@@ -333,7 +333,7 @@ function Index() {
 
         {/* CV */}
         <section id="cv" className="py-20">
-          <SectionHeading eyebrow="05" title="Career" />
+          <SectionHeading eyebrow="06" title="Career" />
           <ol className="mt-10 max-w-3xl">
             {CV.map((c) => (
               <li
