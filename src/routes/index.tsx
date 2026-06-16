@@ -39,7 +39,7 @@ type Model = {
   title: string;
   description: string;
   file: string;
-  embed: boolean;
+  embed?: boolean;
   status: "live" | "coming_soon";
 };
 
