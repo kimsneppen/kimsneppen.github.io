@@ -286,7 +286,7 @@ function Index() {
 
       <main id="top" className="mx-auto max-w-6xl px-6">
         {/* HERO */}
-        <section className="pb-20 pt-32 md:pb-28 md:pt-40">
+        <section className="pb-16 pt-26 md:pb-24 md:pt-32">
           <div className="reveal max-w-4xl">
             <p className="eyebrow">
               Niels Bohr Institute · University of Copenhagen
