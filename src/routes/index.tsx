@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,13 +23,13 @@ export const Route = createFileRoute("/")({
 });
 
 const NAV = [
-  { href: "#about", label: "About" },
-  { href: "#research", label: "Research" },
-  { href: "#publications", label: "Publications" },
-  { href: "#grants", label: "Grants" },
-  { href: "#models", label: "Interactive Models" },
-  { href: "#cv", label: "CV" },
-  { href: "#contact", label: "Contact" },
+  { href: "about", label: "About" },
+  { href: "research", label: "Research" },
+  { href: "publications", label: "Publications" },
+  { href: "grants", label: "Grants" },
+  { href: "models", label: "Interactive Models" },
+  { href: "cv", label: "CV" },
+  { href: "contact", label: "Contact" },
 ];
 
 type Model = {
@@ -106,93 +107,210 @@ const CV = [
   { years: "1989", role: "PhD (Lic. Scient.) in Nuclear Physics, University of Copenhagen" },
 ];
 
-function PhotoFrame({ caption, label }: { caption: string; label: string }) {
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>(".reveal");
+    if (!("IntersectionObserver" in window)) {
+      els.forEach((el) => el.classList.add("is-visible"));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-visible");
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.08 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
+function useScrolled(threshold = 80) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > threshold);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [threshold]);
+  return scrolled;
+}
+
+function useActiveSection(ids: string[]) {
+  const [active, setActive] = useState<string>(ids[0]);
+  useEffect(() => {
+    const sections = ids
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => !!el);
+    if (sections.length === 0) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: "-40% 0px -50% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+    sections.forEach((s) => io.observe(s));
+    return () => io.disconnect();
+  }, [ids]);
+  return active;
+}
+
+function Portrait() {
+  return (
+    <figure className="flex flex-col items-center md:items-start">
+      <div
+        className="h-44 w-44 overflow-hidden rounded-full border border-border shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(15,23,42,0.18)] md:h-52 md:w-52"
+        role="img"
+        aria-label="Formal portrait of Professor Kim Sneppen"
+      >
+        <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(140deg,oklch(0.94_0.012_85)_0%,oklch(0.88_0.018_85)_100%)]">
+          <span className="font-serif text-5xl text-muted-foreground/55">KS</span>
+        </div>
+      </div>
+      <figcaption className="mt-3 text-[11px] italic text-muted-foreground">
+        Photo: Ola Jakup Joensen, NBI
+      </figcaption>
+    </figure>
+  );
+}
+
+function LectureFrame() {
   return (
     <figure className="w-full">
       <div
-        className="aspect-[4/5] w-full overflow-hidden border border-border bg-muted"
+        className="aspect-[4/3] w-full overflow-hidden rounded-md border border-border bg-muted"
         role="img"
-        aria-label={label}
+        aria-label="Kim Sneppen lecturing"
       >
         <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,oklch(0.93_0.01_85)_0%,oklch(0.88_0.015_85)_100%)]">
-          <span className="font-serif text-6xl text-muted-foreground/60">KS</span>
+          <span className="font-serif text-5xl text-muted-foreground/55">KS</span>
         </div>
       </div>
-      <figcaption className="mt-3 text-xs italic text-muted-foreground">{caption}</figcaption>
+      <figcaption className="mt-3 text-[11px] italic text-muted-foreground">
+        Courtesy of Center for Interdisciplinary Studies, Westlake University
+      </figcaption>
     </figure>
+  );
+}
+
+function SectionHeading({ label, title }: { label: string; title: string }) {
+  return (
+    <header className="reveal">
+      <span className="eyebrow">{label}</span>
+      <h2 className="mt-3 text-3xl md:text-4xl lg:text-[2.6rem]">{title}</h2>
+      <span
+        aria-hidden
+        className="mt-5 block h-px w-12 bg-accent/60"
+      />
+    </header>
   );
 }
 
 function Index() {
   const year = new Date().getFullYear();
+  const scrolled = useScrolled(120);
+  const active = useActiveSection(NAV.map((n) => n.href));
+  useReveal();
+
+  const sectionClass = "scroll-mt-24 py-24 md:py-32";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* NAV */}
-      <header className="sticky top-0 z-40 border-b border-rule bg-background/85 backdrop-blur">
+      <header
+        className={[
+          "fixed inset-x-0 top-0 z-40 transition-[background-color,border-color,backdrop-filter,box-shadow] duration-300",
+          scrolled
+            ? "border-b border-rule bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70"
+            : "border-b border-transparent bg-transparent",
+        ].join(" ")}
+      >
         <nav
           aria-label="Primary"
-          className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4"
+          className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4"
         >
           <a
             href="#top"
-            className="font-serif text-lg text-foreground no-underline hover:text-accent"
+            className="font-serif text-base tracking-tight text-foreground no-underline hover:text-accent"
           >
             Kim Sneppen
           </a>
-          <ul className="hidden gap-7 text-sm md:flex">
-            {NAV.map((item) => (
-              <li key={item.href}>
-                <a
-                  href={item.href}
-                  className="text-foreground/75 no-underline hover:text-accent"
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
+          <ul className="hidden items-center gap-7 text-[13px] md:flex">
+            {NAV.map((item) => {
+              const isActive = active === item.href;
+              return (
+                <li key={item.href}>
+                  <a
+                    href={`#${item.href}`}
+                    aria-current={isActive ? "true" : undefined}
+                    className={[
+                      "no-underline transition-colors",
+                      isActive
+                        ? "text-accent"
+                        : "text-foreground/70 hover:text-foreground",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
-          <ul className="flex gap-4 text-xs md:hidden">
-            {NAV.map((item) => (
-              <li key={item.href}>
-                <a href={item.href} className="text-foreground/75 no-underline">
-                  {item.label}
-                </a>
-              </li>
-            ))}
+          <ul className="flex flex-wrap justify-end gap-x-3 gap-y-1 text-[11px] md:hidden">
+            {NAV.map((item) => {
+              const isActive = active === item.href;
+              return (
+                <li key={item.href}>
+                  <a
+                    href={`#${item.href}`}
+                    className={[
+                      "no-underline",
+                      isActive ? "text-accent" : "text-foreground/70",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </header>
 
       <main id="top" className="mx-auto max-w-6xl px-6">
         {/* HERO */}
-        <section className="grid gap-12 py-16 md:grid-cols-[1fr_1.4fr] md:gap-16 md:py-24">
-          <div className="mx-auto w-full max-w-xs md:max-w-none">
-            <PhotoFrame
-              caption="Photo: Ola Jakup Joensen, NBI"
-              label="Formal portrait of Professor Kim Sneppen"
-            />
-          </div>
-          <div className="flex flex-col justify-center">
-            <p className="mb-4 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        <section className="pb-20 pt-32 md:pb-28 md:pt-40">
+          <div className="reveal max-w-4xl">
+            <p className="eyebrow">
               Niels Bohr Institute · University of Copenhagen
             </p>
-            <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl">Kim Sneppen</h1>
-            <p className="mt-4 text-lg text-foreground/85">
-              Professor of Biocomplexity, Niels Bohr Institute, University of Copenhagen
+            <h1 className="mt-5 text-5xl leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
+              Kim Sneppen
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg text-foreground/80 md:text-xl">
+              Professor of Biocomplexity, Niels Bohr Institute, University of Copenhagen.
             </p>
-            <p className="mt-6 max-w-xl font-serif text-xl italic text-foreground/80 md:text-2xl">
+            <p className="mt-8 max-w-2xl border-l-2 border-accent/60 pl-5 font-serif text-xl italic text-foreground/75 md:text-2xl">
               “Modeling living systems with the tools of theoretical physics.”
             </p>
           </div>
+          <div className="reveal mt-14 flex justify-start md:mt-16">
+            <Portrait />
+          </div>
         </section>
 
-        <hr className="border-rule" />
-
         {/* ABOUT */}
-        <section id="about" className="py-20">
-          <SectionHeading eyebrow="01" title="About" />
-          <div className="mt-10 max-w-3xl space-y-5 text-lg leading-relaxed text-foreground/85">
+        <section id="about" className={sectionClass}>
+          <SectionHeading label="About" title="About" />
+          <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
             <p>
               Kim Sneppen is a professor of complex systems and biophysics at the Niels Bohr
               Institute, University of Copenhagen. His research bridges physics and biology,
@@ -209,86 +327,84 @@ function Index() {
           </div>
         </section>
 
-        <hr className="border-rule" />
-
         {/* RESEARCH */}
-        <section id="research" className="py-20">
-          <SectionHeading eyebrow="02" title="Research interests" />
-          <div className="mt-10 grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
+        <section id="research" className={sectionClass}>
+          <SectionHeading label="Research" title="Research interests" />
+          <div className="reveal mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {RESEARCH.map((r) => (
-              <article key={r.title} className="bg-background p-7">
-                <h3 className="text-xl">{r.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{r.body}</p>
+              <article
+                key={r.title}
+                className="rounded-lg border border-border bg-card p-7 transition-colors hover:border-accent/40"
+              >
+                <h3 className="font-serif text-[1.2rem] leading-snug">{r.title}</h3>
+                <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
+                  {r.body}
+                </p>
               </article>
             ))}
           </div>
         </section>
 
-        <hr className="border-rule" />
-
         {/* PUBLICATIONS */}
-        <section id="publications" className="py-20">
-          <SectionHeading eyebrow="03" title="Selected publications" />
-          <p className="mt-6 max-w-2xl text-base text-muted-foreground">
+        <section id="publications" className={sectionClass}>
+          <SectionHeading label="Publications" title="Selected publications" />
+          <p className="reveal mt-6 measure text-[15px] text-muted-foreground">
             Author of 500+ peer-reviewed articles, cited over 22,000 times.
           </p>
-          <ol className="mt-10 max-w-3xl space-y-5">
+          <ol className="reveal mt-12 measure space-y-6">
             {PUBLICATIONS.map((p, i) => (
               <li
                 key={i}
-                className="grid grid-cols-[2rem_1fr] gap-3 text-[15px] leading-relaxed text-foreground/85"
+                className="grid grid-cols-[2rem_1fr] gap-3 text-[15.5px] leading-[1.7] text-foreground/85"
               >
                 <span className="font-serif text-muted-foreground tabular-nums">{i + 1}.</span>
                 <span>{p}</span>
               </li>
             ))}
           </ol>
-          <div className="mt-10">
+          <div className="reveal mt-12">
             <a
               href="https://scholar.google.com/citations?user=LIBL6nQAAAAJ"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block border border-accent px-6 py-3 text-sm font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
+              className="inline-block rounded-md border border-accent/70 px-6 py-3 text-sm font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
             >
               View full publication list on Google Scholar →
             </a>
           </div>
         </section>
 
-        <hr className="border-rule" />
-
         {/* GRANTS */}
-        <section id="grants" className="py-20">
-          <SectionHeading eyebrow="04" title="Grants & awards" />
-          <article className="mt-10 max-w-3xl border-l-2 border-accent pl-6">
-            <h3 className="text-2xl">ERC Advanced Grant — SOURCE</h3>
-            <p className="mt-2 text-sm uppercase tracking-wider text-muted-foreground">
+        <section id="grants" className={sectionClass}>
+          <SectionHeading label="Grants" title="Grants & awards" />
+          <article className="reveal mt-12 measure rounded-lg border border-border bg-card p-8 md:p-10">
+            <p className="eyebrow text-[0.65rem]">ERC Advanced Grant</p>
+            <h3 className="mt-3 font-serif text-2xl md:text-[1.7rem]">SOURCE</h3>
+            <p className="mt-2 text-[13px] uppercase tracking-[0.14em] text-muted-foreground">
               Self-organization in Competition and Diversity · DKK 16.5 million
             </p>
-            <p className="mt-4 text-base leading-relaxed text-foreground/85">
+            <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
               Investigating how diversity emerges and is maintained in complex biological
               systems, from microbial communities to multi-species ecosystems.
             </p>
           </article>
         </section>
 
-        <hr className="border-rule" />
-
         {/* INTERACTIVE MODELS */}
-        <section id="models" className="py-20">
-          <SectionHeading eyebrow="05" title="Interactive models" />
-          <p className="mt-6 max-w-2xl text-base text-muted-foreground">
+        <section id="models" className={sectionClass}>
+          <SectionHeading label="Interactive Models" title="Interactive models" />
+          <p className="reveal mt-6 measure text-[15px] text-muted-foreground">
             Interactive simulations of the models developed in Kim Sneppen's research. Open
             each to explore it in your browser.
           </p>
-          <div className="mt-10 grid gap-8 md:grid-cols-2">
+          <div className="reveal mt-12 grid gap-6 md:grid-cols-2">
             {MODELS.map((m) => (
               <article
                 key={m.id}
-                className="flex flex-col border border-border bg-background p-7"
+                className="flex flex-col rounded-lg border border-border bg-card p-7 transition-colors hover:border-accent/40 md:p-8"
               >
-                <h3 className="font-serif text-2xl">{m.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                <h3 className="font-serif text-[1.3rem] leading-snug">{m.title}</h3>
+                <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
                   {m.description}
                 </p>
                 {m.embed ? (
@@ -307,18 +423,18 @@ function Index() {
                       href={m.file}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-3 inline-block text-sm text-accent"
+                      className="mt-3 inline-block text-[13px] text-accent"
                     >
                       Open full screen ↗
                     </a>
                   </div>
                 ) : (
-                  <div className="mt-6">
+                  <div className="mt-auto pt-6">
                     <a
                       href={m.file}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block border border-accent px-6 py-3 text-sm font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
+                      className="inline-block rounded-md border border-accent/70 px-5 py-2.5 text-[13px] font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
                     >
                       Launch model →
                     </a>
@@ -329,39 +445,43 @@ function Index() {
           </div>
         </section>
 
-        <hr className="border-rule" />
-
         {/* CV */}
-        <section id="cv" className="py-20">
-          <SectionHeading eyebrow="06" title="Career" />
-          <ol className="mt-10 max-w-3xl">
-            {CV.map((c) => (
+        <section id="cv" className={sectionClass}>
+          <SectionHeading label="Career" title="Career" />
+          <ol className="reveal mt-12 max-w-3xl">
+            {CV.map((c, i) => (
               <li
                 key={c.years}
-                className="grid grid-cols-[10rem_1fr] gap-6 border-b border-rule py-5 last:border-b-0"
+                className="relative grid grid-cols-[8.5rem_1fr] gap-6 py-5 sm:grid-cols-[11rem_1fr] sm:gap-8"
               >
-                <span className="font-serif text-sm text-muted-foreground tabular-nums">
+                {i !== CV.length - 1 && (
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-full h-px w-full bg-rule/70"
+                  />
+                )}
+                <span className="font-serif text-[13.5px] font-medium tracking-tight text-accent tabular-nums">
                   {c.years}
                 </span>
-                <span className="text-[15px] text-foreground/90">{c.role}</span>
+                <span className="text-[15px] leading-relaxed text-foreground/85">
+                  {c.role}
+                </span>
               </li>
             ))}
           </ol>
         </section>
 
-        <hr className="border-rule" />
-
         {/* WORK & BOOK */}
-        <section id="work" className="py-20">
-          <SectionHeading eyebrow="07" title="Work & book" />
-          <div className="mt-10 grid gap-12 md:grid-cols-[1.2fr_1fr] md:gap-16">
-            <div className="space-y-6 text-[15px] leading-relaxed text-foreground/85">
+        <section id="work" className={sectionClass}>
+          <SectionHeading label="Work & Book" title="Work & book" />
+          <div className="reveal mt-12 grid gap-12 md:grid-cols-[1.25fr_1fr] md:gap-16">
+            <div className="space-y-10">
               <div>
-                <h3 className="text-xl">Models of Life</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <h3 className="font-serif text-[1.3rem]">Models of Life</h3>
+                <p className="mt-1 text-[12.5px] uppercase tracking-[0.14em] text-muted-foreground">
                   Cambridge University Press, 2014
                 </p>
-                <p className="mt-4">
+                <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
                   A graduate-level synthesis of how concepts from statistical physics — phase
                   transitions, noise, feedback, networks — illuminate the dynamics of cells,
                   organisms, and ecosystems. The book gathers two decades of teaching and
@@ -369,8 +489,8 @@ function Index() {
                 </p>
               </div>
               <div>
-                <h3 className="text-xl">Research group</h3>
-                <p className="mt-4">
+                <h3 className="font-serif text-[1.3rem]">Research group</h3>
+                <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
                   <a
                     href="https://nbi.ku.dk/english/research/biocomplexity/cmol/"
                     target="_blank"
@@ -383,35 +503,28 @@ function Index() {
                 </p>
               </div>
             </div>
-            <PhotoFrame
-              caption="Courtesy of Center for Interdisciplinary Studies, Westlake University"
-              label="Kim Sneppen lecturing"
-            />
+            <LectureFrame />
           </div>
         </section>
 
-        <hr className="border-rule" />
-
         {/* CONTACT */}
-        <section id="contact" className="py-20">
-          <SectionHeading eyebrow="08" title="Contact" />
-          <div className="mt-10 grid max-w-3xl gap-10 md:grid-cols-2">
-            <dl className="space-y-4 text-[15px]">
+        <section id="contact" className={sectionClass}>
+          <SectionHeading label="Contact" title="Contact" />
+          <div className="reveal mt-12 grid max-w-3xl gap-12 md:grid-cols-2">
+            <dl className="space-y-6 text-[15px]">
               <div>
-                <dt className="text-xs uppercase tracking-wider text-muted-foreground">Email</dt>
-                <dd className="mt-1">
+                <dt className="eyebrow text-[0.65rem]">Email</dt>
+                <dd className="mt-2">
                   <a href="mailto:sneppen@nbi.ku.dk">sneppen@nbi.ku.dk</a>
                 </dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wider text-muted-foreground">Phone</dt>
-                <dd className="mt-1 text-foreground/85">+45 35 32 53 52</dd>
+                <dt className="eyebrow text-[0.65rem]">Phone</dt>
+                <dd className="mt-2 text-foreground/85">+45 35 32 53 52</dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Address
-                </dt>
-                <dd className="mt-1 leading-relaxed text-foreground/85">
+                <dt className="eyebrow text-[0.65rem]">Address</dt>
+                <dd className="mt-2 leading-[1.75] text-foreground/85">
                   Niels Bohr Institute
                   <br />
                   University of Copenhagen
@@ -423,10 +536,8 @@ function Index() {
               </div>
             </dl>
             <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                Academic profiles
-              </p>
-              <ul className="mt-3 space-y-2 text-[15px]">
+              <p className="eyebrow text-[0.65rem]">Academic profiles</p>
+              <ul className="mt-3 space-y-3 text-[15px]">
                 <li>
                   <a
                     href="https://scholar.google.com/citations?user=LIBL6nQAAAAJ"
@@ -460,20 +571,11 @@ function Index() {
         </section>
       </main>
 
-      <footer className="border-t border-rule">
-        <div className="mx-auto max-w-6xl px-6 py-8 text-center text-xs text-muted-foreground">
+      <footer className="mt-12 border-t border-rule">
+        <div className="mx-auto max-w-6xl px-6 py-10 text-center text-[12px] text-muted-foreground">
           © {year} Kim Sneppen
         </div>
       </footer>
-    </div>
-  );
-}
-
-function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
-  return (
-    <div className="flex items-baseline gap-5">
-      <span className="font-serif text-sm text-accent tabular-nums">{eyebrow}</span>
-      <h2 className="text-3xl md:text-4xl">{title}</h2>
     </div>
   );
 }
