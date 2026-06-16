@@ -189,14 +189,14 @@ function Portrait() {
 function LectureFrame() {
   return (
     <figure className="w-full">
-      <div
-        className="aspect-[4/3] w-full overflow-hidden rounded-md border border-border bg-muted"
-        role="img"
-        aria-label="Kim Sneppen lecturing"
-      >
-        <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,oklch(0.93_0.01_85)_0%,oklch(0.88_0.015_85)_100%)]">
-          <span className="font-serif text-5xl text-muted-foreground/55">KS</span>
-        </div>
+      <div className="aspect-[3/2] w-full overflow-hidden rounded-lg border border-border bg-muted">
+        <img
+          src={lectureAsset.url}
+          alt="Professor Kim Sneppen presenting his research"
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover"
+        />
       </div>
       <figcaption className="mt-3 text-[11px] italic text-muted-foreground">
         Courtesy of Center for Interdisciplinary Studies, Westlake University
