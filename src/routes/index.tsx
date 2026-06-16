@@ -316,17 +316,24 @@ function Index() {
           <SectionHeading label="About" title="About" />
           <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
             <p>
-              Kim Sneppen is a professor of complex systems and biophysics at the Niels Bohr
-              Institute, University of Copenhagen. His research bridges physics and biology,
-              using methods from statistical physics and complex-systems theory to model
-              biological processes — from gene regulation and epigenetics at the molecular
-              scale, through phage–bacteria co-evolution, to large-scale population and
-              ecosystem dynamics.
+              Kim Sneppen is a professor of biocomplexity at the Niels Bohr Institute,
+              University of Copenhagen, and a leading figure in the physics of living systems.
+              His 1993 work with Per Bak introduced the <span className="font-semibold">Bak–Sneppen model</span> — a foundational model of
+              self-organized criticality that, three decades on, remains a reference point in
+              the study of evolution and complex systems. Across more than <span className="font-semibold">500 publications</span>,
+              cited over <span className="font-semibold">22,000 times</span>, he has built quantitative, physics-based theories of
+              phenomena biology had only described qualitatively: how cells hold stable
+              epigenetic states, how bacteria and their viruses co-evolve, and how diversity
+              emerges and persists in living systems.
             </p>
             <p>
-              He founded and directed the Center for Models of Life (CMOL) and is the author of{" "}
-              <em>Models of Life</em> (Cambridge University Press, 2014). His work has been
-              recognized with an ERC Advanced Grant.
+              He has been a member of the <span className="font-semibold">Royal Danish Academy of Sciences and Letters</span> since
+              2006, and in 2017 was awarded an <span className="font-semibold">ERC Advanced Grant</span> — among Europe's most
+              competitive research awards, reserved for established research leaders — of
+              DKK 16.5 million for his SOURCE project on self-organization, competition, and
+              diversity. He founded and directed the Center for Models of Life (2005–2015),
+              serves as a Divisional Associate Editor of <em>Physical Review Letters</em>, and is the
+              author of <em>Models of Life</em> (Cambridge University Press).
             </p>
           </div>
         </section>
