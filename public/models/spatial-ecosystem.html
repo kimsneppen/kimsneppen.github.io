@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spatial Ecosystem — Mitarai, Mathiesen &amp; Sneppen (2012)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d1014;--panel:#161b22;--panel-2:#1c222b;--line:#2a313c;--line-soft:#222933;
+    --txt:#cdd3dc;--txt-dim:#7c8593;--txt-faint:#576070;
+    --red:#ff5252;--link-light:#eef1f5;--accent:#d98a3c;
+    --gold:#e9b04a;--cyan:#6fb6c2;
+    --sans:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 50% -10%, #14161a 0%, var(--ink) 60%) fixed,var(--ink);
+    color:var(--txt);font-family:var(--sans);-webkit-font-smoothing:antialiased;line-height:1.4}
+  .wrap{max-width:1175px;margin:0 auto;padding:26px 18px 56px}
+
+  header.masthead{border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,var(--panel),#12161c);
+    padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between}
+  .title-line{display:flex;flex-direction:column;gap:3px}
+  .title-line h1{font-size:16px;font-weight:600;letter-spacing:.2px;margin:0;color:#eef2f7}
+  .title-line .cite{font-family:var(--mono);font-size:11.5px;color:var(--txt-dim)}
+  .title-line .cite em{color:var(--txt-faint);font-style:normal}
+  .badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--txt-faint);
+    border:1px solid var(--line);border-radius:999px;padding:5px 11px;white-space:nowrap}
+
+  .layout{display:grid;gap:16px;grid-template-columns:1fr;margin-top:0;align-items:start}
+  @media(min-width:900px){ .layout{grid-template-columns:minmax(0,1fr) 320px} }
+  .maincol{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .sidebar{display:flex;flex-direction:column;gap:12px;min-width:0}
+
+  .card{border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+  .card .cap{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line-soft)}
+  .card .cap h2{margin:0;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--txt-dim);font-weight:600}
+  .card .cap .sub{font-family:var(--mono);font-size:11px;color:var(--txt-faint)}
+  .cap-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
+  .canvas-pad{padding:10px;display:flex;justify-content:center}
+  #gridCanvas{width:100%;max-width:none;aspect-ratio:1/1;border-radius:6px;image-rendering:pixelated;background:#0a0908;display:block}
+  #divCanvas{width:100%;height:196px;display:block;border-radius:6px;background:#0a0d11}
+  #netCanvas{width:100%;height:440px;display:block;border-radius:6px;background:#0a0d11}
+
+  .panel{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+  .ctrl{padding:6px 13px;border-top:1px solid var(--line-soft);display:flex;flex-direction:column;gap:4px}
+  .ctrl:first-child{border-top:none}
+  .ctrl .lab{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .ctrl .lab .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-dim)}
+  .ctrl .lab .v{font-family:var(--mono);font-size:12px;color:#e7ecf2;font-weight:500}
+  .ctrl .hint{display:none}
+  /* two compact segmented controls per line */
+  .duo{padding:6px 13px;border-top:1px solid var(--line-soft);display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .mini{display:flex;flex-direction:column;gap:3px}
+  .mini .mk{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-dim)}
+  .inlinesegs{display:flex;gap:8px;align-items:center}
+  .inlinesegs .seg{flex:1}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:3px;background:var(--line);outline:none;cursor:pointer;margin:2px 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #0d1014;cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #0d1014;cursor:pointer}
+
+  .seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{flex:1;background:transparent;border:none;color:var(--txt-dim);font-family:var(--mono);font-size:11px;padding:6px 4px;cursor:pointer;border-right:1px solid var(--line);white-space:nowrap}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--panel-2);color:#f5e9da;box-shadow:inset 0 -2px 0 var(--accent)}
+
+  .pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-dim);
+    background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:5px 11px;cursor:pointer}
+  .pill.on{color:#f5e9da;border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+
+  .transport .row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+  .btn{font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--txt);background:var(--panel-2);border:1px solid var(--line);border-radius:7px;padding:7px 11px;cursor:pointer}
+  .btn.sm{font-size:10.5px;padding:5px 9px;letter-spacing:.04em}
+  .exp-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .exp-row .xlab{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-faint)}
+  .btn:hover{border-color:#3a4452;color:#fff}
+  .btn.primary{background:var(--accent);color:#241402;border-color:var(--accent);font-weight:600}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .stat{font-family:var(--mono);font-size:12px;color:var(--txt-dim);white-space:nowrap}
+  .stat b{color:#e7ecf2;font-weight:600}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:5px;vertical-align:middle}
+  .dot.frozen{background:#6b7686}
+
+  .legend{display:flex;gap:14px;font-family:var(--mono);font-size:11px;color:var(--txt-dim);flex-wrap:wrap}
+  .legend i{display:inline-block;width:16px;height:0;border-top:2px solid;margin-right:6px;vertical-align:middle;position:relative;top:-2px}
+  .legend .r i{border-color:var(--red)}
+  .legend .g i{border-color:var(--link-light);border-top-width:3px}
+  .legend .d i{border-color:var(--gold)}
+  .legend .pp i{border-color:var(--cyan)}
+  .legend .iv i{border-color:#b48ce0}
+  .legend .cy i{border-color:rgba(255,70,70,0.7)}
+
+  footer{margin-top:24px;font-family:var(--mono);font-size:11px;color:var(--txt-faint);line-height:1.7}
+  footer code{color:var(--txt-dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="layout">
+
+    <!-- LEFT: title + lattice + diversity strip -->
+    <div class="maincol">
+      <header class="masthead">
+        <div class="title-line">
+          <h1>Emergence of diversity in a spatial ecosystem</h1>
+          <div class="cite">Mitarai, Mathiesen &amp; Sneppen · <em>Phys. Rev. E</em> 86, 011929 (2012)</div>
+        </div>
+        <span class="badge">interactive model</span>
+      </header>
+
+      <section class="card">
+        <div class="canvas-pad"><canvas id="gridCanvas"></canvas></div>
+      </section>
+
+      <section class="card">
+        <div class="cap">
+          <h2>Diversity over time</h2>
+          <div class="legend">
+            <span class="d"><i></i>diversity</span>
+            <span class="pp"><i></i>patches</span>
+            <span class="iv"><i></i>density <b id="densVal" style="color:#cdd3dc">0.00</b></span>
+            <span class="cy"><i></i>cycle ≥4</span>
+          </div>
+        </div>
+        <div class="canvas-pad" style="padding:10px 12px"><canvas id="divCanvas"></canvas></div>
+      </section>
+    </div>
+
+    <!-- RIGHT: controls then network -->
+    <aside class="sidebar">
+      <section class="panel">
+        <div class="ctrl">
+          <div class="lab"><span class="k">System size&nbsp;L</span><span class="v" id="vL">300</span></div>
+          <input type="range" id="cL" min="10" max="500" step="10" value="300">
+          <div class="hint" id="hL"></div>
+        </div>
+        <div class="ctrl">
+          <div class="lab"><span class="k">Lattice</span><span class="v" id="vLat" style="font-size:10px;color:var(--txt-faint)">90,000 sites</span></div>
+          <div class="inlinesegs">
+            <div class="seg" id="segLat">
+              <button data-v="square" class="on">square</button>
+              <button data-v="carpet">carpet</button>
+              <button data-v="fractal">cross&nbsp;K=11</button>
+            </div>
+            <div class="seg" id="segFrac" style="max-width:120px">
+              <button data-v="small" class="on">small</button>
+              <button data-v="large">large</button>
+            </div>
+          </div>
+          <div class="hint" id="hLat"></div>
+        </div>
+        <div class="ctrl">
+          <div class="lab"><span class="k">Start species</span><span class="v" id="vN">1</span></div>
+          <div class="inlinesegs">
+            <input type="range" id="cN" min="0" max="25" step="1" value="1" style="flex:2">
+            <div class="seg" id="segPlace" style="flex:1;max-width:150px">
+              <button data-v="random" class="on">random</button>
+              <button data-v="stripes">stripes</button>
+            </div>
+          </div>
+          <div class="hint" id="hN"></div>
+        </div>
+        <div class="ctrl">
+          <div class="lab"><span class="k">Interaction prob.&nbsp;p</span><span class="v" id="vP">0.07</span></div>
+          <input type="range" id="cP" min="0" max="1" step="0.01" value="0.07">
+        </div>
+        <div class="duo">
+          <div class="mini"><span class="mk">Invasion rate</span>
+            <div class="seg" id="segRate"><button data-v="equal" class="on">all = 1</button><button data-v="random">rand</button></div>
+          </div>
+          <div class="mini"><span class="mk">Update</span>
+            <div class="seg" id="segUpdate"><button data-v="async" class="on">async</button><button data-v="sync">sync</button></div>
+          </div>
+        </div>
+        <div class="duo">
+          <div class="mini"><span class="mk">Invasion target</span>
+            <div class="seg" id="segTarget"><button data-v="neighbour" class="on">neighbour</button><button data-v="random">any site</button></div>
+          </div>
+          <div class="mini"><span class="mk">Boundary</span>
+            <div class="seg" id="segBoundary"><button data-v="periodic" class="on">periodic</button><button data-v="closed">closed</button></div>
+          </div>
+        </div>
+        <div class="ctrl">
+          <div class="lab"><span class="k">Introduction rate</span><span class="v" id="vIntro">0.0100</span></div>
+          <input type="range" id="cIntro" min="0" max="0.05" step="0.0005" value="0.01">
+        </div>
+        <div class="duo">
+          <div class="mini"><span class="mk">New species via</span>
+            <div class="seg" id="segEvo"><button data-v="intro" class="on">introduction</button><button data-v="evolve">evolution</button></div>
+          </div>
+          <div class="mini"><span class="mk">Mutation site</span>
+            <div class="seg" id="segEvoMode"><button data-v="paper" class="on">anywhere</button><button data-v="invaded">invaded</button></div>
+          </div>
+        </div>
+        <div class="duo">
+          <div class="mini"><span class="mk">Mutation ε <b id="vEps" style="color:#e7ecf2;font-weight:500">0.00</b></span>
+            <input type="range" id="cEps" min="0" max="1" step="0.01" value="0">
+          </div>
+          <div class="mini"><span class="mk">Cycle prune <b id="vCyc" style="color:#e7ecf2;font-weight:500">8·L</b></span>
+            <input type="range" id="cCyc" min="0" max="12" step="1" value="3">
+          </div>
+        </div>
+        <div class="hint" id="hCyc" style="display:none"></div>
+        <div class="hint" id="hIntro" style="display:none"></div>
+        <div class="hint" id="hEvo" style="display:none"></div>
+        <div class="hint" id="hEvoMode" style="display:none"></div>
+        <div class="hint" id="hTarget" style="display:none"></div>
+        <div class="hint" id="hBoundary" style="display:none"></div>
+        <div class="hint" id="hUpdate" style="display:none"></div>
+        <div class="ctrl transport">
+          <div class="row">
+            <button class="btn primary" id="btnPlay">Pause</button>
+            <button class="btn" id="btnStep">Step</button>
+            <button class="btn" id="btnReset">Reset</button>
+            <span class="k" style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-dim);margin-left:4px">Speed</span>
+            <input type="range" id="cSpeed" min="1" max="8" step="1" value="3" style="flex:1;min-width:70px">
+          </div>
+          <div class="exp-row">
+            <span class="xlab">PNG</span>
+            <button class="btn sm" id="btnPng">lattice + time</button>
+            <button class="btn sm" id="btnPngLat">lattice</button>
+            <button class="btn sm" id="btnPngNet">network</button>
+            <button class="btn sm" id="btnPngDyn">dynamics</button>
+          </div>
+          <div class="row" style="gap:14px">
+            <span class="stat"><span class="dot" id="statDot"></span><b id="statMode">running</b></span>
+            <span class="stat">species <b id="statSpecies">—</b></span>
+            <span class="stat">added <b id="statAdded">0</b></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="cap">
+          <h2>Invasion network</h2>
+          <div class="cap-right">
+            <button class="pill on" id="btnMainCC">main component</button>
+            <button class="pill" id="btnActive">active only</button>
+            <div class="legend">
+              <span class="r"><i></i>active</span>
+              <span class="g"><i></i>latent</span>
+            </div>
+          </div>
+        </div>
+        <div class="canvas-pad" style="padding:10px"><canvas id="netCanvas"></canvas></div>
+      </section>
+    </aside>
+  </div>
+
+  <footer>
+    Arrow <code>a&rarr;b</code> = species <code>a</code> can invade <code>b</code>.
+    <span style="color:var(--red)">Red</span> = the species are neighbours on the grid now (invasion can fire);
+    <span style="color:var(--link-light)">white</span> = latent. <em>Active only</em> hides latent links and lays out just the live network.
+    Palette: warm autumn reds, oranges, yellows, browns and olive greens. Each introduction adds <em>two</em> species at distant sites;
+    with introduction rate&nbsp;=&nbsp;0 a pair is added only when the lattice is frozen.
+    The strip below the grid plots current diversity against cumulative added species; the y-axis spans 0 to the historical maximum,
+    and patch count is rescaled so its peak meets the diversity peak.
+  </footer>
+</div>
+
+<script>
+"use strict";
+/* Mitarai–Mathiesen–Sneppen spatial ecosystem model (PRE 86, 011929, 2012) */
+
+const P = { L:300, Lsquare:300, p:0.07, rateMode:'equal', intro:0.01, speed:3, running:true, activeOnly:false, mainCC:true, randomNeighbor:false, cycleExp:3, syncUpdate:false, startN:1, placement:'random', evolution:false, closed:false, epsilon:0, evoMode:'paper', lattice:'square', carpetSize:243, fracGen:4 };
+const HOLE=-1;                                       // dead cell of a fractal lattice
+// packed fractal lattice (used for the K=11 cross-carpet, dim ~1.488)
+let packed=false, NB=null, cellOX=null, cellOY=null, offW=0, fracBlk=1, fracBG=null;
+// 5x5 generator: full cross (9) + (1,1) & (3,3) = 11 cells  -> dim = ln11/ln5 = 1.4899
+const GEN11=(function(){ const g=new Uint8Array(25); for(let dy=0;dy<5;dy++)for(let dx=0;dx<5;dx++){ if(dx===2||dy===2||(dx===1&&dy===1)||(dx===3&&dy===3)) g[dy*5+dx]=1; } return g; })();
+
+let grid, nextId=1, introAccum=0, sweeps=0, frozen=false, addedCount=0;
+let clock=0, sinceFreeze=0, changeTime, perturbCount=0;
+const ACTIVE_WINDOW=100;                       // sweeps (= updates per lattice site)
+function cycleLimit(){ const lin = grid&&grid.length ? Math.round(Math.sqrt(grid.length)) : P.L; return (1<<P.cycleExp)*lin; }   // ~linear size, in sweeps
+const MUL = 1<<24;
+const rel = new Map();
+
+let seed = 0x2f6e2b1;
+function rnd(){ seed ^= seed<<13; seed ^= seed>>>17; seed ^= seed<<5; return (seed>>>0)/4294967296; }
+function randRate(){ return 0.25 + 0.75*rnd(); }   // per-link invasion strength in [0.25, 1.0]
+
+function relKey(a,b){ return a<b ? a*MUL+b : b*MUL+a; }
+const NONINT={interact:false,inv:0,rate:0};       // shared record for the vacant state (id 0)
+function getRel(a,b){
+  const k = a<b ? a*MUL+b : b*MUL+a;
+  let r = rel.get(k);
+  if(r) return r;
+  if(a<=0||b<=0) return NONINT;                    // empty (0) and holes (-1) never spontaneously interact
+  const interact = rnd() < P.p;
+  let inv=0, rate=0;
+  if(interact){ const lo=a<b?a:b, hi=a<b?b:a; inv=rnd()<0.5?lo:hi; rate=(P.rateMode==='equal')?1:randRate(); }
+  r={interact,inv,rate}; rel.set(k,r);
+  return r;
+}
+function canInvade(a,b){ const r=getRel(a,b); return r.interact && r.inv===a; }
+function invRate(a,b){ return getRel(a,b).rate; }
+
+// ---------- "jet" colormap (matplotlib): blue → cyan → green → yellow → red ----------
+const colorCache=new Map();
+function hashU(n){n=(n*2654435761)>>>0;n^=n>>>15;n=(n*2246822519)>>>0;n^=n>>>13;n=(n*3266489917)>>>0;n^=n>>>16;return n>>>0;}
+function jet(t){
+  if(t<0)t=0; else if(t>1)t=1;
+  const r=Math.min(Math.max(1.5-Math.abs(4*t-3),0),1);
+  const g=Math.min(Math.max(1.5-Math.abs(4*t-2),0),1);
+  const b=Math.min(Math.max(1.5-Math.abs(4*t-1),0),1);
+  return [Math.round(r*255),Math.round(g*255),Math.round(b*255)];
+}
+function colorOf(id){
+  if(id===HOLE) return [8,9,12];                    // fractal hole (background)
+  if(id===0) return [22,24,28];                    // vacant cell (dark)
+  let c=colorCache.get(id);
+  if(!c){ c=jet(hashU(id*2654435761)/4294967296); colorCache.set(id,c); }  // hashed → varied jet hues
+  return c;
+}
+
+// ---------- lattice geometry ----------
+function effectiveL(){ return P.lattice==='carpet'?P.carpetSize : P.lattice==='fractal'?Math.pow(5,P.fracGen) : P.Lsquare; }
+function isHoleXY(x,y){
+  if(P.lattice==='carpet'){ let xx=x,yy=y; while(xx>0||yy>0){ if(xx%3===1&&yy%3===1) return true; xx=(xx/3)|0; yy=(yy/3)|0; } return false; }
+  return false;
+}
+// Build the K=11 cross-carpet fractal as a PACKED lattice: a list of live cells with a
+// precomputed neighbour table NB, plus 45-degree-tilted pixel coordinates for display.
+function buildFractal(g){
+  const S=Math.pow(5,g);                                  // embedding side
+  // enumerate live cells top-down through the generations (visits only the 11^g live cells)
+  const gen=[]; for(let dy=0;dy<5;dy++)for(let dx=0;dx<5;dx++) if(GEN11[dy*5+dx]) gen.push([dx,dy]);
+  let cells=[[0,0]];
+  for(let lvl=0;lvl<g;lvl++){
+    const scale=Math.pow(5,g-1-lvl), next=[];
+    for(let c=0;c<cells.length;c++){ const x=cells[c][0],y=cells[c][1];
+      for(let q=0;q<gen.length;q++) next.push([x+gen[q][0]*scale, y+gen[q][1]*scale]); }
+    cells=next;
+  }
+  const N=cells.length;                                   // = 11^g
+  const idx=new Map(); for(let i=0;i<N;i++) idx.set(cells[i][1]*S+cells[i][0], i);
+  // neighbour table (von Neumann); honour the boundary mode at build time
+  NB=new Int32Array(N*4).fill(-1);
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+  for(let i=0;i<N;i++){ const x=cells[i][0],y=cells[i][1];
+    for(let d=0;d<4;d++){ let nx=x+dirs[d][0], ny=y+dirs[d][1];
+      if(P.closed){ if(nx<0||nx>=S||ny<0||ny>=S) continue; }
+      else { nx=(nx+S)%S; ny=(ny+S)%S; }
+      const j=idx.get(ny*S+nx); if(j!==undefined) NB[i*4+d]=j;
+    }
+  }
+  // 45-degree tilt -> pixel coordinates. Large generations zoom in for resolution and
+  // let the diamond's far tips clip outside the buffer (we don't need to see everything).
+  const big = g>=5;
+  offW = big ? 2048 : Math.min(2*S, 1400);
+  const h = big ? 1.3 : Math.max(1, (offW-2)/(2*(S-1||1)));   // offscreen pixels per fractal unit
+  fracBlk = Math.max(2, Math.round(2*h));                     // block per cell (fills 45° gaps)
+  const cx=offW/2, half=(S-1);
+  cellOX=new Int32Array(N); cellOY=new Int32Array(N);
+  for(let i=0;i<N;i++){ const x=cells[i][0],y=cells[i][1];
+    cellOX[i]=Math.round((x - y)*h + cx);
+    cellOY[i]=Math.round((x + y - half)*h + cx);
+  }
+  const bg=colorOf(HOLE); fracBG=new Uint8ClampedArray(offW*offW*4);
+  for(let o=0;o<fracBG.length;o+=4){ fracBG[o]=bg[0];fracBG[o+1]=bg[1];fracBG[o+2]=bg[2];fracBG[o+3]=255; }
+  return N;
+}
+// ---------- grid + dynamics ----------
+function resetSim(){
+  packed = (P.lattice==='fractal');
+  P.L=effectiveL();
+  let N;
+  if(packed){ N=buildFractal(P.fracGen); }
+  else { N=P.L*P.L; NB=null; }
+  grid=new Int32Array(N);
+  rel.clear(); colorCache.clear();
+  nextId=1; introAccum=0; sweeps=0; frozen=false; addedCount=0;
+  clock=0; sinceFreeze=0; perturbCount=0; changeTime=new Float32Array(N).fill(-1e9);
+  histX=[]; histDiv=[]; histPatch=[]; histDens=[]; histCycle=[]; maxDivEver=1; maxPatchEver=1;
+  const n=P.startN, L=P.L;
+  const ids=[]; for(let k=0;k<n;k++) ids.push(nextId++);
+  for(let i=0;i<N;i++){
+    if(!packed){ const x=i%L,y=(i/L)|0; if(isHoleXY(x,y)){ grid[i]=HOLE; continue; } }
+    if(n<=0){ grid[i]=0; continue; }                              // vacant
+    if(n===1 || P.placement==='random') grid[i]=ids[(rnd()*n)|0];
+    else { const xx = packed ? cellOX[i] : i%L; grid[i]=ids[Math.min(n-1,((xx/ (packed?offW:L))*n)|0)]; } // stripes
+  }
+  netPos.clear();
+  buildGridCanvas(); sizeAux();
+  scanGrid(); drawGrid(); sample(); drawDiversityPlot(); updateReadouts();
+}
+// neighbour index in direction d (0..3); -1 if blocked by closed boundary or a hole
+function neighbor(i,d){
+  if(packed) return NB[i*4+d];
+  const L=P.L,x=i%L,y=(i/L)|0;
+  let nx=x,ny=y;
+  if(d===0)nx=x+1; else if(d===1)nx=x-1; else if(d===2)ny=y+1; else ny=y-1;
+  let j;
+  if(P.closed){ if(nx<0||nx>=L||ny<0||ny>=L) return -1; j=nx+ny*L; }
+  else j=((nx+L)%L)+(((ny+L)%L))*L;
+  if(grid[j]===HOLE) return -1;
+  return j;
+}
+function stepAttempt(){
+  const N=grid.length, i=(rnd()*N)|0;
+  if(grid[i]===HOLE) return;
+  let j;
+  if(P.randomNeighbor){
+    j=(rnd()*N)|0; if(j===i||grid[j]===HOLE) return; // well-mixed: target any (non-hole) site
+  } else {
+    j=neighbor(i,(rnd()*4)|0); if(j<0) return;  // spatial: a lattice neighbour (periodic or closed)
+  }
+  const ai=grid[i],an=grid[j];
+  if(ai===an) return;
+  const r=getRel(an,ai);
+  if(r.interact && r.inv===an){ if(P.rateMode==='equal'||rnd()<r.rate){ grid[i]=an; changeTime[i]=clock; r.cur=(r.cur||0)+1; } }
+}
+// Synchronous-ish sweep: every site updated exactly once per timestep, executed in a
+// fresh random permutation each timestep. Each site (as invader) targets one neighbour.
+let permBuf=null;
+function syncSweep(){
+  const N=grid.length, L=P.L;
+  if(!permBuf || permBuf.length!==N){ permBuf=new Int32Array(N); for(let i=0;i<N;i++) permBuf[i]=i; }
+  for(let i=N-1;i>0;i--){ const k=(rnd()*(i+1))|0; const t=permBuf[i]; permBuf[i]=permBuf[k]; permBuf[k]=t; }  // shuffle
+  for(let p=0;p<N;p++){
+    const i=permBuf[p];
+    if(grid[i]===HOLE) continue;
+    let j;
+    if(P.randomNeighbor){ j=(rnd()*N)|0; if(j===i||grid[j]===HOLE) continue; }
+    else { j=neighbor(i,(rnd()*4)|0); if(j<0) continue; }
+    const a=grid[i], b=grid[j];                 // site i is the invader, targeting neighbour j
+    if(a===b) continue;
+    const r=getRel(a,b);
+    if(r.interact && r.inv===a){ if(P.rateMode==='equal'||rnd()<r.rate){ grid[j]=a; changeTime[j]=clock; r.cur=(r.cur||0)+1; } }
+  }
+}
+function currentDistinct(){ const s=new Set(),N=grid.length; for(let i=0;i<N;i++){ const a=grid[i]; if(a>0) s.add(a); } return s.size; }
+function randomCell(){ const N=grid.length; for(let t=0;t<60;t++){ const i=(rnd()*N)|0; if(grid[i]!==HOLE) return i; } for(let i=0;i<N;i++) if(grid[i]!==HOLE) return i; return 0; }
+function randomSpeciesSite(){ const N=grid.length; for(let t=0;t<60;t++){ const i=(rnd()*N)|0; if(grid[i]>0) return i; } for(let i=0;i<N;i++) if(grid[i]>0) return i; return -1; }
+function addSpeciesAt(i){
+  const old=grid[i], s=nextId++;
+  for(const o of presentSet) getRel(s,o);     // random interaction matrix with present species
+  forceInvade(s,old);                          // EXCEPT a guaranteed link: new invades its site's resident
+  grid[i]=s; changeTime[i]=clock; addedCount++;
+  return s;
+}
+// Evolution (Mitarai, Heinsalu & Sneppen 2014): a mutant copies its parent's interaction
+// matrix, but each entry is independently re-randomized with probability epsilon.
+// 'paper' mode mutates a random individual; 'invaded' mode only a just-invaded site.
+function mutateIntroduce(){
+  let i;
+  if(P.evoMode==='invaded'){
+    const recent=[]; const N=grid.length;
+    for(let q=0;q<N;q++){ if(grid[q]>0 && changeTime[q]===clock) recent.push(q); }   // changed this timestep
+    i = recent.length ? recent[(rnd()*recent.length)|0] : randomSpeciesSite();
+  } else { i=randomSpeciesSite(); }
+  if(i<0){ introduceOne(); return; }                          // no real parent yet -> seed
+  const F=grid[i]; if(F<=0){ introduceOne(); return; }
+  const C=nextId++;
+  const eps=P.epsilon;
+  for(const X of presentSet){
+    if(rnd()<eps){                                            // mutate this interaction: draw afresh
+      const interact=rnd()<P.p;
+      if(interact){ const inv=rnd()<0.5?C:X; rel.set(relKey(C,X),{interact:true,inv,rate:(P.rateMode==='equal'?1:randRate())}); }
+      else rel.set(relKey(C,X),{interact:false,inv:0,rate:0});
+    } else if(X!==F){                                          // inherit parent's relationship unchanged
+      const rf=getRel(F,X);
+      if(rf.interact) rel.set(relKey(C,X),{interact:true,inv:(rf.inv===F?C:X),rate:rf.rate});
+    }
+  }
+  grid[i]=C; changeTime[i]=clock; addedCount++;
+}
+// dispatcher used by both rate-driven and frozen-driven introduction
+function addNewSpecies(){
+  if(P.evolution){ mutateIntroduce(); if(currentDistinct()<5) mutateIntroduce(); }
+  else { if(currentDistinct()<5) introducePair(); else introduceOne(); }
+}
+function introducePair(){
+  const L=P.L,N=grid.length;
+  let i=randomCell();
+  if(packed){ let j=randomCell(),t=0; while(j===i&&t<60){ j=randomCell(); t++; } addSpeciesAt(i); if(j!==i) addSpeciesAt(j); return; }
+  const x=i%L,y=(i/L)|0;
+  const jx=(((rnd()*0.4-0.2)*L)|0),jy=(((rnd()*0.4-0.2)*L)|0);
+  const x2=(((x+(L>>1)+jx)%L)+L)%L,y2=(((y+(L>>1)+jy)%L)+L)%L;
+  let j=x2+y2*L; let t=0; while((j===i||grid[j]===HOLE)&&t<60){ j=(rnd()*N)|0; t++; }
+  if(grid[j]===HOLE) j=i;
+  addSpeciesAt(i); if(j!==i) addSpeciesAt(j);   // two new species at distant (non-hole) sites
+}
+function introduceOne(){ addSpeciesAt(randomCell()); }
+// Escape a persistent cycle: find a species S that is actively being invaded (a predator T
+// of S is present at the cycling front), then remove S by collapsing the ENTIRE connected
+// S-domain that touches the active front onto T. Using neighbor() for connectivity means the
+// boundary of "what to remove" is found correctly on any lattice, including the packed fractal.
+function perturb(){
+  const N=grid.length;
+  const active=[];
+  for(let i=0;i<N;i++){ if(grid[i]>0 && clock-changeTime[i] <= ACTIVE_WINDOW) active.push(i); }
+  if(active.length===0) return;
+  const present=new Set(); for(const i of active) present.add(grid[i]);
+  const list=Array.from(present);
+  // choose a species S in the active front that has an active predator T also present there
+  let S=-1, T=-1;
+  for(let o=list.length-1;o>0;o--){ const k=(rnd()*(o+1))|0; const t=list[o]; list[o]=list[k]; list[k]=t; }  // shuffle
+  for(const cand of list){
+    const preds=[]; for(const X of present){ if(X!==cand && canInvade(X,cand)) preds.push(X); }
+    if(preds.length){ S=cand; T=preds[(rnd()*preds.length)|0]; break; }
+  }
+  if(S<0) return;                                  // nothing perturbable
+  // flood-fill the connected S patch reachable from the active front, collapse it to T
+  const seen=new Uint8Array(N); let stack=[];
+  for(const i of active){ if(grid[i]===S && !seen[i]){ seen[i]=1; stack.push(i); } }
+  while(stack.length){ const i=stack.pop(); grid[i]=T; changeTime[i]=clock;
+    for(let d=0;d<4;d++){ const j=neighbor(i,d); if(j>=0 && grid[j]===S && !seen[j]){ seen[j]=1; stack.push(j); } }
+  }
+  perturbCount++;
+}
+// define species `a` as a predator of species `b`
+function forceInvade(a,b){
+  if(a===b) return;
+  const rate=(P.rateMode==='equal')?1:randRate();
+  rel.set(relKey(a,b),{interact:true,inv:a,rate});
+}
+function isFrozen(){
+  if(P.randomNeighbor){
+    const N=grid.length, set=new Set(); for(let i=0;i<N;i++){ const a=grid[i]; if(a!==HOLE) set.add(a); }
+    const ns=Array.from(set), m=ns.length;
+    for(let a=0;a<m;a++) for(let b=0;b<m;b++){ if(a!==b && canInvade(ns[a],ns[b])) return false; }
+    return true;
+  }
+  const N=grid.length;
+  for(let i=0;i<N;i++){
+    const a=grid[i]; if(a===HOLE) continue;
+    for(let d=0;d<4;d++){ const j=neighbor(i,d); if(j<0) continue; const b=grid[j];
+      if(b!==a && (canInvade(a,b)||canInvade(b,a))) return false; }
+  }
+  return true;
+}
+function countPatches(){
+  const N=grid.length;
+  const seen=new Uint8Array(N), stack=new Int32Array(N);
+  let patches=0;
+  for(let s=0;s<N;s++){
+    if(seen[s]||grid[s]===HOLE) continue;
+    patches++; const sp=grid[s]; let top=0; stack[top++]=s; seen[s]=1;
+    while(top>0){
+      const i=stack[--top];
+      for(let d=0;d<4;d++){ const j=neighbor(i,d); if(j>=0&&!seen[j]&&grid[j]===sp){seen[j]=1;stack[top++]=j;} }
+    }
+  }
+  return patches;
+}
+
+// ---------- present species + spatial adjacency ----------
+let presentList=[], presentSet=new Set(), adjSet=new Set(), speciesCount=new Map();
+function scanGrid(){
+  const N=grid.length;
+  presentSet=new Set(); adjSet=new Set(); speciesCount=new Map();
+  for(let i=0;i<N;i++){
+    const a=grid[i]; if(a===HOLE) continue;
+    speciesCount.set(a,(speciesCount.get(a)||0)+1);
+    if(a>0) presentSet.add(a);
+    for(let d=0;d<2;d++){ const j=neighbor(i,d===0?0:2); if(j<0) continue; const b=grid[j]; if(b!==a) adjSet.add(relKey(a,b)); }
+  }
+  presentList=Array.from(presentSet).sort((u,v)=>u-v);
+  if(rel.size>8000){ for(const k of rel.keys()){ const lo=Math.floor(k/MUL),hi=k%MUL; if(!presentSet.has(lo)&&!presentSet.has(hi)) rel.delete(k); } }
+}
+
+// ---------- diversity history ----------
+let histX=[],histDiv=[],histPatch=[],histDens=[],histCycle=[],maxDivEver=1,maxPatchEver=1;
+function interactionDensity(){
+  const D=presentSet.size; if(D<2) return 0;
+  let cnt=0;
+  for(const [k,r] of rel){ if(!r.interact) continue; const lo=Math.floor(k/MUL),hi=k%MUL;
+    if(lo!==0&&hi!==0&&presentSet.has(lo)&&presentSet.has(hi)) cnt++; }
+  return cnt/(D*(D-1)/2);            // fraction of present species pairs that interact
+}
+// does the currently-ACTIVE (adjacent + invading) directed graph contain a cycle of length >= 4?
+function hasLongActiveCycle(){
+  const g=new Map();
+  for(const [k,r] of rel){ if(!r.interact || !adjSet.has(k)) continue;
+    const lo=Math.floor(k/MUL),hi=k%MUL; if(lo===0||hi===0) continue;
+    if(!presentSet.has(lo)||!presentSet.has(hi)) continue;
+    const pred=r.inv, prey=(pred===lo?hi:lo);
+    if(!g.has(pred)) g.set(pred,[]); g.get(pred).push(prey);
+  }
+  const nodes=[...g.keys()]; if(nodes.length<4) return false;
+  function dfs(start,node,path){
+    const nb=g.get(node); if(!nb) return false;
+    for(const nx of nb){
+      if(nx===start){ if(path.size>=4) return true; continue; }
+      if(!path.has(nx) && path.size<9){ path.add(nx); if(dfs(start,nx,path)) return true; path.delete(nx); }
+    }
+    return false;
+  }
+  for(const s of nodes){ if(dfs(s,s,new Set([s]))) return true; }
+  return false;
+}
+function sample(){
+  const div=presentSet.size, pat=countPatches(), dens=interactionDensity(), cyc=hasLongActiveCycle();
+  histX.push(addedCount); histDiv.push(div); histPatch.push(pat); histDens.push(dens); histCycle.push(cyc);
+  if(div>maxDivEver)maxDivEver=div; if(pat>maxPatchEver)maxPatchEver=pat;
+  if(histX.length>3000){
+    histX=histX.filter((_,i)=>i%2===0); histDiv=histDiv.filter((_,i)=>i%2===0);
+    histPatch=histPatch.filter((_,i)=>i%2===0); histDens=histDens.filter((_,i)=>i%2===0); histCycle=histCycle.filter((_,i)=>i%2===0);
+  }
+}
+
+// ---------- canvases ----------
+const gridCanvas=document.getElementById('gridCanvas'),gctx=gridCanvas.getContext('2d');
+const divCanvas=document.getElementById('divCanvas'),dctx=divCanvas.getContext('2d');
+const netCanvas=document.getElementById('netCanvas'),nctx=netCanvas.getContext('2d');
+let off,octx,oimg;
+function buildGridCanvas(){
+  const dpr=Math.min(window.devicePixelRatio||1,2),css=gridCanvas.clientWidth||560;
+  gridCanvas.width=Math.round(css*dpr); gridCanvas.height=Math.round(css*dpr);
+  const W = packed ? offW : P.L;
+  off=document.createElement('canvas'); off.width=W; off.height=W;
+  octx=off.getContext('2d'); oimg=octx.createImageData(W,W); gctx.imageSmoothingEnabled=false;
+}
+function sizeAux(){
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  divCanvas.width=Math.round(divCanvas.clientWidth*dpr); divCanvas.height=Math.round(divCanvas.clientHeight*dpr);
+  netCanvas.width=Math.round(netCanvas.clientWidth*dpr); netCanvas.height=Math.round(netCanvas.clientHeight*dpr);
+}
+function drawGrid(){
+  const N=grid.length,d=oimg.data;
+  if(packed){
+    d.set(fracBG);                                   // fast background clear
+    const W=offW, blk=fracBlk, o0=blk>>1;
+    for(let i=0;i<N;i++){ const c=colorOf(grid[i]); const ox=cellOX[i]-o0, oy=cellOY[i]-o0;
+      for(let by=0;by<blk;by++){ const py=oy+by; if(py<0||py>=W)continue; const row=py*W;
+        for(let bx=0;bx<blk;bx++){ const px=ox+bx; if(px<0||px>=W)continue; const o=(row+px)*4; d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=255; } } }
+  } else {
+    for(let i=0;i<N;i++){ const c=colorOf(grid[i]),o=i*4; d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=255; }
+  }
+  octx.putImageData(oimg,0,0);
+  gctx.imageSmoothingEnabled=false; gctx.clearRect(0,0,gridCanvas.width,gridCanvas.height);
+  gctx.drawImage(off,0,0,gridCanvas.width,gridCanvas.height);
+}
+
+// ---------- diversity plot ----------
+function drawDiversityPlot(){
+  const dpr=Math.min(window.devicePixelRatio||1,2),W=divCanvas.width,H=divCanvas.height;
+  dctx.clearRect(0,0,W,H);
+  const n=histX.length; if(n===0) return;
+  const xMax=Math.max(1,histX[n-1]);
+  const yDataMax=Math.max(1,maxDivEver);
+  const yTop=yDataMax*1.12;                       // headroom so the peak isn't on the frame
+  const padL=40*dpr,padR=12*dpr,padT=12*dpr,padB=20*dpr;
+  const pw=W-padL-padR, ph=H-padT-padB;
+  const X=v=>padL+(v/xMax)*pw, Y=v=>padT+ph-(v/yTop)*ph;
+  // mark times where an active directed cycle of length >= 4 existed (transparent red)
+  dctx.strokeStyle='rgba(255,70,70,0.16)'; dctx.lineWidth=Math.max(1.5*dpr, Math.min(8*dpr, pw/Math.max(1,n)));
+  for(let i=0;i<n;i++){ if(histCycle[i]){ const px=X(histX[i]); dctx.beginPath(); dctx.moveTo(px,padT); dctx.lineTo(px,padT+ph); dctx.stroke(); } }
+  // frame
+  dctx.strokeStyle='#222933'; dctx.lineWidth=1*dpr;
+  dctx.beginPath(); dctx.moveTo(padL,padT); dctx.lineTo(padL,padT+ph); dctx.lineTo(padL+pw,padT+ph); dctx.stroke();
+  // historical-max gridline (dashed)
+  dctx.strokeStyle='#2c343f'; dctx.setLineDash([3*dpr,3*dpr]);
+  dctx.beginPath(); dctx.moveTo(padL,Y(yDataMax)); dctx.lineTo(padL+pw,Y(yDataMax)); dctx.stroke();
+  dctx.setLineDash([]);
+  // labels
+  dctx.fillStyle='#7c8593'; dctx.font=`${10*dpr}px monospace`; dctx.textBaseline='middle'; dctx.textAlign='right';
+  dctx.fillText(String(Math.round(yDataMax)),padL-6*dpr,Y(yDataMax));
+  dctx.fillText('0',padL-6*dpr,padT+ph);
+  dctx.textBaseline='alphabetic'; dctx.textAlign='left';
+  dctx.fillText('added species →',padL+2*dpr,H-6*dpr);
+  dctx.textAlign='right'; dctx.fillText(String(Math.round(xMax)),padL+pw,H-6*dpr);
+  // patches (rescaled so its peak meets the diversity peak)
+  const pscale=yDataMax/Math.max(1,maxPatchEver);
+  dctx.strokeStyle='#6fb6c2'; dctx.lineWidth=1.4*dpr; dctx.globalAlpha=0.85; dctx.beginPath();
+  for(let i=0;i<n;i++){ const px=X(histX[i]),py=Y(histPatch[i]*pscale); if(i===0)dctx.moveTo(px,py); else dctx.lineTo(px,py); }
+  dctx.stroke();
+  // diversity: area fill + line
+  dctx.globalAlpha=1;
+  dctx.beginPath(); dctx.moveTo(X(histX[0]),padT+ph);
+  for(let i=0;i<n;i++) dctx.lineTo(X(histX[i]),Y(histDiv[i]));
+  dctx.lineTo(X(histX[n-1]),padT+ph); dctx.closePath();
+  dctx.fillStyle='rgba(233,176,74,0.14)'; dctx.fill();
+  dctx.strokeStyle='#e9b04a'; dctx.lineWidth=1.9*dpr; dctx.beginPath();
+  for(let i=0;i<n;i++){ const px=X(histX[i]),py=Y(histDiv[i]); if(i===0)dctx.moveTo(px,py); else dctx.lineTo(px,py); }
+  dctx.stroke();
+  if(n===1){ dctx.fillStyle='#e9b04a'; dctx.beginPath(); dctx.arc(X(histX[0]),Y(histDiv[0]),2.5*dpr,0,6.283); dctx.fill(); }
+  // interaction-matrix density (0..1) mapped to full plot height, purple
+  const YD=v=>padT+ph-(v<0?0:v>1?1:v)*ph;
+  dctx.strokeStyle='#b48ce0'; dctx.lineWidth=1.5*dpr; dctx.globalAlpha=0.9; dctx.beginPath();
+  for(let i=0;i<n;i++){ const px=X(histX[i]),py=YD(histDens[i]); if(i===0)dctx.moveTo(px,py); else dctx.lineTo(px,py); }
+  dctx.stroke(); dctx.globalAlpha=1;
+}
+
+// ---------- network: Kamada–Kawai (SMACOF / Guttman) ----------
+const netPos=new Map();
+function edgeExists(a,b){ return getRel(a,b).interact; }
+function graphDistances(nodes){
+  const n=nodes.length, adj=Array.from({length:n},()=>[]);
+  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) if(edgeExists(nodes[i],nodes[j])){ adj[i].push(j); adj[j].push(i); }
+  const D=Array.from({length:n},()=>new Float64Array(n).fill(Infinity));
+  let maxFinite=1;
+  for(let s=0;s<n;s++){ const q=[s];D[s][s]=0;let h=0;
+    while(h<q.length){ const u=q[h++]; for(const v of adj[u]) if(D[s][v]===Infinity){ D[s][v]=D[s][u]+1; if(D[s][v]>maxFinite)maxFinite=D[s][v]; q.push(v);} } }
+  const big=maxFinite*1.6+1;
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++) if(!isFinite(D[i][j])) D[i][j]=big;
+  return D;
+}
+function layoutNetwork(nodes){
+  const n=nodes.length; if(n===0) return [];
+  const X=new Float64Array(n),Y=new Float64Array(n);
+  for(let i=0;i<n;i++){ const p=netPos.get(nodes[i]); if(p){X[i]=p.x;Y[i]=p.y;} else {const a=rnd()*6.283,r=0.4+rnd()*0.6;X[i]=Math.cos(a)*r;Y[i]=Math.sin(a)*r;} }
+  if(n===1){ netPos.set(nodes[0],{x:0,y:0}); return [{x:0,y:0}]; }
+  const D=graphDistances(nodes), iters=n>90?6:(n>40?12:22);
+  for(let it=0;it<iters;it++){
+    for(let i=0;i<n;i++){
+      let sx=0,sy=0,ws=0; const xi=X[i],yi=Y[i];
+      for(let j=0;j<n;j++){ if(j===i)continue;
+        const d=D[i][j],w=1/(d*d); let dx=xi-X[j],dy=yi-Y[j],dist=Math.hypot(dx,dy);
+        if(dist<1e-6){dist=1e-6;dx=(rnd()-0.5)*1e-3;dy=(rnd()-0.5)*1e-3;}
+        sx+=w*(X[j]+d*dx/dist); sy+=w*(Y[j]+d*dy/dist); ws+=w; }
+      X[i]=sx/ws; Y[i]=sy/ws;
+    }
+  }
+  const out=[];
+  for(let i=0;i<n;i++){ out.push({x:X[i],y:Y[i]}); netPos.set(nodes[i],{x:X[i],y:Y[i]}); }
+  if(netPos.size>nodes.length*2){ const keep=new Set(nodes); for(const k of netPos.keys()) if(!keep.has(k)) netPos.delete(k); }
+  return out;
+}
+function drawNetwork(){
+  const dpr=Math.min(window.devicePixelRatio||1,2),W=netCanvas.width,H=netCanvas.height;
+  nctx.clearRect(0,0,W,H);
+  const present=presentList, np=present.length; if(np===0) return;
+
+  // ensure relationships exist for small networks (so latent links are complete);
+  // for large diversity, work only from already-known relationships to stay fast
+  if(np<=140){ for(let i=0;i<np;i++) for(let j=i+1;j<np;j++) getRel(present[i],present[j]); }
+
+  // build full interaction edge list among present species (active flag + last-step flux)
+  const adj=new Map(); for(const id of present) adj.set(id,[]);
+  const edges=[];                              // {lo,hi,inv,active,flux}
+  for(const [k,r] of rel){
+    if(!r.interact) continue;
+    const lo=Math.floor(k/MUL),hi=k%MUL;
+    if(!presentSet.has(lo)||!presentSet.has(hi)) continue;
+    adj.get(lo).push(hi); adj.get(hi).push(lo);
+    edges.push({lo,hi,inv:r.inv,active:adjSet.has(k),flux:r.flux||0});
+  }
+
+  // candidate node set
+  let cand;
+  if(P.activeOnly){
+    // only species that carry an active (red) link — no inactive/latent links at all
+    const act=new Set();
+    for(const e of edges) if(e.active){ act.add(e.lo); act.add(e.hi); }
+    cand=act;
+  } else {
+    cand=new Set(present);
+  }
+
+  // optionally restrict to the largest connected component within the candidate set
+  // (in active-only mode the component is built from active links, i.e. the largest live cluster)
+  let nodes=Array.from(cand);
+  if(P.mainCC && nodes.length>1){
+    const cadj=new Map(); for(const id of nodes) cadj.set(id,[]);
+    for(const e of edges){ if(P.activeOnly && !e.active) continue; if(cand.has(e.lo)&&cand.has(e.hi)){ cadj.get(e.lo).push(e.hi); cadj.get(e.hi).push(e.lo); } }
+    const seen=new Map(); let best=null,bestLen=0;
+    for(const s of nodes){ if(seen.has(s)) continue; const stack=[s]; seen.set(s,1); const mem=[s];
+      while(stack.length){ const u=stack.pop(); for(const v of cadj.get(u)) if(!seen.has(v)){ seen.set(v,1); stack.push(v); mem.push(v); } }
+      if(mem.length>bestLen){ bestLen=mem.length; best=mem; } }
+    nodes=best||nodes;
+  }
+  if(nodes.length===0) return;
+  const nodeSet=new Set(nodes), idx=new Map(); nodes.forEach((id,k)=>idx.set(id,k));
+  const pos=layoutNetwork(nodes);
+
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  for(const p of pos){ if(p.x<minX)minX=p.x;if(p.x>maxX)maxX=p.x;if(p.y<minY)minY=p.y;if(p.y>maxY)maxY=p.y; }
+  const spanX=maxX-minX||1,spanY=maxY-minY||1,pad=32*dpr;
+  const s=Math.min((W-2*pad)/spanX,(H-2*pad)/spanY);
+  const cx=(W-(minX+maxX)*s)/2,cy=(H-(minY+maxY)*s)/2;
+  const SX=p=>p.x*s+cx,SY=p=>p.y*s+cy;
+  const Rmax=Math.max(4.5*dpr,Math.min(14*dpr,180*dpr/Math.sqrt(nodes.length+4)));
+  const Rmin=2.6*dpr;
+  // node radius so that node AREA ∝ population (cell count) on the map
+  let maxC=1; for(const id of nodes){ const c=speciesCount.get(id)||0; if(c>maxC)maxC=c; }
+  const Rn=new Float64Array(nodes.length);
+  for(let i=0;i<nodes.length;i++){ const c=speciesCount.get(nodes[i])||0; Rn[i]=Math.max(Rmin, Rmax*Math.sqrt(c/maxC)); }
+
+  function arrow(a,b,color,width,alpha){
+    const ia=idx.get(a), ib=idx.get(b), p1=pos[ia],p2=pos[ib];
+    let x1=SX(p1),y1=SY(p1),x2=SX(p2),y2=SY(p2);
+    const ang=Math.atan2(y2-y1,x2-x1);
+    x1+=Math.cos(ang)*Rn[ia];y1+=Math.sin(ang)*Rn[ia];
+    x2-=Math.cos(ang)*Rn[ib];y2-=Math.sin(ang)*Rn[ib];
+    nctx.globalAlpha=alpha;nctx.strokeStyle=color;nctx.lineWidth=width;
+    nctx.beginPath();nctx.moveTo(x1,y1);nctx.lineTo(x2,y2);nctx.stroke();
+    // arrowhead: base width ≈ 0.82·ah; choose ah so head base ≥ 3× line width
+    const ah=Math.max(7*dpr, 4.2*width); nctx.beginPath();nctx.moveTo(x2,y2);
+    nctx.lineTo(x2-Math.cos(ang-0.42)*ah,y2-Math.sin(ang-0.42)*ah);
+    nctx.lineTo(x2-Math.cos(ang+0.42)*ah,y2-Math.sin(ang+0.42)*ah);
+    nctx.closePath();nctx.fillStyle=color;nctx.fill();nctx.globalAlpha=1;
+  }
+  // red-link width scales with invasions during the last timestep
+  let maxFlux=0; for(const e of edges){ if(e.active && nodeSet.has(e.lo)&&nodeSet.has(e.hi) && e.flux>maxFlux) maxFlux=e.flux; }
+  const wMin=1.3*dpr, wMax=4*dpr;
+  nctx.lineCap='round';
+  if(!P.activeOnly){
+    for(const e of edges){ if(e.active) continue; if(!nodeSet.has(e.lo)||!nodeSet.has(e.hi)) continue;
+      const inv=e.inv, oth=(inv===e.lo)?e.hi:e.lo; arrow(inv,oth,'#eef1f5',1.7*dpr,0.55); }
+  }
+  for(const e of edges){ if(!e.active) continue; if(!nodeSet.has(e.lo)||!nodeSet.has(e.hi)) continue;
+    const w=maxFlux>0 ? wMin+(e.flux/maxFlux)*(wMax-wMin) : wMin;
+    const inv=e.inv, oth=(inv===e.lo)?e.hi:e.lo; arrow(inv,oth,'#ff5252',w,0.96); }
+  for(let i=0;i<nodes.length;i++){ const p=pos[i],c=colorOf(nodes[i]);
+    nctx.beginPath();nctx.arc(SX(p),SY(p),Rn[i],0,6.283);
+    nctx.fillStyle=`rgb(${c[0]},${c[1]},${c[2]})`;nctx.fill();
+    nctx.lineWidth=1.5*dpr;nctx.strokeStyle='#0a0d11';nctx.stroke(); }
+}
+
+// ---------- main loop ----------
+let lastNet=0; const CAP=1500000;
+function frame(t){
+  if(P.running){
+    const N=grid.length; let sw; clock=sweeps;
+    if(P.syncUpdate){ const ns=P.speed; for(let s=0;s<ns;s++) syncSweep(); sw=ns; }
+    else { let attempts=P.speed*N; if(attempts>CAP)attempts=CAP; for(let k=0;k<attempts;k++) stepAttempt(); sw=attempts/N; }
+    sweeps+=sw;
+    for(const r of rel.values()) r.flux=(r.cur||0)/sw, r.cur=0;   // invasions-per-sweep, per link
+    if(P.intro>0){ frozen=false; introAccum+=P.intro*sw; while(introAccum>=1){ addNewSpecies(); introAccum-=1; } sinceFreeze=0; }
+    else {
+      frozen=isFrozen();
+      if(frozen){ addNewSpecies(); sinceFreeze=0; }
+      else { sinceFreeze+=sw; if(sinceFreeze>cycleLimit()){ perturb(); sinceFreeze=0; } }
+    }
+  }
+  drawGrid();
+  if(!t || t-lastNet>180){ scanGrid(); sample(); drawDiversityPlot(); drawNetwork(); updateReadouts(); lastNet=t||0; }
+  requestAnimationFrame(frame);
+}
+function updateReadouts(){
+  document.getElementById('statSpecies').textContent=presentSet.size||new Set(grid).size;
+  document.getElementById('statAdded').textContent=addedCount.toLocaleString()+(perturbCount?(' · '+perturbCount+'⚡'):'');
+  const dv=document.getElementById('densVal'); if(dv) dv.textContent=(histDens.length?histDens[histDens.length-1]:0).toFixed(3);
+  const dot=document.getElementById('statDot'),mode=document.getElementById('statMode');
+  if(!P.running){ mode.textContent='paused'; dot.className='dot frozen'; }
+  else if(P.intro===0&&frozen){ mode.textContent='frozen → seeding'; dot.className='dot frozen'; }
+  else if(P.intro===0&&sinceFreeze>cycleLimit()*0.5){ mode.textContent='cycling'; dot.className='dot'; }
+  else { mode.textContent='running'; dot.className='dot'; }
+}
+
+// ---------- UI ----------
+const cL=document.getElementById('cL'),vL=document.getElementById('vL'),hL=document.getElementById('hL');
+const vLat=document.getElementById('vLat');
+cL.addEventListener('input',()=>{ P.Lsquare=+cL.value; vL.textContent=P.Lsquare; if(P.lattice==='square'){ P.L=P.Lsquare; vLat.textContent=(P.Lsquare*P.Lsquare).toLocaleString()+' sites'; updateCycLabels(); resetSim(); } });
+function fracLabel(){
+  const small=document.querySelector('#segFrac button.on')?.dataset.v!=='large';
+  if(P.lattice==='carpet'){ P.carpetSize=small?243:729; }
+  else if(P.lattice==='fractal'){ P.fracGen=small?4:5; }
+  P.L=effectiveL();
+  if(P.lattice==='fractal'){
+    const live=Math.pow(11,P.fracGen);
+    vL.textContent=P.fracGen+'g'; vLat.textContent='g'+P.fracGen+' · '+live.toLocaleString()+' cells · 45°';
+  } else if(P.lattice==='square'){
+    vL.textContent=P.Lsquare; vLat.textContent=(P.Lsquare*P.Lsquare).toLocaleString()+' sites';
+  } else {
+    vL.textContent=effectiveL(); vLat.textContent='carpet · L='+effectiveL();
+  }
+}
+document.querySelectorAll('#segLat button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#segLat button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  P.lattice=b.dataset.v; fracLabel(); updateCycLabels(); resetSim();
+}));
+document.querySelectorAll('#segFrac button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#segFrac button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  fracLabel(); updateCycLabels(); resetSim();
+}));
+const cEps=document.getElementById('cEps'),vEps=document.getElementById('vEps');
+cEps.addEventListener('input',()=>{ P.epsilon=+cEps.value; vEps.textContent=P.epsilon.toFixed(2); });
+document.querySelectorAll('#segEvoMode button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#segEvoMode button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  P.evoMode=b.dataset.v;
+  document.getElementById('hEvoMode').textContent=P.evoMode==='invaded'?'mutate only a just-invaded site':'per-link mutation prob · used in evolution';
+}));
+const cN=document.getElementById('cN'),vN=document.getElementById('vN');
+cN.addEventListener('input',()=>{ P.startN=+cN.value; vN.textContent=P.startN; resetSim(); });
+document.querySelectorAll('#segPlace button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#segPlace button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  P.placement=b.dataset.v; resetSim();
+}));
+document.querySelectorAll('#segEvo button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#segEvo button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  P.evolution=(b.dataset.v==='evolve');
+  document.getElementById('hEvo').textContent=P.evolution?'mutate a random individual at the same rate':'random new species at the same rate';
+}));
+document.querySelectorAll('#segBoundary button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#segBoundary button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  P.closed=(b.dataset.v==='closed');
+  document.getElementById('hBoundary').textContent=P.closed?'no wrap · fixed edges':'wraps around all edges';
+  if(packed) resetSim();   // the fractal's neighbour table is baked in at build time
+}));
+const cP=document.getElementById('cP'),vP=document.getElementById('vP');
+cP.addEventListener('input',()=>{ P.p=+cP.value; vP.textContent=P.p.toFixed(2); rel.clear(); });
+document.querySelectorAll('#segRate button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#segRate button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); P.rateMode=b.dataset.v;
+  for(const r of rel.values()) if(r.interact) r.rate=(P.rateMode==='equal')?1:randRate();
+}));
+const cIntro=document.getElementById('cIntro'),vIntro=document.getElementById('vIntro'),hIntro=document.getElementById('hIntro');
+cIntro.addEventListener('input',()=>{ P.intro=+cIntro.value; vIntro.textContent=P.intro.toFixed(4); hIntro.textContent=P.intro===0?'seed pair only when frozen':'events per sweep · 2 species each'; });
+const cSpeed=document.getElementById('cSpeed'); cSpeed.addEventListener('input',()=>{ P.speed=+cSpeed.value; });
+const cCyc=document.getElementById('cCyc'),vCyc=document.getElementById('vCyc'),hCyc=document.getElementById('hCyc');
+document.querySelectorAll('#segUpdate button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#segUpdate button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  P.syncUpdate=(b.dataset.v==='sync');
+  document.getElementById('hUpdate').textContent=P.syncUpdate?'every site once · random permuted order':'random sites · one pick at a time';
+}));
+function updateCycLabels(){ const m=1<<P.cycleExp; vCyc.textContent=m+'·L'; hCyc.textContent=cycleLimit().toLocaleString()+' sweeps without freezing'; }
+cCyc.addEventListener('input',()=>{ P.cycleExp=+cCyc.value; updateCycLabels(); });
+updateCycLabels();
+document.querySelectorAll('#segTarget button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#segTarget button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  P.randomNeighbor=(b.dataset.v==='random');
+  document.getElementById('hTarget').textContent=P.randomNeighbor?'well-mixed · any site is a target':'spatial · switch live to go well-mixed';
+}));
+const btnMainCC=document.getElementById('btnMainCC');
+btnMainCC.addEventListener('click',()=>{ P.mainCC=!P.mainCC; btnMainCC.classList.toggle('on',P.mainCC); drawNetwork(); });
+const btnActive=document.getElementById('btnActive');
+btnActive.addEventListener('click',()=>{ P.activeOnly=!P.activeOnly; btnActive.classList.toggle('on',P.activeOnly); scanGrid(); drawNetwork(); });
+const btnPlay=document.getElementById('btnPlay');
+btnPlay.addEventListener('click',()=>{ P.running=!P.running; btnPlay.textContent=P.running?'Pause':'Play'; updateReadouts(); });
+document.getElementById('btnStep').addEventListener('click',()=>{
+  const N=grid.length; clock=sweeps;
+  if(P.syncUpdate) syncSweep(); else { for(let k=0;k<N;k++) stepAttempt(); }
+  sweeps++;
+  for(const r of rel.values()) r.flux=(r.cur||0), r.cur=0;
+  if(P.intro>0){ introAccum+=P.intro; while(introAccum>=1){ addNewSpecies(); introAccum-=1; } sinceFreeze=0; }
+  else { frozen=isFrozen(); if(frozen){ addNewSpecies(); sinceFreeze=0; } else { sinceFreeze+=1; if(sinceFreeze>cycleLimit()){ perturb(); sinceFreeze=0; } } }
+  scanGrid(); sample(); drawGrid(); drawDiversityPlot(); drawNetwork(); updateReadouts();
+});
+document.getElementById('btnReset').addEventListener('click',()=>{ seed=(Date.now()>>>0)|1; resetSim(); });
+// export a single PNG: current lattice on top, its diversity/time course below
+document.getElementById('btnPng').addEventListener('click',()=>{
+  drawGrid(); drawDiversityPlot();
+  const g=gridCanvas, d=divCanvas, pad=20, gap=16, bw=2;
+  const inW=Math.max(g.width,d.width);
+  const W=inW+pad*2, H=g.height+gap+d.height+pad*2;
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d');
+  x.fillStyle='#0b0e12'; x.fillRect(0,0,W,H);
+  const gx=pad+(inW-g.width)/2, dx=pad+(inW-d.width)/2;
+  x.strokeStyle='#222933'; x.lineWidth=bw;
+  x.drawImage(g, gx, pad); x.strokeRect(gx-bw/2, pad-bw/2, g.width+bw, g.height+bw);
+  const dy=pad+g.height+gap;
+  x.drawImage(d, dx, dy); x.strokeRect(dx-bw/2, dy-bw/2, d.width+bw, d.height+bw);
+  const lat = P.lattice==='fractal' ? ('fractal_g'+P.fracGen) : (P.lattice+'_L'+P.L);
+  c.toBlob(b=>{ const u=URL.createObjectURL(b); const a=document.createElement('a');
+    a.href=u; a.download='ecosystem_'+lat+'_'+presentSet.size+'sp_'+Date.now()+'.png'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(u),1000); });
+});
+// export just the lattice, no frame/padding/plot — clean for dropping into another figure
+function dlCanvas(cv,name){ cv.toBlob(b=>{ const u=URL.createObjectURL(b); const a=document.createElement('a');
+  a.href=u; a.download=name+'_'+Date.now()+'.png'; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1000); }); }
+document.getElementById('btnPngLat').addEventListener('click',()=>{ drawGrid();
+  const lat = P.lattice==='fractal' ? ('fractal_g'+P.fracGen) : (P.lattice+'_L'+P.L);
+  dlCanvas(gridCanvas,'lattice_'+lat); });
+document.getElementById('btnPngNet').addEventListener('click',()=>{ scanGrid(); drawNetwork(); dlCanvas(netCanvas,'network_'+presentSet.size+'sp'); });
+document.getElementById('btnPngDyn').addEventListener('click',()=>{ drawDiversityPlot(); dlCanvas(divCanvas,'dynamics_'+addedCount+'added'); });
+window.addEventListener('resize',()=>{ buildGridCanvas(); sizeAux(); drawDiversityPlot(); });
+
+function boot(){ buildGridCanvas(); sizeAux(); resetSim(); requestAnimationFrame(frame); }
+boot();
+</script>
+</body>
+</html>

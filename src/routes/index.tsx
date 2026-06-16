@@ -45,13 +45,20 @@ type Model = {
 
 const MODELS: Model[] = [
   {
-    id: "bak-sneppen",
-    title: "Bak–Sneppen Evolution Model",
+    id: "spatial-ecosystem",
+    title: "Spatial Ecosystem",
     description:
-      "An interactive simulation of self-organized criticality and punctuated equilibrium in a model ecology — the dynamics at the heart of the Bak–Sneppen model.",
-    file: "/models/bak-sneppen.html",
-    embed: false,
-    status: "coming_soon",
+      "A spatial simulation of how local interactions on a lattice let many species coexist, illustrating the emergence of diversity in a model ecosystem (after Mitarai, Mathiesen & Sneppen, 2012).",
+    file: "/models/spatial-ecosystem.html",
+    status: "live",
+  },
+  {
+    id: "colony-phage",
+    title: "Colony & Phage",
+    description:
+      "An interactive model of bacteriophage infection spreading through a growing bacterial colony, showing how lysis dynamics shape the colony over time.",
+    file: "/models/colony-phage.html",
+    status: "live",
   },
 ];
 

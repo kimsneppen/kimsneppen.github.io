@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colony &amp; Phage — lysis dynamics</title>
+<style>
+  :root{
+    --ink:#070b12; --panel:#0d1420; --panel2:#111b2b; --line:#1d2c43;
+    --txt:#cdd9ec; --dim:#6f88ab; --accent:#27c6c0;
+    --blue:#3d7be0; --orange:#f6932b; --red:#e8413c;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:var(--ink); color:var(--txt);
+    font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    display:flex; overflow:hidden;}
+  #panel{width:316px; min-width:316px; height:100vh; overflow-y:auto;
+    background:linear-gradient(180deg,var(--panel) 0%, #0a111c 100%);
+    border-right:1px solid var(--line); padding:18px 16px 32px;
+    display:flex; flex-direction:column; gap:14px;}
+  .brand h1{font-size:15px; font-weight:600; margin:0; letter-spacing:.2px;}
+  .brand .sub{font:11px/1.5 "SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+    color:var(--dim); margin-top:5px;}
+  .grp{background:var(--panel2); border:1px solid var(--line); border-radius:10px;
+    padding:11px 12px 13px;}
+  .grp h2{font:600 10.5px/1 "SFMono-Regular",ui-monospace,Menlo,monospace;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin:0 0 10px;}
+  .ctrl{margin:9px 0} .ctrl:first-of-type{margin-top:0}
+  .ctrl label{display:flex; justify-content:space-between; align-items:baseline;
+    font-size:11.5px; color:var(--txt); margin-bottom:5px;}
+  .ctrl label .v{font:600 11.5px "SFMono-Regular",ui-monospace,Menlo,monospace; color:var(--accent);}
+  .ctrl .hint{font-size:10px;color:var(--dim);margin-top:3px;line-height:1.35}
+  input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:3px;
+    background:var(--line); border-radius:3px; outline:none; margin:2px 0;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:14px; height:14px;
+    border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid var(--panel2);
+    box-shadow:0 0 0 1px var(--accent);}
+  input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;
+    background:var(--accent); cursor:pointer;border:2px solid var(--panel2);}
+  input[type=range]:disabled{opacity:.35}
+  .btns{display:flex; gap:8px; flex-wrap:wrap}
+  button{flex:1 1 auto; font:600 12px/1 "Inter",sans-serif; color:var(--txt);
+    background:var(--panel2); border:1px solid var(--line); border-radius:8px;
+    padding:9px 10px; cursor:pointer; transition:.12s; min-width:84px;}
+  button:hover{border-color:var(--accent); color:#fff}
+  button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  button.primary{background:var(--accent); color:#04201f; border-color:var(--accent)}
+  button.primary:hover{filter:brightness(1.08)}
+  button.toggle.on{background:#15302f;border-color:var(--accent);color:var(--accent)}
+  button.wide{flex-basis:100%}
+  #stage{flex:1; position:relative; min-width:0; display:flex; flex-direction:column}
+  #colonyWrap{position:relative; flex:1; min-height:0}
+  #cv{display:block; position:absolute; inset:0; width:100%; height:100%; cursor:grab}
+  #cv:active{cursor:grabbing}
+  #tcv{display:block; width:100%; height:180px; flex:0 0 180px;
+       border-top:1px solid var(--line); background:#070b12; cursor:default}
+  #hud{position:absolute; top:14px; left:16px; pointer-events:none;
+    font:11.5px/1.7 "SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+    color:var(--dim); text-shadow:0 1px 3px #000;}
+  #hud b{color:var(--txt); font-weight:600}
+  #hud .tag{display:inline-block;width:9px;height:9px;border-radius:50%;
+    margin-right:6px;transform:translateY(1px)}
+  #phase{position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+    font:600 11px/1 "SFMono-Regular",ui-monospace,monospace; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--accent); background:rgba(10,17,28,.7);
+    border:1px solid var(--line); border-radius:20px; padding:7px 16px;
+    pointer-events:none; backdrop-filter:blur(3px);}
+  #legend{position:absolute; top:14px; right:16px; pointer-events:none; text-align:right;
+    font:11px/1.8 "SFMono-Regular",ui-monospace,monospace; color:var(--dim);
+    text-shadow:0 1px 3px #000;}
+  #legend i{display:inline-block;width:9px;height:9px;border-radius:50%;
+    margin-left:7px;transform:translateY(1px)}
+  .foot{font-size:10px;color:var(--dim);line-height:1.45;margin-top:2px}
+  ::-webkit-scrollbar{width:9px}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+</style>
+</head>
+<body>
+
+<aside id="panel">
+  <div class="brand">
+    <h1>Colony &amp; Phage</h1>
+    <div class="sub">growth · adsorption · lysis · diffusion<br>1&nbsp;unit = 0.5&nbsp;µm</div>
+  </div>
+
+  <div class="btns">
+    <button id="run" class="primary">Start</button>
+    <button id="reset">Reset</button>
+  </div>
+  <div class="btns">
+    <button id="infect">Infect now</button>
+  </div>
+  <div class="btns">
+    <button id="minimal" class="toggle">Minimal</button>
+    <button id="special" class="toggle">Diff-limit.</button>
+    <button id="critical" class="toggle">D. Diff-lim.</button>
+  </div>
+
+  <div class="grp">
+    <h2>Biofilm</h2>
+    <div style="display:flex; gap:10px">
+      <div class="ctrl" style="flex:1; margin:0">
+        <label>Biofilm radius <span class="v" id="biofilmv"></span></label>
+        <input type="range" id="biofilm" min="0" max="20" step="0.5">
+      </div>
+      <div class="ctrl" style="flex:1; margin:0">
+        <label>Diffusion factor <span class="v" id="biofacv"></span></label>
+        <input type="range" id="biofac" min="0" max="3" step="1">
+      </div>
+    </div>
+    <div class="ctrl">
+      <label>Diffusion cut-off <span class="v" id="lossDistv"></span></label>
+      <input type="range" id="lossDist" min="10" max="100" step="1">
+      <div class="hint">How far beyond the colony surface a free phage may wander before it is removed. Does not affect the view.</div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2>Start condition</h2>
+    <div class="btns">
+      <button id="m_single"    class="toggle on">Susceptible</button>
+      <button id="m_immune"    class="toggle">Susc.+imm</button>
+    </div>
+    <div class="btns">
+      <button id="m_abortive"  class="toggle">Susc.+Abortive</button>
+      <button id="m_resistant" class="toggle">Susc.+Resistant</button>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2>Colony growth</h2>
+    <div class="ctrl">
+      <label>Infect at population N <span class="v" id="Nv"></span></label>
+      <input type="range" id="N" min="3" max="250" step="1">
+      <div class="hint">One phage is seeded onto a surface cell when the colony first reaches N.</div>
+    </div>
+    <div class="ctrl">
+      <label>Generation time <span class="v" id="genv"></span></label>
+      <input type="range" id="gen" min="15" max="120" step="1">
+      <div class="hint">Founder divides at exactly this time; later divisions ~ Gamma(mean, form factor 10). Infected cells stop dividing.</div>
+    </div>
+    <div class="ctrl">
+      <label>Temperature <span class="v" id="Tv"></span></label>
+      <input type="range" id="T" min="0" max="0.05" step="0.001">
+      <div class="hint">Thermal noise in the damped Langevin motion (0 = quiet, the default).</div>
+    </div>
+    <div class="ctrl">
+      <label>Packing force μ <span class="v" id="muv"></span></label>
+      <input type="range" id="mu" min="1" max="20" step="0.5">
+      <div class="hint">Mobility on e<sup>−ax</sup>−e<sup>−ax/2</sup> (a = ln2, rest length 2, cutoff 2.5).</div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2>Phage kinetics</h2>
+    <div class="ctrl">
+      <label>Adsorption η (/s) <span class="v" id="etav"></span></label>
+      <input type="range" id="eta" min="0" max="38" step="1">
+    </div>
+    <div class="ctrl">
+      <label>Detachment f (/s) <span class="v" id="fv"></span></label>
+      <input type="range" id="f" min="0" max="1" step="0.01">
+    </div>
+    <div class="ctrl">
+      <label>Free diffusion D (µm²/s) <span class="v" id="Dfreev"></span></label>
+      <input type="range" id="Dfree" min="1" max="10" step="0.5">
+    </div>
+    <div class="ctrl">
+      <label>Surface diffusion D<sub>surf</sub> (µm²/s) <span class="v" id="Dsurfv"></span></label>
+      <input type="range" id="Dsurf" min="0" max="10" step="0.5">
+      <div class="hint">2D diffusion of a bound (not-yet-injected) phage on the cell surface. Lower it to watch the surface walk clearly.</div>
+    </div>
+    <div class="ctrl">
+      <label>Injection rate (/s) <span class="v" id="infrv"></span></label>
+      <input type="range" id="infr" min="0" max="68" step="1">
+      <div class="hint">Surface-bound phage commits the cell to infection at this rate.</div>
+    </div>
+    <div class="ctrl">
+      <label>Latency <span class="v" id="latv"></span></label>
+      <input type="range" id="lat" min="15" max="120" step="1">
+      <div class="hint">Eclipse + maturation ~ Gamma(mean, form factor 10), then lysis.</div>
+    </div>
+    <div class="ctrl">
+      <label>Burst size <span class="v" id="burstv"></span></label>
+      <input type="range" id="burst" min="1" max="150" step="1">
+      <div class="hint">Phages released into the lysed cell's volume, then it is removed.</div>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2>View</h2>
+    <div class="btns">
+      <button id="spin" class="toggle on">Auto-rotate</button>
+      <button id="trails" class="toggle on">Phage trails</button>
+    </div>
+    <div class="ctrl" style="margin-top:10px">
+      <label>Spin speed <span class="v" id="spinspv"></span></label>
+      <input type="range" id="spinsp" min="0" max="0.05" step="0.001">
+    </div>
+    <div class="ctrl" style="margin-top:10px">
+      <label>Trail fade <span class="v" id="trailAgev"></span></label>
+      <input type="range" id="trailAge" min="1.6" max="32" step="0.4">
+      <div class="hint">How long phage tracks (free and on-surface) linger before fading out.</div>
+    </div>
+    <div class="btns" style="margin-top:4px">
+      <button id="cut" class="toggle">Cut away half</button>
+      <button id="cutfollow" class="toggle on">Cut faces view</button>
+    </div>
+    <div class="ctrl" style="margin-top:10px">
+      <label>Cut angle <span class="v" id="cutangv"></span></label>
+      <input type="range" id="cutang" min="0" max="360" step="1">
+      <div class="hint">Slicing plane is parallel to the (vertical) spin axis. "Faces view" keeps the open face toward you as it rotates; turn it off to slice at a fixed angle.</div>
+    </div>
+    <div class="btns" style="margin-top:4px">
+      <button id="flip">Flip side</button>
+      <button id="savepng">Save PNG</button>
+    </div>
+  </div>
+
+  <div class="grp">
+    <h2>Simulation</h2>
+    <div class="ctrl">
+      <label>Display step <span class="v" id="dispv"></span></label>
+      <input type="range" id="disp" min="1" max="300" step="1">
+      <div class="hint">Simulated time advanced per drawn picture (1 s … 5 min).
+        Lower this to watch phage diffusion unfold.</div>
+    </div>
+    <div class="foot">Free phages are removed past the diffusion cut-off. The run stops automatically at 5000 live cells.
+      Drag to rotate · scroll to zoom.</div>
+  </div>
+</aside>
+
+<main id="stage">
+  <div id="colonyWrap">
+    <canvas id="cv"></canvas>
+    <div id="hud"></div>
+    <div id="legend">
+      <div>susceptible<i style="background:#3d7be0"></i></div>
+      <div>defended<i style="background:#36c46f"></i></div>
+      <div>infected<i style="background:#f6932b"></i></div>
+      <div>phage<i style="background:#e8413c"></i></div>
+    </div>
+    <div id="phase">idle</div>
+  </div>
+  <canvas id="tcv"></canvas>
+</main>
+
+<script>
+"use strict";
+/* ============================================================
+   Bacterial colony + bacteriophage infection / lysis / diffusion
+   Two-timescale integrator: a mechanical/cell substep (~0.5 s)
+   carries a fine phage micro-step so fast diffusion stays faithful
+   while cells evolve on the minutes scale. Surface-bound phages
+   walk in 2D on the cell sphere with their own small substep.
+   ============================================================ */
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const stage = document.getElementById('stage');
+const colonyWrap = document.getElementById('colonyWrap');
+const tcv = document.getElementById('tcv');
+const tctx = tcv.getContext('2d');
+const byId = id => document.getElementById(id);
+
+/* ---------- units & constants ---------- */
+const UM_PER_UNIT = 0.5;
+const A_POT  = Math.log(2);                        // rest length 2
+const RCUT   = 2.5;
+const CELLR  = 1.0;
+const GAMMA_K = 10;
+const MAX_PHAGE = 6000;
+
+const DT_MECH = 0.5, DT_MECH_MAX = 1.0, M_CAP = 400;
+const NSURF = 16;                                  // tangential sub-steps per mech substep (smooth sphere projection)
+const TRAIL_MAX = 400;                             // hard memory cap per trajectory
+const MAX_CELLS = 5000;                            // stop the run when the colony reaches this many live cells
+
+/* ---------- parameters ---------- */
+const P = { N:40, tau:1800, lat:1800, T:0, mu:6,
+            eta:1, f:0.05, infr:0.1, burst:10, disp:30, Dfree:4, Dsurf:4, trailAge:16,
+            biofilm:0, biofilmFactor:0.1, lossDist:20 };
+let instantInfect = false;                         // special diffusion-limited preset
+
+/* ---------- state ---------- */
+let bacteria = [], phages = [], ghosts = [];
+let simT = 0, infectionStarted = false, lysed = 0, running = false;
+let centroid = {x:0,y:0,z:0}, colonyR = 1;
+let measureNextT = 0, measureGen = 0;              // diffusion-constant sampling
+let Din = null, Dout = null, nInLast = 0, nOutLast = 0;   // units^2/s
+let tick = 0;                                      // mech-substep counter (for trail ageing)
+let startMode = 'single';                          // 'single' | 'immune' | 'abortive' | 'resistant'
+let biofilmSpots = [];                             // {x,y,z,r}: permanent slow-diffusion balls left by lysed cells
+
+/* ---------- view ---------- */
+let yaw = 0.6, pitch = -0.35, zoom = 1, scale = 24;
+let autoRotate = true, spinSpeed = 0.008;
+let cutaway = false, cutFollow = true, cutAngle = 0, cutSign = 1, showTrails = true;
+
+/* ---------- math helpers ---------- */
+function randn(){ const u=1-Math.random(), v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+function gammaDelay(mean){ let s=0; for(let i=0;i<GAMMA_K;i++) s+=-Math.log(1-Math.random());
+  return mean*s/GAMMA_K; }
+function randUnit(){ const z=2*Math.random()-1, t=2*Math.PI*Math.random(),
+  r=Math.sqrt(1-z*z); return {x:r*Math.cos(t), y:r*Math.sin(t), z}; }
+function pairForce(r){ return A_POT*Math.exp(-A_POT*r)-0.5*A_POT*Math.exp(-0.5*A_POT*r); }
+function sample100(arr){ const k=Math.min(100,arr.length), idx=new Set();
+  while(idx.size<k) idx.add((Math.random()*arr.length)|0);
+  const out=[]; for(const i of idx) out.push(arr[i]); return out; }
+
+/* ---------- spatial hash ---------- */
+function buildGrid(){
+  const g=new Map();
+  for(let i=0;i<bacteria.length;i++){ const b=bacteria[i];
+    const k=Math.floor(b.x/RCUT)+","+Math.floor(b.y/RCUT)+","+Math.floor(b.z/RCUT);
+    let a=g.get(k); if(!a){a=[];g.set(k,a);} a.push(i); }
+  return g;
+}
+function nearestWithin(grid,x,y,z,rad){
+  const ci=Math.floor(x/RCUT),cj=Math.floor(y/RCUT),ck=Math.floor(z/RCUT);
+  let best=null,bd=rad*rad;
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
+    const a=grid.get((ci+dx)+","+(cj+dy)+","+(ck+dz)); if(!a) continue;
+    for(const idx of a){ const b=bacteria[idx];
+      const ex=x-b.x,ey=y-b.y,ez=z-b.z,d2=ex*ex+ey*ey+ez*ez;
+      if(d2<bd){bd=d2;best=b;} } }
+  return best?{b:best,d:Math.sqrt(bd)}:null;
+}
+
+/* ---------- biofilm: permanent slow-diffusion balls left where cells lyse ---------- */
+function addBiofilm(x,y,z){ if(P.biofilm>0) biofilmSpots.push({x,y,z,r:P.biofilm}); }
+function buildBiofilmGrid(){
+  if(!biofilmSpots.length) return null;
+  let maxR=0; for(const s of biofilmSpots) if(s.r>maxR) maxR=s.r;
+  const cs=Math.max(1,maxR), g=new Map();
+  for(const s of biofilmSpots){
+    const k=Math.floor(s.x/cs)+","+Math.floor(s.y/cs)+","+Math.floor(s.z/cs);
+    let a=g.get(k); if(!a){a=[];g.set(k,a);} a.push(s); }
+  return {g,cs};
+}
+function inBiofilm(bg,x,y,z){
+  if(!bg) return false;
+  const ci=Math.floor(x/bg.cs),cj=Math.floor(y/bg.cs),ck=Math.floor(z/bg.cs);
+  for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
+    const a=bg.g.get((ci+dx)+","+(cj+dy)+","+(ck+dz)); if(!a) continue;
+    for(const s of a){ const ex=x-s.x,ey=y-s.y,ez=z-s.z;
+      if(ex*ex+ey*ey+ez*ez<=s.r*s.r) return true; } }
+  return false;
+}
+
+/* ---------- colony geometry ---------- */
+function updateColony(){
+  const n=bacteria.length; if(n===0){colonyR=1;return;}
+  let sx=0,sy=0,sz=0; for(const b of bacteria){sx+=b.x;sy+=b.y;sz+=b.z;}
+  centroid={x:sx/n,y:sy/n,z:sz/n};
+  let m=0; for(const b of bacteria){const dx=b.x-centroid.x,dy=b.y-centroid.y,dz=b.z-centroid.z;
+    const d=dx*dx+dy*dy+dz*dz; if(d>m)m=d;}
+  colonyR=Math.sqrt(m);
+}
+/* mark cells on the visible outer shell (interior cells are buried; a phage there can't be seen) */
+function computeSurface(){
+  const n=bacteria.length; if(!n) return;
+  const cs=2.6, g=new Map();
+  for(const b of bacteria){ const k=Math.floor(b.x/cs)+","+Math.floor(b.y/cs)+","+Math.floor(b.z/cs);
+    let a=g.get(k); if(!a){a=[];g.set(k,a);} a.push(b); }
+  const R2=2.7*2.7, shell=colonyR-1.6;
+  for(const b of bacteria){
+    let cnt=0; const ci=Math.floor(b.x/cs),cj=Math.floor(b.y/cs),ck=Math.floor(b.z/cs);
+    for(let dx=-1;dx<=1&&cnt<11;dx++)for(let dy=-1;dy<=1&&cnt<11;dy++)for(let dz=-1;dz<=1;dz++){
+      const a=g.get((ci+dx)+","+(cj+dy)+","+(ck+dz)); if(!a) continue;
+      for(const o of a){ if(o===b) continue; const ex=o.x-b.x,ey=o.y-b.y,ez=o.z-b.z;
+        if(ex*ex+ey*ey+ez*ez<=R2) cnt++; } }
+    const er=b.x-centroid.x, ey2=b.y-centroid.y, ez2=b.z-centroid.z;
+    const rr=Math.sqrt(er*er+ey2*ey2+ez2*ez2);
+    b.surf = cnt < 11 || rr >= shell;               // few neighbours OR on the outer shell -> visible
+  }
+}
+
+/* ---------- object factories ---------- */
+function newCell(x,y,z,defense){
+  return {x,y,z, divideAt:simT+gammaDelay(P.tau), infected:false, lysisAt:0, dead:false, nInf:0,
+          defense:defense||'none'};
+}
+function newPhage(x,y,z){
+  return {x,y,z, state:'free', host:null, rx:0,ry:0,rz:0, trail:[{x,y,z,tk:tick}]};
+}
+function trailPush(p){ const pt={x:p.x,y:p.y,z:p.z,tk:tick};
+  if(p.state==='att' && p.host && !p.host.dead){ pt.h=p.host; pt.rx=p.rx; pt.ry=p.ry; pt.rz=p.rz; }
+  p.trail.push(pt);
+  while(p.trail.length>1 && p.trail[0].tk < tick-P.trailAge) p.trail.shift();
+  if(p.trail.length>TRAIL_MAX) p.trail.shift(); }
+function retire(p){ if(p.trail && p.trail.length>1) ghosts.push({pts:p.trail, alpha:0.9}); }
+
+/* deterministic seed: commit one outer-shell cell to infection and show the
+   responsible phage on its surface (a lone free phage escapes too often) */
+function seedPhage(){
+  if(!bacteria.length) return;
+  updateColony();
+  const cand = bacteria.filter(b=>!b.infected && b.defense==='none');
+  if(!cand.length) return;                       // no susceptible host -> nothing to seed
+  const outer=[];
+  for(const b of cand){
+    const dx=b.x-centroid.x,dy=b.y-centroid.y,dz=b.z-centroid.z;
+    if(Math.sqrt(dx*dx+dy*dy+dz*dz) > 0.6*colonyR) outer.push(b); }
+  const pool = outer.length?outer:cand;
+  const h = pool[(Math.random()*pool.length)|0];
+  let dx=h.x-centroid.x,dy=h.y-centroid.y,dz=h.z-centroid.z,L=Math.hypot(dx,dy,dz)||1;
+  if(L<1e-6){ const u=randUnit(); dx=u.x;dy=u.y;dz=u.z;L=1; }
+  const p=newPhage(h.x+dx/L, h.y+dy/L, h.z+dz/L);
+  p.state='att'; p.host=h; p.rx=dx/L; p.ry=dy/L; p.rz=dz/L; p.trail=[];
+  phages.push(p); infectionStarted=true;
+}
+function lyse(b){
+  lysed++; b.dead=true;
+  addBiofilm(b.x,b.y,b.z);                            // slow-diffusion ball, whether or not phages come out
+  if(b.defense==='abortive') return;                 // abortive infection: apoptosis, zero phages out
+  const m=Math.min(P.burst, MAX_PHAGE-phages.length);
+  for(let i=0;i<m;i++){ const u=randUnit(), rr=Math.cbrt(Math.random())*CELLR;
+    phages.push(newPhage(b.x+u.x*rr, b.y+u.y*rr, b.z+u.z*rr)); }
+}
+function detach(p,h){ p.state='free'; p.host=null;
+  p.x=h.x+p.rx*1.06; p.y=h.y+p.ry*1.06; p.z=h.z+p.rz*1.06; trailPush(p); }
+
+/* ============================================================
+   mechanical / cell substep  (dt ~ 0.5–1 s)
+   ============================================================ */
+function mechStep(dt){
+  const n=bacteria.length;
+  if(n>0){
+    const grid=buildGrid();
+    const fx=new Float64Array(n), fy=new Float64Array(n), fz=new Float64Array(n);
+    for(let i=0;i<n;i++){ const b=bacteria[i];
+      const ci=Math.floor(b.x/RCUT),cj=Math.floor(b.y/RCUT),ck=Math.floor(b.z/RCUT);
+      for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
+        const a=grid.get((ci+dx)+","+(cj+dy)+","+(ck+dz)); if(!a) continue;
+        for(const j of a){ if(j<=i) continue; const o=bacteria[j];
+          let ex=b.x-o.x,ey=b.y-o.y,ez=b.z-o.z, r2=ex*ex+ey*ey+ez*ez;
+          if(r2>=RCUT*RCUT||r2<1e-9) continue;
+          const r=Math.sqrt(r2), fm=pairForce(r)/r;
+          ex*=fm;ey*=fm;ez*=fm;
+          fx[i]+=ex;fy[i]+=ey;fz[i]+=ez; fx[j]-=ex;fy[j]-=ey;fz[j]-=ez; } } }
+    const sig=Math.sqrt(2*P.T*dt), mu=P.mu;
+    for(let i=0;i<n;i++){ const b=bacteria[i];
+      b.x+=mu*fx[i]*dt+sig*randn(); b.y+=mu*fy[i]*dt+sig*randn(); b.z+=mu*fz[i]*dt+sig*randn(); }
+  }
+
+  // division (infected cells do not divide)
+  const babies=[];
+  for(const b of bacteria){ if(b.infected) continue;
+    if(simT>=b.divideAt){ const u=randUnit(), off=0.55;
+      babies.push(newCell(b.x+u.x*off,b.y+u.y*off,b.z+u.z*off,b.defense));
+      b.divideAt=simT+gammaDelay(P.tau); } }
+  for(const c of babies) bacteria.push(c);
+
+  // first infection
+  if(!infectionStarted && bacteria.length>=P.N) seedPhage();
+
+  // bound phage processes (detach / inject / 2D surface walk)
+  if(phages.length){
+    const bg=buildBiofilmGrid();
+    const kept=[];
+    for(const p of phages){
+      if(p.state==='att'){ const h=p.host;
+        if(h.dead){ detach(p,h); kept.push(p); }
+        else if(instantInfect || Math.random()<P.infr*dt){
+          h.nInf=(h.nInf||0)+1;                       // counts reinfections / absorbed phages
+          if((h.defense==='none'||h.defense==='abortive') && !h.infected){
+            h.infected=true; h.lysisAt=simT+gammaDelay(P.lat); }   // immune/resistant: degraded, no infection
+          retire(p); /* injected / absorbed -> phage removed (sink) */ }
+        else if(P.f>0 && Math.random()<P.f*dt){ detach(p,h); kept.push(p); }
+        else { surfaceWalk(p,h,dt,bg); kept.push(p); }
+      } else kept.push(p);
+    }
+    phages=kept;
+  }
+
+  // lysis
+  if(bacteria.length){
+    const keep=[];
+    for(const b of bacteria){ if(b.infected && simT>=b.lysisAt) lyse(b); else keep.push(b); }
+    bacteria=keep;
+  }
+  updateColony();
+}
+
+/* 2D random walk on the cell sphere: NSURF steps of length sqrt(2 D dt_surf),
+   each projected onto the local tangent plane and renormalised to the surface.
+   Paced (NSURF capped) so the crawl is visible rather than instantly random. */
+function surfaceWalk(p,h,dt,bg){
+  let Dsu = P.Dsurf/(UM_PER_UNIT*UM_PER_UNIT);          // µm²/s -> units²/s
+  if(inBiofilm(bg,h.x,h.y,h.z)) Dsu *= P.biofilmFactor;  // bound phage crawls slower in biofilm
+  const ss = Math.sqrt(2*Dsu*dt/NSURF);                 // split the substep into NSURF tangential steps
+  for(let i=0;i<NSURF;i++){
+    let sx=ss*randn(), sy=ss*randn(), sz=ss*randn();
+    const dot=sx*p.rx+sy*p.ry+sz*p.rz; sx-=dot*p.rx; sy-=dot*p.ry; sz-=dot*p.rz; // tangent
+    let nx=p.rx+sx, ny=p.ry+sy, nz=p.rz+sz; const L=Math.hypot(nx,ny,nz)||1;
+    p.rx=nx/L; p.ry=ny/L; p.rz=nz/L;
+    if((i&3)===3){ p.x=h.x+p.rx*CELLR; p.y=h.y+p.ry*CELLR; p.z=h.z+p.rz*CELLR; trailPush(p); }
+  }
+  p.x=h.x+p.rx*CELLR; p.y=h.y+p.ry*CELLR; p.z=h.z+p.rz*CELLR; trailPush(p);
+}
+
+/* ============================================================
+   free-phage diffusion: ADAPTIVE per-phage stepping.
+   A phage whose nearest cell surface is "safe" units away may hop in one
+   coarse Gaussian step of size ~0.5·safe (time tau = sig^2/2D), refining to
+   the fine step (~0.5 unit) only as it nears the colony. Each phage still
+   advances the full substep dt, so the total MSD (= 6·D·dt) is preserved.
+   ============================================================ */
+function freePhageStep(dt){
+  if(bacteria.length===0){ for(const p of phages) retire(p); phages=[]; return; }
+  let any=false; for(const p of phages){ if(p.state==='free'){any=true;break;} }
+  if(!any) return;
+  const grid=buildGrid();
+  const bgrid=buildBiofilmGrid();
+  const D_UNIT = P.Dfree/(UM_PER_UNIT*UM_PER_UNIT);     // µm²/s -> units²/s (free-space diffusion)
+  const DT_PHAGE = 0.25/(2*D_UNIT);                     // time of a 0.5-unit step (finest)
+  const baseSig=Math.sqrt(2*D_UNIT*DT_PHAGE);          // finest step (~0.5 unit), used near the colony
+  const maxSig =Math.sqrt(2*D_UNIT*dt);                // coarsest: whole substep in one hop (far field)
+  const lossR=colonyR+P.lossDist, recT=dt/6;
+  const kept=[];
+  for(const p of phages){
+    if(p.state!=='free'){ kept.push(p); continue; }
+    let tp=0, lastRec=0, gone=false;
+    while(tp<dt-1e-9 && p.state==='free'){
+      // distance to nearest cell surface -> how large a step is safe
+      const dcx=p.x-centroid.x, dcy=p.y-centroid.y, dcz=p.z-centroid.z;
+      const dc=Math.hypot(dcx,dcy,dcz);
+      let nc=null, safe;
+      if(dc>colonyR+RCUT){ safe=dc-colonyR-1; }         // far outside: every cell is at least this far (no grid query)
+      else { const nr=nearestWithin(grid,p.x,p.y,p.z,RCUT);
+             if(nr){ nc=nr.b; safe=nr.d-1; } else safe=RCUT-1; }
+      if(safe<0) safe=0;
+      const Dl = inBiofilm(bgrid,p.x,p.y,p.z) ? D_UNIT*P.biofilmFactor : D_UNIT;  // slowed inside biofilm
+      let sig=0.5*safe; if(sig<baseSig)sig=baseSig; if(sig>maxSig)sig=maxSig;
+      let tau=sig*sig/(2*Dl);
+      if(tp+tau>dt){ tau=dt-tp; sig=Math.sqrt(2*Dl*tau); }
+      const nx=p.x+sig*randn(), ny=p.y+sig*randn(), nz=p.z+sig*randn();
+      // capture only matters near a cell; reuse nc, else a cheap re-query at the new spot
+      let cell=nc;
+      if(!cell && dc<=colonyR+RCUT){ const nr2=nearestWithin(grid,nx,ny,nz,CELLR); if(nr2) cell=nr2.b; }
+      let moved=true;
+      if(cell){ const ex=nx-cell.x, ey=ny-cell.y, ez=nz-cell.z, d=Math.hypot(ex,ey,ez);
+        if(d<CELLR){
+          if(cell.defense==='resistant'){ moved=false; }          // cannot adsorb: bounce off
+          else if(instantInfect){
+            if(!cell.dead){ cell.nInf=(cell.nInf||0)+1;
+              if((cell.defense==='none'||cell.defense==='abortive') && !cell.infected){ cell.infected=true; cell.lysisAt=simT+gammaDelay(P.lat); }
+              p.x=nx;p.y=ny;p.z=nz; trailPush(p); retire(p); p.state='done'; }
+          } else if(Math.random()<P.eta*tau){                      // adsorb (rate x step-time)
+            const L=d||1; p.rx=ex/L; p.ry=ey/L; p.rz=ez/L; p.host=cell; p.state='att';
+            p.x=cell.x+p.rx; p.y=cell.y+p.ry; p.z=cell.z+p.rz; trailPush(p);
+          } else { moved=false; }                                  // reject step
+        }
+      }
+      if(moved && p.state==='free'){ p.x=nx; p.y=ny; p.z=nz; }
+      tp+=tau;
+      if(p.state==='free'){
+        const lx=p.x-centroid.x, ly=p.y-centroid.y, lz=p.z-centroid.z;
+        if(Math.hypot(lx,ly,lz)>lossR){ retire(p); gone=true; break; }
+        if(tp-lastRec>=recT){ trailPush(p); lastRec=tp; }
+      }
+    }
+    if(!gone && p.state!=='done') kept.push(p);
+  }
+  phages=kept;
+}
+
+/* ---------- advance one displayed picture ---------- */
+function advanceFrame(){
+  const disp=P.disp;
+  let M=Math.round(disp/DT_MECH); if(M<1)M=1; if(M>M_CAP)M=M_CAP;
+  let dtm=disp/M; if(dtm>DT_MECH_MAX){ M=Math.min(M_CAP,Math.ceil(disp/DT_MECH_MAX)); dtm=disp/M; }
+  for(let m=0;m<M;m++){
+    tick++;
+    const willMeasure = phages.length>0 && simT>=measureNextT;   // sample once per generation
+    if(willMeasure){ measureGen++;
+      for(const p of sample100(phages)){ p.m0x=p.x; p.m0y=p.y; p.m0z=p.z; p.mGen=measureGen; } }
+    simT+=dtm; mechStep(dtm); freePhageStep(dtm);
+    if(willMeasure){ let sIn=0,nIn=0,sOut=0,nOut=0;
+      for(const p of phages){ if(p.mGen!==measureGen) continue;
+        const dx=p.x-p.m0x, dy=p.y-p.m0y, dz=p.z-p.m0z, d2=dx*dx+dy*dy+dz*dz;
+        let inside;
+        if(p.state==='att') inside=true;                         // bound = attached to a colony cell
+        else { const ex=p.x-centroid.x, ey=p.y-centroid.y, ez=p.z-centroid.z;
+               inside = Math.hypot(ex,ey,ez) <= colonyR; }
+        if(inside){ sIn+=d2; nIn++; } else { sOut+=d2; nOut++; } }
+      const inv=1/(6*dtm);                                        // D = <r^2>/(6 dt)
+      if(nIn){ Din=sIn/nIn*inv; nInLast=nIn; }
+      if(nOut){ Dout=sOut/nOut*inv; nOutLast=nOut; }
+      measureNextT = simT + Math.max(1,P.tau);
+    }
+  }
+  if(infectionStarted && bacteria.length>0){           // infection fizzled -> send another phage
+    let anyInf=false; for(const b of bacteria){ if(b.infected){anyInf=true;break;} }
+    if(!anyInf && phages.length===0) seedPhage();
+  }
+  for(const g of ghosts) g.alpha*=0.85;
+  ghosts=ghosts.filter(g=>g.alpha>0.06);
+  if(ghosts.length>500) ghosts.splice(0,ghosts.length-500);
+  computeSurface();
+  recordHistory();
+  if(bacteria.length>=MAX_CELLS){                       // halt once the colony hits the cap
+    running=false; runBtn.textContent='Start'; runBtn.classList.add('primary'); }
+}
+
+/* ============================================================
+   rendering
+   ============================================================ */
+function resize(){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=colonyWrap.clientWidth*dpr; cv.height=colonyWrap.clientHeight*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  tcv.width=tcv.clientWidth*dpr; tcv.height=tcv.clientHeight*dpr;
+  tctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize',resize);
+
+function rot(x,y,z){
+  const cy=Math.cos(yaw),sy=Math.sin(yaw),cx=Math.cos(pitch),sx=Math.sin(pitch);
+  const x1=x*cy+z*sy, z1=-x*sy+z*cy, y2=y*cx-z1*sx, z2=y*sx+z1*cx;
+  return {X:x1,Y:y2,Z:z2};
+}
+let CN={x:0,z:1};
+function updateCutNormal(){
+  if(cutFollow){ CN={x:-Math.sin(yaw), z:Math.cos(yaw)}; }
+  else { const a=cutAngle*Math.PI/180; CN={x:Math.cos(a), z:Math.sin(a)}; }
+}
+function hidden(wx,wz){
+  if(!cutaway) return false;
+  return ((wx-centroid.x)*CN.x + (wz-centroid.z)*CN.z) * cutSign > 0;
+}
+function drawSphere(sx,sy,R,hue,sat,t){
+  const baseL=24+52*t, hx=sx-0.34*R, hy=sy-0.34*R;
+  const g=ctx.createRadialGradient(hx,hy,Math.max(0.4,R*0.06),sx,sy,R*1.18);
+  g.addColorStop(0,   `hsl(${hue-6},${sat-8}%,${Math.min(97,baseL+32)}%)`);
+  g.addColorStop(0.45,`hsl(${hue},${sat}%,${baseL}%)`);
+  g.addColorStop(1,   `hsl(${hue+8},${Math.min(95,sat+8)}%,${Math.max(6,baseL-22)}%)`);
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(sx,sy,R,0,6.2832); ctx.fill();
+}
+function ptPos(q){ return (q.h && !q.h.dead)
+  ? {x:q.h.x+q.rx*CELLR, y:q.h.y+q.ry*CELLR, z:q.h.z+q.rz*CELLR} : q; }
+function drawTrail(pts,W,H,alpha,width){
+  if(pts.length<2) return;
+  ctx.strokeStyle=`rgba(232,65,60,${alpha})`; ctx.lineWidth=width;
+  ctx.beginPath(); let pen=false;
+  for(const q0 of pts){ const q=ptPos(q0);
+    if(hidden(q.x,q.z)){ pen=false; continue; }
+    const r=rot(q.x,q.y,q.z); const sx=W/2+r.X*scale, sy=H/2-r.Y*scale;
+    if(!pen){ ctx.moveTo(sx,sy); pen=true; } else ctx.lineTo(sx,sy); }
+  ctx.stroke();
+}
+function drawTrailAged(pts,W,H,baseAlpha,width){   // fades along the tail by point age
+  if(pts.length<2) return;
+  ctx.lineWidth=width;
+  for(let i=1;i<pts.length;i++){
+    const a=ptPos(pts[i-1]), b=ptPos(pts[i]);
+    if(hidden(a.x,a.z)||hidden(b.x,b.z)) continue;
+    let fade=1-(tick-pts[i].tk)/P.trailAge; if(fade<=0) continue; if(fade>1) fade=1;
+    ctx.strokeStyle=`rgba(232,65,60,${baseAlpha*fade})`;
+    const r0=rot(a.x,a.y,a.z), r1=rot(b.x,b.y,b.z);
+    ctx.beginPath();
+    ctx.moveTo(W/2+r0.X*scale,H/2-r0.Y*scale);
+    ctx.lineTo(W/2+r1.X*scale,H/2-r1.Y*scale);
+    ctx.stroke();
+  }
+}
+function render(){
+  const W=colonyWrap.clientWidth, H=colonyWrap.clientHeight;
+  const bg=ctx.createRadialGradient(W*0.5,H*0.42,40,W*0.5,H*0.5,Math.max(W,H)*0.8);
+  bg.addColorStop(0,'#0c1422'); bg.addColorStop(1,'#05080e');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  let want=(0.42*Math.min(W,H))/(colonyR+1.8)*zoom;
+  want=Math.max(6,Math.min(95,want)); scale+=(want-scale)*0.12;
+  updateCutNormal();
+
+  if(biofilmSpots.length){                         // accumulating low-diffusion medium (drawn behind cells)
+    ctx.fillStyle='rgba(46,49,55,0.07)';
+    const lim=Math.min(biofilmSpots.length,2500);
+    for(let i=0;i<lim;i++){ const s=biofilmSpots[i]; if(hidden(s.x,s.z)) continue;
+      const r=rot(s.x,s.y,s.z);
+      ctx.beginPath(); ctx.arc(W/2+r.X*scale, H/2-r.Y*scale, s.r*scale, 0, 6.2832); ctx.fill(); }
+  }
+
+  const items=[];
+  for(const b of bacteria){ if(hidden(b.x,b.z)) continue; const r=rot(b.x,b.y,b.z);
+    const kind = b.infected?1:(b.defense!=='none'?3:0);
+    items.push({Z:r.Z,sx:W/2+r.X*scale,sy:H/2-r.Y*scale,kind,n:b.nInf||0}); }
+  for(const p of phages){
+    if(p.state==='att' && p.host && p.host.surf===false) continue;  // hide phages on buried cells
+    if(hidden(p.x,p.z)) continue; const r=rot(p.x,p.y,p.z);
+    items.push({Z:r.Z,sx:W/2+r.X*scale,sy:H/2-r.Y*scale,kind:2}); }
+  if(items.length===0) return;
+
+  let zmin=Infinity,zmax=-Infinity;
+  for(const it of items){ if(it.Z<zmin)zmin=it.Z; if(it.Z>zmax)zmax=it.Z; }
+  const span=(zmax-zmin)||1; items.sort((a,b)=>a.Z-b.Z);
+
+  const Rb=CELLR*scale, Rp=Math.max(1.6,0.1*scale);
+  for(const it of items){ const t=(it.Z-zmin)/span;
+    if(it.kind===2){ ctx.fillStyle=`hsl(2,82%,${30+30*t}%)`;
+      ctx.beginPath(); ctx.arc(it.sx,it.sy,Rp,0,6.2832); ctx.fill(); continue; }
+    if(it.kind===1)      drawSphere(it.sx,it.sy,Rb,32,90,t);     // infected: orange
+    else if(it.kind===3) drawSphere(it.sx,it.sy,Rb,150,58,t);    // defended strain: green
+    else                 drawSphere(it.sx,it.sy,Rb,212,68,t);    // susceptible: blue
+    if(Rb>=7 && it.n>0 && it.kind!==0){
+      ctx.fillStyle = it.kind===1?'rgba(38,16,0,0.95)':'rgba(2,30,14,0.95)';
+      ctx.font=`700 ${Math.round(Rb*0.43)}px "SFMono-Regular",ui-monospace,monospace`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(it.n, it.sx, it.sy); }
+  }
+
+  if(showTrails){                               // draw paths on top so surface walks are visible
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    for(const g of ghosts) drawTrail(g.pts,W,H,g.alpha*0.5,1);
+    for(const p of phages){
+      if(p.state==='att' && p.host && p.host.surf===false) continue;
+      drawTrailAged(p.trail,W,H,p.state==='att'?0.9:0.85,1.4); }
+  }
+}
+
+/* ---------- HUD ---------- */
+const hud=byId('hud'), phaseEl=byId('phase');
+function fmtT(s){ return s<120?`${s.toFixed(0)} s`:`${(s/60).toFixed(1)} min`; }
+function frameHud(){
+  let inf=0; for(const b of bacteria) if(b.infected) inf++;
+  let nNone=0,nDef=0,defName='',defHit=0;
+  for(const b of bacteria){ if(b.defense==='none') nNone++;
+    else { nDef++; defName=b.defense; if((b.nInf||0)>0) defHit++; } }
+  let bound=0, fOut=0, fIn=0;
+  for(const p of phages){
+    if(p.state==='att'){ bound++; continue; }
+    const dx=p.x-centroid.x,dy=p.y-centroid.y,dz=p.z-centroid.z;
+    if(Math.hypot(dx,dy,dz) <= colonyR) fIn++; else fOut++;
+  }
+  hud.innerHTML =
+    `<b>t</b> = ${fmtT(simT)} &nbsp;·&nbsp; ${P.disp} s / frame`+(instantInfect?' &nbsp;·&nbsp; <b>special</b>':'')+`<br>`+
+    `<span class="tag" style="background:#3d7be0"></span><b>cells</b> ${bacteria.length}`+
+    (nDef>0?` <span style="opacity:.8">(<span style="color:#5aa0ff">susc ${nNone}</span> / <span style="color:#5fcf8f">${defName} ${nDef}</span>)</span>`:'')+
+    `&nbsp;&nbsp;<span class="tag" style="background:#f6932b"></span><b>infected</b> ${inf}`+
+    `&nbsp;&nbsp;<b>lysed</b> ${lysed}`+
+    (nDef>0?`<br><span class="tag" style="background:#36c46f"></span><b>${defName}</b> hit by phage ${defHit} / ${nDef}`:'')+`<br>`+
+    `<span class="tag" style="background:#e8413c"></span><b>phage free</b> `+
+    `outside ${fOut} / inside ${fIn}<br>`+
+    `<span class="tag" style="background:#e8413c;opacity:.6"></span><b>phage bound</b> ${bound} `+
+    `&nbsp;(total ${phages.length})<br>`+
+    `<span class="tag" style="background:#27c6c0"></span><b>D</b> in `+
+    `${Din!=null?(Din*0.25).toFixed(2):'—'} / out `+
+    `${Dout!=null?(Dout*0.25).toFixed(2):'—'} µm²/s `+
+    `<span style="opacity:.6">(n ${nInLast}/${nOutLast})</span>`+
+    (biofilmSpots.length?`<br><span class="tag" style="background:#5a5e66"></span><b>biofilm</b> ${biofilmSpots.length} patches (D ×${P.biofilmFactor})`:'');
+  let phase='growing';
+  if(!infectionStarted) phase=bacteria.length>=P.N?'seeding…':`growing → N=${P.N}`;
+  else if(phages.length===0 && inf===0) phase=bacteria.length?'colony survived':'colony cleared';
+  else if(inf>0) phase='infection spreading';
+  else phase='phage diffusing';
+  phaseEl.textContent=phase;
+}
+
+/* ---------- time series ---------- */
+let history=[];
+function recordHistory(){
+  let susc=0,def=0,inf=0;
+  for(const b of bacteria){
+    if(b.infected) inf++;
+    else if(b.defense==='none') susc++;
+    else def++; }
+  let fphage=0; for(const p of phages) if(p.state==='free') fphage++;
+  history.push({t:simT, susc, def, inf, lysed, phage:fphage});
+  if(history.length>3000){ const h=[]; for(let i=0;i<history.length;i+=2) h.push(history[i]); history=h; }
+}
+const TS_SERIES=[['susc','#3d7be0','susceptible'],['def','#36c46f','defended'],
+                 ['inf','#f6932b','infected'],['lysed','#e8413c','lysed'],['phage','#27c6c0','free phage']];
+function drawTimePlot(){
+  const W=tcv.clientWidth, H=tcv.clientHeight;
+  tctx.clearRect(0,0,W,H);
+  tctx.fillStyle='#070b12'; tctx.fillRect(0,0,W,H);
+  const padL=10,padR=64,padT=20,padB=16, x0=padL,x1=W-padR,y0=H-padB,y1=padT;
+  const hasDef=history.some(s=>s.def>0);
+  let ymax=1; for(const s of history) ymax=Math.max(ymax,s.susc,s.inf,s.lysed,s.phage,hasDef?s.def:0);
+  const ytop=ymax*1.12;
+  const tmax=history.length?history[history.length-1].t:1;
+  const X=t=> x0+(x1-x0)*(tmax>0?t/tmax:0);
+  const Y=v=> y0+(y1-y0)*(v/ytop);
+  tctx.strokeStyle='rgba(255,255,255,0.10)'; tctx.lineWidth=1;
+  tctx.beginPath(); tctx.moveTo(x0,y0); tctx.lineTo(x1,y0); tctx.stroke();
+  if(history.length>=2){
+    for(const [key,col] of TS_SERIES){ if(key==='def'&&!hasDef) continue;
+      tctx.strokeStyle=col; tctx.lineWidth=1.6; tctx.beginPath();
+      let st=false; for(const s of history){ const xx=X(s.t),yy=Y(s[key]);
+        if(!st){tctx.moveTo(xx,yy);st=true;} else tctx.lineTo(xx,yy);} tctx.stroke(); }
+  }
+  // axis labels
+  tctx.font='10px ui-monospace,monospace'; tctx.textBaseline='alphabetic';
+  tctx.fillStyle='#6b7a90'; tctx.textAlign='left';  tctx.fillText('0',x0,y0+12);
+  tctx.textAlign='right'; tctx.fillText(fmtT(tmax),x1,y0+12);
+  tctx.textAlign='left'; tctx.fillText(Math.round(ymax),x0+2,y1-6);
+  // legend (right column)
+  tctx.textBaseline='middle';
+  let ly=padT+2;
+  for(const [key,col,lab] of TS_SERIES){ if(key==='def'&&!hasDef) continue;
+    tctx.strokeStyle=col; tctx.lineWidth=2; tctx.beginPath();
+    tctx.moveTo(x1+8,ly); tctx.lineTo(x1+20,ly); tctx.stroke();
+    tctx.fillStyle='#9fb0c8'; tctx.textAlign='left'; tctx.fillText(lab,x1+24,ly); ly+=15; }
+}
+
+/* ---------- main loop ---------- */
+let dragging=false;
+function loop(){
+  if(running) advanceFrame();
+  if(autoRotate && !dragging) yaw+=spinSpeed;
+  render(); drawTimePlot(); frameHud(); requestAnimationFrame(loop);
+}
+
+/* ============================================================
+   UI wiring
+   ============================================================ */
+function bind(id,key,opts){ opts=opts||{};
+  const el=byId(id), out=byId(id+'v');
+  const show=()=>{ out.textContent=opts.fmt?opts.fmt(parseFloat(el.value)):el.value; };
+  el.value = opts.scale ? P[key]/opts.scale : P[key]; show();
+  el.addEventListener('input',()=>{ let v=parseFloat(el.value);
+    P[key]=opts.scale?v*opts.scale:v; show(); });
+  return {el,show};
+}
+const B = {};
+B.N    = bind('N','N');
+B.gen  = bind('gen','tau',{scale:60, fmt:v=>v+' min'});
+B.T    = bind('T','T',{fmt:v=>v.toFixed(3)});
+B.mu   = bind('mu','mu',{fmt:v=>v.toFixed(1)});
+const ETA_VALS=(()=>{ const a=[]; for(let i=0;i<=20;i++) a.push(+(i*0.05).toFixed(2));
+  for(let v=2;v<=10;v++) a.push(v); for(let v=20;v<=100;v+=10) a.push(v); return a; })();
+function etaIndexOf(val){ let bi=0,bd=Infinity;
+  for(let i=0;i<ETA_VALS.length;i++){ const d=Math.abs(ETA_VALS[i]-val); if(d<bd){bd=d;bi=i;} } return bi; }
+const etaEl=byId('eta'), etaOut=byId('etav');
+function etaShow(){ etaOut.textContent = P.eta>=1 ? P.eta.toFixed(0) : P.eta.toFixed(2); }
+function setEta(val){ P.eta=val; etaEl.value=etaIndexOf(val); etaShow(); }
+etaEl.value=etaIndexOf(P.eta); etaShow();
+etaEl.addEventListener('input',()=>{ P.eta=ETA_VALS[parseInt(etaEl.value)]; etaShow(); });
+B.f    = bind('f','f',{fmt:v=>v.toFixed(2)});
+B.Dfree= bind('Dfree','Dfree',{fmt:v=>v.toFixed(1)});
+B.Dsurf= bind('Dsurf','Dsurf',{fmt:v=>v.toFixed(1)});
+const INFR_VALS=(()=>{ const a=[]; for(let i=0;i<=50;i++) a.push(+(i*0.02).toFixed(2));
+  for(let v=2;v<=10;v++) a.push(v); for(let v=20;v<=100;v+=10) a.push(v); return a; })();
+function infrIndexOf(val){ let bi=0,bd=Infinity;
+  for(let i=0;i<INFR_VALS.length;i++){ const d=Math.abs(INFR_VALS[i]-val); if(d<bd){bd=d;bi=i;} } return bi; }
+const infrEl=byId('infr'), infrOut=byId('infrv');
+function infrShow(){ infrOut.textContent = P.infr>=1 ? P.infr.toFixed(0) : P.infr.toFixed(2); }
+function setInfr(val){ P.infr=val; infrEl.value=infrIndexOf(val); infrShow(); }
+infrEl.value=infrIndexOf(P.infr); infrShow();
+infrEl.addEventListener('input',()=>{ P.infr=INFR_VALS[parseInt(infrEl.value)]; infrShow(); });
+B.lat  = bind('lat','lat',{scale:60, fmt:v=>v+' min'});
+B.burst= bind('burst','burst');
+B.biofilm = bind('biofilm','biofilm',{fmt:v=> v>0?v.toFixed(2)+' units ('+(v*0.5).toFixed(2)+' µm)':'off'});
+const BIO_FACTORS=[0.0001,0.001,0.01,0.1];
+const biofacEl=byId('biofac'), biofacOut=byId('biofacv');
+function biofacShow(){ biofacOut.textContent='×'+P.biofilmFactor; }
+function setBioFac(v){ let i=BIO_FACTORS.indexOf(v); if(i<0)i=3; P.biofilmFactor=BIO_FACTORS[i]; biofacEl.value=i; biofacShow(); }
+biofacEl.value=Math.max(0,BIO_FACTORS.indexOf(P.biofilmFactor)); biofacShow();
+biofacEl.addEventListener('input',()=>{ P.biofilmFactor=BIO_FACTORS[parseInt(biofacEl.value)]; biofacShow(); });
+B.lossDist = bind('lossDist','lossDist',{fmt:v=> v+' units ('+(v*0.5).toFixed(1)+' µm)'});
+B.disp = bind('disp','disp',{fmt:v=> v>=60?`${v} s (${(v/60).toFixed(1)} min)`:`${v} s`});
+B.trailAge = bind('trailAge','trailAge',{fmt:v=>(v*0.5).toFixed(1)+' s'});
+function setSlider(name, sliderVal){ B[name].el.value=sliderVal; B[name].el.dispatchEvent(new Event('input')); }
+
+const spEl=byId('spinsp'), spOut=byId('spinspv');
+spEl.value=spinSpeed; spOut.textContent=spinSpeed.toFixed(3);
+spEl.addEventListener('input',()=>{ spinSpeed=parseFloat(spEl.value); spOut.textContent=spinSpeed.toFixed(3); });
+function setSpin(v){ spinSpeed=v; spEl.value=v; spOut.textContent=v.toFixed(3); }
+const caEl=byId('cutang'), caOut=byId('cutangv');
+caEl.value=cutAngle; caOut.textContent=cutAngle+'°';
+caEl.addEventListener('input',()=>{ cutAngle=parseFloat(caEl.value); caOut.textContent=cutAngle+'°';
+  if(cutFollow){ cutFollow=false; cfBtn.classList.remove('on'); } });
+
+const runBtn=byId('run');
+runBtn.addEventListener('click',()=>{ running=!running;
+  runBtn.textContent=running?'Pause':'Start'; runBtn.classList.toggle('primary',!running); });
+byId('reset').addEventListener('click',reset);
+byId('infect').addEventListener('click',()=>{ if(bacteria.length) seedPhage(); });
+
+const specialBtn=byId('special');
+const minimalBtn=byId('minimal');
+const criticalBtn=byId('critical');
+function clearPresetTags(){ specialBtn.classList.remove('on'); minimalBtn.classList.remove('on'); criticalBtn.classList.remove('on'); }
+minimalBtn.addEventListener('click',()=>{
+  instantInfect=false; clearPresetTags(); minimalBtn.classList.add('on');
+  setEta(0.5); setSlider('f',0.1); setInfr(0.02); setSlider('burst',100); setSpin(0.008); setSlider('trailAge',4);
+});
+specialBtn.addEventListener('click',()=>{           // diffusion-limited: fast adsorption, ~1 s to inject
+  instantInfect=false; clearPresetTags(); specialBtn.classList.add('on');
+  setSlider('gen',20); setSlider('lat',20); setSlider('f',0); setInfr(100); setEta(100); setSlider('Dsurf',0); setSpin(0.008);
+});
+criticalBtn.addEventListener('click',()=>{          // near-critical spread: moderate adsorption, slow injection
+  instantInfect=false; clearPresetTags(); criticalBtn.classList.add('on');
+  setEta(100); setSlider('f',0.1); setInfr(0.02); setSpin(0.008);
+});
+
+const modeBtns={ single:byId('m_single'), immune:byId('m_immune'),
+                 abortive:byId('m_abortive'), resistant:byId('m_resistant') };
+function setStartMode(m){ startMode=m;
+  for(const k in modeBtns) modeBtns[k].classList.toggle('on', k===m);
+  reset(); }
+for(const k in modeBtns) modeBtns[k].addEventListener('click',()=>setStartMode(k));
+
+const spinBtn=byId('spin');
+spinBtn.addEventListener('click',()=>{ autoRotate=!autoRotate; spinBtn.classList.toggle('on',autoRotate); });
+const trBtn=byId('trails');
+trBtn.addEventListener('click',()=>{ showTrails=!showTrails; trBtn.classList.toggle('on',showTrails); });
+const cutBtn=byId('cut');
+cutBtn.addEventListener('click',()=>{ cutaway=!cutaway; cutBtn.classList.toggle('on',cutaway); });
+const cfBtn=byId('cutfollow');
+cfBtn.addEventListener('click',()=>{ cutFollow=!cutFollow; cfBtn.classList.toggle('on',cutFollow); });
+byId('flip').addEventListener('click',()=>{ cutSign*=-1; });
+byId('savepng').addEventListener('click',()=>{
+  const prev=showTrails; showTrails=true; render(); drawTimePlot(); showTrails=prev;  // refresh both panels
+  const w=Math.max(cv.width,tcv.width), h=cv.height+tcv.height;
+  const off=document.createElement('canvas'); off.width=w; off.height=h;
+  const o=off.getContext('2d');
+  o.fillStyle='#05080e'; o.fillRect(0,0,w,h);
+  o.drawImage(cv,0,0,cv.width,cv.height);
+  o.drawImage(tcv,0,cv.height,tcv.width,tcv.height);
+  const a=document.createElement('a');
+  a.href=off.toDataURL('image/png'); a.download='phage_colony.png'; a.click();
+});
+
+let px=0,py=0;
+cv.addEventListener('pointerdown',e=>{dragging=true;px=e.clientX;py=e.clientY;cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',e=>{ if(!dragging)return;
+  yaw+=(e.clientX-px)*0.01; pitch+=(e.clientY-py)*0.01;
+  pitch=Math.max(-1.55,Math.min(1.55,pitch)); px=e.clientX; py=e.clientY; });
+cv.addEventListener('pointerup',()=>dragging=false);
+cv.addEventListener('wheel',e=>{ e.preventDefault();
+  zoom*=Math.exp(-e.deltaY*0.0012); zoom=Math.max(0.25,Math.min(6,zoom)); },{passive:false});
+
+function reset(){
+  bacteria=[];
+  if(startMode==='single'){
+    const c=newCell(0,0,0,'none'); c.divideAt=P.tau; bacteria.push(c);
+  } else {                                  // normal founder + one defended founder, side by side
+    const a=newCell(-1,0,0,'none');      a.divideAt=P.tau; bacteria.push(a);
+    const b=newCell( 1,0,0,startMode);   b.divideAt=P.tau; bacteria.push(b);
+  }
+  phages=[]; ghosts=[]; biofilmSpots=[]; history=[]; simT=0; infectionStarted=false; lysed=0;
+  measureNextT=0; measureGen=0; Din=null; Dout=null; nInLast=0; nOutLast=0; tick=0;
+  yaw=0.6; pitch=-0.35; zoom=1; scale=80;
+  updateColony(); computeSurface(); recordHistory();
+  running=false; runBtn.textContent='Start'; runBtn.classList.add('primary');
+}
+
+resize(); reset(); loop();
+</script>
+</body>
+</html>
