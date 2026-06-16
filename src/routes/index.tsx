@@ -353,7 +353,7 @@ function Index() {
 
         {/* WORK & BOOK */}
         <section id="work" className="py-20">
-          <SectionHeading eyebrow="06" title="Work & book" />
+          <SectionHeading eyebrow="07" title="Work & book" />
           <div className="mt-10 grid gap-12 md:grid-cols-[1.2fr_1fr] md:gap-16">
             <div className="space-y-6 text-[15px] leading-relaxed text-foreground/85">
               <div>
