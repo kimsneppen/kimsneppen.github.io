@@ -217,24 +217,34 @@ function Index() {
   const year = new Date().getFullYear();
   const scrolled = useScrolled(120);
   const active = useActiveSection();
+  const [menuOpen, setMenuOpen] = useState(false);
   useReveal();
 
-  const sectionClass = "scroll-mt-24 py-17 md:py-22";
+  // Close mobile menu on resize to desktop
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 768) setMenuOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const sectionClass = "scroll-mt-24 py-20 md:py-22";
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen overflow-x-clip bg-background text-foreground">
       {/* NAV */}
       <header
         className={[
           "fixed inset-x-0 top-0 z-40 transition-[background-color,border-color,backdrop-filter,box-shadow] duration-300",
-          scrolled
-            ? "border-b border-rule bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70"
+          scrolled || menuOpen
+            ? "border-b border-rule bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75"
             : "border-b border-transparent bg-transparent",
         ].join(" ")}
       >
         <nav
           aria-label="Primary"
-          className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4"
+          className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5 md:gap-6 md:px-6 md:py-4"
         >
           <a
             href="#top"
@@ -263,45 +273,85 @@ function Index() {
               );
             })}
           </ul>
-          <ul className="flex flex-wrap justify-end gap-x-3 gap-y-1 text-[11px] md:hidden">
-            {NAV.map((item) => {
-              const isActive = active === item.href;
-              return (
-                <li key={item.href}>
-                  <a
-                    href={`#${item.href}`}
-                    className={[
-                      "no-underline",
-                      isActive ? "text-accent" : "text-foreground/70",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
+          <button
+            type="button"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            onClick={() => setMenuOpen((o) => !o)}
+            className="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-md text-foreground/80 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 md:hidden"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              {menuOpen ? (
+                <>
+                  <line x1="5" y1="5" x2="19" y2="19" />
+                  <line x1="19" y1="5" x2="5" y2="19" />
+                </>
+              ) : (
+                <>
+                  <line x1="4" y1="7" x2="20" y2="7" />
+                  <line x1="4" y1="13" x2="20" y2="13" />
+                  <line x1="4" y1="19" x2="20" y2="19" />
+                </>
+              )}
+            </svg>
+          </button>
         </nav>
+        {menuOpen && (
+          <div
+            id="mobile-nav"
+            className="border-t border-rule bg-background/95 backdrop-blur md:hidden"
+          >
+            <ul className="mx-auto flex max-w-6xl flex-col px-5 py-2 text-[15px]">
+              {NAV.map((item) => {
+                const isActive = active === item.href;
+                return (
+                  <li key={item.href}>
+                    <a
+                      href={`#${item.href}`}
+                      onClick={() => setMenuOpen(false)}
+                      className={[
+                        "block py-3 no-underline",
+                        isActive ? "text-accent" : "text-foreground/80",
+                      ].join(" ")}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </header>
 
-      <main id="top" className="mx-auto max-w-6xl px-6">
+      <main id="top" className="mx-auto max-w-6xl px-5 md:px-6">
         {/* HERO */}
-        <section className="pb-10 pt-22 md:pb-14 md:pt-28">
+        <section className="pb-12 pt-24 md:pb-14 md:pt-28">
           <div className="reveal max-w-4xl">
             <p className="eyebrow">
               Niels Bohr Institute · University of Copenhagen
             </p>
-            <h1 className="mt-5 text-5xl leading-[1.05] tracking-tight md:text-6xl lg:text-7xl">
+            <h1 className="mt-5 text-[2.5rem] leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
               Kim Sneppen
             </h1>
-            <p className="mt-6 max-w-2xl text-lg text-foreground/80 md:text-xl">
+            <p className="mt-5 max-w-2xl text-base text-foreground/80 sm:text-lg md:text-xl">
               Professor of Biocomplexity, Niels Bohr Institute, University of Copenhagen.
             </p>
-            <p className="mt-8 max-w-2xl border-l-2 border-accent/60 pl-5 font-serif text-xl italic text-foreground/75 md:text-2xl">
+            <p className="mt-7 max-w-2xl border-l-2 border-accent/60 pl-4 font-serif text-lg italic text-foreground/75 sm:pl-5 sm:text-xl md:text-2xl">
               “Modeling living systems with the tools of theoretical physics.”
             </p>
           </div>
-          <div className="reveal mt-14 flex justify-start md:mt-16">
+          <div className="reveal mt-12 flex justify-center md:mt-16 md:justify-start">
             <Portrait />
           </div>
         </section>
