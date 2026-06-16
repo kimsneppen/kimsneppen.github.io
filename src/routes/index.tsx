@@ -40,6 +40,7 @@ type Model = {
   description: string;
   file: string;
   embed: boolean;
+  status: "live" | "coming_soon";
 };
 
 const MODELS: Model[] = [
@@ -47,16 +48,10 @@ const MODELS: Model[] = [
     id: "bak-sneppen",
     title: "Bak–Sneppen Evolution Model",
     description:
-      "An interactive simulation of self-organized criticality and punctuated equilibrium in a model ecology.",
+      "An interactive simulation of self-organized criticality and punctuated equilibrium in a model ecology — the dynamics at the heart of the Bak–Sneppen model.",
     file: "/models/bak-sneppen.html",
     embed: false,
-  },
-  {
-    id: "example",
-    title: "Example Model",
-    description: "Placeholder — replace with one of Kim's HTML simulations.",
-    file: "/models/example.html",
-    embed: false,
+    status: "coming_soon",
   },
 ];
 
