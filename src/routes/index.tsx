@@ -219,7 +219,7 @@ function SectionHeading({ label, title }: { label: string; title: string }) {
 function Index() {
   const year = new Date().getFullYear();
   const scrolled = useScrolled(120);
-  const active = useActiveSection(NAV.map((n) => n.href));
+  const active = useActiveSection();
   useReveal();
 
   const sectionClass = "scroll-mt-24 py-24 md:py-32";
