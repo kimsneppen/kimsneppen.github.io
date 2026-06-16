@@ -539,34 +539,32 @@ function Index() {
             </dl>
             <div>
               <p className="eyebrow text-[0.65rem]">Academic profiles</p>
-              <ul className="mt-3 space-y-3 text-[15px]">
-                <li>
-                  <a
-                    href="https://scholar.google.com/citations?user=LIBL6nQAAAAJ"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Google Scholar
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://orcid.org/0000-0001-9820-3567"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    ORCID
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://www.researchgate.net/profile/Kim-Sneppen"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    ResearchGate
-                  </a>
-                </li>
+              <ul className="mt-4 flex flex-wrap gap-3">
+                {[
+                  {
+                    label: "Google Scholar",
+                    href: "https://scholar.google.com/citations?user=LIBL6nQAAAAJ",
+                  },
+                  {
+                    label: "ORCID",
+                    href: "https://orcid.org/0000-0001-9820-3567",
+                  },
+                  {
+                    label: "ResearchGate",
+                    href: "https://www.researchgate.net/profile/Kim-Sneppen",
+                  },
+                ].map((p) => (
+                  <li key={p.href}>
+                    <a
+                      href={p.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block rounded-md border border-accent/70 px-4 py-2 text-[13px] font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {p.label} ↗
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
