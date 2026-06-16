@@ -40,6 +40,7 @@ type Model = {
   description: string;
   file: string;
   embed: boolean;
+  status: "live" | "coming_soon";
 };
 
 const MODELS: Model[] = [
@@ -47,16 +48,10 @@ const MODELS: Model[] = [
     id: "bak-sneppen",
     title: "Bak–Sneppen Evolution Model",
     description:
-      "An interactive simulation of self-organized criticality and punctuated equilibrium in a model ecology.",
+      "An interactive simulation of self-organized criticality and punctuated equilibrium in a model ecology — the dynamics at the heart of the Bak–Sneppen model.",
     file: "/models/bak-sneppen.html",
     embed: false,
-  },
-  {
-    id: "example",
-    title: "Example Model",
-    description: "Placeholder — replace with one of Kim's HTML simulations.",
-    file: "/models/example.html",
-    embed: false,
+    status: "coming_soon",
   },
 ];
 
@@ -408,7 +403,7 @@ function Index() {
             Interactive simulations of the models developed in Kim Sneppen's research. Open
             each to explore it in your browser.
           </p>
-          <div className="reveal mt-12 grid gap-6 md:grid-cols-2">
+          <div className="reveal mt-12 grid gap-6 sm:grid-cols-2">
             {MODELS.map((m) => (
               <article
                 key={m.id}
@@ -418,7 +413,7 @@ function Index() {
                 <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
                   {m.description}
                 </p>
-                {m.embed ? (
+                {m.embed && m.status === "live" ? (
                   <div className="mt-6">
                     <div className="overflow-hidden rounded-md border border-border">
                       <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
@@ -439,7 +434,7 @@ function Index() {
                       Open full screen ↗
                     </a>
                   </div>
-                ) : (
+                ) : m.status === "live" ? (
                   <div className="mt-auto pt-6">
                     <a
                       href={m.file}
@@ -449,6 +444,15 @@ function Index() {
                     >
                       Launch model →
                     </a>
+                  </div>
+                ) : (
+                  <div className="mt-auto pt-6">
+                    <span
+                      aria-label="Coming soon"
+                      className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground"
+                    >
+                      Coming soon
+                    </span>
                   </div>
                 )}
               </article>
