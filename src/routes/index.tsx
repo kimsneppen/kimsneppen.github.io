@@ -394,7 +394,7 @@ function Index() {
 
         {/* CONTACT */}
         <section id="contact" className="py-20">
-          <SectionHeading eyebrow="07" title="Contact" />
+          <SectionHeading eyebrow="08" title="Contact" />
           <div className="mt-10 grid max-w-3xl gap-10 md:grid-cols-2">
             <dl className="space-y-4 text-[15px]">
               <div>
