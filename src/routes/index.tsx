@@ -584,7 +584,7 @@ function Index() {
         </section>
       </main>
 
-      <footer className="mt-12 border-t border-rule">
+      <footer className="mt-10 border-t border-rule">
         <div className="mx-auto max-w-6xl px-6 py-10 text-center text-[12px] text-muted-foreground">
           © {year} Kim Sneppen
         </div>
