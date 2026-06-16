@@ -404,7 +404,7 @@ function Index() {
         <section id="publications" className={sectionClass}>
           <SectionHeading label="Publications" title="Selected publications" />
           <p className="reveal mt-6 measure text-[15px] text-muted-foreground">
-            Author of 500+ peer-reviewed articles, cited over 22,000 times.
+            Author of more than 250 peer-reviewed articles.
           </p>
           <ol className="reveal mt-12 measure space-y-6">
             {PUBLICATIONS.map((p, i) => (
