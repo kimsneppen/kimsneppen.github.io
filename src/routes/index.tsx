@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import portraitAsset from "@/assets/kim-sneppen-portrait.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -168,14 +169,14 @@ function useActiveSection() {
 function Portrait() {
   return (
     <figure className="flex flex-col items-center md:items-start">
-      <div
-        className="h-44 w-44 overflow-hidden rounded-full border border-border shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(15,23,42,0.18)] md:h-52 md:w-52"
-        role="img"
-        aria-label="Formal portrait of Professor Kim Sneppen"
-      >
-        <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(140deg,oklch(0.94_0.012_85)_0%,oklch(0.88_0.018_85)_100%)]">
-          <span className="font-serif text-5xl text-muted-foreground/55">KS</span>
-        </div>
+      <div className="h-44 w-44 overflow-hidden rounded-full border border-border shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(15,23,42,0.18)] md:h-52 md:w-52">
+        <img
+          src={portraitAsset.url}
+          alt="Portrait of Professor Kim Sneppen"
+          loading="eager"
+          decoding="async"
+          className="h-full w-full object-cover object-[50%_25%]"
+        />
       </div>
       <figcaption className="mt-3 text-[11px] italic text-muted-foreground">
         Photo: Ola Jakup Joensen, NBI
