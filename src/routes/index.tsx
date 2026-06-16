@@ -219,7 +219,7 @@ function Index() {
   const active = useActiveSection();
   useReveal();
 
-  const sectionClass = "scroll-mt-24 py-20 md:py-26";
+  const sectionClass = "scroll-mt-24 py-17 md:py-22";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -286,7 +286,7 @@ function Index() {
 
       <main id="top" className="mx-auto max-w-6xl px-6">
         {/* HERO */}
-        <section className="pb-16 pt-26 md:pb-24 md:pt-32">
+        <section className="pb-10 pt-22 md:pb-14 md:pt-28">
           <div className="reveal max-w-4xl">
             <p className="eyebrow">
               Niels Bohr Institute · University of Copenhagen
@@ -584,7 +584,7 @@ function Index() {
         </section>
       </main>
 
-      <footer className="mt-10 border-t border-rule">
+      <footer className="mt-8 border-t border-rule">
         <div className="mx-auto max-w-6xl px-6 py-10 text-center text-[12px] text-muted-foreground">
           © {year} Kim Sneppen
         </div>
