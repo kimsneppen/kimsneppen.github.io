@@ -365,8 +365,7 @@ function Index() {
               University of Copenhagen, and a leading figure in the physics of living systems.
               His 1993 work with Per Bak introduced the <span className="font-semibold">Bak–Sneppen model</span> — a foundational model of
               self-organized criticality that, three decades on, remains a reference point in
-              the study of evolution and complex systems. Across more than <span className="font-semibold">500 publications</span>,
-              cited over <span className="font-semibold">22,000 times</span>, he has built quantitative, physics-based theories of
+              the study of evolution and complex systems. Across more than <span className="font-semibold">250 publications</span>, he has built quantitative, physics-based theories of
               phenomena biology had only described qualitatively: how cells hold stable
               epigenetic states, how bacteria and their viruses co-evolve, and how diversity
               emerges and persists in living systems.
@@ -405,7 +404,7 @@ function Index() {
         <section id="publications" className={sectionClass}>
           <SectionHeading label="Publications" title="Selected publications" />
           <p className="reveal mt-6 measure text-[15px] text-muted-foreground">
-            Author of 500+ peer-reviewed articles, cited over 22,000 times.
+            Author of more than 250 peer-reviewed articles.
           </p>
           <ol className="reveal mt-12 measure space-y-6">
             {PUBLICATIONS.map((p, i) => (
