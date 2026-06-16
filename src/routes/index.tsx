@@ -26,8 +26,35 @@ const NAV = [
   { href: "#research", label: "Research" },
   { href: "#publications", label: "Publications" },
   { href: "#grants", label: "Grants" },
+  { href: "#models", label: "Interactive Models" },
   { href: "#cv", label: "CV" },
   { href: "#contact", label: "Contact" },
+];
+
+type Model = {
+  id: string;
+  title: string;
+  description: string;
+  file: string;
+  embed: boolean;
+};
+
+const MODELS: Model[] = [
+  {
+    id: "bak-sneppen",
+    title: "Bak–Sneppen Evolution Model",
+    description:
+      "An interactive simulation of self-organized criticality and punctuated equilibrium in a model ecology.",
+    file: "/models/bak-sneppen.html",
+    embed: false,
+  },
+  {
+    id: "example",
+    title: "Example Model",
+    description: "Placeholder — replace with one of Kim's HTML simulations.",
+    file: "/models/example.html",
+    embed: false,
+  },
 ];
 
 const RESEARCH = [
