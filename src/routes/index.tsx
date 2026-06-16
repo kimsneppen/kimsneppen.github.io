@@ -26,8 +26,35 @@ const NAV = [
   { href: "#research", label: "Research" },
   { href: "#publications", label: "Publications" },
   { href: "#grants", label: "Grants" },
+  { href: "#models", label: "Interactive Models" },
   { href: "#cv", label: "CV" },
   { href: "#contact", label: "Contact" },
+];
+
+type Model = {
+  id: string;
+  title: string;
+  description: string;
+  file: string;
+  embed: boolean;
+};
+
+const MODELS: Model[] = [
+  {
+    id: "bak-sneppen",
+    title: "Bak–Sneppen Evolution Model",
+    description:
+      "An interactive simulation of self-organized criticality and punctuated equilibrium in a model ecology.",
+    file: "/models/bak-sneppen.html",
+    embed: false,
+  },
+  {
+    id: "example",
+    title: "Example Model",
+    description: "Placeholder — replace with one of Kim's HTML simulations.",
+    file: "/models/example.html",
+    embed: false,
+  },
 ];
 
 const RESEARCH = [
@@ -247,9 +274,66 @@ function Index() {
 
         <hr className="border-rule" />
 
+        {/* INTERACTIVE MODELS */}
+        <section id="models" className="py-20">
+          <SectionHeading eyebrow="05" title="Interactive models" />
+          <p className="mt-6 max-w-2xl text-base text-muted-foreground">
+            Interactive simulations of the models developed in Kim Sneppen's research. Open
+            each to explore it in your browser.
+          </p>
+          <div className="mt-10 grid gap-8 md:grid-cols-2">
+            {MODELS.map((m) => (
+              <article
+                key={m.id}
+                className="flex flex-col border border-border bg-background p-7"
+              >
+                <h3 className="font-serif text-2xl">{m.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  {m.description}
+                </p>
+                {m.embed ? (
+                  <div className="mt-6">
+                    <div className="overflow-hidden rounded-md border border-border">
+                      <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
+                        <iframe
+                          src={m.file}
+                          title={m.title}
+                          loading="lazy"
+                          className="absolute inset-0 h-full w-full"
+                        />
+                      </div>
+                    </div>
+                    <a
+                      href={m.file}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-block text-sm text-accent"
+                    >
+                      Open full screen ↗
+                    </a>
+                  </div>
+                ) : (
+                  <div className="mt-6">
+                    <a
+                      href={m.file}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block border border-accent px-6 py-3 text-sm font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      Launch model →
+                    </a>
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <hr className="border-rule" />
+
         {/* CV */}
         <section id="cv" className="py-20">
-          <SectionHeading eyebrow="05" title="Career" />
+          <SectionHeading eyebrow="06" title="Career" />
           <ol className="mt-10 max-w-3xl">
             {CV.map((c) => (
               <li
@@ -269,7 +353,7 @@ function Index() {
 
         {/* WORK & BOOK */}
         <section id="work" className="py-20">
-          <SectionHeading eyebrow="06" title="Work & book" />
+          <SectionHeading eyebrow="07" title="Work & book" />
           <div className="mt-10 grid gap-12 md:grid-cols-[1.2fr_1fr] md:gap-16">
             <div className="space-y-6 text-[15px] leading-relaxed text-foreground/85">
               <div>
@@ -310,7 +394,7 @@ function Index() {
 
         {/* CONTACT */}
         <section id="contact" className="py-20">
-          <SectionHeading eyebrow="07" title="Contact" />
+          <SectionHeading eyebrow="08" title="Contact" />
           <div className="mt-10 grid max-w-3xl gap-10 md:grid-cols-2">
             <dl className="space-y-4 text-[15px]">
               <div>
