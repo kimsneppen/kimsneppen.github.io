@@ -219,7 +219,7 @@ function Index() {
   const active = useActiveSection();
   useReveal();
 
-  const sectionClass = "scroll-mt-24 py-20 md:py-26";
+  const sectionClass = "scroll-mt-24 py-17 md:py-22";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
