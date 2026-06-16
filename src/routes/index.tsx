@@ -86,11 +86,11 @@ const RESEARCH = [
 ];
 
 const PUBLICATIONS = [
-  "Bak, P. & Sneppen, K. (1993). Punctuated equilibrium and criticality in a simple model of evolution. Physical Review Letters, 71, 4083–4086.",
-  "Sneppen, K., Bak, P., Flyvbjerg, H. & Jensen, M. H. (1995). Evolution as a self-organized critical phenomenon. PNAS, 92(11), 5209–5213.",
-  "Sneppen, K. & Dodd, I. B. (2012). A simple histone code opens many paths to epigenetics. PLoS Computational Biology, 8(8).",
-  "[Placeholder] SARS-CoV-2 superspreading / overdispersion paper — citation to confirm.",
-  "[Placeholder] 2025 PNAS paper — citation to confirm.",
+  "Bak, P. & Sneppen, K. (1993). Punctuated equilibrium and criticality in a simple model of evolution. Physical Review Letters, 71(24), 4083–4086.",
+  "Sneppen, K., Bak, P., Flyvbjerg, H. & Jensen, M. H. (1995). Evolution as a self-organized critical phenomenon. Proceedings of the National Academy of Sciences, 92(11), 5209–5213.",
+  "Sneppen, K. & Dodd, I. B. (2012). A simple histone code opens many paths to epigenetics. PLoS Computational Biology, 8(8), e1002643.",
+  "Nielsen, B. F., Simonsen, L. & Sneppen, K. (2021). Overdispersion in COVID-19 increases the effectiveness of limiting nonrepetitive contacts for transmission control. Proceedings of the National Academy of Sciences, 118(14), e2016623118.",
+  "Hvid, U., Simonsen, L., Frisch, M. & Sneppen, K. (2025). Relationship dynamics and behavioral adaptations in the control of the 2022 mpox epidemic. medRxiv, 2025.05.02.25326849.",
 ];
 
 const CV = [
@@ -539,34 +539,32 @@ function Index() {
             </dl>
             <div>
               <p className="eyebrow text-[0.65rem]">Academic profiles</p>
-              <ul className="mt-3 space-y-3 text-[15px]">
-                <li>
-                  <a
-                    href="https://scholar.google.com/citations?user=LIBL6nQAAAAJ"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Google Scholar
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://orcid.org/0000-0001-9820-3567"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    ORCID
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://www.researchgate.net/profile/Kim-Sneppen"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    ResearchGate
-                  </a>
-                </li>
+              <ul className="mt-4 flex flex-wrap gap-3">
+                {[
+                  {
+                    label: "Google Scholar",
+                    href: "https://scholar.google.com/citations?user=LIBL6nQAAAAJ",
+                  },
+                  {
+                    label: "ORCID",
+                    href: "https://orcid.org/0000-0001-9820-3567",
+                  },
+                  {
+                    label: "ResearchGate",
+                    href: "https://www.researchgate.net/profile/Kim-Sneppen",
+                  },
+                ].map((p) => (
+                  <li key={p.href}>
+                    <a
+                      href={p.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block rounded-md border border-accent/70 px-4 py-2 text-[13px] font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {p.label} ↗
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
