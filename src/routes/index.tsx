@@ -517,7 +517,7 @@ function Index() {
             {CV.map((c, i) => (
               <li
                 key={c.years}
-                className="relative grid grid-cols-[8.5rem_1fr] gap-6 py-5 sm:grid-cols-[11rem_1fr] sm:gap-8"
+                className="relative grid grid-cols-1 gap-1 py-4 sm:grid-cols-[11rem_1fr] sm:gap-8 sm:py-5"
               >
                 {i !== CV.length - 1 && (
                   <span
@@ -525,7 +525,7 @@ function Index() {
                     className="absolute left-0 top-full h-px w-full bg-rule/70"
                   />
                 )}
-                <span className="font-serif text-[13.5px] font-medium tracking-tight text-accent tabular-nums">
+                <span className="font-serif text-[13px] font-medium tracking-tight text-accent tabular-nums sm:text-[13.5px]">
                   {c.years}
                 </span>
                 <span className="text-[15px] leading-relaxed text-foreground/85">
