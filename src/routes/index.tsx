@@ -141,12 +141,14 @@ function useScrolled(threshold = 80) {
   return scrolled;
 }
 
-function useActiveSection(ids: string[]) {
-  const [active, setActive] = useState<string>(ids[0]);
+const NAV_IDS = NAV.map((n) => n.href);
+
+function useActiveSection() {
+  const [active, setActive] = useState<string>(NAV_IDS[0]);
   useEffect(() => {
-    const sections = ids
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => !!el);
+    const sections = NAV_IDS.map((id) => document.getElementById(id)).filter(
+      (el): el is HTMLElement => !!el,
+    );
     if (sections.length === 0) return;
     const io = new IntersectionObserver(
       (entries) => {
@@ -159,7 +161,7 @@ function useActiveSection(ids: string[]) {
     );
     sections.forEach((s) => io.observe(s));
     return () => io.disconnect();
-  }, [ids]);
+  }, []);
   return active;
 }
 
