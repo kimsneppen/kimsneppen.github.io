@@ -376,7 +376,7 @@ function Index() {
               competitive research awards, reserved for established research leaders — of
               DKK 16.5 million for his SOURCE project on self-organization, competition, and
               diversity. He founded and directed the Center for Models of Life (2005–2015),
-              serves as a Divisional Associate Editor of <em>Physical Review Letters</em>, and is the
+              served as a Divisional Associate Editor of <em>Physical Review Letters</em>, and is the
               author of <em>Models of Life</em> (Cambridge University Press).
             </p>
           </div>
