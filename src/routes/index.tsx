@@ -127,6 +127,7 @@ const PUBLICATIONS = [
   "Sneppen, K. & Dodd, I. B. (2012). A simple histone code opens many paths to epigenetics. PLoS Computational Biology, 8(8), e1002643.",
   "Dodd, I. B., Micheelsen, M. A., Sneppen, K., & Thon, G. (2007). Theoretical analysis of epigenetic cell memory by nucleosome modification. Cell, 129(4), 813–822.",
   "Nissen, S. B., Rønhild, S., Trusina, A., & Sneppen, K. (2018). Theoretical tool bridging cell polarities with development of robust morphologies. eLife, 7, e38407.",
+  "Maslov, S., & Sneppen, K. (2015). Diversity waves in collapse-driven population dynamics. PLoS Computational Biology, 11(9), e1004440.",
   "Nielsen, B. F., Simonsen, L. & Sneppen, K. (2021). Overdispersion in COVID-19 increases the effectiveness of limiting nonrepetitive contacts for transmission control. Proceedings of the National Academy of Sciences, 118(14), e2016623118.",
   "Hvid, U., Simonsen, L., Frisch, M. & Sneppen, K. (2025). Relationship dynamics and behavioral adaptations in the control of the 2022 mpox epidemic. medRxiv, 2025.05.02.25326849.",
 ];
