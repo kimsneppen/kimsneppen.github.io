@@ -131,7 +131,7 @@ const PUBLICATIONS = [
   "Maslov, S., Krishna, S., Pang, T. Y., & Sneppen, K. (2009). Toolbox model of evolution of prokaryotic metabolic networks and their regulation. Proceedings of the National Academy of Sciences, 106(24), 9743–9748.",
   "Bornholdt, S., Jensen, M. H., & Sneppen, K. (2011). Emergence and decline of scientific paradigms. Physical Review Letters, 106(5), 058701.",
   "Nielsen, B. F., Simonsen, L. & Sneppen, K. (2021). Overdispersion in COVID-19 increases the effectiveness of limiting nonrepetitive contacts for transmission control. Proceedings of the National Academy of Sciences, 118(14), e2016623118.",
-  "Hvid, U., Simonsen, L., Frisch, M. & Sneppen, K. (2025). Relationship dynamics and behavioral adaptations in the control of the 2022 mpox epidemic. medRxiv, 2025.05.02.25326849.",
+  
 ];
 
 const CV = [
