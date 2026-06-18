@@ -105,15 +105,13 @@ const RESEARCH = [
 
 const PUBLICATIONS = [
   "Bak, P. & Sneppen, K. (1993). Punctuated equilibrium and criticality in a simple model of evolution. Physical Review Letters, 71(24), 4083–4086.",
-  "J. Mathiesen, N. Mitarai, K. Sneppen, & A. Trusina (2011). Ecosystems with mutually exclusive interactions self-organize to a state of high diversity. Physical review letters, 107(18), 188101.",
-  
   "Dodd, I. B., Micheelsen, M. A., Sneppen, K., & Thon, G. (2007). Theoretical analysis of epigenetic cell memory by nucleosome modification. Cell, 129(4), 813–822.",
-  "Nissen, S. B., Rønhild, S., Trusina, A., & Sneppen, K. (2018). Theoretical tool bridging cell polarities with development of robust morphologies. eLife, 7, e38407.",
-  "Maslov, S., & Sneppen, K. (2015). Diversity waves in collapse-driven population dynamics. PLoS Computational Biology, 11(9), e1004440.",
   "Maslov, S., Krishna, S., Pang, T. Y., & Sneppen, K. (2009). Toolbox model of evolution of prokaryotic metabolic networks and their regulation. Proceedings of the National Academy of Sciences, 106(24), 9743–9748.",
+  "J. Mathiesen, N. Mitarai, K. Sneppen, & A. Trusina (2011). Ecosystems with mutually exclusive interactions self-organize to a state of high diversity. Physical review letters, 107(18), 188101.",
   "Bornholdt, S., Jensen, M. H., & Sneppen, K. (2011). Emergence and decline of scientific paradigms. Physical Review Letters, 106(5), 058701.",
+  "Maslov, S., & Sneppen, K. (2015). Diversity waves in collapse-driven population dynamics. PLoS Computational Biology, 11(9), e1004440.",
+  "Nissen, S. B., Rønhild, S., Trusina, A., & Sneppen, K. (2018). Theoretical tool bridging cell polarities with development of robust morphologies. eLife, 7, e38407.",
   "Nielsen, B. F., Simonsen, L. & Sneppen, K. (2021). Overdispersion in COVID-19 increases the effectiveness of limiting nonrepetitive contacts for transmission control. Proceedings of the National Academy of Sciences, 118(14), e2016623118.",
-  
 ];
 
 const CV = [
