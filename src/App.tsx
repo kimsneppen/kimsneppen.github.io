@@ -229,8 +229,8 @@ function LectureFrame() {
 function SectionHeading({ label, title }: { label: string; title: string }) {
   return (
     <header className="reveal">
-      <span className="eyebrow">{label}</span>
-      <h2 className="mt-3 text-3xl md:text-4xl lg:text-[2.6rem]">{title}</h2>
+      {label && <span className="eyebrow">{label}</span>}
+      <h2 className={`${label ? "mt-3" : ""} text-3xl md:text-4xl lg:text-[2.6rem]`}>{title}</h2>
       <span
         aria-hidden
         className="mt-5 block h-px w-12 bg-accent/60"
