@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import portraitUrl from "@/assets/kim-sneppen-portrait.jpg";
 import lectureUrl from "@/assets/kim-sneppen-lecture.jpg";
+import complexPhysicsPdf from "@/assets/complex-physics.pdf.asset.json";
 
 export default function App() {
   return <Index />;
@@ -548,6 +549,24 @@ function Index() {
                   transitions, noise, feedback, networks — illuminate the dynamics of cells,
                   organisms, and ecosystems. The book gathers two decades of teaching and
                   research at the interface of physics and biology.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-serif text-[1.3rem]">Complex Physics</h3>
+                <p className="mt-1 text-[12.5px] uppercase tracking-[0.14em] text-muted-foreground">
+                  Lecture notes
+                </p>
+                <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
+                  Lecture notes from Kim Sneppen's course on complex physics, covering
+                  topics at the interface of statistical mechanics, nonlinear dynamics,
+                  and biological complexity.{" "}
+                  <a
+                    href={complexPhysicsPdf.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Download PDF →
+                  </a>
                 </p>
               </div>
               <div>
