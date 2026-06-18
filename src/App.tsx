@@ -388,17 +388,12 @@ function Index() {
           <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
             <p>
               Kim Sneppen is a professor of biocomplexity at the Niels Bohr Institute,
-              University of Copenhagen, and a leading figure in the physics of living systems.
-              His 1993 work with Per Bak introduced the <span className="font-semibold">Bak–Sneppen model</span> — a foundational model of
-              self-organized criticality that, three decades on, remains a reference point in
-              the study of evolution and complex systems. Across more than <span className="font-semibold">250 publications</span>, he has built quantitative, physics-based theories of
-              different biological phenomena: Information perspectives on complex
-              networks, how cells hold stable epigenetic states, how to understand
-              biological regulatory networks from a toolbox perspective, how growth and
-              collapse dynamics inspired by Indian mythology may provide waves of diversity,
-              how bacteria exploit spacetial organization to hide from viruses, how polar
-              interactions between cells shapes sheets and tubes during embryo development,
-              and how diversity emerges and persists in living systems.
+              University of Copenhagen. He builds quantitative, physics-based theories
+              of different biological phenomena including how cells hold stable epigenetic states,
+              how growth and collapse dynamics inspired by Indian mythology may provide waves
+              of diversity, how bacteria exploit spatial organization to hide from viruses,
+              and how polar interactions between cells shapes sheets and tubes during
+              embryo development.
             </p>
             <p>
             </p>
