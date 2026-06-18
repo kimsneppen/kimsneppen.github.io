@@ -537,7 +537,7 @@ function Index() {
 
         {/* WORK & BOOK */}
         <section id="work" className={sectionClass}>
-          <SectionHeading label="Work & Book" title="Work & book" />
+          <SectionHeading label="" title="Work & book" />
           <div className="reveal mt-12 grid gap-12 md:grid-cols-[1.25fr_1fr] md:gap-16">
             <div className="space-y-10">
               <div>
