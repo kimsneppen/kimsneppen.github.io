@@ -1,28 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import portraitAsset from "@/assets/kim-sneppen-portrait.jpg.asset.json";
-import lectureAsset from "@/assets/kim-sneppen-lecture.jpg.asset.json";
+import portraitUrl from "@/assets/kim-sneppen-portrait.jpg";
+import lectureUrl from "@/assets/kim-sneppen-lecture.jpg";
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Kim Sneppen — Professor of Biocomplexity, Niels Bohr Institute" },
-      {
-        name: "description",
-        content:
-          "Kim Sneppen is Professor of Biocomplexity at the Niels Bohr Institute, University of Copenhagen, modeling living systems with the tools of theoretical physics.",
-      },
-      { property: "og:title", content: "Kim Sneppen — Professor of Biocomplexity" },
-      {
-        property: "og:description",
-        content:
-          "Research profile of Kim Sneppen: biophysics, complex systems, epigenetics, phage–bacteria co-evolution, and statistical mechanics of life.",
-      },
-      { property: "og:type", content: "profile" },
-    ],
-  }),
-  component: Index,
-});
+export default function App() {
+  return <Index />;
+}
 
 const NAV = [
   { href: "about", label: "About" },
@@ -211,7 +193,7 @@ function Portrait() {
     <figure className="flex flex-col items-center md:items-start">
       <div className="h-44 w-44 overflow-hidden rounded-full border border-border shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(15,23,42,0.18)] md:h-52 md:w-52">
         <img
-          src={portraitAsset.url}
+          src={portraitUrl}
           alt="Portrait of Professor Kim Sneppen"
           loading="eager"
           decoding="async"
@@ -230,7 +212,7 @@ function LectureFrame() {
     <figure className="w-full">
       <div className="aspect-[3/2] w-full overflow-hidden rounded-lg border border-border bg-muted">
         <img
-          src={lectureAsset.url}
+          src={lectureUrl}
           alt="Professor Kim Sneppen presenting his research"
           loading="lazy"
           decoding="async"
