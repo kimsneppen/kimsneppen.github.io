@@ -447,7 +447,7 @@ function Index() {
 
         {/* INTERACTIVE MODELS */}
         <section id="models" className={sectionClass}>
-          <SectionHeading label="\n" title="Interactive models" />
+          <SectionHeading label="" title="Interactive models" />
           <p className="reveal mt-6 measure text-[15px] text-muted-foreground">
             Interactive simulations of the models developed in Kim Sneppen's research. Open
             each to explore it in your browser.
