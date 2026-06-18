@@ -386,7 +386,7 @@ function Index() {
               DKK 16.5 million for his SOURCE project on self-organization, competition, and
               diversity. He founded and directed the Center for Models of Life (2005–2015),
               served as a Divisional Associate Editor of <em>Physical Review Letters</em>, and is the
-              author of <em>Models of Life</em> (Cambridge University Press).
+              author of two books: <em>Physics in Molecular Biology</em> and <em>Models of Life</em> (Cambridge University Press).
             </p>
           </div>
         </section>
