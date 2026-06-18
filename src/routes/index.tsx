@@ -128,6 +128,7 @@ const PUBLICATIONS = [
   "Dodd, I. B., Micheelsen, M. A., Sneppen, K., & Thon, G. (2007). Theoretical analysis of epigenetic cell memory by nucleosome modification. Cell, 129(4), 813–822.",
   "Nissen, S. B., Rønhild, S., Trusina, A., & Sneppen, K. (2018). Theoretical tool bridging cell polarities with development of robust morphologies. eLife, 7, e38407.",
   "Maslov, S., & Sneppen, K. (2015). Diversity waves in collapse-driven population dynamics. PLoS Computational Biology, 11(9), e1004440.",
+  "Maslov, S., Krishna, S., Pang, T. Y., & Sneppen, K. (2009). Toolbox model of evolution of prokaryotic metabolic networks and their regulation. Proceedings of the National Academy of Sciences, 106(24), 9743–9748.",
   "Nielsen, B. F., Simonsen, L. & Sneppen, K. (2021). Overdispersion in COVID-19 increases the effectiveness of limiting nonrepetitive contacts for transmission control. Proceedings of the National Academy of Sciences, 118(14), e2016623118.",
   "Hvid, U., Simonsen, L., Frisch, M. & Sneppen, K. (2025). Relationship dynamics and behavioral adaptations in the control of the 2022 mpox epidemic. medRxiv, 2025.05.02.25326849.",
 ];
