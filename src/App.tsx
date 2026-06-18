@@ -417,7 +417,7 @@ function Index() {
 
         {/* PUBLICATIONS */}
         <section id="publications" className={sectionClass}>
-          <SectionHeading label="Publications" title="Selected publications" />
+          <SectionHeading label="" title="Selected publications" />
           <p className="reveal mt-6 measure text-[15px] text-muted-foreground">
             .
           </p>
