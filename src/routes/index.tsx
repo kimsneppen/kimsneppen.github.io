@@ -373,9 +373,11 @@ function Index() {
               His 1993 work with Per Bak introduced the <span className="font-semibold">Bak–Sneppen model</span> — a foundational model of
               self-organized criticality that, three decades on, remains a reference point in
               the study of evolution and complex systems. Across more than <span className="font-semibold">250 publications</span>, he has built quantitative, physics-based theories of
-              phenomena biology had only described qualitatively: how cells hold stable
-              epigenetic states, how bacteria and their viruses co-evolve, and how diversity
-              emerges and persists in living systems.
+              different biological phenomena: how cells hold stable epigenetic states, how to
+              understand biological regulatory networks from a toolbox perspective, how growth
+              and collapse dynamics may provide waves of diversity, how bacteria exploit
+              spacetial organization to hide from viruses, and how diversity emerges and
+              persists in living systems.
             </p>
             <p>
               He has been a member of the <span className="font-semibold">Royal Danish Academy of Sciences and Letters</span> since
