@@ -193,7 +193,7 @@ function Portrait() {
     <figure className="flex flex-col items-center md:items-start">
       <div className="h-44 w-44 overflow-hidden rounded-full border border-border shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(15,23,42,0.18)] md:h-52 md:w-52">
         <img
-          src={portraitAsset.url}
+          src={portraitUrl}
           alt="Portrait of Professor Kim Sneppen"
           loading="eager"
           decoding="async"
@@ -212,7 +212,7 @@ function LectureFrame() {
     <figure className="w-full">
       <div className="aspect-[3/2] w-full overflow-hidden rounded-lg border border-border bg-muted">
         <img
-          src={lectureAsset.url}
+          src={lectureUrl}
           alt="Professor Kim Sneppen presenting his research"
           loading="lazy"
           decoding="async"
