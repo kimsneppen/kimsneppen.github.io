@@ -447,7 +447,7 @@ function Index() {
 
         {/* INTERACTIVE MODELS */}
         <section id="models" className={sectionClass}>
-          <SectionHeading label="Interactive Models" title="Interactive models" />
+          <SectionHeading label="\n" title="Interactive models" />
           <p className="reveal mt-6 measure text-[15px] text-muted-foreground">
             Interactive simulations of the models developed in Kim Sneppen's research. Open
             each to explore it in your browser.
@@ -511,7 +511,7 @@ function Index() {
 
         {/* CV */}
         <section id="cv" className={sectionClass}>
-          <SectionHeading label="Career" title="Career" />
+          <SectionHeading label="" title="Career" />
           <ol className="reveal mt-12 max-w-3xl">
             {CV.map((c, i) => (
               <li
