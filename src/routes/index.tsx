@@ -124,7 +124,7 @@ const RESEARCH = [
 const PUBLICATIONS = [
   "Bak, P. & Sneppen, K. (1993). Punctuated equilibrium and criticality in a simple model of evolution. Physical Review Letters, 71(24), 4083–4086.",
   "J. Mathiesen, N. Mitarai, K. Sneppen, & A. Trusina (2011). Ecosystems with mutually exclusive interactions self-organize to a state of high diversity. Physical review letters, 107(18), 188101.",
-  "Sneppen, K. & Dodd, I. B. (2012). A simple histone code opens many paths to epigenetics. PLoS Computational Biology, 8(8), e1002643.",
+  
   "Dodd, I. B., Micheelsen, M. A., Sneppen, K., & Thon, G. (2007). Theoretical analysis of epigenetic cell memory by nucleosome modification. Cell, 129(4), 813–822.",
   "Nissen, S. B., Rønhild, S., Trusina, A., & Sneppen, K. (2018). Theoretical tool bridging cell polarities with development of robust morphologies. eLife, 7, e38407.",
   "Maslov, S., & Sneppen, K. (2015). Diversity waves in collapse-driven population dynamics. PLoS Computational Biology, 11(9), e1004440.",
