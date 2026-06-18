@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Nucleosome · Swi6 turntable</title>
+<style>
+  :root{
+    --bg:#0b0e13;
+    --panel:#14181f;
+    --panel2:#1a202a;
+    --line:#262e3a;
+    --ink:#e7ecf3;
+    --mut:#8c97a8;
+    --accent:#5fd0df;
+    --A:#2f6bff;   /* blue  */
+    --U:#ffd60a;   /* yellow*/
+    --M:#ff453a;   /* red   */
+    --S:#34c759;   /* green */
+    --N:#c9ced6;   /* grey  */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    overflow:hidden;
+  }
+  #app{display:flex;height:100vh;height:100dvh;width:100vw}
+  #stage{position:relative;flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+  #viewport{position:relative;flex:1 1 auto;min-height:0}
+  #plots{flex:0 0 auto;display:flex;flex-direction:column;background:#090c11;border-top:1px solid var(--line)}
+  .plot{position:relative;height:84px;border-bottom:1px solid var(--line)}
+  .plot:last-child{border-bottom:none}
+  .plot canvas{display:block;width:100%;height:100%}
+  .plab{
+    position:absolute;left:10px;top:6px;z-index:2;pointer-events:none;
+    font:10.5px ui-monospace,Menlo,monospace;color:var(--mut);
+    display:inline-flex;align-items:center;gap:5px;text-shadow:0 1px 2px #000;
+  }
+  .plab .dot{width:8px;height:8px}
+  #plotExport{
+    display:flex;align-items:center;gap:6px;padding:5px 10px;
+    border-top:1px solid var(--line);background:#090c11;
+    font:10px ui-monospace,Menlo,monospace;color:var(--mut);
+  }
+  #plotExport span{letter-spacing:.04em}
+  #plotExport button{
+    font:10px ui-monospace,Menlo,monospace;color:var(--ink);
+    background:#11161e;border:1px solid var(--line);border-radius:5px;
+    padding:3px 8px;cursor:pointer;
+  }
+  #plotExport button:hover{border-color:var(--accent);color:var(--accent)}
+  canvas{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:0}
+  /* ---- overlay readouts ---- */
+  #hud{
+    position:absolute;left:16px;top:14px;pointer-events:none;z-index:5;
+    font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);
+    text-shadow:0 1px 3px rgba(0,0,0,.7);
+  }
+  #hud b{color:var(--ink);font-weight:600}
+  #legend{
+    position:absolute;left:16px;bottom:14px;display:flex;gap:14px;flex-wrap:wrap;z-index:5;
+    font:12px/1 ui-monospace,Menlo,monospace;color:var(--mut);pointer-events:none;
+    text-shadow:0 1px 3px rgba(0,0,0,.7);
+  }
+  #legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
+  /* ---- control rail ---- */
+  #panel{
+    flex:0 0 408px;max-width:408px;height:100%;overflow-y:auto;
+    background:linear-gradient(180deg,var(--panel),#11151c);
+    border-left:1px solid var(--line);padding:18px 18px 40px;
+  }
+  .title{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:2px 0 2px}
+  .sub{font-size:11px;color:var(--mut);margin:0 0 16px;line-height:1.5}
+  .group{border-top:1px solid var(--line);padding:14px 0 4px;margin-top:4px;
+    display:grid;grid-template-columns:1fr 1fr;column-gap:20px;row-gap:0;align-items:start}
+  .group h3{grid-column:1 / -1;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin:0 0 12px;font-weight:600}
+  .ctrl{margin-bottom:14px}
+  .ctrl .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .ctrl label{font-size:12.5px;color:var(--ink)}
+  .ctrl .val{font:12px ui-monospace,Menlo,monospace;color:var(--accent)}
+  .ctrl .hint{font-size:10.5px;color:var(--mut);margin-top:4px;line-height:1.4}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:3px;
+    background:var(--line);outline:none;cursor:pointer;margin:2px 0;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent);border:2px solid #0b0e13;box-shadow:0 1px 4px rgba(0,0,0,.5);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid #0b0e13;
+  }
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  button{
+    font:12px system-ui;color:var(--ink);background:var(--panel2);
+    border:1px solid var(--line);border-radius:8px;padding:9px 10px;cursor:pointer;
+    transition:.12s;
+  }
+  button:hover{border-color:var(--accent);color:#fff}
+  button.primary{background:var(--accent);color:#06141a;border-color:var(--accent);font-weight:600}
+  button.primary:hover{filter:brightness(1.08)}
+  button.attbtn{width:100%;padding:7px 8px;font-size:11.5px;text-align:left}
+  button.attbtn.off{color:var(--mut);background:#0c0f15}
+  button.attbtn.hi{border-color:var(--accent);color:var(--accent)}
+  select.sel{width:100%;padding:7px 8px;font:11.5px system-ui;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;cursor:pointer}
+  select.sel:hover{border-color:var(--accent)}
+  .togg{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;margin-bottom:12px}
+  .switch{position:relative;width:38px;height:20px;border-radius:20px;background:var(--line);cursor:pointer;transition:.15s;border:none}
+  .switch.on{background:var(--accent)}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s}
+  .switch.on::after{transform:translateX(18px)}
+  details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+  summary{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);cursor:pointer}
+  details p{font-size:11px;color:var(--mut);line-height:1.55}
+  @media (max-width:760px){
+    #app{flex-direction:column}
+    #panel{flex-basis:auto;max-width:none;height:46%;border-left:none;border-top:1px solid var(--line)}
+    #stage{height:54%}
+    .group{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <div id="viewport">
+      <div id="hud">
+        <div>nucleosomes&nbsp; <b>A</b> <span id="cA">0</span> &nbsp;<b>U</b> <span id="cU">0</span> &nbsp;<b>M</b> <span id="cM">0</span></div>
+        <div>Swi6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>neutral</b> <span id="cN">0</span> &nbsp;<b>charged*</b> <span id="cS">0</span></div>
+        <div style="margin-top:4px;color:#5c6878"><span id="fps">–</span> fps</div>
+      </div>
+      <div id="legend">
+        <span><i class="dot" style="background:var(--M)"></i>M nucleosome</span>
+        <span><i class="dot" style="background:var(--A)"></i>A nucleosome</span>
+        <span><i class="dot" style="background:var(--U)"></i>U nucleosome</span>
+        <span><i class="dot" style="background:var(--S)"></i>Swi6&#42; (charged)</span>
+        <span><i class="dot" style="background:var(--N)"></i>Swi6 (neutral)</span>
+      </div>
+    </div>
+    <div id="plots">
+      <div class="plot">
+        <span class="plab"><i class="dot" style="background:var(--M)"></i>M fraction&nbsp;&nbsp;<i class="dot" style="background:var(--A)"></i>A fraction</span>
+        <canvas id="plotStates"></canvas>
+      </div>
+      <div class="plot">
+        <span class="plab">polymer RMS size&nbsp; R<sub>g</sub> <span id="rgNow" style="color:var(--accent)"></span></span>
+        <canvas id="plotRg"></canvas>
+      </div>
+      <div id="plotExport">
+        <span>Save PNG:</span>
+        <button id="pngBoth">Combined</button>
+        <button id="pngStates">M / A states</button>
+        <button id="pngRg">R<sub>g</sub></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel">
+    <div class="title">Heterochromatin turntable</div>
+    <p class="sub">A polymer of <b>L</b> nucleosomes (A / U / M states) with diffusing Swi6 proteins, in a 20&times;20&times;20 box. Local interactions use Gabriel (Voronoi) neighbors; state changes use a distance&nbsp;&lt;&nbsp;2 cutoff. Drag to orbit, scroll to zoom.</p>
+
+    <div class="btns" style="margin-bottom:14px">
+      <button id="play" class="primary">Pause</button>
+      <button id="reset">Reset</button>
+    </div>
+    <div class="btns" style="margin-bottom:6px">
+      <button id="reseed">Reseed states</button>
+      <button id="boxBtn">Hide box</button>
+    </div>
+    <div class="btns" style="margin-bottom:6px">
+      <button id="pngView">Snapshot 3D &rarr; PNG</button>
+      <button id="pngAll">Snapshot + plots &rarr; PNG</button>
+    </div>
+    <button id="preset" style="width:100%;margin:8px 0 4px;border-style:dashed">Init A · switching @ f=1 &nbsp;&rarr;&nbsp; tap: B</button>
+
+    <div class="group">
+      <h3>Polymer</h3>
+      <div class="ctrl">
+        <div class="row"><label for="L">Nucleosomes&nbsp;L</label><span class="val" id="Lv">40</span></div>
+        <input type="range" id="L" min="20" max="200" step="10" value="40">
+        <div class="hint">Changing L rebuilds the chain.</div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="seed">Initial M fraction</label><span class="val" id="seedv">1.00</span></div>
+        <input type="range" id="seed" min="0" max="1" step="0.05" value="1.00">
+        <div class="hint">Central block seeded as M on reset / reseed.</div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="k">Bond stiffness</label><span class="val" id="kv">10.0</span></div>
+        <input type="range" id="k" min="0" max="40" step="0.5" value="10">
+        <div class="hint">Harmonic neighbor bonds, rest length 1.</div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="T">Temperature (noise)</label><span class="val" id="Tv">0.060</span></div>
+        <input type="range" id="T" min="0" max="0.30" step="0.005" value="0.06">
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>State kinetics (per unit time)</h3>
+      <div class="ctrl">
+        <div class="row"><label for="rec1">rec1 &nbsp; A:&nbsp;M&rarr;U</label><span class="val" id="rec1v">0.55</span></div>
+        <input type="range" id="rec1" min="0" max="3" step="0.01" value="0.55">
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="rec2">rec2 &nbsp; recruitment</label><span class="val" id="rec2v">0.90</span></div>
+        <input type="range" id="rec2" min="0" max="3" step="0.05" value="0.9">
+        <div class="hint">A:&nbsp;U&rarr;A, &nbsp;M:&nbsp;U&rarr;M, &nbsp;Swi6&#42;:&nbsp;A&rarr;U.</div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="spont">spontaneous</label><span class="val" id="spontv">0.220</span></div>
+        <input type="range" id="spont" min="0" max="0.5" step="0.005" value="0.22">
+        <div class="hint">Random per-nucleosome flips. Higher &rarr; more frequent switching; lower &rarr; locked. (Divided by f.)</div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="fslow">Rate slowdown f</label><span class="val" id="fslowv">1</span></div>
+        <input type="range" id="fslow" min="0" max="10" step="1" value="0">
+        <div class="hint">Divides rec1, rec2 &amp; spontaneous by f (powers of 2, 1&ndash;1024). Slows chromatin chemistry vs. Swi6 / polymer.</div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Swi6</h3>
+      <div class="ctrl">
+        <div class="row"><label for="conc">Influx&nbsp;conc</label><span class="val" id="concv">6.0</span></div>
+        <input type="range" id="conc" min="0" max="20" step="0.25" value="6">
+        <div class="hint">New neutral Swi6 / unit time, random site.</div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="decay">Discharge&nbsp;decay</label><span class="val" id="decayv">0.20</span></div>
+        <input type="range" id="decay" min="0" max="3" step="0.05" value="0.2">
+        <div class="hint">Swi6&#42; &rarr; neutral. Charging is instant within 2 of an M.</div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="swiDiff">Swi6 mobility &times;</label><span class="val" id="swiDiffv">6</span></div>
+        <input type="range" id="swiDiff" min="1" max="12" step="1" value="6">
+        <div class="hint">Swi6 diffuse faster than nucleosomes; sets box turnover.</div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label>M:M attraction</label><span class="val" id="mmAttv">on</span></div>
+        <button id="mmAttBtn" class="attbtn hi">M:M nucleosome attraction: ON (1)</button>
+        <div class="hint">Off &rarr; M nucleosomes only repel; silencing then relies on Swi6 bridging.</div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label>Swi6&#42; attraction</label><span class="val" id="swiAttv">&times;1</span></div>
+        <button id="swiAttBtn" class="attbtn hi">Swi6&#42; attraction: &times;1</button>
+        <div class="hint">&times;1 or &times;2, applied to both Swi6&#42;&ndash;Swi6&#42; and Swi6&#42;&ndash;M.</div>
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="cellDiv">Cell division</label><span class="val" id="cellDivv">off</span></div>
+        <select id="cellDiv" class="sel">
+          <option value="0">off (&infin;)</option>
+          <option value="100">every 100</option>
+          <option value="200">every 200</option>
+          <option value="400">every 400</option>
+          <option value="800">every 800</option>
+          <option value="1600">every 1600</option>
+        </select>
+        <div class="hint">At each division: every nucleosome &rarr; U with prob 0.5, and all Swi6 are cleared.</div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Simulation &amp; view</h3>
+      <div class="ctrl">
+        <div class="row"><label for="dt">Time step dt</label><span class="val" id="dtv">0.020</span></div>
+        <input type="range" id="dt" min="0.005" max="0.05" step="0.001" value="0.02">
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="spf">Steps / frame</label><span class="val" id="spfv">2</span></div>
+        <input type="range" id="spf" min="1" max="4" step="1" value="2">
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="rot">Turntable speed</label><span class="val" id="rotv">0.20</span></div>
+        <input type="range" id="rot" min="0" max="0.7" step="0.01" value="0.2">
+      </div>
+      <div class="ctrl">
+        <div class="row"><label for="smooth">Swi6 smoothing</label><span class="val" id="smoothv">10</span></div>
+        <input type="range" id="smooth" min="1" max="40" step="1" value="10">
+        <div class="hint">Display-only: averages Swi6 positions over this many frames. 1 = off.</div>
+      </div>
+    </div>
+
+    <details>
+      <summary>Model notes</summary>
+      <p>&beta;&nbsp;=&nbsp;2&middot;ln2 puts the minimum of exp(&minus;&beta;x)&minus;exp(&minus;&beta;x/2) at x&nbsp;=&nbsp;1. Repulsion exp(&minus;&beta;x) acts as soft excluded volume between all Gabriel-neighbor pairs; the attraction &minus;exp(&minus;&beta;x/2) is added for M&ndash;M, Swi6&#42;&ndash;Swi6&#42; and Swi6&#42;&ndash;M pairs. Backbone bonds are harmonic. Dynamics are overdamped Langevin; the polymer is softly confined to the box and its center of mass is pinned to the center each step. Swi6 leaving the box are forgotten. The <b>Swi6&#42; attraction</b> control scales the entire Swi6&#42;-involving well (repulsion and attraction together) by a factor in units of the M&ndash;M depth, which leaves the energy minimum fixed at x&nbsp;=&nbsp;1 for every attracting pair. For speed, uncharged Swi6 are treated as pure diffusers (excluded from the Voronoi/Gabriel graph and from forces until they charge near an M), and the force-set graph is rebuilt only when a nucleosome or charged Swi6 has moved past a Verlet skin rather than every step. The <b>rate slowdown f</b> divides rec1, rec2 and the spontaneous rate by f. Attraction strengths are toggled separately: <b>M:M</b> nucleosome attraction on (1) or off (0), and <b>Swi6&#42;</b> attraction &times;1 or &times;2 (applied to both Swi6&#42;&ndash;Swi6&#42; and Swi6&#42;&ndash;M); the whole well is scaled so the equilibrium distance stays 1 for every attracting pair. <b>Init A</b> telegraph-switches at f=1; <b>Init B</b> locks the state at f=8; <b>Init C</b> is bistable with M:M attraction off (silent domain held by Swi6 bridging alone), using f=2 to deepen the basins. <b>Init D</b> turns M:M on and Swi6&#42; up to &times;2: the strong dual attraction keeps it bistable at f=1 even at a larger spontaneous rate.</p>
+    </details>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+(function(){
+  // ---------------------------------------------------------------- constants
+  const BOX = 20, C = BOX/2;                 // box size & center coordinate
+  const BETA = 2*Math.log(2);                // ~1.3863  -> min at x=1
+  const RCUT = 3.2;                          // neighbor cutoff for forces/Gabriel
+  const RREACT = 2.0;                        // distance cutoff for state changes
+  const NUC_R = 0.5, SWI_R = 0.36;           // sphere radii
+  const MAX_SWI = 600;
+  const KWALL = 25;                          // soft box confinement for nucleosomes
+  const MU = 1.0;                            // mobility
+
+  const COL = {                              // colors
+    A:0x2f6bff, U:0xffd60a, M:0xff453a, S:0x34c759, N:0xc9ced6
+  };
+
+  // ---------------------------------------------------------------- parameters
+  const P = {
+    L:40, seed:1.00, k:10, T:0.06, swiDiff:6,
+    rec1:0.55, rec2:0.90, conc:6.0, decay:0.20, spontaneous:0.22,
+    dt:0.02, spf:2, rot:0.20, initSwi:20, smoothWin:10,
+    swiAtt:1.0, mmAtt:1, f:1, cellDiv:0
+  };
+
+  // ---------------------------------------------------------------- state
+  // particle arrays (nucleosomes occupy indices 0..L-1, Swi6 follow and are dynamic)
+  let x=[],y=[],z=[],fx=[],fy=[],fz=[];
+  let dx_=[],dy_=[],dz_=[];   // smoothed positions used only for rendering
+  let kind=[];   // 0 = nucleosome, 1 = Swi6
+  let st=[];     // nucleosome: 'A'/'U'/'M' ; Swi6: 'n'/'c'
+  let N=0, L=0;
+  let spawnAcc=0;
+  let divAcc=0;
+
+  // time-course history
+  let simTime=0, sampleClock=0, sampleEvery=0.1;   // record a point every ~0.1 time units
+  const MAXPTS = 1600;
+  let hT=[], hM=[], hA=[], hRg=[];
+  function resetHistory(){ simTime=0; sampleClock=0; sampleEvery=0.1; hT=[]; hM=[]; hA=[]; hRg=[]; }
+
+  // ---------------------------------------------------------------- three.js
+  const stage = document.getElementById('stage');
+  const viewport = document.getElementById('viewport');
+  const renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  viewport.appendChild(renderer.domElement);
+  renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:0;';
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0b0e13);
+  scene.fog = new THREE.Fog(0x0b0e13, 45, 95);
+
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+  let camDist = 19, camAz = 0.5, camEl = 0.30;     // manual orbit (around the world group)
+  let viewClock = 0;                               // drives the slow zoom drift
+  const ZOOM_AMP = 2.6, ZOOM_RATE = 2*Math.PI/48;  // gentle ~48 s breathing
+  function placeCamera(){
+    const d = Math.max(11, camDist + ZOOM_AMP*Math.sin(viewClock*ZOOM_RATE));
+    const ce = Math.cos(camEl), se = Math.sin(camEl);
+    camera.position.set(
+      d*ce*Math.sin(camAz),
+      d*se,
+      d*ce*Math.cos(camAz)
+    );
+    camera.lookAt(0,0,0);
+  }
+
+  // lights (fixed in scene so shadows sweep as the world turns)
+  scene.add(new THREE.HemisphereLight(0x9fb4cc, 0x10141b, 0.55));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.05);
+  sun.position.set(18, 34, 22);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048,2048);
+  sun.shadow.bias = -0.0004;
+  const sc = sun.shadow.camera;
+  sc.left=-20; sc.right=20; sc.top=20; sc.bottom=-20; sc.near=1; sc.far=120;
+  scene.add(sun);
+
+  // floor (fixed) to receive shadows
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(200,200),
+    new THREE.MeshStandardMaterial({color:0x0e1218, roughness:1, metalness:0})
+  );
+  floor.rotation.x = -Math.PI/2;
+  floor.position.y = -C - 1.5;          // just below the box bottom
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  // rotating world group holds particles + box
+  const world = new THREE.Group();
+  scene.add(world);
+
+  // box wireframe (rotates with the world)
+  let boxLines = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(BOX,BOX,BOX)),
+    new THREE.LineBasicMaterial({color:0x2a3340})
+  );
+  world.add(boxLines);
+
+  // sphere mesh pool
+  const sphereGeo = new THREE.SphereGeometry(1, 18, 14);
+  const meshes = [];
+  function getMesh(i){
+    if(meshes[i]) return meshes[i];
+    const m = new THREE.Mesh(sphereGeo, new THREE.MeshStandardMaterial({roughness:0.42, metalness:0.05, transparent:true, opacity:1}));
+    m.castShadow = true; m.receiveShadow = true;
+    world.add(m); meshes[i]=m; return m;
+  }
+
+  // ---------------------------------------------------------------- helpers
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  let gSpare=null;
+  function gauss(){                       // standard normal
+    if(gSpare!==null){ const v=gSpare; gSpare=null; return v; }
+    let u=0,v=0,s=0;
+    do{ u=Math.random()*2-1; v=Math.random()*2-1; s=u*u+v*v; }while(s>=1||s===0);
+    const m=Math.sqrt(-2*Math.log(s)/s); gSpare=v*m; return u*m;
+  }
+  const prob = (rate,dt)=> 1 - Math.exp(-rate*dt);
+
+  // ---------------------------------------------------------------- build / reset
+  function addParticle(px,py,pz,knd,state){
+    x.push(px); y.push(py); z.push(pz);
+    fx.push(0); fy.push(0); fz.push(0);
+    dx_.push(px); dy_.push(py); dz_.push(pz);
+    kind.push(knd); st.push(state); N++;
+  }
+
+  function seedStates(){
+    // central contiguous block of length round(seed*L) set to M, rest A
+    const nM = Math.round(P.seed*L);
+    const start = Math.floor((L-nM)/2);
+    for(let i=0;i<L;i++){
+      st[i] = (i>=start && i<start+nM) ? 'M' : 'A';
+    }
+  }
+
+  function buildPolymer(){
+    x=[];y=[];z=[];fx=[];fy=[];fz=[];dx_=[];dy_=[];dz_=[];kind=[];st=[];N=0;
+    L = P.L;
+    // a gentle random walk pulled toward the center -> compact coil
+    let cx=C, cy=C, cz=C;
+    for(let i=0;i<L;i++){
+      addParticle(cx,cy,cz,0,'A');
+      // next step
+      let dx=gauss(),dy=gauss(),dz=gauss();
+      const n=Math.hypot(dx,dy,dz)||1; dx/=n;dy/=n;dz/=n;
+      // bias back toward center to stay inside the box
+      const bx=(C-cx),by=(C-cy),bz=(C-cz);
+      cx += 0.9*dx + 0.05*bx;
+      cy += 0.9*dy + 0.05*by;
+      cz += 0.9*dz + 0.05*bz;
+    }
+    seedStates();
+    // initial neutral Swi6
+    for(let i=0;i<P.initSwi;i++){
+      addParticle(rand(0,BOX),rand(0,BOX),rand(0,BOX),1,'n');
+    }
+    spawnAcc=0;
+    recenter();
+    neighDirty=true; refX=[]; refY=[]; refZ=[]; builtN=0; staleSteps=0; divAcc=0;
+    resetHistory();
+  }
+
+  // ---------------------------------------------------------------- neighbors (Gabriel graph)
+  // OPTIMISED. Two speedups:
+  //  (1) neutral (uncharged) Swi6 are excluded from the Voronoi/Gabriel construction and from
+  //      force evaluation entirely — they are pure diffusers until they charge near an M.
+  //  (2) the force-set graph (nucleosomes + charged Swi6) is only rebuilt when one of those
+  //      particles has moved more than SKIN since the last build (a Verlet skin), or after
+  //      MAXSTALE steps. Reaction pairs are derived from the same candidates. Neutral->charged
+  //      charging is checked every step (chargeNeutral) so it is never delayed by the skin.
+  const SKIN = 0.25, MAXSTALE = 20, KNN = 20;
+  const CELLOFF = 64, CELLS1 = 256, CELLS2 = 65536;
+  const cellKey = (a,b,c)=> (a+CELLOFF) + (b+CELLOFF)*CELLS1 + (c+CELLOFF)*CELLS2;
+  let gpairs=[];         // [i,j] Gabriel edges among the force set (forces)
+  let rpairs=[];         // [i,j] reaction pairs within RREACT (>=1 nucleosome)
+  let refX=[],refY=[],refZ=[], builtN=0, neighDirty=true, staleSteps=0;
+
+  function buildNeighbors(){
+    removeOutOfBox();                                  // deferred cull happens at rebuild
+    const F=[]; for(let i=0;i<N;i++) if(kind[i]===0 || st[i]==='c') F.push(i);  // force set
+    const nF=F.length, inv=1/RCUT, grid=new Map();
+    for(let t=0;t<nF;t++){ const i=F[t];
+      const kk=cellKey(Math.floor(x[i]*inv),Math.floor(y[i]*inv),Math.floor(z[i]*inv));
+      let a=grid.get(kk); if(!a){a=[];grid.set(kk,a);} a.push(i); }
+    const rc2=RCUT*RCUT, rr2=RREACT*RREACT;
+    const cand=new Map(); for(let t=0;t<nF;t++) cand.set(F[t],[]);
+    rpairs=[];
+    for(let t=0;t<nF;t++){ const i=F[t];
+      const ax=Math.floor(x[i]*inv),ay=Math.floor(y[i]*inv),az=Math.floor(z[i]*inv);
+      for(let da=-1;da<=1;da++)for(let db=-1;db<=1;db++)for(let dc=-1;dc<=1;dc++){
+        const arr=grid.get(cellKey(ax+da,ay+db,az+dc)); if(!arr) continue;
+        for(let u=0;u<arr.length;u++){ const j=arr[u]; if(j<=i) continue;
+          const dx=x[i]-x[j],dy=y[i]-y[j],dz=z[i]-z[j], d2=dx*dx+dy*dy+dz*dz;
+          if(d2<=rc2){ cand.get(i).push(j); cand.get(j).push(i);
+            if(d2<rr2 && (kind[i]===0||kind[j]===0)) rpairs.push(i,j); } } }
+    }
+    // cap each candidate list to the KNN nearest (in addition to the Gabriel cutoff), then
+    // re-symmetrize. Reaction pairs above use the full neighbour set; only the force graph is capped.
+    let capped=false;
+    for(let t=0;t<nF;t++){ const i=F[t], ci=cand.get(i);
+      if(ci.length>KNN){ ci.sort((a,b)=>((x[a]-x[i])**2+(y[a]-y[i])**2+(z[a]-z[i])**2)-((x[b]-x[i])**2+(y[b]-y[i])**2+(z[b]-z[i])**2)); cand.set(i, ci.slice(0,KNN)); capped=true; } }
+    if(capped){
+      const symm=new Map(); for(let t=0;t<nF;t++) symm.set(F[t], new Set(cand.get(F[t])));
+      for(let t=0;t<nF;t++){ const i=F[t]; for(const j of cand.get(i)) symm.get(j).add(i); }
+      for(let t=0;t<nF;t++) cand.set(F[t], [...symm.get(F[t])]);
+    }
+    gpairs=[];
+    for(let t=0;t<nF;t++){ const i=F[t], ci=cand.get(i);
+      for(let u=0;u<ci.length;u++){ const j=ci[u]; if(j<i) continue;
+        let ok=true; const cj=cand.get(j);
+        for(let w=0;w<ci.length&&ok;w++){ const kk=ci[w]; if(kk===j) continue;
+          if(((x[kk]-x[i])*(x[kk]-x[j])+(y[kk]-y[i])*(y[kk]-y[j])+(z[kk]-z[i])*(z[kk]-z[j]))<-1e-9) ok=false; }
+        for(let w=0;w<cj.length&&ok;w++){ const kk=cj[w]; if(kk===i||kk===j) continue;
+          if(((x[kk]-x[i])*(x[kk]-x[j])+(y[kk]-y[i])*(y[kk]-y[j])+(z[kk]-z[i])*(z[kk]-z[j]))<-1e-9) ok=false; }
+        if(ok) gpairs.push(i,j);
+      } }
+    refX=x.slice(); refY=y.slice(); refZ=z.slice(); builtN=N; neighDirty=false; staleSteps=0;
+  }
+  function maxForceSetDisp(){
+    let m2=0; const n=Math.min(builtN,N);
+    for(let i=0;i<n;i++){ if(kind[i]===0||st[i]==='c'){
+      const dx=x[i]-refX[i],dy=y[i]-refY[i],dz=z[i]-refZ[i],d2=dx*dx+dy*dy+dz*dz; if(d2>m2)m2=d2; } }
+    return Math.sqrt(m2);
+  }
+  function maybeBuildNeighbors(){
+    if(neighDirty || staleSteps>=MAXSTALE || maxForceSetDisp()>SKIN) buildNeighbors();
+    else staleSteps++;
+  }
+  // neutral Swi6 charge instantly when within RREACT of an M nucleosome (every step)
+  function chargeNeutral(){
+    const inv=1/RREACT, grid=new Map(); let any=false;
+    for(let i=0;i<L;i++){ if(st[i]!=='M') continue; any=true;
+      const kk=cellKey(Math.floor(x[i]*inv),Math.floor(y[i]*inv),Math.floor(z[i]*inv));
+      let a=grid.get(kk); if(!a){a=[];grid.set(kk,a);} a.push(i); }
+    if(!any) return; const rr2=RREACT*RREACT;
+    for(let s=L;s<N;s++){ if(st[s]!=='n') continue;
+      const ax=Math.floor(x[s]*inv),ay=Math.floor(y[s]*inv),az=Math.floor(z[s]*inv); let done=false;
+      for(let da=-1;da<=1&&!done;da++)for(let db=-1;db<=1&&!done;db++)for(let dc=-1;dc<=1&&!done;dc++){
+        const arr=grid.get(cellKey(ax+da,ay+db,az+dc)); if(!arr) continue;
+        for(let u=0;u<arr.length;u++){ const m=arr[u];
+          const dx=x[s]-x[m],dy=y[s]-y[m],dz=z[s]-z[m];
+          if(dx*dx+dy*dy+dz*dz<rr2){ st[s]='c'; done=true; break; } } }
+    }
+  }
+
+  // ---------------------------------------------------------------- forces
+  function attractive(i,j){
+    // returns true if the pair has the -exp(-beta x/2) attraction
+    const ki=kind[i], kj=kind[j];
+    if(ki===0 && kj===0) return st[i]==='M' && st[j]==='M';                 // M–M
+    if(ki===1 && kj===1) return st[i]==='c' && st[j]==='c';                 // Swi6*–Swi6*
+    // cross: charged Swi6 with M nucleosome
+    if(ki!==kj){
+      const sw = ki===1? i : j, nu = ki===1? j : i;
+      return st[sw]==='c' && st[nu]==='M';
+    }
+    return false;
+  }
+
+  function computeForces(){
+    for(let i=0;i<N;i++){ fx[i]=0; fy[i]=0; fz[i]=0; }
+
+    // backbone harmonic bonds (rest length 1)
+    for(let i=0;i<L-1;i++){
+      const j=i+1;
+      let dx=x[i]-x[j], dy=y[i]-y[j], dz=z[i]-z[j];
+      let d=Math.hypot(dx,dy,dz); if(d<1e-4) d=1e-4;
+      const f = -P.k*(d-1)/d;     // /d to normalize direction
+      fx[i]+=f*dx; fy[i]+=f*dy; fz[i]+=f*dz;
+      fx[j]-=f*dx; fy[j]-=f*dy; fz[j]-=f*dz;
+    }
+
+    // pairwise (Gabriel neighbors only)
+    for(let p=0;p<gpairs.length;p+=2){
+      const i=gpairs[p], j=gpairs[p+1];
+      let dx=x[i]-x[j], dy=y[i]-y[j], dz=z[i]-z[j];
+      let d=Math.hypot(dx,dy,dz); if(d<1e-4) d=1e-4;
+      const rep = BETA*Math.exp(-BETA*d);                // repulsion (>0, pushes apart)
+      let frad;
+      // strength: M–M pairs use P.mmAtt (0 or 1); Swi6*-involving pairs use P.swiAtt (1 or 2).
+      // Scaling the WHOLE well by s>0 leaves the minimum fixed at d=1; s=0 means repulsion only.
+      const s = attractive(i,j) ? ((kind[i]===0 && kind[j]===0) ? P.mmAtt : P.swiAtt) : 0;
+      if(s>0) frad = s*( rep - (BETA/2)*Math.exp(-BETA*d/2) );
+      else    frad = rep;
+      const f = frad/d;
+      fx[i]+=f*dx; fy[i]+=f*dy; fz[i]+=f*dz;
+      fx[j]-=f*dx; fy[j]-=f*dy; fz[j]-=f*dz;
+    }
+
+    // soft box confinement for nucleosomes only
+    for(let i=0;i<L;i++){
+      if(x[i]<NUC_R)        fx[i]+=KWALL*(NUC_R-x[i]);
+      else if(x[i]>BOX-NUC_R) fx[i]+=KWALL*((BOX-NUC_R)-x[i]);
+      if(y[i]<NUC_R)        fy[i]+=KWALL*(NUC_R-y[i]);
+      else if(y[i]>BOX-NUC_R) fy[i]+=KWALL*((BOX-NUC_R)-y[i]);
+      if(z[i]<NUC_R)        fz[i]+=KWALL*(NUC_R-z[i]);
+      else if(z[i]>BOX-NUC_R) fz[i]+=KWALL*((BOX-NUC_R)-z[i]);
+    }
+  }
+
+  // ---------------------------------------------------------------- integrate
+  function integrate(dt){
+    const maxStep = 0.6;
+    for(let i=0;i<N;i++){
+      const tt = (kind[i]===1) ? P.T*P.swiDiff : P.T;   // Swi6 are small, fast diffusers
+      const sig = Math.sqrt(2*MU*tt*dt);
+      let dx = MU*fx[i]*dt + sig*gauss();
+      let dy = MU*fy[i]*dt + sig*gauss();
+      let dz = MU*fz[i]*dt + sig*gauss();
+      // clamp to keep things stable
+      const dmag = Math.hypot(dx,dy,dz);
+      if(dmag>maxStep){ const s=maxStep/dmag; dx*=s;dy*=s;dz*=s; }
+      x[i]+=dx; y[i]+=dy; z[i]+=dz;
+    }
+  }
+
+  // ---------------------------------------------------------------- reactions & Swi6
+  function reactions(dt){
+    const pRec1 = prob(P.rec1/P.f,dt);
+    const pRec2 = prob(P.rec2/P.f,dt);
+
+    for(let p=0;p<rpairs.length;p+=2){
+      const i=rpairs[p], j=rpairs[p+1];
+      const ki=kind[i], kj=kind[j];
+
+      if(ki===0 && kj===0){
+        // nucleosome–nucleosome conversions (check both directions, source = current state)
+        // A acting on M -> U  (rec1)
+        if(st[i]==='A' && st[j]==='M' && Math.random()<pRec1) st[j]='U';
+        else if(st[j]==='A' && st[i]==='M' && Math.random()<pRec1) st[i]='U';
+        // A acting on U -> A  (rec2)
+        if(st[i]==='A' && st[j]==='U' && Math.random()<pRec2) st[j]='A';
+        else if(st[j]==='A' && st[i]==='U' && Math.random()<pRec2) st[i]='A';
+        // M acting on U -> M  (rec2)
+        if(st[i]==='M' && st[j]==='U' && Math.random()<pRec2) st[j]='M';
+        else if(st[j]==='M' && st[i]==='U' && Math.random()<pRec2) st[i]='M';
+      } else if(ki!==kj){
+        const sw = ki===1? i : j, nu = ki===1? j : i;
+        // charged Swi6 demotes A -> U  (rec2)   [neutral->charged handled by chargeNeutral()]
+        if(st[sw]==='c' && st[nu]==='A' && Math.random()<pRec2) st[nu]='U';
+      }
+    }
+  }
+
+  function swiDecay(dt){
+    const pD = prob(P.decay,dt);
+    for(let i=L;i<N;i++){
+      if(st[i]==='c' && Math.random()<pD) st[i]='n';
+    }
+  }
+
+  function spawn(dt){
+    spawnAcc += P.conc*dt;
+    while(spawnAcc>=1){
+      spawnAcc-=1;
+      if(N-L>=MAX_SWI) break;
+      addParticle(rand(0,BOX),rand(0,BOX),rand(0,BOX),1,'n');
+    }
+  }
+
+  function removeOutOfBox(){
+    // remove Swi6 (index >= L) that left the box
+    for(let i=N-1;i>=L;i--){
+      if(x[i]<0||x[i]>BOX||y[i]<0||y[i]>BOX||z[i]<0||z[i]>BOX){
+        x.splice(i,1);y.splice(i,1);z.splice(i,1);
+        fx.splice(i,1);fy.splice(i,1);fz.splice(i,1);
+        dx_.splice(i,1);dy_.splice(i,1);dz_.splice(i,1);
+        kind.splice(i,1);st.splice(i,1);N--;
+      }
+    }
+  }
+
+  // cell division: each nucleosome -> neutral U with prob 0.5, all Swi6 removed from the box
+  function cellDivide(){
+    for(let i=0;i<L;i++){ if(Math.random()<0.5) st[i]='U'; }
+    x.length=L; y.length=L; z.length=L; fx.length=L; fy.length=L; fz.length=L;
+    dx_.length=L; dy_.length=L; dz_.length=L; kind.length=L; st.length=L; N=L;
+    spawnAcc=0; neighDirty=true;
+  }
+
+  function recenter(){
+    let mx=0,my=0,mz=0;
+    for(let i=0;i<L;i++){ mx+=x[i]; my+=y[i]; mz+=z[i]; }
+    mx/=L; my/=L; mz/=L;
+    const sx=C-mx, sy=C-my, sz=C-mz;
+    for(let i=0;i<N;i++){ x[i]+=sx; y[i]+=sy; z[i]+=sz; dx_[i]+=sx; dy_[i]+=sy; dz_[i]+=sz; }
+  }
+
+  // exponential smoothing of displayed positions (Swi6 averaged over a window; nucleosomes shown true)
+  function smoothDisplay(){
+    const a = 1/Math.max(1,P.smoothWin);
+    for(let i=0;i<N;i++){
+      if(kind[i]===1){
+        dx_[i]+=a*(x[i]-dx_[i]); dy_[i]+=a*(y[i]-dy_[i]); dz_[i]+=a*(z[i]-dz_[i]);
+      } else {
+        dx_[i]=x[i]; dy_[i]=y[i]; dz_[i]=z[i];
+      }
+    }
+  }
+
+  // spontaneous (noise) conversions: A->U, M->U, U->A/M (50/50)
+  function spontaneous(dt){
+    const p = prob(P.spontaneous/P.f,dt);
+    if(p<=0) return;
+    for(let i=0;i<L;i++){
+      if(Math.random()<p){
+        const s=st[i];
+        if(s==='A' || s==='M') st[i]='U';
+        else st[i] = Math.random()<0.5 ? 'A' : 'M';
+      }
+    }
+  }
+
+  // root-mean-square size of the polymer (radius of gyration about its COM)
+  function radiusOfGyration(){
+    let mx=0,my=0,mz=0;
+    for(let i=0;i<L;i++){ mx+=x[i]; my+=y[i]; mz+=z[i]; }
+    mx/=L; my/=L; mz/=L;
+    let v=0;
+    for(let i=0;i<L;i++){ const dx=x[i]-mx,dy=y[i]-my,dz=z[i]-mz; v+=dx*dx+dy*dy+dz*dz; }
+    return Math.sqrt(v/L);
+  }
+
+  function decimateHistory(){
+    const f=arr=>{ const o=[]; for(let i=0;i<arr.length;i+=2) o.push(arr[i]); return o; };
+    hT=f(hT); hM=f(hM); hA=f(hA); hRg=f(hRg); sampleEvery*=2;
+  }
+  function recordSample(dt){
+    simTime += dt; sampleClock += dt;
+    if(sampleClock < sampleEvery) return;
+    sampleClock = 0;
+    let a=0,m=0;
+    for(let i=0;i<L;i++){ const s=st[i]; if(s==='A')a++; else if(s==='M')m++; }
+    hT.push(simTime); hA.push(a/L); hM.push(m/L); hRg.push(radiusOfGyration());
+    if(hT.length>=MAXPTS) decimateHistory();
+  }
+
+  // ---------------------------------------------------------------- one step
+  function simStep(dt){
+    maybeBuildNeighbors();
+    computeForces();
+    integrate(dt);
+    reactions(dt);
+    chargeNeutral();
+    spontaneous(dt);
+    swiDecay(dt);
+    spawn(dt);
+    recenter();
+    if(P.cellDiv>0){ divAcc+=dt; if(divAcc>=P.cellDiv){ divAcc-=P.cellDiv; cellDivide(); } }
+    recordSample(dt);
+  }
+
+  // ---------------------------------------------------------------- rendering
+  function colorOf(i){
+    if(kind[i]===1) return st[i]==='c'? COL.S : COL.N;
+    return st[i]==='M'? COL.M : (st[i]==='A'? COL.A : COL.U);
+  }
+  function updateMeshes(){
+    for(let i=0;i<N;i++){
+      const m=getMesh(i);
+      m.visible=true;
+      m.position.set(dx_[i]-C, dy_[i]-C, dz_[i]-C);   // center the box on the group origin
+      const r = kind[i]===0? NUC_R : SWI_R;
+      m.scale.setScalar(r);
+      m.material.color.setHex(colorOf(i));
+      m.material.opacity = (kind[i]===1 && st[i]==='n') ? 0.5 : 1.0;   // neutral Swi6 see-through
+    }
+    for(let i=N;i<meshes.length;i++) if(meshes[i]) meshes[i].visible=false;
+  }
+
+  function updateHUD(){
+    let a=0,u=0,mm=0;
+    for(let i=0;i<L;i++){ const s=st[i]; if(s==='A')a++; else if(s==='U')u++; else mm++; }
+    let n=0,c=0;
+    for(let i=L;i<N;i++){ if(st[i]==='c')c++; else n++; }
+    document.getElementById('cA').textContent=a;
+    document.getElementById('cU').textContent=u;
+    document.getElementById('cM').textContent=mm;
+    document.getElementById('cN').textContent=n;
+    document.getElementById('cS').textContent=c;
+  }
+
+  // ---------------------------------------------------------------- main loop
+  let running=true;
+  let last=performance.now(), fpsT=last, fpsN=0;
+  function loop(now){
+    requestAnimationFrame(loop);
+    const elapsed=(now-last)/1000; last=now;
+
+    if(running){
+      const steps=P.spf;
+      for(let s=0;s<steps;s++) simStep(P.dt);
+      smoothDisplay();
+      updateMeshes();
+      updateHUD();
+      drawPlots();
+    }
+    // turntable
+    world.rotation.y += P.rot * Math.min(elapsed,0.05);
+    viewClock += Math.min(elapsed,0.05);
+
+    placeCamera();
+    renderer.render(scene,camera);
+
+    fpsN++;
+    if(now-fpsT>500){
+      document.getElementById('fps').textContent=Math.round(fpsN*1000/(now-fpsT));
+      fpsT=now; fpsN=0;
+    }
+  }
+
+  // ---------------------------------------------------------------- time-course plots
+  const pStates = document.getElementById('plotStates');
+  const pRg = document.getElementById('plotRg');
+  const ctxS = pStates.getContext('2d');
+  const ctxR = pRg.getContext('2d');
+  const rgNow = document.getElementById('rgNow');
+  let DPR = 1;
+  function sizePlots(){
+    DPR = Math.min(window.devicePixelRatio,2);
+    for(const c of [pStates,pRg]){
+      const w=c.clientWidth, h=c.clientHeight;
+      c.width=Math.max(1,Math.round(w*DPR));
+      c.height=Math.max(1,Math.round(h*DPR));
+    }
+  }
+  function niceNum(r){
+    if(r<=0) return 1;
+    const e=Math.floor(Math.log10(r)), f=r/Math.pow(10,e);
+    const nf = f<1.5?1 : f<3?2 : f<7?5 : 10;
+    return nf*Math.pow(10,e);
+  }
+  function clearAxis(ctx,W,H){
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,H-0.5); ctx.lineTo(W,H-0.5); ctx.stroke();
+  }
+  function label(ctx,txt,X,Y,align,baseline){
+    const f=Math.round(9*DPR);
+    ctx.font=`${f}px ui-monospace,Menlo,monospace`;
+    ctx.textAlign=align; ctx.textBaseline=baseline;
+    const w=ctx.measureText(txt).width;
+    const px = align==='right'? X-w : align==='center'? X-w/2 : X;
+    const py = baseline==='top'? Y : Y-f;
+    ctx.fillStyle='rgba(9,12,17,0.72)';
+    ctx.fillRect(px-2*DPR, py-1*DPR, w+4*DPR, f+2*DPR);
+    ctx.fillStyle='#7e8a99';
+    ctx.fillText(txt,X,Y);
+  }
+  function series(ctx,W,H,xs,ys,ymin,ymax,color,n,lw){
+    if(n<2) return;
+    const tmax = xs[n-1]||1, span=(ymax-ymin)||1;
+    const sx = t=> (t/tmax)*(W-2)+1;
+    const sy = v=> H-2 - ((v-ymin)/span)*(H-4);
+    ctx.strokeStyle=color; ctx.lineWidth=(lw||1.6)*DPR; ctx.lineJoin='round';
+    ctx.beginPath();
+    for(let i=0;i<n;i++){ const X=sx(xs[i]),Y=sy(ys[i]); if(i===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y); }
+    ctx.stroke();
+  }
+  function timeTicks(ctx,W,H,tmax){
+    if(tmax<=0) return;
+    const step=niceNum(tmax/4);
+    ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1;
+    for(let t=0;t<=tmax+1e-9;t+=step){
+      const X=(t/tmax)*(W-2)+1;
+      ctx.beginPath(); ctx.moveTo(X,0); ctx.lineTo(X,H); ctx.stroke();
+      const dec = step<1?1:0;
+      label(ctx, t.toFixed(dec), Math.min(X, W-2*DPR), H-3*DPR, t===0?'left':'center','bottom');
+    }
+    // current time at the right edge
+    label(ctx, 't='+tmax.toFixed(tmax<10?1:0), W-3*DPR, 3*DPR, 'right','top');
+  }
+  function drawPlots(){
+    const n=hT.length;
+    const tmax = n>0 ? hT[n-1] : 1;
+
+    // ---- state fractions (fixed 0..1) ----
+    const Ws=pStates.width, Hs=pStates.height;
+    clearAxis(ctxS,Ws,Hs);
+    ctxS.strokeStyle='rgba(255,255,255,0.05)'; ctxS.lineWidth=1;
+    ctxS.beginPath(); ctxS.moveTo(0,Hs/2); ctxS.lineTo(Ws,Hs/2); ctxS.stroke();
+    series(ctxS,Ws,Hs,hT,hM,0,1,'#ff453a',n);   // M fraction (red)
+    series(ctxS,Ws,Hs,hT,hA,0,1,'#2f6bff',n);   // A fraction (blue)
+    label(ctxS,'1.0',2*DPR,3*DPR,'left','top');
+    label(ctxS,'0.0',2*DPR,Hs-3*DPR,'left','bottom');
+
+    // ---- polymer RMS size (auto-scaled, labeled) ----
+    const Wr=pRg.width, Hr=pRg.height;
+    clearAxis(ctxR,Wr,Hr);
+    let rmin=Infinity,rmax=-Infinity;
+    for(let i=0;i<n;i++){ const v=hRg[i]; if(v<rmin)rmin=v; if(v>rmax)rmax=v; }
+    if(!isFinite(rmin)){ rmin=0; rmax=6; }
+    let lo=rmin, hi=rmax, span=hi-lo;
+    if(span<1){ const m=(lo+hi)/2; lo=m-0.5; hi=m+0.5; span=1; }   // floor on span so noise isn't over-magnified
+    lo-=span*0.12; hi+=span*0.12;
+    // y gridlines + labels at nice Rg values
+    const ystep=niceNum((hi-lo)/2);
+    ctxR.strokeStyle='rgba(255,255,255,0.05)'; ctxR.lineWidth=1;
+    const syR = v=> Hr-2 - ((v-lo)/(hi-lo))*(Hr-4);
+    for(let v=Math.ceil(lo/ystep)*ystep; v<=hi+1e-9; v+=ystep){
+      const Y=syR(v);
+      ctxR.beginPath(); ctxR.moveTo(0,Y); ctxR.lineTo(Wr,Y); ctxR.stroke();
+      label(ctxR, v.toFixed(ystep<1?1:0), 2*DPR, Y, 'left','middle');
+    }
+    timeTicks(ctxR,Wr,Hr,tmax);
+    series(ctxR,Wr,Hr,hT,hRg,lo,hi,'#5fd0df',n);
+    if(n>0) rgNow.textContent = hRg[n-1].toFixed(2);
+  }
+
+  // ---------------------------------------------------------------- PNG export of the plots
+  function exportPNG(canvases, titles, filename){
+    const titleH=Math.round(20*DPR), gap=Math.round(10*DPR), m=Math.round(8*DPR);
+    let w=0,h=0;
+    for(const c of canvases) w=Math.max(w,c.width);
+    for(let i=0;i<canvases.length;i++){ h+=titleH+canvases[i].height; if(i<canvases.length-1) h+=gap; }
+    const out=document.createElement('canvas'); out.width=w; out.height=h;
+    const g=out.getContext('2d');
+    g.fillStyle='#090c11'; g.fillRect(0,0,w,h);
+    g.textBaseline='top'; g.font=Math.round(11*DPR)+'px ui-monospace,Menlo,monospace';
+    let y=0;
+    for(let i=0;i<canvases.length;i++){
+      g.fillStyle='#8c97a8'; g.fillText(titles[i], m, y+Math.round(5*DPR));
+      y+=titleH; g.drawImage(canvases[i],0,y); y+=canvases[i].height+gap;
+    }
+    const a=document.createElement('a'); a.download=filename; a.href=out.toDataURL('image/png'); a.click();
+  }
+  const STATES_TITLE='M fraction (red) / A fraction (blue)';
+  const RG_TITLE='Polymer RMS size  Rg';
+  const VIEW_TITLE='Heterochromatin 3D view';
+  function stamp(){ const t=hT.length?hT[hT.length-1]:0; return '_t'+t.toFixed(0); }
+  function freshView(){ renderer.render(scene,camera); return renderer.domElement; }  // capture latest frame
+  document.getElementById('pngStates').addEventListener('click',()=>{ drawPlots(); exportPNG([pStates],[STATES_TITLE],'states'+stamp()+'.png'); });
+  document.getElementById('pngRg').addEventListener('click',()=>{ drawPlots(); exportPNG([pRg],[RG_TITLE],'Rg'+stamp()+'.png'); });
+  document.getElementById('pngBoth').addEventListener('click',()=>{ drawPlots(); exportPNG([pStates,pRg],[STATES_TITLE,RG_TITLE],'plots'+stamp()+'.png'); });
+  document.getElementById('pngView').addEventListener('click',()=>{ exportPNG([freshView()],[VIEW_TITLE],'view'+stamp()+'.png'); });
+  document.getElementById('pngAll').addEventListener('click',()=>{ drawPlots(); exportPNG([freshView(),pStates,pRg],[VIEW_TITLE,STATES_TITLE,RG_TITLE],'snapshot'+stamp()+'.png'); });
+
+  // ---------------------------------------------------------------- resize
+  function resize(){
+    const w=viewport.clientWidth, h=viewport.clientHeight;
+    renderer.setSize(w,h);
+    camera.aspect=w/h; camera.updateProjectionMatrix();
+    sizePlots();
+    drawPlots();
+  }
+  window.addEventListener('resize',resize);
+
+  // ---------------------------------------------------------------- manual orbit + zoom
+  let dragging=false, lx=0, ly=0;
+  renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;});
+  window.addEventListener('pointerup',()=>dragging=false);
+  window.addEventListener('pointermove',e=>{
+    if(!dragging) return;
+    camAz -= (e.clientX-lx)*0.005;
+    camEl += (e.clientY-ly)*0.005;
+    camEl = Math.max(-1.45,Math.min(1.45,camEl));
+    lx=e.clientX; ly=e.clientY;
+  });
+  renderer.domElement.addEventListener('wheel',e=>{
+    e.preventDefault();
+    camDist *= (1 + Math.sign(e.deltaY)*0.08);
+    camDist = Math.max(10,Math.min(90,camDist));
+  },{passive:false});
+
+  // ---------------------------------------------------------------- UI wiring
+  const BIND=[];                              // registry so presets can resync sliders
+  function bind(id, key, fmt, onChange){
+    const el=document.getElementById(id);
+    const out=document.getElementById(id+'v');
+    const apply=()=>{
+      P[key]=parseFloat(el.value);
+      if(out) out.textContent=fmt(P[key]);
+      if(onChange) onChange();
+    };
+    el.addEventListener('input',apply);
+    BIND.push({el,out,key,fmt});
+    apply();
+  }
+  const f2=v=>v.toFixed(2), f3=v=>v.toFixed(3), f1=v=>v.toFixed(1), i0=v=>String(v|0);
+
+  bind('seed','seed',f2);
+  bind('k','k',f1);
+  bind('T','T',f3);
+  bind('rec1','rec1',f2);
+  bind('rec2','rec2',f2);
+  bind('conc','conc',f1);
+  bind('decay','decay',f2);
+  bind('spont','spontaneous',f3);
+  bind('swiDiff','swiDiff',i0);
+  bind('dt','dt',f3);
+  bind('spf','spf',i0);
+  bind('rot','rot',f2);
+  bind('smooth','smoothWin',i0);
+
+  // rate-slowdown f: slider holds the exponent, P.f = 2^exponent (1..1024)
+  const fEl=document.getElementById('fslow'), fOut=document.getElementById('fslowv');
+  function applyF(){ P.f=Math.pow(2,parseInt(fEl.value)); fOut.textContent=String(P.f); }
+  fEl.addEventListener('input',applyF);
+  applyF();
+
+  // attraction toggles: M:M on/off (mmAtt 1/0); Swi6* x1/x2 (swiAtt 1/2). Both pin eq. distance = 1.
+  const mmBtn=document.getElementById('mmAttBtn'), mmOut=document.getElementById('mmAttv');
+  const swBtn=document.getElementById('swiAttBtn'), swOut=document.getElementById('swiAttv');
+  function refreshToggles(){
+    const on=P.mmAtt>0;
+    mmBtn.textContent='M:M nucleosome attraction: '+(on?'ON (1)':'OFF (0)');
+    mmBtn.classList.toggle('hi',on); mmBtn.classList.toggle('off',!on);
+    mmOut.textContent=on?'on':'off';
+    swBtn.textContent='Swi6\u002A attraction: \u00d7'+P.swiAtt;
+    swOut.textContent='\u00d7'+P.swiAtt;
+  }
+  mmBtn.addEventListener('click',()=>{ P.mmAtt = P.mmAtt>0?0:1; refreshToggles(); });
+  swBtn.addEventListener('click',()=>{ P.swiAtt = (P.swiAtt>=2)?1:2; refreshToggles(); });
+  refreshToggles();
+
+  // cell-division interval selector
+  const cdEl=document.getElementById('cellDiv'), cdOut=document.getElementById('cellDivv');
+  function refreshCellDiv(){ cdEl.value=String(P.cellDiv); cdOut.textContent = P.cellDiv>0 ? 'every '+P.cellDiv : 'off'; }
+  cdEl.addEventListener('change',()=>{ P.cellDiv=parseInt(cdEl.value); divAcc=0; refreshCellDiv(); });
+  refreshCellDiv();
+
+  // L rebuilds on change (commit)
+  const Lel=document.getElementById('L'), Lout=document.getElementById('Lv');
+  Lel.addEventListener('input',()=>Lout.textContent=Lel.value);
+  Lel.addEventListener('change',()=>{ P.L=parseInt(Lel.value); buildPolymer(); updateMeshes(); updateHUD(); });
+
+  // push current P values back onto every control (used after loading a preset)
+  function syncFromP(){
+    for(const b of BIND){ b.el.value=P[b.key]; if(b.out) b.out.textContent=b.fmt(P[b.key]); }
+    fEl.value=Math.round(Math.log2(P.f)); fOut.textContent=String(P.f);
+    Lel.value=P.L; Lout.textContent=P.L;
+    refreshToggles();
+    refreshCellDiv();
+  }
+
+  // ---- initialization presets -------------------------------------------------
+  // A = SWITCHING at f=1 (near boundary, full noise) — telegraph-switches between states.
+  // B = LOCKED at f=8 (rec rates and noise /8, strong Swi6* clustering) — stable memory.
+  // C = M:M attraction OFF, Swi6* x1, bistable at f=2 (silent domain held by Swi6 bridging alone;
+  //     f=2 deepens the basins enough to tolerate conc 5 and spontaneous 0.08).
+  // D = M:M ON (x1) and Swi6* x2, bistable at f=1: the strong dual attraction makes the silent
+  //     domain very compact, so it stays bistable at full speed even with a larger spontaneous (0.10).
+  // All seed all-M; drag "Initial M fraction" to 0 and Reseed to start from the active state.
+  const PRESET_A={ L:40, seed:1.00, k:10, T:0.06, swiDiff:6, rec1:0.55, rec2:0.90, conc:6.0,  decay:0.20, spontaneous:0.22, swiAtt:1.0, mmAtt:1, f:1 };
+  const PRESET_B={ L:40, seed:1.00, k:10, T:0.06, swiDiff:6, rec1:0.55, rec2:0.90, conc:4.0,  decay:0.20, spontaneous:0.25, swiAtt:2.0, mmAtt:1, f:8 };
+  const PRESET_C={ L:40, seed:1.00, k:10, T:0.06, swiDiff:6, rec1:0.55, rec2:0.90, conc:5.0,  decay:0.20, spontaneous:0.08, swiAtt:1.0, mmAtt:0, f:2 };
+  const PRESET_D={ L:40, seed:1.00, k:10, T:0.06, swiDiff:6, rec1:0.55, rec2:0.90, conc:4.0,  decay:0.20, spontaneous:0.10, swiAtt:2.0, mmAtt:1, f:1 };
+  const PRESETS=[
+    {short:'A · switching @ f=1', P:PRESET_A},
+    {short:'B · locked @ f=8', P:PRESET_B},
+    {short:'C · M:M off · bistable @ f=2', P:PRESET_C},
+    {short:'D · M:M+Swi6\u00d72 · bistable @ f=1', P:PRESET_D},
+  ];
+  let presetIdx=0;
+  function applyPreset(pre){ Object.assign(P,pre); syncFromP(); buildPolymer(); updateMeshes(); updateHUD(); drawPlots(); }
+  const presetBtn=document.getElementById('preset');
+  function presetLabel(){ const cur=PRESETS[presetIdx], nxt=PRESETS[(presetIdx+1)%PRESETS.length];
+    presetBtn.textContent='Init '+cur.short+'  \u2192  tap: '+nxt.short.split(' ')[0]; }
+  presetBtn.addEventListener('click',()=>{
+    presetIdx=(presetIdx+1)%PRESETS.length;
+    applyPreset(PRESETS[presetIdx].P);
+    presetLabel();
+  });
+  presetLabel();
+
+  const playBtn=document.getElementById('play');
+  playBtn.addEventListener('click',()=>{ running=!running; playBtn.textContent=running?'Pause':'Play'; });
+  document.getElementById('reset').addEventListener('click',()=>{ buildPolymer(); updateMeshes(); updateHUD(); });
+  document.getElementById('reseed').addEventListener('click',()=>{ seedStates(); neighDirty=true; resetHistory(); updateMeshes(); updateHUD(); drawPlots(); });
+
+  let boxVisible=true;
+  const boxBtn=document.getElementById('boxBtn');
+  boxBtn.addEventListener('click',()=>{ boxVisible=!boxVisible; boxLines.visible=boxVisible; boxBtn.textContent=boxVisible?'Hide box':'Show box'; });
+
+  // ---------------------------------------------------------------- go
+  buildPolymer();
+  resize();
+  placeCamera();
+  updateMeshes();
+  updateHUD();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

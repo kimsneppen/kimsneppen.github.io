@@ -76,6 +76,14 @@ const MODELS: Model[] = [
     file: "/models/rabbit-fox-snake-plant.html",
     status: "live",
   },
+  {
+    id: "nucleosome-swi6",
+    title: "Nucleosome & Swi6",
+    description:
+      "A turntable visualization of nucleosomes and Swi6-mediated spreading of histone modifications, illustrating how epigenetic states are established and maintained along chromatin.",
+    file: "/models/nucleosome-swi6.html",
+    status: "live",
+  },
 ];
 
 const RESEARCH = [
