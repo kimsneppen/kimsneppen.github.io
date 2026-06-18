@@ -68,6 +68,14 @@ const MODELS: Model[] = [
     file: "/models/cell-polarity.html",
     status: "live",
   },
+  {
+    id: "rabbit-fox-snake-plant",
+    title: "Rabbit, Fox, Snake & Plant",
+    description:
+      "An agent-based ecosystem on a lattice with plants, rabbits, foxes, and snakes — exploring how predator–prey interactions sustain coexistence and diversity.",
+    file: "/models/rabbit-fox-snake-plant.html",
+    status: "live",
+  },
 ];
 
 const RESEARCH = [
