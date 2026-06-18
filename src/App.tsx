@@ -586,8 +586,9 @@ function Index() {
                 </dd>
               </div>
               <div>
-                <dt className="eyebrow text-[0.65rem]">Phone</dt>
-                <dd className="mt-2 text-foreground/85">+45 35 32 53 52</dd>
+                <dt className="eyebrow text-[0.65rem]"></dt>
+                <dd className="mt-2 text-foreground/85">
+                </dd>
               </div>
               <div>
                 <dt className="eyebrow text-[0.65rem]">Address</dt>
