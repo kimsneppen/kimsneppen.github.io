@@ -573,7 +573,7 @@ function Index() {
 
         {/* CONTACT */}
         <section id="contact" className={sectionClass}>
-          <SectionHeading label="Contact" title="Contact" />
+          <SectionHeading label="" title="Contact" />
           <div className="reveal mt-12 grid max-w-3xl gap-12 md:grid-cols-2">
             <dl className="space-y-6 text-[15px]">
               <div>
