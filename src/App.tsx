@@ -394,8 +394,6 @@ function Index() {
               and how polar interactions between cells shapes sheets and tubes during
               embryo development.
             </p>
-            <p>
-            </p>
           </div>
         </section>
 
