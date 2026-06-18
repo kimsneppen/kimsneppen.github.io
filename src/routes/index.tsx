@@ -408,10 +408,10 @@ function Index() {
               different biological phenomena: Information perspectives on complex
               networks, how cells hold stable epigenetic states, how to understand
               biological regulatory networks from a toolbox perspective, how growth and
-              collapse dynamics may provide waves of diversity, how bacteria exploit
-              spacetial organization to hide from viruses, how polar interactions between
-              cells shapes sheets and tubes during embryo development, and how diversity
-              emerges and persists in living systems.
+              collapse dynamics inspired by Indian mythology may provide waves of diversity,
+              how bacteria exploit spacetial organization to hide from viruses, how polar
+              interactions between cells shapes sheets and tubes during embryo development,
+              and how diversity emerges and persists in living systems.
             </p>
             <p>
               He has been a member of the <span className="font-semibold">Royal Danish Academy of Sciences and Letters</span> since
