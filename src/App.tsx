@@ -383,7 +383,7 @@ function Index() {
 
         {/* ABOUT */}
         <section id="about" className={sectionClass}>
-          <SectionHeading label="About" title="About" />
+          <SectionHeading label="" title="About" />
           <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
             <p>
               Kim Sneppen is a professor of biocomplexity at the Niels Bohr Institute,
@@ -401,7 +401,7 @@ function Index() {
 
         {/* RESEARCH */}
         <section id="research" className={sectionClass}>
-          <SectionHeading label="Research" title="Research interests" />
+          <SectionHeading label="" title="Research interests" />
           <div className="reveal mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {RESEARCH.map((r) => (
               <article
