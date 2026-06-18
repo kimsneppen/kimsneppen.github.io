@@ -84,6 +84,14 @@ const MODELS: Model[] = [
     file: "/models/nucleosome-swi6.html",
     status: "live",
   },
+  {
+    id: "two-state-gillespie",
+    title: "Two-State Gillespie Dynamics",
+    description:
+      "A stochastic Gillespie simulation of a nucleosome two-state system, showing how noisy molecular reactions give rise to bistability and switching between epigenetic states.",
+    file: "/models/two-state-gillespie.html",
+    status: "live",
+  },
 ];
 
 const RESEARCH = [
