@@ -60,6 +60,14 @@ const MODELS: Model[] = [
     file: "/models/colony-phage.html",
     status: "live",
   },
+  {
+    id: "cell-polarity",
+    title: "Cell Polarity Morphogenesis",
+    description:
+      "A 3D model of how polar interactions between cells fold tissues into sheets, tubes, and invaginations during embryo development (after Nissen et al., 2018).",
+    file: "/models/cell-polarity.html",
+    status: "live",
+  },
 ];
 
 const RESEARCH = [
