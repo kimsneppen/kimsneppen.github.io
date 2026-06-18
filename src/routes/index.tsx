@@ -1,28 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import portraitAsset from "@/assets/kim-sneppen-portrait.jpg.asset.json";
-import lectureAsset from "@/assets/kim-sneppen-lecture.jpg.asset.json";
+import portraitUrl from "@/assets/kim-sneppen-portrait.jpg";
+import lectureUrl from "@/assets/kim-sneppen-lecture.jpg";
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Kim Sneppen — Professor of Biocomplexity, Niels Bohr Institute" },
-      {
-        name: "description",
-        content:
-          "Kim Sneppen is Professor of Biocomplexity at the Niels Bohr Institute, University of Copenhagen, modeling living systems with the tools of theoretical physics.",
-      },
-      { property: "og:title", content: "Kim Sneppen — Professor of Biocomplexity" },
-      {
-        property: "og:description",
-        content:
-          "Research profile of Kim Sneppen: biophysics, complex systems, epigenetics, phage–bacteria co-evolution, and statistical mechanics of life.",
-      },
-      { property: "og:type", content: "profile" },
-    ],
-  }),
-  component: Index,
-});
+export default function App() {
+  return <Index />;
+}
 
 const NAV = [
   { href: "about", label: "About" },
