@@ -401,12 +401,6 @@ function Index() {
               and how diversity emerges and persists in living systems.
             </p>
             <p>
-              He has been a member of the <span className="font-semibold">Royal Danish Academy of Sciences and Letters</span> since
-              2006, and in 2017 was awarded an <span className="font-semibold">ERC Advanced Grant</span>&nbsp;of
-              DKK 16.5 million for his SOURCE project on self-organization, competition, and
-              diversity. He founded and directed the Center for Models of Life (2005–2015) of DKK 51 million funded the Danish Research council,
-              served as a Divisional Associate Editor of <em>Physical Review Letters</em>, and is the
-              author of two books: <em>Physics in Molecular Biology</em> and <em>Models of Life</em> (Cambridge University Press).
             </p>
           </div>
         </section>
