@@ -585,11 +585,7 @@ function Index() {
                   <a href="mailto:ksneppen@gmail.com">ksneppen@gmail.com</a>
                 </dd>
               </div>
-              <div>
-                <dt className="eyebrow text-[0.65rem]"></dt>
-                <dd className="mt-2 text-foreground/85">
-                </dd>
-              </div>
+              
               <div>
                 <dt className="eyebrow text-[0.65rem]">Address</dt>
                 <dd className="mt-2 leading-[1.75] text-foreground/85">
