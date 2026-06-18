@@ -599,7 +599,7 @@ function Index() {
               <div>
                 <dt className="eyebrow text-[0.65rem]">Email</dt>
                 <dd className="mt-2">
-                  <a href="mailto:sneppen@nbi.ku.dk">sneppen@nbi.ku.dk</a>
+                  <a href="mailto:ksneppen@gmail.com">ksneppen@gmail.com</a>
                 </dd>
               </div>
               <div>
