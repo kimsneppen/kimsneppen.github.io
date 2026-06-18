@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cell Polarity Morphogenesis — Nissen et al. 2018</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c12; --bg2:#10131c; --panel:#141824; --panel2:#1b2030;
+    --line:#252c3d; --line2:#313a52;
+    --txt:#e7ecf6; --muted:#8a93a8; --faint:#5b6478;
+    --apical:#ff8a3d; --apicalDark:#7d160b;
+    --basal:#2cc8f2;  --basalDark:#0f2473;
+    --accent:#ffb05a; --accent2:#7fa9ff; --danger:#ff5d6c;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    background:
+      radial-gradient(1100px 700px at 78% -8%, rgba(255,138,61,.06), transparent 60%),
+      radial-gradient(900px 700px at 8% 108%, rgba(47,214,198,.06), transparent 60%),
+      var(--bg);
+    color:var(--txt); font-family:"IBM Plex Mono",ui-monospace,monospace;
+    display:flex; overflow:hidden;
+  }
+  #panel{ width:346px; min-width:346px; height:100vh; overflow-y:auto;
+    background:linear-gradient(180deg,var(--bg2),var(--panel));
+    border-right:1px solid var(--line); padding:22px 20px 48px; }
+  #panel::-webkit-scrollbar{width:9px} #panel::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px}
+  .brand{font-family:"Fraunces",serif; font-weight:900; font-size:25px; line-height:1.02; letter-spacing:-.01em}
+  .brand em{color:var(--accent); font-style:italic}
+  .cite{color:var(--faint); font-size:11px; margin-top:8px; line-height:1.5}
+  .cite a{color:var(--muted); text-decoration:none; border-bottom:1px dotted var(--line2)}
+  hr{border:none; border-top:1px solid var(--line); margin:18px 0}
+  .group-label{font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--faint); margin:0 0 12px}
+  .row{margin-bottom:15px}
+  .row .top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px}
+  .row label{font-size:12px; color:var(--muted)}
+  .row .val{font-size:12.5px; color:var(--txt); font-weight:600}
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:3px; background:var(--line2);
+    border-radius:3px; outline:none; cursor:pointer}
+  input[type=range]:disabled{opacity:.35}
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+    background:var(--accent); border:2px solid var(--bg); box-shadow:0 0 0 1px var(--accent)}
+  input[type=range]::-moz-range-thumb{ width:14px; height:14px; border-radius:50%; background:var(--accent);
+    border:2px solid var(--bg); box-shadow:0 0 0 1px var(--accent)}
+  .lam input[type=range]::-webkit-slider-thumb{background:var(--accent2);box-shadow:0 0 0 1px var(--accent2)}
+  .lam input[type=range]::-moz-range-thumb{background:var(--accent2);box-shadow:0 0 0 1px var(--accent2)}
+  .btn-row{display:flex; gap:8px; margin-bottom:10px}
+  button{ font-family:inherit; font-size:12.5px; font-weight:600; color:var(--txt); background:var(--panel2);
+    border:1px solid var(--line2); border-radius:8px; padding:10px 12px; cursor:pointer; flex:1; transition:.15s; letter-spacing:.02em}
+  button:hover{ border-color:var(--accent); color:var(--accent)}
+  button.primary{ background:linear-gradient(180deg,#2a2014,#1d1810); border-color:#5a4424; color:var(--accent)}
+  .chips{display:flex; flex-wrap:wrap; gap:7px}
+  .chip{ flex:0 0 auto; padding:6px 11px; font-size:11.5px; border-radius:20px; background:var(--panel2);
+    border:1px solid var(--line2); cursor:pointer; color:var(--muted); transition:.15s}
+  .chip:hover{border-color:var(--accent); color:var(--accent)}
+  .chip.active{background:rgba(255,176,90,.12); border-color:var(--accent); color:var(--accent)}
+  .cbtn{flex:1 1 0; display:flex; align-items:center; gap:7px; padding:7px 9px; font-size:11.5px;
+    border-radius:8px; background:var(--panel2); border:1px solid var(--line2); cursor:pointer; color:var(--muted); transition:.15s}
+  .cbtn:hover{border-color:var(--accent); color:var(--txt)}
+  .cbtn b{color:var(--txt); font-weight:600}
+  .csw{flex:0 0 auto; width:14px; height:14px; border-radius:4px; border:1px solid rgba(255,255,255,.25)}
+  .toggle{display:flex; align-items:center; justify-content:space-between; padding:7px 0; font-size:12px; color:var(--muted)}
+  .toggle.dim{opacity:.4; pointer-events:none}
+  .toggle input{appearance:none; width:34px; height:18px; background:var(--line2); border-radius:20px; position:relative; cursor:pointer; transition:.15s; flex:0 0 auto}
+  .toggle input:checked{background:var(--accent)}
+  .toggle input::after{content:"";position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--bg); transition:.15s}
+  .toggle input:checked::after{transform:translateX(16px)}
+  .expbox{background:rgba(255,93,108,.05); border:1px solid #3a2530; border-radius:10px; padding:12px 13px 4px; margin-bottom:6px}
+  .expbox.on{border-color:#6a3340}
+  #stage{flex:1; position:relative; height:100vh}
+  canvas{display:block}
+  #hud{ position:absolute; top:16px; left:18px; font-size:11.5px; color:var(--muted);
+    background:rgba(10,12,18,.55); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:10px;
+    padding:11px 14px; line-height:1.85; pointer-events:none}
+  #hud b{color:var(--txt); font-weight:600}
+  #labels{position:absolute; top:16px; right:18px; display:flex; gap:10px}
+  .badge{font-size:11px; padding:5px 11px; border-radius:8px; border:1px solid var(--line); background:rgba(10,12,18,.55); backdrop-filter:blur(6px); color:var(--muted)}
+  #legend{ position:absolute; bottom:16px; left:18px; font-size:11px; color:var(--muted);
+    background:rgba(10,12,18,.55); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:10px; padding:11px 14px; line-height:1.9}
+  .dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:7px; vertical-align:-1px}
+  .grad{display:inline-block;width:90px;height:9px;border-radius:5px;vertical-align:-1px;margin-right:7px;
+    background:linear-gradient(90deg,#0033ff,#00d0ff,#00d000,#ffe000,#ff2a00)}
+  #help{ position:absolute; bottom:16px; right:18px; font-size:10.5px; color:var(--faint); text-align:right; line-height:1.7}
+  .sumtag{font-size:10.5px; color:var(--faint); margin-top:-6px; margin-bottom:14px}
+  .sumtag b{color:var(--accent2)}
+  .lamwrap{background:rgba(127,169,255,.04); border:1px solid var(--line); border-radius:10px; padding:13px 13px 4px; margin-bottom:8px}
+  .numrow{display:flex; align-items:center; justify-content:space-between; padding:9px 0 4px; font-size:12px; color:var(--muted)}
+  .numrow input{ width:84px; font-family:inherit; font-size:13px; font-weight:600; color:var(--txt); text-align:right;
+    background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:6px 9px; outline:none}
+  .numrow input:focus{border-color:var(--accent)}
+  .numrow input:disabled{opacity:.4}
+</style>
+</head>
+<body>
+  <aside id="panel">
+    <div class="brand">Cell&nbsp;Polarity<br><em>Morphogenesis</em></div>
+    <div class="cite">After Nissen, S.B. <i>et al.</i> “Theoretical tool bridging cell polarities with development of robust morphologies.”
+      <a href="https://doi.org/10.7554/eLife.38407" target="_blank" rel="noopener">eLife 7:e38407 (2018)</a>.</div>
+    <hr>
+
+    <div class="btn-row">
+      <button id="playBtn" class="primary">▶ Run</button>
+      <button id="stepBtn">Step</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+    <div class="btn-row"><button id="pngBtn">⤓ Save PNG</button></div>
+
+    <p class="group-label">Morphology presets</p>
+    <div class="chips" id="presets">
+      <span class="chip" data-l="1,0,0">Monolayer / sphere</span>
+      <span class="chip" data-l="0.50,0.44,0.06">Tube</span>
+      <span class="chip" data-l="0.35,0.35,0.3">Twisted tube</span>
+      <span class="chip" data-l="0.5,0.3,0.2">Mixed</span>
+    </div>
+    <hr>
+
+    <p class="group-label">Polarity weights · S<sub>ij</sub> = λ₁S₁+λ₂S₂+λ₃S₃</p>
+    <div class="lamwrap lam">
+      <div class="row"><div class="top"><label>λ₁ — apical-basal (sheets)</label><span class="val" id="l1v">1.00</span></div>
+        <input type="range" id="l1" min="0" max="1" step="0.01" value="1"></div>
+      <div class="row"><div class="top"><label>λ₂ — AB ↔ PCP coupling</label><span class="val" id="l2v">0.00</span></div>
+        <input type="range" id="l2" min="0" max="1" step="0.01" value="0"></div>
+      <div class="row"><div class="top"><label>λ₃ — planar cell polarity</label><span class="val" id="l3v">0.00</span></div>
+        <input type="range" id="l3" min="0" max="0.3" step="0.01" value="0"></div>
+      <div class="toggle" style="padding:6px 0 0"><span>nematic PCP — use |S₃| (q ≡ −q)</span><input type="checkbox" id="tNematic"></div>
+    </div>
+    <div class="sumtag">λ₁+λ₂+λ₃ = <b id="lsum">1.00</b> · paper convention is 1</div>
+
+    <p class="group-label">Simulation parameters</p>
+    <div class="row"><div class="top"><label>Cells N</label><span class="val" id="Nv">2000</span></div>
+      <input type="range" id="N" min="0" max="0" step="1" value="0"></div>
+    <div class="row"><div class="top"><label>β — attraction range</label><span class="val" id="betav">5.0</span></div>
+      <input type="range" id="beta" min="1" max="10" step="0.1" value="5"></div>
+    <div class="row"><div class="top"><label>Δt — time step</label><span class="val" id="dtv">0.10</span></div>
+      <input type="range" id="dt" min="0.01" max="0.2" step="0.01" value="0.1"></div>
+    <div class="row"><div class="top"><label>η — noise</label><span class="val" id="noisev">0.05</span></div>
+      <input type="range" id="noise" min="0" max="0.3" step="0.005" value="0.05"></div>
+    <div class="row"><div class="top"><label>steps / frame</label><span class="val" id="spfv">2</span></div>
+      <input type="range" id="spf" min="1" max="10" step="1" value="2"></div>
+    <hr>
+
+    <p class="group-label">Initial condition &amp; neighbours</p>
+    <div class="toggle"><span>Initial cells on sphere surface (shell)</span><input type="checkbox" id="tSphere"></div>
+    <div class="toggle"><span>AB polarity initialised outward (apical-out)</span><input type="checkbox" id="tABout"></div>
+    <div class="toggle"><span>PCP whirling about vertical axis (parallel, defect-free)</span><input type="checkbox" id="tPCPwhirl"></div>
+    <div class="toggle"><span>Limit interactions to K nearest (then Gabriel)</span><input type="checkbox" id="tKnn" checked></div>
+    <div class="row" style="margin-top:6px"><div class="top"><label>K — nearest neighbours</label><span class="val" id="knnv">20</span></div>
+      <input type="range" id="knnK" min="6" max="40" step="1" value="20"></div>
+    <div class="sumtag" style="margin:2px 0 0">partners = K nearest cells, each still passing the Gabriel (empty-sphere) test.</div>
+    <hr>
+
+    <p class="group-label">Proliferation &amp; growth</p>
+    <div class="toggle"><span>Cell division (random)</span><input type="checkbox" id="tDivide"></div>
+    <div class="row" style="margin-top:6px"><div class="top"><label>division rate</label><span class="val" id="ratev">0.030</span></div>
+      <input type="range" id="divRate" min="0" max="0.15" step="0.005" value="0.03"></div>
+    <div class="expbox" id="tumorbox" style="margin-top:4px">
+      <div class="toggle" style="padding-top:0"><span style="color:var(--txt)">Tumour · clonal division</span><input type="checkbox" id="tTumor"></div>
+      <div class="toggle dim" id="npToggle"><span>non-polar tumour cells (spherical)</span><input type="checkbox" id="tNonpolar"></div>
+      <div class="row" style="margin:8px 0 4px"><div class="top"><label>cross-adhesion to host +%</label><span class="val" id="crossv">0%</span></div>
+        <input type="range" id="crossPct" min="0" max="300" step="5" value="0" disabled></div>
+      <div class="sumtag" style="margin:2px 0 0">only a central founder cell and its descendants divide.</div>
+    </div>
+    <hr>
+
+    <p class="group-label">Fields</p>
+    <div class="row"><div class="top"><label>radial AB field γ (p → outward)</label><span class="val" id="fieldv">0.00</span></div>
+      <input type="range" id="field" min="0" max="1" step="0.02" value="0"></div>
+    <hr>
+
+    <p class="group-label">Perturbation experiment</p>
+    <div class="expbox" id="expbox">
+      <div class="toggle" style="padding-top:0"><span style="color:var(--txt)">Dual run · flip cells</span><input type="checkbox" id="tDual"></div>
+      <div class="numrow"><label>cells to flip · c</label><input type="number" id="cNum" min="1" max="500" value="1" disabled></div>
+      <div class="row" style="margin:8px 0 4px"><div class="top"><label>perturbation angle</label><span class="val" id="angv">180°</span></div>
+        <input type="range" id="ang" min="0" max="180" step="5" value="180" disabled></div>
+      <div class="toggle dim" id="divToggle"><span>colour perturbed by divergence</span><input type="checkbox" id="tDiv"></div>
+    </div>
+    <div class="sumtag">control &amp; perturbed share one noise seed → divergence is caused only by the flipped cell.</div>
+    <hr>
+
+    <p class="group-label">Display</p>
+    <div class="toggle"><span>AB two-tone shading (p)</span><input type="checkbox" id="tShade" checked></div>
+    <div class="toggle"><span>PCP arrows on cell surface (q)</span><input type="checkbox" id="tPCPsurf"></div>
+    <div class="toggle"><span>Label PCP defects (± charge)</span><input type="checkbox" id="tDefects" checked></div>
+    <div class="toggle"><span>Show PCP centre-lines (q)</span><input type="checkbox" id="tPCP"></div>
+    <div class="toggle"><span>Show AB vectors (p)</span><input type="checkbox" id="tAB"></div>
+    <div class="toggle"><span>Show Voronoi bonds</span><input type="checkbox" id="tBonds"></div>
+    <div class="toggle"><span>Auto-rotate camera</span><input type="checkbox" id="tSpin" checked></div>
+    <div class="row" style="margin-top:6px"><div class="top"><label>depth floor (far-cell brightness)</label><span class="val" id="depthFloorv">0.40</span></div>
+      <input type="range" id="depthFloor" min="0.1" max="0.9" step="0.05" value="0.4"></div>
+    <div class="numrow" style="gap:8px;padding-top:8px">
+      <button class="cbtn" id="outColor"><span class="csw" id="outSw"></span><span>outside: <b id="outNm">red</b></span></button>
+      <button class="cbtn" id="inColor"><span class="csw" id="inSw"></span><span>inside: <b id="inNm">blue</b></span></button>
+    </div>
+    <hr>
+
+    <p class="group-label">Half-cut (clipping plane)</p>
+    <div class="expbox" id="clipbox" style="background:rgba(127,169,255,.05);border-color:#2a3550">
+      <div class="toggle" style="padding-top:0"><span style="color:var(--txt)">Hide half the cluster</span><input type="checkbox" id="tClip"></div>
+      <div class="numrow" style="padding-bottom:0"><label>plane spins about</label>
+        <div class="chips" id="clipAxis" style="gap:6px">
+          <span class="chip" data-ax="x">X</span><span class="chip active" data-ax="y">Y</span><span class="chip" data-ax="z">Z</span>
+        </div></div>
+      <div class="row" style="margin:10px 0 4px"><div class="top"><label>plane angle</label><span class="val" id="clipAngv">0°</span></div>
+        <input type="range" id="clipAng" min="0" max="360" step="2" value="0"></div>
+      <div class="toggle" style="padding-bottom:0"><span>show the other half instead</span><input type="checkbox" id="tClipFlip"></div>
+      <div class="sumtag" style="margin:2px 0 0">cut passes through each replica's own centre of mass.</div>
+    </div>
+  </aside>
+
+  <main id="stage">
+    <div id="hud"></div>
+    <div id="labels"></div>
+    <div id="legend"></div>
+    <div id="help">drag · rotate &nbsp;|&nbsp; scroll · zoom &nbsp;|&nbsp; right-drag · pan</div>
+  </main>
+
+  <script>
+/* =====================================================================
+   Cell-polarity morphogenesis model
+   After: Nissen, S.B. et al. eLife 7:e38407 (2018).
+
+   V_ij = exp(-r) - S_ij*exp(-r/beta)   over Voronoi (Gabriel) neighbours.
+   S_ij = l1*(p_i x r^)·(p_j x r^) + l2*(p_i x q_i)·(p_j x q_j)
+        + l3*(q_i x r^)·(q_j x r^)
+   For non-polar cells (tumour option) the interaction is spherically
+   symmetric: S_ij = S0 (constant), independent of all polarities.
+
+   Extras:
+     - cell division (random, or clonal/tumour from a founder)
+     - radial field of strength `field` torquing AB polarity p outward
+       from the centre of mass.
+
+   Seeded RNG (mulberry32 + polar Box-Muller) -> reproducible; a control
+   and a perturbed run share one noise realisation.
+   ===================================================================== */
+(function (global) {
+  "use strict";
+  function mulberry32(a){return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
+
+  class Simulation {
+    constructor(opts={}){
+      this.setParams(opts);
+      this.seed=(opts.seed??12345)|0;
+      this.cap=Math.max(opts.cap??20000, this.N);
+      this.perturbIndices=[];
+      this.tumorFounder=-1;
+      this.initState(opts.seedPositions);
+    }
+    setParams(opts={}){
+      this.N      = opts.N      ?? 150;
+      this.l1     = opts.l1     ?? 1.0;
+      this.l2     = opts.l2     ?? 0.0;
+      this.l3     = opts.l3     ?? 0.0;
+      this.beta   = opts.beta   ?? 5.0;
+      this.dt     = opts.dt     ?? 0.1;
+      this.noise  = opts.noise  ?? 0.05;
+      this.cutoff = opts.cutoff ?? 3.5;
+      this.recenter = opts.recenter ?? false;
+      this.maxNeighbors = opts.maxNeighbors ?? 20;   // cap on interaction partners (kNN)
+      this.knnLimit     = opts.knnLimit     ?? true;  // restrict to K nearest (then Gabriel)
+      this.abOutward    = opts.abOutward    ?? false; // init AB polarity radially outward
+      this.sphereSurface= opts.sphereSurface?? false; // init positions on a hollow shell
+      this.pcpWhirl     = opts.pcpWhirl     ?? false; // init PCP whirling about vertical axis
+      this.nematicPCP   = opts.nematicPCP   ?? false; // treat S3 (PCP-PCP) as nematic: use |S3|
+      this.S0     = opts.S0     ?? 1.0;   // isotropic strength for non-polar cells
+      this.crossStrength = opts.crossStrength ?? 1.0; // tumour<->non-tumour bond multiplier
+      // proliferation / field (set live by the app)
+      this.divisionOn   = opts.divisionOn   ?? false;
+      this.tumorOn      = opts.tumorOn      ?? false;
+      this.nonpolarTumor= opts.nonpolarTumor?? false;
+      this.divRate      = opts.divRate      ?? 0.02;
+      this.field        = opts.field        ?? 0.0;
+    }
+    pcpActive(){ return this.l2>1e-9 || this.l3>1e-9; }
+
+    _gauss(){ if(this._hasSpare){this._hasSpare=false;return this._spare;} const r=this.rng;let u,v,s;
+      do{u=2*r()-1;v=2*r()-1;s=u*u+v*v;}while(s>=1||s===0); const m=Math.sqrt(-2*Math.log(s)/s);
+      this._spare=v*m;this._hasSpare=true;return u*m; }
+    _randUnit(){ let x,y,z,r; do{x=this._gauss();y=this._gauss();z=this._gauss();r=Math.hypot(x,y,z);}while(r<1e-6); return [x/r,y/r,z/r]; }
+
+    initState(seed){
+      const cap=this.cap, N=this.N;
+      this.rng=mulberry32(this.seed); this._hasSpare=false;
+      this.x=new Float64Array(3*cap); this.p=new Float64Array(3*cap); this.q=new Float64Array(3*cap);
+      this.tumor=new Uint8Array(cap); this.nonpolar=new Uint8Array(cap);
+      const spacing=2.0, R=spacing*Math.cbrt((3*N)/(4*Math.PI))*1.1, r=this.rng;
+      // Shell radius: place N cells on a sphere so nearest neighbours sit at the
+      // pure-AB equilibrium spacing r0 = β·ln β/(β−1) (≈2.01 at β=5). With ~hexagonal
+      // packing the area per cell is (√3/2)r0², giving 4πRs² = N(√3/2)r0² ⇒
+      // Rs = r0·√(N·√3/(8π)). The Fibonacci spiral packs ~11% tighter than an ideal
+      // hex lattice, so an empirical factor kFib restores the mean NN distance to r0.
+      const b=this.beta;
+      const r0 = (Math.abs(b-1)<1e-6) ? 1.0 : b*Math.log(b)/(b-1);
+      const kFib = 1.120;
+      const Rs = kFib*r0*Math.sqrt(N*Math.sqrt(3)/(8*Math.PI));
+      const GA = Math.PI*(3-Math.sqrt(5));   // golden angle, for the Fibonacci spiral
+      for(let i=0;i<N;i++){
+        if(this.sphereSurface){
+          const yy = 1 - 2*(i+0.5)/N, rxy = Math.sqrt(Math.max(0,1-yy*yy)), th = i*GA;
+          this.x[3*i]=Math.cos(th)*rxy*Rs; this.x[3*i+1]=yy*Rs; this.x[3*i+2]=Math.sin(th)*rxy*Rs;
+        } else {
+          let px,py,pz,rr; do{px=2*r()-1;py=2*r()-1;pz=2*r()-1;rr=px*px+py*py+pz*pz;}while(rr>1);
+          this.x[3*i]=px*R;this.x[3*i+1]=py*R;this.x[3*i+2]=pz*R;
+        }
+        const p=this._randUnit(); this.p[3*i]=p[0];this.p[3*i+1]=p[1];this.p[3*i+2]=p[2];
+        const qv=this._randUnit(); const d=qv[0]*p[0]+qv[1]*p[1]+qv[2]*p[2];
+        qv[0]-=d*p[0];qv[1]-=d*p[1];qv[2]-=d*p[2]; const ql=Math.hypot(qv[0],qv[1],qv[2])||1;
+        this.q[3*i]=qv[0]/ql;this.q[3*i+1]=qv[1]/ql;this.q[3*i+2]=qv[2]/ql;
+      }
+      if(seed) this.x.set(seed.subarray(0,3*N));
+      if(this.abOutward){
+        // AB polarity p initialised pointing radially outward from the centre of mass,
+        // PCP q a random unit vector tangent to the surface (orthogonal to p).
+        let cx=0,cy=0,cz=0;
+        for(let i=0;i<N;i++){cx+=this.x[3*i];cy+=this.x[3*i+1];cz+=this.x[3*i+2];}
+        cx/=N;cy/=N;cz/=N;
+        for(let i=0;i<N;i++){
+          let ux=this.x[3*i]-cx,uy=this.x[3*i+1]-cy,uz=this.x[3*i+2]-cz;
+          let ul=Math.hypot(ux,uy,uz);
+          if(ul<1e-9){ const rp=this._randUnit(); ux=rp[0];uy=rp[1];uz=rp[2];ul=1; }
+          const px=ux/ul,py=uy/ul,pz=uz/ul;
+          this.p[3*i]=px;this.p[3*i+1]=py;this.p[3*i+2]=pz;
+          const qv=this._randUnit(); const d=qv[0]*px+qv[1]*py+qv[2]*pz;
+          qv[0]-=d*px;qv[1]-=d*py;qv[2]-=d*pz; const ql=Math.hypot(qv[0],qv[1],qv[2])||1;
+          this.q[3*i]=qv[0]/ql;this.q[3*i+1]=qv[1]/ql;this.q[3*i+2]=qv[2]/ql;
+        }
+      }
+      if(this.pcpWhirl){
+        // PCP q initialised as a coherent whirl about the vertical (y) axis: at each
+        // cell q is the azimuthal direction of the latitude circle through it, made
+        // orthogonal to p. This is defect-free everywhere except the two poles
+        // (topologically unavoidable on a closed shell) — the tube-forming start state.
+        let cx=0,cy=0,cz=0;
+        for(let i=0;i<N;i++){cx+=this.x[3*i];cy+=this.x[3*i+1];cz+=this.x[3*i+2];}
+        cx/=N;cy/=N;cz/=N;
+        for(let i=0;i<N;i++){
+          const ux=this.x[3*i]-cx, uz=this.x[3*i+2]-cz;
+          // azimuthal direction about +y axis: (0,1,0) × u  ∝  (uz, 0, −ux)
+          let wx=uz, wy=0, wz=-ux;
+          const px=this.p[3*i],py=this.p[3*i+1],pz=this.p[3*i+2];
+          let d=wx*px+wy*py+wz*pz; wx-=d*px; wy-=d*py; wz-=d*pz;   // make ⟂ AB polarity
+          let wl=Math.hypot(wx,wy,wz);
+          if(wl<1e-6){ // on the axis (or w ∥ p): fall back to any tangent ⟂ p
+            let rx=1,ry=0,rz=0; if(Math.abs(px)>0.9){rx=0;ry=1;rz=0;}
+            d=rx*px+ry*py+rz*pz; wx=rx-d*px; wy=ry-d*py; wz=rz-d*pz; wl=Math.hypot(wx,wy,wz)||1;
+          }
+          this.q[3*i]=wx/wl;this.q[3*i+1]=wy/wl;this.q[3*i+2]=wz/wl;
+        }
+      }
+      this._alloc(); this.buildNeighbours();
+    }
+    _alloc(){
+      const cap=this.cap;
+      this.gx=new Float64Array(3*cap); this.gp=new Float64Array(3*cap); this.gq=new Float64Array(3*cap);
+      this.gi=new Int32Array(cap); this.gj=new Int32Array(cap); this.gk=new Int32Array(cap); this.next=new Int32Array(cap);
+      this.head=new Map(); this.cand=new Int32Array(256);
+      this._cd=new Float64Array(256);   // candidate squared-distances (kNN selection)
+      this.dK2=new Float64Array(cap);   // squared dist to K-th nearest neighbour per cell
+      this.pairsBuf=new Int32Array(Math.max(64,cap*24)); this.pairCount=0; this.pairs=this.pairsBuf.subarray(0,0);
+    }
+    _growCand(n){ if(n>this.cand.length){let s=this.cand.length;while(s<n)s*=2;
+      const nc=new Int32Array(s); nc.set(this.cand); this.cand=nc;
+      const nd=new Float64Array(s); nd.set(this._cd); this._cd=nd;} }
+    _pushPair(i,j){ if(this.pairCount+2>this.pairsBuf.length){const nb=new Int32Array(Math.ceil(this.pairsBuf.length*1.5));nb.set(this.pairsBuf);this.pairsBuf=nb;}
+      this.pairsBuf[this.pairCount++]=i;this.pairsBuf[this.pairCount++]=j; }
+
+    buildNeighbours(){
+      const N=this.N,x=this.x,cut=this.cutoff,cut2=cut*cut,inv=1/cut;
+      let lox=Infinity,loy=Infinity,loz=Infinity,hix=-Infinity,hiy=-Infinity,hiz=-Infinity;
+      for(let i=0;i<N;i++){const a=x[3*i],b=x[3*i+1],c=x[3*i+2];
+        if(a<lox)lox=a;if(a>hix)hix=a;if(b<loy)loy=b;if(b>hiy)hiy=b;if(c<loz)loz=c;if(c>hiz)hiz=c;}
+      const nx=Math.max(1,Math.floor((hix-lox)*inv)+1),ny=Math.max(1,Math.floor((hiy-loy)*inv)+1),nz=Math.max(1,Math.floor((hiz-loz)*inv)+1);
+      const gi=this.gi,gj=this.gj,gk=this.gk,next=this.next,head=this.head; head.clear();
+      for(let i=0;i<N;i++){
+        let a=Math.floor((x[3*i]-lox)*inv);if(a<0)a=0;else if(a>=nx)a=nx-1;
+        let b=Math.floor((x[3*i+1]-loy)*inv);if(b<0)b=0;else if(b>=ny)b=ny-1;
+        let c=Math.floor((x[3*i+2]-loz)*inv);if(c<0)c=0;else if(c>=nz)c=nz-1;
+        gi[i]=a;gj[i]=b;gk[i]=c; const key=(a*ny+b)*nz+c; const h=head.get(key); next[i]=(h===undefined)?-1:h; head.set(key,i);
+      }
+      this.pairCount=0; const eps=1e-9;
+      const K=this.maxNeighbors|0, knn=this.knnLimit&&K>0, dK2=this.dK2;
+      // ---- PASS A: per-cell squared distance to the K-th nearest neighbour ----
+      // (only needed when the kNN restriction is active). A pair (i,j) is later
+      // admitted iff r_ij^2 <= max(dK2[i],dK2[j]) — i.e. j is among i's K nearest
+      // OR i is among j's K nearest — and it additionally survives the Gabriel test.
+      if(knn){
+        for(let i=0;i<N;i++){
+          const a=gi[i],b=gj[i],c=gk[i],xi=x[3*i],yi=x[3*i+1],zi=x[3*i+2]; let nd=0;
+          for(let da=-1;da<=1;da++){const na=a+da;if(na<0||na>=nx)continue;
+            for(let db=-1;db<=1;db++){const nb=b+db;if(nb<0||nb>=ny)continue;
+              for(let dc=-1;dc<=1;dc++){const ncz=c+dc;if(ncz<0||ncz>=nz)continue;
+                let m=head.get((na*ny+nb)*nz+ncz);
+                while(m!==undefined&&m!==-1){ if(m!==i){const dx=xi-x[3*m],dy=yi-x[3*m+1],dz=zi-x[3*m+2];
+                  const d2=dx*dx+dy*dy+dz*dz; if(d2<=cut2){ if(nd>=this._cd.length)this._growCand(nd+1); this._cd[nd++]=d2; }} m=next[m]; }
+              }}}
+          if(nd<K) dK2[i]=Infinity;                      // fewer than K within cutoff → no kNN cap
+          else { this._cd.subarray(0,nd).sort(); dK2[i]=this._cd[K-1]; }
+        }
+      }
+      // ---- PASS B: Gabriel (Voronoi) neighbours, optionally kNN-restricted ----
+      for(let i=0;i<N;i++){
+        const a=gi[i],b=gj[i],c=gk[i],xi=x[3*i],yi=x[3*i+1],zi=x[3*i+2]; let nc=0;
+        for(let da=-1;da<=1;da++){const na=a+da;if(na<0||na>=nx)continue;
+          for(let db=-1;db<=1;db++){const nb=b+db;if(nb<0||nb>=ny)continue;
+            for(let dc=-1;dc<=1;dc++){const ncz=c+dc;if(ncz<0||ncz>=nz)continue;
+              let m=head.get((na*ny+nb)*nz+ncz);
+              while(m!==undefined&&m!==-1){ if(m!==i){const dx=xi-x[3*m],dy=yi-x[3*m+1],dz=zi-x[3*m+2];
+                if(dx*dx+dy*dy+dz*dz<=cut2){ if(nc>=this.cand.length)this._growCand(nc+1); this.cand[nc++]=m; }} m=next[m]; }
+            }}}
+        const cand=this.cand;
+        for(let t=0;t<nc;t++){ const j=cand[t]; if(j<=i)continue;
+          const dx=xi-x[3*j],dy=yi-x[3*j+1],dz=zi-x[3*j+2]; const r2=dx*dx+dy*dy+dz*dz;
+          if(knn){ const lim=(dK2[i]>dK2[j]?dK2[i]:dK2[j]); if(r2>lim+eps)continue; }  // kNN gate
+          const mx=0.5*(xi+x[3*j]),my=0.5*(yi+x[3*j+1]),mz=0.5*(zi+x[3*j+2]); const half2=0.25*r2;
+          let blocked=false;
+          for(let u=0;u<nc;u++){ const k=cand[u]; if(k===j)continue;
+            const ex=x[3*k]-mx,ey=x[3*k+1]-my,ez=x[3*k+2]-mz; if(ex*ex+ey*ey+ez*ez<half2-eps){blocked=true;break;} }
+          if(!blocked)this._pushPair(i,j);
+        }
+      }
+      this.pairs=this.pairsBuf.subarray(0,this.pairCount); return this.pairs;
+    }
+
+    computeForces(pairs=this.pairs){
+      const x=this.x,p=this.p,q=this.q,gx=this.gx,gp=this.gp,gq=this.gq;
+      const l1=this.l1,l2=this.l2,l3=this.l3,beta=this.beta,S0=this.S0,np=this.nonpolar;
+      const tum=this.tumor, cross=this.crossStrength, nem=this.nematicPCP;
+      gx.fill(0,0,3*this.N); gp.fill(0,0,3*this.N); gq.fill(0,0,3*this.N);
+      let E=0;
+      for(let t=0;t<pairs.length;t+=2){
+        const i=pairs[t],j=pairs[t+1];
+        const dx=x[3*i]-x[3*j],dy=x[3*i+1]-x[3*j+1],dz=x[3*i+2]-x[3*j+2];
+        const r=Math.sqrt(dx*dx+dy*dy+dz*dz); if(r<1e-9)continue;
+        const rhx=dx/r,rhy=dy/r,rhz=dz/r;
+        const eR=Math.exp(-r),eB=Math.exp(-r/beta);
+        const w = (tum[i]!==tum[j]) ? cross : 1.0;     // tumour<->non-tumour bonds scaled
+        if(np[i]||np[j]){                              // spherically symmetric pair
+          const Seff=w*S0; E+=eR-Seff*eB; const dVdr=-eR+(Seff/beta)*eB;
+          const gix=dVdr*rhx,giy=dVdr*rhy,giz=dVdr*rhz;
+          gx[3*i]+=gix;gx[3*i+1]+=giy;gx[3*i+2]+=giz; gx[3*j]-=gix;gx[3*j+1]-=giy;gx[3*j+2]-=giz;
+          continue;
+        }
+        const pix=p[3*i],piy=p[3*i+1],piz=p[3*i+2],pjx=p[3*j],pjy=p[3*j+1],pjz=p[3*j+2];
+        const qix=q[3*i],qiy=q[3*i+1],qiz=q[3*i+2],qjx=q[3*j],qjy=q[3*j+1],qjz=q[3*j+2];
+        const pdot=pix*pjx+piy*pjy+piz*pjz, pri=pix*rhx+piy*rhy+piz*rhz, prj=pjx*rhx+pjy*rhy+pjz*rhz; const S1=pdot-pri*prj;
+        const qdot=qix*qjx+qiy*qjy+qiz*qjz, qri=qix*rhx+qiy*rhy+qiz*rhz, qrj=qjx*rhx+qjy*rhy+qjz*rhz; const S3=qdot-qri*qrj;
+        const aix=piy*qiz-piz*qiy,aiy=piz*qix-pix*qiz,aiz=pix*qiy-piy*qix;
+        const ajx=pjy*qjz-pjz*qjy,ajy=pjz*qjx-pjx*qjz,ajz=pjx*qjy-pjy*qjx;
+        const S2=aix*ajx+aiy*ajy+aiz*ajz;
+        // nematic option: V uses |S3| so q and −q are equivalent. d|S3| = sign(S3)·dS3,
+        // so the energy/radial term use fS3 while every S3 gradient term scales l3 by sign(S3).
+        const fS3 = nem ? Math.abs(S3) : S3;
+        const l3e = nem ? (S3<0 ? -l3 : l3) : l3;
+        const S=l1*S1+l2*S2+l3*fS3;
+        E+=eR-w*S*eB;
+        const dVdr=-eR+(w*S/beta)*eB;
+        let dSrx=l1*(-(prj)*pix-(pri)*pjx)+l3e*(-(qrj)*qix-(qri)*qjx);
+        let dSry=l1*(-(prj)*piy-(pri)*pjy)+l3e*(-(qrj)*qiy-(qri)*qjy);
+        let dSrz=l1*(-(prj)*piz-(pri)*pjz)+l3e*(-(qrj)*qiz-(qri)*qjz);
+        const dotSr=dSrx*rhx+dSry*rhy+dSrz*rhz,cf=-eB*w/r;
+        const gix=dVdr*rhx+cf*(dSrx-dotSr*rhx),giy=dVdr*rhy+cf*(dSry-dotSr*rhy),giz=dVdr*rhz+cf*(dSrz-dotSr*rhz);
+        gx[3*i]+=gix;gx[3*i+1]+=giy;gx[3*i+2]+=giz; gx[3*j]-=gix;gx[3*j+1]-=giy;gx[3*j+2]-=giz;
+        const qi_x_aj_x=qiy*ajz-qiz*ajy,qi_x_aj_y=qiz*ajx-qix*ajz,qi_x_aj_z=qix*ajy-qiy*ajx;
+        gp[3*i]+=-eB*w*(l1*(pjx-prj*rhx)+l2*qi_x_aj_x);gp[3*i+1]+=-eB*w*(l1*(pjy-prj*rhy)+l2*qi_x_aj_y);gp[3*i+2]+=-eB*w*(l1*(pjz-prj*rhz)+l2*qi_x_aj_z);
+        const qj_x_ai_x=qjy*aiz-qjz*aiy,qj_x_ai_y=qjz*aix-qjx*aiz,qj_x_ai_z=qjx*aiy-qjy*aix;
+        gp[3*j]+=-eB*w*(l1*(pix-pri*rhx)+l2*qj_x_ai_x);gp[3*j+1]+=-eB*w*(l1*(piy-pri*rhy)+l2*qj_x_ai_y);gp[3*j+2]+=-eB*w*(l1*(piz-pri*rhz)+l2*qj_x_ai_z);
+        const aj_x_pi_x=ajy*piz-ajz*piy,aj_x_pi_y=ajz*pix-ajx*piz,aj_x_pi_z=ajx*piy-ajy*pix;
+        gq[3*i]+=-eB*w*(l2*aj_x_pi_x+l3e*(qjx-qrj*rhx));gq[3*i+1]+=-eB*w*(l2*aj_x_pi_y+l3e*(qjy-qrj*rhy));gq[3*i+2]+=-eB*w*(l2*aj_x_pi_z+l3e*(qjz-qrj*rhz));
+        const ai_x_pj_x=aiy*pjz-aiz*pjy,ai_x_pj_y=aiz*pjx-aix*pjz,ai_x_pj_z=aix*pjy-aiy*pjx;
+        gq[3*j]+=-eB*w*(l2*ai_x_pj_x+l3e*(qix-qri*rhx));gq[3*j+1]+=-eB*w*(l2*ai_x_pj_y+l3e*(qiy-qri*rhy));gq[3*j+2]+=-eB*w*(l2*ai_x_pj_z+l3e*(qiz-qri*rhz));
+      }
+      // radial AB field: E_field = -field * sum_i (p_i . r^_i), r^ from centre of mass
+      if(this.field>1e-12){
+        const N=this.N,g=this.field; let cx=0,cy=0,cz=0;
+        for(let i=0;i<N;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];} cx/=N;cy/=N;cz/=N;
+        for(let i=0;i<N;i++){ if(np[i])continue;
+          const ux=x[3*i]-cx,uy=x[3*i+1]-cy,uz=x[3*i+2]-cz; const ul=Math.hypot(ux,uy,uz); if(ul<1e-9)continue;
+          const rx=ux/ul,ry=uy/ul,rz=uz/ul;
+          E+=-g*(p[3*i]*rx+p[3*i+1]*ry+p[3*i+2]*rz);
+          gp[3*i]+=-g*rx; gp[3*i+1]+=-g*ry; gp[3*i+2]+=-g*rz;   // dE/dp -> torque outward
+        }
+      }
+      this.energy=E; return E;
+    }
+
+    energyOnly(pairs=this.pairs){
+      const x=this.x,p=this.p,q=this.q,l1=this.l1,l2=this.l2,l3=this.l3,beta=this.beta,S0=this.S0,np=this.nonpolar; let E=0;
+      const tum=this.tumor, cross=this.crossStrength, nem=this.nematicPCP;
+      for(let t=0;t<pairs.length;t+=2){const i=pairs[t],j=pairs[t+1];
+        const dx=x[3*i]-x[3*j],dy=x[3*i+1]-x[3*j+1],dz=x[3*i+2]-x[3*j+2];const r=Math.sqrt(dx*dx+dy*dy+dz*dz);if(r<1e-9)continue;
+        const eR=Math.exp(-r),eB=Math.exp(-r/beta); const w=(tum[i]!==tum[j])?cross:1.0;
+        if(np[i]||np[j]){E+=eR-w*S0*eB;continue;}
+        const rhx=dx/r,rhy=dy/r,rhz=dz/r;
+        const pix=p[3*i],piy=p[3*i+1],piz=p[3*i+2],pjx=p[3*j],pjy=p[3*j+1],pjz=p[3*j+2];
+        const qix=q[3*i],qiy=q[3*i+1],qiz=q[3*i+2],qjx=q[3*j],qjy=q[3*j+1],qjz=q[3*j+2];
+        const S1=(pix*pjx+piy*pjy+piz*pjz)-(pix*rhx+piy*rhy+piz*rhz)*(pjx*rhx+pjy*rhy+pjz*rhz);
+        const S3=(qix*qjx+qiy*qjy+qiz*qjz)-(qix*rhx+qiy*rhy+qiz*rhz)*(qjx*rhx+qjy*rhy+qjz*rhz);
+        const aix=piy*qiz-piz*qiy,aiy=piz*qix-pix*qiz,aiz=pix*qiy-piy*qix;
+        const ajx=pjy*qjz-pjz*qjy,ajy=pjz*qjx-pjx*qjz,ajz=pjx*qjy-pjy*qjx; const S2=aix*ajx+aiy*ajy+aiz*ajz;
+        E+=eR-w*(l1*S1+l2*S2+l3*(nem?Math.abs(S3):S3))*eB;}
+      return E;
+    }
+
+    /* ---- perturbation ---- */
+    pickCentralCells(c){ const N=this.N,x=this.x;let cx=0,cy=0,cz=0;
+      for(let i=0;i<N;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];}cx/=N;cy/=N;cz/=N;
+      const idx=new Array(N),d2=new Float64Array(N);
+      for(let i=0;i<N;i++){const dx=x[3*i]-cx,dy=x[3*i+1]-cy,dz=x[3*i+2]-cz;d2[i]=dx*dx+dy*dy+dz*dz;idx[i]=i;}
+      idx.sort((a,b)=>d2[a]-d2[b]); return idx.slice(0,Math.max(0,Math.min(c|0,N))); }
+    pickCentralCell(){ return this.pickCentralCells(1)[0]; }
+    perturbCells(indices,deg){ this.perturbIndices=Array.from(indices); for(const idx of this.perturbIndices)this._rotateAB(idx,deg); this.buildNeighbours(); }
+    perturbCell(idx,deg){ this.perturbCells([idx],deg); }
+    _rotateAB(idx,deg){ if(idx<0||idx>=this.N)return; const th=deg*Math.PI/180;
+      let px=this.p[3*idx],py=this.p[3*idx+1],pz=this.p[3*idx+2];
+      let rx=1,ry=0,rz=0; if(Math.abs(px)>0.9){rx=0;ry=1;rz=0;}
+      let kx=py*rz-pz*ry,ky=pz*rx-px*rz,kz=px*ry-py*rx; const kl=Math.hypot(kx,ky,kz)||1;kx/=kl;ky/=kl;kz/=kl;
+      const ct=Math.cos(th),st=Math.sin(th),kdp=kx*px+ky*py+kz*pz;
+      const cx2=ky*pz-kz*py,cy2=kz*px-kx*pz,cz2=kx*py-ky*px;
+      const nx=px*ct+cx2*st+kx*kdp*(1-ct),ny=py*ct+cy2*st+ky*kdp*(1-ct),nz=pz*ct+cz2*st+kz*kdp*(1-ct);
+      const nl=Math.hypot(nx,ny,nz)||1; this.p[3*idx]=nx/nl;this.p[3*idx+1]=ny/nl;this.p[3*idx+2]=nz/nl;
+      if(this.pcpActive()){ let qx=this.q[3*idx],qy=this.q[3*idx+1],qz=this.q[3*idx+2];
+        const d=qx*(nx/nl)+qy*(ny/nl)+qz*(nz/nl); qx-=d*nx/nl;qy-=d*ny/nl;qz-=d*nz/nl; const l=Math.hypot(qx,qy,qz)||1;
+        this.q[3*idx]=qx/l;this.q[3*idx+1]=qy/l;this.q[3*idx+2]=qz/l; } }
+
+    /* ---- tumour founder & non-polar flag (live) ---- */
+    initTumor(nonpolar){ const idx=this.pickCentralCell(); this.tumor.fill(0); this.nonpolar.fill(0);
+      this.tumorFounder=idx; this.tumor[idx]=1; if(nonpolar)this.nonpolar[idx]=1; }
+    setTumorNonpolar(on){ for(let i=0;i<this.N;i++) if(this.tumor[i]) this.nonpolar[i]=on?1:0; }
+    clearTumor(){ this.tumor.fill(0); this.nonpolar.fill(0); this.tumorFounder=-1; }
+    tumorCount(){ let c=0; for(let i=0;i<this.N;i++) if(this.tumor[i])c++; return c; }
+
+    /* ---- division ---- */
+    _divide(i){
+      const N=this.N; if(N>=this.cap)return;
+      let dx,dy,dz, rx=this._gauss(),ry=this._gauss(),rz=this._gauss();
+      if(!this.nonpolar[i]){ const px=this.p[3*i],py=this.p[3*i+1],pz=this.p[3*i+2];
+        const d=rx*px+ry*py+rz*pz; rx-=d*px;ry-=d*py;rz-=d*pz; }            // split within the sheet
+      const l=Math.hypot(rx,ry,rz)||1; dx=rx/l;dy=ry/l;dz=rz/l;
+      const L=0.6, ox=this.x[3*i],oy=this.x[3*i+1],oz=this.x[3*i+2];
+      this.x[3*i]=ox-0.5*L*dx;this.x[3*i+1]=oy-0.5*L*dy;this.x[3*i+2]=oz-0.5*L*dz;
+      this.x[3*N]=ox+0.5*L*dx;this.x[3*N+1]=oy+0.5*L*dy;this.x[3*N+2]=oz+0.5*L*dz;
+      this.p[3*N]=this.p[3*i];this.p[3*N+1]=this.p[3*i+1];this.p[3*N+2]=this.p[3*i+2];
+      this.q[3*N]=this.q[3*i];this.q[3*N+1]=this.q[3*i+1];this.q[3*N+2]=this.q[3*i+2];
+      this.tumor[N]=this.tumor[i]; this.nonpolar[N]=this.nonpolar[i];
+      this.N++;
+    }
+    divideStep(){
+      if(!(this.divisionOn||this.tumorOn))return;
+      const M=this.N, prob=this.divRate*this.dt;
+      for(let i=0;i<M;i++){ if(this.N>=this.cap)break;
+        const eligible=this.divisionOn || (this.tumorOn && this.tumor[i]);
+        if(!eligible)continue;
+        if(this.rng()<prob) this._divide(i);
+      }
+    }
+
+    step(){
+      this.buildNeighbours(); this.computeForces();
+      const N=this.N,dt=this.dt,eta=this.noise,x=this.x,p=this.p,q=this.q,gx=this.gx,gp=this.gp,gq=this.gq;
+      const sn=eta*Math.sqrt(dt),useNoise=eta>0,pcp=this.pcpActive();
+      for(let i=0;i<N;i++){
+        if(useNoise){x[3*i]+=-dt*gx[3*i]+sn*this._gauss();x[3*i+1]+=-dt*gx[3*i+1]+sn*this._gauss();x[3*i+2]+=-dt*gx[3*i+2]+sn*this._gauss();}
+        else{x[3*i]+=-dt*gx[3*i];x[3*i+1]+=-dt*gx[3*i+1];x[3*i+2]+=-dt*gx[3*i+2];}
+        let pX=p[3*i]-dt*gp[3*i],pY=p[3*i+1]-dt*gp[3*i+1],pZ=p[3*i+2]-dt*gp[3*i+2];
+        if(useNoise){pX+=0.3*sn*this._gauss();pY+=0.3*sn*this._gauss();pZ+=0.3*sn*this._gauss();}
+        let pl=Math.hypot(pX,pY,pZ)||1;pX/=pl;pY/=pl;pZ/=pl;p[3*i]=pX;p[3*i+1]=pY;p[3*i+2]=pZ;
+        let qX=q[3*i]-dt*gq[3*i],qY=q[3*i+1]-dt*gq[3*i+1],qZ=q[3*i+2]-dt*gq[3*i+2];
+        if(useNoise){qX+=0.3*sn*this._gauss();qY+=0.3*sn*this._gauss();qZ+=0.3*sn*this._gauss();}
+        if(pcp){const d=qX*pX+qY*pY+qZ*pZ;qX-=d*pX;qY-=d*pY;qZ-=d*pZ;}
+        let ql=Math.hypot(qX,qY,qZ)||1;q[3*i]=qX/ql;q[3*i+1]=qY/ql;q[3*i+2]=qZ/ql;
+      }
+      this.divideStep();
+      if(this.recenter){const M=this.N;let cx=0,cy=0,cz=0;for(let i=0;i<M;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];}cx/=M;cy/=M;cz/=M;
+        for(let i=0;i<M;i++){x[3*i]-=cx;x[3*i+1]-=cy;x[3*i+2]-=cz;}}
+      this.time+=dt;this.step_count++;
+    }
+  }
+  const api={Simulation,mulberry32};
+  if(typeof module!=="undefined"&&module.exports)module.exports=api;
+  global.CellModel=api;
+})(typeof window!=="undefined"?window:globalThis);
+
+  </script>
+
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }}
+  </script>
+
+  <script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  const { Simulation } = window.CellModel;
+  const $ = id => document.getElementById(id);
+
+  /* allowed N: 100..2000 step 100, then 2500..8000 step 500 */
+  const NVALUES = [];
+  for (let n=100; n<=2000; n+=100) NVALUES.push(n);
+  for (let n=2500; n<=20000; n+=500) NVALUES.push(n);
+  $('N').max = NVALUES.length-1;
+  let nIndex = NVALUES.indexOf(2000); $('N').value = nIndex;
+
+  let mode = 'single';     // 'single' | 'dual'
+  let shadeOn = true, divMode = false;
+  let systems = [], currentSeed = 12345;
+  let clipAxis = 'y';      // axis the cutting plane spins about
+
+  // outside (apical) / inside (basal) colour palettes; index 0 = current defaults
+  const OUT_COLORS = [{n:'red',hex:'#ff8a3d'},{n:'orange',hex:'#ff9f1c'},{n:'warm yellow',hex:'#ffd24a'}];
+  const IN_COLORS  = [{n:'blue',hex:'#2cc8f2'},{n:'green',hex:'#34e07a'},{n:'magenta',hex:'#ff4dd2'},{n:'purple',hex:'#9b5cff'}];
+  let outIdx=0, inIdx=0;
+  const OUT_V=OUT_COLORS.map(o=>{const c=new THREE.Color(o.hex);return new THREE.Vector3(c.r,c.g,c.b);});
+  const IN_V =IN_COLORS.map(o=>{const c=new THREE.Color(o.hex);return new THREE.Vector3(c.r,c.g,c.b);});
+  let dualMetrics=null, _metricTick=0;
+
+  /* ---- symmetric 3×3 eigen (Jacobi); returns sorted-by-eigenvalue not required ---- */
+  function eigSym3(a00,a01,a02,a11,a12,a22){
+    let A=[[a00,a01,a02],[a01,a11,a12],[a02,a12,a22]];
+    let V=[[1,0,0],[0,1,0],[0,0,1]];
+    for(let sweep=0;sweep<10;sweep++){
+      for(const [p,r] of [[0,1],[0,2],[1,2]]){
+        const apr=A[p][r]; if(Math.abs(apr)<1e-14) continue;
+        const phi=0.5*Math.atan2(2*apr, A[r][r]-A[p][p]);
+        const c=Math.cos(phi), s=Math.sin(phi);
+        for(let k=0;k<3;k++){ const akp=A[k][p], akr=A[k][r]; A[k][p]=c*akp-s*akr; A[k][r]=s*akp+c*akr; }
+        for(let k=0;k<3;k++){ const apk=A[p][k], ark=A[r][k]; A[p][k]=c*apk-s*ark; A[r][k]=s*apk+c*ark; }
+        for(let k=0;k<3;k++){ const vkp=V[k][p], vkr=V[k][r]; V[k][p]=c*vkp-s*vkr; V[k][r]=s*vkp+c*vkr; }
+      }
+    }
+    return { evals:[A[0][0],A[1][1],A[2][2]],
+             evecs:[[V[0][0],V[1][0],V[2][0]],[V[0][1],V[1][1],V[2][1]],[V[0][2],V[1][2],V[2][2]]] };
+  }
+
+  /* ---- detect PCP topological defects on the structure surface ----
+     For each surface cell: fit a local tangent plane (smallest-eigenvector normal),
+     order neighbours by azimuth, and accumulate the winding of the (tangent-projected)
+     PCP angle. Vector field → integer charge; nematic (|S3|) → half-integer. Returns the
+     local-maximum defect cells with their rounded charge. */
+  function detectPCPDefects(sim, nematic, maxOut=80){
+    const N=sim.N, x=sim.x, q=sim.q, pairs=sim.pairs;
+    if(N<8) return [];
+    const deg=new Int32Array(N);
+    for(let t=0;t<pairs.length;t+=2){deg[pairs[t]]++;deg[pairs[t+1]]++;}
+    const off=new Int32Array(N+1); for(let i=0;i<N;i++)off[i+1]=off[i]+deg[i];
+    const adj=new Int32Array(off[N]); const cur=Int32Array.from(off.subarray(0,N));
+    for(let t=0;t<pairs.length;t+=2){const i=pairs[t],j=pairs[t+1]; adj[cur[i]++]=j; adj[cur[j]++]=i;}
+    let cx=0,cy=0,cz=0; for(let i=0;i<N;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];}cx/=N;cy/=N;cz/=N;
+    const wind=new Float64Array(N); const isSurf=new Uint8Array(N);
+    const nrm=new Float32Array(3*N);
+    const TWO_PI=2*Math.PI;
+    for(let i=0;i<N;i++){
+      const s=off[i], e=off[i+1], d=e-s; if(d<5) continue;
+      let m00=0,m01=0,m02=0,m11=0,m12=0,m22=0;
+      for(let k=s;k<e;k++){ const j=adj[k]; let dx=x[3*j]-x[3*i],dy=x[3*j+1]-x[3*i+1],dz=x[3*j+2]-x[3*i+2];
+        const l=Math.hypot(dx,dy,dz)||1; dx/=l;dy/=l;dz/=l;
+        m00+=dx*dx;m01+=dx*dy;m02+=dx*dz;m11+=dy*dy;m12+=dy*dz;m22+=dz*dz; }
+      const {evals,evecs}=eigSym3(m00,m01,m02,m11,m12,m22);
+      let si=0; if(evals[1]<evals[si])si=1; if(evals[2]<evals[si])si=2;
+      let li=0; if(evals[1]>evals[li])li=1; if(evals[2]>evals[li])li=2;
+      if(evals[si] > 0.45*evals[li]+1e-9) continue;   // neighbours fill 3D → interior/bulk, skip
+      let nx=evecs[si][0],ny=evecs[si][1],nz=evecs[si][2];
+      const ox=x[3*i]-cx,oy=x[3*i+1]-cy,oz=x[3*i+2]-cz;
+      if(nx*ox+ny*oy+nz*oz<0){nx=-nx;ny=-ny;nz=-nz;}
+      // tangent frame
+      let e1x=1,e1y=0,e1z=0; if(Math.abs(nx)>0.9){e1x=0;e1y=1;e1z=0;}
+      let dd=e1x*nx+e1y*ny+e1z*nz; e1x-=dd*nx;e1y-=dd*ny;e1z-=dd*nz;
+      const e1l=Math.hypot(e1x,e1y,e1z)||1; e1x/=e1l;e1y/=e1l;e1z/=e1l;
+      const e2x=ny*e1z-nz*e1y, e2y=nz*e1x-nx*e1z, e2z=nx*e1y-ny*e1x;
+      const ths=[], phs=[];
+      for(let k=s;k<e;k++){ const j=adj[k];
+        const dx=x[3*j]-x[3*i],dy=x[3*j+1]-x[3*i+1],dz=x[3*j+2]-x[3*i+2];
+        ths.push(Math.atan2(dx*e2x+dy*e2y+dz*e2z, dx*e1x+dy*e1y+dz*e1z));
+        let qx=q[3*j],qy=q[3*j+1],qz=q[3*j+2]; const qn=qx*nx+qy*ny+qz*nz; qx-=qn*nx;qy-=qn*ny;qz-=qn*nz;
+        phs.push(Math.atan2(qx*e2x+qy*e2y+qz*e2z, qx*e1x+qy*e1y+qz*e1z));
+      }
+      const ord=[...ths.keys()].sort((a,b)=>ths[a]-ths[b]);
+      const modv = nematic ? Math.PI : TWO_PI, half=modv/2;
+      let sum=0;
+      for(let k=0;k<ord.length;k++){
+        let dphi=phs[ord[(k+1)%ord.length]]-phs[ord[k]];
+        while(dphi>half) dphi-=modv; while(dphi<=-half) dphi+=modv;
+        sum+=dphi;
+      }
+      wind[i]=sum/TWO_PI; isSurf[i]=1; nrm[3*i]=nx;nrm[3*i+1]=ny;nrm[3*i+2]=nz;
+    }
+    const quant = nematic ? 0.5 : 1.0, out=[];
+    for(let i=0;i<N;i++){ if(!isSurf[i])continue;
+      const chg=Math.round(wind[i]/quant)*quant; if(Math.abs(chg)<quant-1e-9)continue;
+      let best=true; const ai=Math.abs(wind[i]);
+      for(let k=off[i];k<off[i+1];k++){ const j=adj[k]; const aj=Math.abs(wind[j]);
+        if(aj>ai+1e-9 || (aj>ai-1e-9 && j<i)){best=false;break;} }
+      if(!best)continue;
+      out.push({idx:i, charge:chg, nx:nrm[3*i], ny:nrm[3*i+1], nz:nrm[3*i+2], mag:ai});
+    }
+    out.sort((a,b)=>b.mag-a.mag);
+    return out.slice(0,maxOut);
+  }
+  function chargeStr(c){
+    const sign = c<0 ? '\u2212' : '+';
+    const a = Math.abs(c), whole = Math.floor(a+1e-9);
+    const half = Math.abs(a-whole-0.5) < 1e-6;
+    const body = half ? (whole>0?whole:'')+'\u00BD' : String(Math.round(a));
+    return sign+body;   // e.g. +½, −½, +1, +1½, +2½
+  }
+
+  /* Quantify how far the perturbed structure (systems[1]) has diverged from the control
+     (systems[0]). Cells correspond by index. Returns:
+       rmsdRaw      – RMS cell displacement with no alignment
+       rmsdAligned  – RMS displacement after optimal rigid (Kabsch) alignment, i.e. the
+                      part of the difference that is NOT a global rotation/translation
+       abAng,pcpAng – mean angular difference of AB / PCP polarity after that rotation
+       bondMismatch – Jaccard distance between the two Gabriel bond networks (topology) */
+  function computeDualMetrics(){
+    if(mode!=='dual'||systems.length<2) return null;
+    const A=systems[0].sim, B=systems[1].sim, N=Math.min(A.N,B.N); if(N<3) return null;
+    const ax=A.x, bx=B.x;
+    let acx=0,acy=0,acz=0,bcx=0,bcy=0,bcz=0;
+    for(let i=0;i<N;i++){acx+=ax[3*i];acy+=ax[3*i+1];acz+=ax[3*i+2];bcx+=bx[3*i];bcy+=bx[3*i+1];bcz+=bx[3*i+2];}
+    acx/=N;acy/=N;acz/=N;bcx/=N;bcy/=N;bcz/=N;
+    let Sxx=0,Sxy=0,Sxz=0,Syx=0,Syy=0,Syz=0,Szx=0,Szy=0,Szz=0, sumP2=0,sumQ2=0, raw2=0;
+    for(let i=0;i<N;i++){
+      const px=ax[3*i]-acx,py=ax[3*i+1]-acy,pz=ax[3*i+2]-acz;     // control, centred
+      const qx=bx[3*i]-bcx,qy=bx[3*i+1]-bcy,qz=bx[3*i+2]-bcz;     // perturbed, centred
+      Sxx+=qx*px;Sxy+=qx*py;Sxz+=qx*pz; Syx+=qy*px;Syy+=qy*py;Syz+=qy*pz; Szx+=qz*px;Szy+=qz*py;Szz+=qz*pz;
+      sumP2+=px*px+py*py+pz*pz; sumQ2+=qx*qx+qy*qy+qz*qz;
+      const dx=ax[3*i]-bx[3*i],dy=ax[3*i+1]-bx[3*i+1],dz=ax[3*i+2]-bx[3*i+2]; raw2+=dx*dx+dy*dy+dz*dz;
+    }
+    // Horn's 4×4 from the cross-covariance; dominant eigenvector = optimal rotation quaternion
+    const M=[[Sxx+Syy+Szz, Syz-Szy, Szx-Sxz, Sxy-Syx],
+             [Syz-Szy, Sxx-Syy-Szz, Sxy+Syx, Szx+Sxz],
+             [Szx-Sxz, Sxy+Syx, -Sxx+Syy-Szz, Syz+Szy],
+             [Sxy-Syx, Szx+Sxz, Syz+Szy, -Sxx-Syy+Szz]];
+    let c=0; for(let r=0;r<4;r++){let s=0;for(let k=0;k<4;k++)s+=Math.abs(M[r][k]); if(s>c)c=s;} // shift → PSD
+    let v=[1,1,1,1];
+    for(let it=0;it<80;it++){ const w=[0,0,0,0];
+      for(let r=0;r<4;r++){let s=c*v[r];for(let k=0;k<4;k++)s+=M[r][k]*v[k]; w[r]=s;}
+      const nrm=Math.hypot(w[0],w[1],w[2],w[3])||1; for(let r=0;r<4;r++)v[r]=w[r]/nrm; }
+    let lam=0,Mv=[0,0,0,0]; for(let r=0;r<4;r++){let s=0;for(let k=0;k<4;k++)s+=M[r][k]*v[k];Mv[r]=s;}
+    lam=v[0]*Mv[0]+v[1]*Mv[1]+v[2]*Mv[2]+v[3]*Mv[3];
+    const rmsdAligned=Math.sqrt(Math.max(0,(sumP2+sumQ2-2*lam))/N), rmsdRaw=Math.sqrt(raw2/N);
+    const qw=v[0],qx=v[1],qy=v[2],qz=v[3];
+    let R=[[1-2*(qy*qy+qz*qz),2*(qx*qy-qz*qw),2*(qx*qz+qy*qw)],
+           [2*(qx*qy+qz*qw),1-2*(qx*qx+qz*qz),2*(qy*qz-qx*qw)],
+           [2*(qx*qz-qy*qw),2*(qy*qz+qx*qw),1-2*(qx*qx+qy*qy)]];
+    // guard: ensure R maps perturbed→control (use Rᵀ if it aligns better)
+    let r1=0,r2=0;
+    for(let i=0;i<N;i++){ const qx2=bx[3*i]-bcx,qy2=bx[3*i+1]-bcy,qz2=bx[3*i+2]-bcz, px=ax[3*i]-acx,py=ax[3*i+1]-acy,pz=ax[3*i+2]-acz;
+      const a1=R[0][0]*qx2+R[0][1]*qy2+R[0][2]*qz2,a2=R[1][0]*qx2+R[1][1]*qy2+R[1][2]*qz2,a3=R[2][0]*qx2+R[2][1]*qy2+R[2][2]*qz2;
+      const b1=R[0][0]*qx2+R[1][0]*qy2+R[2][0]*qz2,b2=R[0][1]*qx2+R[1][1]*qy2+R[2][1]*qz2,b3=R[0][2]*qx2+R[1][2]*qy2+R[2][2]*qz2;
+      r1+=(a1-px)**2+(a2-py)**2+(a3-pz)**2; r2+=(b1-px)**2+(b2-py)**2+(b3-pz)**2; }
+    if(r2<r1) R=[[R[0][0],R[1][0],R[2][0]],[R[0][1],R[1][1],R[2][1]],[R[0][2],R[1][2],R[2][2]]];
+    // polarity divergence after the optimal rotation
+    const ap=A.p,bp=B.p,aq=A.q,bq=B.q; let abAng=0,pcpAng=0;
+    for(let i=0;i<N;i++){
+      let vx=bp[3*i],vy=bp[3*i+1],vz=bp[3*i+2];
+      let rx=R[0][0]*vx+R[0][1]*vy+R[0][2]*vz,ry=R[1][0]*vx+R[1][1]*vy+R[1][2]*vz,rz=R[2][0]*vx+R[2][1]*vy+R[2][2]*vz;
+      let d=Math.max(-1,Math.min(1,rx*ap[3*i]+ry*ap[3*i+1]+rz*ap[3*i+2])); abAng+=Math.acos(d);
+      vx=bq[3*i];vy=bq[3*i+1];vz=bq[3*i+2];
+      rx=R[0][0]*vx+R[0][1]*vy+R[0][2]*vz;ry=R[1][0]*vx+R[1][1]*vy+R[1][2]*vz;rz=R[2][0]*vx+R[2][1]*vy+R[2][2]*vz;
+      let e=Math.abs(Math.max(-1,Math.min(1,rx*aq[3*i]+ry*aq[3*i+1]+rz*aq[3*i+2]))); pcpAng+=Math.acos(e); // PCP nematic
+    }
+    abAng=abAng/N*180/Math.PI; pcpAng=pcpAng/N*180/Math.PI;
+    // topological divergence: Gabriel bond networks
+    function eset(sim){ const s=new Set(),pr=sim.pairs; for(let t=0;t<pr.length;t+=2){let i=pr[t],j=pr[t+1]; if(i<N&&j<N){ if(i>j){const u=i;i=j;j=u;} s.add(i*N+j);}} return s; }
+    const EA=eset(A),EB=eset(B); let inter=0; for(const e of EA) if(EB.has(e))inter++;
+    const uni=EA.size+EB.size-inter, bondMismatch=uni>0?1-inter/uni:0, diffBonds=EA.size+EB.size-2*inter;
+    return {rmsdRaw,rmsdAligned,abAng,pcpAng,bondMismatch,diffBonds};
+  }
+
+  function baseParams(){
+    return { N:NVALUES[+$('N').value], l1:+$('l1').value, l2:+$('l2').value, l3:+$('l3').value,
+             beta:+$('beta').value, dt:+$('dt').value, noise:+$('noise').value,
+             knnLimit:$('tKnn').checked, maxNeighbors:+$('knnK').value,
+             abOutward:$('tABout').checked, sphereSurface:$('tSphere').checked,
+             pcpWhirl:$('tPCPwhirl').checked, nematicPCP:$('tNematic').checked };
+  }
+  function sysRadius(N){ return 2.0*Math.cbrt(3*N/(4*Math.PI))*1.1; }
+  function configSimScalars(m){
+    m.l1=+$('l1').value; m.l2=+$('l2').value; m.l3=+$('l3').value;
+    m.beta=+$('beta').value; m.dt=+$('dt').value; m.noise=+$('noise').value;
+    m.divisionOn=$('tDivide').checked; m.divRate=+$('divRate').value;
+    m.tumorOn=$('tTumor').checked; m.nonpolarTumor=$('tNonpolar').checked;
+    m.crossStrength = 1 + (+$('crossPct').value)/100;
+    m.field=+$('field').value;
+    m.knnLimit=$('tKnn').checked; m.maxNeighbors=+$('knnK').value;
+    m.nematicPCP=$('tNematic').checked;
+  }
+  function applyControls(){ for(const sys of systems) configSimScalars(sys.sim); }
+
+  /* Cutting-plane normal: perpendicular to the chosen spin axis, swept by `angle`.
+     Returns null when clipping is off. */
+  function clipPlane(){
+    if(!$('tClip').checked) return null;
+    const th = (+$('clipAng').value) * Math.PI/180;
+    let ux,uy,uz,vx,vy,vz;
+    if(clipAxis==='x'){ ux=0;uy=1;uz=0; vx=0;vy=0;vz=1; }       // axis = X
+    else if(clipAxis==='z'){ ux=1;uy=0;uz=0; vx=0;vy=1;vz=0; }   // axis = Z
+    else { ux=0;uy=0;uz=1; vx=1;vy=0;vz=0; }                     // axis = Y (default)
+    const c=Math.cos(th), s=Math.sin(th);
+    return { nx:c*ux+s*vx, ny:c*uy+s*vy, nz:c*uz+s*vz, flip:$('tClipFlip').checked };
+  }
+
+  /* ---------------- renderer / scene ---------------- */
+  const stage = $('stage');
+  const renderer = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setClearColor(0x0a0c12, 0);
+  stage.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x0a0c12, 0.0042);
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  const grid = new THREE.GridHelper(400, 80, 0x1c2435, 0x131927);
+  grid.material.transparent = true; grid.material.opacity = 0.3;
+  scene.add(grid);
+
+  const CS = getComputedStyle(document.documentElement);
+  const apicalL = new THREE.Color(CS.getPropertyValue('--apical').trim());
+  const apicalD = new THREE.Color(CS.getPropertyValue('--apicalDark').trim());
+  const basalL  = new THREE.Color(CS.getPropertyValue('--basal').trim());
+  const basalD  = new THREE.Color(CS.getPropertyValue('--basalDark').trim());
+  const CELL_R = 0.92;
+
+  function makeCellMaterial(){
+    return new THREE.ShaderMaterial({
+      uniforms:{
+        apicalL:{value:new THREE.Vector3(apicalL.r,apicalL.g,apicalL.b)},
+        apicalD:{value:new THREE.Vector3(apicalD.r,apicalD.g,apicalD.b)},
+        basalL:{value:new THREE.Vector3(basalL.r,basalL.g,basalL.b)},
+        basalD:{value:new THREE.Vector3(basalD.r,basalD.g,basalD.b)},
+        lightDir:{value:new THREE.Vector3(0.5,0.8,0.6).normalize()},
+        colorMode:{value:0.0},   // 0 AB two-tone · 1 flat · 2 divergence
+        pcpOn:{value:0.0},       // 1 -> modulate brightness along PCP (q)
+        depthNear:{value:1.0},   // view distance at which cells are at full brightness
+        depthFar:{value:100.0},  // view distance at which cells reach depthFloor
+        depthFloor:{value:0.4},  // brightness multiplier for the farthest cells (UI-driven)
+      },
+      vertexShader:`
+        attribute vec3 aPol; attribute vec3 aPcp; attribute float aDiv; attribute float aMark; attribute float aFlag; attribute float aClip;
+        varying vec3 vN; varying vec3 vPol; varying vec3 vPcp; varying float vDiv; varying float vMark; varying float vFlag;
+        varying float vViewZ;
+        void main(){
+          vN=normalize(normal); vPol=normalize(aPol); vPcp=aPcp; vDiv=aDiv; vMark=aMark; vFlag=aFlag;
+          vec4 mv = modelViewMatrix * instanceMatrix * vec4(position,1.0);
+          vViewZ = -mv.z;                              // distance in front of the camera
+          vec4 pos = projectionMatrix * mv;
+          if(aClip>0.5) pos = vec4(0.0,0.0,2.0,1.0);   // push past far plane → cell removed
+          gl_Position = pos;
+        }`,
+      fragmentShader:`
+        uniform vec3 apicalL; uniform vec3 apicalD; uniform vec3 basalL; uniform vec3 basalD;
+        uniform vec3 lightDir; uniform float colorMode; uniform float pcpOn;
+        uniform float depthNear; uniform float depthFar; uniform float depthFloor;
+        varying vec3 vN; varying vec3 vPol; varying vec3 vPcp; varying float vDiv; varying float vMark; varying float vFlag;
+        varying float vViewZ;
+        vec3 heat(float t){ t=clamp(t,0.0,1.0);
+          return clamp(vec3(1.5-abs(4.0*t-3.0),1.5-abs(4.0*t-2.0),1.5-abs(4.0*t-1.0)),0.0,1.0); }
+        void main(){
+          float diff=clamp(dot(vN,lightDir),0.0,1.0);
+          float rim=pow(1.0-max(dot(vN,vec3(0.0,0.0,1.0)),0.0),2.0);
+          vec3 violet=vec3(0.78,0.42,1.0);
+          vec3 base;
+          if(colorMode<0.5){
+            float side = smoothstep(-0.18,0.18, dot(vN,vPol));      // 0 basal(blue) .. 1 apical(red)
+            base = mix(basalL, apicalL, side);                      // apical=orange, basal=cyan
+          } else if(colorMode<1.5){ base=vec3(0.6,0.64,0.72); }
+          else { base=heat(vDiv); }
+          if(colorMode<1.5){
+            if(vMark>0.5) base=mix(base, vec3(1.0,0.97,0.9), 0.62);
+            if(vFlag>1.5) base=violet;                              // non-polar tumour cell
+            else if(vFlag>0.5) base=mix(base, violet, 0.40);        // polar tumour lineage
+          }
+          vec3 col = base*(0.66+0.42*diff)+rim*0.08;
+          // depth shading: full brightness up close, smoothly down to depthFloor far away.
+          // multiplicative → hue is preserved (orange→dark red, cyan→dark blue at the back).
+          float dz = smoothstep(depthNear, depthFar, vViewZ);
+          col *= mix(1.0, depthFloor, dz);
+          gl_FragColor=vec4(col,1.0);
+        }`
+    });
+  }
+
+  function detailFor(N){ return N<=800?2 : (N<=10000?1 : 0); }
+
+  class System {
+    constructor(sim, offset, role){
+      this.sim=sim; this.offset=offset; this.role=role;
+      this.mat=makeCellMaterial();
+      this.maxDiv=0;
+      this.build();
+    }
+    build(){
+      const N0=this.sim.N, cap=this.sim.cap;
+      const geo = new THREE.InstancedBufferGeometry().copy(new THREE.IcosahedronGeometry(CELL_R, detailFor(N0)));
+      this.polA = new THREE.InstancedBufferAttribute(new Float32Array(3*cap),3); this.polA.setUsage(THREE.DynamicDrawUsage);
+      this.pcpA = new THREE.InstancedBufferAttribute(new Float32Array(3*cap),3); this.pcpA.setUsage(THREE.DynamicDrawUsage);
+      this.divA = new THREE.InstancedBufferAttribute(new Float32Array(cap),1);   this.divA.setUsage(THREE.DynamicDrawUsage);
+      this.markA= new THREE.InstancedBufferAttribute(new Float32Array(cap),1);
+      this.flagA= new THREE.InstancedBufferAttribute(new Float32Array(cap),1);   this.flagA.setUsage(THREE.DynamicDrawUsage);
+      this.clipA= new THREE.InstancedBufferAttribute(new Float32Array(cap),1);    this.clipA.setUsage(THREE.DynamicDrawUsage);
+      for(const idx of this.sim.perturbIndices) if(idx>=0&&idx<cap) this.markA.array[idx]=1.0;
+      geo.setAttribute('aPol', this.polA); geo.setAttribute('aPcp', this.pcpA);
+      geo.setAttribute('aDiv', this.divA); geo.setAttribute('aMark', this.markA);
+      geo.setAttribute('aFlag', this.flagA); geo.setAttribute('aClip', this.clipA);
+      this.mesh = new THREE.InstancedMesh(geo, this.mat, cap);
+      this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      const m=this.mesh.instanceMatrix.array;
+      for(let i=0;i<cap;i++){ m[16*i]=1; m[16*i+5]=1; m[16*i+10]=1; m[16*i+15]=1; }
+      this.mesh.count=N0;
+      scene.add(this.mesh);
+      this.clipMask=new Uint8Array(cap);                       // 1 = cell hidden by half-cut
+      this.ab  = this._lines(cap,0xffb05a);
+      this.pcp = this._lines(cap,0x7fa9ff);
+      // PCP-on-surface arrows: 3 segments (shaft + 2 chevron) = 6 vertices per cell
+      const pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(18*cap),3));
+      this.pcpSurf=new THREE.LineSegments(pg,new THREE.LineBasicMaterial({color:0x33ffd0,transparent:true,opacity:0.95}));
+      this.pcpSurf.visible=false; scene.add(this.pcpSurf);
+      const bg=new THREE.BufferGeometry(); bg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(0),3));
+      this.bonds=new THREE.LineSegments(bg,new THREE.LineBasicMaterial({color:0x4a5878,transparent:true,opacity:0.25}));
+      scene.add(this.bonds);
+      // floating defect-sign labels (green sprites, ~30% shorter than 3 cells, 3 units above surface)
+      this.labels=[]; this.defects=[]; this._defTick=0;
+      const CW=240, CH=160, FONT=96;                 // canvas px (wide enough for "−1½")
+      const Lh = 0.8125*6*CELL_R*0.7*0.9*0.8;        // glyph world height (progressively reduced)
+      for(let k=0;k<80;k++){
+        const cv=document.createElement('canvas'); cv.width=CW; cv.height=CH;
+        const tex=new THREE.CanvasTexture(cv);
+        const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
+        sp.scale.set(Lh*CW/FONT, Lh*CH/FONT, 1); sp.visible=false;
+        sp.userData={cv,tex,txt:null}; scene.add(sp); this.labels.push(sp);
+      }
+    }
+    _drawLabel(sp,text){ const u=sp.userData; if(u.txt===text)return; u.txt=text;
+      const cv=u.cv, g=cv.getContext('2d'), CW=cv.width, CH=cv.height, cx=CW/2, cy=CH/2-2;
+      g.clearRect(0,0,CW,CH);
+      g.font='bold 96px Arial,sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+      // soft drop shadow (cast down-right) for depth
+      g.save(); g.shadowColor='rgba(0,0,0,0.5)'; g.shadowBlur=12; g.shadowOffsetX=8; g.shadowOffsetY=10;
+      g.fillStyle='#05300f'; g.fillText(text,cx,cy); g.restore();
+      // extruded body: dark→light green copies stepping toward the face → 3D feel
+      const D=8;
+      for(let k=D;k>=1;k--){ const f=k/D;
+        g.fillStyle='rgb('+Math.round(10+16*(1-f))+','+Math.round(58+92*(1-f))+','+Math.round(22+18*(1-f))+')';
+        g.fillText(text, cx+k, cy+k);
+      }
+      // bright top face with a thin dark outline
+      g.lineWidth=7; g.lineJoin='round'; g.strokeStyle='rgba(0,35,0,0.9)'; g.strokeText(text,cx,cy);
+      g.fillStyle='#4bff6a'; g.fillText(text,cx,cy);
+      u.tex.needsUpdate=true; }
+    _placeLabels(ox,oy,oz){ const sim=this.sim,x=sim.x,cm=this.clipMask,defs=this.defects,L=this.labels;
+      for(let k=0;k<L.length;k++){ const sp=L[k];
+        if(k<defs.length){ const d=defs[k], i=d.idx;
+          if(cm[i]){ sp.visible=false; continue; }
+          const r=CELL_R+3;   // float 3 units above the cell surface, along the outward normal
+          sp.position.set(x[3*i]+d.nx*r+ox, x[3*i+1]+d.ny*r+oy, x[3*i+2]+d.nz*r+oz);
+          this._drawLabel(sp, chargeStr(d.charge)); sp.visible=true;
+        } else sp.visible=false;
+      } }
+    _hideLabels(){ for(const sp of this.labels) sp.visible=false; }
+    _lines(N,color){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6*N),3));
+      const o=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color,transparent:true,opacity:0.85})); scene.add(o); return o; }
+    sync(center, refSim){
+      const sim=this.sim, N=sim.N, x=sim.x, p=sim.p, q=sim.q;
+      const ox=this.offset.x-center.x, oy=this.offset.y-center.y, oz=this.offset.z-center.z;
+      this.mesh.count = N;
+      const m=this.mesh.instanceMatrix.array, pa=this.polA.array, qa=this.pcpA.array, fa=this.flagA.array;
+      const tum=sim.tumor, npo=sim.nonpolar;
+      for(let i=0;i<N;i++){
+        const o=16*i;
+        m[o+12]=x[3*i]+ox; m[o+13]=x[3*i+1]+oy; m[o+14]=x[3*i+2]+oz;
+        pa[3*i]=p[3*i]; pa[3*i+1]=p[3*i+1]; pa[3*i+2]=p[3*i+2];
+        qa[3*i]=q[3*i]; qa[3*i+1]=q[3*i+1]; qa[3*i+2]=q[3*i+2];
+        fa[i] = tum[i] ? (npo[i]?2.0:1.0) : 0.0;
+      }
+      this.mesh.instanceMatrix.needsUpdate=true; this.polA.needsUpdate=true; this.pcpA.needsUpdate=true; this.flagA.needsUpdate=true;
+
+      // ---- half-cut: hide every cell on one side of a plane through this replica's COM ----
+      const plane=clipPlane(), cm=this.clipMask, ca=this.clipA.array;
+      if(plane){
+        let cx=0,cy=0,cz=0; for(let i=0;i<N;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];} cx/=N;cy/=N;cz/=N;
+        const nx=plane.nx,ny=plane.ny,nz=plane.nz, sgn=plane.flip?-1:1;
+        for(let i=0;i<N;i++){
+          const s=(x[3*i]-cx)*nx+(x[3*i+1]-cy)*ny+(x[3*i+2]-cz)*nz;
+          const hide=(sgn*s>0)?1:0; cm[i]=hide; ca[i]=hide;
+        }
+      } else {
+        for(let i=0;i<N;i++){ cm[i]=0; ca[i]=0; }
+      }
+      this.clipA.needsUpdate=true;
+
+      if(refSim && divMode){
+        const rx=refSim.x, da=this.divA.array; let mx=0;
+        for(let i=0;i<N;i++){const dx=x[3*i]-rx[3*i],dy=x[3*i+1]-rx[3*i+1],dz=x[3*i+2]-rx[3*i+2];const d=Math.sqrt(dx*dx+dy*dy+dz*dz);da[i]=d;if(d>mx)mx=d;}
+        this.maxDiv=mx; const inv=mx>1e-6?1/mx:0; for(let i=0;i<N;i++)da[i]*=inv;
+        this.divA.needsUpdate=true; this.mat.uniforms.colorMode.value=2.0;
+      } else {
+        this.mat.uniforms.colorMode.value = shadeOn?0.0:1.0;
+      }
+
+      if(this.ab.visible)  this._vec(this.ab,x,p,1.7,ox,oy,oz);
+      if(this.pcp.visible) this._vec(this.pcp,x,q,1.5,ox,oy,oz);
+      if(this.pcpSurf.visible) this._pcpSurf(x,p,q,ox,oy,oz);
+      if(this.bonds.visible) this._bonds(ox,oy,oz);
+
+      // PCP defect sign labels: shown when the on-surface PCP field is displayed.
+      if(this.pcpSurf.visible && $('tDefects').checked){
+        if((this._defTick++ % 8)===0) this.defects=detectPCPDefects(sim, sim.nematicPCP, this.labels.length);
+        this._placeLabels(ox,oy,oz);
+      } else if(this.labels) { this._hideLabels(); }
+    }
+    _vec(obj,x,v,len,ox,oy,oz){ const N=this.sim.N,a=obj.geometry.attributes.position.array,cm=this.clipMask;
+      for(let i=0;i<N;i++){
+        if(cm[i]){ a[6*i]=a[6*i+3]=0;a[6*i+1]=a[6*i+4]=0;a[6*i+2]=a[6*i+5]=0; continue; } // hidden by half-cut
+        a[6*i]=x[3*i]+ox;a[6*i+1]=x[3*i+1]+oy;a[6*i+2]=x[3*i+2]+oz;
+        a[6*i+3]=x[3*i]+v[3*i]*len+ox;a[6*i+4]=x[3*i+1]+v[3*i+1]*len+oy;a[6*i+5]=x[3*i+2]+v[3*i+2]*len+oz; }
+      obj.geometry.attributes.position.needsUpdate=true; obj.geometry.setDrawRange(0,2*N); }
+    /* PCP arrow drawn tangent to the cell surface at its apical pole (+p side). */
+    _pcpSurf(x,p,q,ox,oy,oz){ const N=this.sim.N,a=this.pcpSurf.geometry.attributes.position.array;
+      const cm=this.clipMask,npo=this.sim.nonpolar,R=CELL_R*1.04,L=0.95,hl=0.34,hw=0.22;
+      let n=0;
+      for(let i=0;i<N;i++){
+        if(cm[i]||npo[i]){ for(let k=0;k<18;k++)a[n++]=0; continue; }  // hidden / no PCP
+        const px=p[3*i],py=p[3*i+1],pz=p[3*i+2], qx=q[3*i],qy=q[3*i+1],qz=q[3*i+2];
+        // surface anchor at apical pole; chevron lies in-surface along t = p × q (⊥ q, ⊥ p)
+        const sx=x[3*i]+px*R+ox, sy=x[3*i+1]+py*R+oy, sz=x[3*i+2]+pz*R+oz;
+        let tx=py*qz-pz*qy, ty=pz*qx-px*qz, tz=px*qy-py*qx; const tl=Math.hypot(tx,ty,tz)||1; tx/=tl;ty/=tl;tz/=tl;
+        const bx=sx-qx*L*0.5, by=sy-qy*L*0.5, bz=sz-qz*L*0.5;   // tail
+        const hx=sx+qx*L*0.5, hy=sy+qy*L*0.5, hz=sz+qz*L*0.5;   // head (tip)
+        // shaft
+        a[n++]=bx;a[n++]=by;a[n++]=bz; a[n++]=hx;a[n++]=hy;a[n++]=hz;
+        // two chevron strokes at the tip
+        a[n++]=hx;a[n++]=hy;a[n++]=hz; a[n++]=hx-qx*hl+tx*hw;a[n++]=hy-qy*hl+ty*hw;a[n++]=hz-qz*hl+tz*hw;
+        a[n++]=hx;a[n++]=hy;a[n++]=hz; a[n++]=hx-qx*hl-tx*hw;a[n++]=hy-qy*hl-ty*hw;a[n++]=hz-qz*hl-tz*hw;
+      }
+      this.pcpSurf.geometry.attributes.position.needsUpdate=true; this.pcpSurf.geometry.setDrawRange(0,6*N); }
+    _bonds(ox,oy,oz){ const pairs=this.sim.pairs,x=this.sim.x,cm=this.clipMask; let a=this.bonds.geometry.attributes.position.array;
+      if(a.length<pairs.length*3){ a=new Float32Array(pairs.length*3); this.bonds.geometry.setAttribute('position',new THREE.BufferAttribute(a,3)); }
+      let n=0; for(let t=0;t<pairs.length;t+=2){const i=pairs[t],j=pairs[t+1]; if(cm[i]||cm[j])continue;
+        a[n++]=x[3*i]+ox;a[n++]=x[3*i+1]+oy;a[n++]=x[3*i+2]+oz; a[n++]=x[3*j]+ox;a[n++]=x[3*j+1]+oy;a[n++]=x[3*j+2]+oz; }
+      this.bonds.geometry.attributes.position.needsUpdate=true; this.bonds.geometry.setDrawRange(0,n/3); }
+    setVis(){ this.ab.visible=$('tAB').checked; this.pcp.visible=$('tPCP').checked;
+      this.pcpSurf.visible=$('tPCPsurf').checked; this.bonds.visible=$('tBonds').checked;
+      if(!(this.pcpSurf.visible && $('tDefects').checked)) this._hideLabels(); }
+    dispose(){ for(const o of [this.mesh,this.ab,this.pcp,this.pcpSurf,this.bonds]){ scene.remove(o); o.geometry.dispose(); if(o.material.dispose)o.material.dispose(); }
+      for(const sp of this.labels){ scene.remove(sp); sp.userData.tex.dispose(); sp.material.dispose(); } }
+  }
+
+  function centroid(sim){ const N=sim.N,x=sim.x; let cx=0,cy=0,cz=0;
+    for(let i=0;i<N;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];} return new THREE.Vector3(cx/N,cy/N,cz/N); }
+
+  function fitCamera(){
+    const N=systems[0].sim.N, R=sysRadius(N);
+    let halfW=R+2;
+    if(mode==='dual') halfW=Math.abs(systems[0].offset.x)+R+2;
+    const d=halfW*2.2+8;
+    camera.position.set(d*0.55, d*0.4, d*0.9);
+    camera.far=d*30; camera.updateProjectionMatrix();
+    controls.target.set(0,0,0); controls.update();
+  }
+
+  function resetSim(){
+    setPlay(false);
+    for(const s of systems) s.dispose(); systems=[];
+    currentSeed=(Math.random()*2e9)>>>0;
+    const P=baseParams();
+    $('cNum').max=P.N;
+    if(mode==='dual'){
+      let c=Math.max(1, Math.min(parseInt($('cNum').value)||1, P.N));
+      $('cNum').value=c;
+      const ctrl=new Simulation({...P, seed:currentSeed});
+      const pert=new Simulation({...P, seed:currentSeed});
+      const ids=pert.pickCentralCells(c); ctrl.perturbIndices=ids.slice();
+      pert.perturbCells(ids, +$('ang').value);
+      const off=sysRadius(P.N)*1.35+5;
+      systems=[ new System(ctrl,new THREE.Vector3(-off,0,0),'control'),
+                new System(pert,new THREE.Vector3(+off,0,0),'perturbed') ];
+    } else {
+      systems=[ new System(new Simulation({...P, seed:currentSeed}), new THREE.Vector3(0,0,0),'single') ];
+    }
+    for(const s of systems){ configSimScalars(s.sim); if($('tTumor').checked) s.sim.initTumor($('tNonpolar').checked); }
+    for(const s of systems) s.setVis();
+    updateLabels(); fitCamera(); syncAll();
+  }
+
+  function syncAll(){
+    const ctrl=systems[0].sim, c=centroid(ctrl);
+    for(const s of systems) s.sync(c, s.role==='perturbed'?ctrl:null);
+  }
+
+  /* ---------------- loop ---------------- */
+  let running=false, frames=0, lastT=performance.now(), fps=0;
+  function loop(){
+    requestAnimationFrame(loop);
+    if(running){ const k=+$('spf').value; for(let s=0;s<k;s++) for(const sys of systems) sys.sim.step(); syncAll(); }
+    controls.autoRotate=$('tSpin').checked; controls.autoRotateSpeed=0.7; controls.update();
+    // view-distance darkening: near = front of cluster (full bright), far = back (depthFloor)
+    if(systems.length){
+      const Rtot=(mode==='dual'?Math.abs(systems[0].offset.x):0)+sysRadius(systems[0].sim.N);
+      const camDist=camera.position.distanceTo(controls.target), floor=+$('depthFloor').value;
+      for(const s of systems){ const u=s.mat.uniforms; u.depthNear.value=camDist-Rtot; u.depthFar.value=camDist+Rtot; u.depthFloor.value=floor;
+        u.apicalL.value.copy(OUT_V[outIdx]); u.basalL.value.copy(IN_V[inIdx]); }
+    }
+    if(mode==='dual' && (_metricTick++ % 15)===0) dualMetrics=computeDualMetrics();
+    frames++; const now=performance.now();
+    if(now-lastT>500){ fps=Math.round(frames*1000/(now-lastT)); frames=0; lastT=now; }
+    renderer.render(scene,camera); hud();
+  }
+  function hud(){
+    const s=systems[0].sim; let h=`step <b>${s.step_count}</b> · t <b>${s.time.toFixed(1)}</b><br>cells <b>${s.N}${mode==='dual'?' ×2':''}</b> · bonds <b>${s.pairs.length/2}</b><br>energy <b>${(s.energy||0).toFixed(1)}</b> · ${fps} fps`;
+    if($('tTumor').checked) h+=`<br>tumour cells <b style="color:#c66bff">${s.tumorCount()}</b>`;
+    if(mode==='dual'){ h+=`<br>flipped cells <b>${systems[1].sim.perturbIndices.length}</b> · max divergence <b>${systems[1].maxDiv.toFixed(2)}</b>`;
+      const m=dualMetrics; if(m) h+=`<br><span style="color:var(--faint)">divergence</span> aligned RMSD <b>${m.rmsdAligned.toFixed(2)}</b> · raw <b>${m.rmsdRaw.toFixed(2)}</b><br>AB Δ <b>${m.abAng.toFixed(1)}°</b> · PCP Δ <b>${m.pcpAng.toFixed(1)}°</b> · bonds Δ <b>${(m.bondMismatch*100).toFixed(1)}%</b> (${m.diffBonds})`;
+    }
+    $('hud').innerHTML=h;
+  }
+  function updateLabels(){
+    $('labels').innerHTML = mode==='dual'
+      ? `<span class="badge">◀ control</span><span class="badge" style="color:var(--danger)">perturbed ▶</span>` : '';
+    $('legend').innerHTML = (mode==='dual'&&divMode)
+      ? `<div><span class="grad"></span>cell displacement (control → perturbed)</div><div style="color:var(--faint);margin-top:3px">blue = unchanged · red = max divergence</div>`
+      : `<div><span class="dot" style="background:var(--apical)"></span>apical side <span style="color:var(--faint)">(+p)</span></div><div><span class="dot" style="background:var(--basal)"></span>basal side <span style="color:var(--faint)">(−p)</span></div>`;
+  }
+
+  /* ---------------- UI ---------------- */
+  function setPlay(on){ running=on; const b=$('playBtn'); b.textContent=on?'❚❚ Pause':'▶ Run'; }
+  $('playBtn').onclick=()=>setPlay(!running);
+  $('stepBtn').onclick=()=>{ for(const sys of systems) sys.sim.step(); syncAll(); };
+  $('resetBtn').onclick=resetSim;
+  $('pngBtn').onclick=()=>{ renderer.render(scene,camera);
+    const a=document.createElement('a'); const s=systems[0].sim;
+    a.download=`cellmodel_${mode}_N${s.N}_step${s.step_count}.png`; a.href=renderer.domElement.toDataURL('image/png'); a.click(); };
+
+  const fmt={l1:2,l2:2,l3:2,beta:1,dt:2,noise:3};
+  ['l1','l2','l3','beta','dt','noise'].forEach(id=>$(id).addEventListener('input',()=>{
+    $(id+'v').textContent=(+$(id).value).toFixed(fmt[id]);
+    $('lsum').textContent=(+$('l1').value+ +$('l2').value+ +$('l3').value).toFixed(2);
+    applyControls(); updateLabels();
+  }));
+  $('divRate').addEventListener('input',()=>{ $('ratev').textContent=(+$('divRate').value).toFixed(3); applyControls(); });
+  $('field').addEventListener('input',()=>{ $('fieldv').textContent=(+$('field').value).toFixed(2); applyControls(); });
+  $('tDivide').addEventListener('change',applyControls);
+  $('tTumor').addEventListener('change',e=>{
+    $('npToggle').classList.toggle('dim',!e.target.checked);
+    $('tumorbox').classList.toggle('on',e.target.checked);
+    $('crossPct').disabled=!e.target.checked;
+    for(const sys of systems){ const m=sys.sim; m.tumorOn=e.target.checked;
+      if(e.target.checked) m.initTumor($('tNonpolar').checked); else m.clearTumor(); }
+    applyControls(); syncAll();
+  });
+  $('crossPct').addEventListener('input',()=>{ $('crossv').textContent=$('crossPct').value+'%'; applyControls(); });
+  $('tNonpolar').addEventListener('change',e=>{
+    for(const sys of systems){ sys.sim.nonpolarTumor=e.target.checked;
+      if($('tTumor').checked) sys.sim.setTumorNonpolar(e.target.checked); }
+    applyControls(); syncAll();
+  });
+  $('N').addEventListener('input',()=>{ $('Nv').textContent=NVALUES[+$('N').value]; });
+  $('N').addEventListener('change',resetSim);
+  $('spf').addEventListener('input',()=>$('spfv').textContent=$('spf').value);
+  $('depthFloor').addEventListener('input',()=>$('depthFloorv').textContent=(+$('depthFloor').value).toFixed(2));
+  function applyColorUI(){
+    const o=OUT_COLORS[outIdx], i=IN_COLORS[inIdx];
+    $('outSw').style.background=o.hex; $('outNm').textContent=o.n;
+    $('inSw').style.background=i.hex;  $('inNm').textContent=i.n;
+    document.documentElement.style.setProperty('--apical',o.hex);   // keep legend dots in sync
+    document.documentElement.style.setProperty('--basal', i.hex);
+  }
+  $('outColor').addEventListener('click',()=>{ outIdx=(outIdx+1)%OUT_COLORS.length; applyColorUI(); });
+  $('inColor').addEventListener('click', ()=>{ inIdx =(inIdx +1)%IN_COLORS.length;  applyColorUI(); });
+  applyColorUI();
+  $('ang').addEventListener('input',()=>$('angv').textContent=$('ang').value+'°');
+
+  document.querySelectorAll('#presets .chip').forEach(chip=>chip.addEventListener('click',()=>{
+    document.querySelectorAll('#presets .chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active');
+    const [a,b,c]=chip.dataset.l.split(',').map(Number);
+    $('l1').value=a;$('l2').value=b;$('l3').value=c; ['l1','l2','l3'].forEach(id=>$(id).dispatchEvent(new Event('input')));
+  }));
+
+  $('tDual').addEventListener('change',e=>{
+    mode=e.target.checked?'dual':'single';
+    $('ang').disabled=!e.target.checked;
+    $('cNum').disabled=!e.target.checked;
+    $('divToggle').classList.toggle('dim',!e.target.checked);
+    $('expbox').classList.toggle('on',e.target.checked);
+    if(!e.target.checked){ $('tDiv').checked=false; divMode=false; }
+    resetSim();
+  });
+  $('tDiv').addEventListener('change',e=>{ divMode=e.target.checked; updateLabels(); });
+  $('ang').addEventListener('change',()=>{ if(mode==='dual') resetSim(); });
+  $('cNum').addEventListener('change',()=>{ if(mode==='dual') resetSim(); });
+
+  $('tShade').addEventListener('change',e=>{ shadeOn=e.target.checked; });
+  $('tAB').addEventListener('change',()=>{ for(const s of systems)s.setVis(); syncAll(); });
+  $('tPCP').addEventListener('change',()=>{ for(const s of systems)s.setVis(); syncAll(); });
+  $('tPCPsurf').addEventListener('change',()=>{ for(const s of systems)s.setVis(); syncAll(); });
+  $('tDefects').addEventListener('change',()=>{ for(const s of systems)s.setVis(); syncAll(); });
+  $('tBonds').addEventListener('change',()=>{ for(const s of systems)s.setVis(); syncAll(); });
+  $('tNematic').addEventListener('change',()=>{ applyControls(); for(const s of systems)s.sim.computeForces(); syncAll(); });
+
+  /* half-cut clipping (live display only) */
+  $('tClip').addEventListener('change',e=>{ $('clipbox').classList.toggle('on',e.target.checked); syncAll(); });
+  $('tClipFlip').addEventListener('change',syncAll);
+  $('clipAng').addEventListener('input',()=>{ $('clipAngv').textContent=$('clipAng').value+'°'; syncAll(); });
+  document.querySelectorAll('#clipAxis .chip').forEach(chip=>chip.addEventListener('click',()=>{
+    document.querySelectorAll('#clipAxis .chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active');
+    clipAxis=chip.dataset.ax; syncAll();
+  }));
+
+  /* neighbour restriction (live: rebuild neighbours so bonds/forces update at once) */
+  $('tKnn').addEventListener('change',()=>{ applyControls(); for(const s of systems)s.sim.buildNeighbours(); syncAll(); });
+  $('knnK').addEventListener('input',()=>{ $('knnv').textContent=$('knnK').value; applyControls(); for(const s of systems)s.sim.buildNeighbours(); syncAll(); });
+
+  /* AB-outward initial condition needs a fresh reset */
+  $('tABout').addEventListener('change',resetSim);
+  $('tSphere').addEventListener('change',resetSim);
+  $('tPCPwhirl').addEventListener('change',resetSim);
+
+  function resize(){ const w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+  window.addEventListener('resize',resize);
+
+  const mono=document.querySelector('#presets .chip[data-l="1,0,0"]'); if(mono) mono.classList.add('active');
+  resetSim(); resize(); loop();
+  </script>
+</body>
+</html>
