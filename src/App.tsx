@@ -374,7 +374,6 @@ function Index() {
               Professor of Biocomplexity, Niels Bohr Institute, University of Copenhagen.
             </p>
             <p className="mt-7 max-w-2xl border-l-2 border-accent/60 pl-4 font-serif text-lg italic text-foreground/75 sm:pl-5 sm:text-xl md:text-2xl">
-              “Modeling living systems with the tools of theoretical physics.”
             </p>
           </div>
           <div className="reveal mt-12 flex justify-center md:mt-16 md:justify-start">
