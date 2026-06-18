@@ -10,7 +10,7 @@ const NAV = [
   { href: "about", label: "About" },
   { href: "research", label: "Research" },
   { href: "publications", label: "Publications" },
-  { href: "grants", label: "Honors" },
+  
   { href: "models", label: "Interactive Models" },
   { href: "cv", label: "CV" },
   { href: "contact", label: "Contact" },
@@ -447,34 +447,6 @@ function Index() {
           </div>
         </section>
 
-        {/* GRANTS */}
-        <section id="grants" className={sectionClass}>
-          <SectionHeading label="Honors & Grants" title="Honors & grants" />
-          <div className="reveal mt-12 grid gap-6 md:grid-cols-2">
-            <article className="measure rounded-lg border border-border bg-card p-8 md:p-10">
-              <p className="eyebrow text-[0.65rem]">Academy Membership</p>
-              <h3 className="mt-3 font-serif text-2xl md:text-[1.7rem]">Royal Danish Academy of Sciences and Letters</h3>
-              <p className="mt-2 text-[13px] uppercase tracking-[0.14em] text-muted-foreground">
-                Member since 2006
-              </p>
-              <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
-                Elected member of Det Kongelige Danske Videnskabernes Selskab, Denmark's
-                oldest learned society, recognizing distinguished contributions to science.
-              </p>
-            </article>
-            <article className="measure rounded-lg border border-border bg-card p-8 md:p-10">
-              <p className="eyebrow text-[0.65rem]">ERC Advanced Grant</p>
-              <h3 className="mt-3 font-serif text-2xl md:text-[1.7rem]">SOURCE</h3>
-              <p className="mt-2 text-[13px] uppercase tracking-[0.14em] text-muted-foreground">
-                Self-organization in Competition and Diversity · DKK 16.5 million
-              </p>
-              <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
-                Investigating how diversity emerges and is maintained in complex biological
-                systems, from microbial communities to multi-species ecosystems.
-              </p>
-            </article>
-          </div>
-        </section>
 
         {/* INTERACTIVE MODELS */}
         <section id="models" className={sectionClass}>
