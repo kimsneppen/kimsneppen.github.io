@@ -557,9 +557,9 @@ function Index() {
                   Lecture notes
                 </p>
                 <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
-                  Lecture notes from Kim Sneppen's course on complex physics, covering
-                  topics at the interface of statistical mechanics, nonlinear dynamics,
-                  and biological complexity.{" "}
+                  Lecture notes from my course on complex physics, covering topics at
+                  the interface of statistical mechanics, percolation,
+                  self-organization, networks, agent based models and complexity.{" "}
                   <a
                     href={complexPhysicsPdf.url}
                     target="_blank"
