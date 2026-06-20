@@ -389,8 +389,7 @@ function Index() {
               University of Copenhagen. He builds quantitative, physics-based theories
               of different biological phenomena including how cells hold stable epigenetic states,
               how growth and collapse dynamics inspired by Indian mythology may provide waves
-              of diversity, how bacteria exploit spatial organization to hide from viruses,
-              and how polar interactions between cells shapes sheets and tubes during
+              of diversity, how virus deals with space of/in their host, and how polar interactions between cells shapes sheets and tubes during
               embryo development.
             </p>
           </div>
