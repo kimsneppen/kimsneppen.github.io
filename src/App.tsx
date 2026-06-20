@@ -118,6 +118,7 @@ const PUBLICATIONS = [
 
 const CV = [
   { years: "2005–present", role: "Professor, Niels Bohr Institute, University of Copenhagen" },
+  { years: "2006–present", role: "Member of the Royal Danish Academy of Sciences" },
   { years: "2014–2020", role: "Divisional Associate Editor, Physical Review Letters" },
   { years: "2005–2015", role: "Founding Director, Center for Models of Life (CMOL)" },
   { years: "2002–2005", role: "Research Professor, NORDITA" },
