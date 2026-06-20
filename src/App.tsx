@@ -112,6 +112,7 @@ const PUBLICATIONS = [
   "Bornholdt, S., Jensen, M. H., & Sneppen, K. (2011). Emergence and decline of scientific paradigms. Physical Review Letters, 106(5), 058701.",
   "Maslov, S., & Sneppen, K. (2015). Diversity waves in collapse-driven population dynamics. PLoS Computational Biology, 11(9), e1004440.",
   "Nissen, S. B., Rønhild, S., Trusina, A., & Sneppen, K. (2018). Theoretical tool bridging cell polarities with development of robust morphologies. eLife, 7, e38407.",
+  "Eriksen, R. S., Svenningsen, S. L., Sneppen, K., & Mitarai, N. (2018). A growing microcolony can survive and support persistent propagation of virulent phages. Proceedings of the National Academy of Sciences, 115(2), 337–342.",
   "Nielsen, B. F., Simonsen, L. & Sneppen, K. (2021). Overdispersion in COVID-19 increases the effectiveness of limiting nonrepetitive contacts for transmission control. Proceedings of the National Academy of Sciences, 118(14), e2016623118.",
 ];
 
