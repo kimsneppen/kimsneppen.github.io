@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTW Sandpile — 3D Self-Organized Criticality</title>
+<style>
+  :root{
+    --bg:#0a0a12; --panel:#14141f; --edge:#2b2b3d; --txt:#ece9f5;
+    --muted:#9a93b5; --accent:#c084fc; --accent2:#7c3aed; --hot:#ff5d8f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:radial-gradient(1200px 700px at 70% -10%,#1a1030,#0a0a12 60%);
+    color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:13px;
+  }
+  header{padding:10px 16px; border-bottom:1px solid var(--edge); display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;}
+  header h1{font-size:16px; margin:0; font-weight:700; background:linear-gradient(90deg,#c084fc,#ff5d8f,#ffb347); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  header .sub{color:var(--muted); font-size:12px;}
+  .wrap{display:flex; gap:16px; padding:14px 16px; align-items:flex-start;}
+  .col{display:flex; flex-direction:column; gap:12px;}
+  .card{background:var(--panel); border:1px solid var(--edge); border-radius:8px; padding:10px;}
+  .card h2{font-size:11px; margin:0 0 8px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:600;}
+  canvas{display:block; background:#05050b; border-radius:6px;}
+  canvas.tilt{cursor:grab;}
+  .controls{display:flex; flex-direction:column; gap:9px; min-width:236px; max-width:252px;}
+  .row{display:flex; gap:6px; flex-wrap:wrap;}
+  button{
+    background:#20203033; color:var(--txt); border:1px solid var(--edge);
+    border-radius:6px; padding:6px 10px; cursor:pointer; font-size:12px; transition:.12s;
+  }
+  button:hover{border-color:var(--accent); color:#fff;}
+  button.active{background:linear-gradient(90deg,var(--accent2),var(--hot)); border-color:var(--accent); color:#fff;}
+  button.primary{background:linear-gradient(90deg,var(--accent2),#5b21b6); border-color:var(--accent);}
+  button.freeze{background:linear-gradient(90deg,#0ea5e9,#22d3ee); border-color:#22d3ee; color:#04121a; font-weight:600;}
+  label.field{display:flex; flex-direction:column; gap:3px; font-size:11px; color:var(--muted);}
+  input[type=range]{width:100%; accent-color:var(--accent);}
+  input[type=range].short{max-width:130px;}
+  input[type=number]{width:60px; background:#0d0d17; color:var(--txt); border:1px solid var(--edge); border-radius:5px; padding:3px 5px;}
+  .val{color:var(--accent); font-variant-numeric:tabular-nums;}
+  .stats{font-size:12px; line-height:1.7;}
+  .stats b{color:var(--accent); font-variant-numeric:tabular-nums;}
+  .legend{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); margin-top:6px;}
+  .legend .bar{height:10px; flex:1; min-width:80px; border-radius:3px;}
+  .hint{color:var(--muted); font-size:11px; line-height:1.45;}
+  .sectiontitle{font-size:11px; color:var(--accent); text-transform:uppercase; letter-spacing:.05em; font-weight:600; margin-top:5px;}
+  .smallrow{display:flex; gap:12px;}
+  .frozenBadge{display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; background:#0ea5e933; border:1px solid #22d3ee; color:#67e8f9;}
+</style>
+</head>
+<body>
+<header>
+  <h1>BTW Sandpile</h1>
+  <span class="sub">Bak–Tang–Wiesenfeld self-organized criticality · perspective 3D view · steppable grain → sweep → avalanche · frozen-config A/S probes</span>
+</header>
+
+<div class="wrap">
+  <!-- ============ CONTROLS ============ -->
+  <div class="controls card">
+    <h2>Run</h2>
+    <div class="row">
+      <button id="btnStart" class="primary">▶ Start</button>
+      <button id="btnStep">Step</button>
+      <button id="btnReset">Reset</button>
+    </div>
+
+    <label class="field">Update granularity / speed:
+      <span class="val" id="granLabel">1 avalanche / frame</span>
+      <input type="range" id="gran" min="0" max="6" value="2">
+    </label>
+    <div class="hint">Slowest → fastest: a single toppling, one sweep, one whole avalanche, … up to one grain added per site (a full lattice pass) each frame.</div>
+
+    <label class="field">Lattice size L = <span class="val" id="Lval">32</span>
+      <span style="font-size:10px;color:var(--muted)">scroll · max 1024 (if pixels allow) · <span id="LpxInfo">— px/site</span></span>
+      <input type="range" id="Lslider" min="0" max="1" value="0" step="1">
+    </label>
+    <div class="hint">L snaps to sizes giving a whole number of pixels per lattice site. Below L = 100 the pile is 3-D balls; above 100 it is columns — flat squares when viewed top-down (tilt 0°), real 3-D columns once you tilt.</div>
+
+    <div class="sectiontitle">Drive mode (grain drop site)</div>
+    <div class="row" id="modeRow">
+      <button data-mode="random" class="active">Random</button>
+      <button data-mode="deterministic">Deterministic</button>
+      <button data-mode="detboundary">Det. boundary</button>
+      <button data-mode="boundary">Random boundary</button>
+      <button data-mode="corner">Corner</button>
+      <button data-mode="center">Center</button>
+    </div>
+    <div class="hint"><b>Det. boundary</b> drives the top boundary row one site at a time, left → right, then repeats.</div>
+
+    <div class="sectiontitle">Frozen-config A / S</div>
+    <div class="row">
+      <button id="btnFreeze" class="freeze">❄ Freeze &amp; pause</button>
+      <span id="frozenState" class="hint">running</span>
+    </div>
+    <div class="row">
+      <button id="btnAS" class="primary">Compute A &amp; S</button>
+    </div>
+    <div class="hint">Freeze pauses the run and snapshots the configuration; press again to restart. <b>Compute A &amp; S</b> then probes the frozen state: drop one grain at <i>every</i> site in turn (resetting each time). <b>S</b>[p] = size of the avalanche from p. <b>A</b> = total topplings at each site summed over all probe-avalanches.</div>
+
+    <div class="sectiontitle">Colour scheme (all panels)</div>
+    <div class="row">
+      <button id="btnScheme" class="primary">Colour: Mountain</button>
+    </div>
+    <div class="hint">Applies to the pile, A, S and the latest-avalanche map. Each panel is normalised to its own maximum.</div>
+
+    <div class="sectiontitle">Pile view</div>
+    <div class="row">
+      <button id="btnFlat">Columns ▸ Flat colours</button>
+    </div>
+    <div class="hint">Force the flat top-down colour map (no 3-D) at any size — handy as a fast view for very large L when tilted 3-D gets heavy.</div>
+
+    <div class="sectiontitle">View (all 3 lattice figures)</div>
+    <label class="field">Polar tilt from vertical (5° steps): <span class="val"><span id="polVal">0</span>°</span>
+      <input type="range" id="polar" class="short" min="0" max="90" step="5" value="0">
+    </label>
+    <label class="field">Azimuth around centre: <span class="val"><span id="aziVal">0</span>°</span>
+      <input type="range" id="azimuth" min="0" max="360" value="0">
+    </label>
+    <label class="field">A &amp; S view distance: <span class="val" id="asDistLabel">∞</span>
+      <input type="range" id="asDist" class="short" min="0" max="5" step="1" value="5">
+    </label>
+    <div class="hint">Camera height for the A/S plots, in multiples of the tallest bar (its max value = 1): ×1, 2, 4, 8, 16, then ∞ (orthographic). Drag inside any lattice panel to tilt &amp; turn them together.</div>
+
+    <div class="sectiontitle">Save PNG</div>
+    <div class="row">
+      <button id="savMain">Main</button>
+      <button id="savA">A</button>
+      <button id="savS">S</button>
+    </div>
+    <div class="row">
+      <button id="savTime">Size–time</button>
+      <button id="savDist">Distrib.</button>
+      <button id="savCur">Avalanche</button>
+    </div>
+    <div class="row"><button id="savAll" class="primary">All together</button></div>
+
+    <div class="sectiontitle">Statistics</div>
+    <div class="stats">
+      Grains added: <b id="stGrains">0</b><br>
+      Avalanches: <b id="stAval">0</b><br>
+      Last size: <b id="stLast">0</b><br>
+      Max size: <b id="stMax">0</b><br>
+      Mean size: <b id="stMean">0</b><br>
+      Mean height: <b id="stHeight">0</b>
+    </div>
+  </div>
+
+  <!-- ============ MAIN COLUMN: main, 3 small plots, then A and S below ============ -->
+  <div class="col">
+    <div class="card">
+      <h2 style="white-space:nowrap">Sandpile profile, model of P. Bak, C. Tang &amp; K. Wiesenfeld. Physical Review Letters, 59 (1987).</h2>
+      <canvas id="main" class="tilt" width="728" height="728"></canvas>
+      <div class="legend"><span>low</span><span class="bar" id="legHeight"></span><span>high</span></div>
+    </div>
+
+    <div class="smallrow">
+      <div class="card">
+        <h2>Avalanche size vs. time</h2>
+        <canvas id="timePlot" width="216" height="200"></canvas>
+      </div>
+      <div class="card">
+        <h2>Size distribution (log-log, last ¾)</h2>
+        <canvas id="distPlot" width="216" height="200"></canvas>
+      </div>
+      <div class="card">
+        <h2 style="white-space:nowrap">Last avalanche &gt; <span id="bigThrLabel" class="val">—</span></h2>
+        <canvas id="curPlot" class="tilt" width="216" height="200"></canvas>
+        <input type="range" id="bigThr" min="10" max="100" value="10" style="margin-top:6px;">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="white-space:nowrap">A — Σ activity over avalanches from every site &nbsp;·&nbsp; M. Engsig &amp; K. Sneppen, Physical Review Letters, 134 (2025).</h2>
+      <canvas id="aPlot" class="tilt" width="728" height="728"></canvas>
+      <div class="legend"><span id="aMin">0</span><span class="bar" id="legJetA"></span><span id="aMax">0</span></div>
+    </div>
+    <div class="card">
+      <h2 style="white-space:nowrap">S — avalanche size when seeding each site &nbsp;·&nbsp; M. Engsig &amp; K. Sneppen, Physical Review Letters, 134 (2025).</h2>
+      <canvas id="sPlot" class="tilt" width="728" height="728"></canvas>
+      <div class="legend"><span id="sMin">0</span><span class="bar" id="legJetS"></span><span id="sMax">0</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   BTW (Bak–Tang–Wiesenfeld) sandpile, L×L, open boundary.
+   ============================================================ */
+
+const State = {
+  L: 32, z:null, Acur:null, Aprobe:null, Sprobe:null, frozen:null,
+  mark:null, markVer:0,
+  aval:{ cur:[], next:[], pos:0, size:0, fillVer:0, running:false },
+  sizes:[], grains:0, lastSize:0, maxSize:0,
+  lastBig:null, lastBigSize:0, bigThresh:10,
+  mode:"random", detIndex:0, running:false, scheme:"mountain", flat:false,
+};
+
+function alloc(L){
+  State.L=L; const N=L*L;
+  State.z=new Int16Array(N); State.Acur=new Int32Array(N);
+  State.Aprobe=new Int32Array(N); State.Sprobe=new Int32Array(N);
+  State.frozen=null; State.mark=new Int32Array(N); State.markVer=0;
+  State.aval={ cur:[], next:[], pos:0, size:0, fillVer:0, running:false };
+  State.sizes=[]; State.grains=0; State.lastSize=0; State.maxSize=0; State.detIndex=0;
+  State.lastBig=new Int32Array(N); State.lastBigSize=0;
+}
+const idx=(i,j)=> j*State.L + i;
+
+function dropSite(){
+  const L=State.L;
+  switch(State.mode){
+    case "deterministic":{ const k=State.detIndex%(L*L); State.detIndex++; return k; }
+    case "detboundary":{ const i=State.detIndex%L; State.detIndex++; return idx(i,L-1); } // top row, left→right, repeat
+    case "boundary":{ const e=(Math.random()*4)|0, t=(Math.random()*L)|0;
+      if(e===0) return idx(t,0); if(e===1) return idx(t,L-1);
+      if(e===2) return idx(0,t); return idx(L-1,t); }
+    case "corner": return idx(0,0);
+    case "center": return idx((L/2)|0,(L/2)|0);
+    default: return (Math.random()*L*L)|0;
+  }
+}
+
+/* ---------- avalanche state machine ---------- */
+function beginGrain(){
+  const z=State.z, a=State.aval;
+  const k0=dropSite(); z[k0]++; State.grains++; State.Acur.fill(0);
+  a.cur=[]; a.next=[]; a.pos=0; a.size=0; a.fillVer=++State.markVer;
+  if(z[k0]>3){ a.cur.push(k0); a.running=true; } else { a.running=false; finalizeAval(); }
+}
+function toppleSite(k){
+  const z=State.z, L=State.L, a=State.aval, mark=State.mark;
+  z[k]-=4; a.size++; State.Acur[k]++;
+  const i=k%L, j=(k/L)|0;
+  const nb0=(i>0)?k-1:-1, nb1=(i<L-1)?k+1:-1, nb2=(j>0)?k-L:-1, nb3=(j<L-1)?k+L:-1;
+  if(nb0>=0) z[nb0]++; if(nb1>=0) z[nb1]++; if(nb2>=0) z[nb2]++; if(nb3>=0) z[nb3]++;
+  const cand=[k,nb0,nb1,nb2,nb3];
+  for(let c=0;c<5;c++){ const m=cand[c];
+    if(m>=0 && z[m]>3 && mark[m]!==a.fillVer){ mark[m]=a.fillVer; a.next.push(m); } }
+}
+function stepTopple(){
+  const a=State.aval, z=State.z; if(!a.running) return;
+  if(a.pos>=a.cur.length){ if(a.next.length===0){ finalizeAval(); return; }
+    a.cur=a.next; a.next=[]; a.pos=0; a.fillVer=++State.markVer; }
+  const k=a.cur[a.pos++]; if(z[k]>3) toppleSite(k);
+  if(a.pos>=a.cur.length && a.next.length===0) finalizeAval();
+}
+function stepSweep(){
+  const a=State.aval, z=State.z; if(!a.running) return;
+  while(a.pos<a.cur.length){ const k=a.cur[a.pos++]; if(z[k]>3) toppleSite(k); }
+  if(a.next.length===0){ finalizeAval(); }
+  else { a.cur=a.next; a.next=[]; a.pos=0; a.fillVer=++State.markVer; }
+}
+function resolveFull(){ while(State.aval.running) stepSweep(); }
+function finalizeAval(){ const a=State.aval; a.running=false;
+  State.lastSize=a.size; if(a.size>State.maxSize) State.maxSize=a.size; State.sizes.push(a.size);
+  if(a.size>=State.bigThresh){ State.lastBig.set(State.Acur); State.lastBigSize=a.size; } }
+function ensureGrain(){ if(!State.aval.running) beginGrain(); }
+
+/* ---------- freeze + probe ---------- */
+function freezeLattice(){ State.frozen=State.z.slice(); }
+function probeAS(){
+  if(!State.frozen) freezeLattice();
+  const L=State.L, N=L*L, fr=State.frozen;
+  const Ap=new Int32Array(N), Sp=new Int32Array(N), zz=new Int16Array(N), mark=new Int32Array(N); let ver=0;
+  for(let p=0;p<N;p++){
+    zz.set(fr); zz[p]++;
+    if(zz[p]<=3){ Sp[p]=0; continue; }
+    let cur=[p], size=0;
+    while(cur.length){
+      ver++; const next=[];
+      for(let s=0;s<cur.length;s++){
+        const k=cur[s]; if(zz[k]<=3) continue;
+        zz[k]-=4; size++; Ap[k]++;
+        const i=k%L, j=(k/L)|0;
+        const nb0=(i>0)?k-1:-1, nb1=(i<L-1)?k+1:-1, nb2=(j>0)?k-L:-1, nb3=(j<L-1)?k+L:-1;
+        if(nb0>=0) zz[nb0]++; if(nb1>=0) zz[nb1]++; if(nb2>=0) zz[nb2]++; if(nb3>=0) zz[nb3]++;
+        const cand=[k,nb0,nb1,nb2,nb3];
+        for(let c=0;c<5;c++){ const m=cand[c];
+          if(m>=0 && zz[m]>3 && mark[m]!==ver){ mark[m]=ver; next.push(m); } }
+      }
+      cur=next;
+    }
+    Sp[p]=size;
+  }
+  State.Aprobe=Ap; State.Sprobe=Sp;
+}
+
+/* ============================================================
+   Perspective 3D camera.  camDist = distance from camera to the
+   NEAREST feature (in world units); we add a depth bound so the
+   denominator is always positive even for very close distances.
+   camDist === Infinity  →  orthographic (no perspective).
+   ============================================================ */
+const View={ polar:0, azimuth:0, asDist:Infinity };
+function makeProjector(canvas, L, opts){
+  opts=opts||{};
+  const barTop=opts.barTop||0;
+  const polRad=View.polar*Math.PI/180, aziRad=View.azimuth*Math.PI/180;
+  const alpha=Math.PI/2-polRad, ca=Math.cos(alpha), sa=Math.sin(alpha);
+  const cz=Math.cos(aziRad), sz=Math.sin(aziRad);
+  const cx=canvas.width/2, cy=canvas.height/2;
+  const baseScale=(Math.min(canvas.width,canvas.height)*0.80)/L;
+  const c=(L-1)/2;
+  const ortho = !(opts.camDist!==undefined && isFinite(opts.camDist));
+  let D=Infinity, f=baseScale;
+  if(!ortho){
+    const depthBound=Math.abs(L*0.6*ca)+Math.abs((barTop+0.5)*sa)+1;  // max |depth| over the scene
+    D=opts.camDist+depthBound;                                        // nearest point ~ camDist away
+    f=baseScale*D;
+  }
+  return { scale:baseScale, cx, cy, ortho,
+    project(i,j,zw){
+      let x=i-c, y=j-c, z=zw;
+      const x1=x*cz - y*sz, y1=x*sz + y*cz;
+      const up    = z*ca - y1*sa;
+      const depth = z*sa + y1*ca;
+      const ps = ortho ? baseScale : f/Math.max(0.001, D - depth);
+      return { sx: cx + x1*ps, sy: cy - up*ps - L*0.05*baseScale, depth };
+    } };
+}
+
+/* ---------- colormaps (shared) ---------- */
+function clamp(v){ return Math.max(0,Math.min(1,v)); }
+function lerp3(a,b,t){ return [Math.round(a[0]+(b[0]-a[0])*t), Math.round(a[1]+(b[1]-a[1])*t), Math.round(a[2]+(b[2]-a[2])*t)]; }
+function ramp(stops,t){ t=clamp(t);
+  if(t<=stops[0][0]) return stops[0][1].slice();
+  for(let i=1;i<stops.length;i++){ if(t<=stops[i][0]){
+    const a=stops[i-1], b=stops[i], f=(t-a[0])/(b[0]-a[0]); return lerp3(a[1],b[1],f); } }
+  return stops[stops.length-1][1].slice();
+}
+const PLASMA=[[24,8,64],[92,22,150],[186,28,140],[240,90,54],[255,214,92]];
+function plasma(t){ const x=clamp(t)*(PLASMA.length-1), i=Math.min(PLASMA.length-2,Math.floor(x)); return lerp3(PLASMA[i],PLASMA[i+1],x-i); }
+function jet(t){ t=clamp(t);
+  return [Math.round(clamp(1.5-Math.abs(4*t-3))*255), Math.round(clamp(1.5-Math.abs(4*t-2))*255), Math.round(clamp(1.5-Math.abs(4*t-1))*255)]; }
+function autumn(t){ t=clamp(t); return [255, Math.round(255*t), 0]; }
+function blueRamp(t){ t=clamp(t); return lerp3([10,22,90],[150,205,255],t); }
+function hsv2rgb(h,s,v){ const c=v*s, x=c*(1-Math.abs((h/60)%2-1)), m=v-c; let r,g,b;
+  if(h<60){r=c;g=x;b=0;} else if(h<120){r=x;g=c;b=0;} else if(h<180){r=0;g=c;b=x;}
+  else if(h<240){r=0;g=x;b=c;} else if(h<300){r=x;g=0;b=c;} else {r=c;g=0;b=x;}
+  return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)]; }
+function rainbow(t){ return hsv2rgb((1-clamp(t))*240,1,1); }
+/* Mountain: black(0) → dark green → green → light green → orange →
+   yellow → blue → light blue → cyan → snowy white with a touch of cyan. */
+const MOUNTAIN_STOPS=[
+  [0.00,[  0,  0,  0]],
+  [0.06,[ 10, 55, 12]],
+  [0.18,[ 28,120, 32]],
+  [0.32,[120,210, 95]],
+  [0.46,[224,138, 30]],
+  [0.58,[245,228, 66]],
+  [0.70,[ 40, 78,240]],
+  [0.80,[110,165,250]],
+  [0.88,[ 60,220,232]],
+  [1.00,[228,250,250]],
+];
+function mountain(t){ return ramp(MOUNTAIN_STOPS,t); }
+/* Classical heat (black-body): black → red → orange → yellow → white. */
+const HEAT_STOPS=[
+  [0.00,[  0,  0,  0]],
+  [0.25,[128,  0,  0]],
+  [0.50,[255, 60,  0]],
+  [0.75,[255,200,  0]],
+  [1.00,[255,255,255]],
+];
+function heat(t){ return ramp(HEAT_STOPS,t); }
+const SCHEMES={ mountain, heat, plasma, jet, autumn, blue:blueRamp, rainbow };
+const SCHEME_ORDER=["mountain","heat","plasma","jet","autumn","blue","rainbow"];
+const SCHEME_LABEL={mountain:"Mountain", heat:"Heat", plasma:"Plasma", jet:"Jet", autumn:"Autumn", blue:"Blue", rainbow:"Rainbow"};
+function cmap(t){ return (SCHEMES[State.scheme]||mountain)(t); }
+
+/* ---------- shaded sphere sprites ---------- */
+const spriteCache={};
+function sphereSprite(rgb, dpx){
+  const key=rgb.join(",")+"@"+(dpx|0);
+  if(spriteCache[key]) return spriteCache[key];
+  const pad=Math.ceil(dpx*0.35), size=(dpx|0)+pad*2;
+  const cv=document.createElement("canvas"); cv.width=size; cv.height=size;
+  const g=cv.getContext("2d"); const cx=size/2, cy=size/2, R=dpx/2;
+  g.save(); g.globalAlpha=0.34; g.fillStyle="#000";
+  g.beginPath(); g.ellipse(cx,cy+R*0.85,R*0.95,R*0.42,0,0,Math.PI*2); g.fill(); g.restore();
+  const [r,gg,b]=rgb, lx=cx-R*0.4, ly=cy-R*0.45;
+  const grad=g.createRadialGradient(lx,ly,R*0.1,cx,cy,R*1.05);
+  const lighten=(c,fr)=>Math.min(255,Math.round(c+(255-c)*fr)), darken=(c,fr)=>Math.round(c*(1-fr));
+  grad.addColorStop(0,`rgb(${lighten(r,.8)},${lighten(gg,.8)},${lighten(b,.8)})`);
+  grad.addColorStop(0.45,`rgb(${r},${gg},${b})`);
+  grad.addColorStop(1,`rgb(${darken(r,.6)},${darken(gg,.6)},${darken(b,.6)})`);
+  g.fillStyle=grad; g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.fill();
+  g.globalAlpha=0.55; g.fillStyle="#fff"; g.beginPath(); g.arc(lx,ly,R*0.22,0,Math.PI*2); g.fill();
+  g.globalAlpha=1;
+  const out={cv, off:pad+dpx/2}; spriteCache[key]=out; return out;
+}
+function spriteCacheClear(){ for(const k in spriteCache) delete spriteCache[k]; }
+
+const VSPACE=0.55, SPHERE_D=0.92;
+function fillPoly(ctx, pts, style){
+  ctx.beginPath(); ctx.moveTo(pts[0].sx,pts[0].sy);
+  for(let k=1;k<pts.length;k++) ctx.lineTo(pts[k].sx,pts[k].sy); ctx.closePath();
+  ctx.fillStyle=style; ctx.fill();
+}
+function drawGroundPlane(ctx, proj){
+  const L=State.L;
+  const cs=[[-0.5,-0.5],[L-0.5,-0.5],[L-0.5,L-0.5],[-0.5,L-0.5]].map(c=>proj.project(c[0],c[1],0));
+  ctx.save(); ctx.beginPath(); ctx.moveTo(cs[0].sx,cs[0].sy);
+  for(let k=1;k<4;k++) ctx.lineTo(cs[k].sx,cs[k].sy);
+  ctx.closePath(); ctx.fillStyle="rgba(50,40,80,0.30)"; ctx.fill();
+  ctx.strokeStyle="rgba(150,120,200,0.30)"; ctx.lineWidth=1; ctx.stroke(); ctx.restore();
+}
+/* ---- L>100 top-down: flat square columns, integer pixels per site (very fast) ---- */
+function renderSquaresMain(ctx, canvas, maxH){
+  const S=Math.min(canvas.width,canvas.height), L=State.L, z=State.z;
+  ctx.fillStyle="#05050b"; ctx.fillRect(0,0,canvas.width,canvas.height);
+  const P=Math.max(1,Math.floor(S/L));      // whole pixels per lattice site
+  const grid=L*P, ox=Math.floor((canvas.width-grid)/2), oy=Math.floor((canvas.height-grid)/2);
+  const lut=new Array(maxH+1); for(let h=1;h<=maxH;h++) lut[h]=cmap(h/maxH);
+  const im=ctx.createImageData(grid,grid), d=im.data;
+  for(let py=0;py<grid;py++){
+    const j=L-1-((py/P)|0), row=j*L;        // flip y so j increases upward
+    for(let px=0;px<grid;px++){
+      const h=z[row+((px/P)|0)], o=(py*grid+px)<<2;
+      if(h>0){ const c=lut[h]; d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; }
+      else { d[o]=5; d[o+1]=5; d[o+2]=11; }
+      d[o+3]=255;
+    }
+  }
+  ctx.putImageData(im, ox, oy);
+}
+/* ---- L>100 tilted: real 3-D columns, one cheap stroke each, narrowing with L ---- */
+function render3DColumns(ctx, canvas, maxH){
+  const L=State.L, z=State.z;
+  const proj=makeProjector(canvas,L,{camDist:L*2.4, barTop:maxH*VSPACE});
+  drawGroundPlane(ctx,proj);
+  const lw=Math.max(1, proj.scale*0.72);              // column width shrinks as L grows
+  const lut=new Array(maxH+1); for(let h=1;h<=maxH;h++) lut[h]=cmap(h/maxH);
+  const order=[];
+  for(let j=0;j<L;j++)for(let i=0;i<L;i++){ const h=z[j*L+i]; if(h>0) order.push([i,j,h,proj.project(i,j,0).depth]); }
+  order.sort((a,b)=>a[3]-b[3]);                        // painter's order, back to front
+  ctx.lineCap="round";
+  for(const o of order){ const i=o[0], j=o[1], c=lut[o[2]];
+    const b=proj.project(i,j,0), t=proj.project(i,j,o[2]*VSPACE);
+    ctx.strokeStyle=`rgb(${c[0]},${c[1]},${c[2]})`; ctx.lineWidth=lw;
+    ctx.beginPath(); ctx.moveTo(b.sx,b.sy); ctx.lineTo(t.sx,t.sy); ctx.stroke(); }
+  ctx.lineCap="butt";
+}
+function renderMain(){
+  const canvas=document.getElementById("main"), ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const L=State.L, z=State.z;
+  let maxH=1; for(let k=0;k<L*L;k++) if(z[k]>maxH) maxH=z[k];
+  if(L>100){                                           // balls → columns above L=100
+    if(State.flat || View.polar===0) renderSquaresMain(ctx,canvas,maxH);  // top-down → fast flat grid
+    else render3DColumns(ctx,canvas,maxH);                                // tilted → real 3-D columns
+    return;
+  }
+  const proj=makeProjector(canvas,L,{camDist:L*2.4, barTop:maxH*VSPACE});
+  drawGroundPlane(ctx,proj);
+  if(State.flat){
+    // ----- flat colours only: filled cells on the ground plane, no columns -----
+    const cells=[];
+    for(let j=0;j<L;j++)for(let i=0;i<L;i++){
+      const h=z[idx(i,j)]; if(h<=0) continue;
+      const p0=proj.project(i-0.5,j-0.5,0), p1=proj.project(i+0.5,j-0.5,0),
+            p2=proj.project(i+0.5,j+0.5,0), p3=proj.project(i-0.5,j+0.5,0);
+      cells.push({pts:[p0,p1,p2,p3], col:cmap(h/maxH), depth:(p0.depth+p2.depth)/2});
+    }
+    cells.sort((a,b)=>a.depth-b.depth);
+    for(const cl of cells){ const [r,g,b]=cl.col; fillPoly(ctx,cl.pts,`rgb(${r},${g},${b})`); }
+    return;
+  }
+  // ----- 3-D sphere columns -----
+  const prims=[];
+  for(let j=0;j<L;j++)for(let i=0;i<L;i++){
+    const h=z[idx(i,j)]; if(h<=0) continue;
+    const col=cmap(h/maxH);
+    for(let kk=0;kk<h;kk++){ const p=proj.project(i,j,(kk+0.5)*VSPACE);
+      prims.push({sx:p.sx,sy:p.sy,depth:p.depth,col}); }
+  }
+  prims.sort((a,b)=>a.depth-b.depth);
+  const baseD=SPHERE_D*proj.scale;
+  for(const p of prims){ const sp=sphereSprite(p.col,baseD); ctx.drawImage(sp.cv,p.sx-sp.off,p.sy-sp.off); }
+}
+
+/* ---------- A / S / last-avalanche 3D bar plots (shared perspective) ----------
+   Columns are full-width (bw = 0.5, stroke = one full cell) so adjacent sites
+   touch with no gaps between columns in the 3-D view. */
+function drawFieldBars(canvas, field){
+  const ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const L=State.L; let vmax=0; for(let k=0;k<L*L;k++) if(field[k]>vmax) vmax=field[k];
+  const maxBarH=L*0.45;
+  const camDist = (View.asDist===Infinity)? Infinity : View.asDist*maxBarH;
+  const proj=makeProjector(canvas,L,{camDist, barTop:maxBarH});
+  drawGroundPlane(ctx,proj);
+  if(vmax<=0) return 0;
+  if(L>100){
+    if(View.polar!==0){
+      // tilted: cheap 3-D bars (one stroke each, no shaded faces)
+      const lw=Math.max(1, proj.scale*1.04), order=[];   // full-cell width → columns touch
+      for(let j=0;j<L;j++)for(let i=0;i<L;i++){ const v=field[idx(i,j)]; if(v>0) order.push([i,j,v,proj.project(i,j,0).depth]); }
+      order.sort((a,b)=>a[3]-b[3]); ctx.lineCap="butt";
+      for(const o of order){ const i=o[0], j=o[1], t=o[2]/vmax, c=cmap(t);
+        const b=proj.project(i,j,0), tp=proj.project(i,j,t*maxBarH);
+        ctx.strokeStyle=`rgb(${c[0]},${c[1]},${c[2]})`; ctx.lineWidth=lw;
+        ctx.beginPath(); ctx.moveTo(b.sx,b.sy); ctx.lineTo(tp.sx,tp.sy); ctx.stroke(); }
+      return vmax;
+    }
+    // top-down: fast flat colour grid
+    const S=Math.min(canvas.width,canvas.height), P=Math.max(1,Math.floor(S/L));
+    const grid=L*P, ox=Math.floor((canvas.width-grid)/2), oy=Math.floor((canvas.height-grid)/2);
+    const im=ctx.createImageData(grid,grid), d=im.data;
+    for(let py=0;py<grid;py++){ const j=L-1-((py/P)|0), row=j*L;
+      for(let px=0;px<grid;px++){ const v=field[row+((px/P)|0)], o=(py*grid+px)<<2;
+        if(v>0){ const c=cmap(v/vmax); d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; } else { d[o]=5; d[o+1]=5; d[o+2]=11; }
+        d[o+3]=255; } }
+    ctx.putImageData(im, ox, oy); return vmax;
+  }
+  const bw=0.5, boxes=[];   // full half-width → boxes abut, no gaps
+  for(let j=0;j<L;j++)for(let i=0;i<L;i++){
+    const v=field[idx(i,j)]; if(v<=0) continue;
+    const t=v/vmax; boxes.push({i,j,hw:t*maxBarH+0.04,col:cmap(t),depth:proj.project(i,j,0).depth});
+  }
+  boxes.sort((a,b)=>a.depth-b.depth);
+  for(const bx of boxes) drawBox(ctx,proj,bx.i,bx.j,bw,bx.hw,bx.col);
+  return vmax;
+}
+function renderField(canvasId, field, minId, maxId){
+  const canvas=document.getElementById(canvasId);
+  const vmax=drawFieldBars(canvas, field);
+  if(minId) document.getElementById(minId).textContent="0";
+  if(maxId) document.getElementById(maxId).textContent=String(vmax);
+}
+function drawBox(ctx,proj,i,j,bw,h,col){
+  const P=(dx,dy,z)=>proj.project(i+dx,j+dy,z);
+  const top=[P(-bw,-bw,h),P(bw,-bw,h),P(bw,bw,h),P(-bw,bw,h)];
+  const bot=[P(-bw,-bw,0),P(bw,-bw,0),P(bw,bw,0),P(-bw,bw,0)];
+  const [r,g,b]=col;
+  const face=(pts,sh)=>{ fillPoly(ctx,pts,`rgb(${Math.round(r*sh)},${Math.round(g*sh)},${Math.round(b*sh)})`);
+    ctx.strokeStyle="rgba(0,0,0,0.25)"; ctx.lineWidth=0.5; ctx.stroke(); };
+  face([bot[0],bot[1],top[1],top[0]],0.62); face([bot[1],bot[2],top[2],top[1]],0.50);
+  face([bot[3],bot[0],top[0],top[3]],0.74); face([bot[2],bot[3],top[3],top[2]],0.55);
+  face(top,1.0);
+}
+
+/* ---------- last-big-avalanche map (small, same 3-D perspective) ---------- */
+function renderCurrent(){
+  const canvas=document.getElementById("curPlot"), ctx=canvas.getContext("2d");
+  if(State.lastBigSize<=0){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const maxBarH=State.L*0.45, camDist=(View.asDist===Infinity)?Infinity:View.asDist*maxBarH;
+    drawGroundPlane(ctx, makeProjector(canvas,State.L,{camDist, barTop:maxBarH}));
+    ctx.fillStyle="#6b6486"; ctx.font="10px sans-serif";
+    ctx.fillText("none > "+State.bigThresh+" yet", 6, canvas.height-6);
+    return;
+  }
+  drawFieldBars(canvas, State.lastBig);
+  ctx.fillStyle="#cdd3df"; ctx.font="10px sans-serif";
+  ctx.fillText("size "+State.lastBigSize, 6, canvas.height-6);
+}
+
+/* ---------- statistics plots ---------- */
+function axes(ctx,W,H,m,xl,yl){
+  ctx.strokeStyle="#2b2b3d"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(m.l,m.t); ctx.lineTo(m.l,H-m.b); ctx.lineTo(W-m.r,H-m.b); ctx.stroke();
+  ctx.fillStyle="#9a93b5"; ctx.font="9px sans-serif";
+  ctx.fillText(xl,(W-m.l)/2-8,H-3);
+  ctx.save(); ctx.translate(9,(H-m.b)/2+m.t+8); ctx.rotate(-Math.PI/2); ctx.fillText(yl,0,0); ctx.restore();
+}
+function renderTimePlot(){
+  const canvas=document.getElementById("timePlot"), ctx=canvas.getContext("2d");
+  const W=canvas.width,H=canvas.height; ctx.clearRect(0,0,W,H);
+  const m={l:30,r:6,t:6,b:18}; axes(ctx,W,H,m,"t","size");
+  const data=State.sizes; if(data.length<2) return;
+  let vmax=1; for(const v of data) if(v>vmax) vmax=v;
+  const pw=W-m.l-m.r, ph=H-m.t-m.b, N=data.length, cols=Math.min(pw,N);
+  ctx.beginPath(); ctx.strokeStyle="#c084fc"; ctx.lineWidth=1;
+  for(let c=0;c<cols;c++){ const a=Math.floor(c*N/cols), bnd=Math.floor((c+1)*N/cols);
+    let peak=0; for(let k=a;k<Math.max(a+1,bnd);k++) if(data[k]>peak) peak=data[k];
+    const x=m.l+c*pw/cols, y=m.t+ph-(peak/vmax)*ph; if(c===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke();
+}
+function renderDistPlot(){
+  const canvas=document.getElementById("distPlot"), ctx=canvas.getContext("2d");
+  const W=canvas.width,H=canvas.height; ctx.clearRect(0,0,W,H);
+  const m={l:30,r:6,t:6,b:18}; axes(ctx,W,H,m,"log s","log N");
+  const all=State.sizes, start=Math.floor(all.length*0.25), data=[];
+  for(let k=start;k<all.length;k++) if(all[k]>=1) data.push(all[k]);
+  if(data.length<5) return;
+  const binW=0.2, bins={}; let maxLs=0;
+  for(const s of data){ const ls=Math.log10(s); if(ls>maxLs) maxLs=ls; const b=Math.round(ls/binW); bins[b]=(bins[b]||0)+1; }
+  const pts=[];
+  for(const b in bins){ const lo=Math.pow(10,(b-0.5)*binW), hi=Math.pow(10,(b+0.5)*binW);
+    pts.push([b*binW, Math.log10(bins[b]/(hi-lo))]); }
+  pts.sort((a,b)=>a[0]-b[0]);
+  let xmin=0,xmax=Math.max(0.5,maxLs), ymin=Infinity,ymax=-Infinity;
+  for(const p of pts){ if(p[1]<ymin)ymin=p[1]; if(p[1]>ymax)ymax=p[1]; }
+  if(!isFinite(ymin)) return; if(ymax-ymin<0.5) ymax=ymin+0.5;
+  const pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const sx=ls=>m.l+(ls-xmin)/(xmax-xmin)*pw, sy=ld=>m.t+ph-(ld-ymin)/(ymax-ymin)*ph;
+  ctx.strokeStyle="rgba(255,180,90,0.5)"; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(sx(xmin),sy(ymax)); ctx.lineTo(sx(xmin+(ymax-ymin)),sy(ymax-(ymax-ymin))); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle="#c084fc"; ctx.fillStyle="#c084fc"; ctx.lineWidth=1; ctx.beginPath();
+  pts.forEach((p,i)=>{ const x=sx(p[0]),y=sy(p[1]); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke();
+  for(const p of pts){ ctx.beginPath(); ctx.arc(sx(p[0]),sy(p[1]),1.8,0,Math.PI*2); ctx.fill(); }
+}
+
+/* ---------- orchestration ---------- */
+let probed=false;
+function renderAll(){
+  renderMain(); renderTimePlot(); renderDistPlot(); renderCurrent();
+  if(probed){ renderField("aPlot",State.Aprobe,"aMin","aMax"); renderField("sPlot",State.Sprobe,"sMin","sMax"); }
+  updateStats();
+}
+function updateStats(){
+  document.getElementById("stGrains").textContent=State.grains;
+  document.getElementById("stAval").textContent=State.sizes.length;
+  document.getElementById("stLast").textContent=State.lastSize;
+  document.getElementById("stMax").textContent=State.maxSize;
+  let sum=0,cnt=0; for(const s of State.sizes){ if(s>0){sum+=s;cnt++;} }
+  document.getElementById("stMean").textContent=cnt?(sum/cnt).toFixed(1):"0";
+  let hs=0; for(let k=0;k<State.L*State.L;k++) hs+=State.z[k];
+  document.getElementById("stHeight").textContent=(hs/(State.L*State.L)).toFixed(3);
+}
+
+const GRAN=[
+  {label:"1 toppling / frame",             kind:"topple", n:()=>1},
+  {label:"1 sweep / frame",                kind:"sweep",  n:()=>1},
+  {label:"1 avalanche / frame",            kind:"aval",   n:()=>1},
+  {label:"8 grains / frame",               kind:"aval",   n:()=>8},
+  {label:"64 grains / frame",              kind:"aval",   n:()=>64},
+  {label:"¼·L² grains / frame",            kind:"aval",   n:()=>Math.max(1,(State.L*State.L)>>2)},
+  {label:"1 per site · L² grains / frame", kind:"aval",   n:()=>State.L*State.L},
+];
+let granIdx=2;
+function stepWork(){
+  const g=GRAN[granIdx], n=g.n();
+  if(g.kind==="topple"){ ensureGrain(); for(let s=0;s<n;s++) stepTopple(); }
+  else if(g.kind==="sweep"){ ensureGrain(); for(let s=0;s<n;s++) stepSweep(); }
+  else { for(let s=0;s<n;s++){ ensureGrain(); resolveFull(); } }
+}
+function advanceOne(){ stepWork(); }
+function frame(){
+  try{ if(State.running) stepWork(); renderAll(); }
+  catch(err){ console.error("frame error:", err); }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- legends ---------- */
+function gradCss(fn){ let s="linear-gradient(to right";
+  for(let t=0;t<=1.001;t+=0.1){ const [r,g,b]=fn(t); s+=`,rgb(${r},${g},${b})`; } return s+")"; }
+function setLegends(){
+  const css=gradCss(cmap);
+  document.getElementById("legHeight").style.background=css;
+  document.getElementById("legJetA").style.background=css;
+  document.getElementById("legJetS").style.background=css;
+}
+
+/* ---------- shared drag-to-tilt ---------- */
+function addTilt(canvasId){
+  const cv=document.getElementById(canvasId);
+  let dragging=false, px=0, py=0;
+  cv.addEventListener("mousedown",e=>{ dragging=true; px=e.clientX; py=e.clientY; cv.style.cursor="grabbing"; });
+  window.addEventListener("mouseup",()=>{ dragging=false; cv.style.cursor="grab"; });
+  window.addEventListener("mousemove",e=>{ if(!dragging) return;
+    const dx=e.clientX-px, dy=e.clientY-py; px=e.clientX; py=e.clientY;
+    View.azimuth=(View.azimuth+dx*0.6+360)%360; View.polar=Math.max(0,Math.min(90,Math.round((View.polar+dy*0.4)/5)*5));
+    syncViewUI(); if(!State.running) renderAll(); });
+}
+function syncViewUI(){
+  document.getElementById("polar").value=Math.round(View.polar);
+  document.getElementById("azimuth").value=Math.round(View.azimuth);
+  document.getElementById("polVal").textContent=Math.round(View.polar);
+  document.getElementById("aziVal").textContent=Math.round(View.azimuth);
+}
+
+/* ---------- run-state UI ---------- */
+function updateRunUI(){
+  const s=document.getElementById("btnStart");
+  s.textContent=State.running?"⏸ Pause":"▶ Start"; s.classList.toggle("primary",!State.running);
+  const f=document.getElementById("btnFreeze");
+  f.textContent=State.running?"❄ Freeze & pause":"▶ Restart";
+}
+
+const AS_DIST=[1,2,4,8,16,Infinity], AS_LABEL=["×1","×2","×4","×8","×16","∞"];
+
+/* threshold slider range for the "Last avalanche >" panel: 10 … 0.3·L² */
+function updateBigThrRange(){
+  const maxThr=Math.max(20, Math.round(0.3*State.L*State.L));
+  const bt=document.getElementById("bigThr"); bt.min=10; bt.max=maxThr;
+  const v=Math.min(maxThr, Math.max(10, Math.round(0.03*State.L*State.L)));
+  State.bigThresh=v; bt.value=v;
+  document.getElementById("bigThrLabel").textContent=v;
+}
+
+function wire(){
+  document.getElementById("btnStart").onclick=()=>{ State.running=!State.running;
+    document.getElementById("frozenState").textContent=State.running?"running":"paused"; updateRunUI(); };
+  document.getElementById("btnStep").onclick=()=>{ advanceOne(); renderAll(); };
+  document.getElementById("btnReset").onclick=()=>{ alloc(State.L); probed=false; State.running=false;
+    document.getElementById("frozenState").textContent="running"; updateRunUI(); renderAll(); };
+
+  const ls=document.getElementById("Lslider");
+  ls.oninput=()=>setLfromIndex(parseInt(ls.value));
+
+  const bt=document.getElementById("bigThr");
+  bt.oninput=()=>{ State.bigThresh=parseInt(bt.value); document.getElementById("bigThrLabel").textContent=State.bigThresh; };
+
+  const gr=document.getElementById("gran");
+  gr.oninput=()=>{ granIdx=parseInt(gr.value); document.getElementById("granLabel").textContent=GRAN[granIdx].label; };
+
+  document.querySelectorAll("#modeRow button").forEach(b=>{
+    b.onclick=()=>{ document.querySelectorAll("#modeRow button").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active"); State.mode=b.dataset.mode; State.detIndex=0; };
+  });
+
+  document.getElementById("btnFreeze").onclick=()=>{
+    if(State.running){ resolveFull(); freezeLattice(); State.running=false;
+      document.getElementById("frozenState").innerHTML='<span class="frozenBadge">frozen ✓</span>'; }
+    else { State.running=true; document.getElementById("frozenState").textContent="running"; }
+    updateRunUI(); renderAll();
+  };
+  document.getElementById("btnAS").onclick=()=>{ probeAS(); probed=true;
+    renderField("aPlot",State.Aprobe,"aMin","aMax"); renderField("sPlot",State.Sprobe,"sMin","sMax"); };
+
+  document.getElementById("btnScheme").onclick=()=>{
+    const i=SCHEME_ORDER.indexOf(State.scheme), nx=SCHEME_ORDER[(i+1)%SCHEME_ORDER.length];
+    State.scheme=nx; document.getElementById("btnScheme").textContent="Colour: "+SCHEME_LABEL[nx];
+    spriteCacheClear(); setLegends(); renderAll();
+  };
+
+  const fb=document.getElementById("btnFlat");
+  fb.onclick=()=>{ State.flat=!State.flat;
+    fb.textContent=State.flat?"Flat ▸ Columns":"Columns ▸ Flat colours";
+    fb.classList.toggle("active",State.flat); renderAll(); };
+
+  const pol=document.getElementById("polar"), azi=document.getElementById("azimuth");
+  pol.oninput=()=>{ View.polar=parseInt(pol.value); document.getElementById("polVal").textContent=View.polar; renderAll(); };
+  azi.oninput=()=>{ View.azimuth=parseInt(azi.value); document.getElementById("aziVal").textContent=View.azimuth; renderAll(); };
+
+  const ad=document.getElementById("asDist");
+  ad.oninput=()=>{ const i=parseInt(ad.value); View.asDist=AS_DIST[i]; document.getElementById("asDistLabel").textContent=AS_LABEL[i]; if(!State.running) renderAll(); };
+
+  const save=(id,name)=>{ const cv=document.getElementById(id); const a=document.createElement("a");
+    a.download=name; a.href=cv.toDataURL("image/png"); a.click(); };
+  document.getElementById("savMain").onclick=()=>save("main","btw_main.png");
+  document.getElementById("savA").onclick=()=>save("aPlot","btw_A.png");
+  document.getElementById("savS").onclick=()=>save("sPlot","btw_S.png");
+  document.getElementById("savTime").onclick=()=>save("timePlot","btw_size_time.png");
+  document.getElementById("savDist").onclick=()=>save("distPlot","btw_distribution.png");
+  document.getElementById("savCur").onclick=()=>save("curPlot","btw_last_big_avalanche.png");
+  document.getElementById("savAll").onclick=saveCombined;
+
+  addTilt("main"); addTilt("aPlot"); addTilt("sPlot"); addTilt("curPlot");
+}
+
+/* ---------- responsive panel sizing ----------
+   Big lattice panels grow to ~1024 (so L can reach 1024 at 1 px/site) but
+   never exceed the screen's vertical pixel count; the three small plots follow. */
+let BIG=728, SMALL_W=216, SMALL_H=200;
+function applyCanvasSizes(){
+  const screenV = (typeof window!=="undefined" && window.screen && window.screen.height) ? window.screen.height : 1024;
+  BIG = Math.min(1024, Math.max(560, screenV));
+  SMALL_W = Math.round((BIG-24)/3);
+  SMALL_H = Math.round(SMALL_W*0.9);
+  for(const id of ["main","aPlot","sPlot"]){ const c=document.getElementById(id); c.width=BIG; c.height=BIG; }
+  for(const id of ["timePlot","distPlot","curPlot"]){ const c=document.getElementById(id); c.width=SMALL_W; c.height=SMALL_H; }
+}
+
+/* ---------- allowed lattice sizes: a whole number of pixels per site ----------
+   For pixel budget S (=BIG) the valid sizes are L = floor(S/P) for integer
+   pixels-per-site P; scrolling steps between these crisp values. Capped at 1024. */
+let ALLOWED=[];
+function buildAllowedL(){
+  const S=BIG, maxL=Math.min(1024,S), set=new Set();
+  for(let P=1;P<=Math.floor(S/4);P++){ const L=Math.floor(S/P); if(L>=4 && L<=maxL) set.add(L); }
+  for(let L=4;L<=20;L++) if(L<=maxL) set.add(L);   // fine control at the small end
+  ALLOWED=[...set].sort((a,b)=>a-b);
+}
+function nearestAllowedIndex(L){ let bi=0,bd=Infinity;
+  for(let k=0;k<ALLOWED.length;k++){ const dd=Math.abs(ALLOWED[k]-L); if(dd<bd){bd=dd;bi=k;} } return bi; }
+function setLfromIndex(i){
+  i=Math.max(0,Math.min(ALLOWED.length-1,i|0));
+  const L=ALLOWED[i], P=Math.max(1,Math.floor(BIG/L));
+  alloc(L); probed=false; spriteCacheClear();
+  updateBigThrRange();
+  document.getElementById("Lval").textContent=L;
+  document.getElementById("LpxInfo").textContent=P+" px/site";
+  document.getElementById("Lslider").value=i;
+  renderAll();
+}
+
+function saveCombined(){
+  const pad=14, title=18, gap=12;
+  const W=pad + BIG + pad;
+  const H=pad + title+BIG + gap + title+SMALL_H + gap + title+BIG + gap + title+BIG + pad;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const g=cv.getContext("2d"); g.fillStyle="#0a0a12"; g.fillRect(0,0,W,H);
+  g.font="14px sans-serif";
+  const lab=(t,x,y)=>{ g.fillStyle="#9a93b5"; g.fillText(t,x,y-4); };
+  let x=pad, y=pad+title;
+  lab("Sandpile profile (Bak, Tang & Wiesenfeld 1987)",x,y); g.drawImage(document.getElementById("main"),x,y);
+  let ys=y+BIG+gap+title, sx2=x;
+  for(const [id,t] of [["timePlot","Size vs time"],["distPlot","Distribution"],["curPlot","Last big avalanche"]]){
+    lab(t,sx2,ys); g.drawImage(document.getElementById(id),sx2,ys); sx2+=SMALL_W+gap;
+  }
+  let ya=ys+SMALL_H+gap+title;
+  lab("A — Engsig & Sneppen, PRL 134 (2025)",x,ya); g.drawImage(document.getElementById("aPlot"),x,ya);
+  let ys2=ya+BIG+gap+title;
+  lab("S — Engsig & Sneppen, PRL 134 (2025)",x,ys2); g.drawImage(document.getElementById("sPlot"),x,ys2);
+  const a=document.createElement("a"); a.download="btw_all_figures.png"; a.href=cv.toDataURL("image/png"); a.click();
+}
+
+/* ---------- boot ---------- */
+applyCanvasSizes(); buildAllowedL(); setLegends(); wire();
+document.getElementById("btnScheme").textContent="Colour: "+SCHEME_LABEL[State.scheme];
+const _ls=document.getElementById("Lslider"); _ls.min=0; _ls.max=ALLOWED.length-1; _ls.step=1;
+document.getElementById("granLabel").textContent=GRAN[granIdx].label;
+document.getElementById("asDistLabel").textContent=AS_LABEL[AS_DIST.indexOf(View.asDist)>=0?AS_DIST.indexOf(View.asDist):5];
+setLfromIndex(nearestAllowedIndex(32));   // allocates + renders
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

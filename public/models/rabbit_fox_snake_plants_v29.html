@@ -1,0 +1,2678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rabbit-Fox-Snake-Plant ABM — v29</title>
+<style>
+  :root {
+    --lattice-w: 792px;
+    --paper:   #eef1ee;   /* page background */
+    --panel:   #f6f7f4;   /* sidebar */
+    --card:    #ffffff;   /* framed canvases */
+    --ink:     #18211d;
+    --muted:   #69736d;
+    --faint:   #9aa39c;
+    --line:    #e2e7e2;
+    --line-2:  #d3dad3;
+    --accent:  #df741a;   /* fox orange — primary actions */
+    --accent-d:#bb5e11;
+    --danger:  #c63a23;
+    --danger-d:#a32d18;
+    --plant:   #2f9e54;
+    --rabbit:  #9097a6;
+    --fox:     #df741a;
+    --snake:   #3a463c;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--paper);
+    background-image:
+      radial-gradient(1200px 600px at 12% -8%, #f3f6f1 0%, rgba(243,246,241,0) 60%),
+      linear-gradient(180deg, #f0f3ef 0%, #e9ece8 100%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 452px 1fr;
+  }
+  aside {
+    background: var(--panel);
+    background-image: linear-gradient(180deg, #f8f9f6 0%, #f4f6f2 100%);
+    border-right: 1px solid var(--line-2);
+    padding: 20px 18px 28px;
+  }
+  main {
+    padding: 22px 26px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 640px;
+  }
+
+  /* ---- Sidebar header ---- */
+  .brand { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  h1 {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 25px;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+    line-height: 1.08;
+  }
+  .brand-tag {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--muted);
+    background: #e9ece8;
+    border: 1px solid var(--line-2);
+    padding: 2px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .lede {
+    margin: 9px 0 14px;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  /* thin four-species accent rule, ties the palette together under the header */
+  .species-rule {
+    height: 3px;
+    border-radius: 3px;
+    margin: 0 0 16px;
+    background: linear-gradient(90deg,
+      var(--plant) 0%, var(--plant) 25%,
+      var(--rabbit) 25%, var(--rabbit) 50%,
+      var(--fox) 50%, var(--fox) 75%,
+      var(--snake) 75%, var(--snake) 100%);
+    opacity: .85;
+  }
+
+  /* the long explainer, now collapsible */
+  .subtitle { display: contents; } /* legacy hook, no longer styled as a block */
+  .about { margin: 0 0 14px; }
+  .about > summary {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-d);
+    list-style: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 0;
+  }
+  .about > summary::-webkit-details-marker { display: none; }
+  .about > summary::before { content: "▸"; font-size: 10px; transition: transform .15s; }
+  .about[open] > summary::before { transform: rotate(90deg); }
+  .about p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.5;
+  }
+  .about b { color: #41493f; }
+
+  /* ---- Buttons ---- */
+  .group-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 16px 0 7px;
+  }
+  .button-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+  .button-row.solo { grid-template-columns: 1fr; }
+  .button-row.trio { grid-template-columns: 1.3fr 1fr 1fr; }
+  button {
+    appearance: none;
+    border: 1px solid var(--line-2);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 9px;
+    padding: 9px 10px;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 12.5px;
+    line-height: 1.2;
+    transition: background .12s, border-color .12s, box-shadow .12s, transform .04s;
+  }
+  button:hover { border-color: #b9c2b9; background: #fcfdfc; }
+  button:active { transform: translateY(1px); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent-d);
+    color: #fff;
+    box-shadow: 0 1px 0 rgba(120,60,10,.25);
+  }
+  button.primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
+
+  /* ---- Collapsible sections ---- */
+  details:not(.about) {
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+    margin-top: 14px;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: .01em;
+    margin-bottom: 9px;
+    color: #2b332d;
+  }
+
+  /* ---- Parameter controls ---- */
+  .control {
+    display: grid;
+    grid-template-columns: 1fr 72px 42px;
+    gap: 7px;
+    align-items: center;
+    margin: 9px 0;
+  }
+  .control label { font-size: 12px; color: #3a423c; }
+  .control input[type="number"] {
+    width: 72px;
+    padding: 5px 6px;
+    border: 1px solid var(--line-2);
+    border-radius: 7px;
+    background: #fff;
+    font-family: var(--mono);
+    font-size: 11.5px;
+  }
+  .control select {
+    grid-column: 1 / 4;
+    width: 100%;
+    padding: 6px;
+    border: 1px solid var(--line-2);
+    border-radius: 7px;
+    background: #fff;
+    font-size: 12px;
+  }
+  .control input[type="range"] {
+    grid-column: 1 / 4;
+    width: 100%;
+    accent-color: var(--accent);
+  }
+  .control input:focus-visible, .mini-control input:focus-visible,
+  .control select:focus-visible, .mini-control select:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent);
+  }
+  .hint { font-size: 11px; color: var(--muted); line-height: 1.45; margin: 9px 0 0; }
+
+  .lock-btn {
+    width: 42px;
+    padding: 5px 2px;
+    border-radius: 7px;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.05;
+    color: var(--muted);
+  }
+  .lock-btn.locked { background: #20281f; border-color: #20281f; color: #fff; }
+
+  /* ---- Main column cards ---- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line-2);
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(20,30,20,.04), 0 8px 24px -18px rgba(20,30,20,.25);
+    overflow: hidden;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(#fff, #fcfdfb);
+  }
+  .card-title {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    color: #232b25;
+  }
+  .card-body { padding: 16px; }
+
+  /* species legend */
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #424a44; }
+  .swatch { width: 13px; height: 13px; border-radius: 50%; border: 1px solid rgba(0,0,0,.18); display: inline-block; }
+  .legend-divider { width: 1px; height: 15px; background: var(--line-2); margin: 0 2px; }
+  .swatch.plant  { background: radial-gradient(circle at 35% 32%, #b8f79d, #2f9e54 70%, #0c5a26); }
+  .swatch.rabbit { background: radial-gradient(circle at 35% 32%, #fdfdfe, var(--rabbit) 78%); }
+  .swatch.fox    { background: radial-gradient(circle at 35% 32%, #f7ad57, var(--fox) 72%, #b85c12); }
+  .swatch.snake  { background: radial-gradient(circle at 35% 32%, #6d7d62, var(--snake) 75%, #1f2820); border-radius: 4px; }
+  /* afterglow legend chips: render as soft glowing rings, not solid species dots */
+  .swatch.glow-fox {
+    border: none;
+    background: radial-gradient(circle, rgba(255,45,25,.95) 0%, rgba(255,70,30,.45) 45%, rgba(255,90,40,0) 72%);
+  }
+  .swatch.glow-snake {
+    border: none;
+    background: radial-gradient(circle, rgba(40,120,255,.95) 0%, rgba(55,140,255,.45) 45%, rgba(80,160,255,0) 72%);
+  }
+
+  .canvas-wrap { display: grid; place-items: center; width: 100%; min-height: 0; }
+  canvas { max-width: 100%; background: #fff; }
+  #world {
+    border: 1px solid var(--line-2);
+    border-radius: 12px;
+    image-rendering: auto;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.02);
+  }
+  #plot {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    width: 100%;
+    height: 420px;
+  }
+  .legend-note { font-size: 11.5px; color: var(--muted); line-height: 1.45; margin: 10px 2px 0; }
+
+  /* ---- Status strip ---- */
+  .status {
+    display: flex;
+    gap: 9px 16px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 12px;
+    padding: 11px 15px;
+    border: 1px solid var(--line-2);
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: 0 1px 2px rgba(20,30,20,.04);
+  }
+  .status > span { color: var(--muted); white-space: nowrap; }
+  .status > span b {
+    color: var(--ink);
+    font-weight: 600;
+    font-family: var(--mono);
+    margin-left: 4px;
+    font-size: 12.5px;
+  }
+  .pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #eef1ec;
+    border: 1px solid var(--line);
+    color: #4a524c;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .small { font-size: 11px; color: var(--muted); }
+
+  /* ---- Parameter search panel ---- */
+  .search-panel {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fbfcfa;
+    padding: 11px;
+  }
+  .search-panel .button-row { margin-bottom: 4px; }
+  .mini-control {
+    display: grid;
+    grid-template-columns: 1fr 72px;
+    align-items: center;
+    gap: 7px;
+    margin: 8px 0;
+    font-size: 12px;
+  }
+  .mini-control input, .mini-control select {
+    width: 100%;
+    padding: 5px 6px;
+    border: 1px solid var(--line-2);
+    border-radius: 7px;
+    background: #fff;
+    font-size: 12px;
+  }
+  .search-status {
+    margin-top: 9px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: #f4f6f2;
+    font-size: 11px;
+    line-height: 1.45;
+    color: #3a423c;
+  }
+
+  /* v14: scenario presets, two-column controls, matched column widths */
+  .scenario-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+  .scenario-row button { text-align: center; font-size: 11.5px; line-height: 1.25; padding: 8px 5px; }
+  .controls-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; }
+  .controls-2col .control { grid-template-columns: 1fr 66px 28px; gap: 4px; margin: 8px 0; }
+  .controls-2col .control label { font-size: 11.5px; line-height: 1.2; }
+  .controls-2col .control input[type="number"] { width: 66px; }
+  .controls-2col .lock-btn { width: 28px; padding: 5px 1px; }
+  .col-track { width: 100%; max-width: calc(var(--lattice-w) + 34px); }
+  .frozen-control { margin: 9px 0 2px; }
+  .frozen-control .frozen-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .frozen-control label { font-size: 11.5px; font-weight: 600; color: #3a423c; }
+  .frozen-control .frozen-val { font-family: var(--mono); font-size: 11.5px; color: var(--ink); }
+  .frozen-control input[type="range"] { width: 100%; accent-color: var(--accent); margin-top: 5px; }
+  .frozen-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+  .frozen-row input[type="range"] { flex: 0 1 150px; width: auto; margin-top: 0; }
+  .L-toggle { display: inline-flex; margin-left: auto; border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; }
+  .L-toggle button { border: 0; border-left: 1px solid var(--line-2); border-radius: 0; background: #fff; padding: 6px 9px; font-size: 11px; font-weight: 700; color: var(--muted); }
+  .L-toggle button:first-child { border-left: 0; }
+  .L-toggle button:hover { background: #f1f0ea; }
+  .L-toggle button.primary { background: var(--accent); color: #fff; }
+  .L-toggle button.primary:hover { background: var(--accent-d); }
+  #scenario3Btn { border-color: #e3b6ab; color: #9c3019; }
+  #scenario3Btn:hover { border-color: #d68a78; background: #fdf3f0; }
+  #scenario3Btn.primary { background: var(--danger); border-color: var(--danger-d); color: #fff; }
+  #scenario3Btn.primary:hover { background: var(--danger-d); border-color: var(--danger-d); }
+
+  @media (max-width: 1040px) {
+    .app { grid-template-columns: 1fr; }
+    aside { max-height: none; border-right: 0; border-bottom: 1px solid var(--line-2); }
+    main { min-width: 0; padding: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+
+
+  /* ---- v29 layout helpers + visual polish ---- */
+  .span-2 { grid-column: 1 / 3; }
+  h1 {
+    background: linear-gradient(92deg, #1f6b3a 0%, #2f9e54 22%, #6b7280 50%, #df741a 76%, #2b332d 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .brand-tag { background: linear-gradient(#eef1ec, #e4e8e1); }
+  aside { box-shadow: inset -12px 0 26px -24px rgba(20,40,25,.55); }
+  .species-rule { height: 4px; box-shadow: 0 1px 3px -1px rgba(20,60,30,.4); opacity: .92; }
+
+  .scenario-row button {
+    border-radius: 10px;
+    background: linear-gradient(#ffffff, #f3f6f1);
+    box-shadow: 0 1px 1px rgba(20,40,20,.04);
+    transition: background .12s, border-color .12s, box-shadow .12s, transform .04s;
+  }
+  .scenario-row button:hover { box-shadow: 0 3px 12px -7px rgba(20,40,20,.6); transform: translateY(-1px); }
+  .scenario-row button:active { transform: translateY(0); }
+  .scenario-row button.primary {
+    background: var(--accent);
+    border-color: var(--accent-d);
+    color: #fff;
+    box-shadow: 0 3px 12px -5px rgba(120,60,10,.55);
+  }
+  .scenario-row button.primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
+  #scenario5Btn { border-color: #b7d9bf; color: #1f6b3a; }
+  #scenario5Btn:hover { border-color: #8fc59c; background: #eff8f1; }
+  #scenario5Btn.primary { background: var(--plant); border-color: #1f7d40; color: #fff; }
+  #scenario5Btn.primary:hover { background: #1f8f3c; border-color: #1f7d40; }
+  #scenario6Btn { border-color: #b9c2b2; color: #344230; }
+  #scenario6Btn:hover { border-color: #97a68e; background: #f0f3ec; }
+  #scenario6Btn.primary { background: var(--snake); border-color: #20281f; color: #fff; }
+  #scenario6Btn.primary:hover { background: #2b362c; border-color: #20281f; }
+
+  .card { border-radius: 18px; box-shadow: 0 1px 2px rgba(20,30,20,.05), 0 20px 44px -30px rgba(20,40,25,.5); }
+  .card-head { background: linear-gradient(#ffffff, #f6f9f4); }
+  .canvas-wrap {
+    background: radial-gradient(120% 120% at 50% 0%, #fbfdf9 0%, #f3f6f0 70%, #edf1ea 100%);
+    border-radius: 14px;
+    padding: 6px;
+  }
+  #world { box-shadow: inset 0 0 0 1px rgba(0,0,0,.02), 0 12px 34px -24px rgba(20,40,20,.75); }
+  .legend-item { font-weight: 500; }
+  .swatch { box-shadow: 0 1px 2px rgba(0,0,0,.18); }
+  button.primary { box-shadow: 0 2px 9px -3px rgba(120,60,10,.5); }
+  .status { background: linear-gradient(#ffffff, #fafbf8); }
+  .pill { transition: background .12s, border-color .12s; }
+  details:not(.about) > summary:hover { color: var(--accent-d); }
+
+  /* v29: collapsible run-statistics panel — sits between the lattice and the plot,
+     closed by default so it only shows the numbers when you want them. */
+  details.status-panel {
+    border: 1px solid var(--line-2);
+    border-radius: 14px;
+    padding: 0;
+    margin: 0;
+    background: var(--card);
+    box-shadow: 0 1px 2px rgba(20,30,20,.05), 0 18px 40px -32px rgba(20,40,25,.45);
+    overflow: hidden;
+  }
+  details.status-panel > summary {
+    list-style: none;
+    cursor: pointer;
+    margin: 0;
+    padding: 10px 15px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: #3a423c;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    user-select: none;
+    background: linear-gradient(#ffffff, #f6f9f4);
+  }
+  details.status-panel > summary::-webkit-details-marker { display: none; }
+  details.status-panel > summary::before {
+    content: "▸";
+    font-size: 10px;
+    color: var(--muted);
+    transition: transform .15s;
+  }
+  details.status-panel[open] > summary::before { transform: rotate(90deg); }
+  details.status-panel[open] > summary { border-bottom: 1px solid var(--line); }
+  details.status-panel > summary:hover { color: var(--accent-d); }
+  details.status-panel > summary .summary-hint { color: var(--faint); font-weight: 500; }
+  details.status-panel .status {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: linear-gradient(#ffffff, #fafbf8);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+        <div class="brand">
+      <h1>Protective Plants</h1>
+      <span class="brand-tag">ABM · v29</span>
+    </div>
+    <p class="lede">A spatial predator–prey model on a periodic lattice. Plants shelter rabbits, foxes take the exposed, and snakes strike only under cover.</p>
+    <div class="species-rule" aria-hidden="true"></div>
+    <details class="about">
+      <summary>About this model</summary>
+      <p class="subtitle">Foxes eat exposed rabbits; snakes move freely but eat only rabbits sheltering below a plant. The lattice has periodic boundaries. Three presets set the starting state. <b>1 — Rabbits clear plants:</b> a rabbit removes a plant (probability σ) only when it <i>successfully</i> moves onto a covered site; foxes never clear plants. <b>2 — Fixed plant cover:</b> plants start at density 0.5 and are frozen — no growth and no removal by any species. <b>3 — Foxes clear plants:</b> only foxes remove plants, and only when a rabbit is sheltering below. <b>5 — Frozen circular forest:</b> plants are frozen into one dense disc of cover at the lattice centre whose size follows the tree density, and animals roam a fixed island. <b>6 — Snakes kill plants:</b> only snakes erode plants (rate σ); rabbits and foxes never disturb cover. The <b>Rabbit shelter</b> switch chooses whether rabbits always hide under plants (default) or adapt — hiding while foxes dominate and staying exposed while snakes dominate. All presets use L=20, γ=1, σ=0.064, μR=μF=μS=10, f=fS=0.1, δF=δS=0.1, and one step per animation frame. <b>Export PNG snapshot</b> saves the current lattice and trajectory as one image.</p>
+    </details>
+
+    <div class="group-label">Scenario presets</div>
+    <div class="scenario-row">
+      <button id="scenario1Btn" class="primary">1 · Moving Rabbits clear plants</button>
+      <button id="scenario2Btn">2 · Fixed plant cover</button>
+      <button id="scenario3Btn" title="Cautionary: this regime is bistable. Foxes and plants (and snakes) rarely coexist — each run collapses to either a fox state or a plant state.">3 · Foxes clear plants</button>
+      <button id="scenario4Btn" title="Rabbits erode the plant they end below on every move (rate σ). γ=10.75 maximises the (transient) four-species coexistence at L=30 — mean ~275 time units before one species is lost.">4 · Rabbits kill plants</button>
+      <button id="scenario5Btn" title="All plants are frozen into one dense circular forest at the centre of the lattice — nothing grows or clears them. The forest size follows the tree density. Rabbits, foxes and snakes roam a fixed island of cover.">5 · Frozen circular forest</button>
+      <button id="scenario6Btn" title="Snakes erode the plants they crawl into (rate σ); rabbits and foxes leave plants untouched, so plant cover is shaped entirely by the snakes.">6 · Snakes kill plants</button>
+    </div>
+    <div class="frozen-control">
+      <div class="frozen-head">
+        <label for="frozenDensity">Frozen plant density (coexist. at 0.2&ndash;0.28)</label>
+        <span class="frozen-val" id="frozenDensityVal">0.24</span>
+      </div>
+      <div class="frozen-row">
+        <input id="frozenDensity" type="range" min="0" max="0.5" step="0.01" value="0.24" />
+        <div class="L-toggle" role="group" aria-label="Preset lattice size">
+          <button type="button" id="Lpreset20" class="primary">L20</button>
+          <button type="button" id="Lpreset30">L30</button>
+          <button type="button" id="Lpreset50">L50</button>
+        </div>
+      </div>
+    </div>
+    <p class="hint">Each preset reseeds with its own rules and plant growth rate (&#963;=0.064, one step per frame). The slider sets presets 2 &amp; 5&rsquo;s plant density (reseeds live while either is active); the L20 / L30 / L50 toggle picks the lattice size used by the presets. You can still change any parameter afterward.</p>
+
+    <div class="group-label">Run</div>
+    <div class="button-row">
+      <button id="runBtn" class="primary">Start</button>
+      <button id="stepBtn">One step</button>
+    </div>
+    <div class="button-row solo" style="margin-top:7px;">
+      <button id="resetBtn">Reset / reseed</button>
+    </div>
+
+    <div class="group-label">Model &amp; rules</div>
+    <div class="button-row">
+      <button id="modeBtn">Local neighbors</button>
+      <button id="birthRuleBtn">Rabbit births: anywhere</button>
+      <button id="rabbitShelterBtn" class="span-2">Rabbit shelter: always under plants</button>
+      <button id="rabbitPlantBtn">Rabbit plant removal: on</button>
+      <button id="rabbitPlantModeBtn">Removal trigger: on successful move</button>
+      <button id="foxPlantBtn">Fox plant removal: off</button>
+      <button id="snakePlantBtn">Snake plant removal: off</button>
+      <button id="freezeBtn" class="span-2">Freeze plants now</button>
+    </div>
+
+    <div class="group-label">Plot &amp; export</div>
+    <div class="button-row">
+      <button id="clearHistoryBtn">Clear plot</button>
+      <button id="exportPngBtn">Export PNG snapshot</button>
+    </div>
+    <div class="button-row solo" style="margin-top:7px;">
+      <button id="exportFigBtn">Export figure (lattice + plot)</button>
+    </div>
+
+    <details open>
+      <summary>Core simulation</summary>
+      <div id="coreControls" class="controls-2col"></div>
+    </details>
+
+    <details open>
+      <summary>Rates</summary>
+      <div id="rateControls" class="controls-2col"></div>
+    </details>
+
+    <details>
+      <summary>Initial densities</summary>
+      <div id="initControls" class="controls-2col"></div>
+      <p class="hint">Initial fox and snake densities are probabilities for placing one animal on a site at reset. Multiple predators may later occupy the same site.</p>
+    </details>
+
+    <details>
+      <summary>Display</summary>
+      <div id="displayControls"></div>
+    </details>
+
+
+    <details open>
+      <summary>Parameter search</summary>
+      <div class="search-panel">
+        <div class="button-row">
+          <button id="searchBtn">Start search</button>
+          <button id="searchTrialBtn">One search trial</button>
+          <button id="storeWinnerBtn">Store winner</button>
+          <button id="loadSavedBtn">Load selected + reset</button>
+        </div>
+        <div class="mini-control">
+          <label for="searchMaxTime">Max survival time tested (≤ 5000)</label>
+          <input id="searchMaxTime" type="number" value="5000" min="1" max="5000" step="1" />
+        </div>
+        <div class="mini-control">
+          <label for="searchTrialsPerFrame">Trials per animation frame</label>
+          <input id="searchTrialsPerFrame" type="number" value="1" min="1" max="20" step="1" />
+        </div>
+        <div class="mini-control">
+          <label for="searchMutation">Search mutation size</label>
+          <input id="searchMutation" type="number" value="0.25" min="0.01" max="2" step="0.01" />
+        </div>
+        <div class="mini-control">
+          <label for="savedSets">Stored winners</label>
+          <select id="savedSets"></select>
+        </div>
+        <button id="birthRuleLockBtn" class="lock-btn" style="width:100%;margin-top:4px;">Rabbit birth rule free in search</button>
+        <button id="rabbitPlantLockBtn" class="lock-btn" style="width:100%;margin-top:4px;">Rabbit plant-removal free in search</button>
+        <div class="search-status" id="searchStatus">Search idle. The search always runs L=15, starts each test with 20% plants, 20% rabbits, 20% foxes, and 20% snakes, and caps every trial at 5000 time units.</div>
+        <p class="hint">Small lock buttons beside rate parameters freeze those parameters during search. Unlocked rates are varied around the current winning set. If a new trial keeps all four populations alive longer, it becomes the new winner and is copied to the controls. σ is searched on factor-of-two steps between 0.001 and 1; in this variant σ sets the probability that a rabbit removes a plant when it moves onto a plant-covered site. Rabbit and fox plant-removal toggles are stored with winners and can be locked during search. The rabbit removal trigger (on move attempt vs. on successful move) is held at its current setting during search and stored with each winner.</p>
+      </div>
+    </details>
+
+    <p class="hint"><b>Freeze plants now</b> locks the current plant cover: no plant growth, no rabbit plant-removal, and no optional fox plant-removal. Press again to unfreeze.</p>
+    <p class="hint"><b>Random-neighbor model</b> sends movement, reproduction, and plant growth targets to a random lattice site instead of a nearest neighbor.</p>
+  </aside>
+
+    <main>
+    <section class="card col-track">
+      <div class="card-head">
+        <span class="card-title">Lattice</span>
+        <div class="legend">
+          <span class="legend-item"><span class="swatch plant"></span>Plant</span>
+          <span class="legend-item"><span class="swatch rabbit"></span>Rabbit</span>
+          <span class="legend-item"><span class="swatch fox"></span>Fox</span>
+          <span class="legend-item"><span class="swatch snake"></span>Snake</span>
+          <span class="legend-divider" aria-hidden="true"></span>
+          <span class="legend-item"><span class="swatch glow-fox"></span>Fox kill</span>
+          <span class="legend-item"><span class="swatch glow-snake"></span>Snake kill</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="canvas-wrap"><canvas id="world" width="792" height="792"></canvas></div>
+      </div>
+    </section>
+
+    <details class="status-panel col-track">
+      <summary>Run statistics &amp; parameters <span class="summary-hint">— optional readout</span></summary>
+      <div class="status" id="status"></div>
+    </details>
+
+    <section class="card col-track">
+      <div class="card-body">
+        <canvas id="plot" width="1100" height="460"></canvas>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const searchParameterIds = ["gamma", "sigma", "epsilon", "muR", "muF", "f", "deltaF", "muS", "fS", "deltaS"];
+
+  const controls = {
+    core: [
+      { id: "L", label: "Lattice size L", value: 20, min: 10, max: 150, step: 1 },
+      { id: "dt", label: "Time step Δt", value: 0.01, min: 0.001, max: 0.05, step: 0.001 },
+      { id: "speed", label: "Steps per animation frame", value: 1, min: 1, max: 80, step: 1 },
+      { id: "sampleEvery", label: "Record plot every N steps", value: 2, min: 1, max: 100, step: 1 }
+    ],
+    rates: [
+      { id: "gamma", label: "Plant growth γ", value: 1, min: 0, max: 12, step: 0.05 },
+      { id: "sigma", label: "Plant slowness / plant removal σ", value: 0.064, min: 0.001, max: 1, step: 0, values: [0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.256, 0.512, 1] },
+      { id: "epsilon", label: "Rabbit reproduction ε", value: 1.0, min: 0, max: 5, step: 0.05 },
+      { id: "muR", label: "Rabbit mobility μR", value: 10, min: 1, max: 100, step: 1 },
+      { id: "muF", label: "Fox mobility μF", value: 10, min: 1, max: 100, step: 1 },
+      { id: "f", label: "Fox conversion f", value: 0.10, min: 0, max: 1, step: 0.005 },
+      { id: "deltaF", label: "Fox mortality δF", value: 0.10, min: 0, max: 2, step: 0.01 },
+      { id: "muS", label: "Snake mobility μS", value: 10, min: 1, max: 100, step: 1 },
+      { id: "fS", label: "Snake conversion fS", value: 0.10, min: 0, max: 1, step: 0.005 },
+      { id: "deltaS", label: "Snake mortality δS", value: 0.10, min: 0, max: 2, step: 0.01 }
+    ],
+    init: [
+      { id: "initPlant", label: "Initial plant density", value: 0.45, min: 0, max: 1, step: 0.01 },
+      { id: "initRabbit", label: "Initial rabbit density", value: 0.24, min: 0, max: 1, step: 0.01 },
+      { id: "initFox", label: "Initial fox density", value: 0.06, min: 0, max: 0.5, step: 0.005 },
+      { id: "initSnake", label: "Initial snake density", value: 0.025, min: 0, max: 0.5, step: 0.005 }
+    ],
+    display: [
+      { id: "worldSize", label: "Lattice plot size", value: 792, min: 360, max: 1100, step: 6 }
+    ]
+  };
+
+  const params = {};
+  const inputs = {};
+  const searchLocked = {};
+  const birthRules = ["anywhere", "under", "exposed"];
+  let rabbitBirthRule = "anywhere";
+  let rabbitPlantRemoval = true;
+  let rabbitRemovalOnAttempt = false; // true: degrade on any move attempt onto a plant; false: only on a successful move
+  let rabbitRemovalEndedBelow = false; // preset 4: each move attempt erodes the plant the rabbit ends BELOW
+  let foxPlantRemoval = false;
+  let snakePlantRemoval = false;      // scenario 6: snakes erode the plants they enter
+  let rabbitShelterMode = "always";   // "always" = shelter under plants whenever possible (option 1, default);
+                                       // "adaptive" = shelter when foxes outnumber snakes, seek open ground when snakes outnumber foxes
+  let plantSeedMode = "random";       // "random" = scatter plants by density; "circle" = one dense circular forest
+  let activeScenario = 1;
+  let frozenDensity = 0.24;   // preset 2 fixed plant cover (default in coexistence window)
+  const scenarios = {
+    1: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: true,  rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "random", frozen: false },
+    2: { gamma: 1, sigma: 0.064, initPlant: 0.24, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "random", frozen: true  },
+    3: { gamma: 0.45, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: true,  snakePlantRemoval: false, plantSeedMode: "random", frozen: false },
+    4: { gamma: 10.75, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: true, rabbitRemovalOnAttempt: true, rabbitRemovalEndedBelow: true, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "random", frozen: false },
+    5: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "circle", frozen: true },
+    6: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: true,  plantSeedMode: "random", frozen: false }
+  };
+  let birthRuleLocked = false;
+  let rabbitPlantLocked = false;
+  let searchRunning = false;
+  let searchBest = null;
+  let searchTrials = 0;
+  const savedKey = "rabbitFoxSnakePlantSavedWinnersV10LongRunStable";
+  const maxLocalPredators = 1000; // browser-safety cap per site; still allows many predators per site.
+  const maxStoredHistoryPoints = 50000; // adaptive thinning keeps long runs from exhausting memory.
+  const maxPlotPoints = 3200; // draw a representative subset; the full retained curve is still compressed across time.
+  let L = 20, N = 400;
+  let plants, rabbits, foxes, snakes, glow, glowType;
+  let time = 0;
+  let stepNumber = 0;
+  let running = false;
+  let randomNeighborModel = false;
+  let plantsFrozen = false;
+  let history = [];
+  let historyYMax = 0.02;
+  let historyStride = 1;
+
+  const worldCanvas = document.getElementById("world");
+  const worldCtx = worldCanvas.getContext("2d");
+  const plotCanvas = document.getElementById("plot");
+  const plotCtx = plotCanvas.getContext("2d");
+  const statusEl = document.getElementById("status");
+
+  function clampProb(x) { return Math.max(0, Math.min(1, x)); }
+  function randInt(n) { return Math.floor(Math.random() * n); }
+  function idxXY(x, y) { return y * L + x; }
+  function xOf(i) { return i % L; }
+  function yOf(i) { return Math.floor(i / L); }
+
+  function targetFrom(i) {
+    if (randomNeighborModel) return randInt(N);
+    const x = xOf(i), y = yOf(i);
+    switch (randInt(4)) {
+      case 0: return idxXY((x + 1) % L, y);
+      case 1: return idxXY((x + L - 1) % L, y);
+      case 2: return idxXY(x, (y + 1) % L);
+      default: return idxXY(x, (y + L - 1) % L);
+    }
+  }
+
+  function updateParamLockButton(button, id) {
+    const locked = !!searchLocked[id];
+    button.textContent = locked ? "lock" : "free";
+    button.classList.toggle("locked", locked);
+    button.title = locked ? "Frozen during parameter search" : "Varied during parameter search";
+  }
+
+  function getControlMeta(id) {
+    for (const section of Object.values(controls)) {
+      const found = section.find(x => x.id === id);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  function nearestListedValue(value, values) {
+    let best = values[0], bestDist = Math.abs(value - best);
+    for (const v of values) {
+      const d = Math.abs(value - v);
+      if (d < bestDist) { best = v; bestDist = d; }
+    }
+    return best;
+  }
+
+  function formatControlValue(v) {
+    return Number(v).toLocaleString(undefined, { maximumFractionDigits: 6, useGrouping: false });
+  }
+
+  function setControlValue(id, value) {
+    let v = Number(value);
+    if (!Number.isFinite(v)) return;
+    const meta = getControlMeta(id);
+    if (meta && meta.values) v = nearestListedValue(v, meta.values);
+    params[id] = v;
+    if (inputs[id]) {
+      if (inputs[id].number) inputs[id].number.value = formatControlValue(v);
+      if (inputs[id].range) inputs[id].range.value = String(v);
+      if (inputs[id].select) inputs[id].select.value = String(v);
+    }
+    if (id === "worldSize") resizeWorldCanvas();
+    if (id === "L" && typeof updateLToggle === "function") updateLToggle();
+  }
+
+  function updateBirthRuleButton() {
+    const label = rabbitBirthRule === "anywhere" ? "anywhere" : (rabbitBirthRule === "under" ? "only under plants" : "only outside plants");
+    const b = document.getElementById("birthRuleBtn");
+    if (b) b.textContent = "Rabbit births: " + label;
+    const lb = document.getElementById("birthRuleLockBtn");
+    if (lb) {
+      lb.textContent = birthRuleLocked ? "Rabbit birth rule locked in search" : "Rabbit birth rule free in search";
+      lb.classList.toggle("locked", birthRuleLocked);
+    }
+  }
+
+
+  function updateRabbitPlantButton() {
+    const b = document.getElementById("rabbitPlantBtn");
+    if (b) {
+      b.textContent = rabbitPlantRemoval ? "Rabbit plant removal: on" : "Rabbit plant removal: off";
+      b.title = rabbitPlantRemoval
+        ? "Rabbits remove plants with probability σ when they successfully move onto a plant-covered site"
+        : "Rabbits do not remove plants";
+    }
+    const lock = document.getElementById("rabbitPlantLockBtn");
+    if (lock) {
+      lock.textContent = rabbitPlantLocked ? "Rabbit plant-removal locked in search" : "Rabbit plant-removal free in search";
+      lock.classList.toggle("locked", rabbitPlantLocked);
+    }
+  }
+
+  function updateRabbitPlantModeButton() {
+    const b = document.getElementById("rabbitPlantModeBtn");
+    if (!b) return;
+    b.textContent = rabbitRemovalOnAttempt ? "Removal trigger: on move attempt" : "Removal trigger: on successful move";
+    b.classList.toggle("primary", rabbitRemovalOnAttempt);
+    b.disabled = !rabbitPlantRemoval;
+    b.style.opacity = rabbitPlantRemoval ? "1" : "0.5";
+    b.title = rabbitRemovalOnAttempt
+      ? "Rabbits roll to remove a plant whenever they TRY to move onto a plant-covered site, even if another rabbit blocks the move"
+      : "Rabbits roll to remove a plant only when they successfully move onto a plant-covered site";
+  }
+
+  function updateFoxPlantButton() {
+    const b = document.getElementById("foxPlantBtn");
+    if (!b) return;
+    b.textContent = foxPlantRemoval ? "Fox plant removal: on" : "Fox plant removal: off";
+    b.classList.toggle("primary", foxPlantRemoval);
+    b.title = foxPlantRemoval
+      ? "Foxes remove plants above rabbits with probability σ when they move onto such a site"
+      : "Default variant: rabbits, not foxes, remove plants";
+  }
+
+  function updateSnakePlantButton() {
+    const b = document.getElementById("snakePlantBtn");
+    if (!b) return;
+    b.textContent = snakePlantRemoval ? "Snake plant removal: on" : "Snake plant removal: off";
+    b.classList.toggle("primary", snakePlantRemoval);
+    b.title = snakePlantRemoval
+      ? "Snakes remove the plants they crawl into with probability σ"
+      : "Snakes leave plants untouched";
+  }
+
+  function updateRabbitShelterButton() {
+    const b = document.getElementById("rabbitShelterBtn");
+    if (!b) return;
+    const adaptive = rabbitShelterMode === "adaptive";
+    b.textContent = adaptive
+      ? "Rabbit shelter: adaptive (foxes ↔ snakes)"
+      : "Rabbit shelter: always under plants";
+    b.classList.toggle("primary", adaptive);
+    b.title = adaptive
+      ? "Rabbits stay under plants while foxes outnumber snakes, but stay in open ground when snakes outnumber foxes"
+      : "Rabbits always stay under a plant whenever they can (option 1, default)";
+  }
+
+  function rabbitMayReproduceAt(site, plantArray = plants) {
+    if (rabbitBirthRule === "under") return plantArray[site] === 1;
+    if (rabbitBirthRule === "exposed") return plantArray[site] === 0;
+    return true;
+  }
+
+  function makeControl(containerId, item) {
+    params[item.id] = item.value;
+    const wrap = document.createElement("div");
+    wrap.className = "control";
+
+    const label = document.createElement("label");
+    label.htmlFor = item.id + (item.values ? "_select" : "_range");
+    label.textContent = item.label;
+
+    const number = document.createElement("input");
+    number.type = "number";
+    number.value = formatControlValue(item.value);
+    number.min = item.min;
+    number.max = item.max;
+    number.step = item.values ? "any" : item.step;
+
+    const lock = document.createElement("button");
+    lock.type = "button";
+    lock.className = "lock-btn";
+    if (searchParameterIds.includes(item.id)) {
+      searchLocked[item.id] = false;
+      updateParamLockButton(lock, item.id);
+      lock.title = "Toggle whether this parameter is frozen during parameter search";
+      lock.addEventListener("click", () => {
+        searchLocked[item.id] = !searchLocked[item.id];
+        updateParamLockButton(lock, item.id);
+      });
+    } else {
+      lock.textContent = "";
+      lock.disabled = true;
+      lock.style.visibility = "hidden";
+    }
+
+    wrap.appendChild(label);
+    wrap.appendChild(number);
+    wrap.appendChild(lock);
+
+    if (item.values) {
+      const select = document.createElement("select");
+      select.id = item.id + "_select";
+      for (const v of item.values) {
+        const opt = document.createElement("option");
+        opt.value = String(v);
+        opt.textContent = formatControlValue(v);
+        select.appendChild(opt);
+      }
+      select.value = String(item.value);
+      const update = (value) => setControlValue(item.id, value);
+      select.addEventListener("change", () => update(select.value));
+      number.addEventListener("change", () => update(number.value));
+      wrap.appendChild(select);
+      inputs[item.id] = { select, number, lock };
+    } else {
+      const range = document.createElement("input");
+      range.type = "range";
+      range.id = item.id + "_range";
+      range.value = item.value;
+      range.min = item.min;
+      range.max = item.max;
+      range.step = item.step;
+
+      const update = (value) => setControlValue(item.id, value);
+      range.addEventListener("input", () => update(range.value));
+      number.addEventListener("change", () => update(number.value));
+      wrap.appendChild(range);
+      inputs[item.id] = { range, number, lock };
+    }
+
+    document.getElementById(containerId).appendChild(wrap);
+  }
+
+  for (const item of controls.core) makeControl("coreControls", item);
+  for (const item of controls.rates) makeControl("rateControls", item);
+  for (const item of controls.init) makeControl("initControls", item);
+  for (const item of controls.display) makeControl("displayControls", item);
+
+  function resizeWorldCanvas() {
+    const s = Math.round(params.worldSize || 792);
+    worldCanvas.width = s;
+    worldCanvas.height = s;
+    document.documentElement.style.setProperty("--lattice-w", s + "px");
+    drawWorld();
+  }
+
+  function reset() {
+    L = Math.max(2, Math.round(params.L));
+    N = L * L;
+    plants = new Uint8Array(N);
+    rabbits = new Uint8Array(N);
+    foxes = new Uint16Array(N);
+    snakes = new Uint16Array(N);
+    glow = new Float32Array(N);
+    glowType = new Uint8Array(N); // 0 = fox kill (red afterglow), 1 = snake kill (blue afterglow)
+    time = 0;
+    stepNumber = 0;
+    history = [];
+    historyYMax = 0.02;
+    historyStride = 1;
+    plantsFrozen = false;
+    document.getElementById("freezeBtn").textContent = "Freeze plants now";
+
+    const forestCx = (L - 1) / 2, forestCy = (L - 1) / 2;
+    // Circular forest: a fully-filled disc whose AREA equals the tree density,
+    // so the plant count still tracks the density and a low density makes a smaller forest.
+    const forestR2 = clampProb(params.initPlant) * N / Math.PI;
+    for (let i = 0; i < N; i++) {
+      if (plantSeedMode === "circle") {
+        const dx = xOf(i) - forestCx, dy = yOf(i) - forestCy;
+        plants[i] = (dx * dx + dy * dy <= forestR2) ? 1 : 0;
+      } else {
+        plants[i] = Math.random() < params.initPlant ? 1 : 0;
+      }
+      rabbits[i] = Math.random() < params.initRabbit ? 1 : 0;
+      foxes[i] = Math.random() < params.initFox ? 1 : 0;
+      snakes[i] = Math.random() < params.initSnake ? 1 : 0;
+    }
+    recordHistory();
+    drawAll();
+  }
+
+  function collectBinaryPositions(arr) {
+    const out = [];
+    for (let i = 0; i < N; i++) if (arr[i]) out.push(i);
+    return out;
+  }
+
+  function collectCountPositions(arr) {
+    const out = [];
+    for (let i = 0; i < N; i++) if (arr[i] > 0) out.push([i, arr[i]]);
+    return out;
+  }
+
+  function plantActions() {
+    if (plantsFrozen) return;
+    const pGrow = clampProb(params.gamma * params.sigma * params.dt);
+    if (pGrow <= 0) return;
+    const positions = collectBinaryPositions(plants);
+    for (const i of positions) {
+      if (!plants[i]) continue;
+      if (Math.random() < pGrow) {
+        const j = targetFrom(i);
+        if (!plants[j]) plants[j] = 1;
+      }
+    }
+  }
+
+  function shelterAllowsMove(protectedNow, protectedTarget, preferShelter) {
+    // preferShelter true  -> classic rule: never leave cover for open ground.
+    // preferShelter false -> inverse: never leave open ground to hide under a plant.
+    if (preferShelter) return (!protectedNow || protectedTarget);
+    return (protectedNow || !protectedTarget);
+  }
+
+  function rabbitActions() {
+    const pMove = clampProb(params.muR * params.dt);
+    const pBirth = clampProb(params.epsilon * params.dt);
+    const positions = collectBinaryPositions(rabbits);
+
+    // Adaptive shelter rule: rabbits hide under plants while foxes are the bigger
+    // threat, but stay in the open when snakes (which strike under cover) dominate.
+    let preferShelter = true;
+    if (rabbitShelterMode === "adaptive") {
+      let foxTotal = 0, snakeTotal = 0;
+      for (let i = 0; i < N; i++) { foxTotal += foxes[i]; snakeTotal += snakes[i]; }
+      if (snakeTotal > foxTotal) preferShelter = false;
+    }
+
+    for (const start of positions) {
+      if (!rabbits[start]) continue;
+      let current = start;
+
+      if (Math.random() < pMove) {
+        const j = targetFrom(current);
+        const protectedNow = plants[current] === 1;
+        const protectedTarget = plants[j] === 1;
+        const canMove = !rabbits[j] && shelterAllowsMove(protectedNow, protectedTarget, preferShelter);
+
+        if (rabbitRemovalEndedBelow) {
+          // Preset-4 rule: the rabbit moves first, then (on every attempt, prob sigma)
+          // erodes the plant of the cell it ENDS below — whether it moved or was blocked.
+          if (canMove) { rabbits[current] = 0; rabbits[j] = 1; current = j; }
+          if (rabbitPlantRemoval && !plantsFrozen && plants[current] &&
+              Math.random() < clampProb(params.sigma)) {
+            plants[current] = 0;
+          }
+        } else {
+          // Rabbits erode the plant they target (toggle rabbitRemovalOnAttempt):
+          //   - "on successful move": only when the rabbit actually arrives.
+          //   - "on move attempt": whenever it tries to move onto a plant-covered site.
+          if (rabbitPlantRemoval && !plantsFrozen && protectedTarget &&
+              (rabbitRemovalOnAttempt || canMove) &&
+              Math.random() < clampProb(params.sigma)) {
+            plants[j] = 0;
+          }
+          if (canMove) {
+            rabbits[current] = 0;
+            rabbits[j] = 1;
+            current = j;
+          }
+        }
+      }
+
+      if (rabbits[current] && rabbitMayReproduceAt(current) && Math.random() < pBirth) {
+        const j = targetFrom(current);
+        if (!rabbits[j]) rabbits[j] = 1;
+      }
+    }
+  }
+
+  function addCapped(arr, site, amount = 1) {
+    if (!amount || amount <= 0) return 0;
+    const room = maxLocalPredators - arr[site];
+    if (room <= 0) return 0;
+    const add = Math.min(room, Math.floor(amount));
+    arr[site] += add;
+    return add;
+  }
+
+  function binomialSample(n, p) {
+    n = Math.floor(Number(n) || 0);
+    p = clampProb(Number(p) || 0);
+    if (n <= 0 || p <= 0) return 0;
+    if (p >= 1) return n;
+    if (n < 80) {
+      let k = 0;
+      for (let i = 0; i < n; i++) if (Math.random() < p) k++;
+      return k;
+    }
+    const mean = n * p;
+    const sd = Math.sqrt(Math.max(0, n * p * (1 - p)));
+    let k = Math.round(mean + sd * randn());
+    if (k < 0) k = 0;
+    if (k > n) k = n;
+    return k;
+  }
+
+  function addFoxOffspring(parentSite, arr = foxes) {
+    const j = targetFrom(parentSite);
+    addCapped(arr, j, 1);
+  }
+
+  function foxActions() {
+    const pMove = clampProb(params.muF * params.dt);
+    const pBirth = clampProb(params.f);
+    const pDeath = clampProb(params.deltaF * params.dt);
+    const nextFoxes = new Uint16Array(N);
+    const arrivals = new Uint32Array(N);
+
+    for (let start = 0; start < N; start++) {
+      const n = foxes[start];
+      if (!n) continue;
+      const deaths = binomialSample(n, pDeath);
+      const survivors = n - deaths;
+      if (survivors <= 0) continue;
+      const movers = binomialSample(survivors, pMove);
+      const stayers = survivors - movers;
+      addCapped(nextFoxes, start, stayers);
+      for (let m = 0; m < movers; m++) {
+        arrivals[targetFrom(start)]++;
+      }
+    }
+
+    for (let j = 0; j < N; j++) {
+      const m = arrivals[j];
+      if (!m) continue;
+      addCapped(nextFoxes, j, m);
+      if (!rabbits[j]) continue;
+      if (plants[j]) {
+        // Optional only: foxes can remove plants above rabbits. Several arriving foxes
+        // give probability 1-(1-σ)^m, but they do not eat that protected rabbit in this same batch.
+        if (foxPlantRemoval && !plantsFrozen) {
+          const pRemove = 1 - Math.pow(1 - clampProb(params.sigma), m);
+          if (Math.random() < pRemove) plants[j] = 0;
+        }
+      } else {
+        rabbits[j] = 0;
+        glow[j] = 1;
+        glowType[j] = 0; // fox kill -> red afterglow
+        if (Math.random() < pBirth) addFoxOffspring(j, nextFoxes);
+      }
+    }
+
+    foxes = nextFoxes;
+  }
+
+  function addSnakeOffspring(parentSite, arr = snakes) {
+    const j = targetFrom(parentSite);
+    addCapped(arr, j, 1);
+  }
+
+  function snakeActions() {
+    const pMove = clampProb(params.muS * params.dt);
+    const pBirth = clampProb(params.fS);
+    const pDeath = clampProb(params.deltaS * params.dt);
+    const nextSnakes = new Uint16Array(N);
+    const arrivals = new Uint32Array(N);
+
+    for (let start = 0; start < N; start++) {
+      const n = snakes[start];
+      if (!n) continue;
+      const deaths = binomialSample(n, pDeath);
+      const survivors = n - deaths;
+      if (survivors <= 0) continue;
+      const movers = binomialSample(survivors, pMove);
+      const stayers = survivors - movers;
+      addCapped(nextSnakes, start, stayers);
+      for (let m = 0; m < movers; m++) {
+        arrivals[targetFrom(start)]++;
+      }
+    }
+
+    for (let j = 0; j < N; j++) {
+      const m = arrivals[j];
+      if (!m) continue;
+      addCapped(nextSnakes, j, m);
+      if (plants[j] && rabbits[j]) {
+        rabbits[j] = 0;
+        glow[j] = 1;
+        glowType[j] = 1; // snake kill -> blue afterglow
+        if (Math.random() < pBirth) addSnakeOffspring(j, nextSnakes);
+      }
+      // Scenario 6: snakes erode the plants they crawl into. With m arrivals the
+      // removal probability is 1-(1-sigma)^m, matching the fox plant-removal rule.
+      if (snakePlantRemoval && !plantsFrozen && plants[j]) {
+        const pRemove = 1 - Math.pow(1 - clampProb(params.sigma), m);
+        if (Math.random() < pRemove) plants[j] = 0;
+      }
+    }
+
+    snakes = nextSnakes;
+  }
+
+  function stepSimulation() {
+    plantActions();
+    rabbitActions();
+    foxActions();
+    snakeActions();
+    time += params.dt;
+    stepNumber++;
+    if (stepNumber % Math.max(1, Math.round(params.sampleEvery)) === 0) recordHistory();
+  }
+
+  function countPopulations() {
+    let plantCount = 0, rabbitCount = 0, rabbitBelowPlant = 0, foxCount = 0, snakeCount = 0, maxFoxLocal = 0, maxSnakeLocal = 0;
+    for (let i = 0; i < N; i++) {
+      if (plants[i]) plantCount++;
+      if (rabbits[i]) {
+        rabbitCount++;
+        if (plants[i]) rabbitBelowPlant++;
+      }
+      foxCount += foxes[i];
+      snakeCount += snakes[i];
+      if (foxes[i] > maxFoxLocal) maxFoxLocal = foxes[i];
+      if (snakes[i] > maxSnakeLocal) maxSnakeLocal = snakes[i];
+    }
+    return { plantCount, rabbitCount, rabbitBelowPlant, foxCount, snakeCount, maxFoxLocal, maxSnakeLocal };
+  }
+
+  function thinHistoryIfNeeded() {
+    if (history.length <= maxStoredHistoryPoints) return;
+    const thinned = [];
+    for (let i = 0; i < history.length; i += 2) thinned.push(history[i]);
+    const last = history[history.length - 1];
+    if (thinned[thinned.length - 1] !== last) thinned.push(last);
+    history = thinned;
+    historyStride *= 2;
+  }
+
+  function recordHistory() {
+    const c = countPopulations();
+    const row = {
+      t: time,
+      plants: c.plantCount / N,
+      allRabbits: c.rabbitCount / N,
+      rabbitsBelowPlants: c.rabbitBelowPlant / N,
+      foxes: c.foxCount / N,
+      snakes: c.snakeCount / N
+    };
+    history.push(row);
+    historyYMax = Math.max(historyYMax, row.plants, row.allRabbits, row.rabbitsBelowPlants, row.foxes, row.snakes);
+    thinHistoryIfNeeded();
+  }
+
+  function getPlotData() {
+    if (history.length <= maxPlotPoints) return history;
+    const stride = Math.ceil(history.length / maxPlotPoints);
+    const out = [];
+    for (let i = 0; i < history.length; i += stride) out.push(history[i]);
+    const last = history[history.length - 1];
+    if (out[out.length - 1] !== last) out.push(last);
+    return out;
+  }
+
+  function drawPlant(ctx, x, y, s) {
+    ctx.save();
+    const cx = x + s * 0.50;
+    const cy = y + s * 0.50;
+    const r = Math.max(1.8, s * 0.36);
+
+    // Soft cast shadow makes each plant read as one raised green sphere.
+    if (s >= 5) {
+      const shadow = ctx.createRadialGradient(cx + r * 0.25, cy + r * 0.32, r * 0.05, cx + r * 0.22, cy + r * 0.32, r * 0.95);
+      shadow.addColorStop(0.00, "rgba(0,0,0,0.20)");
+      shadow.addColorStop(0.70, "rgba(0,0,0,0.08)");
+      shadow.addColorStop(1.00, "rgba(0,0,0,0.00)");
+      ctx.fillStyle = shadow;
+      ctx.beginPath();
+      ctx.ellipse(cx + r * 0.16, cy + r * 0.18, r * 0.92, r * 0.70, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // One spherical plant: bright upper-left highlight, darker lower-right edge.
+    const sphere = ctx.createRadialGradient(cx - r * 0.38, cy - r * 0.45, r * 0.08, cx + r * 0.18, cy + r * 0.22, r * 1.08);
+    sphere.addColorStop(0.00, "#f0ffe8");
+    sphere.addColorStop(0.14, "#b8f79d");
+    sphere.addColorStop(0.42, "#56c75b");
+    sphere.addColorStop(0.73, "#1f8f3c");
+    sphere.addColorStop(1.00, "#07501f");
+    ctx.fillStyle = sphere;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (s >= 6) {
+      ctx.strokeStyle = "rgba(4, 73, 26, 0.72)";
+      ctx.lineWidth = Math.max(0.7, s * 0.035);
+      ctx.stroke();
+
+      // Specular highlight and a smaller reflected glow.
+      ctx.fillStyle = "rgba(255,255,255,0.72)";
+      ctx.beginPath();
+      ctx.arc(cx - r * 0.38, cy - r * 0.42, Math.max(0.8, r * 0.19), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.25)";
+      ctx.beginPath();
+      ctx.arc(cx - r * 0.12, cy - r * 0.22, Math.max(0.55, r * 0.10), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawCountBadge(ctx, x, y, s, count) {
+    if (!(count > 1 && s > 14)) return;
+    const txt = String(count);
+    ctx.font = `700 ${Math.max(8, s * 0.26)}px var(--mono), ui-monospace, monospace`;
+    ctx.textBaseline = "alphabetic";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = Math.max(2, s * 0.06);
+    ctx.strokeStyle = "#ffffff";
+    ctx.strokeText(txt, x + s * 0.70, y + s * 0.30);
+    ctx.fillStyle = "#1c130d";
+    ctx.fillText(txt, x + s * 0.70, y + s * 0.30);
+  }
+
+  function drawRabbit(ctx, x, y, s) {
+    ctx.save();
+    const cx = x + s * 0.5, cy = y + s * 0.5;
+
+    if (s < 7) {
+      ctx.fillStyle = "#aab0bd";
+      ctx.beginPath(); ctx.arc(cx, cy + s * 0.04, Math.max(1.0, s * 0.27), 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(cx - s * 0.17, cy - s * 0.30, Math.max(0.8, s * 0.09), s * 0.26);
+      ctx.fillRect(cx + s * 0.05, cy - s * 0.30, Math.max(0.8, s * 0.09), s * 0.26);
+      ctx.restore(); return;
+    }
+
+    const detail = s >= 13;
+    const FUR = "#b9bfcb", FUR_HI = "#eef0f4", FUR_SH = "#9097a6", LINE = "#6f7686";
+    const PINK = "#e7a6b1", EYE = "#222428";
+
+    // ground shadow
+    ctx.fillStyle = "rgba(20,24,32,0.12)";
+    ctx.beginPath(); ctx.ellipse(cx + s * 0.02, y + s * 0.88, s * 0.32, s * 0.085, 0, 0, Math.PI * 2); ctx.fill();
+
+    // fluffy tail (lower-left, behind body)
+    ctx.fillStyle = FUR_HI;
+    ctx.beginPath(); ctx.arc(x + s * 0.23, y + s * 0.68, s * 0.105, 0, Math.PI * 2); ctx.fill();
+    if (detail) { ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.016; ctx.stroke(); }
+
+    // body / haunch — radial shading for a rounded, 3-D look
+    const bodyGrad = ctx.createRadialGradient(x + s * 0.36, y + s * 0.54, s * 0.04, x + s * 0.47, y + s * 0.70, s * 0.36);
+    bodyGrad.addColorStop(0.00, "#ffffff");
+    bodyGrad.addColorStop(0.28, FUR_HI);
+    bodyGrad.addColorStop(0.64, FUR);
+    bodyGrad.addColorStop(1.00, FUR_SH);
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath(); ctx.ellipse(x + s * 0.45, y + s * 0.66, s * 0.27, s * 0.255, -0.08, 0, Math.PI * 2); ctx.fill();
+    if (detail) {
+      ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.02; ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      ctx.beginPath(); ctx.ellipse(x + s * 0.37, y + s * 0.56, s * 0.075, s * 0.045, -0.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // front paw
+    ctx.fillStyle = FUR_HI;
+    ctx.beginPath(); ctx.ellipse(x + s * 0.60, y + s * 0.82, s * 0.085, s * 0.05, 0, 0, Math.PI * 2); ctx.fill();
+
+    const earBaseX = x + s * 0.66, earBaseY = y + s * 0.42;
+    // ears (behind the head)
+    for (const dx of [-0.085, 0.085]) {
+      ctx.save();
+      ctx.translate(earBaseX + dx * s, earBaseY);
+      ctx.rotate(dx * 2.0 - 0.18);
+      ctx.fillStyle = FUR;
+      ctx.beginPath(); ctx.ellipse(0, -s * 0.16, s * 0.062, s * 0.20, 0, 0, Math.PI * 2); ctx.fill();
+      if (detail) {
+        ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.016; ctx.stroke();
+        ctx.fillStyle = PINK;
+        ctx.beginPath(); ctx.ellipse(0, -s * 0.16, s * 0.028, s * 0.135, 0, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // head
+    const headGrad = ctx.createRadialGradient(earBaseX - s * 0.05, earBaseY - s * 0.04, s * 0.02, earBaseX, earBaseY, s * 0.2);
+    headGrad.addColorStop(0, FUR_HI); headGrad.addColorStop(0.7, FUR); headGrad.addColorStop(1, FUR_SH);
+    ctx.fillStyle = headGrad;
+    ctx.beginPath(); ctx.arc(earBaseX, earBaseY, s * 0.165, 0, Math.PI * 2); ctx.fill();
+    if (detail) {
+      ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.02; ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.beginPath(); ctx.arc(earBaseX - s * 0.05, earBaseY - s * 0.055, s * 0.035, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // face
+    if (detail) {
+      ctx.fillStyle = EYE;
+      ctx.beginPath(); ctx.arc(earBaseX + s * 0.07, earBaseY - s * 0.01, s * 0.028, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.beginPath(); ctx.arc(earBaseX + s * 0.083, earBaseY - s * 0.025, s * 0.011, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = PINK;
+      ctx.beginPath(); ctx.arc(earBaseX + s * 0.155, earBaseY + s * 0.03, s * 0.02, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = EYE;
+      ctx.beginPath(); ctx.arc(earBaseX + s * 0.06, earBaseY, s * 0.03, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawFox(ctx, x, y, s, count) {
+    ctx.save();
+    const cx = x + s * 0.5, cy = y + s * 0.5;
+
+    if (s < 7) {
+      ctx.fillStyle = "#df741a";
+      ctx.beginPath(); ctx.arc(cx, cy + s * 0.03, Math.max(1.1, s * 0.27), 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#b85c12";
+      ctx.beginPath(); ctx.moveTo(cx - s * 0.24, cy - s * 0.10); ctx.lineTo(cx - s * 0.08, cy - s * 0.34); ctx.lineTo(cx - s * 0.02, cy - s * 0.12); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(cx + s * 0.24, cy - s * 0.10); ctx.lineTo(cx + s * 0.08, cy - s * 0.34); ctx.lineTo(cx + s * 0.02, cy - s * 0.12); ctx.closePath(); ctx.fill();
+      ctx.restore(); return;
+    }
+
+    const detail = s >= 13;
+    const O_HI = "#f7ad57", O = "#e57f22", O_SH = "#c2641a", LINE = "#8a3f0e";
+    const WHITE = "#fbf3e4", BLACK = "#2a2320", EYE = "#1c130d";
+
+    // ground shadow
+    ctx.fillStyle = "rgba(40,25,10,0.13)";
+    ctx.beginPath(); ctx.ellipse(cx, y + s * 0.90, s * 0.34, s * 0.085, 0, 0, Math.PI * 2); ctx.fill();
+
+    // render the fox ~12% larger and sitting a little higher in the cell
+    ctx.save();
+    const fpx = cx, fpy = y + s * 0.90;
+    ctx.translate(0, -s * 0.04);
+    ctx.translate(fpx, fpy);
+    ctx.scale(1.12, 1.12);
+    ctx.translate(-fpx, -fpy);
+
+    // bushy tail (behind, sweeping up to the left)
+    const tailGrad = ctx.createLinearGradient(x + s * 0.05, y + s * 0.5, x + s * 0.36, y + s * 0.8);
+    tailGrad.addColorStop(0, O); tailGrad.addColorStop(1, O_SH);
+    ctx.fillStyle = tailGrad;
+    ctx.beginPath();
+    ctx.moveTo(x + s * 0.34, y + s * 0.62);
+    ctx.quadraticCurveTo(x + s * 0.02, y + s * 0.66, x + s * 0.07, y + s * 0.36);
+    ctx.quadraticCurveTo(x + s * 0.17, y + s * 0.52, x + s * 0.34, y + s * 0.80);
+    ctx.closePath(); ctx.fill();
+    if (detail) { ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.018; ctx.stroke(); }
+    ctx.fillStyle = WHITE;
+    ctx.beginPath(); ctx.ellipse(x + s * 0.095, y + s * 0.40, s * 0.058, s * 0.05, -0.5, 0, Math.PI * 2); ctx.fill();
+
+    // body — radial shading for a rounded, 3-D look
+    const bodyGrad = ctx.createRadialGradient(x + s * 0.42, y + s * 0.55, s * 0.05, x + s * 0.47, y + s * 0.72, s * 0.38);
+    bodyGrad.addColorStop(0.00, O_HI); bodyGrad.addColorStop(0.20, "#f3974a"); bodyGrad.addColorStop(0.58, O); bodyGrad.addColorStop(1.00, O_SH);
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.moveTo(x + s * 0.34, y + s * 0.50);
+    ctx.quadraticCurveTo(x + s * 0.66, y + s * 0.46, x + s * 0.62, y + s * 0.86);
+    ctx.quadraticCurveTo(x + s * 0.46, y + s * 0.93, x + s * 0.34, y + s * 0.86);
+    ctx.quadraticCurveTo(x + s * 0.29, y + s * 0.66, x + s * 0.34, y + s * 0.50);
+    ctx.closePath(); ctx.fill();
+    if (detail) {
+      ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.02; ctx.stroke();
+      ctx.fillStyle = "rgba(255,242,214,0.42)";
+      ctx.beginPath(); ctx.ellipse(x + s * 0.42, y + s * 0.58, s * 0.06, s * 0.04, -0.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // white chest
+    ctx.fillStyle = WHITE;
+    ctx.beginPath();
+    ctx.moveTo(x + s * 0.47, y + s * 0.55);
+    ctx.quadraticCurveTo(x + s * 0.57, y + s * 0.70, x + s * 0.50, y + s * 0.87);
+    ctx.quadraticCurveTo(x + s * 0.42, y + s * 0.85, x + s * 0.42, y + s * 0.66);
+    ctx.closePath(); ctx.fill();
+
+    // black paws
+    ctx.fillStyle = BLACK;
+    ctx.beginPath(); ctx.ellipse(x + s * 0.45, y + s * 0.87, s * 0.05, s * 0.06, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + s * 0.55, y + s * 0.86, s * 0.045, s * 0.055, 0, 0, Math.PI * 2); ctx.fill();
+
+    const hx = x + s * 0.58, hy = y + s * 0.42;
+    // ears
+    for (const e of [-0.075, 0.075]) {
+      ctx.fillStyle = O;
+      ctx.beginPath();
+      ctx.moveTo(hx + e * s - s * 0.05, hy - s * 0.04);
+      ctx.lineTo(hx + e * s, hy - s * 0.24);
+      ctx.lineTo(hx + e * s + s * 0.07, hy - s * 0.03);
+      ctx.closePath(); ctx.fill();
+      if (detail) {
+        ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.016; ctx.stroke();
+        ctx.fillStyle = BLACK;
+        ctx.beginPath();
+        ctx.moveTo(hx + e * s - s * 0.022, hy - s * 0.045);
+        ctx.lineTo(hx + e * s, hy - s * 0.20);
+        ctx.lineTo(hx + e * s + s * 0.032, hy - s * 0.04);
+        ctx.closePath(); ctx.fill();
+      }
+    }
+
+    // head with snout to the right
+    const headGrad = ctx.createRadialGradient(hx - s * 0.03, hy - s * 0.03, s * 0.02, hx, hy, s * 0.22);
+    headGrad.addColorStop(0, O_HI); headGrad.addColorStop(0.7, O); headGrad.addColorStop(1, O_SH);
+    ctx.fillStyle = headGrad;
+    ctx.beginPath();
+    ctx.moveTo(hx - s * 0.13, hy - s * 0.05);
+    ctx.quadraticCurveTo(hx - s * 0.16, hy + s * 0.12, hx - s * 0.02, hy + s * 0.16);
+    ctx.quadraticCurveTo(hx + s * 0.12, hy + s * 0.17, hx + s * 0.20, hy + s * 0.09);
+    ctx.quadraticCurveTo(hx + s * 0.11, hy + s * 0.03, hx + s * 0.10, hy - s * 0.02);
+    ctx.quadraticCurveTo(hx + s * 0.04, hy - s * 0.14, hx - s * 0.13, hy - s * 0.05);
+    ctx.closePath(); ctx.fill();
+    if (detail) { ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.02; ctx.stroke(); }
+
+    // white muzzle
+    ctx.fillStyle = WHITE;
+    ctx.beginPath();
+    ctx.moveTo(hx - s * 0.02, hy + s * 0.02);
+    ctx.quadraticCurveTo(hx + s * 0.16, hy + s * 0.05, hx + s * 0.20, hy + s * 0.09);
+    ctx.quadraticCurveTo(hx + s * 0.10, hy + s * 0.18, hx - s * 0.02, hy + s * 0.15);
+    ctx.quadraticCurveTo(hx - s * 0.06, hy + s * 0.085, hx - s * 0.02, hy + s * 0.02);
+    ctx.closePath(); ctx.fill();
+
+    // nose
+    ctx.fillStyle = EYE;
+    ctx.beginPath(); ctx.arc(hx + s * 0.20, hy + s * 0.085, s * 0.028, 0, Math.PI * 2); ctx.fill();
+    // eye
+    if (detail) {
+      ctx.fillStyle = EYE;
+      ctx.beginPath(); ctx.ellipse(hx + s * 0.02, hy - s * 0.005, s * 0.034, s * 0.024, -0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.beginPath(); ctx.arc(hx + s * 0.03, hy - s * 0.018, s * 0.01, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = EYE;
+      ctx.beginPath(); ctx.arc(hx + s * 0.02, hy - s * 0.005, s * 0.03, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ctx.restore();   // end fox scale/lift transform
+    drawCountBadge(ctx, x, y, s, count);
+    ctx.restore();
+  }
+
+  function drawSnake(ctx, x, y, s, count) {
+    ctx.save();
+
+    if (s < 7) {
+      ctx.strokeStyle = "#3a463c"; ctx.lineWidth = Math.max(1.1, s * 0.16); ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(x + s * 0.18, y + s * 0.62);
+      ctx.quadraticCurveTo(x + s * 0.42, y + s * 0.38, x + s * 0.60, y + s * 0.62);
+      ctx.quadraticCurveTo(x + s * 0.74, y + s * 0.80, x + s * 0.84, y + s * 0.58);
+      ctx.stroke();
+      ctx.fillStyle = "#3a463c";
+      ctx.beginPath(); ctx.arc(x + s * 0.84, y + s * 0.58, Math.max(1.0, s * 0.13), 0, Math.PI * 2); ctx.fill();
+      ctx.restore(); return;
+    }
+
+    const detail = s >= 13;
+    const BODY_HI = "#7d8f63", BODY = "#566b3f", BODY_SH = "#37452a", BAND = "#283520", EYE = "#1a140c";
+
+    // S-shaped centerline from tail (left) to head (right)
+    const n = 26;
+    const pts = [];
+    const x0 = x + s * 0.16, x1 = x + s * 0.82;
+    const midY = y + s * 0.56, amp = s * 0.17;
+    for (let k = 0; k <= n; k++) {
+      const t = k / n;
+      const px = x0 + (x1 - x0) * t;
+      const py = midY + Math.sin(t * Math.PI * 2 - 0.3) * amp * (0.55 + 0.45 * t);
+      pts.push([px, py]);
+    }
+    const wMax = s * 0.155, wMin = s * 0.03;
+    const widthAt = (t) => wMin + (wMax - wMin) * Math.pow(t, 0.6);
+
+    const left = [], right = [];
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
+      let dx = b[0] - a[0], dy = b[1] - a[1]; const len = Math.hypot(dx, dy) || 1; dx /= len; dy /= len;
+      const nx = -dy, ny = dx; const w = widthAt(i / (pts.length - 1)) / 2;
+      left.push([pts[i][0] + nx * w, pts[i][1] + ny * w]);
+      right.push([pts[i][0] - nx * w, pts[i][1] - ny * w]);
+    }
+    const poly = left.concat(right.reverse());
+    const trace = (p) => { ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]); for (let i = 1; i < p.length; i++) ctx.lineTo(p[i][0], p[i][1]); ctx.closePath(); };
+
+    // shadow
+    ctx.save(); ctx.translate(s * 0.02, s * 0.05);
+    trace(poly); ctx.fillStyle = "rgba(20,28,18,0.14)"; ctx.fill();
+    ctx.restore();
+
+    // body
+    const g = ctx.createLinearGradient(0, y + s * 0.35, 0, y + s * 0.80);
+    g.addColorStop(0, BODY_HI); g.addColorStop(0.5, BODY); g.addColorStop(1, BODY_SH);
+    trace(poly); ctx.fillStyle = g; ctx.fill();
+
+    if (detail) {
+      ctx.save();
+      trace(poly); ctx.clip();
+      ctx.fillStyle = BAND;
+      for (let k = 3; k < n - 1; k += 3) {
+        const p = pts[k], a = pts[k - 1], b = pts[k + 1];
+        const ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+        ctx.save(); ctx.translate(p[0], p[1]); ctx.rotate(ang);
+        ctx.beginPath(); ctx.ellipse(0, 0, s * 0.032, wMax * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+      ctx.restore();
+      // dorsal highlight
+      ctx.strokeStyle = "rgba(222,232,192,0.32)"; ctx.lineWidth = s * 0.018; ctx.lineCap = "round";
+      ctx.beginPath();
+      for (let i = 0; i < pts.length; i++) { const p = pts[i]; if (i === 0) ctx.moveTo(p[0], p[1] - wMax * 0.16); else ctx.lineTo(p[0], p[1] - wMax * 0.1); }
+      ctx.stroke();
+    }
+
+    // outline
+    trace(poly); ctx.strokeStyle = BODY_SH; ctx.lineWidth = Math.max(0.6, s * 0.02); ctx.stroke();
+
+    // head at the head end
+    const hp = pts[pts.length - 1], hpPrev = pts[pts.length - 3];
+    const ang = Math.atan2(hp[1] - hpPrev[1], hp[0] - hpPrev[0]);
+    ctx.save();
+    ctx.translate(hp[0], hp[1]); ctx.rotate(ang);
+    const hg = ctx.createLinearGradient(0, -wMax * 0.6, 0, wMax * 0.6);
+    hg.addColorStop(0, BODY_HI); hg.addColorStop(1, BODY_SH);
+    ctx.fillStyle = hg;
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.02, -wMax * 0.62);
+    ctx.quadraticCurveTo(s * 0.14, -wMax * 0.5, s * 0.17, 0);
+    ctx.quadraticCurveTo(s * 0.14, wMax * 0.5, -s * 0.02, wMax * 0.62);
+    ctx.quadraticCurveTo(-s * 0.06, 0, -s * 0.02, -wMax * 0.62);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = BODY_SH; ctx.lineWidth = Math.max(0.5, s * 0.016); ctx.stroke();
+
+    // forked tongue
+    ctx.strokeStyle = "#c0392b"; ctx.lineWidth = Math.max(0.7, s * 0.022); ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(s * 0.17, 0); ctx.lineTo(s * 0.26, 0);
+    ctx.moveTo(s * 0.26, 0); ctx.lineTo(s * 0.31, -s * 0.03);
+    ctx.moveTo(s * 0.26, 0); ctx.lineTo(s * 0.31, s * 0.03);
+    ctx.stroke();
+
+    // eyes
+    if (detail) {
+      ctx.fillStyle = EYE;
+      ctx.beginPath(); ctx.arc(s * 0.055, -wMax * 0.3, s * 0.026, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(s * 0.055, wMax * 0.3, s * 0.026, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(255,220,120,0.9)";
+      ctx.beginPath(); ctx.arc(s * 0.062, -wMax * 0.3, s * 0.01, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(s * 0.062, wMax * 0.3, s * 0.01, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = EYE;
+      ctx.beginPath(); ctx.arc(s * 0.05, -wMax * 0.25, s * 0.03, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+
+    drawCountBadge(ctx, x, y, s, count);
+    ctx.restore();
+  }
+
+  function drawWorld() {
+    if (!plants) return;
+    const ctx = worldCtx;
+    const W = worldCanvas.width;
+    const s = W / L;
+    ctx.clearRect(0, 0, W, W);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, W);
+
+    for (let i = 0; i < N; i++) {
+      const x = (i % L) * s;
+      const y = Math.floor(i / L) * s;
+      if (plants[i]) drawPlant(ctx, x, y, s);
+    }
+    for (let i = 0; i < N; i++) {
+      if (!rabbits[i] && !foxes[i] && !snakes[i]) continue;
+      const x = (i % L) * s;
+      const y = Math.floor(i / L) * s;
+      if (rabbits[i]) drawRabbit(ctx, x, y, s);
+      if (foxes[i]) drawFox(ctx, x, y, s, foxes[i]);
+      if (snakes[i]) drawSnake(ctx, x, y, s, snakes[i]);
+    }
+
+    // afterglow where a predator just ate a rabbit; fades over a few frames.
+    // Fox kills glow red; snake kills glow blue. Fades over a few frames.
+    if (glow) {
+      for (let i = 0; i < N; i++) {
+        const g = glow[i];
+        if (g <= 0.02) { if (g) glow[i] = 0; continue; }
+        const gcx = (i % L) * s + s * 0.5;
+        const gcy = Math.floor(i / L) * s + s * 0.5;
+        const rr = s * (0.5 + 0.30 * g);
+        const a = Math.min(0.92, g);
+        const gr = ctx.createRadialGradient(gcx, gcy, s * 0.04, gcx, gcy, rr);
+        if (glowType && glowType[i] === 1) {
+          // snake kill -> cool blue afterglow
+          gr.addColorStop(0.00, `rgba(40,120,255,${(0.9 * a).toFixed(3)})`);
+          gr.addColorStop(0.45, `rgba(55,140,255,${(0.42 * a).toFixed(3)})`);
+          gr.addColorStop(1.00, "rgba(80,160,255,0)");
+        } else {
+          // fox kill -> warm red afterglow
+          gr.addColorStop(0.00, `rgba(255,45,25,${(0.9 * a).toFixed(3)})`);
+          gr.addColorStop(0.45, `rgba(255,70,30,${(0.42 * a).toFixed(3)})`);
+          gr.addColorStop(1.00, "rgba(255,90,40,0)");
+        }
+        ctx.fillStyle = gr;
+        ctx.beginPath(); ctx.arc(gcx, gcy, rr, 0, Math.PI * 2); ctx.fill();
+        glow[i] = g * 0.84;
+      }
+    }
+
+    if (s >= 12) {
+      ctx.strokeStyle = "rgba(0,0,0,0.07)";
+      ctx.lineWidth = 1;
+      for (let k = 0; k <= L; k++) {
+        const a = k * s;
+        ctx.beginPath(); ctx.moveTo(a, 0); ctx.lineTo(a, W); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, a); ctx.lineTo(W, a); ctx.stroke();
+      }
+    }
+  }
+
+  function plotY(value, y0, h, yMax) {
+    return y0 + h - (value / yMax) * h;
+  }
+
+  function plotX(d, firstT, lastT, x0, w, index, n) {
+    const span = lastT - firstT;
+    if (span > 1e-12) return x0 + ((d.t - firstT) / span) * w;
+    return x0 + (n <= 1 ? 0 : (index / (n - 1)) * w);
+  }
+
+  function timeLabel(t, span) {
+    if (span < 10) return t.toFixed(1);
+    if (span < 1000) return t.toFixed(0);
+    if (span < 10000) return (Math.round(t / 10) * 10).toString();
+    return t.toExponential(1);
+  }
+
+  function niceTickStep(span, desiredTicks = 6) {
+    if (!(span > 0)) return 1;
+    const raw = span / desiredTicks;
+    const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+    const scaled = raw / pow;
+    const mult = scaled <= 1 ? 1 : (scaled <= 2 ? 2 : (scaled <= 5 ? 5 : 10));
+    return mult * pow;
+  }
+
+  function drawLine(ctx, data, field, color, x0, y0, w, h, yMax, firstT, lastT) {
+    if (data.length < 2) return;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < data.length; i++) {
+      const x = plotX(data[i], firstT, lastT, x0, w, i, data.length);
+      const y = plotY(data[i][field], y0, h, yMax);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  function drawPlot() {
+    const ctx = plotCtx;
+    const W = plotCanvas.width, H = plotCanvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, W, H);
+
+    const x0 = 78, y0 = 26, w = W - 102, h = H - 84;
+    const data = getPlotData();
+    const firstT = history.length ? history[0].t : 0;
+    const lastT = history.length ? history[history.length - 1].t : 0;
+    const spanT = Math.max(0, lastT - firstT);
+
+    ctx.strokeStyle = "#d8d8d8";
+    ctx.lineWidth = 1;
+    ctx.font = "24px sans-serif";
+    ctx.fillStyle = "#666";
+
+    // Autoscale the y-axis to the data actually being drawn, so an early spike
+    // no longer permanently squashes the long-run dynamics (v11 change).
+    // Autoscale to the largest density seen in the last 70% of the simulated time,
+    // so an early transient spike stops dictating the scale once it scrolls away.
+    const scaleCutoff = firstT + 0.30 * spanT;
+    let visibleMax = 0.02;
+    for (const d of data) {
+      if (d.t < scaleCutoff) continue;
+      if (d.plants > visibleMax) visibleMax = d.plants;
+      if (d.allRabbits > visibleMax) visibleMax = d.allRabbits;
+      if (d.rabbitsBelowPlants > visibleMax) visibleMax = d.rabbitsBelowPlants;
+      if (d.foxes > visibleMax) visibleMax = d.foxes;
+      if (d.snakes > visibleMax) visibleMax = d.snakes;
+    }
+    const yMax = visibleMax * 1.24;
+    const niceMax = Math.max(0.1, yMax);
+
+    for (let k = 0; k <= 4; k++) {
+      const y = y0 + h * k / 4;
+      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
+      if (k === 0) continue; // omit the largest value for a cleaner top edge
+      const val = niceMax * (1 - k / 4);
+      ctx.fillText(val.toFixed(val < 1 ? 2 : 1), 8, y + 8);
+    }
+
+    const tickStep = niceTickStep(Math.max(spanT, 1e-9), 6);
+    const ticks = [];
+    if (spanT <= 1e-9) ticks.push(firstT);
+    else {
+      let t = Math.ceil(firstT / tickStep) * tickStep;
+      if (t > firstT + 1e-9) ticks.push(firstT);
+      for (let guard = 0; t <= lastT + 1e-9 && guard < 50; guard++, t += tickStep) ticks.push(t);
+      if (ticks[ticks.length - 1] < lastT - 1e-9) ticks.push(lastT);
+    }
+    for (const t of ticks) {
+      const x = x0 + (spanT > 1e-12 ? ((t - firstT) / spanT) * w : 0);
+      ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
+      const label = timeLabel(t, spanT);
+      const tw = ctx.measureText(label).width;
+      ctx.fillStyle = "#555";
+      ctx.fillText(label, Math.max(2, Math.min(W - tw - 2, x - tw / 2)), y0 + h + 28);
+      ctx.fillStyle = "#666";
+    }
+
+    ctx.strokeStyle = "#888";
+    ctx.strokeRect(x0, y0, w, h);
+
+    if (data.length >= 2) {
+      ctx.fillStyle = "rgba(128,128,128,0.28)";
+      ctx.beginPath();
+      for (let i = 0; i < data.length; i++) {
+        const x = plotX(data[i], firstT, lastT, x0, w, i, data.length);
+        const y = plotY(data[i].allRabbits, y0, h, niceMax);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      for (let i = data.length - 1; i >= 0; i--) {
+        const x = plotX(data[i], firstT, lastT, x0, w, i, data.length);
+        const y = plotY(data[i].rabbitsBelowPlants, y0, h, niceMax);
+        ctx.lineTo(x, y);
+      }
+      ctx.closePath(); ctx.fill();
+
+      drawLine(ctx, data, "foxes", "#f08a24", x0, y0, w, h, niceMax, firstT, lastT);
+      drawLine(ctx, data, "snakes", "#050505", x0, y0, w, h, niceMax, firstT, lastT);
+      drawLine(ctx, data, "rabbitsBelowPlants", "#2d8a43", x0, y0, w, h, niceMax, firstT, lastT);
+      drawLine(ctx, data, "allRabbits", "#666666", x0, y0, w, h, niceMax, firstT, lastT);
+      drawLine(ctx, data, "plants", "#44aa55", x0, y0, w, h, niceMax, firstT, lastT);
+    }
+
+    ctx.fillStyle = "#333";
+    ctx.fillText("density", 7, 22);
+    ctx.fillText("time", x0 + w - 52, H - 10);
+
+    // Label the four single-species curves with their creature icon, sitting on the curve.
+    if (data.length >= 2) {
+      const iconS = 44;
+      const onCurve = (field, frac) => {
+        const i = Math.max(0, Math.min(data.length - 1, Math.round(frac * (data.length - 1))));
+        const px = plotX(data[i], firstT, lastT, x0, w, i, data.length);
+        let py = plotY(data[i][field], y0, h, niceMax);
+        py = Math.max(y0 + iconS / 2, Math.min(y0 + h - iconS / 2, py));
+        return [px - iconS / 2, py - iconS / 2];
+      };
+      let p;
+      p = onCurve("plants", 0.20);     drawPlant(ctx, p[0], p[1], iconS);
+      p = onCurve("foxes", 0.40);      drawFox(ctx, p[0], p[1], iconS, 1);
+      p = onCurve("snakes", 0.60);     drawSnake(ctx, p[0], p[1], iconS, 1);
+      p = onCurve("allRabbits", 0.82); drawRabbit(ctx, p[0], p[1], iconS);
+    }
+
+    // Only the two rabbit bands need words; centre them along the top.
+    ctx.font = "24px sans-serif";
+    const two = [["Rabbits below plants", "#2d8a43"], ["Exposed rabbit band", "rgba(128,128,128,0.45)"]];
+    const swW = 34, swGap = 10, itemGap = 46;
+    const widths = two.map(([name]) => swW + swGap + ctx.measureText(name).width);
+    const total = widths.reduce((a, b) => a + b, 0) + itemGap * (two.length - 1);
+    let tx = x0 + (w - total) / 2;
+    const ty = y0 + 26;
+    for (let k = 0; k < two.length; k++) {
+      const [name, color] = two[k];
+      ctx.fillStyle = color; ctx.fillRect(tx, ty - 16, swW, 9);
+      ctx.fillStyle = "#333"; ctx.fillText(name, tx + swW + swGap, ty - 8);
+      tx += widths[k] + itemGap;
+    }
+  }
+
+
+
+  function getRateMeta(id) {
+    return controls.rates.find(x => x.id === id) || controls.core.find(x => x.id === id) || controls.init.find(x => x.id === id);
+  }
+
+  function roundToStep(v, step, min) {
+    if (!step || step <= 0) return v;
+    return min + Math.round((v - min) / step) * step;
+  }
+
+  function randn() {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  }
+
+  function snapshotSearchParams() {
+    const out = { dt: params.dt, randomNeighborModel, rabbitBirthRule, rabbitPlantRemoval, rabbitRemovalOnAttempt, foxPlantRemoval };
+    for (const id of searchParameterIds) out[id] = params[id];
+    return normalizeParameterSet(out);
+  }
+
+  function normalizeParameterSet(set) {
+    const src = set || {};
+    const out = { dt: Number(src.dt ?? params.dt), randomNeighborModel: !!src.randomNeighborModel, rabbitBirthRule: src.rabbitBirthRule || "anywhere", rabbitPlantRemoval: src.rabbitPlantRemoval !== false, rabbitRemovalOnAttempt: src.rabbitRemovalOnAttempt !== false, foxPlantRemoval: !!src.foxPlantRemoval };
+    if (!birthRules.includes(out.rabbitBirthRule)) out.rabbitBirthRule = "anywhere";
+    for (const id of searchParameterIds) {
+      const meta = getControlMeta(id);
+      let v = Number(src[id]);
+      if (!Number.isFinite(v)) v = Number(params[id] ?? (meta ? meta.value : 0));
+      if (meta) {
+        if (meta.values) v = nearestListedValue(v, meta.values);
+        else v = Math.max(Number(meta.min), Math.min(Number(meta.max), v));
+      }
+      out[id] = v;
+    }
+    return out;
+  }
+
+  function stopSearchIfRunning() {
+    searchRunning = false;
+    const b = document.getElementById("searchBtn");
+    if (b) {
+      b.textContent = "Start search";
+      b.classList.remove("primary");
+    }
+  }
+
+  function applyParameterSetToControls(set, resetAfter = true) {
+    const clean = normalizeParameterSet(set);
+    for (const id of searchParameterIds) {
+      if (clean[id] !== undefined) setControlValue(id, clean[id]);
+    }
+    if (clean.dt !== undefined) setControlValue("dt", clean.dt);
+    randomNeighborModel = !!clean.randomNeighborModel;
+    document.getElementById("modeBtn").textContent = randomNeighborModel ? "Random-neighbor model" : "Local neighbors";
+    rabbitBirthRule = clean.rabbitBirthRule;
+    rabbitPlantRemoval = clean.rabbitPlantRemoval !== false;
+    rabbitRemovalOnAttempt = clean.rabbitRemovalOnAttempt !== false;
+    foxPlantRemoval = !!clean.foxPlantRemoval;
+    updateBirthRuleButton();
+    updateRabbitPlantButton();
+    updateRabbitPlantModeButton();
+    updateFoxPlantButton();
+    if (resetAfter) reset(); else drawAll();
+  }
+
+  function mutateSearchParams(base) {
+    const cand = { ...base };
+    const scale = Math.max(0.001, Number(document.getElementById("searchMutation").value) || 0.25);
+    for (const id of searchParameterIds) {
+      if (searchLocked[id]) continue;
+      const meta = getRateMeta(id);
+      if (meta.values) {
+        const values = meta.values;
+        const currentIndex = Math.max(0, values.findIndex(v => v === nearestListedValue(Number(cand[id]), values)));
+        const jump = Math.max(1, Math.round(Math.abs(randn()) * (1 + scale * 4)));
+        const direction = Math.random() < 0.5 ? -1 : 1;
+        const newIndex = Math.max(0, Math.min(values.length - 1, currentIndex + direction * jump));
+        cand[id] = values[newIndex];
+        continue;
+      }
+      const min = Number(meta.min), max = Number(meta.max), step = Number(meta.step);
+      const current = Math.max(Number(cand[id]), min + 1e-12);
+      let v;
+      if (current <= min + 1e-10) {
+        v = min + Math.random() * (max - min) * 0.08;
+      } else {
+        v = current * Math.exp(randn() * scale);
+      }
+      v = Math.max(min, Math.min(max, v));
+      cand[id] = Number(roundToStep(v, step, min).toFixed(6));
+    }
+    if (!birthRuleLocked && Math.random() < 0.25) {
+      cand.rabbitBirthRule = birthRules[randInt(birthRules.length)];
+    }
+    if (!rabbitPlantLocked && Math.random() < 0.20) {
+      cand.rabbitPlantRemoval = !cand.rabbitPlantRemoval;
+    }
+    cand.randomNeighborModel = randomNeighborModel;
+    cand.foxPlantRemoval = foxPlantRemoval;
+    cand.rabbitRemovalOnAttempt = rabbitRemovalOnAttempt;
+    cand.dt = params.dt;
+    return cand;
+  }
+
+  function runSurvivalTest(testParams) {
+    testParams = normalizeParameterSet(testParams);
+    const sL = 15;
+    const sN = sL * sL;
+    const splants = new Uint8Array(sN);
+    const srabbits = new Uint8Array(sN);
+    const sfoxes = new Uint16Array(sN);
+    const ssnakes = new Uint16Array(sN);
+    const dt = Math.max(0.0001, Number(testParams.dt) || 0.01);
+    const maxTime = Math.min(5000, Math.max(dt, Number(document.getElementById("searchMaxTime").value) || 5000));
+    const maxSteps = Math.max(1, Math.floor(maxTime / dt));
+
+    for (let i = 0; i < sN; i++) {
+      splants[i] = Math.random() < 0.20 ? 1 : 0;
+      srabbits[i] = Math.random() < 0.20 ? 1 : 0;
+      sfoxes[i] = Math.random() < 0.20 ? 1 : 0;
+      ssnakes[i] = Math.random() < 0.20 ? 1 : 0;
+    }
+
+    const sxOf = i => i % sL;
+    const syOf = i => Math.floor(i / sL);
+    const sIdx = (x, y) => y * sL + x;
+    const sRandTarget = (i) => {
+      if (testParams.randomNeighborModel) return randInt(sN);
+      const x = sxOf(i), y = syOf(i);
+      switch (randInt(4)) {
+        case 0: return sIdx((x + 1) % sL, y);
+        case 1: return sIdx((x + sL - 1) % sL, y);
+        case 2: return sIdx(x, (y + 1) % sL);
+        default: return sIdx(x, (y + sL - 1) % sL);
+      }
+    };
+    const collectBin = (arr) => {
+      const out = [];
+      for (let i = 0; i < sN; i++) if (arr[i]) out.push(i);
+      return out;
+    };
+    const collectCount = (arr) => {
+      const out = [];
+      for (let i = 0; i < sN; i++) if (arr[i] > 0) out.push([i, arr[i]]);
+      return out;
+    };
+    const birthAllowed = (site) => {
+      if (testParams.rabbitBirthRule === "under") return splants[site] === 1;
+      if (testParams.rabbitBirthRule === "exposed") return splants[site] === 0;
+      return true;
+    };
+    const aliveStats = () => {
+      let pc = 0, rc = 0, fc = 0, sc = 0;
+      for (let i = 0; i < sN; i++) {
+        pc += splants[i];
+        rc += srabbits[i];
+        fc += sfoxes[i];
+        sc += ssnakes[i];
+      }
+      return { pc, rc, fc, sc };
+    };
+
+    for (let step = 0; step < maxSteps; step++) {
+      const pGrow = clampProb(testParams.gamma * (testParams.sigma ?? 1) * dt);
+      if (pGrow > 0) {
+        for (const i of collectBin(splants)) {
+          if (splants[i] && Math.random() < pGrow) {
+            const j = sRandTarget(i);
+            if (!splants[j]) splants[j] = 1;
+          }
+        }
+      }
+
+      const pRMove = clampProb(testParams.muR * dt);
+      const pRBirth = clampProb(testParams.epsilon * dt);
+      for (const start of collectBin(srabbits)) {
+        if (!srabbits[start]) continue;
+        let current = start;
+        if (Math.random() < pRMove) {
+          const j = sRandTarget(current);
+          const protectedNow = splants[current] === 1;
+          const protectedTarget = splants[j] === 1;
+          const canMove = !srabbits[j] && (!protectedNow || protectedTarget);
+          // Search variant honors the same trigger mode as the live model.
+          if (testParams.rabbitPlantRemoval && protectedTarget &&
+              (testParams.rabbitRemovalOnAttempt || canMove) &&
+              Math.random() < clampProb(testParams.sigma ?? 1)) {
+            splants[j] = 0;
+          }
+          if (canMove) {
+            srabbits[current] = 0;
+            srabbits[j] = 1;
+            current = j;
+          }
+        }
+        if (srabbits[current] && birthAllowed(current) && Math.random() < pRBirth) {
+          const j = sRandTarget(current);
+          if (!srabbits[j]) srabbits[j] = 1;
+        }
+      }
+
+      const pFMove = clampProb(testParams.muF * dt);
+      const pFBirth = clampProb(testParams.f);
+      const pFDeath = clampProb(testParams.deltaF * dt);
+      for (const [start, originalCount] of collectCount(sfoxes)) {
+        for (let c = 0; c < originalCount; c++) {
+          if (sfoxes[start] === 0) break;
+          let current = start;
+          if (Math.random() < pFMove) {
+            const j = sRandTarget(start);
+            if (sfoxes[j] < maxLocalPredators) {
+              sfoxes[start]--;
+              sfoxes[j]++;
+              current = j;
+            } else {
+              current = start;
+            }
+            if (current === j && srabbits[j]) {
+              if (splants[j]) {
+                if (testParams.foxPlantRemoval && Math.random() < clampProb(testParams.sigma ?? 1)) splants[j] = 0;
+              } else {
+                srabbits[j] = 0;
+                if (Math.random() < pFBirth) {
+                  const k = sRandTarget(j);
+                  if (sfoxes[k] < maxLocalPredators) sfoxes[k]++;
+                }
+              }
+            }
+          }
+          if (Math.random() < pFDeath && sfoxes[current] > 0) sfoxes[current]--;
+        }
+      }
+
+      const pSMove = clampProb(testParams.muS * dt);
+      const pSBirth = clampProb(testParams.fS);
+      const pSDeath = clampProb(testParams.deltaS * dt);
+      for (const [start, originalCount] of collectCount(ssnakes)) {
+        for (let c = 0; c < originalCount; c++) {
+          if (ssnakes[start] === 0) break;
+          let current = start;
+          if (Math.random() < pSMove) {
+            const j = sRandTarget(start);
+            if (ssnakes[j] < maxLocalPredators) {
+              ssnakes[start]--;
+              ssnakes[j]++;
+              current = j;
+            } else {
+              current = start;
+            }
+            if (current === j && splants[j] && srabbits[j]) {
+              srabbits[j] = 0;
+              if (Math.random() < pSBirth) {
+                const k = sRandTarget(j);
+                if (ssnakes[k] < maxLocalPredators) ssnakes[k]++;
+              }
+            }
+          }
+          if (Math.random() < pSDeath && ssnakes[current] > 0) ssnakes[current]--;
+        }
+      }
+
+      const a = aliveStats();
+      if (a.pc === 0 || a.rc === 0 || a.fc === 0 || a.sc === 0) return (step + 1) * dt;
+    }
+    return maxTime;
+  }
+
+  function formatSet(set) {
+    if (!set) return "none";
+    return `γ=${set.gamma}, σ=${set.sigma}, ε=${set.epsilon}, μR=${set.muR}, μF=${set.muF}, f=${set.f}, δF=${set.deltaF}, μS=${set.muS}, fS=${set.fS}, δS=${set.deltaS}, birth=${set.rabbitBirthRule}, rabbitPlantRemoval=${set.rabbitPlantRemoval !== false ? "on" : "off"} (${set.rabbitRemovalOnAttempt !== false ? "attempt" : "move"}), foxPlantRemoval=${set.foxPlantRemoval ? "on" : "off"}`;
+  }
+
+  function updateSearchStatus(message = "") {
+    const el = document.getElementById("searchStatus");
+    const bestText = searchBest ? `Best survival: ${searchBest.survival.toFixed(2)} time units after ${searchTrials} trial(s).<br>${formatSet(searchBest.params)}` : "No winner tested yet.";
+    el.innerHTML = `${message ? message + "<br>" : ""}${bestText}<br><span class="small">Search uses L=15, initial densities P=R=F=S=0.20, and a hard cap of 5000 time units every trial.</span>`;
+  }
+
+  function runOneSearchTrial() {
+    if (!searchBest) {
+      const base = snapshotSearchParams();
+      const survival = runSurvivalTest(base);
+      searchBest = { params: normalizeParameterSet(base), survival };
+      searchTrials = 1;
+      updateSearchStatus("Initialized baseline from current controls.");
+      return;
+    }
+    const cand = mutateSearchParams(searchBest.params);
+    const survival = runSurvivalTest(cand);
+    searchTrials++;
+    if (survival > searchBest.survival) {
+      searchBest = { params: normalizeParameterSet(cand), survival };
+      applyParameterSetToControls(cand, false);
+      updateSearchStatus("New winning parameter set found and copied to controls.");
+    } else {
+      updateSearchStatus(`Trial survived ${survival.toFixed(2)}; no improvement.`);
+    }
+  }
+
+  function readSavedSets() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(savedKey) || "[]");
+      return Array.isArray(raw) ? raw.map(entry => ({ ...entry, params: normalizeParameterSet(entry.params), survival: Number(entry.survival) || 0 })) : [];
+    } catch { return []; }
+  }
+
+  function writeSavedSets(list) {
+    const clean = list.map(entry => ({ ...entry, params: normalizeParameterSet(entry.params), survival: Number(entry.survival) || 0 }));
+    localStorage.setItem(savedKey, JSON.stringify(clean));
+  }
+
+  function populateSavedSets() {
+    const select = document.getElementById("savedSets");
+    const list = readSavedSets();
+    select.innerHTML = "";
+    if (!list.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No stored winners";
+      select.appendChild(opt);
+      return;
+    }
+    list.forEach((entry, i) => {
+      const opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent = `${entry.date} · survival ${Number(entry.survival).toFixed(2)} · σ=${entry.params.sigma} · ${entry.params.rabbitBirthRule} · rabbitPlant=${entry.params.rabbitPlantRemoval !== false ? "on" : "off"} · foxPlant=${entry.params.foxPlantRemoval ? "on" : "off"}`;
+      select.appendChild(opt);
+    });
+  }
+
+  function storeWinner() {
+    if (!searchBest) {
+      updateSearchStatus("Run at least one search trial before storing a winner.");
+      return;
+    }
+    const list = readSavedSets();
+    list.unshift({
+      date: new Date().toLocaleString(),
+      survival: searchBest.survival,
+      params: normalizeParameterSet(searchBest.params)
+    });
+    writeSavedSets(list.slice(0, 30));
+    populateSavedSets();
+    updateSearchStatus("Stored current winning parameter set in this browser.");
+  }
+
+  function loadSelectedWinner() {
+    const list = readSavedSets();
+    const sel = document.getElementById("savedSets");
+    const i = Number(sel.value);
+    if (!list.length || !Number.isFinite(i) || !list[i]) {
+      updateSearchStatus("No stored winner selected.");
+      return;
+    }
+    stopSearchIfRunning();
+    const loaded = normalizeParameterSet(list[i].params);
+    searchBest = { params: loaded, survival: Number(list[i].survival) || 0 };
+    applyParameterSetToControls(loaded, true);
+    updateSearchStatus("Loaded selected stored winner, stopped the search, applied controls, and reset the main simulation.");
+  }
+
+  function drawStatus() {
+    const c = countPopulations();
+    const model = randomNeighborModel ? "Random-neighbor / well mixed targets" : "Local nearest-neighbor targets";
+    const freeze = plantsFrozen ? `plants frozen at t=${time.toFixed(2)}` : "plants dynamic";
+    statusEl.innerHTML = `
+      <span><b>t</b> ${time.toFixed(2)}</span>
+      <span><b>step</b> ${stepNumber}</span>
+      <span><b>L</b> ${L}×${L}</span>
+      <span><b>plants</b> ${(c.plantCount / N).toFixed(3)}</span>
+      <span><b>all rabbits</b> ${(c.rabbitCount / N).toFixed(3)}</span>
+      <span><b>rabbits below plants</b> ${(c.rabbitBelowPlant / N).toFixed(3)}</span>
+      <span><b>foxes</b> ${(c.foxCount / N).toFixed(3)}</span>
+      <span><b>snakes</b> ${(c.snakeCount / N).toFixed(3)}</span>
+      <span><b>max fox/site</b> ${c.maxFoxLocal}</span>
+      <span><b>max snake/site</b> ${c.maxSnakeLocal}</span>
+      <span><b>plot points</b> ${history.length}${historyStride > 1 ? " (thin×" + historyStride + ")" : ""}</span>
+      <span class="pill">${model}</span>
+      <span class="pill">σ=${params.sigma}, γeff=${(params.gamma * params.sigma).toFixed(4)}, rabbit plant-removal ${rabbitPlantRemoval ? ("p=σ, " + (rabbitRemovalOnAttempt ? "on move attempt" : "on successful move")) : "off"}</span>
+      <span class="pill">rabbit births: ${rabbitBirthRule === "anywhere" ? "anywhere" : (rabbitBirthRule === "under" ? "under plants only" : "outside plants only")}</span>
+      <span class="pill">plant removal: ${[rabbitPlantRemoval ? "rabbits" : null, foxPlantRemoval ? "foxes" : null, snakePlantRemoval ? "snakes" : null].filter(Boolean).join(" + ") || "none"}</span>
+      <span class="pill">rabbit shelter: ${rabbitShelterMode === "adaptive" ? "adaptive (foxes↔snakes)" : "always under plants"}</span>
+      <span class="pill">${freeze}</span>
+    `;
+  }
+
+  function exportFigure() {
+    if (!history.length || history[history.length - 1].t < time) recordHistory();
+    drawAll();
+    const worldW = worldCanvas.width, worldH = worldCanvas.height;
+    const plotW = plotCanvas.width, plotH = plotCanvas.height;
+    const W = worldW;                                  // figure width = lattice width
+    const gap = Math.max(8, Math.round(W * 0.02));
+    const plotDrawH = Math.round(plotH * (W / plotW)); // plot scaled to the same width
+    const H = worldH + gap + plotDrawH;
+
+    const out = document.createElement("canvas");
+    out.width = W;
+    out.height = H;
+    const ctx = out.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.drawImage(worldCanvas, 0, 0, worldW, worldH);
+    ctx.drawImage(plotCanvas, 0, worldH + gap, W, plotDrawH);
+
+    // hairline frames to match the on-screen panels
+    ctx.strokeStyle = "#222"; ctx.lineWidth = 1;
+    ctx.strokeRect(0.5, 0.5, W - 1, worldH - 1);
+    ctx.strokeStyle = "#d7d7cd";
+    ctx.strokeRect(0.5, worldH + gap + 0.5, W - 1, plotDrawH - 1);
+
+    let url;
+    try {
+      url = out.toDataURL("image/png");
+    } catch (err) {
+      statusEl.innerHTML += `<span class="pill" style="border-color:#c44;color:#922;">PNG export failed: ${err && err.message ? err.message : err}</span>`;
+      return;
+    }
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    a.download = `abm_figure_t${time.toFixed(2)}_${stamp}.png`;
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function exportPNG() {
+    // Make sure the on-screen lattice and trajectory reflect the current state.
+    if (!history.length || history[history.length - 1].t < time) recordHistory();
+    drawAll();
+
+    const c = countPopulations();
+    const pad = 26;
+    const gap = 22;
+    const titleH = 92;          // title + summary + species legend
+    const sectionLabelH = 22;
+    const captionH = 78;
+
+    const worldW = worldCanvas.width;
+    const worldH = worldCanvas.height;
+    const plotW = plotCanvas.width;
+    const plotH = plotCanvas.height;
+
+    const contentW = Math.max(worldW, plotW);
+    const canvasW = contentW + pad * 2;
+    const canvasH = pad + titleH + sectionLabelH + worldH + gap +
+                    sectionLabelH + plotH + gap + captionH + pad;
+
+    const out = document.createElement("canvas");
+    out.width = canvasW;
+    out.height = canvasH;
+    const ctx = out.getContext("2d");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvasW, canvasH);
+    ctx.textBaseline = "top";
+
+    // ---- Title + run summary ----
+    let y = pad;
+    ctx.fillStyle = "#1d1d1d";
+    ctx.font = "bold 22px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctx.fillText("Protective-plants ABM — final lattice and population trajectory", pad, y);
+    y += 30;
+
+    ctx.fillStyle = "#555";
+    ctx.font = "13px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctx.fillText(
+      `t = ${time.toFixed(2)}   ·   step ${stepNumber}   ·   L = ${L}×${L}   ·   ` +
+      `plants ${(c.plantCount / N).toFixed(3)}   rabbits ${(c.rabbitCount / N).toFixed(3)} ` +
+      `(below plants ${(c.rabbitBelowPlant / N).toFixed(3)})   foxes ${(c.foxCount / N).toFixed(3)}   snakes ${(c.snakeCount / N).toFixed(3)}`,
+      pad, y);
+    y += 24;
+
+    // ---- Species legend for the lattice ----
+    const legendItems = [
+      ["plant", "#3aa14b", "circle"],
+      ["rabbit", "#cfd2d3", "circle"],
+      ["fox", "#f08a24", "triangle"],
+      ["snake", "#050505", "line"]
+    ];
+    let lx = pad;
+    ctx.font = "13px system-ui, -apple-system, Segoe UI, sans-serif";
+    for (const [name, color, shape] of legendItems) {
+      ctx.fillStyle = color;
+      if (shape === "triangle") {
+        ctx.beginPath();
+        ctx.moveTo(lx + 7, y + 1); ctx.lineTo(lx + 14, y + 14); ctx.lineTo(lx, y + 14);
+        ctx.closePath(); ctx.fill();
+      } else if (shape === "line") {
+        ctx.strokeStyle = color; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(lx, y + 8); ctx.lineTo(lx + 14, y + 8); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.arc(lx + 7, y + 7, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 1; ctx.stroke();
+      }
+      ctx.fillStyle = "#333";
+      ctx.fillText(name, lx + 20, y);
+      lx += 20 + ctx.measureText(name).width + 26;
+    }
+    y = pad + titleH;
+
+    // ---- Section A: final lattice ----
+    ctx.fillStyle = "#1d1d1d";
+    ctx.font = "bold 14px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctx.fillText("Final lattice", pad, y);
+    y += sectionLabelH;
+
+    const worldX = pad + (contentW - worldW) / 2;
+    ctx.drawImage(worldCanvas, worldX, y, worldW, worldH);
+    ctx.strokeStyle = "#222"; ctx.lineWidth = 1;
+    ctx.strokeRect(worldX + 0.5, y + 0.5, worldW, worldH);
+    y += worldH + gap;
+
+    // ---- Section B: population trajectory ----
+    ctx.fillStyle = "#1d1d1d";
+    ctx.font = "bold 14px system-ui, -apple-system, Segoe UI, sans-serif";
+    ctx.fillText("Population trajectory (densities vs time)", pad, y);
+    y += sectionLabelH;
+
+    const plotX = pad + (contentW - plotW) / 2;
+    ctx.drawImage(plotCanvas, plotX, y, plotW, plotH);
+    ctx.strokeStyle = "#d7d7cd"; ctx.lineWidth = 1;
+    ctx.strokeRect(plotX + 0.5, y + 0.5, plotW, plotH);
+    y += plotH + gap;
+
+    // ---- Caption: parameters ----
+    ctx.fillStyle = "#444";
+    ctx.font = "12px system-ui, -apple-system, Segoe UI, sans-serif";
+    const captionLines = [
+      `γ=${params.gamma}  σ=${params.sigma}  ε=${params.epsilon}  μR=${params.muR}  μF=${params.muF}  μS=${params.muS}  ` +
+        `f=${params.f}  δF=${params.deltaF}  fS=${params.fS}  δS=${params.deltaS}  Δt=${params.dt}`,
+      `rabbit births: ${rabbitBirthRule}  ·  rabbit plant removal: ${rabbitPlantRemoval ? "on" : "off"}` +
+        ` (${rabbitRemovalOnAttempt ? "on move attempt" : "on successful move"})  ·  fox plant removal: ${foxPlantRemoval ? "on" : "off"}`,
+      `${randomNeighborModel ? "random-neighbor targets" : "local nearest-neighbor targets"}` +
+        `${plantsFrozen ? "  ·  plants frozen" : ""}  ·  exposed-rabbit band = all rabbits − rabbits below plants`
+    ];
+    captionLines.forEach((ln, i) => ctx.fillText(ln, pad, y + i * 18));
+
+    // ---- Trigger download ----
+    let url;
+    try {
+      url = out.toDataURL("image/png");
+    } catch (err) {
+      statusEl.innerHTML += `<span class="pill" style="border-color:#c44;color:#922;">PNG export failed: ${err && err.message ? err.message : err}</span>`;
+      return;
+    }
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    a.download = `abm_snapshot_t${time.toFixed(2)}_${stamp}.png`;
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function drawAll() {
+    drawWorld();
+    drawPlot();
+    drawStatus();
+  }
+
+  function loop() {
+    try {
+      if (running) {
+        const n = Math.max(1, Math.round(params.speed));
+        for (let i = 0; i < n; i++) stepSimulation();
+        if (!history.length || history[history.length - 1].t < time) recordHistory();
+        drawAll();
+      }
+      if (searchRunning) {
+        const n = Math.max(1, Math.min(20, Math.round(Number(document.getElementById("searchTrialsPerFrame").value) || 1)));
+        for (let i = 0; i < n; i++) runOneSearchTrial();
+      }
+    } catch (err) {
+      running = false;
+      searchRunning = false;
+      const runButton = document.getElementById("runBtn");
+      if (runButton) { runButton.textContent = "Start"; runButton.classList.add("primary"); }
+      const searchButton = document.getElementById("searchBtn");
+      if (searchButton) { searchButton.textContent = "Start search"; searchButton.classList.remove("primary"); }
+      try { if (!history.length || history[history.length - 1].t < time) recordHistory(); drawAll(); } catch (_) {}
+      const msg = err && err.message ? err.message : String(err);
+      statusEl.innerHTML += `<span class="pill" style="border-color:#c44;color:#922;">simulation paused after error: ${msg}</span>`;
+      console.error(err);
+    }
+    requestAnimationFrame(loop);
+  }
+
+  document.getElementById("runBtn").addEventListener("click", () => {
+    running = !running;
+    const b = document.getElementById("runBtn");
+    b.textContent = running ? "Pause" : "Start";
+    b.classList.toggle("primary", !running);
+  });
+
+  document.getElementById("stepBtn").addEventListener("click", () => {
+    stepSimulation();
+    if (stepNumber % Math.max(1, Math.round(params.sampleEvery)) !== 0) recordHistory();
+    drawAll();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => reset());
+
+  document.getElementById("modeBtn").addEventListener("click", () => {
+    randomNeighborModel = !randomNeighborModel;
+    document.getElementById("modeBtn").textContent = randomNeighborModel ? "Random-neighbor model" : "Local neighbors";
+    drawStatus();
+  });
+
+  document.getElementById("rabbitPlantBtn").addEventListener("click", () => {
+    rabbitPlantRemoval = !rabbitPlantRemoval;
+    updateRabbitPlantButton();
+    updateRabbitPlantModeButton();
+    clearScenarioHighlight();
+    drawStatus();
+  });
+
+  document.getElementById("rabbitPlantModeBtn").addEventListener("click", () => {
+    rabbitRemovalOnAttempt = !rabbitRemovalOnAttempt;
+    updateRabbitPlantModeButton();
+    clearScenarioHighlight();
+    drawStatus();
+  });
+
+  document.getElementById("exportPngBtn").addEventListener("click", () => exportPNG());
+  document.getElementById("exportFigBtn").addEventListener("click", () => exportFigure());
+
+  document.getElementById("foxPlantBtn").addEventListener("click", () => {
+    foxPlantRemoval = !foxPlantRemoval;
+    updateFoxPlantButton();
+    clearScenarioHighlight();
+    drawStatus();
+  });
+
+  document.getElementById("snakePlantBtn").addEventListener("click", () => {
+    snakePlantRemoval = !snakePlantRemoval;
+    updateSnakePlantButton();
+    clearScenarioHighlight();
+    drawStatus();
+  });
+
+  document.getElementById("rabbitShelterBtn").addEventListener("click", () => {
+    rabbitShelterMode = rabbitShelterMode === "adaptive" ? "always" : "adaptive";
+    updateRabbitShelterButton();
+    drawStatus();
+  });
+
+  document.getElementById("freezeBtn").addEventListener("click", () => {
+    plantsFrozen = !plantsFrozen;
+    document.getElementById("freezeBtn").textContent = plantsFrozen ? "Unfreeze plants" : "Freeze plants now";
+    clearScenarioHighlight();
+    drawStatus();
+  });
+
+  document.getElementById("clearHistoryBtn").addEventListener("click", () => {
+    history = [];
+    historyYMax = 0.02;
+    historyStride = 1;
+    recordHistory();
+    drawPlot();
+  });
+
+
+  document.getElementById("birthRuleBtn").addEventListener("click", () => {
+    const i = birthRules.indexOf(rabbitBirthRule);
+    rabbitBirthRule = birthRules[(i + 1) % birthRules.length];
+    updateBirthRuleButton();
+    drawStatus();
+  });
+
+  document.getElementById("birthRuleLockBtn").addEventListener("click", () => {
+    birthRuleLocked = !birthRuleLocked;
+    updateBirthRuleButton();
+  });
+
+  document.getElementById("rabbitPlantLockBtn").addEventListener("click", () => {
+    rabbitPlantLocked = !rabbitPlantLocked;
+    updateRabbitPlantButton();
+  });
+
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    searchRunning = !searchRunning;
+    const b = document.getElementById("searchBtn");
+    b.textContent = searchRunning ? "Stop search" : "Start search";
+    b.classList.toggle("primary", searchRunning);
+    updateSearchStatus(searchRunning ? "Search running." : "Search stopped.");
+  });
+
+  document.getElementById("searchTrialBtn").addEventListener("click", () => runOneSearchTrial());
+  document.getElementById("storeWinnerBtn").addEventListener("click", () => storeWinner());
+  document.getElementById("loadSavedBtn").addEventListener("click", () => loadSelectedWinner());
+
+  function updateScenarioButtons() {
+    for (const k of [1, 2, 3, 4, 5, 6]) {
+      const b = document.getElementById("scenario" + k + "Btn");
+      if (b) b.classList.toggle("primary", activeScenario === k);
+    }
+  }
+  function clearScenarioHighlight() {
+    activeScenario = 0;
+    updateScenarioButtons();
+  }
+  function applyScenario(n) {
+    const sc = scenarios[n];
+    if (!sc) return;
+    setControlValue("speed", 1);
+    setControlValue("gamma", sc.gamma);
+    setControlValue("sigma", sc.sigma);
+    setControlValue("initPlant", (n === 2 || n === 5) ? frozenDensity : sc.initPlant);
+    rabbitPlantRemoval = sc.rabbitPlantRemoval;
+    rabbitRemovalOnAttempt = sc.rabbitRemovalOnAttempt;
+    foxPlantRemoval = sc.foxPlantRemoval;
+    snakePlantRemoval = !!sc.snakePlantRemoval;
+    plantSeedMode = sc.plantSeedMode || "random";
+    rabbitRemovalEndedBelow = !!sc.rabbitRemovalEndedBelow;
+    updateRabbitPlantButton();
+    updateRabbitPlantModeButton();
+    updateFoxPlantButton();
+    updateSnakePlantButton();
+    reset();
+    if (sc.frozen) {
+      plantsFrozen = true;
+      const fb = document.getElementById("freezeBtn");
+      if (fb) fb.textContent = "Unfreeze plants";
+    }
+    activeScenario = n;
+    updateScenarioButtons();
+    updateLToggle();
+    drawAll();
+  }
+  document.getElementById("scenario1Btn").addEventListener("click", () => applyScenario(1));
+  document.getElementById("scenario2Btn").addEventListener("click", () => applyScenario(2));
+  document.getElementById("scenario3Btn").addEventListener("click", () => applyScenario(3));
+  document.getElementById("scenario4Btn").addEventListener("click", () => applyScenario(4));
+  document.getElementById("scenario5Btn").addEventListener("click", () => applyScenario(5));
+  document.getElementById("scenario6Btn").addEventListener("click", () => applyScenario(6));
+  function reseedFrozen() {
+    setControlValue("initPlant", frozenDensity);
+    reset();
+    plantsFrozen = true;
+    const fb = document.getElementById("freezeBtn");
+    if (fb) fb.textContent = "Unfreeze plants";
+    drawAll();
+  }
+  function updateLToggle() {
+    const cur = Math.round(params.L);
+    for (const n of [20, 30, 50]) {
+      const btn = document.getElementById("Lpreset" + n);
+      if (btn) btn.classList.toggle("primary", cur === n);
+    }
+  }
+  function setPresetL(n) {
+    setControlValue("L", n);
+    if (activeScenario) applyScenario(activeScenario); else { reset(); drawAll(); }
+    updateLToggle();
+  }
+  [20, 30, 50].forEach((n) => {
+    const btn = document.getElementById("Lpreset" + n);
+    if (btn) btn.addEventListener("click", () => setPresetL(n));
+  });
+  const frozenSlider = document.getElementById("frozenDensity");
+  const frozenVal = document.getElementById("frozenDensityVal");
+  if (frozenSlider) {
+    frozenSlider.addEventListener("input", () => {
+      frozenDensity = Number(frozenSlider.value);
+      if (frozenVal) frozenVal.textContent = frozenDensity.toFixed(2);
+      if (activeScenario === 2 || activeScenario === 5) reseedFrozen();
+    });
+  }
+
+  updateBirthRuleButton();
+  updateRabbitPlantButton();
+  updateRabbitPlantModeButton();
+  updateFoxPlantButton();
+  updateSnakePlantButton();
+  updateRabbitShelterButton();
+  populateSavedSets();
+  updateSearchStatus();
+  updateLToggle();
+
+  applyScenario(1);
+  loop();
+})();
+</script>
+</body>
+</html>
