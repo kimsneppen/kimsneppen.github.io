@@ -32,7 +32,7 @@ const MODELS: Model[] = [
     title: "Spatial Ecosystem",
     description:
       "A spatial simulation of how local interactions on a lattice let many species coexist, illustrating the emergence of diversity in a model ecosystem (after Mitarai, Mathiesen & Sneppen, 2012).",
-    file: "/models/spatial-ecosystem.html",
+    file: "/models/Lichen19_activity.html",
     status: "live",
   },
   {
@@ -40,7 +40,7 @@ const MODELS: Model[] = [
     title: "Colony & Phage",
     description:
       "An interactive model of bacteriophage infection spreading through a growing bacterial colony, showing how lysis dynamics shape the colony over time.",
-    file: "/models/colony-phage.html",
+    file: "/models/phage_colony-v25.html",
     status: "live",
   },
   {
@@ -48,7 +48,7 @@ const MODELS: Model[] = [
     title: "Cell Polarity Morphogenesis",
     description:
       "A 3D model of how polar interactions between cells fold tissues into sheets, tubes, and invaginations during embryo development (after Nissen et al., 2018).",
-    file: "/models/cell-polarity.html",
+    file: "/models/cell-polarity-model-36-mesenchyme.html",
     status: "live",
   },
   {
@@ -56,7 +56,7 @@ const MODELS: Model[] = [
     title: "Rabbit, Fox, Snake & Plant",
     description:
       "An agent-based ecosystem on a lattice with plants, rabbits, foxes, and snakes — exploring how predator–prey interactions sustain coexistence and diversity.",
-    file: "/models/rabbit-fox-snake-plant.html",
+    file: "/models/rabbit-fox-snake-plant_v29.html",
     status: "live",
   },
   {
@@ -64,7 +64,7 @@ const MODELS: Model[] = [
     title: "Nucleosome & Swi6",
     description:
       "A turntable visualization of nucleosomes and Swi6-mediated spreading of histone modifications, illustrating how epigenetic states are established and maintained along chromatin.",
-    file: "/models/nucleosome-swi6.html",
+    file: "/models/nucleosome-swi6-19.html",
     status: "live",
   },
   {
@@ -75,6 +75,22 @@ const MODELS: Model[] = [
     file: "/models/two-state-gillespie.html",
     status: "live",
   },
+  {
+    id: "btw-sandpile",
+    title: "BTW Sandpile",
+    description:
+      "The classical sandpile model exhibiting Self Organized Criticality.",
+    file: "/models/btw_sandpile.html",
+    status: "live",
+  },
+  {
+    id: "sepkoski-extinction",
+    title: "Fossil Data",
+    description:
+      "Analysis of Sepkoski Fossil Data.",
+    file: "/models/Sepkoski_Extinction_Explorer_v22.html",
+    status: "live",
+  },  
 ];
 
 const RESEARCH = [
