@@ -83,14 +83,6 @@ const MODELS: Model[] = [
     file: "/models/btw_sandpile.html",
     status: "live",
   },
-  {
-    id: "sepkoski-extinction",
-    title: "Fossil Data",
-    description:
-      "Analysis of Sepkoski Fossil Data.",
-    file: "/models/Sepkoski_Extinction_Explorer_v22.html",
-    status: "live",
-  },  
 ];
 
 const RESEARCH = [
