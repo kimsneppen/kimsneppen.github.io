@@ -64,7 +64,7 @@ const MODELS: Model[] = [
     title: "Nucleosome & Swi6",
     description:
       "A turntable visualization of nucleosomes and Swi6-mediated spreading of histone modifications, illustrating how epigenetic states are established and maintained along chromatin.",
-    file: "/models/nucleosome-swi6-19.html",
+    file: "/models/nucleosome_swi6-19.html",
     status: "live",
   },
   {
