@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cell Polarity Morphogenesis — Nissen et al. 2018</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c12; --bg2:#10131c; --panel:#141824; --panel2:#1b2030;
+    --line:#252c3d; --line2:#313a52;
+    --txt:#e7ecf6; --muted:#8a93a8; --faint:#5b6478;
+    --apical:#ff8a3d; --apicalDark:#7d160b;
+    --basal:#2cc8f2;  --basalDark:#0f2473;
+    --accent:#ffb05a; --accent2:#7fa9ff; --danger:#ff5d6c;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    background:
+      radial-gradient(1100px 700px at 78% -8%, rgba(255,138,61,.06), transparent 60%),
+      radial-gradient(900px 700px at 8% 108%, rgba(47,214,198,.06), transparent 60%),
+      var(--bg);
+    color:var(--txt); font-family:"IBM Plex Mono",ui-monospace,monospace;
+    display:flex; overflow:hidden;
+  }
+  #panel{ width:346px; min-width:346px; height:100vh; overflow-y:auto;
+    background:linear-gradient(180deg,var(--bg2),var(--panel));
+    border-right:1px solid var(--line); padding:22px 20px 48px; }
+  #panel::-webkit-scrollbar{width:9px} #panel::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px}
+  .brand{font-family:"Fraunces",serif; font-weight:900; font-size:25px; line-height:1.02; letter-spacing:-.01em}
+  .brand em{color:var(--accent); font-style:italic}
+  .cite{color:var(--faint); font-size:11px; margin-top:8px; line-height:1.5}
+  .cite a{color:var(--muted); text-decoration:none; border-bottom:1px dotted var(--line2)}
+  hr{border:none; border-top:1px solid var(--line); margin:18px 0}
+  .group-label{font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--faint); margin:0 0 12px}
+  .row{margin-bottom:15px}
+  .row .top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px}
+  .row label{font-size:12px; color:var(--muted)}
+  .row .val{font-size:12.5px; color:var(--txt); font-weight:600}
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:3px; background:var(--line2);
+    border-radius:3px; outline:none; cursor:pointer}
+  input[type=range]:disabled{opacity:.35}
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+    background:var(--accent); border:2px solid var(--bg); box-shadow:0 0 0 1px var(--accent)}
+  input[type=range]::-moz-range-thumb{ width:14px; height:14px; border-radius:50%; background:var(--accent);
+    border:2px solid var(--bg); box-shadow:0 0 0 1px var(--accent)}
+  .lam input[type=range]::-webkit-slider-thumb{background:var(--accent2);box-shadow:0 0 0 1px var(--accent2)}
+  .lam input[type=range]::-moz-range-thumb{background:var(--accent2);box-shadow:0 0 0 1px var(--accent2)}
+  .wedge input[type=range]::-webkit-slider-thumb{background:#33ffd0;box-shadow:0 0 0 1px #33ffd0}
+  .wedge input[type=range]::-moz-range-thumb{background:#33ffd0;box-shadow:0 0 0 1px #33ffd0}
+  .wedge{background:rgba(51,255,208,.04);border:1px solid #1f4a44}
+  .sectionbtn{ width:100%; text-align:left; background:var(--panel2); border:1px solid var(--line2);
+    border-radius:8px; padding:10px 12px; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted); cursor:pointer; margin:0 0 10px; display:flex; justify-content:space-between; align-items:center; transition:.15s}
+  .sectionbtn:hover{border-color:#33ffd0;color:#9affe6}
+  .sectionbtn .car{color:#33ffd0;font-size:12px}
+  .duo{display:flex; gap:12px}
+  .duo .half{flex:1; min-width:0; margin-bottom:10px}
+  .duo .half input[type=range]{width:100%}
+  .btn-row{display:flex; gap:8px; margin-bottom:10px}
+  button{ font-family:inherit; font-size:12.5px; font-weight:600; color:var(--txt); background:var(--panel2);
+    border:1px solid var(--line2); border-radius:8px; padding:10px 12px; cursor:pointer; flex:1; transition:.15s; letter-spacing:.02em}
+  button:hover{ border-color:var(--accent); color:var(--accent)}
+  button.primary{ background:linear-gradient(180deg,#2a2014,#1d1810); border-color:#5a4424; color:var(--accent)}
+  .chips{display:flex; flex-wrap:wrap; gap:7px}
+  .chip{ flex:0 0 auto; padding:6px 11px; font-size:11.5px; border-radius:20px; background:var(--panel2);
+    border:1px solid var(--line2); cursor:pointer; color:var(--muted); transition:.15s}
+  .chip:hover{border-color:var(--accent); color:var(--accent)}
+  .chip.active{background:rgba(255,176,90,.12); border-color:var(--accent); color:var(--accent)}
+  .cbtn{flex:1 1 0; display:flex; align-items:center; gap:7px; padding:7px 9px; font-size:11.5px;
+    border-radius:8px; background:var(--panel2); border:1px solid var(--line2); cursor:pointer; color:var(--muted); transition:.15s}
+  .cbtn:hover{border-color:var(--accent); color:var(--txt)}
+  .cbtn b{color:var(--txt); font-weight:600}
+  .csw{flex:0 0 auto; width:14px; height:14px; border-radius:4px; border:1px solid rgba(255,255,255,.25)}
+  .toggle{display:flex; align-items:center; justify-content:space-between; padding:7px 0; font-size:12px; color:var(--muted)}
+  .toggle.dim{opacity:.4; pointer-events:none}
+  .toggle input{appearance:none; width:34px; height:18px; background:var(--line2); border-radius:20px; position:relative; cursor:pointer; transition:.15s; flex:0 0 auto}
+  .toggle input:checked{background:var(--accent)}
+  .toggle input::after{content:"";position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--bg); transition:.15s}
+  .toggle input:checked::after{transform:translateX(16px)}
+  .expbox{background:rgba(255,93,108,.05); border:1px solid #3a2530; border-radius:10px; padding:12px 13px 4px; margin-bottom:6px}
+  .expbox.on{border-color:#6a3340}
+  #stage{flex:1; position:relative; height:100vh}
+  canvas{display:block}
+  #hud{ position:absolute; top:16px; left:18px; font-size:11.5px; color:var(--muted);
+    background:rgba(10,12,18,.55); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:10px;
+    padding:11px 14px; line-height:1.85; pointer-events:none}
+  #hud b{color:var(--txt); font-weight:600}
+  #labels{position:absolute; top:16px; right:18px; display:flex; gap:10px}
+  .badge{font-size:11px; padding:5px 11px; border-radius:8px; border:1px solid var(--line); background:rgba(10,12,18,.55); backdrop-filter:blur(6px); color:var(--muted)}
+  #legend{ position:absolute; bottom:16px; left:18px; font-size:11px; color:var(--muted);
+    background:rgba(10,12,18,.55); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:10px; padding:11px 14px; line-height:1.9}
+  .dot{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:7px; vertical-align:-1px}
+  .grad{display:inline-block;width:90px;height:9px;border-radius:5px;vertical-align:-1px;margin-right:7px;
+    background:linear-gradient(90deg,#0033ff,#00d0ff,#00d000,#ffe000,#ff2a00)}
+  #help{ position:absolute; bottom:16px; right:18px; font-size:10.5px; color:var(--faint); text-align:right; line-height:1.7}
+  .sumtag{font-size:10.5px; color:var(--faint); margin-top:-6px; margin-bottom:14px}
+  .sumtag b{color:var(--accent2)}
+  .lamwrap{background:rgba(127,169,255,.04); border:1px solid var(--line); border-radius:10px; padding:13px 13px 4px; margin-bottom:8px}
+  .numrow{display:flex; align-items:center; justify-content:space-between; padding:9px 0 4px; font-size:12px; color:var(--muted)}
+  .numrow input{ width:84px; font-family:inherit; font-size:13px; font-weight:600; color:var(--txt); text-align:right;
+    background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:6px 9px; outline:none}
+  .numrow input:focus{border-color:var(--accent)}
+  .numrow input:disabled{opacity:.4}
+</style>
+</head>
+<body>
+  <aside id="panel">
+    <div class="brand">Cell&nbsp;Polarity<br><em>Morphogenesis</em></div>
+    <div class="cite">After Nissen, S.B. <i>et al.</i> “Theoretical tool bridging cell polarities with development of robust morphologies.”
+      <a href="https://doi.org/10.7554/eLife.38407" target="_blank" rel="noopener">eLife 7:e38407 (2018)</a>.</div>
+    <hr>
+
+    <div class="btn-row">
+      <button id="playBtn" class="primary">▶ Run</button>
+      <button id="stepBtn">Step</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+    <div class="btn-row" style="margin-top:2px">
+      <button id="presetBaby">R. Baby</button>
+      <button id="presetPCP">R. Baby (PCP)</button>
+      <button id="presetCompare">±PCP</button>
+    </div>
+    <div class="btn-row">
+      <button id="presetBranch">Branching</button>
+      <button id="presetBranchPCP">Branching (PCP)</button>
+      <button id="presetBranchNem">nematic</button>
+    </div>
+    <div class="row"><div class="top"><label>Cells N</label><span class="val" id="Nv">2000</span></div>
+      <input type="range" id="N" min="0" max="0" step="1" value="0"></div>
+    <button id="initToggle" class="sectionbtn"><span>Initial condition &amp; neighbours</span><span class="car" id="initCar">▸</span></button>
+    <div class="lamwrap" id="initPanel" style="display:none">
+      <div class="toggle" style="padding-top:0"><span>Initial cells on sphere surface (shell)</span><input type="checkbox" id="tSphere"></div>
+      <div class="toggle"><span>AB polarity initialised outward (apical-out)</span><input type="checkbox" id="tABout"></div>
+      <div class="toggle"><span>AB polarity initialised inward (apical-in)</span><input type="checkbox" id="tABin"></div>
+      <div class="toggle"><span>PCP whirling about vertical axis (parallel, defect-free)</span><input type="checkbox" id="tPCPwhirl"></div>
+      <div class="toggle"><span>Limit interactions to K nearest (then Gabriel)</span><input type="checkbox" id="tKnn" checked></div>
+      <div class="row" style="margin-top:6px"><div class="top"><label>K — nearest neighbours</label><span class="val" id="knnv">20</span></div>
+        <input type="range" id="knnK" min="6" max="40" step="1" value="20"></div>
+      <div class="sumtag" style="margin:2px 0 0">partners = K nearest cells, each still passing the Gabriel (empty-sphere) test.</div>
+    </div>
+    <div class="btn-row"><button id="pngBtn">⤓ Save PNG</button></div>
+
+    <p class="group-label">Morphology presets</p>
+    <div class="chips" id="presets">
+      <span class="chip" data-l="1,0,0">Monolayer / sphere</span>
+      <span class="chip" data-l="0.50,0.44,0.06">Tube</span>
+      <span class="chip" data-l="0.35,0.35,0.3">Twisted tube</span>
+      <span class="chip" data-l="0.5,0.3,0.2">Mixed</span>
+    </div>
+    <hr>
+
+    <p class="group-label">Polarity weights · S<sub>ij</sub> = λ₁S₁+λ₂S₂+λ₃S₃</p>
+    <div class="lamwrap lam">
+      <div class="row"><div class="top"><label>λ₁ — apical-basal (sheets)</label><span class="val" id="l1v">1.00</span></div>
+        <input type="range" id="l1" min="0" max="1" step="0.01" value="1"></div>
+      <div class="row"><div class="top"><label>λ₂ — AB ↔ PCP coupling</label><span class="val" id="l2v">0.00</span></div>
+        <input type="range" id="l2" min="0" max="1" step="0.01" value="0"></div>
+      <div class="row"><div class="top"><label>λ₃ — planar cell polarity</label><span class="val" id="l3v">0.00</span></div>
+        <input type="range" id="l3" min="0" max="0.3" step="0.01" value="0"></div>
+      <div class="toggle" style="padding:6px 0 0"><span>nematic PCP — use |S₃| (q ≡ −q)</span><input type="checkbox" id="tNematic"></div>
+    </div>
+    <div class="sumtag">λ₁+λ₂+λ₃ = <b id="lsum">1.00</b> · paper convention is 1</div>
+
+    <button id="wedgeToggle" class="sectionbtn"><span>Cell wedging · Nielsen et&nbsp;al. 2020</span><span class="car" id="wedgeCar">▸</span></button>
+    <div class="lamwrap wedge" id="wedgePanel" style="display:none">
+      <div class="duo">
+        <div class="row half"><div class="top"><label>α<sub>S</sub> tilt</label><span class="val" id="alphaSv">20°</span></div>
+          <input type="range" id="alphaS" min="-45" max="45" step="1" value="20"></div>
+        <div class="row half"><div class="top"><label>λ<sub>S</sub> strength</label><span class="val" id="lamSv">0.00</span></div>
+          <input type="range" id="lamS" min="0" max="1" step="0.05" value="0"></div>
+      </div>
+      <div class="sumtag" style="margin:-7px 0 9px">symmetric (isotropic) wedging — cones</div>
+      <div class="duo">
+        <div class="row half"><div class="top"><label>α<sub>A</sub> tilt</label><span class="val" id="alphaAv">20°</span></div>
+          <input type="range" id="alphaA" min="-45" max="45" step="1" value="20"></div>
+        <div class="row half"><div class="top"><label>λ<sub>A</sub> strength</label><span class="val" id="lamAv">0.00</span></div>
+          <input type="range" id="lamA" min="0" max="1" step="0.05" value="0"></div>
+      </div>
+      <div class="sumtag" style="margin:-7px 0 9px">directed (PCP-coupled) wedging — donut cake-slices</div>
+      <div class="row"><div class="top"><label>cells wedged per mesenchyme (#)</label><span class="val" id="wedgeNumv">16</span></div>
+        <input type="range" id="wedgeNum" min="0" max="0" step="1" value="0"></div>
+      <div class="row"><div class="top"><label>negative-wedge cells (just beyond, #)</label><span class="val" id="negWedgeNumv">0</span></div>
+        <input type="range" id="negWedgeNum" min="0" max="0" step="1" value="0"></div>
+      <div class="sumtag" style="margin:-7px 0 9px">cells in the band just past the wedge set are wedged with the opposite tilt (negative α). 0 ⇒ none.</div>
+      <div class="row"><div class="top"><label>cells dividing near mesenchyme (#)</label><span class="val" id="divMesNumv">16</span></div>
+        <input type="range" id="divMesNum" min="0" max="0" step="1" value="0"></div>
+      <div class="row"><div class="top"><label>mesenchyme optimal distance</label><span class="val" id="mesD0v">12.0</span></div>
+        <input type="range" id="mesD0" min="5" max="50" step="0.5" value="12"></div>
+      <div class="toggle" style="padding:4px 0"><span>show mesenchyme super-cell (green)</span><input type="checkbox" id="tMesShow"></div>
+      <div class="row"><div class="top"><label>mesenchyme divides per # induced divisions</label><span class="val" id="mesDivThreshv">64</span></div>
+        <input type="range" id="mesDivThresh" min="0" max="0" step="1" value="0"></div>
+      <div class="sumtag" style="margin:2px 0 0">A hidden mesenchyme cell (Gabriel neighbours only) sits below the cluster at the Morse optimal distance set above and self-positions without affecting the other cells. Each mesenchyme wedges its # nearest cells and induces division in its # nearest cells (cells claimed by several take the closest one's properties); a mesenchyme divides once it has triggered the set number of cell divisions.</div>
+      <div class="toggle" style="padding:6px 0 0"><span>tag cells by inducing mesenchyme (origin)</span><input type="checkbox" id="tOrigin"></div>
+      <div class="row"><div class="top"><label>origin repulsion factor</label><span class="val" id="originFactorv">1</span></div>
+        <input type="range" id="originFactor" min="1" max="20" step="1" value="1"></div>
+      <div class="row"><div class="top"><label>repulsion range β<sub>M</sub></label><span class="val" id="betaMv">5.0</span></div>
+        <input type="range" id="betaM" min="1" max="10" step="0.1" value="5"></div>
+      <div class="sumtag" style="margin:2px 0 0">when on, each cell carries the label of the mesenchyme branch that bore it (original tissue = 0). Cells of different branches repel by F·max(0, −e^(−r/β<sub>M</sub>)·p<sub>i</sub>·p<sub>j</sub>) — only where their AB polarities oppose — among cells inside each other's K nearest Gabriel neighbours. A branch and its own mother branch never repel; the original tissue does repel later branches.</div>
+    </div>
+
+    <button id="dynToggle" class="sectionbtn"><span>Dynamical parameters</span><span class="car" id="dynCar">▸</span></button>
+    <div class="lamwrap" id="dynPanel" style="display:none">
+      <div class="row"><div class="top"><label>β — attraction range</label><span class="val" id="betav">5.0</span></div>
+        <input type="range" id="beta" min="1" max="10" step="0.1" value="5"></div>
+      <div class="row"><div class="top"><label>Δt — time step</label><span class="val" id="dtv">0.10</span></div>
+        <input type="range" id="dt" min="0.01" max="0.2" step="0.01" value="0.1"></div>
+      <div class="row" style="margin-bottom:4px"><div class="top"><label>η — noise</label><span class="val" id="noisev">0.05</span></div>
+        <input type="range" id="noise" min="0" max="0.3" step="0.005" value="0.05"></div>
+    </div>
+    <hr>
+
+    <p class="group-label">Proliferation &amp; growth</p>
+    <div class="toggle"><span>Cell division</span><input type="checkbox" id="tDivide"></div>
+    <div class="chips" id="divMode" style="display:none;margin-bottom:10px">
+      <span class="chip active" data-mode="random">random · whole system</span>
+      <span class="chip" data-mode="mesenchyme">near mesenchyme</span>
+      <span class="chip" data-mode="cancer">cancer growth</span>
+    </div>
+    <div class="row" id="divRateRow" style="margin-top:6px;display:none"><div class="top"><label>division rate</label><span class="val" id="ratev">0.020</span></div>
+      <input type="range" id="divRate" min="0" max="0.15" step="0.005" value="0.02"></div>
+    <div class="expbox" id="tumorbox" style="margin-top:4px;display:none">
+      <div class="toggle dim" id="npToggle" style="padding-top:0"><span>non-polar tumour cells (spherical)</span><input type="checkbox" id="tNonpolar"></div>
+      <div class="row" style="margin:8px 0 4px"><div class="top"><label>cross-adhesion to host +%</label><span class="val" id="crossv">0%</span></div>
+        <input type="range" id="crossPct" min="0" max="300" step="5" value="0" disabled></div>
+      <div class="sumtag" style="margin:2px 0 0">only a central founder cell and its descendants divide.</div>
+    </div>
+    <hr>
+
+    <p class="group-label">Fields</p>
+    <div class="row"><div class="top"><label>radial AB field γ (p → outward)</label><span class="val" id="fieldv">0.00</span></div>
+      <input type="range" id="field" min="0" max="1" step="0.02" value="0"></div>
+    <hr>
+
+    <p class="group-label">Perturbation experiment</p>
+    <div class="expbox" id="expbox">
+      <div class="toggle" style="padding-top:0"><span style="color:var(--txt)">Dual run · flip cells</span><input type="checkbox" id="tDual"></div>
+      <div class="numrow"><label>cells to flip · c</label><input type="number" id="cNum" min="1" max="500" value="1" disabled></div>
+      <div class="row" style="margin:8px 0 4px"><div class="top"><label>perturbation angle</label><span class="val" id="angv">180°</span></div>
+        <input type="range" id="ang" min="0" max="180" step="5" value="180" disabled></div>
+      <div class="toggle dim" id="divToggle"><span>colour perturbed by divergence</span><input type="checkbox" id="tDiv"></div>
+    </div>
+    <div class="sumtag">control &amp; perturbed share one noise seed → divergence is caused only by the flipped cell.</div>
+    <hr>
+
+    <button id="dispToggle" class="sectionbtn"><span>Display</span><span class="car" id="dispCar">▸</span></button>
+    <div class="lamwrap" id="dispPanel" style="display:none">
+      <div class="toggle" style="padding-top:0"><span>AB two-tone shading (p)</span><input type="checkbox" id="tShade" checked></div>
+      <div class="toggle"><span>PCP arrows on cell surface (q)</span><input type="checkbox" id="tPCPsurf"></div>
+      <div class="chips" id="pcpSideSel" style="margin:0 0 8px">
+        <span class="chip active" data-side="apical">apical</span>
+        <span class="chip" data-side="opposite">opposite</span>
+        <span class="chip" data-side="both">both</span>
+      </div>
+      <div class="toggle"><span>Double-width PCP arrows</span><input type="checkbox" id="tPCPwide"></div>
+      <div class="toggle"><span>Label PCP defects (± charge)</span><input type="checkbox" id="tDefects"></div>
+      <div class="toggle"><span>Cell origin letters (mesenchyme lineage)</span><input type="checkbox" id="tCellId"></div>
+      <div class="toggle"><span>Colour cells by mesenchyme inducer</span><input type="checkbox" id="tCellInducer"></div>
+      <div class="toggle"><span>Show PCP centre-lines (q)</span><input type="checkbox" id="tPCP"></div>
+      <div class="toggle"><span>Show AB vectors (p)</span><input type="checkbox" id="tAB"></div>
+      <div class="toggle"><span>Show Voronoi bonds</span><input type="checkbox" id="tBonds"></div>
+      <div class="toggle"><span>Auto-rotate camera</span><input type="checkbox" id="tSpin" checked></div>
+      <div class="row" style="margin-top:6px"><div class="top"><label>depth floor (far-cell brightness)</label><span class="val" id="depthFloorv">0.40</span></div>
+        <input type="range" id="depthFloor" min="0.1" max="0.9" step="0.05" value="0.4"></div>
+      <div class="numrow" style="gap:8px;padding-top:8px">
+        <button class="cbtn" id="outColor"><span class="csw" id="outSw"></span><span>outside: <b id="outNm">red</b></span></button>
+        <button class="cbtn" id="inColor"><span class="csw" id="inSw"></span><span>inside: <b id="inNm">blue</b></span></button>
+      </div>
+      <div class="row" style="margin:10px 0 4px"><div class="top"><label>steps / frame</label><span class="val" id="spfv">2</span></div>
+        <input type="range" id="spf" min="1" max="10" step="1" value="2"></div>
+    </div>
+    <hr>
+
+    <p class="group-label">Half-cut (clipping plane)</p>
+    <div class="expbox" id="clipbox" style="background:rgba(127,169,255,.05);border-color:#2a3550">
+      <div class="toggle" style="padding-top:0"><span style="color:var(--txt)">Hide half the cluster</span><input type="checkbox" id="tClip"></div>
+      <div class="numrow" style="padding-bottom:0"><label>plane spins about</label>
+        <div class="chips" id="clipAxis" style="gap:6px">
+          <span class="chip" data-ax="x">X</span><span class="chip active" data-ax="y">Y</span><span class="chip" data-ax="z">Z</span>
+        </div></div>
+      <div class="row" style="margin:10px 0 4px"><div class="top"><label>plane angle</label><span class="val" id="clipAngv">0°</span></div>
+        <input type="range" id="clipAng" min="0" max="360" step="2" value="0"></div>
+      <div class="toggle" style="padding-bottom:0"><span>show the other half instead</span><input type="checkbox" id="tClipFlip"></div>
+      <div class="sumtag" style="margin:2px 0 0">cut passes through each replica's own centre of mass.</div>
+    </div>
+  </aside>
+
+  <main id="stage">
+    <div id="hud"></div>
+    <div id="labels"></div>
+    <div id="legend"></div>
+    <div id="help">drag · rotate &nbsp;|&nbsp; scroll · zoom &nbsp;|&nbsp; right-drag · pan</div>
+  </main>
+
+  <script>
+/* =====================================================================
+   Cell-polarity morphogenesis model
+   After: Nissen, S.B. et al. eLife 7:e38407 (2018).
+
+   V_ij = exp(-r) - S_ij*exp(-r/beta)   over Voronoi (Gabriel) neighbours.
+   S_ij = l1*(p_i x r^)·(p_j x r^) + l2*(p_i x q_i)·(p_j x q_j)
+        + l3*(q_i x r^)·(q_j x r^)
+   For non-polar cells (tumour option) the interaction is spherically
+   symmetric: S_ij = S0 (constant), independent of all polarities.
+
+   Extras:
+     - cell division (random, or clonal/tumour from a founder)
+     - radial field of strength `field` torquing AB polarity p outward
+       from the centre of mass.
+
+   Seeded RNG (mulberry32 + polar Box-Muller) -> reproducible; a control
+   and a perturbed run share one noise realisation.
+   ===================================================================== */
+(function (global) {
+  "use strict";
+  function mulberry32(a){return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
+
+  class Simulation {
+    constructor(opts={}){
+      this.setParams(opts);
+      this.seed=(opts.seed??12345)|0;
+      this.cap=Math.max(opts.cap??20000, this.N);
+      this.perturbIndices=[];
+      this.tumorFounder=-1;
+      this.initState(opts.seedPositions);
+    }
+    setParams(opts={}){
+      this.N      = opts.N      ?? 150;
+      this.l1     = opts.l1     ?? 1.0;
+      this.l2     = opts.l2     ?? 0.0;
+      this.l3     = opts.l3     ?? 0.0;
+      this.beta   = opts.beta   ?? 5.0;
+      this.dt     = opts.dt     ?? 0.1;
+      this.noise  = opts.noise  ?? 0.05;
+      this.cutoff = opts.cutoff ?? 3.5;
+      this.recenter = opts.recenter ?? false;
+      this.maxNeighbors = opts.maxNeighbors ?? 20;   // cap on interaction partners (kNN)
+      this.knnLimit     = opts.knnLimit     ?? true;  // restrict to K nearest (then Gabriel)
+      this.abOutward    = opts.abOutward    ?? false; // init AB polarity radially outward
+      this.abInward     = opts.abInward     ?? false; // init AB polarity radially inward (apical-in)
+      this.sphereSurface= opts.sphereSurface?? false; // init positions on a hollow shell
+      this.pcpWhirl     = opts.pcpWhirl     ?? false; // init PCP whirling about vertical axis
+      this.nematicPCP   = opts.nematicPCP   ?? false; // treat S3 (PCP-PCP) as nematic: use |S3|
+      this.pcpInducedOnly= opts.pcpInducedOnly?? false; // PCP only on mesenchyme-induced offspring
+      this.S0     = opts.S0     ?? 1.0;   // isotropic strength for non-polar cells
+      this.crossStrength = opts.crossStrength ?? 1.0; // tumour<->non-tumour bond multiplier
+      // proliferation / field (set live by the app)
+      this.divisionOn   = opts.divisionOn   ?? false;
+      this.tumorOn      = opts.tumorOn      ?? false;
+      this.nonpolarTumor= opts.nonpolarTumor?? false;
+      this.divRate      = opts.divRate      ?? 0.02;
+      this.field        = opts.field        ?? 0.0;
+      // ---- cell wedging (Nielsen, Nissen, Sneppen, Mathiesen & Trusina, iScience 2020) ----
+      // symmetric (isotropic) wedging: strength lamS, tilt angle alphaS (rad)
+      // directed (anisotropic, PCP-coupled) wedging: strength lamA, tilt angle alphaA (rad)
+      this.lamS     = opts.lamS     ?? 0.0;   // symmetric  wedging prefactor  (0..1)
+      this.lamA     = opts.lamA     ?? 0.0;   // asymmetric wedging prefactor  (0..1)
+      this.alphaS   = opts.alphaS   ?? 0.0;   // symmetric  tilt angle  (rad, 0..pi/4)
+      this.alphaA   = opts.alphaA   ?? 0.0;   // asymmetric tilt angle  (rad, 0..pi/4)
+      this.wedgeNum   = opts.wedgeNum   ?? 64;   // # nearest cells each mesenchyme wedges (1,2,4,...,N)
+      this.negWedgeNum= opts.negWedgeNum?? 0;    // # cells just beyond the wedge set, wedged with opposite tilt
+      // ---- mesenchyme super-cell: hidden, adaptive, one-way Gabriel/Morse coupling ----
+      this.mesD0      = opts.mesD0      ?? 6.0;  // Morse optimal distance to interacting cells
+      this.mesDivThresh = opts.mesDivThresh ?? 16; // # induced cell-divisions before a mesenchyme divides
+      this.divideNearMes = opts.divideNearMes ?? false; // restrict normal division to near-mesenchyme cells
+      this.divMesNum     = opts.divMesNum     ?? this.N;  // # nearest cells each mesenchyme induces to divide
+      this.divGamma   = opts.divGamma   ?? 10;   // Gamma shape (form factor) for division-time draws
+      this.originOn   = opts.originOn   ?? false; // tag cells by inducing mesenchyme; repel different origins
+      this.originFactor = opts.originFactor ?? 1; // prefactor of the AB-dependent branch repulsion
+      this.betaM      = opts.betaM      ?? this.beta; // length scale of the branch repulsion (default = beta)
+    }
+    pcpActive(){ return this.l2>1e-9 || this.l3>1e-9; }
+    wedgeActive(){ return (this.lamS>1e-9||this.lamA>1e-9) && this.wedgeNum>0 && this.mesN>0; }
+    _mesAncestor(anc,node){ let c=node,g=0; while(c>=0&&g++<1024){ if(c===anc)return true; c=this.mesMother[c]; } return false; }
+
+    _gauss(){ if(this._hasSpare){this._hasSpare=false;return this._spare;} const r=this.rng;let u,v,s;
+      do{u=2*r()-1;v=2*r()-1;s=u*u+v*v;}while(s>=1||s===0); const m=Math.sqrt(-2*Math.log(s)/s);
+      this._spare=v*m;this._hasSpare=true;return u*m; }
+    _randUnit(){ let x,y,z,r; do{x=this._gauss();y=this._gauss();z=this._gauss();r=Math.hypot(x,y,z);}while(r<1e-6); return [x/r,y/r,z/r]; }
+
+    initState(seed){
+      const cap=this.cap, N=this.N;
+      this.rng=mulberry32(this.seed); this._hasSpare=false;
+      this.x=new Float64Array(3*cap); this.p=new Float64Array(3*cap); this.q=new Float64Array(3*cap);
+      this.tumor=new Uint8Array(cap); this.nonpolar=new Uint8Array(cap);
+      const spacing=2.0, R=spacing*Math.cbrt((3*N)/(4*Math.PI))*1.1, r=this.rng;
+      // Shell radius: place N cells on a sphere so nearest neighbours sit at the
+      // pure-AB equilibrium spacing r0 = β·ln β/(β−1) (≈2.01 at β=5). With ~hexagonal
+      // packing the area per cell is (√3/2)r0², giving 4πRs² = N(√3/2)r0² ⇒
+      // Rs = r0·√(N·√3/(8π)). The Fibonacci spiral packs ~11% tighter than an ideal
+      // hex lattice, so an empirical factor kFib restores the mean NN distance to r0.
+      const b=this.beta;
+      const r0 = (Math.abs(b-1)<1e-6) ? 1.0 : b*Math.log(b)/(b-1);
+      const kFib = 1.120;
+      const Rs = kFib*r0*Math.sqrt(N*Math.sqrt(3)/(8*Math.PI));
+      const GA = Math.PI*(3-Math.sqrt(5));   // golden angle, for the Fibonacci spiral
+      for(let i=0;i<N;i++){
+        if(this.sphereSurface){
+          const yy = 1 - 2*(i+0.5)/N, rxy = Math.sqrt(Math.max(0,1-yy*yy)), th = i*GA;
+          this.x[3*i]=Math.cos(th)*rxy*Rs; this.x[3*i+1]=yy*Rs; this.x[3*i+2]=Math.sin(th)*rxy*Rs;
+        } else {
+          let px,py,pz,rr; do{px=2*r()-1;py=2*r()-1;pz=2*r()-1;rr=px*px+py*py+pz*pz;}while(rr>1);
+          this.x[3*i]=px*R;this.x[3*i+1]=py*R;this.x[3*i+2]=pz*R;
+        }
+        const p=this._randUnit(); this.p[3*i]=p[0];this.p[3*i+1]=p[1];this.p[3*i+2]=p[2];
+        const qv=this._randUnit(); const d=qv[0]*p[0]+qv[1]*p[1]+qv[2]*p[2];
+        qv[0]-=d*p[0];qv[1]-=d*p[1];qv[2]-=d*p[2]; const ql=Math.hypot(qv[0],qv[1],qv[2])||1;
+        this.q[3*i]=qv[0]/ql;this.q[3*i+1]=qv[1]/ql;this.q[3*i+2]=qv[2]/ql;
+      }
+      if(seed) this.x.set(seed.subarray(0,3*N));
+      if(this.abOutward || this.abInward){
+        // AB polarity p initialised radially: outward, or inward when abInward (apical-in).
+        // PCP q a random unit vector tangent to the surface (orthogonal to p).
+        const sgn = this.abInward ? -1 : 1;
+        let cx=0,cy=0,cz=0;
+        for(let i=0;i<N;i++){cx+=this.x[3*i];cy+=this.x[3*i+1];cz+=this.x[3*i+2];}
+        cx/=N;cy/=N;cz/=N;
+        for(let i=0;i<N;i++){
+          let ux=this.x[3*i]-cx,uy=this.x[3*i+1]-cy,uz=this.x[3*i+2]-cz;
+          let ul=Math.hypot(ux,uy,uz);
+          if(ul<1e-9){ const rp=this._randUnit(); ux=rp[0];uy=rp[1];uz=rp[2];ul=1; }
+          const px=sgn*ux/ul,py=sgn*uy/ul,pz=sgn*uz/ul;
+          this.p[3*i]=px;this.p[3*i+1]=py;this.p[3*i+2]=pz;
+          const qv=this._randUnit(); const d=qv[0]*px+qv[1]*py+qv[2]*pz;
+          qv[0]-=d*px;qv[1]-=d*py;qv[2]-=d*pz; const ql=Math.hypot(qv[0],qv[1],qv[2])||1;
+          this.q[3*i]=qv[0]/ql;this.q[3*i+1]=qv[1]/ql;this.q[3*i+2]=qv[2]/ql;
+        }
+      }
+      if(this.pcpWhirl){
+        // PCP q initialised as a coherent whirl about the vertical (y) axis: at each
+        // cell q is the azimuthal direction of the latitude circle through it, made
+        // orthogonal to p. This is defect-free everywhere except the two poles
+        // (topologically unavoidable on a closed shell) — the tube-forming start state.
+        let cx=0,cy=0,cz=0;
+        for(let i=0;i<N;i++){cx+=this.x[3*i];cy+=this.x[3*i+1];cz+=this.x[3*i+2];}
+        cx/=N;cy/=N;cz/=N;
+        for(let i=0;i<N;i++){
+          const ux=this.x[3*i]-cx, uz=this.x[3*i+2]-cz;
+          // azimuthal direction about +y axis: (0,1,0) × u  ∝  (uz, 0, −ux)
+          let wx=uz, wy=0, wz=-ux;
+          const px=this.p[3*i],py=this.p[3*i+1],pz=this.p[3*i+2];
+          let d=wx*px+wy*py+wz*pz; wx-=d*px; wy-=d*py; wz-=d*pz;   // make ⟂ AB polarity
+          let wl=Math.hypot(wx,wy,wz);
+          if(wl<1e-6){ // on the axis (or w ∥ p): fall back to any tangent ⟂ p
+            let rx=1,ry=0,rz=0; if(Math.abs(px)>0.9){rx=0;ry=1;rz=0;}
+            d=rx*px+ry*py+rz*pz; wx=rx-d*px; wy=ry-d*py; wz=rz-d*pz; wl=Math.hypot(wx,wy,wz)||1;
+          }
+          this.q[3*i]=wx/wl;this.q[3*i+1]=wy/wl;this.q[3*i+2]=wz/wl;
+        }
+      }
+      this.time=this.time||0; this.step_count=this.step_count||0; this.energy=this.energy||0;
+      this._alloc(); this.hasPCP.fill(this.pcpInducedOnly?0:1,0,N); this._initMesenchyme(); this.buildNeighbours(); this.updateWedgeFlags();
+    }
+    _initMesenchyme(){
+      const N=this.N,x=this.x; let cx=0,cz=0,ymin=Infinity;
+      for(let i=0;i<N;i++){ cx+=x[3*i]; cz+=x[3*i+2]; if(x[3*i+1]<ymin)ymin=x[3*i+1]; }
+      cx/=N; cz/=N;
+      this.mesN=1; this.mx[0]=cx; this.mx[1]=ymin-this.mesD0; this.mx[2]=cz;   // below the cluster
+    }
+    _alloc(){
+      const cap=this.cap;
+      this.gx=new Float64Array(3*cap); this.gp=new Float64Array(3*cap); this.gq=new Float64Array(3*cap);
+      this.wedge=new Uint8Array(cap); this._ybuf=new Float64Array(cap);   // wedging flags + dist scratch
+      this.mesCap=256; this.mesN=0; this.mx=new Float64Array(3*this.mesCap);   // mesenchyme positions
+      this._mfx=new Float64Array(this.mesCap); this._mfy=new Float64Array(this.mesCap); this._mfz=new Float64Array(this.mesCap);
+      this.mesClock=new Float64Array(this.mesCap).fill(-1);                    // (legacy) mesenchyme division clocks
+      this.mesInduced=new Int32Array(this.mesCap);                            // # cell-divisions each mesenchyme has induced
+      this.mesMother=new Int32Array(this.mesCap).fill(-1);                    // mother mesenchyme index (-1 = root)
+      this.mesClosestCell=new Int32Array(this.mesCap).fill(-1);               // index of each mesenchyme's nearest cell
+      this.mesClosestD=new Float64Array(this.mesCap);
+      this.divClock=new Float64Array(cap).fill(-1);                           // per-cell division clocks (Gamma)
+      this.nearMes=new Uint8Array(cap); this.mesOwner=new Int32Array(cap).fill(-1);
+      this._mcIdx=new Int32Array(cap); this._mcD=new Float64Array(cap); this._selBuf=new Float64Array(cap);
+      this.gi=new Int32Array(cap); this.gj=new Int32Array(cap); this.gk=new Int32Array(cap); this.next=new Int32Array(cap);
+      this.head=new Map(); this.cand=new Int32Array(256);
+      this._cd=new Float64Array(256);   // candidate squared-distances (kNN selection)
+      this.dK2=new Float64Array(cap);   // squared dist to K-th nearest neighbour per cell
+      this.origin=new Int32Array(cap);    // origin tag = inducing-mesenchyme id; 0 = first/original
+      this.hasPCP=new Uint8Array(cap);    // 1 = cell participates in PCP coupling
+      this.induced=new Uint8Array(cap);   // 1 = born of mesenchyme-induced division (PCP candidate)
+      this.pairsBuf=new Int32Array(Math.max(64,cap*24)); this.pairCount=0; this.pairs=this.pairsBuf.subarray(0,0);
+    }
+    _growCand(n){ if(n>this.cand.length){let s=this.cand.length;while(s<n)s*=2;
+      const nc=new Int32Array(s); nc.set(this.cand); this.cand=nc;
+      const nd=new Float64Array(s); nd.set(this._cd); this._cd=nd;} }
+    _pushPair(i,j){ if(this.pairCount+2>this.pairsBuf.length){const nb=new Int32Array(Math.ceil(this.pairsBuf.length*1.5));nb.set(this.pairsBuf);this.pairsBuf=nb;}
+      this.pairsBuf[this.pairCount++]=i;this.pairsBuf[this.pairCount++]=j; }
+
+    buildNeighbours(){
+      const N=this.N,x=this.x,cut=this.cutoff,cut2=cut*cut,inv=1/cut;
+      let lox=Infinity,loy=Infinity,loz=Infinity,hix=-Infinity,hiy=-Infinity,hiz=-Infinity;
+      for(let i=0;i<N;i++){const a=x[3*i],b=x[3*i+1],c=x[3*i+2];
+        if(a<lox)lox=a;if(a>hix)hix=a;if(b<loy)loy=b;if(b>hiy)hiy=b;if(c<loz)loz=c;if(c>hiz)hiz=c;}
+      const nx=Math.max(1,Math.floor((hix-lox)*inv)+1),ny=Math.max(1,Math.floor((hiy-loy)*inv)+1),nz=Math.max(1,Math.floor((hiz-loz)*inv)+1);
+      const gi=this.gi,gj=this.gj,gk=this.gk,next=this.next,head=this.head; head.clear();
+      for(let i=0;i<N;i++){
+        let a=Math.floor((x[3*i]-lox)*inv);if(a<0)a=0;else if(a>=nx)a=nx-1;
+        let b=Math.floor((x[3*i+1]-loy)*inv);if(b<0)b=0;else if(b>=ny)b=ny-1;
+        let c=Math.floor((x[3*i+2]-loz)*inv);if(c<0)c=0;else if(c>=nz)c=nz-1;
+        gi[i]=a;gj[i]=b;gk[i]=c; const key=(a*ny+b)*nz+c; const h=head.get(key); next[i]=(h===undefined)?-1:h; head.set(key,i);
+      }
+      this.pairCount=0; const eps=1e-9;
+      const K=this.maxNeighbors|0, knn=this.knnLimit&&K>0, dK2=this.dK2;
+      const needA = knn || this.originOn;   // K-th nearest distances also gate the branch repulsion
+      // ---- PASS A: per-cell squared distance to the K-th nearest neighbour ----
+      // kNN gate admits a pair iff r^2 <= max(dK2[i],dK2[j]); branch repulsion needs r^2 <= min(dK2[i],dK2[j]).
+      if(needA){
+        for(let i=0;i<N;i++){
+          const a=gi[i],b=gj[i],c=gk[i],xi=x[3*i],yi=x[3*i+1],zi=x[3*i+2]; let nd=0;
+          for(let da=-1;da<=1;da++){const na=a+da;if(na<0||na>=nx)continue;
+            for(let db=-1;db<=1;db++){const nb=b+db;if(nb<0||nb>=ny)continue;
+              for(let dc=-1;dc<=1;dc++){const ncz=c+dc;if(ncz<0||ncz>=nz)continue;
+                let m=head.get((na*ny+nb)*nz+ncz);
+                while(m!==undefined&&m!==-1){ if(m!==i){const dx=xi-x[3*m],dy=yi-x[3*m+1],dz=zi-x[3*m+2];
+                  const d2=dx*dx+dy*dy+dz*dz; if(d2<=cut2){ if(nd>=this._cd.length)this._growCand(nd+1); this._cd[nd++]=d2; }} m=next[m]; }
+              }}}
+          if(nd>0) this._cd.subarray(0,nd).sort();
+          dK2[i] = (nd<K) ? Infinity : this._cd[K-1];
+        }
+      }
+      // ---- PASS B: Gabriel (Voronoi) neighbours, optionally kNN-restricted ----
+      for(let i=0;i<N;i++){
+        const a=gi[i],b=gj[i],c=gk[i],xi=x[3*i],yi=x[3*i+1],zi=x[3*i+2]; let nc=0;
+        for(let da=-1;da<=1;da++){const na=a+da;if(na<0||na>=nx)continue;
+          for(let db=-1;db<=1;db++){const nb=b+db;if(nb<0||nb>=ny)continue;
+            for(let dc=-1;dc<=1;dc++){const ncz=c+dc;if(ncz<0||ncz>=nz)continue;
+              let m=head.get((na*ny+nb)*nz+ncz);
+              while(m!==undefined&&m!==-1){ if(m!==i){const dx=xi-x[3*m],dy=yi-x[3*m+1],dz=zi-x[3*m+2];
+                if(dx*dx+dy*dy+dz*dz<=cut2){ if(nc>=this.cand.length)this._growCand(nc+1); this.cand[nc++]=m; }} m=next[m]; }
+            }}}
+        const cand=this.cand;
+        for(let t=0;t<nc;t++){ const j=cand[t]; if(j<=i)continue;
+          const dx=xi-x[3*j],dy=yi-x[3*j+1],dz=zi-x[3*j+2]; const r2=dx*dx+dy*dy+dz*dz;
+          if(knn){ const lim=(dK2[i]>dK2[j]?dK2[i]:dK2[j]); if(r2>lim+eps)continue; }  // kNN gate
+          const mx=0.5*(xi+x[3*j]),my=0.5*(yi+x[3*j+1]),mz=0.5*(zi+x[3*j+2]); const half2=0.25*r2;
+          let blocked=false;
+          for(let u=0;u<nc;u++){ const k=cand[u]; if(k===j)continue;
+            const ex=x[3*k]-mx,ey=x[3*k+1]-my,ez=x[3*k+2]-mz; if(ex*ex+ey*ey+ez*ez<half2-eps){blocked=true;break;} }
+          if(!blocked)this._pushPair(i,j);
+        }
+      }
+      this.pairs=this.pairsBuf.subarray(0,this.pairCount); return this.pairs;
+    }
+
+    /* ---- cell-wedging helpers ----------------------------------------------
+       Wedging acts on the wedgeNum cells nearest each mesenchyme super-cell.
+       The added pair-potential makes each wedging cell tilt its AB axis p by an
+       angle alpha relative to every neighbour, sharing the model's attraction
+       range exp(-r/beta).  Symmetric part: tilt the same in all directions.
+       Directed part: tilt only along the mean PCP axis (n.qhat), giving an
+       anisotropic, PCP-coupled wedge.  Energies/forces derived in computeForces. */
+    /* Each mesenchyme cell claims its wedgeNum nearest ordinary cells (counts 1,2,4,...,N).
+       A cell is in the near set if some mesenchyme claims it; its owner is the CLOSEST
+       mesenchyme cell (so cells claimed by several take the closest one's properties).
+       The wedge set = near set when wedging is active. The near set also drives optional
+       mesenchyme-localised division. */
+    updateWedgeFlags(){
+      const N=this.N,x=this.x,M=this.mesN,mx=this.mx,nm=this.nearMes,ow=this.mesOwner,w=this.wedge,og=this.origin;
+      const wa=this.wedgeActive(), dnm=this.divideNearMes;
+      if(M<=0 || (!wa && !dnm)){ w.fill(0,0,N); nm.fill(0,0,N); return; }
+      nm.fill(0,0,N); w.fill(0,0,N);
+      const mcc=this.mesClosestCell, mcd=this.mesClosestD;
+      for(let a=0;a<M;a++){ mcc[a]=-1; mcd[a]=Infinity; }
+      // owner = closest mesenchyme; also record each mesenchyme's single nearest cell
+      for(let i=0;i<N;i++){ const xi=x[3*i],yi=x[3*i+1],zi=x[3*i+2]; let best=Infinity,ba=-1;
+        for(let a=0;a<M;a++){ const dx=xi-mx[3*a],dy=yi-mx[3*a+1],dz=zi-mx[3*a+2]; const r2=dx*dx+dy*dy+dz*dz;
+          if(r2<best){best=r2;ba=a;} if(r2<mcd[a]){mcd[a]=r2;mcc[a]=i;} }
+        ow[i]=ba; }
+      let wnum=this.wedgeNum|0; if(wnum<1)wnum=1; if(wnum>N)wnum=N;            // positively-wedged cells
+      let negnum=this.negWedgeNum|0; if(negnum<0)negnum=0; if(negnum>N)negnum=N; // negatively-wedged cells (just beyond)
+      let dnum=this.divMesNum|0; if(dnum<1)dnum=1; if(dnum>N)dnum=N;            // cells induced to divide
+      const db=this._ybuf, ix=this._mcIdx;
+      for(let a=0;a<M;a++){ const ax=mx[3*a],ay=mx[3*a+1],az=mx[3*a+2];
+        // division set: the nearest dnum cells to a by ABSOLUTE distance, restricted to those a owns.
+        // (a mesenchyme can NEVER induce a cell beyond its nearest dnum cells — fixes far induction.)
+        if(dnm){
+          for(let i=0;i<N;i++){ const dx=x[3*i]-ax,dy=x[3*i+1]-ay,dz=x[3*i+2]-az; db[i]=dx*dx+dy*dy+dz*dz; }
+          const thrD=this._nthSmallest(db,Math.min(dnum,N),N);
+          for(let i=0;i<N;i++) if(ow[i]===a && db[i]<=thrD) nm[i]=1;
+        }
+        // wedge set: ONLY cells born of mesenchyme a (origin==a) — a mesenchyme cannot wedge cells of another
+        if(wa){ let cnt=0;
+          for(let i=0;i<N;i++){ if(og[i]!==a) continue; const dx=x[3*i]-ax,dy=x[3*i+1]-ay,dz=x[3*i+2]-az; ix[cnt]=i; db[cnt]=dx*dx+dy*dy+dz*dz; cnt++; }
+          if(cnt>0){ const kW=Math.min(wnum,cnt), thrW=this._nthSmallest(db,kW,cnt);
+            let thrWN=-1; if(negnum>0){ const kWN=Math.min(wnum+negnum,cnt); thrWN=this._nthSmallest(db,kWN,cnt); }
+            for(let t=0;t<cnt;t++){ const d=db[t], i=ix[t]; if(d<=thrW) w[i]=1; else if(negnum>0 && d<=thrWN) w[i]=2; } }
+        }
+      }
+      // Branching (PCP): an induced cell gains PCP once it is no longer its mesenchyme's closest cell.
+      if(this.pcpInducedOnly){ const ind=this.induced, hp=this.hasPCP;
+        for(let i=0;i<N;i++){ if(ind[i] && hp[i]===0){ const a=ow[i]; if(!(a>=0 && mcc[a]===i)) hp[i]=1; } }
+      }
+    }
+    _gammaDiv(mean){ const k=(this.divGamma|0)||10; let sg=0;            // Gamma(shape k, mean) inter-division time
+      for(let n=0;n<k;n++){ let u=this.rng(); if(u<1e-12)u=1e-12; sg+=Math.log(u); } return -(mean/k)*sg; }
+    _nthSmallest(src,n,len){ const a=this._selBuf; for(let i=0;i<len;i++)a[i]=src[i];   // quickselect (n-th smallest)
+      let lo=0,hi=len-1; const k=Math.max(0,Math.min(len-1,n-1));
+      while(lo<hi){ const p=a[(lo+hi)>>1]; let i=lo,j=hi;
+        while(i<=j){ while(a[i]<p)i++; while(a[j]>p)j--; if(i<=j){ const t=a[i];a[i]=a[j];a[j]=t; i++; j--; } }
+        if(k<=j)hi=j; else if(k>=i)lo=i; else break; }
+      return a[k]; }
+    _partialNearest(idx,dd,nc,K){ for(let a=0;a<K&&a<nc;a++){ let m=a;                  // K smallest dd -> front
+        for(let b=a+1;b<nc;b++) if(dd[b]<dd[m])m=b;
+        if(m!==a){ const td=dd[a];dd[a]=dd[m];dd[m]=td; const ti=idx[a];idx[a]=idx[m];idx[m]=ti; } } }
+    /* Mesenchyme super-cell dynamics. A Morse-like pair-potential with its minimum at
+       mesD0 (=5) couples each mesenchyme cell to nearby ordinary cells (and to other
+       mesenchyme cells). The force is applied ONLY to the mesenchyme cells, so they
+       self-position against the tissue without perturbing it. Optional Poisson division. */
+    _morseDV(r,lm,b){ return -(1/lm)*Math.exp(-r/lm)+(1/(lm*b))*Math.exp(-r/(lm*b)); }  // dV/dr, min at lm*r0
+    stepMesenchyme(){
+      const M=this.mesN; if(M<=0) return;
+      const x=this.x,N=this.N,mx=this.mx,dt=this.dt,eta=this.noise,b=this.beta;
+      const r0=(Math.abs(b-1)<1e-6)?1.0:b*Math.log(b)/(b-1), lm=this.mesD0/r0;
+      const search=this.mesD0*2.5, search2=search*search, sn=eta*Math.sqrt(dt), K=64, eps=1e-9;
+      const idx=this._mcIdx, dd=this._mcD;
+      for(let a=0;a<M;a++){
+        const ax=mx[3*a],ay=mx[3*a+1],az=mx[3*a+2]; let fx=0,fy=0,fz=0;
+        // ---- gather candidate cells within the search radius, keep the nearest K ----
+        let nc=0;
+        for(let j=0;j<N;j++){ const dx=ax-x[3*j],dy=ay-x[3*j+1],dz=az-x[3*j+2]; const r2=dx*dx+dy*dy+dz*dz;
+          if(r2<=search2){ idx[nc]=j; dd[nc]=r2; nc++; } }
+        if(nc>K){ this._partialNearest(idx,dd,nc,K); nc=K; }
+        // ---- Gabriel test (blockers = the candidate cells): only true Voronoi neighbours interact ----
+        for(let u=0;u<nc;u++){ const j=idx[u], jx=x[3*j],jy=x[3*j+1],jz=x[3*j+2];
+          const hx=0.5*(ax+jx),hy=0.5*(ay+jy),hz=0.5*(az+jz), half2=0.25*dd[u]; let blocked=false;
+          for(let v=0;v<nc;v++){ if(v===u)continue; const k=idx[v]; const ex=x[3*k]-hx,ey=x[3*k+1]-hy,ez=x[3*k+2]-hz;
+            if(ex*ex+ey*ey+ez*ez<half2-eps){ blocked=true; break; } }
+          if(blocked)continue;
+          const r=Math.sqrt(dd[u]); if(r<1e-9)continue;
+          const wgt=(this.origin[j]===a?1.0:0.5);   // full pull to own offspring, half (attr+rep) to others
+          const dV=this._morseDV(r,lm,b),fc=wgt*dV/r;
+          fx+=fc*(ax-jx); fy+=fc*(ay-jy); fz+=fc*(az-jz); }
+        // ---- mesenchyme-mesenchyme: Morse at the same optimal distance, Gabriel among mesenchyme ----
+        for(let c=0;c<M;c++){ if(c===a)continue; const dx=ax-mx[3*c],dy=ay-mx[3*c+1],dz=az-mx[3*c+2]; const r2=dx*dx+dy*dy+dz*dz;
+          if(r2>search2||r2<1e-12)continue; const hx=0.5*(ax+mx[3*c]),hy=0.5*(ay+mx[3*c+1]),hz=0.5*(az+mx[3*c+2]),half2=0.25*r2; let blocked=false;
+          for(let e=0;e<M;e++){ if(e===a||e===c)continue; const ex=mx[3*e]-hx,ey=mx[3*e+1]-hy,ez=mx[3*e+2]-hz;
+            if(ex*ex+ey*ey+ez*ez<half2-eps){ blocked=true; break; } }
+          if(blocked)continue;
+          const r=Math.sqrt(r2),dV=this._morseDV(r,lm,b),fc=dV/r; fx+=fc*dx;fy+=fc*dy;fz+=fc*dz; }
+        this._mfx[a]=fx; this._mfy[a]=fy; this._mfz[a]=fz;
+      }
+      for(let a=0;a<M;a++){
+        mx[3*a]  += -dt*this._mfx[a] + (eta>0?sn*this._gauss():0);
+        mx[3*a+1]+= -dt*this._mfy[a] + (eta>0?sn*this._gauss():0);
+        mx[3*a+2]+= -dt*this._mfz[a] + (eta>0?sn*this._gauss():0);
+      }
+      // ---- mesenchyme division: a mesenchyme splits once it has induced mesDivThresh cell divisions ----
+      const thr=this.mesDivThresh|0;
+      if(thr>0 && this.mesN<this.mesCap){
+        const M0=this.mesN;
+        for(let a=0;a<M0;a++){ if(this.mesN>=this.mesCap)break;
+          if(this.mesInduced[a]>=thr){ const n=this.mesN;
+            mx[3*n]=mx[3*a]+0.5*this._gauss(); mx[3*n+1]=mx[3*a+1]+0.5*this._gauss(); mx[3*n+2]=mx[3*a+2]+0.5*this._gauss();
+            this.mesInduced[a]=0; this.mesInduced[n]=0; this.mesMother[n]=a; this.mesN++; } }
+      }
+    }
+    wedgeEnergy(pairs=this.pairs){
+      if(!this.wedgeActive()) return 0;
+      this.updateWedgeFlags();
+      const x=this.x,p=this.p,q=this.q,w=this.wedge,beta=this.beta;
+      const lamS=this.lamS,lamA=this.lamA,sS=Math.sin(this.alphaS),sA=Math.sin(this.alphaA),sSn=-Math.sin(this.alphaS/2),sAn=-Math.sin(this.alphaA/2);
+      let E=0;
+      for(let t=0;t<pairs.length;t+=2){ const i=pairs[t],j=pairs[t+1]; if(!w[i]&&!w[j])continue;
+        const dx=x[3*i]-x[3*j],dy=x[3*i+1]-x[3*j+1],dz=x[3*i+2]-x[3*j+2];
+        const r=Math.sqrt(dx*dx+dy*dy+dz*dz); if(r<1e-9)continue;
+        const nx=dx/r,ny=dy/r,nz=dz/r, eB=Math.exp(-r/beta);
+        let Qx=q[3*i]+q[3*j],Qy=q[3*i+1]+q[3*j+1],Qz=q[3*i+2]+q[3*j+2];
+        const Qn=Math.sqrt(Qx*Qx+Qy*Qy+Qz*Qz); let m=0; if(Qn>1e-6) m=(nx*Qx+ny*Qy+nz*Qz)/Qn;
+        if(w[i]){ const sSi=(w[i]===2?sSn:sS), sAi=(w[i]===2?sAn:sA), ai=p[3*i]*nx+p[3*i+1]*ny+p[3*i+2]*nz, eS=ai+sSi, eA=ai+sAi*m;
+          E+=eB*(0.5*lamS*eS*eS+0.5*lamA*eA*eA); }
+        if(w[j]){ const sSj=(w[j]===2?sSn:sS), sAj=(w[j]===2?sAn:sA), aj=p[3*j]*nx+p[3*j+1]*ny+p[3*j+2]*nz, eS=aj-sSj, eA=aj-sAj*m;
+          E+=eB*(0.5*lamS*eS*eS+0.5*lamA*eA*eA); }
+      }
+      return E;
+    }
+
+    computeForces(pairs=this.pairs){
+      this.updateWedgeFlags();   // refresh nearest-mesenchyme / wedge sets (also used by division)
+      const x=this.x,p=this.p,q=this.q,gx=this.gx,gp=this.gp,gq=this.gq;
+      const l1=this.l1,l2=this.l2,l3=this.l3,beta=this.beta,S0=this.S0,np=this.nonpolar,hp=this.hasPCP;
+      const tum=this.tumor, cross=this.crossStrength, nem=this.nematicPCP;
+      gx.fill(0,0,3*this.N); gp.fill(0,0,3*this.N); gq.fill(0,0,3*this.N);
+      let E=0;
+      for(let t=0;t<pairs.length;t+=2){
+        const i=pairs[t],j=pairs[t+1];
+        const dx=x[3*i]-x[3*j],dy=x[3*i+1]-x[3*j+1],dz=x[3*i+2]-x[3*j+2];
+        const r=Math.sqrt(dx*dx+dy*dy+dz*dz); if(r<1e-9)continue;
+        const rhx=dx/r,rhy=dy/r,rhz=dz/r;
+        const eR=Math.exp(-r),eB=Math.exp(-r/beta);
+        const w = (tum[i]!==tum[j]) ? cross : 1.0;     // tumour<->non-tumour bonds scaled
+        if(np[i]||np[j]){                              // spherically symmetric pair
+          const Seff=w*S0; E+=eR-Seff*eB; const dVdr=-eR+(Seff/beta)*eB;
+          const gix=dVdr*rhx,giy=dVdr*rhy,giz=dVdr*rhz;
+          gx[3*i]+=gix;gx[3*i+1]+=giy;gx[3*i+2]+=giz; gx[3*j]-=gix;gx[3*j+1]-=giy;gx[3*j+2]-=giz;
+          continue;
+        }
+        const pix=p[3*i],piy=p[3*i+1],piz=p[3*i+2],pjx=p[3*j],pjy=p[3*j+1],pjz=p[3*j+2];
+        const qix=q[3*i],qiy=q[3*i+1],qiz=q[3*i+2],qjx=q[3*j],qjy=q[3*j+1],qjz=q[3*j+2];
+        const pdot=pix*pjx+piy*pjy+piz*pjz, pri=pix*rhx+piy*rhy+piz*rhz, prj=pjx*rhx+pjy*rhy+pjz*rhz; const S1=pdot-pri*prj;
+        const qdot=qix*qjx+qiy*qjy+qiz*qjz, qri=qix*rhx+qiy*rhy+qiz*rhz, qrj=qjx*rhx+qjy*rhy+qjz*rhz; const S3=qdot-qri*qrj;
+        const aix=piy*qiz-piz*qiy,aiy=piz*qix-pix*qiz,aiz=pix*qiy-piy*qix;
+        const ajx=pjy*qjz-pjz*qjy,ajy=pjz*qjx-pjx*qjz,ajz=pjx*qjy-pjy*qjx;
+        const S2=aix*ajx+aiy*ajy+aiz*ajz;
+        // nematic option: V uses |S3| so q and −q are equivalent. d|S3| = sign(S3)·dS3,
+        // so the energy/radial term use fS3 while every S3 gradient term scales l3 by sign(S3).
+        const pc=(hp[i]&&hp[j])?1:0, l2m=l2*pc, l3m=l3*pc;   // PCP coupling only between PCP-bearing cells
+        // a cell without PCP behaves as pure apical-basal (lambda1 = 1); a pair uses the LARGER lambda1
+        const l1p=Math.max(hp[i]?l1:1.0, hp[j]?l1:1.0);
+        const fS3 = nem ? Math.abs(S3) : S3;
+        const l3e = (nem ? (S3<0 ? -l3 : l3) : l3)*pc;
+        const S=l1p*S1+l2m*S2+l3m*fS3;
+        E+=eR-w*S*eB;
+        const dVdr=-eR+(w*S/beta)*eB;
+        let dSrx=l1p*(-(prj)*pix-(pri)*pjx)+l3e*(-(qrj)*qix-(qri)*qjx);
+        let dSry=l1p*(-(prj)*piy-(pri)*pjy)+l3e*(-(qrj)*qiy-(qri)*qjy);
+        let dSrz=l1p*(-(prj)*piz-(pri)*pjz)+l3e*(-(qrj)*qiz-(qri)*qjz);
+        const dotSr=dSrx*rhx+dSry*rhy+dSrz*rhz,cf=-eB*w/r;
+        const gix=dVdr*rhx+cf*(dSrx-dotSr*rhx),giy=dVdr*rhy+cf*(dSry-dotSr*rhy),giz=dVdr*rhz+cf*(dSrz-dotSr*rhz);
+        gx[3*i]+=gix;gx[3*i+1]+=giy;gx[3*i+2]+=giz; gx[3*j]-=gix;gx[3*j+1]-=giy;gx[3*j+2]-=giz;
+        const qi_x_aj_x=qiy*ajz-qiz*ajy,qi_x_aj_y=qiz*ajx-qix*ajz,qi_x_aj_z=qix*ajy-qiy*ajx;
+        gp[3*i]+=-eB*w*(l1p*(pjx-prj*rhx)+l2m*qi_x_aj_x);gp[3*i+1]+=-eB*w*(l1p*(pjy-prj*rhy)+l2m*qi_x_aj_y);gp[3*i+2]+=-eB*w*(l1p*(pjz-prj*rhz)+l2m*qi_x_aj_z);
+        const qj_x_ai_x=qjy*aiz-qjz*aiy,qj_x_ai_y=qjz*aix-qjx*aiz,qj_x_ai_z=qjx*aiy-qjy*aix;
+        gp[3*j]+=-eB*w*(l1p*(pix-pri*rhx)+l2m*qj_x_ai_x);gp[3*j+1]+=-eB*w*(l1p*(piy-pri*rhy)+l2m*qj_x_ai_y);gp[3*j+2]+=-eB*w*(l1p*(piz-pri*rhz)+l2m*qj_x_ai_z);
+        const aj_x_pi_x=ajy*piz-ajz*piy,aj_x_pi_y=ajz*pix-ajx*piz,aj_x_pi_z=ajx*piy-ajy*pix;
+        gq[3*i]+=-eB*w*(l2m*aj_x_pi_x+l3e*(qjx-qrj*rhx));gq[3*i+1]+=-eB*w*(l2m*aj_x_pi_y+l3e*(qjy-qrj*rhy));gq[3*i+2]+=-eB*w*(l2m*aj_x_pi_z+l3e*(qjz-qrj*rhz));
+        const ai_x_pj_x=aiy*pjz-aiz*pjy,ai_x_pj_y=aiz*pjx-aix*pjz,ai_x_pj_z=aix*pjy-aiy*pjx;
+        gq[3*j]+=-eB*w*(l2m*ai_x_pj_x+l3e*(qix-qri*rhx));gq[3*j+1]+=-eB*w*(l2m*ai_x_pj_y+l3e*(qiy-qri*rhy));gq[3*j+2]+=-eB*w*(l2m*ai_x_pj_z+l3e*(qiz-qri*rhz));
+      }
+      // radial AB field: E_field = -field * sum_i (p_i . r^_i), r^ from centre of mass
+      if(this.field>1e-12){
+        const N=this.N,g=this.field; let cx=0,cy=0,cz=0;
+        for(let i=0;i<N;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];} cx/=N;cy/=N;cz/=N;
+        for(let i=0;i<N;i++){ if(np[i])continue;
+          const ux=x[3*i]-cx,uy=x[3*i+1]-cy,uz=x[3*i+2]-cz; const ul=Math.hypot(ux,uy,uz); if(ul<1e-9)continue;
+          const rx=ux/ul,ry=uy/ul,rz=uz/ul;
+          E+=-g*(p[3*i]*rx+p[3*i+1]*ry+p[3*i+2]*rz);
+          gp[3*i]+=-g*rx; gp[3*i+1]+=-g*ry; gp[3*i+2]+=-g*rz;   // dE/dp -> torque outward
+        }
+      }
+      // ===================== CELL WEDGING (added potential) =====================
+      // For each wedging cell i and neighbour j (n = (x_i - x_j)/r, points j->i):
+      //   a_i = p_i . n   (radial lean of AB),   m = n . qhat,  qhat = (q_i+q_j)/|.|
+      //   g_i = 1/2 lamS (a_i + sinAlphaS)^2 + 1/2 lamA (a_i + sinAlphaA * m)^2
+      //   E_i = exp(-r/beta) * g_i      (cell j: target sign flipped -> a_j - ...)
+      // Gradients (raw Euclidean; integrator handles the unit/orthogonality constraints):
+      //   dE_i/dp_i = eB G_i n,            G_i = lamS(a_i+sS)+lamA(a_i+sA m)
+      //   dE_i/dq_{i,j} = eB H_i (n - m qhat)/|Q|,   H_i = lamA(a_i+sA m) sA
+      //   dE_i/dx_i = -(eB/beta) g_i n + (eB/r)[G_i(p_i - a_i n) + H_i(qhat - m n)]
+      //   dE_i/dx_j = -dE_i/dx_i
+      if(this.wedgeActive()){
+        const w=this.wedge,lamS=this.lamS,lamA=this.lamA,
+              sS=Math.sin(this.alphaS),sA=Math.sin(this.alphaA),sSn=-Math.sin(this.alphaS/2),sAn=-Math.sin(this.alphaA/2),bw=beta;
+        for(let t=0;t<pairs.length;t+=2){
+          const i=pairs[t],j=pairs[t+1]; if(!w[i]&&!w[j])continue;
+          const dx=x[3*i]-x[3*j],dy=x[3*i+1]-x[3*j+1],dz=x[3*i+2]-x[3*j+2];
+          const r=Math.sqrt(dx*dx+dy*dy+dz*dz); if(r<1e-9)continue;
+          const nx=dx/r,ny=dy/r,nz=dz/r, eB=Math.exp(-r/bw);
+          let Qx=q[3*i]+q[3*j],Qy=q[3*i+1]+q[3*j+1],Qz=q[3*i+2]+q[3*j+2];
+          const Qn=Math.sqrt(Qx*Qx+Qy*Qy+Qz*Qz);
+          let qhx=0,qhy=0,qhz=0,m=0; const hasQ=Qn>1e-6;
+          if(hasQ){ qhx=Qx/Qn; qhy=Qy/Qn; qhz=Qz/Qn; m=nx*qhx+ny*qhy+nz*qhz; }
+          let gXx=0,gXy=0,gXz=0;                       // dE/dx_i (x_j gets the negative)
+          if(w[i]){
+            const sSi=(w[i]===2?sSn:sS), sAi=(w[i]===2?sAn:sA);
+            const ai=p[3*i]*nx+p[3*i+1]*ny+p[3*i+2]*nz, eS=ai+sSi, eA=ai+sAi*m;
+            const gi=0.5*lamS*eS*eS+0.5*lamA*eA*eA, Gi=lamS*eS+lamA*eA, Hi=lamA*eA*sAi;
+            E+=eB*gi;
+            gp[3*i]+=eB*Gi*nx; gp[3*i+1]+=eB*Gi*ny; gp[3*i+2]+=eB*Gi*nz;
+            if(hasQ){ const cf=eB*Hi/Qn, vx=(nx-m*qhx)*cf,vy=(ny-m*qhy)*cf,vz=(nz-m*qhz)*cf;
+              gq[3*i]+=vx; gq[3*i+1]+=vy; gq[3*i+2]+=vz; gq[3*j]+=vx; gq[3*j+1]+=vy; gq[3*j+2]+=vz; }
+            const c1=-(eB/bw)*gi, c2=eB/r;
+            gXx+=c1*nx+c2*(Gi*(p[3*i]  -ai*nx)+Hi*(qhx-m*nx));
+            gXy+=c1*ny+c2*(Gi*(p[3*i+1]-ai*ny)+Hi*(qhy-m*ny));
+            gXz+=c1*nz+c2*(Gi*(p[3*i+2]-ai*nz)+Hi*(qhz-m*nz));
+          }
+          if(w[j]){
+            const sSj=(w[j]===2?sSn:sS), sAj=(w[j]===2?sAn:sA);
+            const aj=p[3*j]*nx+p[3*j+1]*ny+p[3*j+2]*nz, eS=aj-sSj, eA=aj-sAj*m;
+            const gj=0.5*lamS*eS*eS+0.5*lamA*eA*eA, Gj=lamS*eS+lamA*eA, Hj=-lamA*eA*sAj;
+            E+=eB*gj;
+            gp[3*j]+=eB*Gj*nx; gp[3*j+1]+=eB*Gj*ny; gp[3*j+2]+=eB*Gj*nz;
+            if(hasQ){ const cf=eB*Hj/Qn, vx=(nx-m*qhx)*cf,vy=(ny-m*qhy)*cf,vz=(nz-m*qhz)*cf;
+              gq[3*i]+=vx; gq[3*i+1]+=vy; gq[3*i+2]+=vz; gq[3*j]+=vx; gq[3*j+1]+=vy; gq[3*j+2]+=vz; }
+            const c1=-(eB/bw)*gj, c2=eB/r;
+            gXx+=c1*nx+c2*(Gj*(p[3*j]  -aj*nx)+Hj*(qhx-m*nx));
+            gXy+=c1*ny+c2*(Gj*(p[3*j+1]-aj*ny)+Hj*(qhy-m*ny));
+            gXz+=c1*nz+c2*(Gj*(p[3*j+2]-aj*nz)+Hj*(qhz-m*nz));
+          }
+          gx[3*i]+=gXx; gx[3*i+1]+=gXy; gx[3*i+2]+=gXz;
+          gx[3*j]-=gXx; gx[3*j+1]-=gXy; gx[3*j+2]-=gXz;
+        }
+      }
+      // ===== AB-dependent repulsion between cells of different mesenchyme branches =====
+      // V = F * max(0, -exp(-r/betaM) * (p_i . p_j))  -> repulsive ONLY where the AB
+      // polarities oppose (p_i.p_j < 0). Acts on Gabriel pairs within EACH other's K nearest.
+      // Same branch label, or a direct mother-branch (ancestor) relation among real branches
+      // (label>0), are exempt; the original tissue (label 0) DOES repel later branches.
+      // Gradients enter the AB (p) and position (x) equations; V has no q-dependence so dV/dq=0.
+      if(this.originOn && this.originFactor>1e-9){
+        const F=this.originFactor, og=this.origin, dK2=this.dK2, invbM=1/this.betaM;
+        for(let t=0;t<pairs.length;t+=2){ const i=pairs[t],j=pairs[t+1];
+          const oi=og[i],oj=og[j]; if(oi===oj) continue;
+          if(oi>0 && oj>0 && (this._mesAncestor(oi,oj)||this._mesAncestor(oj,oi))) continue;
+          const pix=p[3*i],piy=p[3*i+1],piz=p[3*i+2],pjx=p[3*j],pjy=p[3*j+1],pjz=p[3*j+2];
+          const D=pix*pjx+piy*pjy+piz*pjz; if(D>=0) continue;                  // only when AB oppose
+          const dx=x[3*i]-x[3*j],dy=x[3*i+1]-x[3*j+1],dz=x[3*i+2]-x[3*j+2]; const r2=dx*dx+dy*dy+dz*dz;
+          if(r2<1e-18 || r2>dK2[i] || r2>dK2[j]) continue;                     // within each other's K nearest
+          const r=Math.sqrt(r2), e=F*Math.exp(-r*invbM);
+          E += -e*D;                                                            // V = -e * (p_i.p_j) > 0
+          const fr=(D*invbM)*e/r;       // dV/dr = (D/betaM) e ; gx += (dV/dr) * (x_i-x_j)/r
+          gx[3*i]+=fr*dx; gx[3*i+1]+=fr*dy; gx[3*i+2]+=fr*dz;
+          gx[3*j]-=fr*dx; gx[3*j+1]-=fr*dy; gx[3*j+2]-=fr*dz;
+          gp[3*i]+=-e*pjx; gp[3*i+1]+=-e*pjy; gp[3*i+2]+=-e*pjz;               // dV/dp_i = -e p_j
+          gp[3*j]+=-e*pix; gp[3*j+1]+=-e*piy; gp[3*j+2]+=-e*piz;               // dV/dp_j = -e p_i
+        }
+      }
+      this.energy=E; return E;
+    }
+
+    energyOnly(pairs=this.pairs){
+      const x=this.x,p=this.p,q=this.q,l1=this.l1,l2=this.l2,l3=this.l3,beta=this.beta,S0=this.S0,np=this.nonpolar; let E=0;
+      const tum=this.tumor, cross=this.crossStrength, nem=this.nematicPCP;
+      for(let t=0;t<pairs.length;t+=2){const i=pairs[t],j=pairs[t+1];
+        const dx=x[3*i]-x[3*j],dy=x[3*i+1]-x[3*j+1],dz=x[3*i+2]-x[3*j+2];const r=Math.sqrt(dx*dx+dy*dy+dz*dz);if(r<1e-9)continue;
+        const eR=Math.exp(-r),eB=Math.exp(-r/beta); const w=(tum[i]!==tum[j])?cross:1.0;
+        if(np[i]||np[j]){E+=eR-w*S0*eB;continue;}
+        const rhx=dx/r,rhy=dy/r,rhz=dz/r;
+        const pix=p[3*i],piy=p[3*i+1],piz=p[3*i+2],pjx=p[3*j],pjy=p[3*j+1],pjz=p[3*j+2];
+        const qix=q[3*i],qiy=q[3*i+1],qiz=q[3*i+2],qjx=q[3*j],qjy=q[3*j+1],qjz=q[3*j+2];
+        const S1=(pix*pjx+piy*pjy+piz*pjz)-(pix*rhx+piy*rhy+piz*rhz)*(pjx*rhx+pjy*rhy+pjz*rhz);
+        const S3=(qix*qjx+qiy*qjy+qiz*qjz)-(qix*rhx+qiy*rhy+qiz*rhz)*(qjx*rhx+qjy*rhy+qjz*rhz);
+        const aix=piy*qiz-piz*qiy,aiy=piz*qix-pix*qiz,aiz=pix*qiy-piy*qix;
+        const ajx=pjy*qjz-pjz*qjy,ajy=pjz*qjx-pjx*qjz,ajz=pjx*qjy-pjy*qjx; const S2=aix*ajx+aiy*ajy+aiz*ajz;
+        E+=eR-w*(l1*S1+l2*S2+l3*(nem?Math.abs(S3):S3))*eB;}
+      E+=this.wedgeEnergy(pairs);
+      return E;
+    }
+
+    /* ---- perturbation ---- */
+    pickCentralCells(c){ const N=this.N,x=this.x;let cx=0,cy=0,cz=0;
+      for(let i=0;i<N;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];}cx/=N;cy/=N;cz/=N;
+      const idx=new Array(N),d2=new Float64Array(N);
+      for(let i=0;i<N;i++){const dx=x[3*i]-cx,dy=x[3*i+1]-cy,dz=x[3*i+2]-cz;d2[i]=dx*dx+dy*dy+dz*dz;idx[i]=i;}
+      idx.sort((a,b)=>d2[a]-d2[b]); return idx.slice(0,Math.max(0,Math.min(c|0,N))); }
+    pickCentralCell(){ return this.pickCentralCells(1)[0]; }
+    perturbCells(indices,deg){ this.perturbIndices=Array.from(indices); for(const idx of this.perturbIndices)this._rotateAB(idx,deg); this.buildNeighbours(); }
+    perturbCell(idx,deg){ this.perturbCells([idx],deg); }
+    _rotateAB(idx,deg){ if(idx<0||idx>=this.N)return; const th=deg*Math.PI/180;
+      let px=this.p[3*idx],py=this.p[3*idx+1],pz=this.p[3*idx+2];
+      let rx=1,ry=0,rz=0; if(Math.abs(px)>0.9){rx=0;ry=1;rz=0;}
+      let kx=py*rz-pz*ry,ky=pz*rx-px*rz,kz=px*ry-py*rx; const kl=Math.hypot(kx,ky,kz)||1;kx/=kl;ky/=kl;kz/=kl;
+      const ct=Math.cos(th),st=Math.sin(th),kdp=kx*px+ky*py+kz*pz;
+      const cx2=ky*pz-kz*py,cy2=kz*px-kx*pz,cz2=kx*py-ky*px;
+      const nx=px*ct+cx2*st+kx*kdp*(1-ct),ny=py*ct+cy2*st+ky*kdp*(1-ct),nz=pz*ct+cz2*st+kz*kdp*(1-ct);
+      const nl=Math.hypot(nx,ny,nz)||1; this.p[3*idx]=nx/nl;this.p[3*idx+1]=ny/nl;this.p[3*idx+2]=nz/nl;
+      if(this.pcpActive()){ let qx=this.q[3*idx],qy=this.q[3*idx+1],qz=this.q[3*idx+2];
+        const d=qx*(nx/nl)+qy*(ny/nl)+qz*(nz/nl); qx-=d*nx/nl;qy-=d*ny/nl;qz-=d*nz/nl; const l=Math.hypot(qx,qy,qz)||1;
+        this.q[3*idx]=qx/l;this.q[3*idx+1]=qy/l;this.q[3*idx+2]=qz/l; } }
+
+    /* ---- tumour founder & non-polar flag (live) ---- */
+    initTumor(nonpolar){ const idx=this.pickCentralCell(); this.tumor.fill(0); this.nonpolar.fill(0);
+      this.tumorFounder=idx; this.tumor[idx]=1; if(nonpolar)this.nonpolar[idx]=1; }
+    setTumorNonpolar(on){ for(let i=0;i<this.N;i++) if(this.tumor[i]) this.nonpolar[i]=on?1:0; }
+    clearTumor(){ this.tumor.fill(0); this.nonpolar.fill(0); this.tumorFounder=-1; }
+    tumorCount(){ let c=0; for(let i=0;i<this.N;i++) if(this.tumor[i])c++; return c; }
+
+    /* ---- division ---- */
+    _divide(i){
+      const N=this.N; if(N>=this.cap)return;
+      let dx,dy,dz, rx=this._gauss(),ry=this._gauss(),rz=this._gauss();
+      if(!this.nonpolar[i]){ const px=this.p[3*i],py=this.p[3*i+1],pz=this.p[3*i+2];
+        const d=rx*px+ry*py+rz*pz; rx-=d*px;ry-=d*py;rz-=d*pz; }            // split within the sheet
+      const l=Math.hypot(rx,ry,rz)||1; dx=rx/l;dy=ry/l;dz=rz/l;
+      const L=0.6, ox=this.x[3*i],oy=this.x[3*i+1],oz=this.x[3*i+2];
+      this.x[3*i]=ox-0.5*L*dx;this.x[3*i+1]=oy-0.5*L*dy;this.x[3*i+2]=oz-0.5*L*dz;
+      this.x[3*N]=ox+0.5*L*dx;this.x[3*N+1]=oy+0.5*L*dy;this.x[3*N+2]=oz+0.5*L*dz;
+      this.p[3*N]=this.p[3*i];this.p[3*N+1]=this.p[3*i+1];this.p[3*N+2]=this.p[3*i+2];
+      this.q[3*N]=this.q[3*i];this.q[3*N+1]=this.q[3*i+1];this.q[3*N+2]=this.q[3*i+2];
+      this.tumor[N]=this.tumor[i]; this.nonpolar[N]=this.nonpolar[i]; this.origin[N]=this.origin[i]; this.hasPCP[N]=this.pcpInducedOnly?0:this.hasPCP[i]; this.induced[N]=this.induced[i];
+      this.divClock[N]=this._gammaDiv(this.divRate>0?1/this.divRate:1e9);
+      this.N++;
+    }
+    divideStep(){
+      if(!(this.divisionOn||this.tumorOn))return;
+      if(!(this.divRate>0))return;
+      const M=this.N, mean=1/this.divRate, dt=this.dt;
+      for(let i=0;i<M;i++){ if(this.N>=this.cap)break;
+        const base=this.divisionOn || (this.tumorOn && this.tumor[i]);
+        if(!base)continue;
+        if(this.divClock[i]<0) this.divClock[i]=this._gammaDiv(mean);
+        this.divClock[i]-=dt;
+        if(this.divClock[i]<=0){
+          const near=(!this.divideNearMes) || (this.mesN>0 && this.nearMes[i]);   // only nearest cells divide
+          if(near){ this._divide(i); this.divClock[i]=this._gammaDiv(mean);
+            if(this.mesN>0 && this.nearMes[i]){ const ow=this.mesOwner[i]; if(ow>=0){ this.mesInduced[ow]++;
+              this.origin[i]=ow; this.origin[this.N-1]=ow; this.induced[i]=1; this.induced[this.N-1]=1; } } }
+        }
+      }
+    }
+
+    step(){
+      this.buildNeighbours(); this.computeForces();
+      const N=this.N,dt=this.dt,eta=this.noise,x=this.x,p=this.p,q=this.q,gx=this.gx,gp=this.gp,gq=this.gq;
+      const sn=eta*Math.sqrt(dt),useNoise=eta>0,pcp=this.pcpActive();
+      for(let i=0;i<N;i++){
+        if(useNoise){x[3*i]+=-dt*gx[3*i]+sn*this._gauss();x[3*i+1]+=-dt*gx[3*i+1]+sn*this._gauss();x[3*i+2]+=-dt*gx[3*i+2]+sn*this._gauss();}
+        else{x[3*i]+=-dt*gx[3*i];x[3*i+1]+=-dt*gx[3*i+1];x[3*i+2]+=-dt*gx[3*i+2];}
+        let pX=p[3*i]-dt*gp[3*i],pY=p[3*i+1]-dt*gp[3*i+1],pZ=p[3*i+2]-dt*gp[3*i+2];
+        if(useNoise){pX+=0.3*sn*this._gauss();pY+=0.3*sn*this._gauss();pZ+=0.3*sn*this._gauss();}
+        let pl=Math.hypot(pX,pY,pZ)||1;pX/=pl;pY/=pl;pZ/=pl;p[3*i]=pX;p[3*i+1]=pY;p[3*i+2]=pZ;
+        let qX=q[3*i]-dt*gq[3*i],qY=q[3*i+1]-dt*gq[3*i+1],qZ=q[3*i+2]-dt*gq[3*i+2];
+        if(useNoise){qX+=0.3*sn*this._gauss();qY+=0.3*sn*this._gauss();qZ+=0.3*sn*this._gauss();}
+        if(pcp){const d=qX*pX+qY*pY+qZ*pZ;qX-=d*pX;qY-=d*pY;qZ-=d*pZ;}
+        let ql=Math.hypot(qX,qY,qZ)||1;q[3*i]=qX/ql;q[3*i+1]=qY/ql;q[3*i+2]=qZ/ql;
+      }
+      this.divideStep();
+      this.stepMesenchyme();
+      if(this.recenter){const M=this.N;let cx=0,cy=0,cz=0;for(let i=0;i<M;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];}cx/=M;cy/=M;cz/=M;
+        for(let i=0;i<M;i++){x[3*i]-=cx;x[3*i+1]-=cy;x[3*i+2]-=cz;}
+        for(let a=0;a<this.mesN;a++){this.mx[3*a]-=cx;this.mx[3*a+1]-=cy;this.mx[3*a+2]-=cz;}}
+      this.time+=dt;this.step_count++;
+    }
+  }
+  const api={Simulation,mulberry32};
+  if(typeof module!=="undefined"&&module.exports)module.exports=api;
+  global.CellModel=api;
+})(typeof window!=="undefined"?window:globalThis);
+
+  </script>
+
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }}
+  </script>
+
+  <script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  const { Simulation } = window.CellModel;
+  const $ = id => document.getElementById(id);
+
+  /* allowed N: 100..2000 step 100, then 2500..8000 step 500 */
+  const NVALUES = [];
+  for (let n=100; n<=2000; n+=100) NVALUES.push(n);
+  for (let n=2500; n<=20000; n+=500) NVALUES.push(n);
+  $('N').max = NVALUES.length-1;
+  let nIndex = NVALUES.indexOf(2000); $('N').value = nIndex;
+  let WEDGEVALUES=[1,2,4,8,16,32,64];
+  function rebuildWedgeValues(preferred){
+    const Ntot=NVALUES[+$('N').value]||100, arr=[];
+    for(let v=1; v<Ntot; v*=2) arr.push(v); arr.push(Ntot);
+    const prev = preferred ?? (WEDGEVALUES[+$('wedgeNum').value] ?? 64);
+    WEDGEVALUES=arr; $('wedgeNum').max=arr.length-1;
+    let bi=0,bd=Infinity; for(let i=0;i<arr.length;i++){ const dd=Math.abs(arr[i]-prev); if(dd<bd){bd=dd;bi=i;} }
+    $('wedgeNum').value=bi; $('wedgeNumv').textContent=arr[bi];
+  }
+  rebuildWedgeValues(16);
+
+  // generic count axis: 1..16 in steps of 1, then 32,64,128,... up to total system size
+  function buildCountAxis(){
+    const Ntot=NVALUES[+$('N').value]||100, arr=[];
+    for(let v=1; v<=16 && v<Ntot; v++) arr.push(v);
+    for(let v=32; v<Ntot; v*=2) arr.push(v);
+    if(arr.length===0 || arr[arr.length-1]!==Ntot) arr.push(Ntot);
+    return arr;
+  }
+  function nearestIdx(arr,val){ let bi=0,bd=Infinity; for(let i=0;i<arr.length;i++){ const d=Math.abs(arr[i]-val); if(d<bd){bd=d;bi=i;} } return bi; }
+
+  // cells dividing near mesenchyme — two synced sliders (proliferation panel + wedging pulldown)
+  let DIVMESVALUES=[1,2,4,8,16];
+  function rebuildDivMesValues(preferred){
+    const arr=buildCountAxis();
+    const prev = preferred ?? (DIVMESVALUES[+$('divMesNum').value] ?? 16);
+    DIVMESVALUES=arr; const bi=nearestIdx(arr,prev); const v=arr[bi];
+    $('divMesNum').max=arr.length-1; $('divMesNum').value=bi; $('divMesNumv').textContent=v;
+  }
+  rebuildDivMesValues(16);   // default = 16 nearest cells
+
+  // mesenchyme division threshold — # induced cell-divisions before a mesenchyme splits
+  let MESDIVVALUES=[1,2,4,8,16];
+  function rebuildMesDivValues(preferred){
+    const arr=buildCountAxis();
+    const prev = preferred ?? (MESDIVVALUES[+$('mesDivThresh').value] ?? 16);
+    MESDIVVALUES=arr; const bi=nearestIdx(arr,prev);
+    $('mesDivThresh').max=arr.length-1; $('mesDivThresh').value=bi; $('mesDivThreshv').textContent=arr[bi];
+  }
+  rebuildMesDivValues(64);   // default = divide after inducing 64 divisions
+
+  // negative-wedge cells — the band just beyond the positively-wedged cells (opposite tilt). 0 ⇒ none.
+  let NEGWEDGEVALUES=[0,1,2,4,8,16];
+  function setNegWedgeByValue(v){ const bi=nearestIdx(NEGWEDGEVALUES,v); $('negWedgeNum').value=bi; $('negWedgeNumv').textContent=NEGWEDGEVALUES[bi]; }
+  function rebuildNegWedgeValues(){ const cur=NEGWEDGEVALUES[+$('negWedgeNum').value] ?? 0;
+    NEGWEDGEVALUES=[0].concat(buildCountAxis()); $('negWedgeNum').max=NEGWEDGEVALUES.length-1; setNegWedgeByValue(cur); }
+  function autoNegWedge(){ if(negWedgeTouched) return; const wnum=(WEDGEVALUES[+$('wedgeNum').value]|0)||1; setNegWedgeByValue(Math.round(wnum/2)); }
+  rebuildNegWedgeValues();
+
+  let mode = 'single';     // 'single' | 'dual'
+  let mesD0Touched = false; // user has manually set the mesenchyme optimal distance
+  let divModeSel = 'random'; // active cell-division mode: random | mesenchyme | cancer
+  let negWedgeTouched = false; // user has manually set the negative-wedge count
+  let pcpSide = 'apical';      // PCP-arrow surface: apical | opposite | both
+  let betaMTouched = false;    // user has manually set the branch-repulsion range
+  let nextSeed = null;         // one-shot fixed seed (presets use it so runs are comparable)
+  const PRESET_SEED = 20240611;
+  let pcpInducedOnlyFlag = false; // Branching (PCP): PCP only on induced offspring
+  let compareShow = 0;          // compare mode: which overlaid run is displayed (0 no-PCP, 1 PCP)
+  let shadeOn = true, divMode = false;
+  let systems = [], currentSeed = 12345;
+  let clipAxis = 'y';      // axis the cutting plane spins about
+
+  // outside (apical) / inside (basal) colour palettes; index 0 = current defaults
+  const OUT_COLORS = [{n:'red',hex:'#ff8a3d'},{n:'orange',hex:'#ff9f1c'},{n:'warm yellow',hex:'#ffd24a'}];
+  const IN_COLORS  = [{n:'blue',hex:'#2cc8f2'},{n:'green',hex:'#34e07a'},{n:'magenta',hex:'#ff4dd2'},{n:'purple',hex:'#9b5cff'}];
+  let outIdx=0, inIdx=0;
+  const OUT_V=OUT_COLORS.map(o=>{const c=new THREE.Color(o.hex);return new THREE.Vector3(c.r,c.g,c.b);});
+  const IN_V =IN_COLORS.map(o=>{const c=new THREE.Color(o.hex);return new THREE.Vector3(c.r,c.g,c.b);});
+  let dualMetrics=null, _metricTick=0;
+
+  /* ---- symmetric 3×3 eigen (Jacobi); returns sorted-by-eigenvalue not required ---- */
+  function eigSym3(a00,a01,a02,a11,a12,a22){
+    let A=[[a00,a01,a02],[a01,a11,a12],[a02,a12,a22]];
+    let V=[[1,0,0],[0,1,0],[0,0,1]];
+    for(let sweep=0;sweep<10;sweep++){
+      for(const [p,r] of [[0,1],[0,2],[1,2]]){
+        const apr=A[p][r]; if(Math.abs(apr)<1e-14) continue;
+        const phi=0.5*Math.atan2(2*apr, A[r][r]-A[p][p]);
+        const c=Math.cos(phi), s=Math.sin(phi);
+        for(let k=0;k<3;k++){ const akp=A[k][p], akr=A[k][r]; A[k][p]=c*akp-s*akr; A[k][r]=s*akp+c*akr; }
+        for(let k=0;k<3;k++){ const apk=A[p][k], ark=A[r][k]; A[p][k]=c*apk-s*ark; A[r][k]=s*apk+c*ark; }
+        for(let k=0;k<3;k++){ const vkp=V[k][p], vkr=V[k][r]; V[k][p]=c*vkp-s*vkr; V[k][r]=s*vkp+c*vkr; }
+      }
+    }
+    return { evals:[A[0][0],A[1][1],A[2][2]],
+             evecs:[[V[0][0],V[1][0],V[2][0]],[V[0][1],V[1][1],V[2][1]],[V[0][2],V[1][2],V[2][2]]] };
+  }
+
+  /* ---- detect PCP topological defects on the structure surface ----
+     For each surface cell: fit a local tangent plane (smallest-eigenvector normal),
+     order neighbours by azimuth, and accumulate the winding of the (tangent-projected)
+     PCP angle. Vector field → integer charge; nematic (|S3|) → half-integer. Returns the
+     local-maximum defect cells with their rounded charge. */
+  function detectPCPDefects(sim, nematic, maxOut=80){
+    const N=sim.N, x=sim.x, q=sim.q, pairs=sim.pairs;
+    if(N<8) return [];
+    const deg=new Int32Array(N);
+    for(let t=0;t<pairs.length;t+=2){deg[pairs[t]]++;deg[pairs[t+1]]++;}
+    const off=new Int32Array(N+1); for(let i=0;i<N;i++)off[i+1]=off[i]+deg[i];
+    const adj=new Int32Array(off[N]); const cur=Int32Array.from(off.subarray(0,N));
+    for(let t=0;t<pairs.length;t+=2){const i=pairs[t],j=pairs[t+1]; adj[cur[i]++]=j; adj[cur[j]++]=i;}
+    let cx=0,cy=0,cz=0; for(let i=0;i<N;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];}cx/=N;cy/=N;cz/=N;
+    const wind=new Float64Array(N); const isSurf=new Uint8Array(N);
+    const nrm=new Float32Array(3*N);
+    const TWO_PI=2*Math.PI;
+    for(let i=0;i<N;i++){
+      const s=off[i], e=off[i+1], d=e-s; if(d<5) continue;
+      let m00=0,m01=0,m02=0,m11=0,m12=0,m22=0;
+      for(let k=s;k<e;k++){ const j=adj[k]; let dx=x[3*j]-x[3*i],dy=x[3*j+1]-x[3*i+1],dz=x[3*j+2]-x[3*i+2];
+        const l=Math.hypot(dx,dy,dz)||1; dx/=l;dy/=l;dz/=l;
+        m00+=dx*dx;m01+=dx*dy;m02+=dx*dz;m11+=dy*dy;m12+=dy*dz;m22+=dz*dz; }
+      const {evals,evecs}=eigSym3(m00,m01,m02,m11,m12,m22);
+      let si=0; if(evals[1]<evals[si])si=1; if(evals[2]<evals[si])si=2;
+      let li=0; if(evals[1]>evals[li])li=1; if(evals[2]>evals[li])li=2;
+      if(evals[si] > 0.45*evals[li]+1e-9) continue;   // neighbours fill 3D → interior/bulk, skip
+      let nx=evecs[si][0],ny=evecs[si][1],nz=evecs[si][2];
+      const ox=x[3*i]-cx,oy=x[3*i+1]-cy,oz=x[3*i+2]-cz;
+      if(nx*ox+ny*oy+nz*oz<0){nx=-nx;ny=-ny;nz=-nz;}
+      // tangent frame
+      let e1x=1,e1y=0,e1z=0; if(Math.abs(nx)>0.9){e1x=0;e1y=1;e1z=0;}
+      let dd=e1x*nx+e1y*ny+e1z*nz; e1x-=dd*nx;e1y-=dd*ny;e1z-=dd*nz;
+      const e1l=Math.hypot(e1x,e1y,e1z)||1; e1x/=e1l;e1y/=e1l;e1z/=e1l;
+      const e2x=ny*e1z-nz*e1y, e2y=nz*e1x-nx*e1z, e2z=nx*e1y-ny*e1x;
+      const ths=[], phs=[]; let tsum=0, tmin=1e9;
+      for(let k=s;k<e;k++){ const j=adj[k];
+        const dx=x[3*j]-x[3*i],dy=x[3*j+1]-x[3*i+1],dz=x[3*j+2]-x[3*i+2];
+        ths.push(Math.atan2(dx*e2x+dy*e2y+dz*e2z, dx*e1x+dy*e1y+dz*e1z));
+        let qx=q[3*j],qy=q[3*j+1],qz=q[3*j+2]; const qn=qx*nx+qy*ny+qz*nz; qx-=qn*nx;qy-=qn*ny;qz-=qn*nz;
+        const tmag=Math.hypot(qx,qy,qz); tsum+=tmag; if(tmag<tmin)tmin=tmag;
+        phs.push(Math.atan2(qx*e2x+qy*e2y+qz*e2z, qx*e1x+qy*e1y+qz*e1z));
+      }
+      // in-plane PCP must be substantial all around the loop, else atan2 of a near-zero
+      // tangential vector is pure noise and a near-uniform field reports a spurious winding.
+      if(tsum/(e-s) < 0.40 || tmin < 0.12) continue;
+      const ord=[...ths.keys()].sort((a,b)=>ths[a]-ths[b]);
+      const modv = nematic ? Math.PI : TWO_PI, half=modv/2;
+      let sum=0;
+      for(let k=0;k<ord.length;k++){
+        let dphi=phs[ord[(k+1)%ord.length]]-phs[ord[k]];
+        while(dphi>half) dphi-=modv; while(dphi<=-half) dphi+=modv;
+        sum+=dphi;
+      }
+      wind[i]=sum/TWO_PI; isSurf[i]=1; nrm[3*i]=nx;nrm[3*i+1]=ny;nrm[3*i+2]=nz;
+    }
+    const quant = nematic ? 0.5 : 1.0, out=[];
+    for(let i=0;i<N;i++){ if(!isSurf[i])continue;
+      const chg=Math.round(wind[i]/quant)*quant; if(Math.abs(chg)<quant-1e-9)continue;
+      if(Math.abs(wind[i]-chg) > 0.30) continue;   // reject weak/partial windings near the rounding boundary
+      let best=true; const ai=Math.abs(wind[i]);
+      for(let k=off[i];k<off[i+1];k++){ const j=adj[k]; const aj=Math.abs(wind[j]);
+        if(aj>ai+1e-9 || (aj>ai-1e-9 && j<i)){best=false;break;} }
+      if(!best)continue;
+      out.push({idx:i, charge:chg, nx:nrm[3*i], ny:nrm[3*i+1], nz:nrm[3*i+2], mag:ai});
+    }
+    out.sort((a,b)=>b.mag-a.mag);
+    return out.slice(0,maxOut);
+  }
+  function chargeStr(c){
+    const sign = c<0 ? '\u2212' : '+';
+    const a = Math.abs(c), whole = Math.floor(a+1e-9);
+    const half = Math.abs(a-whole-0.5) < 1e-6;
+    const body = half ? (whole>0?whole:'')+'\u00BD' : String(Math.round(a));
+    return sign+body;   // e.g. +½, −½, +1, +1½, +2½
+  }
+
+  /* Quantify how far the perturbed structure (systems[1]) has diverged from the control
+     (systems[0]). Cells correspond by index. Returns:
+       rmsdRaw      – RMS cell displacement with no alignment
+       rmsdAligned  – RMS displacement after optimal rigid (Kabsch) alignment, i.e. the
+                      part of the difference that is NOT a global rotation/translation
+       abAng,pcpAng – mean angular difference of AB / PCP polarity after that rotation
+       bondMismatch – Jaccard distance between the two Gabriel bond networks (topology) */
+  function computeDualMetrics(){
+    if(mode!=='dual'||systems.length<2) return null;
+    const A=systems[0].sim, B=systems[1].sim, N=Math.min(A.N,B.N); if(N<3) return null;
+    const ax=A.x, bx=B.x;
+    let acx=0,acy=0,acz=0,bcx=0,bcy=0,bcz=0;
+    for(let i=0;i<N;i++){acx+=ax[3*i];acy+=ax[3*i+1];acz+=ax[3*i+2];bcx+=bx[3*i];bcy+=bx[3*i+1];bcz+=bx[3*i+2];}
+    acx/=N;acy/=N;acz/=N;bcx/=N;bcy/=N;bcz/=N;
+    let Sxx=0,Sxy=0,Sxz=0,Syx=0,Syy=0,Syz=0,Szx=0,Szy=0,Szz=0, sumP2=0,sumQ2=0, raw2=0;
+    for(let i=0;i<N;i++){
+      const px=ax[3*i]-acx,py=ax[3*i+1]-acy,pz=ax[3*i+2]-acz;     // control, centred
+      const qx=bx[3*i]-bcx,qy=bx[3*i+1]-bcy,qz=bx[3*i+2]-bcz;     // perturbed, centred
+      Sxx+=qx*px;Sxy+=qx*py;Sxz+=qx*pz; Syx+=qy*px;Syy+=qy*py;Syz+=qy*pz; Szx+=qz*px;Szy+=qz*py;Szz+=qz*pz;
+      sumP2+=px*px+py*py+pz*pz; sumQ2+=qx*qx+qy*qy+qz*qz;
+      const dx=ax[3*i]-bx[3*i],dy=ax[3*i+1]-bx[3*i+1],dz=ax[3*i+2]-bx[3*i+2]; raw2+=dx*dx+dy*dy+dz*dz;
+    }
+    // Horn's 4×4 from the cross-covariance; dominant eigenvector = optimal rotation quaternion
+    const M=[[Sxx+Syy+Szz, Syz-Szy, Szx-Sxz, Sxy-Syx],
+             [Syz-Szy, Sxx-Syy-Szz, Sxy+Syx, Szx+Sxz],
+             [Szx-Sxz, Sxy+Syx, -Sxx+Syy-Szz, Syz+Szy],
+             [Sxy-Syx, Szx+Sxz, Syz+Szy, -Sxx-Syy+Szz]];
+    let c=0; for(let r=0;r<4;r++){let s=0;for(let k=0;k<4;k++)s+=Math.abs(M[r][k]); if(s>c)c=s;} // shift → PSD
+    let v=[1,1,1,1];
+    for(let it=0;it<80;it++){ const w=[0,0,0,0];
+      for(let r=0;r<4;r++){let s=c*v[r];for(let k=0;k<4;k++)s+=M[r][k]*v[k]; w[r]=s;}
+      const nrm=Math.hypot(w[0],w[1],w[2],w[3])||1; for(let r=0;r<4;r++)v[r]=w[r]/nrm; }
+    let lam=0,Mv=[0,0,0,0]; for(let r=0;r<4;r++){let s=0;for(let k=0;k<4;k++)s+=M[r][k]*v[k];Mv[r]=s;}
+    lam=v[0]*Mv[0]+v[1]*Mv[1]+v[2]*Mv[2]+v[3]*Mv[3];
+    const rmsdAligned=Math.sqrt(Math.max(0,(sumP2+sumQ2-2*lam))/N), rmsdRaw=Math.sqrt(raw2/N);
+    const qw=v[0],qx=v[1],qy=v[2],qz=v[3];
+    let R=[[1-2*(qy*qy+qz*qz),2*(qx*qy-qz*qw),2*(qx*qz+qy*qw)],
+           [2*(qx*qy+qz*qw),1-2*(qx*qx+qz*qz),2*(qy*qz-qx*qw)],
+           [2*(qx*qz-qy*qw),2*(qy*qz+qx*qw),1-2*(qx*qx+qy*qy)]];
+    // guard: ensure R maps perturbed→control (use Rᵀ if it aligns better)
+    let r1=0,r2=0;
+    for(let i=0;i<N;i++){ const qx2=bx[3*i]-bcx,qy2=bx[3*i+1]-bcy,qz2=bx[3*i+2]-bcz, px=ax[3*i]-acx,py=ax[3*i+1]-acy,pz=ax[3*i+2]-acz;
+      const a1=R[0][0]*qx2+R[0][1]*qy2+R[0][2]*qz2,a2=R[1][0]*qx2+R[1][1]*qy2+R[1][2]*qz2,a3=R[2][0]*qx2+R[2][1]*qy2+R[2][2]*qz2;
+      const b1=R[0][0]*qx2+R[1][0]*qy2+R[2][0]*qz2,b2=R[0][1]*qx2+R[1][1]*qy2+R[2][1]*qz2,b3=R[0][2]*qx2+R[1][2]*qy2+R[2][2]*qz2;
+      r1+=(a1-px)**2+(a2-py)**2+(a3-pz)**2; r2+=(b1-px)**2+(b2-py)**2+(b3-pz)**2; }
+    if(r2<r1) R=[[R[0][0],R[1][0],R[2][0]],[R[0][1],R[1][1],R[2][1]],[R[0][2],R[1][2],R[2][2]]];
+    // polarity divergence after the optimal rotation
+    const ap=A.p,bp=B.p,aq=A.q,bq=B.q; let abAng=0,pcpAng=0;
+    for(let i=0;i<N;i++){
+      let vx=bp[3*i],vy=bp[3*i+1],vz=bp[3*i+2];
+      let rx=R[0][0]*vx+R[0][1]*vy+R[0][2]*vz,ry=R[1][0]*vx+R[1][1]*vy+R[1][2]*vz,rz=R[2][0]*vx+R[2][1]*vy+R[2][2]*vz;
+      let d=Math.max(-1,Math.min(1,rx*ap[3*i]+ry*ap[3*i+1]+rz*ap[3*i+2])); abAng+=Math.acos(d);
+      vx=bq[3*i];vy=bq[3*i+1];vz=bq[3*i+2];
+      rx=R[0][0]*vx+R[0][1]*vy+R[0][2]*vz;ry=R[1][0]*vx+R[1][1]*vy+R[1][2]*vz;rz=R[2][0]*vx+R[2][1]*vy+R[2][2]*vz;
+      let e=Math.abs(Math.max(-1,Math.min(1,rx*aq[3*i]+ry*aq[3*i+1]+rz*aq[3*i+2]))); pcpAng+=Math.acos(e); // PCP nematic
+    }
+    abAng=abAng/N*180/Math.PI; pcpAng=pcpAng/N*180/Math.PI;
+    // topological divergence: Gabriel bond networks
+    function eset(sim){ const s=new Set(),pr=sim.pairs; for(let t=0;t<pr.length;t+=2){let i=pr[t],j=pr[t+1]; if(i<N&&j<N){ if(i>j){const u=i;i=j;j=u;} s.add(i*N+j);}} return s; }
+    const EA=eset(A),EB=eset(B); let inter=0; for(const e of EA) if(EB.has(e))inter++;
+    const uni=EA.size+EB.size-inter, bondMismatch=uni>0?1-inter/uni:0, diffBonds=EA.size+EB.size-2*inter;
+    return {rmsdRaw,rmsdAligned,abAng,pcpAng,bondMismatch,diffBonds};
+  }
+
+  function baseParams(){
+    return { N:NVALUES[+$('N').value], l1:+$('l1').value, l2:+$('l2').value, l3:+$('l3').value,
+             beta:+$('beta').value, dt:+$('dt').value, noise:+$('noise').value,
+             knnLimit:$('tKnn').checked, maxNeighbors:+$('knnK').value,
+             abOutward:$('tABout').checked, abInward:$('tABin').checked, sphereSurface:$('tSphere').checked,
+             pcpWhirl:$('tPCPwhirl').checked, nematicPCP:$('tNematic').checked, pcpInducedOnly:pcpInducedOnlyFlag,
+             lamS:+$('lamS').value, lamA:+$('lamA').value,
+             alphaS:(+$('alphaS').value)*Math.PI/180, alphaA:(+$('alphaA').value)*Math.PI/180,
+             wedgeNum:(WEDGEVALUES[+$('wedgeNum').value]|0)||1, negWedgeNum:(NEGWEDGEVALUES[+$('negWedgeNum').value]|0), mesD0:+$('mesD0').value,
+             mesDivThresh:(MESDIVVALUES[+$('mesDivThresh').value]|0)||1,
+             divMesNum:(DIVMESVALUES[+$('divMesNum').value]|0)||1,
+             divideNearMes:divFlags().divideNearMes,
+             originOn:$('tOrigin').checked, originFactor:+$('originFactor').value, betaM:+$('betaM').value, divGamma:10 };
+  }
+  function sysRadius(N){ return 2.0*Math.cbrt(3*N/(4*Math.PI))*1.1; }
+  function configSimScalars(m){
+    if(m._fixedL){ m.l1=m._fixedL[0]; m.l2=m._fixedL[1]; m.l3=m._fixedL[2]; }
+    else { m.l1=+$('l1').value; m.l2=+$('l2').value; m.l3=+$('l3').value; }
+    m.beta=+$('beta').value; m.dt=+$('dt').value; m.noise=+$('noise').value;
+    { const f=divFlags(); m.divisionOn=f.divisionOn; m.tumorOn=f.tumorOn; }
+    m.divRate=+$('divRate').value; m.nonpolarTumor=$('tNonpolar').checked;
+    m.crossStrength = 1 + (+$('crossPct').value)/100;
+    m.field=+$('field').value;
+    m.knnLimit=$('tKnn').checked; m.maxNeighbors=+$('knnK').value;
+    m.nematicPCP=$('tNematic').checked;
+    m.lamS=+$('lamS').value; m.lamA=+$('lamA').value;
+    m.alphaS=(+$('alphaS').value)*Math.PI/180; m.alphaA=(+$('alphaA').value)*Math.PI/180;
+    m.wedgeNum=(WEDGEVALUES[+$('wedgeNum').value]|0)||1; m.negWedgeNum=(NEGWEDGEVALUES[+$('negWedgeNum').value]|0);
+    m.mesD0=+$('mesD0').value; m.mesDivThresh=(MESDIVVALUES[+$('mesDivThresh').value]|0)||1;
+    const _dmv=(DIVMESVALUES[+$('divMesNum').value]|0)||1;
+    m.divMesNum=_dmv; m.divideNearMes=divFlags().divideNearMes; m.divGamma=10;
+    m.originOn=$('tOrigin').checked; m.originFactor=+$('originFactor').value; m.betaM=+$('betaM').value;
+  }
+  function applyControls(){ for(const sys of systems) configSimScalars(sys.sim); }
+
+  /* Cutting-plane normal: perpendicular to the chosen spin axis, swept by `angle`.
+     Returns null when clipping is off. */
+  function clipPlane(){
+    if(!$('tClip').checked) return null;
+    const th = (+$('clipAng').value) * Math.PI/180;
+    let ux,uy,uz,vx,vy,vz;
+    if(clipAxis==='x'){ ux=0;uy=1;uz=0; vx=0;vy=0;vz=1; }       // axis = X
+    else if(clipAxis==='z'){ ux=1;uy=0;uz=0; vx=0;vy=1;vz=0; }   // axis = Z
+    else { ux=0;uy=0;uz=1; vx=1;vy=0;vz=0; }                     // axis = Y (default)
+    const c=Math.cos(th), s=Math.sin(th);
+    return { nx:c*ux+s*vx, ny:c*uy+s*vy, nz:c*uz+s*vz, flip:$('tClipFlip').checked };
+  }
+
+  /* ---------------- renderer / scene ---------------- */
+  const stage = $('stage');
+  const renderer = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setClearColor(0x0a0c12, 0);
+  stage.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x0a0c12, 0.0042);
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  const grid = new THREE.GridHelper(400, 80, 0x1c2435, 0x131927);
+  grid.material.transparent = true; grid.material.opacity = 0.3;
+  scene.add(grid);
+
+  const CS = getComputedStyle(document.documentElement);
+  const apicalL = new THREE.Color(CS.getPropertyValue('--apical').trim());
+  const apicalD = new THREE.Color(CS.getPropertyValue('--apicalDark').trim());
+  const basalL  = new THREE.Color(CS.getPropertyValue('--basal').trim());
+  const basalD  = new THREE.Color(CS.getPropertyValue('--basalDark').trim());
+  const CELL_R = 0.92;
+
+  function makeCellMaterial(){
+    return new THREE.ShaderMaterial({
+      uniforms:{
+        apicalL:{value:new THREE.Vector3(apicalL.r,apicalL.g,apicalL.b)},
+        apicalD:{value:new THREE.Vector3(apicalD.r,apicalD.g,apicalD.b)},
+        basalL:{value:new THREE.Vector3(basalL.r,basalL.g,basalL.b)},
+        basalD:{value:new THREE.Vector3(basalD.r,basalD.g,basalD.b)},
+        lightDir:{value:new THREE.Vector3(0.5,0.8,0.6).normalize()},
+        colorMode:{value:0.0},   // 0 AB two-tone · 1 flat · 2 divergence
+        pcpOn:{value:0.0},       // 1 -> modulate brightness along PCP (q)
+        depthNear:{value:1.0},   // view distance at which cells are at full brightness
+        depthFar:{value:100.0},  // view distance at which cells reach depthFloor
+        depthFloor:{value:0.4},  // brightness multiplier for the farthest cells (UI-driven)
+      },
+      vertexShader:`
+        attribute vec3 aPol; attribute vec3 aPcp; attribute float aDiv; attribute float aMark; attribute float aFlag; attribute float aClip;
+        varying vec3 vN; varying vec3 vPol; varying vec3 vPcp; varying float vDiv; varying float vMark; varying float vFlag;
+        varying float vViewZ;
+        void main(){
+          vN=normalize(normal); vPol=normalize(aPol); vPcp=aPcp; vDiv=aDiv; vMark=aMark; vFlag=aFlag;
+          vec4 mv = modelViewMatrix * instanceMatrix * vec4(position,1.0);
+          vViewZ = -mv.z;                              // distance in front of the camera
+          vec4 pos = projectionMatrix * mv;
+          if(aClip>0.5) pos = vec4(0.0,0.0,2.0,1.0);   // push past far plane → cell removed
+          gl_Position = pos;
+        }`,
+      fragmentShader:`
+        uniform vec3 apicalL; uniform vec3 apicalD; uniform vec3 basalL; uniform vec3 basalD;
+        uniform vec3 lightDir; uniform float colorMode; uniform float pcpOn;
+        uniform float depthNear; uniform float depthFar; uniform float depthFloor;
+        varying vec3 vN; varying vec3 vPol; varying vec3 vPcp; varying float vDiv; varying float vMark; varying float vFlag;
+        varying float vViewZ;
+        vec3 heat(float t){ t=clamp(t,0.0,1.0);
+          return clamp(vec3(1.5-abs(4.0*t-3.0),1.5-abs(4.0*t-2.0),1.5-abs(4.0*t-1.0)),0.0,1.0); }
+        vec3 hue2rgb(float h){ h=fract(h)*6.0; return clamp(vec3(abs(h-3.0)-1.0, 2.0-abs(h-2.0), 2.0-abs(h-4.0)),0.0,1.0); }
+        void main(){
+          float diff=clamp(dot(vN,lightDir),0.0,1.0);
+          float rim=pow(1.0-max(dot(vN,vec3(0.0,0.0,1.0)),0.0),2.0);
+          vec3 violet=vec3(0.78,0.42,1.0);
+          vec3 base;
+          if(colorMode<0.5){
+            float side = smoothstep(-0.18,0.18, dot(vN,vPol));      // 0 basal(blue) .. 1 apical(red)
+            base = mix(basalL, apicalL, side);                      // apical=orange, basal=cyan
+          } else if(colorMode<1.5){ base=vec3(0.6,0.64,0.72); }
+          else if(colorMode<2.5){ base=heat(vDiv); }
+          else { base=0.35+0.65*hue2rgb(vDiv); }   // colour by mesenchyme inducer (origin)
+          if(colorMode<1.5){
+            if(vMark>0.5) base=mix(base, vec3(1.0,0.97,0.9), 0.62);
+            if(vFlag>1.5) base=violet;                              // non-polar tumour cell
+            else if(vFlag>0.5) base=mix(base, violet, 0.40);        // polar tumour lineage
+          }
+          vec3 col = base*(0.66+0.42*diff)+rim*0.08;
+          // depth shading: full brightness up close, smoothly down to depthFloor far away.
+          // multiplicative → hue is preserved (orange→dark red, cyan→dark blue at the back).
+          float dz = smoothstep(depthNear, depthFar, vViewZ);
+          col *= mix(1.0, depthFloor, dz);
+          gl_FragColor=vec4(col,1.0);
+        }`
+    });
+  }
+
+  function detailFor(N){ return N<=800?2 : (N<=10000?1 : 0); }
+
+  class System {
+    constructor(sim, offset, role){
+      this.sim=sim; this.offset=offset; this.role=role;
+      this.mat=makeCellMaterial();
+      this.maxDiv=0;
+      this.build();
+    }
+    build(){
+      const N0=this.sim.N, cap=this.sim.cap;
+      const geo = new THREE.InstancedBufferGeometry().copy(new THREE.IcosahedronGeometry(CELL_R, detailFor(N0)));
+      this.polA = new THREE.InstancedBufferAttribute(new Float32Array(3*cap),3); this.polA.setUsage(THREE.DynamicDrawUsage);
+      this.pcpA = new THREE.InstancedBufferAttribute(new Float32Array(3*cap),3); this.pcpA.setUsage(THREE.DynamicDrawUsage);
+      this.divA = new THREE.InstancedBufferAttribute(new Float32Array(cap),1);   this.divA.setUsage(THREE.DynamicDrawUsage);
+      this.markA= new THREE.InstancedBufferAttribute(new Float32Array(cap),1);
+      this.flagA= new THREE.InstancedBufferAttribute(new Float32Array(cap),1);   this.flagA.setUsage(THREE.DynamicDrawUsage);
+      this.clipA= new THREE.InstancedBufferAttribute(new Float32Array(cap),1);    this.clipA.setUsage(THREE.DynamicDrawUsage);
+      for(const idx of this.sim.perturbIndices) if(idx>=0&&idx<cap) this.markA.array[idx]=1.0;
+      geo.setAttribute('aPol', this.polA); geo.setAttribute('aPcp', this.pcpA);
+      geo.setAttribute('aDiv', this.divA); geo.setAttribute('aMark', this.markA);
+      geo.setAttribute('aFlag', this.flagA); geo.setAttribute('aClip', this.clipA);
+      this.mesh = new THREE.InstancedMesh(geo, this.mat, cap);
+      this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      const m=this.mesh.instanceMatrix.array;
+      for(let i=0;i<cap;i++){ m[16*i]=1; m[16*i+5]=1; m[16*i+10]=1; m[16*i+15]=1; }
+      this.mesh.count=N0;
+      scene.add(this.mesh);
+      this.clipMask=new Uint8Array(cap);                       // 1 = cell hidden by half-cut
+      // ---- wedged cells rendered as cones (frustum) directed along the AB axis ----
+      // apical (+p) end = thin, basal end = broad; mean radius = CELL_R, height = 2*CELL_R
+      this.coneTau=0.0; this.coneGeoParams={top:CELL_R,bot:CELL_R,h:2*CELL_R};
+      const cg=this._coneGeometry();
+      this.coneClipA=new THREE.InstancedBufferAttribute(new Float32Array(cap),1); this.coneClipA.setUsage(THREE.DynamicDrawUsage);
+      this.conePolA =new THREE.InstancedBufferAttribute(new Float32Array(3*cap),3); this.conePolA.setUsage(THREE.DynamicDrawUsage);
+      this.conePcpA =new THREE.InstancedBufferAttribute(new Float32Array(3*cap),3); this.conePcpA.setUsage(THREE.DynamicDrawUsage);
+      this.coneDivA =new THREE.InstancedBufferAttribute(new Float32Array(cap),1);   this.coneDivA.setUsage(THREE.DynamicDrawUsage);
+      this.coneMarkA=new THREE.InstancedBufferAttribute(new Float32Array(cap),1);
+      this.coneFlagA=new THREE.InstancedBufferAttribute(new Float32Array(cap),1);   this.coneFlagA.setUsage(THREE.DynamicDrawUsage);
+      this._coneAttrs(cg);
+      for(const idx of this.sim.perturbIndices) if(idx>=0&&idx<cap) this.coneMarkA.array[idx]=1.0;
+      this.coneMesh=new THREE.InstancedMesh(cg,this.mat,cap); this.coneMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      { const m=this.coneMesh.instanceMatrix.array; for(let i=0;i<cap;i++){m[16*i]=1;m[16*i+5]=1;m[16*i+10]=1;m[16*i+15]=1;} }
+      this.coneMesh.count=N0; this.coneMesh.visible=false; scene.add(this.coneMesh);
+      // ---- mesenchyme super-cell: green double-radius sphere, no polarity, hidden by default ----
+      this.mesMesh=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(2*CELL_R,1),
+        new THREE.MeshBasicMaterial({color:0x2ee06a,transparent:true,opacity:0.9}), this.sim.mesCap);
+      this.mesMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      { const mm=this.mesMesh.instanceMatrix.array; for(let a=0;a<this.sim.mesCap;a++){mm[16*a]=1;mm[16*a+5]=1;mm[16*a+10]=1;mm[16*a+15]=1;} }
+      this.mesMesh.count=this.sim.mesN; this.mesMesh.visible=false; this.mesMesh.frustumCulled=false; scene.add(this.mesMesh);
+      this.wedgeMode='cone';
+      this._cq=new THREE.Quaternion(); this._cup=new THREE.Vector3(0,1,0);
+      this._cpos=new THREE.Vector3(); this._cdir=new THREE.Vector3(); this._cscale=new THREE.Vector3(1,1,1); this._cmat=new THREE.Matrix4();
+      this._cX=new THREE.Vector3(); this._cY=new THREE.Vector3(); this._cZ=new THREE.Vector3();
+      this.ab  = this._lines(cap,0xffb05a);
+      this.pcp = this._lines(cap,0x7fa9ff);
+      // PCP-on-surface arrows: 3 segments (shaft + 2 chevron) = 6 vertices per cell
+      const pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(108*cap),3));
+      this.pcpSurf=new THREE.Mesh(pg,new THREE.MeshBasicMaterial({color:0x33ffd0,transparent:true,opacity:0.95,side:THREE.DoubleSide}));
+      this.pcpSurf.visible=false; this.pcpSurf.frustumCulled=false; scene.add(this.pcpSurf);
+      const bg=new THREE.BufferGeometry(); bg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(0),3));
+      this.bonds=new THREE.LineSegments(bg,new THREE.LineBasicMaterial({color:0x4a5878,transparent:true,opacity:0.25}));
+      scene.add(this.bonds);
+      // floating defect-sign labels (green sprites, ~30% shorter than 3 cells, 3 units above surface)
+      this.labels=[]; this.defects=[]; this._defTick=0;
+      this.idLabels=[]; this._idCap=4000;
+      const CW=240, CH=160, FONT=96;                 // canvas px (wide enough for "−1½")
+      const Lh = 0.8125*6*CELL_R*0.7*0.9*0.8*0.8;    // glyph world height (progressively reduced; ×0.8 = 20% smaller)
+      for(let k=0;k<80;k++){
+        const cv=document.createElement('canvas'); cv.width=CW; cv.height=CH;
+        const tex=new THREE.CanvasTexture(cv);
+        const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
+        sp.scale.set(Lh*CW/FONT, Lh*CH/FONT, 1); sp.visible=false;
+        sp.userData={cv,tex,txt:null}; scene.add(sp); this.labels.push(sp);
+      }
+    }
+    _drawLabel(sp,text){ const u=sp.userData; if(u.txt===text)return; u.txt=text;
+      const cv=u.cv, g=cv.getContext('2d'), CW=cv.width, CH=cv.height, cx=CW/2, cy=CH/2-2;
+      g.clearRect(0,0,CW,CH);
+      g.font='bold 96px Arial,sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+      // soft drop shadow (cast down-right) for depth
+      g.save(); g.shadowColor='rgba(0,0,0,0.5)'; g.shadowBlur=12; g.shadowOffsetX=8; g.shadowOffsetY=10;
+      g.fillStyle='#05300f'; g.fillText(text,cx,cy); g.restore();
+      // extruded body: dark→light green copies stepping toward the face → 3D feel
+      const D=8;
+      for(let k=D;k>=1;k--){ const f=k/D;
+        g.fillStyle='rgb('+Math.round(10+16*(1-f))+','+Math.round(58+92*(1-f))+','+Math.round(22+18*(1-f))+')';
+        g.fillText(text, cx+k, cy+k);
+      }
+      // bright top face with a thin dark outline
+      g.lineWidth=7; g.lineJoin='round'; g.strokeStyle='rgba(0,35,0,0.9)'; g.strokeText(text,cx,cy);
+      g.fillStyle='#4bff6a'; g.fillText(text,cx,cy);
+      u.tex.needsUpdate=true; }
+    _placeLabels(ox,oy,oz){ const sim=this.sim,x=sim.x,cm=this.clipMask,defs=this.defects,L=this.labels;
+      for(let k=0;k<L.length;k++){ const sp=L[k];
+        if(k<defs.length){ const d=defs[k], i=d.idx;
+          if(cm[i]){ sp.visible=false; continue; }
+          const r=CELL_R+3;   // float 3 units above the cell surface, along the outward normal
+          sp.position.set(x[3*i]+d.nx*r+ox, x[3*i+1]+d.ny*r+oy, x[3*i+2]+d.nz*r+oz);
+          this._drawLabel(sp, chargeStr(d.charge)); sp.visible=true;
+        } else sp.visible=false;
+      } }
+    _hideLabels(){ for(const sp of this.labels) sp.visible=false; }
+    _placeIdLabels(ox,oy,oz){ const sim=this.sim,x=sim.x,og=sim.origin,cm=this.clipMask,npo=sim.nonpolar,L=this.idLabels,sz=CELL_R*1.3;
+      let k=0;
+      for(let i=0;i<sim.N && k<this._idCap;i++){ const o=og[i]; if(o<0||cm[i]||npo[i]) continue;
+        let sp=L[k]; if(!sp){ sp=new THREE.Sprite(new THREE.SpriteMaterial({transparent:true,depthWrite:false,depthTest:false})); sp.scale.set(sz,sz,1); sp.renderOrder=10; scene.add(sp); L[k]=sp; }
+        sp.material.map=idTexture(lineageLetter(o)); sp.material.needsUpdate=true;
+        sp.position.set(x[3*i]+ox,x[3*i+1]+oy,x[3*i+2]+oz); sp.visible=true; k++; }
+      for(let m=k;m<L.length;m++) L[m].visible=false; }
+    _hideIdLabels(){ for(const sp of this.idLabels) sp.visible=false; }
+    _coneGeometry(){ const c=this.coneGeoParams; return new THREE.CylinderGeometry(c.top,c.bot,c.h,16,1); }
+    _coneAttrs(cg){ cg.setAttribute('aPol',this.conePolA); cg.setAttribute('aPcp',this.conePcpA); cg.setAttribute('aDiv',this.coneDivA);
+      cg.setAttribute('aMark',this.coneMarkA); cg.setAttribute('aFlag',this.coneFlagA); cg.setAttribute('aClip',this.coneClipA); }
+    setWedgeGeometry(mode,tau,alphaA){
+      this.wedgeMode=mode; let cg;
+      if(mode==='slice'){ cg=this._sliceGeometry(alphaA); }
+      else { tau=Math.max(0,Math.min(0.82,tau)); this.coneTau=tau;
+        this.coneGeoParams.top=CELL_R*(1-tau); this.coneGeoParams.bot=CELL_R*(1+tau); cg=this._coneGeometry(); }
+      this._coneAttrs(cg);
+      const old=this.coneMesh.geometry; this.coneMesh.geometry=cg; old.dispose(); }
+    /* directed-wedge cell = a slice of cake cut from a donut: an annular (torus) sector.
+       Radial direction (inner->outer) = AB axis p (apical inner/thin, basal outer/broad);
+       donut axis = PCP axis q; tangential = q x p.  The sector angle 2*alphaA sets the
+       relative thickness of the two AB ends; mean radial length, tangential thickness and
+       donut depth are all ~ the normal cell diameter (2*CELL_R). */
+    _sliceGeometry(aA){
+      const R=CELL_R, h=2*R, dphi=2*Math.max(0.06, aA||0);
+      const rmean=Math.min(30*R, (2*R)/dphi), rin=Math.max(0.02*R, rmean-R), rout=rmean+R;
+      const sh=new THREE.Shape();
+      sh.moveTo(rin*Math.cos(-dphi/2), rin*Math.sin(-dphi/2));
+      sh.absarc(0,0,rin,-dphi/2,dphi/2,false);
+      sh.lineTo(rout*Math.cos(dphi/2), rout*Math.sin(dphi/2));
+      sh.absarc(0,0,rout,dphi/2,-dphi/2,true);
+      sh.closePath();
+      const geo=new THREE.ExtrudeGeometry(sh,{depth:h,bevelEnabled:false,curveSegments:12,steps:1});
+      geo.translate(-rmean,0,-h/2);
+      return geo;
+    }
+    _syncCones(ox,oy,oz){
+      const sim=this.sim,N=sim.N,x=sim.x,p=sim.p,q=sim.q,wf=sim.wedge,cm=this.clipMask;
+      const on=sim.wedgeActive(); this.coneMesh.visible=on; if(!on) return;
+      this.coneMesh.count=N;
+      const m=this.coneMesh.instanceMatrix.array,pa=this.conePolA.array,qa=this.conePcpA.array,fa=this.coneFlagA.array,ca=this.coneClipA.array;
+      const tum=sim.tumor,npo=sim.nonpolar;
+      for(let i=0;i<N;i++){
+        const show=wf[i]&&!cm[i]; ca[i]=show?0:1;
+        if(show){
+          const px=p[3*i],py=p[3*i+1],pz=p[3*i+2];
+          if(this.wedgeMode==='slice'){
+            // basis: local +X = basal (-p), +Z = donut axis (q), +Y = tangential (q x -p)
+            this._cX.set(-px,-py,-pz);
+            if(this._cX.lengthSq()<1e-12)this._cX.set(1,0,0); else this._cX.normalize();
+            this._cZ.set(q[3*i],q[3*i+1],q[3*i+2]);
+            const d=this._cZ.x*this._cX.x+this._cZ.y*this._cX.y+this._cZ.z*this._cX.z;
+            this._cZ.x-=d*this._cX.x; this._cZ.y-=d*this._cX.y; this._cZ.z-=d*this._cX.z;
+            if(this._cZ.lengthSq()<1e-9){ this._cZ.set(this._cX.y,-this._cX.x,0); if(this._cZ.lengthSq()<1e-9)this._cZ.set(0,this._cX.z,-this._cX.y); }
+            this._cZ.normalize();
+            this._cY.crossVectors(this._cZ,this._cX);
+            this._cmat.makeBasis(this._cX,this._cY,this._cZ);
+            this._cmat.setPosition(x[3*i]+ox,x[3*i+1]+oy,x[3*i+2]+oz);
+            m.set(this._cmat.elements,16*i);
+          } else {
+            this._cdir.set(px,py,pz);
+            if(this._cdir.lengthSq()<1e-12)this._cdir.set(0,1,0); else this._cdir.normalize();
+            this._cq.setFromUnitVectors(this._cup,this._cdir);
+            this._cpos.set(x[3*i]+ox,x[3*i+1]+oy,x[3*i+2]+oz);
+            this._cmat.compose(this._cpos,this._cq,this._cscale); m.set(this._cmat.elements,16*i);
+          }
+        }
+        pa[3*i]=p[3*i];pa[3*i+1]=p[3*i+1];pa[3*i+2]=p[3*i+2];
+        qa[3*i]=q[3*i];qa[3*i+1]=q[3*i+1];qa[3*i+2]=q[3*i+2];
+        fa[i]=tum[i]?(npo[i]?2.0:1.0):0.0;
+      }
+      this.coneMesh.instanceMatrix.needsUpdate=true; this.conePolA.needsUpdate=true; this.conePcpA.needsUpdate=true;
+      this.coneFlagA.needsUpdate=true; this.coneClipA.needsUpdate=true;
+    }
+    _lines(N,color){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6*N),3));
+      const o=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color,transparent:true,opacity:0.85})); scene.add(o); return o; }
+    sync(center, refSim){
+      const sim=this.sim, N=sim.N, x=sim.x, p=sim.p, q=sim.q;
+      sim.updateWedgeFlags();   // keep near-mesenchyme / wedge sets fresh for display (also when paused)
+      const ox=this.offset.x-center.x, oy=this.offset.y-center.y, oz=this.offset.z-center.z;
+      this.mesh.count = N;
+      const m=this.mesh.instanceMatrix.array, pa=this.polA.array, qa=this.pcpA.array, fa=this.flagA.array;
+      const tum=sim.tumor, npo=sim.nonpolar;
+      for(let i=0;i<N;i++){
+        const o=16*i;
+        m[o+12]=x[3*i]+ox; m[o+13]=x[3*i+1]+oy; m[o+14]=x[3*i+2]+oz;
+        pa[3*i]=p[3*i]; pa[3*i+1]=p[3*i+1]; pa[3*i+2]=p[3*i+2];
+        qa[3*i]=q[3*i]; qa[3*i+1]=q[3*i+1]; qa[3*i+2]=q[3*i+2];
+        fa[i] = tum[i] ? (npo[i]?2.0:1.0) : 0.0;
+      }
+      this.mesh.instanceMatrix.needsUpdate=true; this.polA.needsUpdate=true; this.pcpA.needsUpdate=true; this.flagA.needsUpdate=true;
+
+      // ---- half-cut: hide every cell on one side of a plane through this replica's COM ----
+      const plane=clipPlane(), cm=this.clipMask, ca=this.clipA.array;
+      if(plane){
+        let cx=0,cy=0,cz=0; for(let i=0;i<N;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];} cx/=N;cy/=N;cz/=N;
+        const nx=plane.nx,ny=plane.ny,nz=plane.nz, sgn=plane.flip?-1:1;
+        for(let i=0;i<N;i++){
+          const s=(x[3*i]-cx)*nx+(x[3*i+1]-cy)*ny+(x[3*i+2]-cz)*nz;
+          const hide=(sgn*s>0)?1:0; cm[i]=hide; ca[i]=hide;
+        }
+      } else {
+        for(let i=0;i<N;i++){ cm[i]=0; ca[i]=0; }
+      }
+      this.clipA.needsUpdate=true;
+      // wedged cells are drawn as cones -> hide their spheres
+      if(this.sim.wedgeActive()){ const wf=this.sim.wedge, ca2=this.clipA.array;
+        for(let i=0;i<N;i++) if(wf[i]) ca2[i]=1; this.clipA.needsUpdate=true; }
+      this._syncCones(ox,oy,oz);
+      // mesenchyme super-cell spheres (display only; toggled by the user)
+      if(this.mesMesh){ const showM=($('tMesShow')&&$('tMesShow').checked);
+        this.mesMesh.visible=!!showM; const Mm=sim.mesN; this.mesMesh.count=Mm;
+        const mm=this.mesMesh.instanceMatrix.array;
+        for(let a=0;a<Mm;a++){ const o=16*a; mm[o+12]=sim.mx[3*a]+ox; mm[o+13]=sim.mx[3*a+1]+oy; mm[o+14]=sim.mx[3*a+2]+oz; }
+        this.mesMesh.instanceMatrix.needsUpdate=true; }
+
+      if(refSim && divMode){
+        const rx=refSim.x, da=this.divA.array; let mx=0;
+        for(let i=0;i<N;i++){const dx=x[3*i]-rx[3*i],dy=x[3*i+1]-rx[3*i+1],dz=x[3*i+2]-rx[3*i+2];const d=Math.sqrt(dx*dx+dy*dy+dz*dz);da[i]=d;if(d>mx)mx=d;}
+        this.maxDiv=mx; const inv=mx>1e-6?1/mx:0; for(let i=0;i<N;i++)da[i]*=inv;
+        this.divA.needsUpdate=true; this.mat.uniforms.colorMode.value=2.0;
+      } else if($('tCellInducer') && $('tCellInducer').checked){
+        const da=this.divA.array; for(let i=0;i<N;i++) da[i]=(sim.origin[i]*0.61803398875)%1; this.divA.needsUpdate=true;
+        this.mat.uniforms.colorMode.value=3.0;
+      } else {
+        this.mat.uniforms.colorMode.value = shadeOn?0.0:1.0;
+      }
+
+      if(this.ab.visible)  this._vec(this.ab,x,p,1.7,ox,oy,oz);
+      if(this.pcp.visible) this._vec(this.pcp,x,q,1.5,ox,oy,oz);
+      if(this.pcpSurf.visible) this._pcpSurf(x,p,q,ox,oy,oz);
+      if(this.bonds.visible) this._bonds(ox,oy,oz);
+
+      // PCP defect sign labels: shown when the on-surface PCP field is displayed.
+      if(this.pcpSurf.visible && $('tDefects').checked){
+        if((this._defTick++ % 8)===0) this.defects=detectPCPDefects(sim, sim.nematicPCP, this.labels.length);
+        this._placeLabels(ox,oy,oz);
+      } else if(this.labels) { this._hideLabels(); }
+      if($('tCellId').checked) this._placeIdLabels(ox,oy,oz); else this._hideIdLabels();
+    }
+    _vec(obj,x,v,len,ox,oy,oz){ const N=this.sim.N,a=obj.geometry.attributes.position.array,cm=this.clipMask;
+      for(let i=0;i<N;i++){
+        if(cm[i]){ a[6*i]=a[6*i+3]=0;a[6*i+1]=a[6*i+4]=0;a[6*i+2]=a[6*i+5]=0; continue; } // hidden by half-cut
+        a[6*i]=x[3*i]+ox;a[6*i+1]=x[3*i+1]+oy;a[6*i+2]=x[3*i+2]+oz;
+        a[6*i+3]=x[3*i]+v[3*i]*len+ox;a[6*i+4]=x[3*i+1]+v[3*i+1]*len+oy;a[6*i+5]=x[3*i+2]+v[3*i+2]*len+oz; }
+      obj.geometry.attributes.position.needsUpdate=true; obj.geometry.setDrawRange(0,2*N); }
+    /* PCP arrow drawn tangent to the cell surface at its apical pole (+p side). */
+    _pcpSurf(x,p,q,ox,oy,oz){ const N=this.sim.N,a=this.pcpSurf.geometry.attributes.position.array;
+      const cm=this.clipMask,npo=this.sim.nonpolar,R=CELL_R*1.04,L=0.95,hl=0.34,hw=0.22;
+      const drawA=(pcpSide==='apical'||pcpSide==='both'), drawO=(pcpSide==='opposite'||pcpSide==='both');
+      const wide=($('tPCPwide')&&$('tPCPwide').checked), halfw=wide?0.075:0.03;   // ribbon half-width (one thick arrow)
+      let n=0;
+      for(let i=0;i<N;i++){
+        if(cm[i]||npo[i]||!this.sim.hasPCP[i]) continue;  // hidden / non-polar / no PCP assigned
+        const px=p[3*i],py=p[3*i+1],pz=p[3*i+2], qx=q[3*i],qy=q[3*i+1],qz=q[3*i+2];
+        let tx=py*qz-pz*qy, ty=pz*qx-px*qz, tz=px*qy-py*qx; const tl=Math.hypot(tx,ty,tz)||1; tx/=tl;ty/=tl;tz/=tl;
+        for(let sgi=0;sgi<2;sgi++){
+          if(sgi===0 && !drawA) continue; if(sgi===1 && !drawO) continue;
+          const sgn = sgi===0?1:-1;   // +1 apical (+p pole), -1 opposite (-p pole)
+          const nx=sgn*px, ny=sgn*py, nz=sgn*pz;   // outward surface normal — ribbons lie in the tangent plane
+          const sx=x[3*i]+sgn*px*R+ox, sy=x[3*i+1]+sgn*py*R+oy, sz=x[3*i+2]+sgn*pz*R+oz;
+          const bx=sx-qx*L*0.5, by=sy-qy*L*0.5, bz=sz-qz*L*0.5;   // tail
+          const hx=sx+qx*L*0.5, hy=sy+qy*L*0.5, hz=sz+qz*L*0.5;   // head (tip)
+          const c1x=hx-qx*hl+tx*hw,c1y=hy-qy*hl+ty*hw,c1z=hz-qz*hl+tz*hw;
+          const c2x=hx-qx*hl-tx*hw,c2y=hy-qy*hl-ty*hw,c2z=hz-qz*hl-tz*hw;
+          n=this._ribbon(a,n,bx,by,bz,hx,hy,hz,nx,ny,nz,halfw);    // shaft
+          n=this._ribbon(a,n,hx,hy,hz,c1x,c1y,c1z,nx,ny,nz,halfw); // chevron 1
+          n=this._ribbon(a,n,hx,hy,hz,c2x,c2y,c2z,nx,ny,nz,halfw); // chevron 2
+        }
+      }
+      this.pcpSurf.geometry.attributes.position.needsUpdate=true; this.pcpSurf.geometry.setDrawRange(0,n/3); }
+    _ribbon(a,n,ax,ay,az,bx,by,bz,nx,ny,nz,hw){   // one segment a->b widened into a flat ribbon (2 triangles)
+      let dx=bx-ax,dy=by-ay,dz=bz-az;
+      let px=ny*dz-nz*dy, py=nz*dx-nx*dz, pz=nx*dy-ny*dx; const pl=Math.hypot(px,py,pz)||1; px=px/pl*hw; py=py/pl*hw; pz=pz/pl*hw;
+      a[n++]=ax+px;a[n++]=ay+py;a[n++]=az+pz; a[n++]=ax-px;a[n++]=ay-py;a[n++]=az-pz; a[n++]=bx+px;a[n++]=by+py;a[n++]=bz+pz;
+      a[n++]=ax-px;a[n++]=ay-py;a[n++]=az-pz; a[n++]=bx-px;a[n++]=by-py;a[n++]=bz-pz; a[n++]=bx+px;a[n++]=by+py;a[n++]=bz+pz;
+      return n; }
+    _bonds(ox,oy,oz){ const pairs=this.sim.pairs,x=this.sim.x,cm=this.clipMask; let a=this.bonds.geometry.attributes.position.array;
+      if(a.length<pairs.length*3){ a=new Float32Array(pairs.length*3); this.bonds.geometry.setAttribute('position',new THREE.BufferAttribute(a,3)); }
+      let n=0; for(let t=0;t<pairs.length;t+=2){const i=pairs[t],j=pairs[t+1]; if(cm[i]||cm[j])continue;
+        a[n++]=x[3*i]+ox;a[n++]=x[3*i+1]+oy;a[n++]=x[3*i+2]+oz; a[n++]=x[3*j]+ox;a[n++]=x[3*j+1]+oy;a[n++]=x[3*j+2]+oz; }
+      this.bonds.geometry.attributes.position.needsUpdate=true; this.bonds.geometry.setDrawRange(0,n/3); }
+    setVis(){ this.ab.visible=$('tAB').checked; this.pcp.visible=$('tPCP').checked;
+      this.pcpSurf.visible=$('tPCPsurf').checked; this.bonds.visible=$('tBonds').checked;
+      if(!(this.pcpSurf.visible && $('tDefects').checked)) this._hideLabels(); }
+    setShown(on){
+      this.mesh.visible=on; this.coneMesh.visible=on&&this.sim.wedgeActive();
+      this.ab.visible=on&&$('tAB').checked; this.pcp.visible=on&&$('tPCP').checked;
+      this.pcpSurf.visible=on&&$('tPCPsurf').checked; this.bonds.visible=on&&$('tBonds').checked;
+      if(this.mesMesh) this.mesMesh.visible=on&&$('tMesShow').checked;
+      if(!on){ this._hideLabels(); this._hideIdLabels(); } }
+    dispose(){ for(const o of [this.mesh,this.ab,this.pcp,this.pcpSurf,this.bonds]){ scene.remove(o); o.geometry.dispose(); if(o.material.dispose)o.material.dispose(); }
+      scene.remove(this.coneMesh); this.coneMesh.geometry.dispose();
+      scene.remove(this.mesMesh); this.mesMesh.geometry.dispose(); this.mesMesh.material.dispose();
+      for(const sp of this.labels){ scene.remove(sp); sp.userData.tex.dispose(); sp.material.dispose(); }
+      for(const sp of this.idLabels){ scene.remove(sp); sp.material.dispose(); } }
+  }
+
+  function centroid(sim){ const N=sim.N,x=sim.x; let cx=0,cy=0,cz=0;
+    for(let i=0;i<N;i++){cx+=x[3*i];cy+=x[3*i+1];cz+=x[3*i+2];} return new THREE.Vector3(cx/N,cy/N,cz/N); }
+
+  function fitCamera(){
+    const N=systems[0].sim.N, R=sysRadius(N);
+    let halfW=R+2;
+    if(mode==='dual') halfW=Math.abs(systems[0].offset.x)+R+2;
+    const d=halfW*2.2+8;
+    camera.position.set(d*0.55, d*0.4, d*0.9);
+    camera.far=d*30; camera.updateProjectionMatrix();
+    controls.target.set(0,0,0); controls.update();
+  }
+
+  // ---- cell-origin letter labels ----
+  const idTexCache=new Map();
+  function lineageLetter(o){ let n=o,s=''; do{ s=String.fromCharCode(65+(n%26))+s; n=Math.floor(n/26)-1; }while(n>=0); return s; }
+  function idTexture(letter){ let tex=idTexCache.get(letter); if(tex) return tex;
+    const cv=document.createElement('canvas'); cv.width=64; cv.height=64; const g=cv.getContext('2d');
+    g.clearRect(0,0,64,64); g.font='bold 46px Arial,sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+    g.lineWidth=6; g.strokeStyle='rgba(0,0,0,0.85)'; g.strokeText(letter,32,34); g.fillStyle='#ffffff'; g.fillText(letter,32,34);
+    tex=new THREE.CanvasTexture(cv); idTexCache.set(letter,tex); return tex; }
+
+  // ---- preset configurations ----
+  function setMorphChip(dl){ document.querySelectorAll('#presets .chip').forEach(c=>c.classList.toggle('active',c.dataset.l===dl)); }
+  function setPcpSideChip(side){ document.querySelectorAll('#pcpSideSel .chip').forEach(c=>c.classList.toggle('active',c.dataset.side===side)); }
+  function setLambda(a,b,c){ $('l1').value=a;$('l2').value=b;$('l3').value=c;
+    $('l1v').textContent=(+a).toFixed(2);$('l2v').textContent=(+b).toFixed(2);$('l3v').textContent=(+c).toFixed(2);
+    $('lsum').textContent=(a+b+c).toFixed(2); document.querySelectorAll('#presets .chip').forEach(ch=>ch.classList.remove('active')); }
+  function setStandardDefaults(Nval){
+    const ni=NVALUES.indexOf(Nval); $('N').value=(ni>=0?ni:NVALUES.indexOf(2000)); $('Nv').textContent=NVALUES[+$('N').value];
+    $('l1').value=1;$('l2').value=0;$('l3').value=0; $('l1v').textContent='1.00';$('l2v').textContent='0.00';$('l3v').textContent='0.00';$('lsum').textContent='1.00';
+    setMorphChip('1,0,0'); $('tNematic').checked=false; pcpInducedOnlyFlag=false;
+    $('beta').value=5;$('betav').textContent='5.0'; $('dt').value=0.1;$('dtv').textContent='0.10'; $('noise').value=0.05;$('noisev').textContent='0.05';
+    $('alphaS').value=20;$('alphaSv').textContent='20°'; $('alphaA').value=20;$('alphaAv').textContent='20°';
+    $('lamS').value=0;$('lamSv').textContent='0.00'; $('lamA').value=0;$('lamAv').textContent='0.00';
+    rebuildWedgeValues(16); rebuildDivMesValues(16); rebuildMesDivValues(64); rebuildNegWedgeValues(); setNegWedgeByValue(0);
+    mesD0Touched=false; setMesD0(3*Math.sqrt((DIVMESVALUES[+$('divMesNum').value]||16)));
+    $('tMesShow').checked=false;
+    $('tOrigin').checked=false; $('originFactor').value=1; $('originFactorv').textContent='1'; $('tCellId').checked=false;
+    betaMTouched=false; $('betaM').value=5; $('betaMv').textContent='5.0';
+    $('tSphere').checked=false; $('tABout').checked=false; $('tABin').checked=false; $('tPCPwhirl').checked=false;
+    $('tKnn').checked=true; $('knnK').value=20; $('knnv').textContent='20';
+    $('tDivide').checked=false; divModeSel='random'; $('divRate').value=0.02; $('ratev').textContent='0.020';
+    $('tNonpolar').checked=false; $('crossPct').value=0; $('crossv').textContent='0%';
+    shadeOn=true; $('tShade').checked=true; $('tPCPsurf').checked=false; pcpSurfTouched=false; pcpSide='apical'; setPcpSideChip('apical');
+    $('tDefects').checked=false; $('tPCP').checked=false; $('tAB').checked=false; $('tBonds').checked=false; $('tSpin').checked=true; $('tCellInducer').checked=false; $('tPCPwide').checked=false;
+    $('depthFloor').value=0.4; $('depthFloorv').textContent='0.40'; $('field').value=0; $('fieldv').textContent='0.00';
+  }
+  function applyPreset(name){
+    nextSeed=PRESET_SEED;   // presets share a seed so positions & AB match across compatible presets
+    mode = (name==='compare')?'compare':'single'; $('tDual').checked=false; compareShow=0;
+    const branchy = (name==='branch'||name==='branchpcp'||name==='branchpcpnem');
+    const branchPCP = (name==='branchpcp'||name==='branchpcpnem');
+    const N = branchy?800 : 2000;
+    setStandardDefaults(N);
+    if(name==='pcp'){ setLambda(0.48,0.47,0.05); }
+    else if(branchy){
+      $('tSphere').checked=true; $('tABin').checked=true; $('tABout').checked=false;
+      $('alphaS').value=45; $('alphaSv').textContent='45°'; $('lamS').value=1; $('lamSv').textContent='1.00';
+      $('tDivide').checked=true; divModeSel='mesenchyme'; $('tMesShow').checked=true;
+      rebuildMesDivValues(128); $('tOrigin').checked=true; $('tCellId').checked=false;   // no origin letters in branching
+      betaMTouched=true; setBetaM(10);
+      if(branchPCP){ setLambda(0.48,0.47,0.05); pcpInducedOnlyFlag=true; $('tPCPsurf').checked=true; pcpSurfTouched=true; pcpSide='both'; setPcpSideChip('both'); }
+      if(name==='branchpcpnem'){ $('tNematic').checked=true; }   // nematic PCP (q ≡ −q)
+    }
+    resetSim();
+    if(branchy){ mesD0Touched=true; setMesD0(20); applyControls(); }
+    applyDivUI(); rebuildWedgeGeo(); syncAll();
+  }
+  $('presetBaby').addEventListener('click',()=>applyPreset('baby'));
+  $('presetPCP').addEventListener('click',()=>applyPreset('pcp'));
+  $('presetBranch').addEventListener('click',()=>applyPreset('branch'));
+  $('presetBranchPCP').addEventListener('click',()=>applyPreset('branchpcp'));
+  $('presetBranchNem').addEventListener('click',()=>applyPreset('branchpcpnem'));
+  $('presetCompare').addEventListener('click',()=>{
+    if(mode!=='compare'){ applyPreset('compare'); }    // first push: build both runs, show the no-PCP version
+    else { compareShow=1-compareShow; }                // next pushes: flip to the other version
+    $('tPCPsurf').checked=(compareShow===1); pcpSurfTouched=true;   // PCP arrows only on the +PCP version
+    for(const s of systems) s.setVis(); syncAll();
+  });
+
+  function resetSim(){
+    setPlay(false);
+    for(const s of systems) s.dispose(); systems=[];
+    currentSeed=(nextSeed!=null)?(nextSeed>>>0):((Math.random()*2e9)>>>0); nextSeed=null;
+    rebuildWedgeValues();
+    rebuildDivMesValues();
+    rebuildMesDivValues();
+    rebuildNegWedgeValues();
+    mesD0Touched=false; autoMesD0();
+    const P=baseParams();
+    $('cNum').max=P.N;
+    if(mode==='dual'){
+      let c=Math.max(1, Math.min(parseInt($('cNum').value)||1, P.N));
+      $('cNum').value=c;
+      const ctrl=new Simulation({...P, seed:currentSeed});
+      const pert=new Simulation({...P, seed:currentSeed});
+      const ids=pert.pickCentralCells(c); ctrl.perturbIndices=ids.slice();
+      pert.perturbCells(ids, +$('ang').value);
+      const off=sysRadius(P.N)*1.35+5;
+      systems=[ new System(ctrl,new THREE.Vector3(-off,0,0),'control'),
+                new System(pert,new THREE.Vector3(+off,0,0),'perturbed') ];
+    } else if(mode==='compare'){
+      // two overlaid runs from the SAME seed (identical positions, AB & noise) differing only in PCP
+      const simA=new Simulation({...P, l1:1, l2:0, l3:0, seed:currentSeed});
+      const simB=new Simulation({...P, l1:0.48, l2:0.47, l3:0.05, seed:currentSeed});
+      simA._fixedL=[1,0,0]; simB._fixedL=[0.48,0.47,0.05];
+      systems=[ new System(simA,new THREE.Vector3(0,0,0),'compareA'),
+                new System(simB,new THREE.Vector3(0,0,0),'compareB') ];
+    } else {
+      systems=[ new System(new Simulation({...P, seed:currentSeed}), new THREE.Vector3(0,0,0),'single') ];
+    }
+    for(const s of systems){ configSimScalars(s.sim); if(divFlags().tumorOn) s.sim.initTumor($('tNonpolar').checked); }
+    for(const s of systems) s.setVis();
+    rebuildWedgeGeo();
+    autoPCPsurf();
+    updateLabels(); fitCamera(); syncAll();
+  }
+
+  function syncAll(){
+    if(mode==='compare' && systems.length===2){
+      const act=systems[compareShow], oth=systems[1-compareShow];
+      oth.setShown(false); act.setShown(true);
+      act.sync(centroid(act.sim), null);
+      return;
+    }
+    const ctrl=systems[0].sim, c=centroid(ctrl);
+    for(const s of systems) s.sync(c, s.role==='perturbed'?ctrl:null);
+  }
+
+  /* ---------------- loop ---------------- */
+  let running=false, frames=0, lastT=performance.now(), fps=0;
+  function loop(){
+    requestAnimationFrame(loop);
+    if(running){ const k=+$('spf').value; for(let s=0;s<k;s++) for(const sys of systems) sys.sim.step(); syncAll(); }
+    controls.autoRotate=$('tSpin').checked; controls.autoRotateSpeed=0.7; controls.update();
+    // view-distance darkening: near = front of cluster (full bright), far = back (depthFloor)
+    if(systems.length){
+      const Rtot=(mode==='dual'?Math.abs(systems[0].offset.x):0)+sysRadius(systems[0].sim.N);
+      const camDist=camera.position.distanceTo(controls.target), floor=+$('depthFloor').value;
+      for(const s of systems){ const u=s.mat.uniforms; u.depthNear.value=camDist-Rtot; u.depthFar.value=camDist+Rtot; u.depthFloor.value=floor;
+        u.apicalL.value.copy(OUT_V[outIdx]); u.basalL.value.copy(IN_V[inIdx]); }
+    }
+    if(mode==='dual' && (_metricTick++ % 15)===0) dualMetrics=computeDualMetrics();
+    frames++; const now=performance.now();
+    if(now-lastT>500){ fps=Math.round(frames*1000/(now-lastT)); frames=0; lastT=now; }
+    renderer.render(scene,camera); hud();
+  }
+  function hud(){
+    const s=(mode==='compare'&&systems[compareShow])?systems[compareShow].sim:systems[0].sim; let h=`step <b>${s.step_count}</b> · t <b>${s.time.toFixed(1)}</b><br>cells <b>${s.N}${mode==='dual'?' ×2':(mode==='compare'?(compareShow?' · PCP':' · no-PCP'):'')}</b> · bonds <b>${s.pairs.length/2}</b><br>energy <b>${(s.energy||0).toFixed(1)}</b> · ${fps} fps`;
+    if(divFlags().tumorOn) h+=`<br>tumour cells <b style="color:#c66bff">${s.tumorCount()}</b>`;
+    if(mode==='dual'){ h+=`<br>flipped cells <b>${systems[1].sim.perturbIndices.length}</b> · max divergence <b>${systems[1].maxDiv.toFixed(2)}</b>`;
+      const m=dualMetrics; if(m) h+=`<br><span style="color:var(--faint)">divergence</span> aligned RMSD <b>${m.rmsdAligned.toFixed(2)}</b> · raw <b>${m.rmsdRaw.toFixed(2)}</b><br>AB Δ <b>${m.abAng.toFixed(1)}°</b> · PCP Δ <b>${m.pcpAng.toFixed(1)}°</b> · bonds Δ <b>${(m.bondMismatch*100).toFixed(1)}%</b> (${m.diffBonds})`;
+    }
+    $('hud').innerHTML=h;
+  }
+  function updateLabels(){
+    $('labels').innerHTML = mode==='dual'
+      ? `<span class="badge">◀ control</span><span class="badge" style="color:var(--danger)">perturbed ▶</span>` : '';
+    $('legend').innerHTML = (mode==='dual'&&divMode)
+      ? `<div><span class="grad"></span>cell displacement (control → perturbed)</div><div style="color:var(--faint);margin-top:3px">blue = unchanged · red = max divergence</div>`
+      : `<div><span class="dot" style="background:var(--apical)"></span>apical side <span style="color:var(--faint)">(+p)</span></div><div><span class="dot" style="background:var(--basal)"></span>basal side <span style="color:var(--faint)">(−p)</span></div>`;
+  }
+
+  /* ---------------- UI ---------------- */
+  function setPlay(on){ running=on; const b=$('playBtn'); b.textContent=on?'❚❚ Pause':'▶ Run'; }
+  $('playBtn').onclick=()=>setPlay(!running);
+  $('stepBtn').onclick=()=>{ for(const sys of systems) sys.sim.step(); syncAll(); };
+  $('resetBtn').onclick=resetSim;
+  $('pngBtn').onclick=()=>{ renderer.render(scene,camera);
+    const a=document.createElement('a'); const s=systems[0].sim;
+    a.download=`cellmodel_${mode}_N${s.N}_step${s.step_count}.png`; a.href=renderer.domElement.toDataURL('image/png'); a.click(); };
+
+  const fmt={l1:2,l2:2,l3:2,beta:1,dt:2,noise:3};
+  ['l1','l2','l3','beta','dt','noise'].forEach(id=>$(id).addEventListener('input',()=>{
+    $(id+'v').textContent=(+$(id).value).toFixed(fmt[id]);
+    $('lsum').textContent=(+$('l1').value+ +$('l2').value+ +$('l3').value).toFixed(2);
+    applyControls(); autoBetaM(); autoPCPsurf(); updateLabels();
+  }));
+  $('divRate').addEventListener('input',()=>{ $('ratev').textContent=(+$('divRate').value).toFixed(3); applyControls(); });
+  $('field').addEventListener('input',()=>{ $('fieldv').textContent=(+$('field').value).toFixed(2); applyControls(); });
+  // ---- division mode: master enable + mutually-exclusive modes (random / mesenchyme / cancer) ----
+  function divFlags(){
+    const on=$('tDivide').checked, m=divModeSel;
+    return { on, mode:m,
+      divisionOn:  on && (m==='random' || m==='mesenchyme'),
+      divideNearMes: on && m==='mesenchyme',
+      tumorOn:     on && m==='cancer' };
+  }
+  function applyDivUI(){
+    const f=divFlags(), cancer=f.tumorOn;
+    $('divMode').style.display       = f.on?'flex':'none';
+    $('divRateRow').style.display    = f.on?'block':'none';
+    $('tumorbox').style.display      = cancer?'block':'none';
+    $('npToggle').classList.toggle('dim', !cancer);
+    $('crossPct').disabled = !cancer;
+    document.querySelectorAll('#divMode .chip').forEach(c=>c.classList.toggle('active',c.dataset.mode===divModeSel));
+    for(const sys of systems){ const m=sys.sim;
+      if(cancer){ if(!m.tumorOn){ m.tumorOn=true; m.initTumor($('tNonpolar').checked); } }
+      else if(m.tumorOn){ m.tumorOn=false; m.clearTumor(); } }
+    applyControls(); syncAll();
+  }
+  $('tDivide').addEventListener('change',applyDivUI);
+  document.querySelectorAll('#divMode .chip').forEach(chip=>chip.addEventListener('click',()=>{
+    divModeSel=chip.dataset.mode; applyDivUI(); }));
+  $('crossPct').addEventListener('input',()=>{ $('crossv').textContent=$('crossPct').value+'%'; applyControls(); });
+  $('tNonpolar').addEventListener('change',e=>{
+    for(const sys of systems){ sys.sim.nonpolarTumor=e.target.checked;
+      if(divFlags().tumorOn) sys.sim.setTumorNonpolar(e.target.checked); }
+    applyControls(); syncAll();
+  });
+  $('N').addEventListener('input',()=>{ $('Nv').textContent=NVALUES[+$('N').value]; });
+  $('N').addEventListener('change',resetSim);
+  $('spf').addEventListener('input',()=>$('spfv').textContent=$('spf').value);
+  $('depthFloor').addEventListener('input',()=>$('depthFloorv').textContent=(+$('depthFloor').value).toFixed(2));
+  // ---- cell-wedging controls ----
+  function wedgeBend(){ return (+$('lamS').value)*Math.sin((+$('alphaS').value)*Math.PI/180)
+                            + (+$('lamA').value)*Math.sin((+$('alphaA').value)*Math.PI/180); }
+  function rebuildWedgeGeo(){
+    const bS=(+$('lamS').value)*Math.sin((+$('alphaS').value)*Math.PI/180);
+    const bA=(+$('lamA').value)*Math.sin((+$('alphaA').value)*Math.PI/180);
+    const mode=(bA>bS && (+$('lamA').value)>1e-9)?'slice':'cone';   // directed dominant -> cake slice
+    const tau=Math.min(0.82, 0.9*(bS+bA)), aA=(+$('alphaA').value)*Math.PI/180;
+    for(const s of systems) s.setWedgeGeometry(mode,tau,aA);
+  }
+  ['alphaS','alphaA'].forEach(id=>$(id).addEventListener('input',()=>{ $(id+'v').textContent=$(id).value+'°'; applyControls(); rebuildWedgeGeo(); syncAll(); }));
+  ['lamS','lamA'].forEach(id=>$(id).addEventListener('input',()=>{ $(id+'v').textContent=(+$(id).value).toFixed(2); applyControls(); rebuildWedgeGeo(); syncAll(); }));
+  $('wedgeNum').addEventListener('input',()=>{ $('wedgeNumv').textContent=WEDGEVALUES[+$('wedgeNum').value]; applyControls(); for(const s of systems)s.sim.updateWedgeFlags(); syncAll(); });
+  $('negWedgeNum').addEventListener('input',()=>{ $('negWedgeNumv').textContent=NEGWEDGEVALUES[+$('negWedgeNum').value]; applyControls(); for(const s of systems)s.sim.updateWedgeFlags(); syncAll(); });
+  $('wedgeToggle').addEventListener('click',()=>{ const p=$('wedgePanel'), open=p.style.display==='none';
+    p.style.display=open?'block':'none'; $('wedgeCar').textContent=open?'▾':'▸'; });
+  $('dynToggle').addEventListener('click',()=>{ const p=$('dynPanel'), open=p.style.display==='none';
+    p.style.display=open?'block':'none'; $('dynCar').textContent=open?'▾':'▸'; });
+  $('dispToggle').addEventListener('click',()=>{ const p=$('dispPanel'), open=p.style.display==='none';
+    p.style.display=open?'block':'none'; $('dispCar').textContent=open?'▾':'▸'; });
+  $('initToggle').addEventListener('click',()=>{ const p=$('initPanel'), open=p.style.display==='none';
+    p.style.display=open?'block':'none'; $('initCar').textContent=open?'▾':'▸'; });
+  // cells dividing near mesenchyme — two synced sliders
+  function setDivMesIndex(idx){
+    idx=Math.max(0,Math.min(DIVMESVALUES.length-1,idx|0)); const v=DIVMESVALUES[idx];
+    $('divMesNum').value=idx; $('divMesNumv').textContent=v;
+  }
+  function onDivMesInput(idx){ setDivMesIndex(idx); autoMesD0(); applyControls(); for(const s of systems)s.sim.updateWedgeFlags(); syncAll(); }
+  $('divMesNum').addEventListener('input',()=>onDivMesInput(+$('divMesNum').value));
+  // mesenchyme optimal distance — two synced sliders; default 3·√(# dividing) unless user overrides
+  function setMesD0(v){ v=Math.max(5,Math.min(50,v)); const t=v.toFixed(1);
+    $('mesD0').value=v; $('mesD0v').textContent=t; }
+  function autoMesD0(){ if(mesD0Touched) return; const dmv=DIVMESVALUES[+$('divMesNum').value]||16; setMesD0(3*Math.sqrt(dmv)); }
+  function onMesD0Input(v){ mesD0Touched=true; setMesD0(v); applyControls(); syncAll(); }
+  $('mesD0').addEventListener('input',()=>onMesD0Input(+$('mesD0').value));
+  // mesenchyme division threshold
+  $('mesDivThresh').addEventListener('input',()=>{ $('mesDivThreshv').textContent=MESDIVVALUES[+$('mesDivThresh').value]; applyControls(); });
+  function setBetaM(v){ v=Math.max(1,Math.min(10,v)); $('betaM').value=v; $('betaMv').textContent=v.toFixed(1); }
+  function autoBetaM(){ if(betaMTouched) return; setBetaM(+$('beta').value); }
+  $('betaM').addEventListener('input',()=>{ betaMTouched=true; $('betaMv').textContent=(+$('betaM').value).toFixed(1); applyControls(); });
+  $('originFactor').addEventListener('input',()=>{ $('originFactorv').textContent=$('originFactor').value; applyControls(); });
+  $('tOrigin').addEventListener('change',()=>{ applyControls(); for(const s of systems)s.sim.buildNeighbours(); syncAll(); });
+  $('tMesShow').addEventListener('change',()=>{ syncAll(); });
+  function applyColorUI(){
+    const o=OUT_COLORS[outIdx], i=IN_COLORS[inIdx];
+    $('outSw').style.background=o.hex; $('outNm').textContent=o.n;
+    $('inSw').style.background=i.hex;  $('inNm').textContent=i.n;
+    document.documentElement.style.setProperty('--apical',o.hex);   // keep legend dots in sync
+    document.documentElement.style.setProperty('--basal', i.hex);
+  }
+  $('outColor').addEventListener('click',()=>{ outIdx=(outIdx+1)%OUT_COLORS.length; applyColorUI(); });
+  $('inColor').addEventListener('click', ()=>{ inIdx =(inIdx +1)%IN_COLORS.length;  applyColorUI(); });
+  applyColorUI();
+  $('ang').addEventListener('input',()=>$('angv').textContent=$('ang').value+'°');
+
+  document.querySelectorAll('#presets .chip').forEach(chip=>chip.addEventListener('click',()=>{
+    document.querySelectorAll('#presets .chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active');
+    const [a,b,c]=chip.dataset.l.split(',').map(Number);
+    $('l1').value=a;$('l2').value=b;$('l3').value=c; ['l1','l2','l3'].forEach(id=>$(id).dispatchEvent(new Event('input')));
+  }));
+
+  $('tDual').addEventListener('change',e=>{
+    mode=e.target.checked?'dual':'single';
+    $('ang').disabled=!e.target.checked;
+    $('cNum').disabled=!e.target.checked;
+    $('divToggle').classList.toggle('dim',!e.target.checked);
+    $('expbox').classList.toggle('on',e.target.checked);
+    if(!e.target.checked){ $('tDiv').checked=false; divMode=false; }
+    resetSim();
+  });
+  $('tDiv').addEventListener('change',e=>{ divMode=e.target.checked; updateLabels(); });
+  $('ang').addEventListener('change',()=>{ if(mode==='dual') resetSim(); });
+  $('cNum').addEventListener('change',()=>{ if(mode==='dual') resetSim(); });
+
+  $('tShade').addEventListener('change',e=>{ shadeOn=e.target.checked; });
+  $('tAB').addEventListener('change',()=>{ for(const s of systems)s.setVis(); syncAll(); });
+  $('tPCP').addEventListener('change',()=>{ for(const s of systems)s.setVis(); syncAll(); });
+  let pcpSurfTouched=false;
+  function autoPCPsurf(){
+    if(pcpSurfTouched || !systems.length) return;
+    const on = systems[0].sim.pcpActive();          // PCP vectors meaningfully assigned (λ₂ or λ₃ > 0)
+    if($('tPCPsurf').checked!==on){ $('tPCPsurf').checked=on; for(const s of systems)s.setVis(); }
+  }
+  $('tPCPsurf').addEventListener('change',()=>{ pcpSurfTouched=true; for(const s of systems)s.setVis(); syncAll(); });
+  document.querySelectorAll('#pcpSideSel .chip').forEach(chip=>chip.addEventListener('click',()=>{
+    document.querySelectorAll('#pcpSideSel .chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active');
+    pcpSide=chip.dataset.side; syncAll(); }));
+  $('tDefects').addEventListener('change',()=>{ for(const s of systems)s.setVis(); syncAll(); });
+  $('tCellId').addEventListener('change',()=>syncAll());
+  $('tCellInducer').addEventListener('change',()=>syncAll());
+  $('tPCPwide').addEventListener('change',()=>syncAll());
+  $('tBonds').addEventListener('change',()=>{ for(const s of systems)s.setVis(); syncAll(); });
+  $('tNematic').addEventListener('change',()=>{ applyControls(); for(const s of systems)s.sim.computeForces(); syncAll(); });
+
+  /* half-cut clipping (live display only) */
+  $('tClip').addEventListener('change',e=>{ $('clipbox').classList.toggle('on',e.target.checked); syncAll(); });
+  $('tClipFlip').addEventListener('change',syncAll);
+  $('clipAng').addEventListener('input',()=>{ $('clipAngv').textContent=$('clipAng').value+'°'; syncAll(); });
+  document.querySelectorAll('#clipAxis .chip').forEach(chip=>chip.addEventListener('click',()=>{
+    document.querySelectorAll('#clipAxis .chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active');
+    clipAxis=chip.dataset.ax; syncAll();
+  }));
+
+  /* neighbour restriction (live: rebuild neighbours so bonds/forces update at once) */
+  $('tKnn').addEventListener('change',()=>{ applyControls(); for(const s of systems)s.sim.buildNeighbours(); syncAll(); });
+  $('knnK').addEventListener('input',()=>{ $('knnv').textContent=$('knnK').value; applyControls(); for(const s of systems)s.sim.buildNeighbours(); syncAll(); });
+
+  /* AB radial initial condition needs a fresh reset; apical-out and apical-in are exclusive */
+  $('tABout').addEventListener('change',()=>{ if($('tABout').checked)$('tABin').checked=false; resetSim(); });
+  $('tABin').addEventListener('change',()=>{ if($('tABin').checked)$('tABout').checked=false; resetSim(); });
+  $('tSphere').addEventListener('change',resetSim);
+  $('tPCPwhirl').addEventListener('change',resetSim);
+
+  function resize(){ const w=stage.clientWidth,h=stage.clientHeight; renderer.setSize(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+  window.addEventListener('resize',resize);
+
+  const mono=document.querySelector('#presets .chip[data-l="1,0,0"]'); if(mono) mono.classList.add('active');
+  resetSim(); applyDivUI(); resize(); loop();
+  </script>
+</body>
+</html>
