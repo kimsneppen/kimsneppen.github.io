@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Talkers &amp; Listeners — 3D Social Network Model</title>
+<style>
+  :root{
+    --bg:#0a0c12; --panel:#11151f; --panel2:#171c29; --panel3:#0e1320; --line:#222a3a;
+    --txt:#dfe6f2; --muted:#8b96ab; --accent:#ffb347;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
+  #app{display:flex;height:100vh;width:100vw}
+  #leftcol{flex:1 1 auto;min-width:0;height:100vh;overflow-y:auto;overflow-x:hidden}
+  #stage{position:relative;width:100%;height:100vh}
+  #charts{width:100%;padding:16px 12px 28px;border-top:1px solid var(--line)}
+  #view{display:block;width:100%;height:100%}
+  #overlay{position:absolute;top:0;left:0;padding:14px 16px;pointer-events:none}
+  #overlay h1{font-size:15px;margin:0 0 2px;font-weight:600;letter-spacing:.2px}
+  #overlay .sub{font-size:11px;color:var(--muted);margin:0}
+  #stats{position:absolute;top:52px;left:16px;font-size:12px;color:var(--muted);
+    background:rgba(10,12,18,.55);border:1px solid var(--line);border-radius:8px;
+    padding:7px 11px;line-height:1.5;pointer-events:none}
+  #stats b{color:var(--txt);font-weight:600}
+  #presets{position:absolute;top:14px;right:14px;z-index:6;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+  #presets button{font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;border:1px solid var(--accent);
+    background:rgba(255,179,71,0.16);color:var(--accent);cursor:pointer;white-space:nowrap}
+  #presets button:hover{background:rgba(255,179,71,0.30)}
+  #presets button.active{background:var(--accent);color:#1a1205;border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,179,71,0.45)}
+  #presets .preset-sep{height:1px;width:100%;background:var(--line);margin:2px 0}
+  #legend{position:absolute;left:16px;bottom:14px;font-size:11px;color:var(--muted);
+    background:rgba(10,12,18,.55);border:1px solid var(--line);border-radius:8px;
+    padding:8px 11px;pointer-events:none;text-align:left}
+  #swatch{display:inline-block;width:60px;height:9px;border-radius:5px;vertical-align:middle;
+    margin:0 6px;background:linear-gradient(90deg,#39c84b,#ff8c1a)}
+  #chart,#histo{display:block;margin:0 auto 12px;border:1px solid var(--line);border-radius:8px}
+  #chartwrap{position:relative;margin:0 auto 12px}
+  #chartwrap canvas{margin:0}
+  #timeBtn{position:absolute;top:6px;left:8px;z-index:5;font-size:11px;padding:3px 8px;border-radius:7px;
+    border:1px solid var(--line);background:rgba(14,19,32,0.85);color:var(--txt);cursor:pointer}
+  #timeBtn:hover{border-color:var(--accent)}
+
+  #panel{flex:0 0 318px;background:var(--panel);border-left:1px solid var(--line);
+    overflow-y:auto;padding:14px 14px 40px}
+  #panel::-webkit-scrollbar{width:9px}
+  #panel::-webkit-scrollbar-thumb{background:#27314a;border-radius:6px}
+  .grp{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    padding:11px 12px;margin-bottom:11px}
+  .grp h2{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);
+    margin:0 0 9px;font-weight:700}
+  .sub-panel{background:var(--panel3);border:1px solid var(--line);border-radius:9px;
+    padding:10px 11px;margin-top:10px}
+  .sub-panel h3{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
+    margin:0 0 8px;font-weight:700}
+  .row{margin:9px 0}
+  .row:first-child{margin-top:0}
+  label.lab{display:flex;justify-content:space-between;font-size:12px;color:var(--txt);margin-bottom:5px}
+  label.lab .val{color:var(--accent);font-variant-numeric:tabular-nums;font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--accent);height:18px;cursor:pointer}
+  select{width:100%;background:var(--panel3);color:var(--txt);border:1px solid var(--line);
+    border-radius:7px;padding:7px 8px;font-size:12px;cursor:pointer}
+  .two{display:flex;gap:8px}
+  .two>div{flex:1}
+  .btns{display:flex;gap:8px}
+  .btns button{flex:1;padding:9px;border-radius:8px;border:1px solid var(--line);
+    background:var(--panel3);color:var(--txt);font-size:13px;font-weight:600;cursor:pointer;transition:.12s}
+  .btns button:hover{border-color:var(--accent)}
+  #playBtn.on,.btns button.on{background:var(--accent);color:#1a1205;border-color:var(--accent)}
+  .chk{display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;margin:7px 0}
+  .chk input{accent-color:var(--accent);width:15px;height:15px}
+  .hint{font-size:10.5px;color:var(--muted);line-height:1.45;margin:6px 0 0}
+  .hidden{display:none}
+  .note{font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:8px;
+    border-top:1px solid var(--line);padding-top:9px}
+  #topbar{margin-bottom:11px}
+  details.rolldown{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    margin-bottom:11px;overflow:hidden}
+  details.rolldown>summary{list-style:none;cursor:pointer;padding:12px;font-size:11px;
+    text-transform:uppercase;letter-spacing:.8px;color:var(--accent);font-weight:700;
+    display:flex;justify-content:space-between;align-items:center;user-select:none}
+  details.rolldown>summary::-webkit-details-marker{display:none}
+  details.rolldown>summary::after{content:'▾ roll down';color:var(--muted);font-size:10px;letter-spacing:.4px}
+  details.rolldown[open]>summary::after{content:'▴ roll up'}
+  .rd-body{padding:0 11px 6px}
+  .rd-body .grp{margin-bottom:9px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="leftcol">
+  <div id="stage">
+    <canvas id="view"></canvas>
+    <div id="overlay">
+      <h1>Talkers &amp; Listeners</h1>
+      <p class="sub">3D agent-memory social network · Krebs &amp; Sneppen (PRE 2025)</p>
+    </div>
+    <div id="stats"></div>
+    <div id="presets">
+      <button data-mode="fixed" data-n="100" data-t="0">Listeners</button>
+      <button data-mode="fixed" data-n="100" data-t="100">Talkers</button>
+      <button data-mode="fixed" data-n="100" data-t="4">Few talkers</button>
+      <div class="preset-sep"></div>
+      <button data-mode="adaptive" data-f="1">Adaptive (self, f=1)</button>
+      <button data-mode="adaptive" data-f="20">Adaptive (self, f=20)</button>
+      <button data-mode="adaptive" data-f="100" style="text-align:center;line-height:1.25">Adaptive (self, f=100)<br><span style="font-weight:400;font-size:10px;opacity:0.85">(USA Republicans, 2017-...)</span></button>
+    </div>
+    <div id="legend">
+      listener <span id="swatch"></span> talker · size &amp; fatness = connectivity<br>
+      <span style="color:#8b96ab">red head = self-memory · arrow: remembers → remembered</span>
+    </div>
+    </div>
+    <div id="charts">
+      <div style="text-align:center;font-size:11px;color:var(--muted);margin:0 0 8px">▼ scroll down for the time series &amp; histograms ▼</div>
+      <div id="chartwrap">
+        <button id="timeBtn">⏱ Window</button>
+        <canvas id="chart"></canvas>
+      </div>
+      <canvas id="histo"></canvas>
+    </div>
+  </div>
+
+  <div id="panel">
+    <div id="topbar" class="grp">
+      <div class="btns">
+        <button id="playBtn" class="on">❚❚ Pause</button>
+        <button id="resetBtn">⟳ Reset</button>
+      </div>
+      <div class="btns" style="margin-top:8px">
+        <button id="pngMain" title="Save the 3D network view as PNG">🖼 Main .png</button>
+        <button id="pngPanel" title="Save the control panels as PNG">🖼 Controls .png</button>
+        <button id="pngAll" title="Save view + charts + controls as PNG">🖼 All .png</button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <h2>Population</h2>
+      <div class="row">
+        <label class="lab">Agents N <span class="val" id="vN">100</span></label>
+        <input type="range" id="N" min="0" max="25" step="1" value="19">
+      </div>
+      <div class="row">
+        <label class="lab">Memory slots M <span class="val" id="vM">5</span></label>
+        <input type="range" id="M" min="2" max="12" step="1" value="5">
+      </div>
+      <div class="hint">N runs 5–100 in steps of 5, then 150…400. Changing N or M rebuilds the population.</div>
+    </div>
+
+    <div class="grp">
+      <h2>Behaviour model</h2>
+      <select id="modeSel">
+        <option value="fixed">Fixed roles — T talkers, rest listeners</option>
+        <option value="prob">Global propensity θ (same for all)</option>
+        <option value="randomfixed">Random fixed propensities (θ ∈ [0,1] per agent)</option>
+        <option value="adaptive" selected>Adaptation (self)</option>
+        <option value="adaptive2">Adaptation (neighbors)</option>
+      </select>
+
+      <div class="row mode-fixed hidden" style="margin-top:11px">
+        <label class="lab">Talkers T <span class="val" id="vT">4</span></label>
+        <input type="range" id="T" min="0" max="100" step="1" value="4">
+        <div class="hint">T agents always talk; the other N−T always listen (Fig. 1 &amp; 3).</div>
+      </div>
+
+      <div class="row mode-prob hidden" style="margin-top:11px">
+        <label class="lab">Talk propensity θ <span class="val" id="vTheta">0.30</span></label>
+        <input type="range" id="theta" min="0" max="1" step="0.01" value="0.30">
+        <div class="hint">Every encounter: talker with prob. θ, listener with 1−θ (Fig. 2).</div>
+      </div>
+
+      <div class="row mode-randomfixed hidden" style="margin-top:11px">
+        <div class="hint">Each agent keeps a fixed talk-propensity drawn uniformly from [0,1]
+        (Fig. 3c–d). Press Reset to draw a new population.</div>
+      </div>
+
+      <div class="sub-panel mode-adaptive">
+        <h3>Adaptive controls</h3>
+        <div class="row">
+          <label class="lab">θ<sub>max</sub> ceiling <span class="val" id="vTmax">1.00</span></label>
+          <input type="range" id="tmax" min="0.4" max="1" step="0.01" value="1.00">
+        </div>
+        <div class="row">
+          <label class="lab">Adaptive step δ <span class="val" id="vDstep">0.10</span></label>
+          <input type="range" id="dstep" min="0.01" max="0.20" step="0.01" value="0.10">
+        </div>
+        <div class="row">
+          <label class="lab">Megaphone (f = 10^x) <span class="val" id="vF">0 → f=1</span></label>
+          <input type="range" id="fexp" min="0" max="3" step="0.1" value="0">
+        </div>
+        <div class="hint"><b>Self</b>: your own action changes you (talk→θ↑, listen→θ↓ — paper Fig. 4).
+        <b>Neighbors</b>: only the contacted agent changes — pushed to listen→θ↓, asked to talk→θ↑; being contacted always raises activity. Activity contrast kept below f. With f=1 expect
+        many small clusters; larger f makes the network grow together.</div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <h2>Social openness σ <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0">(common to both modes)</span></h2>
+      <div class="row">
+        <label class="lab">σ (stranger contact) <span class="val" id="vSigma">0.010</span></label>
+        <input type="range" id="sigma" min="0" max="1000" step="1" value="100">
+        <div class="hint">Probability of contacting a random agent instead of one from memory. σ=1 ⇒ random network.</div>
+      </div>
+    </div>
+
+    <details class="rolldown" open>
+      <summary>Controls · colours · forces · simulation · view</summary>
+      <div class="rd-body">
+
+        <div class="grp">
+          <h2>Colours</h2>
+          <div class="two">
+            <div>
+              <label class="lab" style="display:block;margin-bottom:5px">Talker</label>
+              <select id="talkerColor">
+                <option value="Orange" selected>Orange</option>
+                <option value="Red">Red</option>
+                <option value="Violet">Violet</option>
+              </select>
+            </div>
+            <div>
+              <label class="lab" style="display:block;margin-bottom:5px">Listener</label>
+              <select id="listenerColor">
+                <option value="Green" selected>Green</option>
+                <option value="Blue">Blue</option>
+                <option value="Yellow">Yellow</option>
+                <option value="Grey">Grey</option>
+              </select>
+            </div>
+          </div>
+          <div class="hint">Body colour = talk-propensity. Head reddens with self-memory (normal red when all self).</div>
+        </div>
+
+        <div class="grp">
+          <h2>Layout forces</h2>
+          <div class="row">
+            <label class="lab">Hub repulsion  k₁·k₂ / d³ <span class="val" id="vKrep">80.00</span></label>
+            <input type="range" id="krep" min="0" max="2004" step="1" value="1600">
+            <div class="hint">Within a cluster only (0–100 fine, then ×2 to 1600), spreading members by
+            connectivity. Distinct clusters repel each other so they sit apart; the cloud is RMS-normalised
+            to always fill &amp; fit the window.</div>
+          </div>
+          <div class="row">
+            <label class="lab">Node repulsion (Kamada–Kawai) <span class="val" id="vNodeRep">8.0×</span></label>
+            <input type="range" id="nodeRep" min="1" max="20" step="0.5" value="8">
+            <div class="hint">Uniform node–node spacing applied to every pair in a cluster. Increase to push the
+            many connectivity‑1 nodes crowded around a hub apart (8× = default, up to 20× stronger).</div>
+          </div>
+          <div class="row">
+            <label class="lab">Hub spread (uniform fan-out) <span class="val" id="vSpread">10.0×</span></label>
+            <input type="range" id="spread" min="0" max="25" step="0.5" value="10">
+            <div class="hint">Repels agents that share the same hub, so the many low-degree neighbours fan out
+            evenly around a high-degree node instead of clumping on one side (0 = off).</div>
+          </div>
+        </div>
+
+        <div class="grp">
+          <h2>Simulation</h2>
+          <div class="row">
+            <label class="lab">Speed (updates / frame) <span class="val" id="vSpeed">20</span></label>
+            <input type="range" id="speed" min="0" max="11" step="1" value="5">
+          </div>
+        </div>
+
+        <div class="grp">
+          <h2>View</h2>
+          <div class="row">
+            <label class="lab">Rotation speed <span class="val" id="vRot">0.05</span></label>
+            <input type="range" id="rot" min="0" max="1.5" step="0.01" value="0.05">
+          </div>
+          <div class="row">
+            <label class="lab">Layout relaxation <span class="val" id="vLay">0.05</span></label>
+            <input type="range" id="lay" min="0" max="9" step="1" value="4">
+          </div>
+          <div class="row">
+            <label class="lab">Zoom <span class="val" id="vZoom">1.0</span></label>
+            <input type="range" id="zoom" min="0.3" max="2.5" step="0.05" value="1.0">
+          </div>
+          <div class="btns" style="margin:2px 0 8px">
+            <button id="labelBtn">① Numbers: off</button>
+          </div>
+          <label class="chk"><input type="checkbox" id="showArrows" checked> Show memory arrows</label>
+          <div class="row">
+            <label class="lab">Arrow width <span class="val" id="vArrow">0.4×</span></label>
+            <input type="range" id="arrow" min="0.1" max="5" step="0.1" value="0.4">
+          </div>
+          <div class="hint">Camera auto-fits the cloud; zoom fine-tunes. Drag to orbit · scroll to zoom.</div>
+        </div>
+
+      </div>
+    </details>
+
+    <div class="note">
+      Top chart: top-10 attention (10-update average) with mean attention &amp; counts of listeners (θ&lt;0.5)
+      and talkers (θ&gt;0.5). Bottom: time-averaged (1000 updates) histograms of connectivity and attention.
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+"use strict";
+/* ================= Model ================= */
+const P = {
+  N:100, M:5,
+  mode:'adaptive',
+  T:4, theta:0.30,
+  tmax:1.0, dstep:0.10, f:1,
+  sigma:0.01,
+  speed:20, running:true,
+  rot:0.05, lay:0.05, zoom:1.0,
+  krep:80.0, nodeRep:8.0, spread:10.0, arrow:0.4,
+  showArrows:true, showLabels:false, timeAll:false,
+  talkerColor:'Orange', listenerColor:'Green'
+};
+const DEFAULTS = Object.assign({}, P);   // default parameters for the preset button
+const TALK_COL = {Orange:0xff8c1a, Red:0xe23b3b, Violet:0x9b59ff};
+const LIST_COL = {Green:0x39c84b, Blue:0x3a7bff, Yellow:0xffe04d, Grey:0x9aa3b2};
+const CATT = 0.06;
+const LSZ  = 0.0125;
+const NVALUES=(()=>{const a=[];for(let v=5;v<=100;v+=5)a.push(v);[150,200,250,300,350,400].forEach(v=>a.push(v));return a;})();
+const LAYVALUES=[0,0.001,0.005,0.01,0.05,0.1,0.2,0.5,1.0,2.0];
+const KREPVALUES=(()=>{const a=[];for(let i=0;i<=2000;i++)a.push(+(i*0.05).toFixed(2));[200,400,800,1600].forEach(v=>a.push(v));return a;})();
+const SPEEDVALUES=[0,1,2,5,10,20,50,100,200,500,1000,2000];
+function fmtKrep(v){ return v>=100? String(Math.round(v)) : v.toFixed(2); }
+
+let mem, isTalker, thetaFixed, theta, alpha, cum;
+function randint(n){ return (Math.random()*n)|0; }
+function useAlpha(){ return P.mode==='adaptive'||P.mode==='adaptive2'; }
+
+function initModel(){
+  const N=P.N, M=P.M;
+  mem=new Array(N);
+  for(let i=0;i<N;i++){ mem[i]=new Int32Array(M); for(let k=0;k<M;k++) mem[i][k]=randint(N); }
+  isTalker=new Uint8Array(N);
+  const idx=[...Array(N).keys()];
+  for(let i=N-1;i>0;i--){const j=randint(i+1);[idx[i],idx[j]]=[idx[j],idx[i]];}
+  const T=Math.min(P.T,N); for(let t=0;t<T;t++) isTalker[idx[t]]=1;
+  thetaFixed=new Float64Array(N); for(let i=0;i<N;i++) thetaFixed[i]=Math.random();
+  theta=new Float64Array(N).fill(0.5);
+  alpha=new Float64Array(N).fill(0.5);
+  cum=new Float64Array(N);
+}
+function propensity(i){
+  if(P.mode==='fixed')       return isTalker[i]?1:0;
+  if(P.mode==='prob')        return P.theta;
+  if(P.mode==='randomfixed') return thetaFixed[i];
+  return theta[i];
+}
+function actsAsTalker(i){
+  if(P.mode==='fixed') return isTalker[i]===1;
+  return Math.random() < propensity(i);
+}
+function selectAgent(){
+  const N=P.N;
+  if(!useAlpha()) return randint(N);
+  let s=0; for(let i=0;i<N;i++){ s+=alpha[i]; cum[i]=s; }
+  const r=Math.random()*s; let lo=0,hi=N-1;
+  while(lo<hi){ const mid=(lo+hi)>>1; if(cum[mid]<r) lo=mid+1; else hi=mid; }
+  return lo;
+}
+/* Update rule (paper, Sec. II + Fig. 4 self-adaptation):
+   selected A contacts B=M[A][k]. A talker -> B remembers A and one of A's memories (B forced to listen).
+   A listener -> A remembers B and one of B's memories (B asked to talk).
+   Self θ: actor's role changes its own θ; the contacted agent's role changes its θ too
+   (θ↑ when acting as talker — initiating OR selected to talk; θ↓ when acting as listener). */
+function step(){
+  const M=P.M, d=P.dstep;
+  const adSelf=P.mode==='adaptive', adSurr=P.mode==='adaptive2';
+  const A=selectAgent();
+  let B;
+  if(Math.random()<P.sigma) B=randint(P.N);
+  else B=mem[A][randint(M)];
+  if(actsAsTalker(A)){
+    mem[B][randint(M)]=A;
+    mem[B][randint(M)]=mem[A][randint(M)];
+    if(adSelf){ theta[A]=Math.min(P.tmax,theta[A]+d); theta[B]=Math.max(0,theta[B]-d); alpha[B]=Math.min(1e9,alpha[B]*(1+d)); }
+    else if(adSurr){ theta[B]=Math.max(0,theta[B]-d); alpha[B]=Math.min(1e9,alpha[B]*(1+d)); }
+  } else {
+    mem[A][randint(M)]=B;
+    mem[A][randint(M)]=mem[B][randint(M)];
+    if(adSelf){ theta[A]=Math.max(0,theta[A]-d); theta[B]=Math.min(P.tmax,theta[B]+d); alpha[B]=Math.min(1e9,alpha[B]*(1+d)); }
+    else if(adSurr){ theta[B]=Math.min(P.tmax,theta[B]+d); alpha[B]=Math.min(1e9,alpha[B]*(1+d)); }
+  }
+}
+function regulateAlpha(){
+  if(!useAlpha()) return;
+  const N=P.N, f=Math.max(1,P.f); let mn=Infinity,mx=-Infinity;
+  for(let i=0;i<N;i++){ const a=alpha[i]; if(a<mn)mn=a; if(a>mx)mx=a; }
+  if(mx>f*mn && mx>mn){ const span=mx-mn;
+    for(let i=0;i<N;i++) alpha[i]=mn+(f-1)*mn*((alpha[i]-mn)/span); mx=f*mn; }
+  if(mx>0) for(let i=0;i<N;i++) alpha[i]=Math.max(1e-4, alpha[i]/mx);
+}
+
+/* =========== Derived network =========== */
+let attention, selfCount, kdeg, clusterId, edgeA, edgeB, edgeW, nEdges=0, maxAtt=1, nClusters=1;
+const counter=new Map();
+let parent;
+function findRoot(x){ while(parent[x]!==x){ parent[x]=parent[parent[x]]; x=parent[x]; } return x; }
+function buildNetwork(){
+  const N=P.N, M=P.M;
+  if(!attention||attention.length!==N) attention=new Float64Array(N);
+  if(!selfCount||selfCount.length!==N) selfCount=new Float64Array(N);
+  if(!kdeg||kdeg.length!==N) kdeg=new Float64Array(N);
+  if(!clusterId||clusterId.length!==N) clusterId=new Int32Array(N);
+  if(!parent||parent.length!==N) parent=new Int32Array(N);
+  attention.fill(0); kdeg.fill(0);
+  const cap=N*M;
+  if(!edgeA||edgeA.length<cap){ edgeA=new Int32Array(cap); edgeB=new Int32Array(cap); edgeW=new Float64Array(cap); }
+  nEdges=0;
+  for(let i=0;i<N;i++) parent[i]=i;
+  for(let i=0;i<N;i++){
+    counter.clear(); const row=mem[i];
+    for(let k=0;k<M;k++){ const t=row[k]; attention[t]++; counter.set(t,(counter.get(t)||0)+1);
+      if(t!==i){ const ra=findRoot(i),rb=findRoot(t); if(ra!==rb) parent[ra]=rb; } }
+    selfCount[i]=counter.get(i)||0;
+    counter.forEach((w,j)=>{ if(j===i) return; edgeA[nEdges]=i; edgeB[nEdges]=j; edgeW[nEdges]=w; nEdges++; });
+  }
+  for(let e=0;e<nEdges;e++){ kdeg[edgeA[e]]++; kdeg[edgeB[e]]++; }
+  let nc=0; for(let i=0;i<N;i++){ const r=findRoot(i); clusterId[i]=r; if(r===i) nc++; }
+  nClusters=nc;
+  maxAtt=1; for(let i=0;i<N;i++) if(attention[i]>maxAtt) maxAtt=attention[i];
+}
+function computeStats(){
+  const N=P.N; const size=new Map();
+  for(let i=0;i<N;i++){ const r=clusterId[i]; size.set(r,(size.get(r)||0)+1); }
+  let sq=0; size.forEach(c=>sq+=c*c);
+  return {D:(N*N)/sq, comps:size.size, links:nEdges};
+}
+
+/* ================= Layout ================= */
+let px,py,pz,fx,fy,fz,R,rmaxCloud=10;
+function worldRadius(){ return 8 + Math.pow(P.N,0.62)*1.6; }
+function initLayout(){
+  const N=P.N; R=worldRadius();
+  px=new Float64Array(N); py=new Float64Array(N); pz=new Float64Array(N);
+  fx=new Float64Array(N); fy=new Float64Array(N); fz=new Float64Array(N);
+  for(let i=0;i<N;i++){
+    const u=Math.random()*2-1, t=Math.random()*Math.PI*2, r=R*0.5*Math.cbrt(Math.random());
+    const s=Math.sqrt(1-u*u);
+    px[i]=r*s*Math.cos(t); py[i]=r*s*Math.sin(t); pz[i]=r*u;
+  }
+}
+function nodeRadius(){ return Math.max(0.3, worldRadius()*0.9/Math.sqrt(P.N+8)); }
+function relax(){
+  const N=P.N; if(N===0||P.lay<=0) return;
+  const nodeR=nodeRadius(), L0=nodeR*10, lay=P.lay, nr3=nodeR*nodeR*nodeR;
+  const Crep=P.krep*nr3*0.003;     // same-cluster hub repulsion (spreads members by connectivity)
+  const Canti=nr3*0.40*P.nodeRep;  // same-cluster node-node repulsion / anti-overlap (keeps dolls apart)
+  const Cspread=nr3*0.60*P.spread;  // repulsion among co-neighbours of a hub -> uniform angular fan-out
+  const Csep=nr3*80.0;             // DIFFERENT-cluster separation (apart but not flung far)
+  const kg=0.15, kgx=kg/1.82, kgy=kg/1.2, kgz=kg;  // asymmetric bound: x ~+80%, y +20%
+  for(let it=0;it<2;it++){
+    fx.fill(0); fy.fill(0); fz.fill(0);
+    for(let i=0;i<N;i++){ const xi=px[i],yi=py[i],zi=pz[i], ki=1+kdeg[i], ci=clusterId[i];
+      for(let j=i+1;j<N;j++){
+        let dx=xi-px[j],dy=yi-py[j],dz=zi-pz[j]; const d2=dx*dx+dy*dy+dz*dz+0.05;
+        const d=Math.sqrt(d2);
+        let f;
+        if(clusterId[j]===ci) f=Canti/(d2*d)+Crep*ki*(1+kdeg[j])/(d2*d);   // intra: shape
+        else f=Csep/d2;                                                    // inter: separate clusters
+        const inv=f/d; dx*=inv;dy*=inv;dz*=inv;
+        fx[i]+=dx;fy[i]+=dy;fz[i]+=dz; fx[j]-=dx;fy[j]-=dy;fz[j]-=dz; } }
+    // Hub spread: neighbours of the same node repel each other, so the low-degree leaves
+    // around a high-degree hub distribute evenly on the sphere instead of clumping on one side.
+    if(Cspread>0 && nEdges>0){
+      const off=new Int32Array(N+1);
+      for(let e=0;e<nEdges;e++){ off[edgeA[e]+1]++; off[edgeB[e]+1]++; }
+      for(let i=0;i<N;i++) off[i+1]+=off[i];
+      const adj=new Int32Array(off[N]), cur=Int32Array.from(off.subarray(0,N));
+      for(let e=0;e<nEdges;e++){ const a=edgeA[e],b=edgeB[e]; adj[cur[a]++]=b; adj[cur[b]++]=a; }
+      for(let h=0;h<N;h++){ const s0=off[h], e0=off[h+1]; if(e0-s0<2) continue;
+        for(let a=s0;a<e0;a++){ const i=adj[a];
+          for(let b=a+1;b<e0;b++){ const j=adj[b];
+            let dx=px[i]-px[j],dy=py[i]-py[j],dz=pz[i]-pz[j];
+            const d2=dx*dx+dy*dy+dz*dz+0.05, d=Math.sqrt(d2);
+            const f=Cspread/(d2*d), inv=f/d; dx*=inv;dy*=inv;dz*=inv;
+            fx[i]+=dx;fy[i]+=dy;fz[i]+=dz; fx[j]-=dx;fy[j]-=dy;fz[j]-=dz;
+          } } }
+    }
+    // Kamada-Kawai spring, weighted linearly by memory multiplicity -> keeps clusters compact
+    for(let e=0;e<nEdges;e++){ const i=edgeA[e],j=edgeB[e],w=edgeW[e];
+      let dx=px[j]-px[i],dy=py[j]-py[i],dz=pz[j]-pz[i];
+      const d=Math.sqrt(dx*dx+dy*dy+dz*dz)+1e-6, f=CATT*(d-L0)*w/d;
+      dx*=f;dy*=f;dz*=f; fx[i]+=dx;fy[i]+=dy;fz[i]+=dz; fx[j]-=dx;fy[j]-=dy;fz[j]-=dz; }
+    let cx=0,cy=0,cz=0; const maxStep=nodeR*2.0, dt=0.9*lay;
+    for(let i=0;i<N;i++){
+      fx[i]-=kgx*px[i]; fy[i]-=kgy*py[i]; fz[i]-=kgz*pz[i];        // asymmetric gravity
+      let mx=fx[i]*dt,my=fy[i]*dt,mz=fz[i]*dt; const ml=Math.sqrt(mx*mx+my*my+mz*mz);
+      if(ml>maxStep){ const sc=maxStep/ml; mx*=sc;my*=sc;mz*=sc; }
+      px[i]+=mx;py[i]+=my;pz[i]+=mz; cx+=px[i];cy+=py[i];cz+=pz[i];
+    }
+    cx/=N;cy/=N;cz/=N; for(let i=0;i<N;i++){ px[i]-=cx;py[i]-=cy;pz[i]-=cz; }   // centre on COM
+  }
+  // no size normalisation: gravity bounds the cloud, the camera auto-fits it.
+  // Zero-connectivity singletons are handled separately so they neither blow up the
+  // camera fit nor drift far from the connected cloud.
+  let esum=0; for(let e=0;e<nEdges;e++){ const i=edgeA[e],j=edgeB[e];
+    const dx=px[i]-px[j],dy=py[i]-py[j],dz=pz[i]-pz[j]; esum+=Math.sqrt(dx*dx+dy*dy+dz*dz); }
+  const arrowLen = nEdges ? esum/nEdges : nodeR*4;         // typical arrow (edge) length
+  // radius of the CONNECTED cloud only (ignore singletons when optimising the picture)
+  let rmMain=0, haveMain=false;
+  for(let i=0;i<N;i++){ if(kdeg[i]===0) continue; haveMain=true;
+    const r=px[i]*px[i]+py[i]*py[i]+pz[i]*pz[i]; if(r>rmMain) rmMain=r; }
+  rmMain=Math.sqrt(rmMain);
+  // clamp singletons so they sit at most ~2 arrow lengths beyond the connected cloud
+  const maxSing = (haveMain?rmMain:nodeR*4) + 2*arrowLen;
+  for(let i=0;i<N;i++){ if(kdeg[i]!==0) continue;
+    const r=Math.sqrt(px[i]*px[i]+py[i]*py[i]+pz[i]*pz[i]);
+    if(r>maxSing && r>1e-6){ const sc=maxSing/r; px[i]*=sc; py[i]*=sc; pz[i]*=sc; } }
+  // camera fit uses the connected cloud; fall back to all nodes if everything is a singleton
+  if(haveMain){ rmaxCloud=rmMain; }
+  else { let rm=1; for(let i=0;i<N;i++){ const r=px[i]*px[i]+py[i]*py[i]+pz[i]*pz[i]; if(r>rm) rm=r; } rmaxCloud=Math.sqrt(rm); }
+}
+
+/* ================= Three.js ================= */
+const canvas=document.getElementById('view');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=false;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0a0c12);
+const camera=new THREE.PerspectiveCamera(42,1,0.1,12000);
+
+scene.add(new THREE.AmbientLight(0xffffff,0.5));
+scene.add(new THREE.HemisphereLight(0xbfd4ff,0x2a1c10,0.4));
+const dir=new THREE.DirectionalLight(0xfff1d8,1.0);
+dir.castShadow=true; dir.shadow.mapSize.set(2048,2048); dir.shadow.bias=-0.0006; scene.add(dir);
+const dir2=new THREE.DirectionalLight(0xffd9a8,0.3); dir2.position.set(-1,0.4,-1); scene.add(dir2);
+
+const netGroup=new THREE.Group(); scene.add(netGroup);
+let ground=null, figMeshes=[], headMeshes=[], labelSprites=[], shaftMesh=null, headMesh=null;
+let bodyGeos=null, headGeoSphere=null;
+
+function mergeGeos(geos){
+  const ng=geos.map(g=>g.index?g.toNonIndexed():g);
+  let total=0; ng.forEach(g=>total+=g.attributes.position.count);
+  const pos=new Float32Array(total*3), nor=new Float32Array(total*3); let o=0;
+  ng.forEach(g=>{ pos.set(g.attributes.position.array,o); nor.set(g.attributes.normal.array,o);
+    o+=g.attributes.position.count*3; });
+  const m=new THREE.BufferGeometry();
+  m.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  m.setAttribute('normal',new THREE.BufferAttribute(nor,3));
+  return m;
+}
+function M4(){ return new THREE.Matrix4(); }
+function part(geo,mat){ geo.applyMatrix4(mat); return geo; }
+function buildBody(w){
+  const g=[];
+  const legX=0.15+0.02*w, legR=0.12+0.015*w;
+  g.push(part(new THREE.CylinderGeometry(legR,legR*0.9,0.55,10), M4().makeTranslation(legX,0.27,0)));
+  g.push(part(new THREE.CylinderGeometry(legR,legR*0.9,0.55,10), M4().makeTranslation(-legX,0.27,0)));
+  const halfW=0.30+0.16*w, halfH=0.62-0.12*w, topY=1.36, cy=topY-halfH;
+  g.push(part(new THREE.SphereGeometry(0.5,18,14),
+      M4().makeTranslation(0,cy,0).multiply(M4().makeScale(2*halfW,2*halfH,2*halfW*0.9))));
+  const bellyR=0.34*(w-0.8);
+  if(bellyR>0.05){
+    g.push(part(new THREE.SphereGeometry(bellyR,16,12),
+      M4().makeTranslation(0,cy-halfH*0.5,halfW*0.4).multiply(M4().makeScale(1.15,0.95,1.0))));
+  }
+  const armX=halfW+0.10, armA=0.5+0.12*w, armY=cy+halfH*0.3;
+  g.push(part(new THREE.CylinderGeometry(0.11,0.095,0.55,9),
+      M4().makeTranslation(armX,armY,0).multiply(M4().makeRotationZ(-armA))));
+  g.push(part(new THREE.CylinderGeometry(0.11,0.095,0.55,9),
+      M4().makeTranslation(-armX,armY,0).multiply(M4().makeRotationZ(armA))));
+  const m=mergeGeos(g);
+  m.applyMatrix4(M4().makeTranslation(0,-0.95,0));
+  m.computeVertexNormals();
+  return m;
+}
+const FAT=[0.62,0.90,1.22,1.60,2.05];
+const HEAD_LOCAL_Y=0.52;
+function buildDolls(){
+  bodyGeos=FAT.map(buildBody);
+  headGeoSphere=new THREE.SphereGeometry(0.34,18,14);
+  headGeoSphere.applyMatrix4(M4().makeTranslation(0,HEAD_LOCAL_Y,0));
+}
+const numTexCache={};
+function numberTexture(n){
+  if(numTexCache[n]) return numTexCache[n];
+  const c=document.createElement('canvas'); c.width=64; c.height=64;
+  const x=c.getContext('2d'); x.font='bold 46px Arial'; x.textAlign='center'; x.textBaseline='middle';
+  x.lineWidth=6; x.strokeStyle='rgba(0,0,0,0.75)'; x.strokeText(''+n,32,34);
+  x.fillStyle='#ffffff'; x.fillText(''+n,32,34);
+  const t=new THREE.CanvasTexture(c); numTexCache[n]=t; return t;
+}
+
+const shaftGeo=new THREE.CylinderGeometry(1,1,1,9,1,true);
+const headGeo=new THREE.ConeGeometry(1,1,11);
+const arrowMat=new THREE.MeshStandardMaterial({color:0xf2d3b0,roughness:0.65,metalness:0,
+  transparent:true,opacity:0.72});
+const dummy=new THREE.Object3D(), UP=new THREE.Vector3(0,1,0);
+let cTalk=new THREE.Color(TALK_COL.Orange), cList=new THREE.Color(LIST_COL.Green), cTmp=new THREE.Color();
+const RED=new THREE.Color(0xff2a2a); let cHead=new THREE.Color(), cWork=new THREE.Color();
+function refreshColors(){
+  cTalk.setHex(TALK_COL[P.talkerColor]); cList.setHex(LIST_COL[P.listenerColor]);
+  document.getElementById('swatch').style.background=
+    `linear-gradient(90deg,#${cList.getHexString()},#${cTalk.getHexString()})`;
+}
+function propColorCss(t){ cWork.copy(cList).lerp(cTalk,Math.max(0,Math.min(1,t)));
+  return `rgb(${Math.round(cWork.r*255)},${Math.round(cWork.g*255)},${Math.round(cWork.b*255)})`; }
+
+function disposeScene(){
+  for(const m of figMeshes){ netGroup.remove(m); m.material.dispose(); }
+  for(const m of headMeshes){ netGroup.remove(m); m.material.dispose(); }
+  for(const s of labelSprites){ netGroup.remove(s); s.material.dispose(); }
+  figMeshes=[]; headMeshes=[]; labelSprites=[];
+  if(shaftMesh){ netGroup.remove(shaftMesh); shaftMesh.dispose(); shaftMesh=null; }
+  if(headMesh){ netGroup.remove(headMesh); headMesh.dispose(); headMesh=null; }
+}
+function buildSceneObjects(){
+  disposeScene();
+  if(!bodyGeos) buildDolls();
+  const N=P.N;
+  for(let i=0;i<N;i++){
+    const bmat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.5,metalness:0.05,emissive:0x000000});
+    const body=new THREE.Mesh(bodyGeos[0],bmat); body.castShadow=true; body.receiveShadow=false;
+    netGroup.add(body); figMeshes.push(body);
+    const hmat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.45,metalness:0.05,emissive:0x000000});
+    const head=new THREE.Mesh(headGeoSphere,hmat); head.castShadow=true; head.receiveShadow=false;
+    netGroup.add(head); headMeshes.push(head);
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:numberTexture(i),transparent:true,
+      depthTest:false,depthWrite:false,sizeAttenuation:false}));
+    sp.renderOrder=10; sp.visible=P.showLabels; netGroup.add(sp); labelSprites.push(sp);
+  }
+  const cap=N*P.M;
+  shaftMesh=new THREE.InstancedMesh(shaftGeo,arrowMat,cap);
+  headMesh =new THREE.InstancedMesh(headGeo, arrowMat,cap);
+  shaftMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  headMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  shaftMesh.castShadow=false; headMesh.castShadow=false;
+  shaftMesh.frustumCulled=false; headMesh.frustumCulled=false;
+  netGroup.add(shaftMesh); netGroup.add(headMesh);
+
+  R=worldRadius();
+
+  dir.position.set(R*1.4,R*2.6,R*1.1);
+  const sc=dir.shadow.camera, s=R*2.2;
+  sc.left=-s;sc.right=s;sc.top=s;sc.bottom=-s;sc.near=0.5;sc.far=R*10; sc.updateProjectionMatrix();
+  dir.target.position.set(0,0,0); scene.add(dir.target);
+
+  histReset();
+}
+
+function levelFor(att){ const r=att/Math.max(1,P.M);
+  return r<0.5?0 : r<1?1 : r<2?2 : r<4?3 : 4; }
+function updateFigures(){
+  const N=P.N, nodeR=nodeRadius(), figScale=nodeR*1.26, aspect=camera.aspect||1;
+  for(let i=0;i<N;i++){
+    const body=figMeshes[i], head=headMeshes[i], sp=labelSprites[i];
+    const t=Math.max(0,Math.min(1,propensity(i)));
+    cTmp.copy(cList).lerp(cTalk,t);
+    let s=figScale*(0.8+0.55*Math.sqrt(attention[i]/maxAtt));
+    if(useAlpha()) s*=(0.6+0.85*alpha[i]);
+    const L=levelFor(attention[i]);
+    if(body.geometry!==bodyGeos[L]) body.geometry=bodyGeos[L];
+    body.position.set(px[i],py[i],pz[i]); body.scale.setScalar(s);
+    body.material.color.copy(cTmp); body.material.emissive.copy(cTmp).multiplyScalar(0.10);
+    head.position.set(px[i],py[i],pz[i]); head.scale.setScalar(s);
+    const sf=Math.min(1,selfCount[i]/P.M);
+    cHead.copy(cTmp).lerp(RED,sf);
+    head.material.color.copy(cHead);
+    head.material.emissive.copy(cHead).multiplyScalar(0.12);
+    sp.visible=P.showLabels;
+    if(P.showLabels){ sp.position.set(px[i], py[i]+1.15*s+nodeR*0.4, pz[i]); sp.scale.set(LSZ/aspect, LSZ, 1); }
+  }
+}
+function updateArrows(){
+  if(!P.showArrows){ shaftMesh.count=0; headMesh.count=0; return; }
+  const nodeR=nodeRadius(), baseR=nodeR*0.06*P.arrow;   // arrow width scaled by slider
+  let n=0;
+  for(let e=0;e<nEdges;e++){
+    const i=edgeA[e], j=edgeB[e], w=edgeW[e];
+    const ax=px[i],ay=py[i],az=pz[i];
+    let dx=px[j]-ax,dy=py[j]-ay,dz=pz[j]-az;
+    const len=Math.sqrt(dx*dx+dy*dy+dz*dz); if(len<1e-3) continue;
+    const inv=1/len; dx*=inv;dy*=inv;dz*=inv;
+    const rad=baseR*(0.7+0.6*Math.log2(1+w));
+    const startGap=nodeR*0.15, endGap=nodeR*2.1;
+    const headLen=Math.min(len*0.3, nodeR*1.5), headRad=rad*2.4;
+    const usable=len-startGap-endGap-headLen; if(usable<=0.001) continue;
+    dummy.quaternion.setFromUnitVectors(UP,{x:dx,y:dy,z:dz});
+    const sMid=startGap+usable*0.5;
+    dummy.position.set(ax+dx*sMid,ay+dy*sMid,az+dz*sMid);
+    dummy.scale.set(rad,usable,rad); dummy.updateMatrix(); shaftMesh.setMatrixAt(n,dummy.matrix);
+    const hMid=startGap+usable+headLen*0.5;
+    dummy.position.set(ax+dx*hMid,ay+dy*hMid,az+dz*hMid);
+    dummy.scale.set(headRad,headLen,headRad); dummy.updateMatrix(); headMesh.setMatrixAt(n,dummy.matrix);
+    n++;
+  }
+  shaftMesh.count=n; headMesh.count=n;
+  shaftMesh.instanceMatrix.needsUpdate=true; headMesh.instanceMatrix.needsUpdate=true;
+}
+
+/* ---- camera: auto-fit cloud, centred on COM ---- */
+let camAz=0.6, camEl=0.32, camDist=120, camDistTarget=120;
+let dragging=false, lpx=0, lpy=0;
+canvas.addEventListener('pointerdown',e=>{dragging=true;lpx=e.clientX;lpy=e.clientY;canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointerup',()=>{dragging=false;});
+canvas.addEventListener('pointermove',e=>{ if(!dragging) return;
+  camAz-=(e.clientX-lpx)*0.005; camEl+=(e.clientY-lpy)*0.005;
+  camEl=Math.max(-1.45,Math.min(1.45,camEl)); lpx=e.clientX; lpy=e.clientY; });
+canvas.addEventListener('wheel',e=>{ e.preventDefault();
+  P.zoom*=(1-Math.sign(e.deltaY)*0.08); P.zoom=Math.max(0.3,Math.min(2.5,P.zoom));
+  const z=document.getElementById('zoom'); z.value=P.zoom; document.getElementById('vZoom').textContent=P.zoom.toFixed(1);
+  },{passive:false});
+function updateCamera(dt){
+  camAz+=P.rot*dt;
+  const halfFov=THREE.MathUtils.degToRad(camera.fov)/2;
+  const need=(rmaxCloud+nodeRadius()*2.5);
+  const fitV=need/Math.tan(halfFov), fitH=need/(Math.tan(halfFov)*(camera.aspect||1));
+  camDistTarget=Math.max(fitV,fitH)*1.15/P.zoom;
+  camDist+=(camDistTarget-camDist)*0.08;
+  const cy=Math.cos(camEl)*camDist;
+  camera.position.set(Math.sin(camAz)*cy, Math.sin(camEl)*camDist, Math.cos(camAz)*cy);
+  camera.lookAt(0,0,0);
+}
+
+/* ================= Charts ================= */
+const chartCanvas=document.getElementById('chart');
+const cctx=chartCanvas.getContext('2d');
+const histoCanvas=document.getElementById('histo');
+const hctx=histoCanvas.getContext('2d');
+const HISTLEN=300, ALLCAP=512, AVGN=10;
+const BPO=2;                       // histogram bins per octave (2 = half-octave, finer x-axis)
+const KBINS=15, ABINS=21, HBWIN=1000;
+let histBuf=null, allBuf=null, histCols=0, histCount=0, allCount=0, allStride=1, allAccum=0, sampMod=0;
+let timeWin=null, timeAll=null, simTime=0;
+let avgRing=null, avgSum=null, avgPos=0, avgFilled=0;
+let ringKL=null, ringKT=null, ringAL=null, ringAT=null, sumKL=null, sumKT=null, sumAL=null, sumAT=null, hbPos=0, hbFilled=0;
+const curKL=new Float64Array(KBINS), curKT=new Float64Array(KBINS), curAL=new Float64Array(ABINS), curAT=new Float64Array(ABINS);
+function histReset(){
+  histBuf=new Float32Array(P.N*HISTLEN); allBuf=new Float32Array(P.N*ALLCAP);
+  avgRing=new Float32Array(P.N*AVGN); avgSum=new Float64Array(P.N); avgPos=0; avgFilled=0;
+  histCols=P.N; histCount=0; allCount=0; allStride=1; allAccum=0;
+  ringKL=new Float32Array(HBWIN*KBINS); ringKT=new Float32Array(HBWIN*KBINS); ringAL=new Float32Array(HBWIN*ABINS); ringAT=new Float32Array(HBWIN*ABINS);
+  sumKL=new Float64Array(KBINS); sumKT=new Float64Array(KBINS); sumAL=new Float64Array(ABINS); sumAT=new Float64Array(ABINS); hbPos=0; hbFilled=0;
+  timeWin=new Float64Array(HISTLEN); timeAll=new Float64Array(ALLCAP); simTime=0;
+}
+function logBin(v,nb){ let b=Math.floor(BPO*Math.log2(1+v)); if(b<0)b=0; if(b>=nb)b=nb-1; return b; }
+function recordHistory(){
+  if(!histBuf||histCols!==P.N) histReset();
+  const N=P.N;
+  for(let i=0;i<N;i++){ const base=i*AVGN; const old=avgRing[base+avgPos];
+    avgSum[i]+=attention[i]-old; avgRing[base+avgPos]=attention[i]; }
+  avgPos=(avgPos+1)%AVGN; if(avgFilled<AVGN) avgFilled++;
+  const inv=1/avgFilled;
+  const col=histCount%HISTLEN;
+  timeWin[col]=simTime;
+  for(let i=0;i<N;i++) histBuf[i*HISTLEN+col]=avgSum[i]*inv;
+  histCount++;
+  if(++allAccum>=allStride){
+    allAccum=0;
+    if(allCount>=ALLCAP){ const half=ALLCAP>>1;
+      for(let i=0;i<N;i++){ const b=i*ALLCAP; for(let k=0;k<half;k++) allBuf[b+k]=(allBuf[b+2*k]+allBuf[b+2*k+1])*0.5; }
+      for(let k=0;k<half;k++) timeAll[k]=(timeAll[2*k]+timeAll[2*k+1])*0.5;
+      allCount=half; allStride*=2; }
+    for(let i=0;i<N;i++) allBuf[i*ALLCAP+allCount]=avgSum[i]*inv;
+    timeAll[allCount]=simTime;
+    allCount++;
+  }
+  curKL.fill(0); curKT.fill(0); curAL.fill(0); curAT.fill(0);
+  for(let i=0;i<N;i++){ const kbn=logBin(kdeg[i],KBINS), abn=logBin(attention[i],ABINS);
+    if(propensity(i)<0.5){ curKL[kbn]++; curAL[abn]++; } else { curKT[kbn]++; curAT[abn]++; } }
+  const kb=hbPos*KBINS, ab=hbPos*ABINS;
+  for(let b=0;b<KBINS;b++){ sumKL[b]+=curKL[b]-ringKL[kb+b]; ringKL[kb+b]=curKL[b]; sumKT[b]+=curKT[b]-ringKT[kb+b]; ringKT[kb+b]=curKT[b]; }
+  for(let b=0;b<ABINS;b++){ sumAL[b]+=curAL[b]-ringAL[ab+b]; ringAL[ab+b]=curAL[b]; sumAT[b]+=curAT[b]-ringAT[ab+b]; ringAT[ab+b]=curAT[b]; }
+  hbPos=(hbPos+1)%HBWIN; if(hbFilled<HBWIN) hbFilled++;
+}
+const topIdx=[];
+function thetaSplit(){
+  const size=new Map();
+  for(let i=0;i<P.N;i++) size.set(clusterId[i],(size.get(clusterId[i])||0)+1);
+  let nLo=0,nHi=0,sLo=0,sHi=0,gLo=0,gHi=0,mLo=0,mHi=0;
+  for(let i=0;i<P.N;i++){ const single=size.get(clusterId[i])===1, a=attention[i];
+    if(propensity(i)<0.5){nLo++;sLo+=a;if(single)gLo++;if(a>mLo)mLo=a;} else {nHi++;sHi+=a;if(single)gHi++;if(a>mHi)mHi=a;} }
+  return {nLo,nHi,aLo:nLo?sLo/nLo:0,aHi:nHi?sHi/nHi:0,gLo,gHi,mLo,mHi};
+}
+function drawChart(){
+  const W=chartCanvas.width, H=chartCanvas.height;
+  cctx.clearRect(0,0,W,H);
+  cctx.fillStyle='rgba(10,12,18,0.66)'; cctx.fillRect(0,0,W,H);
+  cctx.strokeStyle='#222a3a'; cctx.strokeRect(0.5,0.5,W-1,H-1);
+  cctx.fillStyle='#8b96ab'; cctx.font='11px Arial'; cctx.textAlign='left';
+  cctx.fillText(P.timeAll?'top-10 attention (10-avg) — entire run':'top-10 attention (10-avg) — window',86,18);
+  const padL=30,padR=20,padT=30,padB=12, plotW=W-padL-padR, plotH=H-padT-padB;
+  const useAll=P.timeAll;
+  const cnt=useAll?allCount:Math.min(histCount,HISTLEN);
+  if(cnt<2||!histBuf) return;
+  const buf=useAll?allBuf:histBuf, cap=useAll?ALLCAP:HISTLEN;
+  const val=(i,s)=> useAll ? buf[i*cap+s] : buf[i*cap+((histCount-cnt+s)%cap)];
+  topIdx.length=0; for(let i=0;i<P.N;i++) topIdx.push(i);
+  topIdx.sort((a,b)=>attention[b]-attention[a]); topIdx.length=Math.min(10,P.N);
+  let yMax=1; for(const i of topIdx) for(let s=0;s<cnt;s++){ const v=val(i,s); if(v>yMax)yMax=v; }
+  yMax*=1.1;
+  cctx.fillStyle='#8b96ab'; cctx.font='11px Arial'; cctx.textAlign='right';
+  for(let g=0;g<=2;g++){ const yy=padT+plotH*(1-g/2);
+    cctx.strokeStyle='rgba(40,48,64,0.7)'; cctx.beginPath(); cctx.moveTo(padL,yy); cctx.lineTo(W-padR,yy); cctx.stroke();
+    cctx.fillText(Math.round(yMax*g/2),padL-3,yy+3); }
+  const denom=Math.max(1,cnt-1);
+  for(let r=0;r<topIdx.length;r++){ const i=topIdx[r];
+    const col=propColorCss(propensity(i));
+    cctx.strokeStyle=col; cctx.lineWidth=1.5; cctx.beginPath();
+    let lx=0,ly=0;
+    for(let s=0;s<cnt;s++){ const v=val(i,s); const xx=padL+plotW*(s/denom), yy=padT+plotH*(1-v/yMax);
+      if(s===0)cctx.moveTo(xx,yy);else cctx.lineTo(xx,yy); lx=xx;ly=yy; }
+    cctx.stroke();
+    if(r<3){ cctx.fillStyle=col; cctx.font='bold 11px Arial'; cctx.textAlign='left';
+      cctx.fillText(String(i), Math.min(W-12,lx+3), Math.max(padT+4,Math.min(H-3,ly+3))); }
+  }
+  const tval=s=> useAll ? timeAll[s] : timeWin[(histCount-cnt+s)%HISTLEN];
+  const fmtT=t=> t>=1e6?(t/1e6).toFixed(1)+'M':t>=1e3?(t/1e3).toFixed(1)+'k':String(Math.round(t));
+  cctx.fillStyle='#6f7a90'; cctx.font='11px Arial';
+  cctx.textAlign='left';   cctx.fillText('t='+fmtT(tval(0)), padL, H-2);
+  cctx.textAlign='center'; cctx.fillText(fmtT(tval((cnt-1)>>1)), padL+plotW*0.5, H-2);
+  cctx.textAlign='right';  cctx.fillText(fmtT(tval(cnt-1))+' updates →', W-padR, H-2);
+}
+function drawBars(ctx,x0,y0,w,h,valsL,valsT,nb,title,denom){
+  ctx.fillStyle='#dfe6f2'; ctx.font='11px Arial'; ctx.textAlign='left'; ctx.fillText(title,x0,y0-3);
+  let mx=0.001; for(let b=0;b<nb;b++){ const t=valsL[b]+valsT[b]; if(t>mx) mx=t; }
+  const mxv=mx/denom;                       // max time-averaged count in any bin
+  const lden=Math.log10(1+mxv)||1;          // log-scale y-axis normaliser
+  const frac=v=> v<=0?0:Math.log10(1+v)/lden;
+  const bw=w/nb, colL=propColorCss(0), colT=propColorCss(1);
+  const minPx=2;   // any occupied bin gets at least a 2px marker (a lone hub is 1 of ~N nodes)
+  // log-scale y gridlines + labels (1,10,100,...)
+  ctx.font='9px Arial'; ctx.textAlign='left';
+  for(const gv of [1,10,100,1000,10000]){
+    if(gv>mxv) break;
+    const yy=y0+h-frac(gv)*h;
+    ctx.strokeStyle='rgba(40,48,64,0.55)'; ctx.beginPath(); ctx.moveTo(x0,yy); ctx.lineTo(x0+w,yy); ctx.stroke();
+    ctx.fillStyle='#5f6b81'; ctx.fillText(String(gv), x0+2, yy-1);
+  }
+  // stacked bars, total height on log scale (L+T split kept proportional)
+  for(let b=0;b<nb;b++){ const vl=valsL[b]/denom, vt=valsT[b]/denom, tot=vl+vt;
+    if(tot<=0) continue;
+    let Htot=frac(tot)*h; if(Htot<minPx) Htot=minPx;
+    const hl=Htot*(vl/tot), ht=Htot*(vt/tot);
+    ctx.fillStyle=colL; ctx.fillRect(x0+b*bw+1, y0+h-hl, bw-2, hl);
+    ctx.fillStyle=colT; ctx.fillRect(x0+b*bw+1, y0+h-hl-ht, bw-2, ht);
+  }
+  ctx.strokeStyle='#222a3a'; ctx.strokeRect(x0+0.5,y0+0.5,w-1,h-1);
+  // x labels at full-octave ticks only (bins are half-octave)
+  ctx.fillStyle='#6f7a90'; ctx.font='11px Arial'; ctx.textAlign='center';
+  for(let b=0;b<nb;b+=2){ const v=Math.round(2**(b/BPO));
+    const lab=(b===nb-1)?('≥'+v):String(v); ctx.fillText(lab, x0+(b+0.5)*bw, y0+h+9); }
+}
+function drawHisto(){
+  const W=histoCanvas.width, H=histoCanvas.height;
+  hctx.clearRect(0,0,W,H);
+  hctx.fillStyle='rgba(10,12,18,0.66)'; hctx.fillRect(0,0,W,H);
+  hctx.strokeStyle='#222a3a'; hctx.strokeRect(0.5,0.5,W-1,H-1);
+  if(!sumKL || hbFilled<1) return;
+  const denom=Math.max(1,hbFilled);
+  const gap=14, pad=8, colW=(W-pad*2-gap)/2, top=18, bh=H-top-14;
+  drawBars(hctx, pad, top, colW, bh, sumKL, sumKT, KBINS, 'Connectivity k — listener/talker', denom);
+  drawBars(hctx, pad+colW+gap, top, colW, bh, sumAL, sumAT, ABINS, 'Attention — listener/talker', denom);
+}
+function resizeCharts(){
+  const sw=stageEl.clientWidth;
+  let w=sw-24;
+  let cht=Math.max(96,Math.min(Math.round(w/6),150));
+  const hh=Math.max(96,Math.min(Math.round(w/9),120));
+  chartCanvas.width=Math.round(w); chartCanvas.height=cht;
+  chartCanvas.style.width=w+'px'; chartCanvas.style.height=cht+'px';
+  histoCanvas.width=Math.round(w); histoCanvas.height=hh;
+  histoCanvas.style.width=w+'px'; histoCanvas.style.height=hh+'px';
+}
+
+/* ================= Loop ================= */
+const statsEl=document.getElementById('stats');
+const stageEl=document.getElementById('stage');
+let last=performance.now(), statTimer=0;
+function frame(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  if(P.running){ const steps=P.speed|0; const ad=useAlpha(); for(let s=0;s<steps;s++){ step(); if(ad) regulateAlpha(); } simTime+=steps; }
+  buildNetwork(); relax(); updateFigures(); updateArrows(); updateCamera(dt);
+  renderer.render(scene,camera);
+  if(P.running){ sampMod=(sampMod+1)%2; if(sampMod===0) recordHistory(); }
+  drawChart(); drawHisto();
+  statTimer+=dt;
+  if(statTimer>0.25){ statTimer=0; const st=computeStats();
+    const sp=thetaSplit();
+    statsEl.innerHTML=`<b>${P.N}</b> agents · <b>${st.links}</b> links · <b>${st.comps}</b> clusters · D = <b>${st.D.toFixed(2)}</b>`
+      +`<br><span style="color:${propColorCss(0)}">θ&lt;0.5: ⟨A⟩=${sp.aLo.toFixed(1)}, Amax=${sp.mLo} (n=${sp.nLo}, singleton=${sp.gLo})</span>`
+      +`<br><span style="color:${propColorCss(1)}">θ&gt;0.5: ⟨A⟩=${sp.aHi.toFixed(1)}, Amax=${sp.mHi} (n=${sp.nHi}, singleton=${sp.gHi})</span>`; }
+  requestAnimationFrame(frame);
+}
+function resize(){
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  if(canvas.width!==w||canvas.height!==h){ renderer.setSize(w,h,false);
+    camera.aspect=w/h; camera.updateProjectionMatrix(); }
+  resizeCharts();
+}
+new ResizeObserver(resize).observe(stageEl);
+
+/* ================= Reset / wiring ================= */
+function fullReset(){ initModel(); initLayout(); buildSceneObjects(); buildNetwork(); }
+
+document.getElementById('N').addEventListener('input',e=>{P.N=NVALUES[+e.target.value];document.getElementById('vN').textContent=P.N;
+  const T=document.getElementById('T'); T.max=P.N; if(P.T>P.N){P.T=P.N;T.value=P.N;document.getElementById('vT').textContent=P.N;} fullReset();});
+document.getElementById('M').addEventListener('input',e=>{P.M=+e.target.value;document.getElementById('vM').textContent=P.M;fullReset();});
+document.getElementById('T').addEventListener('input',e=>{P.T=+e.target.value;document.getElementById('vT').textContent=P.T;initModel();});
+document.getElementById('theta').addEventListener('input',e=>{P.theta=+e.target.value;document.getElementById('vTheta').textContent=P.theta.toFixed(2);});
+document.getElementById('tmax').addEventListener('input',e=>{P.tmax=+e.target.value;document.getElementById('vTmax').textContent=P.tmax.toFixed(2);});
+document.getElementById('dstep').addEventListener('input',e=>{P.dstep=+e.target.value;document.getElementById('vDstep').textContent=P.dstep.toFixed(2);});
+document.getElementById('fexp').addEventListener('input',e=>{P.f=Math.round(Math.pow(10,+e.target.value));
+  document.getElementById('vF').textContent=(+e.target.value).toFixed(1)+' → f='+P.f;});
+document.getElementById('sigma').addEventListener('input',e=>{const v=+e.target.value/1000;P.sigma=v*v;document.getElementById('vSigma').textContent=P.sigma.toFixed(3);});
+document.getElementById('krep').addEventListener('input',e=>{P.krep=KREPVALUES[+e.target.value];document.getElementById('vKrep').textContent=fmtKrep(P.krep);});
+document.getElementById('nodeRep').addEventListener('input',e=>{P.nodeRep=+e.target.value;document.getElementById('vNodeRep').textContent=P.nodeRep.toFixed(1)+'×';});
+document.getElementById('spread').addEventListener('input',e=>{P.spread=+e.target.value;document.getElementById('vSpread').textContent=P.spread.toFixed(1)+'×';});
+document.getElementById('speed').addEventListener('input',e=>{P.speed=SPEEDVALUES[+e.target.value];document.getElementById('vSpeed').textContent=P.speed;});
+document.getElementById('rot').addEventListener('input',e=>{P.rot=+e.target.value;document.getElementById('vRot').textContent=P.rot.toFixed(2);});
+document.getElementById('lay').addEventListener('input',e=>{P.lay=LAYVALUES[+e.target.value];document.getElementById('vLay').textContent=String(P.lay);});
+document.getElementById('zoom').addEventListener('input',e=>{P.zoom=+e.target.value;document.getElementById('vZoom').textContent=P.zoom.toFixed(1);});
+document.getElementById('showArrows').addEventListener('change',e=>{P.showArrows=e.target.checked;});
+document.getElementById('arrow').addEventListener('input',e=>{P.arrow=+e.target.value;document.getElementById('vArrow').textContent=P.arrow.toFixed(1)+'×';});
+const labelBtn=document.getElementById('labelBtn');
+labelBtn.addEventListener('click',()=>{P.showLabels=!P.showLabels;labelBtn.classList.toggle('on',P.showLabels);
+  labelBtn.textContent=P.showLabels?'① Numbers: on':'① Numbers: off';});
+const timeBtn=document.getElementById('timeBtn');
+timeBtn.addEventListener('click',()=>{P.timeAll=!P.timeAll; timeBtn.textContent=P.timeAll?'⏱ All time':'⏱ Window';});
+document.getElementById('talkerColor').addEventListener('change',e=>{P.talkerColor=e.target.value;refreshColors();});
+document.getElementById('listenerColor').addEventListener('change',e=>{P.listenerColor=e.target.value;refreshColors();});
+
+function updateModeUI(){
+  const isAd = P.mode==='adaptive'||P.mode==='adaptive2';
+  document.querySelectorAll('.mode-fixed').forEach(x=>x.classList.toggle('hidden',P.mode!=='fixed'));
+  document.querySelectorAll('.mode-prob').forEach(x=>x.classList.toggle('hidden',P.mode!=='prob'));
+  document.querySelectorAll('.mode-randomfixed').forEach(x=>x.classList.toggle('hidden',P.mode!=='randomfixed'));
+  document.querySelectorAll('.mode-adaptive').forEach(x=>x.classList.toggle('hidden',!isAd));
+}
+document.getElementById('modeSel').addEventListener('change',e=>{ P.mode=e.target.value; updateModeUI();
+  if(P.mode!=='fixed') initModel(); });
+
+const playBtn=document.getElementById('playBtn');
+playBtn.addEventListener('click',()=>{P.running=!P.running;playBtn.classList.toggle('on',P.running);
+  playBtn.textContent=P.running?'❚❚ Pause':'▶ Play';});
+document.getElementById('resetBtn').addEventListener('click',fullReset);
+
+/* ---- PNG export (main view / control panels / all three combined) ---- */
+function pngStamp(){ const d=new Date(), p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds()); }
+function downloadCanvas(cv,name){ cv.toBlob(b=>{ const u=URL.createObjectURL(b), a=document.createElement('a');
+  a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1500); },'image/png'); }
+function capElem(el){ return html2canvas(el,{backgroundColor:'#0a0c12',scale:2,logging:false,useCORS:true}); }
+function withFreshFrame(fn){ renderer.render(scene,camera); requestAnimationFrame(()=>requestAnimationFrame(fn)); }
+const stageElRef=document.getElementById('stage');
+const chartsElRef=document.getElementById('charts');
+const panelElRef=document.getElementById('panel');
+document.getElementById('pngMain').addEventListener('click',()=>{
+  withFreshFrame(()=>capElem(stageElRef).then(cv=>downloadCanvas(cv,'talker-listener_view_'+pngStamp()+'.png'))); });
+document.getElementById('pngPanel').addEventListener('click',()=>{
+  capElem(panelElRef).then(cv=>downloadCanvas(cv,'talker-listener_controls_'+pngStamp()+'.png')); });
+document.getElementById('pngAll').addEventListener('click',()=>{
+  withFreshFrame(()=> Promise.all([capElem(stageElRef),capElem(chartsElRef),capElem(panelElRef)]).then(([sc,ch,pa])=>{
+    const leftW=Math.max(sc.width,ch.width), leftH=sc.height+ch.height;
+    const W=leftW+pa.width, H=Math.max(leftH,pa.height);
+    const out=document.createElement('canvas'); out.width=W; out.height=H;
+    const g=out.getContext('2d'); g.fillStyle='#0a0c12'; g.fillRect(0,0,W,H);
+    g.drawImage(sc,0,0); g.drawImage(ch,0,sc.height); g.drawImage(pa,leftW,0);
+    downloadCanvas(out,'talker-listener_all_'+pngStamp()+'.png');
+  })); });
+
+function syncControls(){
+  const $=id=>document.getElementById(id);
+  $('N').value=NVALUES.indexOf(P.N); $('vN').textContent=P.N;
+  $('M').value=P.M; $('vM').textContent=P.M;
+  $('modeSel').value=P.mode;
+  const Tsl=$('T'); Tsl.max=P.N; $('T').value=P.T; $('vT').textContent=P.T;
+  $('theta').value=P.theta; $('vTheta').textContent=P.theta.toFixed(2);
+  $('tmax').value=P.tmax; $('vTmax').textContent=P.tmax.toFixed(2);
+  $('dstep').value=P.dstep; $('vDstep').textContent=P.dstep.toFixed(2);
+  const fexp=Math.round(Math.log10(P.f)*10)/10; $('fexp').value=fexp; $('vF').textContent=fexp.toFixed(1)+' → f='+P.f;
+  $('sigma').value=Math.round(1000*Math.sqrt(P.sigma)); $('vSigma').textContent=P.sigma.toFixed(3);
+  $('krep').value=KREPVALUES.indexOf(P.krep); $('vKrep').textContent=fmtKrep(P.krep);
+  $('nodeRep').value=P.nodeRep; $('vNodeRep').textContent=P.nodeRep.toFixed(1)+'×';
+  $('spread').value=P.spread; $('vSpread').textContent=P.spread.toFixed(1)+'×';
+  $('speed').value=SPEEDVALUES.indexOf(P.speed); $('vSpeed').textContent=P.speed;
+  $('rot').value=P.rot; $('vRot').textContent=P.rot.toFixed(2);
+  $('lay').value=LAYVALUES.indexOf(P.lay); $('vLay').textContent=String(P.lay);
+  $('zoom').value=P.zoom; $('vZoom').textContent=P.zoom.toFixed(1);
+  $('arrow').value=P.arrow; $('vArrow').textContent=P.arrow.toFixed(1)+'×';
+  $('talkerColor').value=P.talkerColor; $('listenerColor').value=P.listenerColor;
+  $('showArrows').checked=P.showArrows;
+  const lb=$('labelBtn'); lb.classList.toggle('on',P.showLabels); lb.textContent=P.showLabels?'① Numbers: on':'① Numbers: off';
+  const pb=$('playBtn'); pb.classList.toggle('on',P.running); pb.textContent=P.running?'❚❚ Pause':'▶ Play';
+  $('timeBtn').textContent=P.timeAll?'⏱ All time':'⏱ Window';
+  updateModeUI(); refreshColors();
+}
+document.querySelectorAll('#presets button').forEach(b=>b.addEventListener('click',()=>{
+  const opts={mode:b.dataset.mode, zoom:1.3, speed:10, nodeRep:8, spread:10, arrow:0.4};
+  if(b.dataset.f!==undefined) opts.f=+b.dataset.f;
+  if(b.dataset.n!==undefined) opts.N=+b.dataset.n;
+  if(b.dataset.t!==undefined) opts.T=+b.dataset.t;
+  Object.assign(P,DEFAULTS,opts); syncControls(); fullReset();
+  document.querySelectorAll('#presets button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }));
+function clearPreset(){ document.querySelectorAll('#presets button.active').forEach(x=>x.classList.remove('active')); }
+document.getElementById('panel').addEventListener('input',clearPreset);
+document.getElementById('panel').addEventListener('change',clearPreset);
+
+document.getElementById('vSigma').textContent=P.sigma.toFixed(3);
+refreshColors(); updateModeUI();
+fullReset(); resize(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>
