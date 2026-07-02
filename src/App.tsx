@@ -48,7 +48,7 @@ const MODELS: Model[] = [
     title: "Cell Polarity Morphogenesis",
     description:
       "A 3D model of how polar interactions between cells fold tissues into sheets, tubes, and invaginations during embryo development (after Nissen et al., 2018).",
-    file: "/models/cell-polarity-model-36-mesenchyme.html",
+    file: "/models/cell-polarity-model-59.html‎",
     status: "live",
   },
   {
@@ -80,7 +80,15 @@ const MODELS: Model[] = [
     title: "BTW Sandpile",
     description:
       "The classical sandpile model exhibiting Self Organized Criticality.",
-    file: "/models/btw_sandpile.html",
+    file: "/models/btw_sandpile_v11.html",
+    status: "live",
+  },
+  {
+    id: "talker-listener",
+    title: "Talker Listener dynamics",
+    description:
+      "A model for people networking through talking and listening about each other and themselves.",
+    file: "/models/talker_listener_applet_v25.html",
     status: "live",
   },
 ];
