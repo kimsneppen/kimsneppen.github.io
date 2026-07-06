@@ -40,7 +40,7 @@ const MODELS: Model[] = [
     title: "Colony & Phage",
     description:
       "An interactive model of bacteriophage infection spreading through a growing bacterial colony, showing how lysis dynamics shape the colony over time.",
-    file: "/models/phage_colony-v25.html",
+    file: "/models/phage_colony_v26_final.html",
     status: "live",
   },
   {
@@ -88,7 +88,15 @@ const MODELS: Model[] = [
     title: "Talker Listener dynamics",
     description:
       "A model for people networking through talking and listening about each other and themselves.",
-    file: "/models/talker_listener_applet_v25.html",
+    file: "/models/talker_listener_applet_v41_mobile.html‎",
+    status: "live",
+  },
+    {
+    id: "Merging-creation",
+    title: "Merging Creation network",
+    description:
+      "A model for nodes on a network which merge with each other while new nodes are added with a connectivity k (parameter)",
+    file: "/models/merging-creation.html‎",
     status: "live",
   },
 ];
