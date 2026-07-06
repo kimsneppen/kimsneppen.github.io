@@ -88,7 +88,7 @@ const MODELS: Model[] = [
     title: "Talker Listener dynamics",
     description:
       "A model for people networking through talking and listening about each other and themselves.",
-    file: "/models/talker_listener_applet_v41_mobile.html‎",
+    file: "/models/talker_listener_applet_v41_mobile.html",
     status: "live",
   },
     {
@@ -96,7 +96,7 @@ const MODELS: Model[] = [
     title: "Merging Creation network",
     description:
       "A model for nodes on a network which merge with each other while new nodes are added with a connectivity k (parameter)",
-    file: "/models/merging-creation.html‎",
+    file: "/models/merging-creation.html,
     status: "live",
   },
 ];
