@@ -96,7 +96,7 @@ const MODELS: Model[] = [
     title: "Merging Creation network",
     description:
       "A model for nodes on a network which merge with each other while new nodes are added with a connectivity k (parameter)",
-    file: "/models/merging-creation.html"
+    file: "/models/merging-creation.html",
     status: "live",
   },
 ];
