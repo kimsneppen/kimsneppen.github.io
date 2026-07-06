@@ -48,7 +48,7 @@ const MODELS: Model[] = [
     title: "Cell Polarity Morphogenesis",
     description:
       "A 3D model of how polar interactions between cells fold tissues into sheets, tubes, and invaginations during embryo development (after Nissen et al., 2018).",
-    file: "/models/cell-polarity-model-59.html",
+    file: "/models/cell-polarity-model-mobile.html",
     status: "live",
   },
   {
@@ -96,7 +96,7 @@ const MODELS: Model[] = [
     title: "Merging Creation network",
     description:
       "A model for nodes on a network which merge with each other while new nodes are added with a connectivity k (parameter)",
-    file: "/models/merging-creation.html,
+    file: "/models/merging-creation.html"
     status: "live",
   },
 ];
