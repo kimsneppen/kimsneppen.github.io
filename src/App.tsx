@@ -80,7 +80,7 @@ const MODELS: Model[] = [
     title: "BTW Sandpile",
     description:
       "The classical sandpile model exhibiting Self Organized Criticality.",
-    file: "/models/btw_sandpile_v11.html",
+    file: "/models/btw_sandpile_v12.html",
     status: "live",
   },
   {
