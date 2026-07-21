@@ -7,11 +7,10 @@ export default function App() {
   return <Index />;
 }
 
+const SCHOLAR_URL = "https://scholar.google.com/citations?user=LIBL6nQAAAAJ";
+
 const NAV = [
   { href: "about", label: "About" },
-  { href: "research", label: "Research" },
-  { href: "publications", label: "Publications" },
-  
   { href: "models", label: "Interactive Models" },
   { href: "cv", label: "CV" },
   { href: "contact", label: "Contact" },
@@ -363,7 +362,15 @@ function Index() {
             <p className="mt-5 max-w-2xl text-base text-foreground/80 sm:text-lg md:text-xl">
               Professor of Biocomplexity, Niels Bohr Institute, University of Copenhagen.
             </p>
-            <p className="mt-7 max-w-2xl border-l-2 border-accent/60 pl-4 font-serif text-lg italic text-foreground/75 sm:pl-5 sm:text-xl md:text-2xl">
+            <p className="mt-7">
+              <a
+                href={SCHOLAR_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-md border border-accent/70 px-6 py-3 text-sm font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                Publications on Google Scholar →
+              </a>
             </p>
           </div>
           <div className="reveal mt-12 flex justify-center md:mt-16 md:justify-start">
@@ -385,54 +392,6 @@ function Index() {
             </p>
           </div>
         </section>
-
-        {/* RESEARCH */}
-        <section id="research" className={sectionClass}>
-          <SectionHeading label="" title="Research interests" />
-          <div className="reveal mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {RESEARCH.map((r) => (
-              <article
-                key={r.title}
-                className="rounded-lg border border-border bg-card p-7 transition-colors hover:border-accent/40"
-              >
-                <h3 className="font-serif text-[1.2rem] leading-snug">{r.title}</h3>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
-                  {r.body}
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* PUBLICATIONS */}
-        <section id="publications" className={sectionClass}>
-          <SectionHeading label="" title="Selected publications" />
-          <p className="reveal mt-6 measure text-[15px] text-muted-foreground">
-            .
-          </p>
-          <ol className="reveal mt-12 measure space-y-6">
-            {PUBLICATIONS.map((p, i) => (
-              <li
-                key={i}
-                className="grid grid-cols-[2rem_1fr] gap-3 text-[15.5px] leading-[1.7] text-foreground/85"
-              >
-                <span className="font-serif text-muted-foreground tabular-nums">{i + 1}.</span>
-                <span>{p}</span>
-              </li>
-            ))}
-          </ol>
-          <div className="reveal mt-12">
-            <a
-              href="https://scholar.google.com/citations?user=LIBL6nQAAAAJ"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block rounded-md border border-accent/70 px-6 py-3 text-sm font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
-            >
-              View full publication list on Google Scholar →
-            </a>
-          </div>
-        </section>
-
 
         {/* INTERACTIVE MODELS */}
         <section id="models" className={sectionClass}>
@@ -589,7 +548,7 @@ function Index() {
                   <a href="mailto:ksneppen@gmail.com">ksneppen@gmail.com</a>
                 </dd>
               </div>
-              
+
               <div>
                 <dt className="eyebrow text-[0.65rem]">Address</dt>
                 <dd className="mt-2 leading-[1.75] text-foreground/85">
@@ -609,7 +568,7 @@ function Index() {
                 {[
                   {
                     label: "Google Scholar",
-                    href: "https://scholar.google.com/citations?user=LIBL6nQAAAAJ",
+                    href: SCHOLAR_URL,
                   },
                   {
                     label: "ORCID",
