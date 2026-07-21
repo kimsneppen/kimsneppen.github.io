@@ -404,7 +404,34 @@ function Index() {
           </div>
         </section>
 
- 
+        {/* PUBLICATIONS */}
+        <section id="publications" className={sectionClass}>
+          <SectionHeading label="" title="Selected publications" />
+          <p className="reveal mt-6 measure text-[15px] text-muted-foreground">
+            .
+          </p>
+          <ol className="reveal mt-12 measure space-y-6">
+            {PUBLICATIONS.map((p, i) => (
+              <li
+                key={i}
+                className="grid grid-cols-[2rem_1fr] gap-3 text-[15.5px] leading-[1.7] text-foreground/85"
+              >
+                <span className="font-serif text-muted-foreground tabular-nums">{i + 1}.</span>
+                <span>{p}</span>
+              </li>
+            ))}
+          </ol>
+          <div className="reveal mt-12">
+            <a
+              href="https://scholar.google.com/citations?user=LIBL6nQAAAAJ"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block rounded-md border border-accent/70 px-6 py-3 text-sm font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              View full publication list on Google Scholar →
+            </a>
+          </div>
+        </section>
 
 
         {/* INTERACTIVE MODELS */}
