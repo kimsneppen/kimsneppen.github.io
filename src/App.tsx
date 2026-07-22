@@ -26,14 +26,15 @@ type Model = {
 };
 
 const MODELS: Model[] = [
-    {
-    id: "btw-sandpile",
-    title: "BTW Sandpile",
-    description:
-      "The classical sandpile model exhibiting Self Organized Criticality.",
-    file: "/models/btw_sandpile_v17.html",
-    status: "live",
-  },
+  {
+  id: "btw-sandpile",
+  title: "BTW Sandpile",
+  description:
+    "The classical sandpile model exhibiting Self Organized Criticality.",
+  file: "/models/btw_sandpile_v17.html",
+  image: "/images/btw.png",
+  status: "live",
+},
   {
     id: "spatial-ecosystem",
     title: "Spatial Ecosystem",
