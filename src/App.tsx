@@ -36,6 +36,22 @@ const MODELS: Model[] = [
   status: "live",
 },
   {
+    id: "talker-listener",
+    title: "Talker Listener dynamics",
+    description:
+      "A model for people networking through talking and listening about each other and themselves.",
+    file: "/models/talker_listener_applet_v41_mobile.html",
+    status: "live",
+  },
+  {
+    id: "rabbit-fox-snake-plant",
+    title: "Rabbit, Fox, Snake & Plant",
+    description:
+      "An agent-based ecosystem on a lattice with plants, rabbits, foxes, and snakes — exploring how predator–prey interactions sustain coexistence and diversity.",
+    file: "/models/Rabbit-mobile.html",
+    status: "live",
+  },
+  {
     id: "spatial-ecosystem",
     title: "Spatial Ecosystem",
     description:
@@ -60,14 +76,6 @@ const MODELS: Model[] = [
     status: "live",
   },
   {
-    id: "rabbit-fox-snake-plant",
-    title: "Rabbit, Fox, Snake & Plant",
-    description:
-      "An agent-based ecosystem on a lattice with plants, rabbits, foxes, and snakes — exploring how predator–prey interactions sustain coexistence and diversity.",
-    file: "/models/Rabbit-mobile.html",
-    status: "live",
-  },
-  {
     id: "nucleosome-swi6",
     title: "Nucleosome & Swi6",
     description:
@@ -81,14 +89,6 @@ const MODELS: Model[] = [
     description:
       "A stochastic Gillespie simulation of a nucleosome two-state system, showing how noisy molecular reactions give rise to bistability and switching between epigenetic states.",
     file: "/models/two-state-gillespie.html",
-    status: "live",
-  },
-  {
-    id: "talker-listener",
-    title: "Talker Listener dynamics",
-    description:
-      "A model for people networking through talking and listening about each other and themselves.",
-    file: "/models/talker_listener_applet_v41_mobile.html",
     status: "live",
   },
     {
