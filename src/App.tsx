@@ -26,6 +26,14 @@ type Model = {
 };
 
 const MODELS: Model[] = [
+    {
+    id: "btw-sandpile",
+    title: "BTW Sandpile",
+    description:
+      "The classical sandpile model exhibiting Self Organized Criticality.",
+    file: "/models/btw_sandpile_v17.html",
+    status: "live",
+  },
   {
     id: "spatial-ecosystem",
     title: "Spatial Ecosystem",
@@ -72,14 +80,6 @@ const MODELS: Model[] = [
     description:
       "A stochastic Gillespie simulation of a nucleosome two-state system, showing how noisy molecular reactions give rise to bistability and switching between epigenetic states.",
     file: "/models/two-state-gillespie.html",
-    status: "live",
-  },
-  {
-    id: "btw-sandpile",
-    title: "BTW Sandpile",
-    description:
-      "The classical sandpile model exhibiting Self Organized Criticality.",
-    file: "/models/btw_sandpile_v17.html",
     status: "live",
   },
   {
