@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTW Sandpile — 3D Self-Organized Criticality</title>
+<style>
+  :root{
+    --bg:#0a0a12; --panel:#14141f; --edge:#2b2b3d; --txt:#ece9f5;
+    --muted:#9a93b5; --accent:#c084fc; --accent2:#7c3aed; --hot:#ff5d8f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:radial-gradient(1200px 700px at 70% -10%,#1a1030,#0a0a12 60%);
+    color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:13px;
+  }
+  header{padding:10px 16px; border-bottom:1px solid var(--edge); display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;}
+  header h1{font-size:16px; margin:0; font-weight:700; background:linear-gradient(90deg,#c084fc,#ff5d8f,#ffb347); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  header .sub{color:var(--muted); font-size:12px;}
+  .wrap{display:flex; gap:16px; padding:14px 16px; align-items:flex-start;}
+  .col{order:1; min-width:0; flex:1;}
+  .controls{order:2;}
+  .col{display:flex; flex-direction:column; gap:12px;}
+  .card{background:var(--panel); border:1px solid var(--edge); border-radius:8px; padding:10px;}
+  .card h2{font-size:11px; margin:0 0 8px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:600;}
+  canvas{display:block; background:#05050b; border-radius:6px; max-width:100%; height:auto;}
+  canvas.tilt{cursor:grab; touch-action:none;}   /* one-finger drag tilts, doesn't scroll the page */
+  .controls{display:flex; flex-direction:column; gap:9px; min-width:236px; max-width:252px;}
+  .row{display:flex; gap:6px; flex-wrap:wrap;}
+  button{
+    background:#20203033; color:var(--txt); border:1px solid var(--edge);
+    border-radius:6px; padding:6px 10px; cursor:pointer; font-size:12px; transition:.12s;
+  }
+  button:hover{border-color:var(--accent); color:#fff;}
+  button.active{background:linear-gradient(90deg,var(--accent2),var(--hot)); border-color:var(--accent); color:#fff;}
+  button.primary{background:linear-gradient(90deg,var(--accent2),#5b21b6); border-color:var(--accent);}
+  button.freeze{background:linear-gradient(90deg,#0ea5e9,#22d3ee); border-color:#22d3ee; color:#04121a; font-weight:600;}
+  button.model{font-size:14px; padding:9px 14px; flex:1; font-weight:700; letter-spacing:.02em;}
+  label.field{display:flex; flex-direction:column; gap:3px; font-size:11px; color:var(--muted);}
+  input[type=range]{width:100%; accent-color:var(--accent);}
+  input[type=range].short{max-width:130px;}
+  input[type=number]{width:60px; background:#0d0d17; color:var(--txt); border:1px solid var(--edge); border-radius:5px; padding:3px 5px;}
+  .val{color:var(--accent); font-variant-numeric:tabular-nums;}
+  .stats{font-size:12px; line-height:1.7;}
+  .stats b{color:var(--accent); font-variant-numeric:tabular-nums;}
+  .legend{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); margin-top:6px;}
+  .legend .bar{height:10px; flex:1; min-width:80px; border-radius:3px;}
+  .hint{color:var(--muted); font-size:11px; line-height:1.45;}
+  .sectiontitle{font-size:11px; color:var(--accent); text-transform:uppercase; letter-spacing:.05em; font-weight:600; margin-top:5px;}
+  .smallrow{display:flex; gap:12px;}
+  .frozenBadge{display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px; background:#0ea5e933; border:1px solid #22d3ee; color:#67e8f9;}
+  /* ---- responsive: phones & narrow windows ---- */
+  body{overflow-x:hidden;}                     /* never let a stray wide element cause sideways scroll */
+  @media (max-width: 900px){
+    .wrap{flex-direction:column; gap:12px; padding:10px;}
+    .col{order:1; width:100%;}
+    .controls{order:2; max-width:none; min-width:0; width:100%;}
+    .smallrow{flex-wrap:wrap;}
+    .smallrow .card{flex:1 1 160px;}           /* the three mini-plots share the row, then wrap */
+    .card{max-width:100%; overflow:hidden;}
+    .card h2{white-space:normal !important; overflow-wrap:anywhere;}  /* long titles wrap instead of overflowing */
+    header{padding:8px 10px;}
+    button{padding:8px 12px;}                 /* easier touch targets */
+    input[type=range]{min-height:28px;}
+    input[type=range].short{max-width:none;}
+  }
+  @media (max-width: 480px){
+    body{font-size:12px;}
+    header h1{font-size:15px;}
+    header .sub{font-size:11px;}
+    .wrap{padding:8px;}
+    .card{padding:8px;}
+    .smallrow .card{flex:1 1 100%;}            /* stack the mini-plots one per row on tiny screens */
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>BTW Sandpile</h1>
+  <span class="sub">Bak–Tang–Wiesenfeld self-organized criticality · perspective 3D view · steppable grain → sweep → avalanche · frozen-config A/S probes</span>
+</header>
+
+<div class="wrap">
+  <!-- ============ CONTROLS ============ -->
+  <div class="controls card">
+    <h2>Run</h2>
+    <div class="row">
+      <button id="btnStart" class="primary">▶ Start</button>
+      <button id="btnStep">Step</button>
+      <button id="btnReset">Reset</button>
+    </div>
+    <div class="row" id="modelRow">
+      <button id="btnBTW" class="model active">BTW</button>
+      <button id="btnManna" class="model">Manna</button>
+    </div>
+    <div class="row">
+      <button id="btnViewTgl" style="flex:1 1 auto">View: top ▸ 3D</button>
+      <button id="btnGrass" style="flex:1 1 auto">○ Grassberger</button>
+    </div>
+
+    <label class="field"><span class="val" id="granLabel">1 avalanche / frame</span>
+      <input type="range" id="gran" min="0" max="6" value="2">
+    </label>
+    <div class="row">
+      <button id="btnTrace">○ Trace grains: off</button>
+      <button id="btnTraceCol" class="primary">Track: White</button>
+    </div>
+    <div class="row">
+      <button id="btnLongest">○ Longest walker</button>
+    </div>
+    <label class="field">Track-trace delay <span class="val" id="traceDelayLabel">10</span>
+      <input type="range" id="traceDelay" class="short" min="0" max="7" value="4">
+    </label>
+
+    <label class="field">Lattice size L = <span class="val" id="Lval">32</span>
+      <input type="range" id="Lslider" min="0" max="1" value="0" step="1">
+    </label>
+
+    <div class="sectiontitle">Drive mode (grain drop site)</div>
+    <div class="row" id="modeRow">
+      <button data-mode="random" class="active">Random</button>
+      <button data-mode="deterministic">Deterministic</button>
+      <button data-mode="detboundary">Det. boundary</button>
+      <button data-mode="boundary">Random boundary</button>
+      <button data-mode="corner">Corner</button>
+      <button data-mode="center">Center</button>
+    </div>
+    <div class="hint"><b>Det. boundary</b> drives the top boundary row one site at a time, left → right, then repeats.</div>
+
+    <div class="sectiontitle">Frozen-config A / S</div>
+    <div class="row">
+      <button id="btnFreeze" class="freeze">❄ Freeze &amp; pause</button>
+      <span id="frozenState" class="hint">running</span>
+    </div>
+    <div class="row">
+      <button id="btnAS" class="primary">Compute A &amp; S</button>
+    </div>
+    <div class="hint"><b>S</b>[p] = size of the avalanche from p. <b>A</b> = total topplings at each site summed over all probe-avalanches.</div>
+
+    <div class="sectiontitle">Colour scheme (all panels)</div>
+    <div class="row">
+      <button id="btnScheme" class="primary">Colour: Mountain</button>
+    </div>
+
+    <div class="sectiontitle">Pile view</div>
+    <div class="row">
+      <button id="btnFlat">Columns ▸ Flat colours</button>
+    </div>
+    <div class="hint">Force the flat top-down colour map (no 3-D) at any size — handy as a fast view for very large L when tilted 3-D gets heavy.</div>
+
+    <div class="sectiontitle">View (all 3 lattice figures)</div>
+    <label class="field">Polar tilt from vertical (5° steps): <span class="val"><span id="polVal">0</span>°</span>
+      <input type="range" id="polar" class="short" min="0" max="90" step="5" value="0">
+    </label>
+    <label class="field">Azimuth around centre: <span class="val"><span id="aziVal">0</span>°</span>
+      <input type="range" id="azimuth" min="0" max="360" value="0">
+    </label>
+    <label class="field">A &amp; S view distance: <span class="val" id="asDistLabel">∞</span>
+      <input type="range" id="asDist" class="short" min="0" max="5" step="1" value="5">
+    </label>
+    <div class="hint">Camera height for the A/S plots, in multiples of the tallest bar (its max value = 1): ×1, 2, 4, 8, 16, then ∞ (orthographic). Drag inside any lattice panel to tilt &amp; turn them together.</div>
+
+    <div class="sectiontitle">Save PNG</div>
+    <div class="row">
+      <button id="savMain">Main</button>
+      <button id="savA">A</button>
+      <button id="savS">S</button>
+    </div>
+    <div class="row">
+      <button id="savTime">Size–time</button>
+      <button id="savDist">Distrib.</button>
+      <button id="savCur">Avalanche</button>
+    </div>
+    <div class="row"><button id="savAll" class="primary">All together</button></div>
+
+    <div class="sectiontitle">Statistics</div>
+    <div class="stats">
+      Grains added: <b id="stGrains">0</b><br>
+      Avalanches: <b id="stAval">0</b><br>
+      Last size: <b id="stLast">0</b><br>
+      Max size: <b id="stMax">0</b><br>
+      Mean size: <b id="stMean">0</b><br>
+      Mean height: <b id="stHeight">0</b>
+    </div>
+  </div>
+
+  <!-- ============ MAIN COLUMN: main, 3 small plots, then A and S below ============ -->
+  <div class="col">
+    <div class="card">
+      <h2 style="white-space:nowrap" id="mainTitle">"Self Organized Criticality" by P. Bak, C. Tang &amp; K. Wiesenfeld. Phys. Rev. Letters 59, 1987.</h2>
+      <canvas id="main" class="tilt" width="728" height="728"></canvas>
+      <div class="legend"><span>low</span><span class="bar" id="legHeight"></span><span>high</span></div>
+    </div>
+
+    <div class="smallrow">
+      <div class="card">
+        <h2>Avalanche size vs. time</h2>
+        <canvas id="timePlot" width="216" height="200"></canvas>
+      </div>
+      <div class="card">
+        <h2>Size distribution (log-log, last ¾)</h2>
+        <canvas id="distPlot" width="216" height="200"></canvas>
+      </div>
+      <div class="card">
+        <h2 style="white-space:nowrap">Last avalanche &gt; <span id="bigThrLabel" class="val">—</span></h2>
+        <canvas id="curPlot" class="tilt" width="216" height="200"></canvas>
+        <input type="range" id="bigThr" min="10" max="100" value="10" style="margin-top:6px;">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="white-space:nowrap">A — Σ activity over avalanches from every site &nbsp;·&nbsp; M. Engsig &amp; K. Sneppen, Physical Review Letters, 134 (2025).</h2>
+      <canvas id="aPlot" class="tilt" width="728" height="728"></canvas>
+      <div class="legend"><span id="aMin">0</span><span class="bar" id="legJetA"></span><span id="aMax">0</span></div>
+    </div>
+    <div class="card">
+      <h2 style="white-space:nowrap">S — avalanche size when seeding each site &nbsp;·&nbsp; M. Engsig &amp; K. Sneppen, Physical Review Letters, 134 (2025).</h2>
+      <canvas id="sPlot" class="tilt" width="728" height="728"></canvas>
+      <div class="legend"><span id="sMin">0</span><span class="bar" id="legJetS"></span><span id="sMax">0</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   BTW (Bak–Tang–Wiesenfeld) sandpile, L×L, open boundary.
+   ============================================================ */
+
+const State = {
+  L: 32, z:null, Acur:null, Aprobe:null, Sprobe:null, frozen:null,
+  mark:null, markVer:0,
+  upd:null, updVer:0, particles:[],
+  trace:false, traceColor:0, stacks:null, traces:[], traceWait:0, traceDelay:10,
+  manna:false, traceLongestOnly:false, avalId:0,
+  grassberger:false, gbPhase:null, gbTimer:null, gbFolders:[], gbPending:[], gbStacks:null, gbTick:0, gbHand:null, gbWin:null,
+  aval:{ cur:[], next:[], pos:0, size:0, fillVer:0, running:false },
+  sizes:[], grains:0, lastSize:0, maxSize:0,
+  lastBig:null, lastBigSize:0, bigThresh:10,
+  mode:"random", detIndex:0, running:false, scheme:"mountain", flat:false,
+};
+
+function alloc(L){
+  State.L=L; const N=L*L;
+  State.z=new Int16Array(N); State.Acur=new Int32Array(N);
+  State.Aprobe=new Int32Array(N); State.Sprobe=new Int32Array(N);
+  State.frozen=null; State.mark=new Int32Array(N); State.markVer=0;
+  State.upd=new Int32Array(N); State.updVer=0; State.particles=[];
+  State.aval={ cur:[], next:[], pos:0, size:0, fillVer:0, running:false };
+  State.sizes=[]; State.grains=0; State.lastSize=0; State.maxSize=0; State.detIndex=0;
+  State.lastBig=new Int32Array(N); State.lastBigSize=0;
+  State.gbPhase=new Int8Array(N); State.gbTimer=new Int16Array(N); State.gbFolders=[]; State.gbPending=[];
+  State.gbStacks=new Array(N); for(let q=0;q<N;q++) State.gbStacks[q]=[];
+  State.gbWin={n:new Int16Array(L), s:new Int16Array(L), e:new Int16Array(L), w:new Int16Array(L)};
+  State.gbTick=0; State.gbHand=null;
+  State.traces=[]; State.traceWait=0; if(State.trace) initStacks(); else State.stacks=null;
+}
+const idx=(i,j)=> j*State.L + i;
+
+function dropSite(){
+  const L=State.L;
+  switch(State.mode){
+    case "deterministic":{ const k=State.detIndex%(L*L); State.detIndex++; return k; }
+    case "detboundary":{ const i=State.detIndex%L; State.detIndex++; return idx(i,L-1); } // top row, left→right, repeat
+    case "boundary":{ const e=(Math.random()*4)|0, t=(Math.random()*L)|0;
+      if(e===0) return idx(t,0); if(e===1) return idx(t,L-1);
+      if(e===2) return idx(0,t); return idx(L-1,t); }
+    case "corner": return idx(0,0);
+    case "center": return idx((L/2)|0,(L/2)|0);
+    default: return (Math.random()*L*L)|0;
+  }
+}
+
+/* ---------- avalanche state machine ---------- */
+function beginGrain(){ beginGrainAt(dropSite(), undefined); }
+function beginGrainAt(k0, sh){
+  const z=State.z, a=State.aval; State.avalId++;
+  if(State.grassberger && !State.gbStacks) gbInitStacks();   // sync folder identities before the new grain lands
+  z[k0]++; State.grains++; State.Acur.fill(0); State.updVer++;
+  if(State.trace){ const L=State.L; State.stacks[k0].push({path:[[k0%L,(k0/L)|0]], off:[traceJit(),traceJit()]}); }
+  if(State.grassberger){ State.gbStacks[k0].push(sh!==undefined?sh:Math.random()); }
+  a.cur=[]; a.next=[]; a.pos=0; a.size=0; a.fillVer=++State.markVer;
+  if(z[k0]>3){ a.cur.push(k0); a.running=true; } else { a.running=false; finalizeAval(); }
+}
+function toppleSite(k){
+  const z=State.z, L=State.L, a=State.aval, mark=State.mark;
+  z[k]-=4; a.size++; State.Acur[k]++;
+  const i=k%L, j=(k/L)|0;
+  const nb0=(i>0)?k-1:-1, nb1=(i<L-1)?k+1:-1, nb2=(j>0)?k-L:-1, nb3=(j<L-1)?k+L:-1;
+  const nb=[nb0,nb1,nb2,nb3], ddx=[-1,1,0,0], ddy=[0,0,-1,1];
+  const manna=State.manna, tracing=State.trace, slow=granIdx<=2, gb=State.grassberger;
+  const src=tracing?State.stacks[k]:null, st=tracing?State.stacks:null;
+  /* distribute the 4 toppled grains.  BTW: one grain to each of the 4 neighbours.
+     Manna: each grain hops to a uniformly random neighbour, so a neighbour may get 0..4. */
+  for(let g=0;g<4;g++){
+    const d=manna?((Math.random()*4)|0):g, m=nb[d];
+    if(m>=0) z[m]++;
+    else if(slow) spawnDepart(i,j,ddx[d],ddy[d]);          // grain leaves the open boundary
+    if(gb){
+      if(!State.gbStacks) gbInitStacks();
+      const gsrc=State.gbStacks[k], sh=(gsrc&&gsrc.length)? gsrc.pop() : Math.random();
+      if(m>=0) State.gbStacks[m].push(sh);                           // the folder keeps its shade on the new desk
+      else if(State.gbWin){                                            // folder leaves: fling that window open
+        if(ddy[d]===1) State.gbWin.n[i]=GB_WINOPEN;
+        else if(ddy[d]===-1) State.gbWin.s[i]=GB_WINOPEN;
+        else if(ddx[d]===1) State.gbWin.e[j]=GB_WINOPEN;
+        else State.gbWin.w[j]=GB_WINOPEN;
+      }
+      if(State.gbFolders.length+State.gbPending.length<GB_MAXFOLDERS){
+        const fol={i,j,dx:ddx[d],dy:ddy[d],t:0,out:m<0,sh};
+        if(granIdx<=1) State.gbPending.push({fol,d:GB_WINDUP});  // slow modes: fling only after the stand-up beat
+        else State.gbFolders.push(fol);                          // fast modes: launch immediately
+      }
+    }
+    if(tracing){ const go=src.pop(); if(go){ go.path.push([i+ddx[d], j+ddy[d]]);
+      if(m>=0) st[m].push(go); else finishTrace(go); } }
+  }
+  if(gb){ State.gbPhase[k]=1; State.gbTimer[k]=GB_TOPPLE + (granIdx<=1?GB_WINDUP:0); }   // clerk jumps up, frustrated (stays up through the windup in slow modes)
+  /* grey-backdrop footprint: this site + every existing neighbour */
+  const uv=State.updVer, upd=State.upd;
+  upd[k]=uv;
+  if(nb0>=0) upd[nb0]=uv; if(nb1>=0) upd[nb1]=uv; if(nb2>=0) upd[nb2]=uv; if(nb3>=0) upd[nb3]=uv;
+  const cand=[k,nb0,nb1,nb2,nb3];
+  for(let c=0;c<5;c++){ const m=cand[c];
+    if(m>=0 && z[m]>3 && mark[m]!==a.fillVer){ mark[m]=a.fillVer; a.next.push(m); } }
+}
+function stepTopple(){
+  const a=State.aval, z=State.z; if(!a.running) return;
+  if(a.pos>=a.cur.length){ if(a.next.length===0){ finalizeAval(); return; }
+    a.cur=a.next; a.next=[]; a.pos=0; a.fillVer=++State.markVer; }
+  const k=a.cur[a.pos++]; if(z[k]>3) toppleSite(k);
+  if(a.pos>=a.cur.length && a.next.length===0) finalizeAval();
+}
+function stepSweep(){
+  const a=State.aval, z=State.z; if(!a.running) return;
+  while(a.pos<a.cur.length){ const k=a.cur[a.pos++]; if(z[k]>3) toppleSite(k); }
+  if(a.next.length===0){ finalizeAval(); }
+  else { a.cur=a.next; a.next=[]; a.pos=0; a.fillVer=++State.markVer; }
+}
+function resolveFull(){ while(State.aval.running) stepSweep(); }
+function finalizeAval(){ const a=State.aval; a.running=false;
+  State.lastSize=a.size; if(a.size>State.maxSize) State.maxSize=a.size; State.sizes.push(a.size);
+  if(a.size>=State.bigThresh){ State.lastBig.set(State.Acur); State.lastBigSize=a.size; }
+  if(State.trace && State.traceLongestOnly) pruneToLongest(); }
+function ensureGrain(){ if(!State.aval.running) beginGrain(); }
+
+/* ---------- departing-grain particles (boundary out-flux animation) ---------- */
+const PART_LIFE=3.4;                       // lattice units travelled before fully faded
+const PART_SPEED=[0.10,0.16,0.24];         // per-frame fly-away speed, synced to update granularity
+function spawnDepart(i,j,dx,dy){
+  if(State.particles.length>4000) return;  // safety cap for big boundary avalanches
+  State.particles.push({i,j,dx,dy,t:0,col:cmap(0.82)});
+}
+function advanceParticles(){
+  const ps=State.particles; if(!ps.length) return;
+  const v=(granIdx<=2?PART_SPEED[granIdx]:0.20);   // fly-away speed follows the lattice update speed
+  for(let n=ps.length-1;n>=0;n--){ const p=ps[n]; p.t+=v; if(p.t>=PART_LIFE) ps.splice(n,1); }
+}
+
+/* ============================================================
+   Grain-walk tracing.  When enabled, every site keeps a stack of
+   identified grains; a toppling moves its top 4 grains to the 4
+   neighbours (appending each step to that grain's path).  When a
+   grain topples off the open boundary its finished walk is drawn
+   as a stepwise polyline with a star at its starting site, and is
+   forgotten thereafter.
+   ============================================================ */
+const TRACE_COLORS=[[235,235,245],[255,70,90],[70,150,255],[255,210,70]];
+const TRACE_LABELS=["White","Red","Blue","Yellow"];
+const SLOW_FADE=0.02;          // per-substep fade in single-toppling / single-sweep modes
+const TRACE_JITTER=0.16;       // per-grain sideways displacement so overlapping walks stay legible
+function traceJit(){ return (Math.random()*2-1)*TRACE_JITTER; }
+function initStacks(){
+  const L=State.L, N=L*L, z=State.z, st=new Array(N);
+  for(let k=0;k<N;k++){ const i=k%L, j=(k/L)|0, arr=[];
+    for(let c=0;c<z[k];c++) arr.push({path:[[i,j]], off:[traceJit(),traceJit()]}); st[k]=arr; }
+  State.stacks=st;
+}
+function finishTrace(g){
+  State.traces.push({pts:g.path, start:g.path[0], alpha:1, col:TRACE_COLORS[State.traceColor], off:g.off||[0,0], aid:State.avalId});
+  if(State.traces.length>3000) State.traces.shift();
+}
+/* keep only the single longest walk produced by the just-finished avalanche */
+function pruneToLongest(){
+  const tr=State.traces, aid=State.avalId; let best=null, bestLen=-1;
+  for(const t of tr){ if(t.aid===aid && t.pts.length>bestLen){ bestLen=t.pts.length; best=t; } }
+  if(!best) return;
+  for(let n=tr.length-1;n>=0;n--){ if(tr[n].aid===aid && tr[n]!==best) tr.splice(n,1); }
+}
+/* a leaving grain counts as "inner" if its start sits in the central half of the lattice */
+function anyInnerStart(){
+  const L=State.L, lo=L*0.25, hi=L-L*0.25;
+  for(const t of State.traces){ const si=t.start[0], sj=t.start[1];
+    if(si>=lo && si<hi && sj>=lo && sj<hi) return true; }
+  return false;
+}
+function fadeTraces(rate){
+  const tr=State.traces;
+  for(let n=tr.length-1;n>=0;n--){ tr[n].alpha-=rate; if(tr[n].alpha<=0) tr.splice(n,1); }
+}
+function stepWorkTraced(){
+  if(granIdx<=1){                       // single topplings / single sweeps -> gradual fade
+    ensureGrain();
+    if(granIdx===0) stepTopple(); else stepSweep();
+    fadeTraces(SLOW_FADE);
+  } else {                              // faster -> one avalanche, then an optional visible delay
+    if(State.traceWait>0){ State.traceWait--; return; }
+    State.traces=[];                    // previous avalanche's tracks clear as the next is shown
+    ensureGrain(); resolveFull();
+    // only pause if a grain that left the system started in the inner half of the lattice
+    State.traceWait = anyInnerStart() ? State.traceDelay : 0;
+  }
+}
+function drawStar(ctx,cx,cy,R,col,a){
+  const [r,g,b]=col; ctx.save();
+  ctx.fillStyle=`rgba(${r},${g},${b},${a})`;
+  ctx.strokeStyle=`rgba(20,20,30,${0.5*a})`; ctx.lineWidth=0.7;
+  ctx.beginPath();
+  for(let p=0;p<10;p++){ const rad=(p&1)?R*0.42:R, ang=-Math.PI/2+p*Math.PI/5;
+    const x=cx+Math.cos(ang)*rad, y=cy+Math.sin(ang)*rad; if(p===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+}
+function drawTraces(ctx, proj){
+  const tr=State.traces; if(!tr.length) return;
+  const L=State.L, z=State.z;
+  let maxLen=0; for(const t of tr){ if(t.alpha>0 && t.pts.length>maxLen) maxLen=t.pts.length; }
+  ctx.save(); ctx.lineJoin="round"; ctx.lineCap="round";
+  for(const t of tr){
+    const a=Math.max(0,Math.min(1,t.alpha)); if(a<=0) continue;
+    const [r,g,b]=t.col, pts=t.pts, ox=(t.off?t.off[0]:0), oy=(t.off?t.off[1]:0);
+    const si=t.start[0], sj=t.start[1];
+    const distB=Math.min(si, sj, L-1-si, L-1-sj);
+    ctx.strokeStyle=`rgba(${r},${g},${b},${a})`;
+    ctx.lineWidth=(pts.length===maxLen && maxLen>1)?3.4:1.7;   // longest walk drawn double-thick
+    ctx.setLineDash(distB<4?[2,3]:[]);                          // walks born near the edge are dotted
+    ctx.beginPath();
+    for(let q=0;q<pts.length;q++){ const P=proj.project(pts[q][0]+ox, pts[q][1]+oy, 0.18);
+      if(q===0) ctx.moveTo(P.sx,P.sy); else ctx.lineTo(P.sx,P.sy); }
+    ctx.stroke();
+    let zh=0; if(si>=0&&si<L&&sj>=0&&sj<L) zh=z[sj*L+si];
+    const sp=proj.project(si+ox, sj+oy, zh*VSPACE+0.6);
+    ctx.setLineDash([]);
+    drawStar(ctx, sp.sx, sp.sy, Math.max(3.2, proj.scale*0.5), t.col, a);
+  }
+  ctx.setLineDash([]); ctx.restore();
+}
+
+/* ---------- freeze + probe ---------- */
+function freezeLattice(){ State.frozen=State.z.slice(); }
+function probeAS(){
+  if(!State.frozen) freezeLattice();
+  const L=State.L, N=L*L, fr=State.frozen;
+  const Ap=new Int32Array(N), Sp=new Int32Array(N), zz=new Int16Array(N), mark=new Int32Array(N); let ver=0;
+  for(let p=0;p<N;p++){
+    zz.set(fr); zz[p]++;
+    if(zz[p]<=3){ Sp[p]=0; continue; }
+    let cur=[p], size=0;
+    while(cur.length){
+      ver++; const next=[];
+      for(let s=0;s<cur.length;s++){
+        const k=cur[s]; if(zz[k]<=3) continue;
+        zz[k]-=4; size++; Ap[k]++;
+        const i=k%L, j=(k/L)|0;
+        const nb0=(i>0)?k-1:-1, nb1=(i<L-1)?k+1:-1, nb2=(j>0)?k-L:-1, nb3=(j<L-1)?k+L:-1;
+        if(State.manna){ const nbp=[nb0,nb1,nb2,nb3]; for(let gg=0;gg<4;gg++){ const dd=(Math.random()*4)|0; if(nbp[dd]>=0) zz[nbp[dd]]++; } }
+        else { if(nb0>=0) zz[nb0]++; if(nb1>=0) zz[nb1]++; if(nb2>=0) zz[nb2]++; if(nb3>=0) zz[nb3]++; }
+        const cand=[k,nb0,nb1,nb2,nb3];
+        for(let c=0;c<5;c++){ const m=cand[c];
+          if(m>=0 && zz[m]>3 && mark[m]!==ver){ mark[m]=ver; next.push(m); } }
+      }
+      cur=next;
+    }
+    Sp[p]=size;
+  }
+  State.Aprobe=Ap; State.Sprobe=Sp;
+}
+
+/* ============================================================
+   Perspective 3D camera.  camDist = distance from camera to the
+   NEAREST feature (in world units); we add a depth bound so the
+   denominator is always positive even for very close distances.
+   camDist === Infinity  →  orthographic (no perspective).
+   ============================================================ */
+const View={ polar:0, azimuth:0, asDist:Infinity };
+function makeProjector(canvas, L, opts){
+  opts=opts||{};
+  const barTop=opts.barTop||0;
+  const polRad=View.polar*Math.PI/180, aziRad=View.azimuth*Math.PI/180;
+  const alpha=Math.PI/2-polRad, ca=Math.cos(alpha), sa=Math.sin(alpha);
+  const cz=Math.cos(aziRad), sz=Math.sin(aziRad);
+  const cx=canvas.width/2, cy=canvas.height/2;
+  const baseScale=(Math.min(canvas.width,canvas.height)*0.80)/L;
+  const c=(L-1)/2;
+  const ortho = !(opts.camDist!==undefined && isFinite(opts.camDist));
+  let D=Infinity, f=baseScale;
+  if(!ortho){
+    const depthBound=Math.abs(L*0.6*ca)+Math.abs((barTop+0.5)*sa)+1;  // max |depth| over the scene
+    D=opts.camDist+depthBound;                                        // nearest point ~ camDist away
+    f=baseScale*D;
+  }
+  return { scale:baseScale, cx, cy, ortho,
+    project(i,j,zw){
+      let x=i-c, y=j-c, z=zw;
+      const x1=x*cz - y*sz, y1=x*sz + y*cz;
+      const up    = z*ca - y1*sa;
+      const depth = z*sa + y1*ca;
+      const ps = ortho ? baseScale : f/Math.max(0.001, D - depth);
+      return { sx: cx + x1*ps, sy: cy - up*ps - L*0.05*baseScale, depth };
+    } };
+}
+
+/* ---------- colormaps (shared) ---------- */
+function clamp(v){ return Math.max(0,Math.min(1,v)); }
+function lerp3(a,b,t){ return [Math.round(a[0]+(b[0]-a[0])*t), Math.round(a[1]+(b[1]-a[1])*t), Math.round(a[2]+(b[2]-a[2])*t)]; }
+function ramp(stops,t){ t=clamp(t);
+  if(t<=stops[0][0]) return stops[0][1].slice();
+  for(let i=1;i<stops.length;i++){ if(t<=stops[i][0]){
+    const a=stops[i-1], b=stops[i], f=(t-a[0])/(b[0]-a[0]); return lerp3(a[1],b[1],f); } }
+  return stops[stops.length-1][1].slice();
+}
+const PLASMA=[[24,8,64],[92,22,150],[186,28,140],[240,90,54],[255,214,92]];
+function plasma(t){ const x=clamp(t)*(PLASMA.length-1), i=Math.min(PLASMA.length-2,Math.floor(x)); return lerp3(PLASMA[i],PLASMA[i+1],x-i); }
+function jet(t){ t=clamp(t);
+  return [Math.round(clamp(1.5-Math.abs(4*t-3))*255), Math.round(clamp(1.5-Math.abs(4*t-2))*255), Math.round(clamp(1.5-Math.abs(4*t-1))*255)]; }
+function autumn(t){ t=clamp(t); return [255, Math.round(255*t), 0]; }
+function blueRamp(t){ t=clamp(t); return lerp3([10,22,90],[150,205,255],t); }
+function hsv2rgb(h,s,v){ const c=v*s, x=c*(1-Math.abs((h/60)%2-1)), m=v-c; let r,g,b;
+  if(h<60){r=c;g=x;b=0;} else if(h<120){r=x;g=c;b=0;} else if(h<180){r=0;g=c;b=x;}
+  else if(h<240){r=0;g=x;b=c;} else if(h<300){r=x;g=0;b=c;} else {r=c;g=0;b=x;}
+  return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)]; }
+function rainbow(t){ return hsv2rgb((1-clamp(t))*240,1,1); }
+/* Mountain: black(0) → dark green → green → light green → orange →
+   yellow → blue → light blue → cyan → snowy white with a touch of cyan. */
+const MOUNTAIN_STOPS=[
+  [0.00,[  0,  0,  0]],
+  [0.06,[ 10, 55, 12]],
+  [0.18,[ 28,120, 32]],
+  [0.32,[120,210, 95]],
+  [0.46,[224,138, 30]],
+  [0.58,[245,228, 66]],
+  [0.70,[ 40, 78,240]],
+  [0.80,[110,165,250]],
+  [0.88,[ 60,220,232]],
+  [1.00,[228,250,250]],
+];
+function mountain(t){ return ramp(MOUNTAIN_STOPS,t); }
+/* Classical heat (black-body): black → red → orange → yellow → white. */
+const HEAT_STOPS=[
+  [0.00,[  0,  0,  0]],
+  [0.25,[128,  0,  0]],
+  [0.50,[255, 60,  0]],
+  [0.75,[255,200,  0]],
+  [1.00,[255,255,255]],
+];
+function heat(t){ return ramp(HEAT_STOPS,t); }
+const SCHEMES={ mountain, heat, plasma, jet, autumn, blue:blueRamp, rainbow };
+const SCHEME_ORDER=["mountain","heat","plasma","jet","autumn","blue","rainbow"];
+const SCHEME_LABEL={mountain:"Mountain", heat:"Heat", plasma:"Plasma", jet:"Jet", autumn:"Autumn", blue:"Blue", rainbow:"Rainbow"};
+function cmap(t){ return (SCHEMES[State.scheme]||mountain)(t); }
+
+/* ---------- shaded sphere sprites ---------- */
+const spriteCache={};
+function sphereSprite(rgb, dpx){
+  const key=rgb.join(",")+"@"+(dpx|0);
+  if(spriteCache[key]) return spriteCache[key];
+  const pad=Math.ceil(dpx*0.35), size=(dpx|0)+pad*2;
+  const cv=document.createElement("canvas"); cv.width=size; cv.height=size;
+  const g=cv.getContext("2d"); const cx=size/2, cy=size/2, R=dpx/2;
+  g.save(); g.globalAlpha=0.34; g.fillStyle="#000";
+  g.beginPath(); g.ellipse(cx,cy+R*0.85,R*0.95,R*0.42,0,0,Math.PI*2); g.fill(); g.restore();
+  const [r,gg,b]=rgb, lx=cx-R*0.4, ly=cy-R*0.45;
+  const grad=g.createRadialGradient(lx,ly,R*0.1,cx,cy,R*1.05);
+  const lighten=(c,fr)=>Math.min(255,Math.round(c+(255-c)*fr)), darken=(c,fr)=>Math.round(c*(1-fr));
+  grad.addColorStop(0,`rgb(${lighten(r,.8)},${lighten(gg,.8)},${lighten(b,.8)})`);
+  grad.addColorStop(0.45,`rgb(${r},${gg},${b})`);
+  grad.addColorStop(1,`rgb(${darken(r,.6)},${darken(gg,.6)},${darken(b,.6)})`);
+  g.fillStyle=grad; g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.fill();
+  g.globalAlpha=0.55; g.fillStyle="#fff"; g.beginPath(); g.arc(lx,ly,R*0.22,0,Math.PI*2); g.fill();
+  g.globalAlpha=1;
+  const out={cv, off:pad+dpx/2}; spriteCache[key]=out; return out;
+}
+function spriteCacheClear(){ for(const k in spriteCache) delete spriteCache[k]; }
+
+const VSPACE=0.55, SPHERE_D=0.92;
+function mainColourMax(){ return State.manna ? 16 : 8; }   // fixed main-pile colour ceiling: BTW 8, Manna 16 -> no flicker at any avalanche size; A/S/avalanche keep their own max
+function fillPoly(ctx, pts, style){
+  ctx.beginPath(); ctx.moveTo(pts[0].sx,pts[0].sy);
+  for(let k=1;k<pts.length;k++) ctx.lineTo(pts[k].sx,pts[k].sy); ctx.closePath();
+  ctx.fillStyle=style; ctx.fill();
+}
+function drawGroundPlane(ctx, proj){
+  const L=State.L;
+  const cs=[[-0.5,-0.5],[L-0.5,-0.5],[L-0.5,L-0.5],[-0.5,L-0.5]].map(c=>proj.project(c[0],c[1],0));
+  ctx.save(); ctx.beginPath(); ctx.moveTo(cs[0].sx,cs[0].sy);
+  for(let k=1;k<4;k++) ctx.lineTo(cs[k].sx,cs[k].sy);
+  ctx.closePath(); ctx.fillStyle="rgba(50,40,80,0.30)"; ctx.fill();
+  ctx.strokeStyle="rgba(150,120,200,0.30)"; ctx.lineWidth=1; ctx.stroke(); ctx.restore();
+}
+/* ---- L>100 top-down: flat square columns, integer pixels per site (very fast) ---- */
+function renderSquaresMain(ctx, canvas, maxH){
+  const S=Math.min(canvas.width,canvas.height), L=State.L, z=State.z;
+  ctx.fillStyle="#05050b"; ctx.fillRect(0,0,canvas.width,canvas.height);
+  const P=Math.max(1,Math.floor(S/L));      // whole pixels per lattice site
+  const grid=L*P, ox=Math.floor((canvas.width-grid)/2), oy=Math.floor((canvas.height-grid)/2);
+  const cmax=mainColourMax(), lut=new Array(maxH+1); for(let h=1;h<=maxH;h++) lut[h]=cmap(h/cmax);
+  const im=ctx.createImageData(grid,grid), d=im.data;
+  for(let py=0;py<grid;py++){
+    const j=L-1-((py/P)|0), row=j*L;        // flip y so j increases upward
+    for(let px=0;px<grid;px++){
+      const h=z[row+((px/P)|0)], o=(py*grid+px)<<2;
+      if(h>0){ const c=lut[h]; d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; }
+      else { d[o]=5; d[o+1]=5; d[o+2]=11; }
+      d[o+3]=255;
+    }
+  }
+  ctx.putImageData(im, ox, oy);
+}
+/* ---- L>100 tilted: real 3-D columns, one cheap stroke each, narrowing with L ---- */
+function render3DColumns(ctx, canvas, maxH){
+  const L=State.L, z=State.z;
+  const proj=makeProjector(canvas,L,{camDist:L*2.4, barTop:maxH*VSPACE});
+  drawGroundPlane(ctx,proj);
+  const lw=Math.max(1, proj.scale*0.72);              // column width shrinks as L grows
+  const cmax=mainColourMax(), lut=new Array(maxH+1); for(let h=1;h<=maxH;h++) lut[h]=cmap(h/cmax);
+  const order=[];
+  for(let j=0;j<L;j++)for(let i=0;i<L;i++){ const h=z[j*L+i]; if(h>0) order.push([i,j,h,proj.project(i,j,0).depth]); }
+  order.sort((a,b)=>a[3]-b[3]);                        // painter's order, back to front
+  ctx.lineCap="round";
+  for(const o of order){ const i=o[0], j=o[1], c=lut[o[2]];
+    const b=proj.project(i,j,0), t=proj.project(i,j,o[2]*VSPACE);
+    ctx.strokeStyle=`rgb(${c[0]},${c[1]},${c[2]})`; ctx.lineWidth=lw;
+    ctx.beginPath(); ctx.moveTo(b.sx,b.sy); ctx.lineTo(t.sx,t.sy); ctx.stroke(); }
+  ctx.lineCap="butt";
+}
+/* ---------- grey backdrop for the cells updated by the current avalanche ---------- */
+function drawUpdatedFootprint(ctx, proj){
+  if(granIdx>2) return;                     // only the three slow granularities
+  const L=State.L, upd=State.upd, uv=State.updVer;
+  for(let j=0;j<L;j++)for(let i=0;i<L;i++){
+    if(upd[j*L+i]!==uv) continue;
+    const p0=proj.project(i-0.5,j-0.5,0), p1=proj.project(i+0.5,j-0.5,0),
+          p2=proj.project(i+0.5,j+0.5,0), p3=proj.project(i-0.5,j+0.5,0);
+    fillPoly(ctx,[p0,p1,p2,p3],"rgba(120,122,140,0.55)");
+  }
+}
+/* ---------- fly-away grains leaving the open boundary ---------- */
+function drawParticles(ctx, proj){
+  const ps=State.particles; if(!ps.length) return;
+  ctx.save();
+  for(const p of ps){
+    const frac=p.t/PART_LIFE, alpha=Math.max(0,1-frac);
+    const wx=p.i + p.dx*(0.5+p.t), wy=p.j + p.dy*(0.5+p.t);
+    const wz=0.5 + 1.4*Math.sin(Math.PI*Math.min(1,frac));   // gentle outward hop
+    const pr=proj.project(wx,wy,wz);
+    const r=Math.max(1.3, proj.scale*0.34)*(0.6+0.4*alpha);
+    const [cr,cg,cb]=p.col;
+    ctx.globalAlpha=alpha*0.30; ctx.fillStyle=`rgb(${cr},${cg},${cb})`;
+    ctx.beginPath(); ctx.arc(pr.sx,pr.sy,r*2.1,0,Math.PI*2); ctx.fill();   // soft glow
+    ctx.globalAlpha=alpha;
+    ctx.beginPath(); ctx.arc(pr.sx,pr.sy,r,0,Math.PI*2); ctx.fill();       // core grain
+  }
+  ctx.globalAlpha=1; ctx.restore();
+}
+/* ============================================================
+   Grassberger office view.  P. Grassberger's classic picture of
+   the BTW model: an office of bureaucrats, each desk holding a
+   stack of folders (= grains).  When a stack exceeds the critical
+   number 3 the clerk stands up in frustration and shoves one
+   folder onto each neighbouring desk, then sits back down with a
+   self-satisfied expression.  Folders crossing the boundary are
+   thrown out of the open windows that surround the office.
+   ============================================================ */
+const GB_TOPPLE=16, GB_HAPPY=42, GB_MAXFOLDERS=900, GB_MAXL=64, GB_FSPEED=0.08, GB_STEPDELAY=16;
+const GB_WINDUP=8;   // slow modes: frames a clerk stands, fists up, before flinging folders to neighbours
+const GB_HAND_DOWN=40, GB_HAND_PLACE=10, GB_HAND_UP=28, GB_HAND_MAXL=32;   // descent, placing, retreat; no hand for L >= 32
+const GB_WINOPEN=50;                                       // frames a window stays open after a folder flies out
+/* the transparent hand of god delivers every externally added folder
+   (slow granularities only); nothing else happens while it is at work */
+function startGbHand(){
+  const k=dropSite(), L=State.L, fast=L>6, tilted=View.polar>0;
+  /* in the 3-D view the descent covers far fewer pixels, so it uses a
+     much shorter clock to match the on-screen speed of the 2-D view */
+  State.gbHand={k, i:k%L, j:(k/L)|0, stage:"down", t:0, a:1, sh:Math.random(),
+    dDown:fast?Math.max(4,Math.round(96/L)):(tilted?14:GB_HAND_DOWN),
+    dPlace:fast?4:(tilted?6:GB_HAND_PLACE)};
+}
+function drawGodHandScreen(ctx,x,y,S,holding,sh,alpha){
+  const A=(alpha===undefined)?1:alpha;
+  ctx.save(); ctx.translate(x,y);
+  if(holding){ const cc=gbShadeRGB(sh);                    // the folder in its grip
+    ctx.globalAlpha=0.95*A; ctx.fillStyle="rgb("+cc[0]+","+cc[1]+","+cc[2]+")";
+    ctx.fillRect(-S*0.20,S*0.10,S*0.40,S*0.14);
+    ctx.strokeStyle="rgba(60,40,10,0.8)"; ctx.lineWidth=1; ctx.strokeRect(-S*0.20,S*0.10,S*0.40,S*0.14);
+  }
+  ctx.globalAlpha=0.32*A; ctx.fillStyle="rgb(250,240,215)";
+  ctx.strokeStyle="rgba(150,130,95,0.45)"; ctx.lineWidth=Math.max(0.8,S*0.02);
+  const topLocal=-y-30;                                    // reaches down from beyond the top edge
+  /* forearm tapering into a wrist */
+  ctx.beginPath();
+  ctx.moveTo(-S*0.26,topLocal);
+  ctx.lineTo(-S*0.13,-S*0.42);
+  ctx.quadraticCurveTo(-S*0.11,-S*0.30,-S*0.16,-S*0.22);
+  ctx.lineTo(S*0.16,-S*0.22);
+  ctx.quadraticCurveTo(S*0.11,-S*0.30,S*0.13,-S*0.42);
+  ctx.lineTo(S*0.26,topLocal);
+  ctx.closePath(); ctx.fill();
+  /* palm: rounded, wider at the knuckles */
+  ctx.beginPath();
+  ctx.moveTo(-S*0.20,-S*0.26);
+  ctx.quadraticCurveTo(-S*0.30,-S*0.10,-S*0.26,S*0.04);
+  ctx.quadraticCurveTo(-S*0.16,S*0.14,0,S*0.15);
+  ctx.quadraticCurveTo(S*0.16,S*0.14,S*0.26,S*0.04);
+  ctx.quadraticCurveTo(S*0.30,-S*0.10,S*0.20,-S*0.26);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  /* four fingers of different lengths, slightly splayed, curling down over the folder */
+  for(const fg of [[-0.20,0.30,-0.16],[-0.07,0.36,-0.05],[0.06,0.35,0.05],[0.18,0.28,0.15]]){
+    ctx.save(); ctx.translate(fg[0]*S,S*0.10); ctx.rotate(fg[2]);
+    ctx.beginPath(); ctx.ellipse(0,fg[1]*S*0.5,S*0.052,fg[1]*S*0.55,0,0,Math.PI*2);
+    ctx.fill(); ctx.stroke(); ctx.restore();
+  }
+  /* opposing thumb */
+  ctx.save(); ctx.translate(-S*0.28,-S*0.02); ctx.rotate(0.85);
+  ctx.beginPath(); ctx.ellipse(0,S*0.10,S*0.058,S*0.16,0,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.restore();
+  /* faint knuckle line */
+  ctx.beginPath(); ctx.moveTo(-S*0.18,S*0.06); ctx.quadraticCurveTo(0,S*0.11,S*0.18,S*0.06); ctx.stroke();
+  /* small halo */
+  ctx.globalAlpha=0.07*A; ctx.beginPath(); ctx.arc(0,-S*0.05,S*0.48,0,Math.PI*2); ctx.fill();
+  ctx.restore(); ctx.globalAlpha=1;
+}
+/* every folder is an individual: it carries its own shade t in [0,1] for life */
+function gbShadeRGB(t){ const f=0.72+0.55*t; return [Math.min(255,(210*f)|0), Math.min(255,(172*f)|0), Math.min(255,(92*f)|0)]; }
+function gbInitStacks(){
+  const N=State.L*State.L, z=State.z, st=new Array(N);
+  for(let k=0;k<N;k++){ const a=[]; for(let c=0;c<z[k];c++) a.push(Math.random()); st[k]=a; }
+  State.gbStacks=st;
+}
+function advanceGrassberger(){
+  if(!State.grassberger || !State.gbPhase) return;
+  if(State.gbHand && State.running){
+    const hd=State.gbHand; hd.t++;
+    if(hd.stage==="down"){ if(hd.t>=hd.dDown){ hd.stage="place"; hd.t=0; beginGrainAt(hd.k,hd.sh); } }
+    else if(hd.stage==="place"){ if(hd.t>=hd.dPlace){ hd.stage="up"; hd.t=0; hd.a=1; } }
+    else {
+      /* fade over the lifetime of the avalanche it caused; quickly when quiet */
+      if(State.aval.running || State.gbFolders.length>0) hd.a*=0.96;
+      else hd.a-=0.12;
+      if(hd.a<=0.03) State.gbHand=null;
+    }
+  }
+  const ph=State.gbPhase, tm=State.gbTimer;
+  for(let k=0;k<ph.length;k++){
+    if(!ph[k]) continue;
+    if(--tm[k]<=0){ if(ph[k]===1){ ph[k]=2; tm[k]=GB_HAPPY; } else ph[k]=0; }
+  }
+  const pn=State.gbPending;                          // released into flight after the stand-up beat
+  if(pn && pn.length) for(let n=pn.length-1;n>=0;n--){ if(--pn[n].d<=0){ State.gbFolders.push(pn[n].fol); pn.splice(n,1); } }
+  const fs=State.gbFolders;
+  const fstep = (granIdx===0) ? GB_FSPEED*0.5 : GB_FSPEED;   // 1 toppling/frame: twice the motion detail (half speed) as tasks fly to neighbours/window
+  for(let n=fs.length-1;n>=0;n--){ const f=fs[n]; f.t+=fstep; if(f.t>=(f.out?2.2:1)) fs.splice(n,1); }
+  if(State.gbWin){ for(const sd of ["n","s","e","w"]){ const a=State.gbWin[sd];
+    for(let q=0;q<a.length;q++) if(a[q]>0) a[q]--; } }
+}
+/* one desk + clerk + folder stack; phase 0 = seated neutral, 1 = standing frustrated, 2 = seated pleased */
+function drawClerkDesk(ctx,x,y,C,h,phase,stack){
+  const cx=x+C*0.5, standing=phase===1;
+  const expr=standing?1:(h<=1?2:(h<=3?0:1));   // happy with 0-1 folders, neutral 2-3, frustrated 4+
+  const deskY=y+C*0.60, deskW=C*0.72, deskH=Math.max(2,C*0.10);
+  /* clerk first, desk painted after -> the clerk sits behind the desk */
+  const headR=Math.max(1.5,C*0.105);
+  const headY=standing? y+C*0.19 : y+C*0.37;
+  const suit=standing? "#8c2f3a" : (expr===2? "#3c5a41" : "#3a445e");
+  const bw=Math.max(1.5,C*0.17), bodyTop=headY+headR*0.85;
+  ctx.fillStyle=suit; ctx.fillRect(cx-bw/2, bodyTop, bw, Math.max(1,deskY+deskH*0.5-bodyTop));
+  ctx.strokeStyle=suit; ctx.lineWidth=Math.max(1,C*0.05); ctx.beginPath();
+  if(standing){ const ay=bodyTop+C*0.07;                     // arms out, pushing folders away
+    ctx.moveTo(cx-bw/2,ay); ctx.lineTo(cx-C*0.36,ay);
+    ctx.moveTo(cx+bw/2,ay); ctx.lineTo(cx+C*0.36,ay); }
+  else { const ay=bodyTop+C*0.05;                            // arms resting on the desk
+    ctx.moveTo(cx-bw/2,ay); ctx.lineTo(cx-C*0.17,ay+C*0.09);
+    ctx.moveTo(cx+bw/2,ay); ctx.lineTo(cx+C*0.17,ay+C*0.09); }
+  ctx.stroke();
+  ctx.fillStyle=(expr===1)? "#ff8f78" : "#f0c8a0";           // flushed when frustrated
+  ctx.beginPath(); ctx.arc(cx,headY,headR,0,Math.PI*2); ctx.fill();
+  if(C>=14){
+    gbFace(ctx,cx,headY,headR,expr);
+    if(standing){                                            // little anger sparks while erupting
+      ctx.strokeStyle="#ffd24d"; ctx.lineWidth=Math.max(0.7,headR*0.16); ctx.beginPath();
+      ctx.moveTo(cx-headR*1.6,headY-headR*1.15); ctx.lineTo(cx-headR*1.15,headY-headR*0.75);
+      ctx.moveTo(cx+headR*1.6,headY-headR*1.15); ctx.lineTo(cx+headR*1.15,headY-headR*0.75);
+      ctx.stroke();
+    }
+  }
+  /* desk */
+  ctx.fillStyle="#8b5e3c"; ctx.fillRect(cx-deskW/2,deskY,deskW,deskH);
+  ctx.fillStyle="#66401f";
+  const legW=Math.max(1,C*0.05), legH=C*0.20;
+  ctx.fillRect(cx-deskW/2+legW,   deskY+deskH, legW, legH);
+  ctx.fillRect(cx+deskW/2-2*legW, deskY+deskH, legW, legH);
+  /* folder stack: one folder per grain; the 4th and above turn red = over-critical */
+  const fh=Math.max(2,C*0.065), fw=C*0.45, nShow=Math.min(h,9);
+  for(let n=0;n<nShow;n++){
+    const fy=deskY-(n+1)*fh, wob=((n*73)%5-2)*C*0.013;
+    const tt=(stack && stack[n]!==undefined)? stack[n] : ((n*73)%7)/6;
+    const cc=gbShadeRGB(tt);
+    ctx.fillStyle="rgb("+cc[0]+","+cc[1]+","+cc[2]+")";
+    ctx.fillRect(cx-fw/2+wob, fy, fw, fh-0.8);
+    ctx.strokeStyle=(n>=3)? "rgba(220,50,50,0.95)" : "rgba(55,36,8,0.6)"; ctx.lineWidth=(n>=3)?1.2:0.7;
+    ctx.strokeRect(cx-fw/2+wob, fy, fw, fh-0.8);
+  }
+  if(h>9){ ctx.fillStyle="#ffe9b0"; ctx.font=(Math.max(8,C*0.16)|0)+"px sans-serif";
+    ctx.fillText("+"+(h-9), cx+fw/2+2, deskY-8.4*fh); }
+}
+function renderGrassberger(ctx,canvas){
+  const L=State.L, z=State.z, W=canvas.width, H=canvas.height;
+  if(L>GB_MAXL){
+    let maxH=1; for(let k=0;k<L*L;k++) if(z[k]>maxH) maxH=z[k];
+    renderSquaresMain(ctx,canvas,maxH);
+    ctx.fillStyle="#ffd28a"; ctx.font="bold 14px sans-serif";
+    ctx.fillText("Grassberger office view needs L \u2264 "+GB_MAXL+" \u2014 showing flat colours instead", 14, 24);
+    return;
+  }
+  const M=Math.max(30, Math.min(W,H)*0.06);
+  const C=(Math.min(W,H)-2*M)/L, gw=C*L;
+  const ox=(W-gw)/2, oy=(H-gw)/2;
+  /* night sky outside the office */
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,"#0b1e3d"); sky.addColorStop(1,"#17334f");
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+  /* walls */
+  ctx.fillStyle="#57503f"; ctx.fillRect(ox-M,oy-M,gw+2*M,gw+2*M);
+  ctx.fillStyle="#6b6350"; ctx.fillRect(ox-M+3,oy-M+3,gw+2*M-6,gw+2*M-6);
+  /* open windows all the way around */
+  const st=Math.max(1, Math.ceil(20/C)), ww=C*st*0.62, wh=M*0.66;
+  const wopen=(side,c,stp,flip)=>{ const a=State.gbWin&&State.gbWin[side]; if(!a) return false;
+    for(let q=c;q<Math.min(L,c+stp);q++){ const b=flip? L-1-q : q; if(a[b]>0) return true; } return false; };
+  const win=(wx,wy,w,h,vert,open,dir)=>{
+    ctx.fillStyle="#2b241d"; ctx.fillRect(wx-2,wy-2,w+4,h+4);
+    if(open){                                                // flung open: dark opening + sashes swung outward
+      ctx.fillStyle="#0b1626"; ctx.fillRect(wx,wy,w,h);
+      ctx.strokeStyle="rgba(255,255,255,0.9)"; ctx.lineWidth=1.2; ctx.strokeRect(wx,wy,w,h);
+      ctx.fillStyle="rgba(159,212,255,0.55)"; ctx.strokeStyle="rgba(255,255,255,0.7)";
+      if(!vert){ const eY=dir<0? wy : wy+h;
+        ctx.beginPath(); ctx.moveTo(wx,eY); ctx.lineTo(wx+w*0.42,eY+dir*h*0.9); ctx.lineTo(wx+w*0.5,eY+dir*h*0.9); ctx.lineTo(wx+w*0.08,eY); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(wx+w,eY); ctx.lineTo(wx+w*0.58,eY+dir*h*0.9); ctx.lineTo(wx+w*0.5,eY+dir*h*0.9); ctx.lineTo(wx+w*0.92,eY); ctx.closePath(); ctx.fill(); ctx.stroke();
+      } else { const eX=dir<0? wx : wx+w;
+        ctx.beginPath(); ctx.moveTo(eX,wy); ctx.lineTo(eX+dir*w*0.9,wy+h*0.42); ctx.lineTo(eX+dir*w*0.9,wy+h*0.5); ctx.lineTo(eX,wy+h*0.08); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(eX,wy+h); ctx.lineTo(eX+dir*w*0.9,wy+h*0.58); ctx.lineTo(eX+dir*w*0.9,wy+h*0.5); ctx.lineTo(eX,wy+h*0.92); ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+      return;
+    }
+    const g2=vert?ctx.createLinearGradient(wx,wy,wx+w,wy):ctx.createLinearGradient(wx,wy,wx,wy+h);
+    g2.addColorStop(0,"#a6d8ff"); g2.addColorStop(1,"#39719f");
+    ctx.fillStyle=g2; ctx.fillRect(wx,wy,w,h);
+    ctx.strokeStyle="rgba(255,255,255,0.8)"; ctx.lineWidth=1.2; ctx.strokeRect(wx,wy,w,h);
+    ctx.beginPath();
+    if(vert){ ctx.moveTo(wx+w*0.5,wy); ctx.lineTo(wx+w*0.5,wy+h); }
+    else { ctx.moveTo(wx,wy+h*0.5); ctx.lineTo(wx+w,wy+h*0.5); }
+    ctx.stroke();
+  };
+  for(let i=0;i<L;i+=st){ const cwx=ox+Math.min(i+st/2,L-0.5)*C;
+    win(cwx-ww/2, oy-M+(M-wh)/2, ww, wh, false, wopen("n",i,st,false), -1);
+    win(cwx-ww/2, oy+gw+(M-wh)/2, ww, wh, false, wopen("s",i,st,false), 1); }
+  for(let j=0;j<L;j+=st){ const cwy=oy+Math.min(j+st/2,L-0.5)*C;
+    win(ox-M+(M-wh)/2, cwy-ww/2, wh, ww, true, wopen("w",j,st,true), -1);
+    win(ox+gw+(M-wh)/2, cwy-ww/2, wh, ww, true, wopen("e",j,st,true), 1); }
+  /* office floor */
+  ctx.fillStyle="#7a5c3e"; ctx.fillRect(ox,oy,gw,gw);
+  ctx.strokeStyle="rgba(0,0,0,0.18)"; ctx.lineWidth=1;
+  for(let j=1;j<L;j++){ ctx.beginPath(); ctx.moveTo(ox,oy+j*C); ctx.lineTo(ox+gw,oy+j*C); ctx.stroke(); }
+  /* clerks + desks */
+  const ph=State.gbPhase;
+  for(let j=0;j<L;j++)for(let i=0;i<L;i++){
+    const k=idx(i,j);
+    drawClerkDesk(ctx, ox+i*C, oy+(L-1-j)*C, C, z[k], ph?ph[k]:0, State.gbStacks?State.gbStacks[k]:null);
+  }
+  /* folders in flight (avalanche = folders; boundary folders sail out of the windows) */
+  const fs=State.gbFolders, fw2=C*0.32, fh2=Math.max(2,C*0.12);
+  for(const f of fs){
+    const t=f.t, wi=f.i+f.dx*t, wj=f.j+f.dy*t;
+    const sx2=ox+(wi+0.5)*C;
+    let lift=Math.sin(Math.PI*Math.min(t,1))*C*0.4;
+    if(f.out && t>1) lift-=C*0.9*(t-1)*(t-1);        // tumbles down outside the window
+    const sy2=oy+(L-1-wj+0.5)*C - lift;
+    const al=(f.out && t>1)? Math.max(0,1-(t-1)/1.2) : 1;
+    const sc=(f.out && t>1)? Math.max(0.4,1-(t-1)*0.4) : 1;
+    ctx.save(); ctx.translate(sx2,sy2);
+    ctx.rotate((f.out?t*4:t*1.4)*(((f.dx-f.dy)>=0)?1:-1));
+    ctx.globalAlpha=al; ctx.scale(sc,sc);
+    const fcc=gbShadeRGB(f.sh!==undefined?f.sh:0.5);
+    ctx.fillStyle="rgb("+fcc[0]+","+fcc[1]+","+fcc[2]+")"; ctx.fillRect(-fw2/2,-fh2/2,fw2,fh2);
+    ctx.strokeStyle="rgba(60,40,10,0.85)"; ctx.lineWidth=0.9; ctx.strokeRect(-fw2/2,-fh2/2,fw2,fh2);
+    ctx.restore();
+  }
+  /* the hand of god delivering the next folder */
+  if(State.gbHand){
+    const hd2=State.gbHand, kk=idx(hd2.i,hd2.j);
+    const hx=ox+(hd2.i+0.5)*C, ycell=oy+(L-1-hd2.j)*C;
+    const yT=ycell+C*0.60 - Math.min(z[kk],9)*Math.max(2,C*0.065) - C*0.30;
+    const ease=q=>q*q*(3-2*q);
+    let yh, ha=1;
+    if(L>6){                               // larger offices: quick materialization above the site
+      if(hd2.stage==="down"){ const q=Math.min(1,hd2.t/hd2.dDown); yh=yT-C*0.35*(1-ease(q)); ha=q; }
+      else if(hd2.stage==="place"){ yh=yT; }
+      else { ha=hd2.a; yh=yT-C*0.45*ease(1-hd2.a); }
+    } else {
+      if(hd2.stage==="down") yh=-50+(yT+50)*ease(Math.min(1,hd2.t/hd2.dDown));
+      else if(hd2.stage==="place") yh=yT;
+      else { ha=hd2.a; yh=yT-(yT+50)*0.25*ease(1-hd2.a); }
+    }
+    drawGodHandScreen(ctx,hx,yh,C*0.95,hd2.stage==="down",hd2.sh,ha);
+  }
+  ctx.globalAlpha=1;
+}
+/* ---------- Grassberger office in 3-D perspective ----------
+   Used when the office view is on AND the view is tilted
+   (polar > 0).  Desks, clerks and folder stacks become little
+   3-D objects with shadows on the office floor; the far walls
+   carry the open windows (near walls are cut away so the view
+   into the office stays clear).  Drag the panel to walk around. */
+const GB_DESK_H=0.36;
+function gbBox(ctx,proj,i,j,bx,by,z0,z1,col){
+  const P=(dx,dy,zz)=>proj.project(i+dx,j+dy,zz);
+  const top=[P(-bx,-by,z1),P(bx,-by,z1),P(bx,by,z1),P(-bx,by,z1)];
+  const bot=[P(-bx,-by,z0),P(bx,-by,z0),P(bx,by,z0),P(-bx,by,z0)];
+  const r=col[0],g=col[1],b=col[2];
+  const face=(pts,sh)=>{ fillPoly(ctx,pts,"rgb("+Math.round(r*sh)+","+Math.round(g*sh)+","+Math.round(b*sh)+")");
+    ctx.strokeStyle="rgba(0,0,0,0.25)"; ctx.lineWidth=0.5; ctx.stroke(); };
+  face([bot[0],bot[1],top[1],top[0]],0.62); face([bot[1],bot[2],top[2],top[1]],0.50);
+  face([bot[3],bot[0],top[0],top[3]],0.74); face([bot[2],bot[3],top[3],top[2]],0.55);
+  face(top,1.0);
+}
+function gbLocalScale(proj,i,j,zw){
+  const a=proj.project(i,j,zw), b=proj.project(i+0.5,j,zw);
+  return Math.hypot(b.sx-a.sx,b.sy-a.sy)*2;          // pixels per world unit at this point
+}
+/* A rounded, shaded 3-D limb: a poly-line of world-space joints (shoulder →
+   elbow → wrist) rendered as a fake tube — round caps/joins keep the elbow
+   bend, tapering width gives it volume, and a light/base/shadow triple-pass
+   makes it read as a cylinder rather than a stick. When `glow`>0 a soft red
+   aura of anger burns behind it. */
+function gbLimb(ctx,proj,joints,radii,rgb,glow){
+  const P=joints.map(p=>proj.project(p[0],p[1],p[2]));
+  const Sc=joints.map(p=>gbLocalScale(proj,p[0],p[1],p[2]));
+  const wid=radii.map((r,k)=>Math.max(1.4,2*r*Sc[k]));      // on-screen diameter at each joint
+  let wmax=0; for(const w of wid) if(w>wmax) wmax=w;
+  const [r,g,b]=rgb;
+  const dk=(c,f)=>Math.round(c*(1-f)), lt=(c,f)=>Math.min(255,Math.round(c+(255-c)*f));
+  const chunky=wmax>3;
+  const seg=(ox,oy,mul,style)=>{ ctx.strokeStyle=style; ctx.lineCap="round"; ctx.lineJoin="round";
+    for(let s=0;s<P.length-1;s++){ ctx.lineWidth=Math.max(1,((wid[s]+wid[s+1])*0.5)*mul);
+      ctx.beginPath(); ctx.moveTo(P[s].sx+ox,P[s].sy+oy); ctx.lineTo(P[s+1].sx+ox,P[s+1].sy+oy); ctx.stroke(); } };
+  if(glow>0 && chunky){                                     // furious red halo behind the raised arm
+    ctx.save(); ctx.strokeStyle="rgba(255,70,45,"+(0.40*glow).toFixed(3)+")";
+    ctx.shadowColor="rgba(255,48,32,0.9)"; ctx.shadowBlur=wmax*(1.0+0.8*glow);
+    ctx.lineCap="round"; ctx.lineJoin="round"; ctx.lineWidth=wmax*0.85;
+    ctx.beginPath(); ctx.moveTo(P[0].sx,P[0].sy); for(let k=1;k<P.length;k++) ctx.lineTo(P[k].sx,P[k].sy); ctx.stroke();
+    ctx.restore();
+  }
+  seg( wmax*0.15, wmax*0.17, 1.00, "rgb("+dk(r,.45)+","+dk(g,.45)+","+dk(b,.45)+")");   // shaded underside
+  seg(0,0,1.00,"rgb("+r+","+g+","+b+")");                                              // main tube (lit top = base colour)
+}
+/* A clenched fist at a world point: a shaded sphere with a knuckle crease,
+   wrapped in a hot red glow when the clerk is enraged. */
+function gbFist(ctx,proj,i,j,z,rw,skin,glow){
+  const p=proj.project(i,j,z), sc=gbLocalScale(proj,i,j,z);
+  const d=Math.max(3,2*rw*sc);
+  if(glow>0){ ctx.save(); ctx.globalAlpha=0.5*glow; ctx.fillStyle="rgb(255,55,35)";
+    ctx.shadowColor="rgba(255,45,30,0.95)"; ctx.shadowBlur=d*1.1;
+    ctx.beginPath(); ctx.arc(p.sx,p.sy,d*0.5,0,Math.PI*2); ctx.fill(); ctx.restore(); }
+  const sp=sphereSprite(skin,d); ctx.drawImage(sp.cv,p.sx-sp.off,p.sy-sp.off);
+  if(d>7){ ctx.save(); ctx.strokeStyle="rgba(120,60,45,0.5)"; ctx.lineWidth=Math.max(0.6,d*0.07); ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(p.sx-d*0.28,p.sy-d*0.03); ctx.lineTo(p.sx+d*0.28,p.sy-d*0.03); ctx.stroke(); ctx.restore(); }
+}
+/* A seated arm as a shaded tube, but only the sub-segments on one side of a
+   depth threshold are drawn: call side='far' BEFORE the folder stack and
+   side='near' AFTER it, so the stack's own silhouette occludes the part of the
+   arm that lies behind it — which part shows then depends on the viewing angle.
+   side='all' draws the whole tube (used when there's no stack to hide behind).
+   depth is the projector's per-vertex depth (larger = nearer the camera). */
+function gbArmSplit(ctx,proj,joints,radii,rgb,stackDepth,side){
+  const K=6, nodes=[];                                   // densify so the occlusion boundary is smooth
+  for(let s=0;s<joints.length-1;s++){
+    const a=joints[s], b=joints[s+1], ra=radii[s], rb=radii[s+1], last=(s===joints.length-2);
+    const cnt=last?K+1:K;
+    for(let t=0;t<cnt;t++){ const u=t/K;
+      nodes.push([a[0]+(b[0]-a[0])*u, a[1]+(b[1]-a[1])*u, a[2]+(b[2]-a[2])*u, ra+(rb-ra)*u]); }
+  }
+  const P=nodes.map(n=>proj.project(n[0],n[1],n[2]));
+  const wid=nodes.map(n=>Math.max(1.4,2*n[3]*gbLocalScale(proj,n[0],n[1],n[2])));
+  let wmax=0; for(const w of wid) if(w>wmax) wmax=w;
+  const [r,g,b]=rgb, dk=(c,f)=>Math.round(c*(1-f));
+  ctx.lineCap="round"; ctx.lineJoin="round";
+  const pass=(ox,oy,style)=>{ ctx.strokeStyle=style;
+    for(let s=0;s<P.length-1;s++){
+      if(side!=="all"){ const md=(P[s].depth+P[s+1].depth)*0.5; if((md>stackDepth)!==(side==="near")) continue; }
+      ctx.lineWidth=Math.max(1,(wid[s]+wid[s+1])*0.5);
+      ctx.beginPath(); ctx.moveTo(P[s].sx+ox,P[s].sy+oy); ctx.lineTo(P[s+1].sx+ox,P[s+1].sy+oy); ctx.stroke();
+    } };
+  pass(wmax*0.15, wmax*0.17, "rgb("+dk(r,.45)+","+dk(g,.45)+","+dk(b,.45)+")");   // shaded underside
+  pass(0,0,"rgb("+r+","+g+","+b+")");                                              // main tube
+}
+function gbFace(ctx,cx,cy,r,phase){
+  if(r<4.5) return;
+  ctx.save(); ctx.strokeStyle="#241609"; ctx.fillStyle="#241609"; ctx.lineWidth=Math.max(0.7,r*0.16);
+  const ex=r*0.42, ey=cy-r*0.12;
+  if(phase===1){                                     // frustrated
+    ctx.beginPath();
+    ctx.moveTo(cx-ex-r*0.28,ey-r*0.42); ctx.lineTo(cx-ex+r*0.12,ey-r*0.12);
+    ctx.moveTo(cx+ex+r*0.28,ey-r*0.42); ctx.lineTo(cx+ex-r*0.12,ey-r*0.12);
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx-ex,ey,r*0.10,0,Math.PI*2); ctx.arc(cx+ex,ey,r*0.10,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy+r*0.42,r*0.24,0,Math.PI*2); ctx.fill();
+  } else if(phase===2){                              // self-satisfied
+    ctx.beginPath(); ctx.arc(cx-ex,ey,r*0.24,Math.PI*1.05,Math.PI*1.95); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx+ex,ey,r*0.24,Math.PI*1.05,Math.PI*1.95); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy+r*0.12,r*0.46,Math.PI*0.15,Math.PI*0.85); ctx.stroke();
+  } else {                                           // neutral
+    ctx.beginPath(); ctx.arc(cx-ex,ey,r*0.10,0,Math.PI*2); ctx.arc(cx+ex,ey,r*0.10,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx-r*0.28,cy+r*0.36); ctx.lineTo(cx+r*0.28,cy+r*0.36); ctx.stroke();
+  }
+  ctx.restore();
+}
+/* one 3-D vignette: floor shadows, clerk (3-D body: legs/stool, hips,
+   chest, arms that spread wide when frustrated, sphere head), desk,
+   and the folder stack in which every folder keeps its own shade */
+function gbCell3D(ctx,proj,i,j,h,phase,detail,kv,stack){
+  const standing=phase===1;
+  const expr=standing?1:(h<=1?2:(h<=3?0:1));   // happy with 0-1 folders, neutral 2-3, frustrated 4+
+  const suitRgb=standing?[140,47,58]:(expr===2?[60,90,65]:[58,68,94]);
+  const suitCss="rgb("+suitRgb.join(",")+")";
+  const cj=j+0.34;                                   // the clerk sits behind the desk
+  /* people are drawn 10% larger than the furniture; scale body/head/arms about
+     the clerk's floor base (i, cj, 0).  The desk & folders keep their size. */
+  const PS=1.10;
+  const bx=x=>i+(x-i)*PS, by=y=>cj+(y-cj)*PS, bz=z=>z*PS;
+  const bBox=(cx,cy,hx,hy,z0,z1,rgb)=>gbBox(ctx,proj,bx(cx),by(cy),hx*PS,hy*PS,bz(z0),bz(z1),rgb);
+  /* soft shadows on the office floor */
+  ctx.fillStyle="rgba(0,0,0,0.28)";
+  const sD=proj.project(i,j+0.04,0.004);
+  ctx.beginPath(); ctx.ellipse(sD.sx,sD.sy, proj.scale*0.40, Math.max(1.2,proj.scale*0.40*kv),0,0,Math.PI*2); ctx.fill();
+  const sC=proj.project(i,cj+0.06,0.004);
+  ctx.beginPath(); ctx.ellipse(sC.sx,sC.sy, proj.scale*(standing?0.24:0.17), Math.max(1,proj.scale*0.17*kv),0,0,Math.PI*2); ctx.fill();
+  /* 3-D body (10% larger) */
+  if(standing){
+    bBox(i-0.055,cj,0.035,0.045,0,0.30,[45,50,66]);   // legs
+    bBox(i+0.055,cj,0.035,0.045,0,0.30,[45,50,66]);
+    bBox(i,cj,0.105,0.075,0.30,0.44,suitRgb);          // hips
+    bBox(i,cj,0.12,0.085,0.44,0.68,suitRgb);           // chest
+  } else {
+    bBox(i,cj+0.03,0.09,0.07,0,0.14,[70,52,36]);       // stool
+    bBox(i,cj,0.105,0.075,0.14,0.28,suitRgb);          // hips
+    bBox(i,cj,0.12,0.085,0.28,0.47,suitRgb);           // chest
+  }
+  const hz=bz(standing?0.80:0.58);
+  const ls=gbLocalScale(proj,i,cj,hz);
+  const armDetail = ls>10;
+  const skin = (expr===1)? [255,150,120] : [240,200,160];
+  /* Precompute the seated arms up front so the half that lies behind the folder
+     stack can be painted BEFORE the stack (and thus be occluded by it). */
+  let seated=null;
+  if(!standing){
+    const shL=[bx(i-0.10),by(cj),bz(0.44)], shR=[bx(i+0.10),by(cj),bz(0.44)];
+    const elR=[bx(i+0.17),by(cj+0.05),bz(0.40)], haR=[bx(i+0.20), j+0.15, GB_DESK_H+0.03];  // right hand rests on the desk
+    const elL=[bx(i-0.17),by(cj+0.05),bz(0.40)], haL=[bx(i-0.20), j+0.15, GB_DESK_H+0.03];  // left hand mirrors it — same length, also on the desk
+    seated={ sleeve:suitRgb, haR, haL,
+      armR: armDetail?[shR,elR,haR]:[shR,haR],
+      armL: armDetail?[shL,elL,haL]:[shL,haL],
+      rad:  armDetail?[0.050*PS,0.044*PS,0.036*PS]:[0.045*PS,0.036*PS] };
+  }
+  /* desk, painted after the clerk so he sits behind it */
+  if(detail){
+    for(const dd of [[-0.26,-0.15],[0.26,-0.15],[-0.26,0.15],[0.26,0.15]])
+      gbBox(ctx,proj,i+dd[0],j+dd[1],0.03,0.03,0,GB_DESK_H-0.07,[102,64,31]);
+  } else {
+    gbBox(ctx,proj,i,j,0.06,0.05,0,GB_DESK_H-0.07,[102,64,31]);
+  }
+  gbBox(ctx,proj,i,j,0.33,0.22,GB_DESK_H-0.07,GB_DESK_H,[139,94,60]);
+  const fh=0.11, nShow=Math.min(h,9);
+  /* Depth threshold at the stack, taken low (near desk height) so the split is
+     driven by fore/aft position: arm behind hides, forearm/hand in front shows. */
+  const stackDepth = nShow>0 ? proj.project(i,j,GB_DESK_H+Math.min(nShow*fh,0.5)*0.30).depth : Infinity;
+  const fistDepth = ha => proj.project(ha[0],ha[1],ha[2]).depth;
+  /* seated: the arm halves BEHIND the stack, painted first so the stack covers them */
+  if(seated && nShow>0){
+    gbArmSplit(ctx,proj,seated.armR,seated.rad,seated.sleeve,stackDepth,"far");
+    gbArmSplit(ctx,proj,seated.armL,seated.rad,seated.sleeve,stackDepth,"far");
+    if(armDetail){
+      if(fistDepth(seated.haR)<=stackDepth) gbFist(ctx,proj,seated.haR[0],seated.haR[1],seated.haR[2],0.048*PS,skin,0);
+      if(fistDepth(seated.haL)<=stackDepth) gbFist(ctx,proj,seated.haL[0],seated.haL[1],seated.haL[2],0.048*PS,skin,0);
+    }
+  }
+  /* folder stack (= grains): every folder keeps its own shade as it travels */
+  if(detail){
+    for(let n=0;n<nShow;n++){
+      const tt=(stack && stack[n]!==undefined)? stack[n] : ((i*7+j*13+n*29)%7)/6;
+      gbBox(ctx,proj,i,j,0.20,0.14,GB_DESK_H+n*fh,GB_DESK_H+(n+1)*fh-0.02,gbShadeRGB(tt));
+    }
+  } else if(nShow>0){
+    gbBox(ctx,proj,i,j,0.20,0.14,GB_DESK_H,GB_DESK_H+nShow*fh,(h>3)?[224,79,79]:[217,178,94]);
+  }
+  /* arms in FRONT of the stack (standing arms are raised, so always on top) */
+  if(standing){
+    const glow = 0.60+0.40*Math.sin(performance.now()*0.010 + (i*1.7+j*0.9));
+    const sleeve=[184,52,58];                                        // hot red sleeves of rage
+    const shL=[bx(i-0.12),by(cj),bz(0.64)],      shR=[bx(i+0.12),by(cj),bz(0.64)];      // shoulders
+    const elL=[bx(i-0.31),by(cj-0.02),bz(0.58)], elR=[bx(i+0.31),by(cj-0.02),bz(0.58)]; // elbows flung out
+    const fiL=[bx(i-0.34),by(cj-0.05),bz(1.03)], fiR=[bx(i+0.34),by(cj-0.05),bz(1.03)]; // fists overhead
+    const AW=0.90;                                                    // raised arms 10% thinner (width only; height/reach unchanged)
+    if(armDetail){
+      gbLimb(ctx,proj,[shL,elL,fiL],[0.060*PS*AW,0.050*PS*AW,0.042*PS*AW],sleeve,glow);
+      gbLimb(ctx,proj,[shR,elR,fiR],[0.060*PS*AW,0.050*PS*AW,0.042*PS*AW],sleeve,glow);
+      gbFist(ctx,proj,fiL[0],fiL[1],fiL[2],0.070*PS,skin,glow);
+      gbFist(ctx,proj,fiR[0],fiR[1],fiR[2],0.070*PS,skin,glow);
+    } else {
+      gbLimb(ctx,proj,[shL,fiL],[0.05*PS*AW,0.04*PS*AW],sleeve,0);
+      gbLimb(ctx,proj,[shR,fiR],[0.05*PS*AW,0.04*PS*AW],sleeve,0);
+    }
+  } else {
+    const side = nShow>0 ? "near" : "all";
+    gbArmSplit(ctx,proj,seated.armR,seated.rad,seated.sleeve,stackDepth,side);
+    gbArmSplit(ctx,proj,seated.armL,seated.rad,seated.sleeve,stackDepth,side);
+    if(armDetail){
+      if(nShow===0 || fistDepth(seated.haR)>stackDepth) gbFist(ctx,proj,seated.haR[0],seated.haR[1],seated.haR[2],0.048*PS,skin,0);
+      if(nShow===0 || fistDepth(seated.haL)>stackDepth) gbFist(ctx,proj,seated.haL[0],seated.haL[1],seated.haL[2],0.048*PS,skin,0);
+    }
+  }
+  /* head with a face, drawn last so it is never hidden */
+  const hp=proj.project(i,cj,hz);
+  const hd=Math.max(2,ls*0.24*PS);
+  const sp=sphereSprite((expr===1)?[255,143,120]:[240,200,160], hd);
+  ctx.drawImage(sp.cv, hp.sx-sp.off, hp.sy-sp.off);
+  if(detail) gbFace(ctx,hp.sx,hp.sy,hd/2,expr);
+}
+function renderGrassberger3D(ctx,canvas){
+  const L=State.L, z=State.z, W=canvas.width, H=canvas.height;
+  if(L>GB_MAXL){
+    let maxH=1; for(let k=0;k<L*L;k++) if(z[k]>maxH) maxH=z[k];
+    render3DColumns(ctx,canvas,maxH);
+    ctx.fillStyle="#ffd28a"; ctx.font="bold 14px sans-serif";
+    ctx.fillText("Grassberger office view needs L \u2264 "+GB_MAXL+" \u2014 showing columns instead", 14, 24);
+    return;
+  }
+  const proj=makeProjector(canvas,L,{camDist:L*2.4, barTop:1.6});
+  const kv=Math.cos(View.polar*Math.PI/180);         // shadow foreshortening with tilt
+  /* night sky behind everything */
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,"#0b1e3d"); sky.addColorStop(1,"#17334f");
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+  /* wooden office floor */
+  const x0=-0.7, x1=L-0.3, y0=-0.7, y1=L-0.3;
+  fillPoly(ctx,[proj.project(x0,y0,0),proj.project(x1,y0,0),proj.project(x1,y1,0),proj.project(x0,y1,0)],"#7a5c3e");
+  ctx.strokeStyle="rgba(40,30,18,0.8)"; ctx.lineWidth=1.2; ctx.stroke();
+  if(L<=40){
+    ctx.strokeStyle="rgba(0,0,0,0.14)"; ctx.lineWidth=1;
+    for(let j=0;j<=L;j++){ const a=proj.project(x0,j-0.5,0),b=proj.project(x1,j-0.5,0);
+      ctx.beginPath(); ctx.moveTo(a.sx,a.sy); ctx.lineTo(b.sx,b.sy); ctx.stroke(); }
+    for(let i=0;i<=L;i++){ const a=proj.project(i-0.5,y0,0),b=proj.project(i-0.5,y1,0);
+      ctx.beginPath(); ctx.moveTo(a.sx,a.sy); ctx.lineTo(b.sx,b.sy); ctx.stroke(); }
+  }
+  /* far walls with open windows; near walls are cut away */
+  const WH=1.5, cD=proj.project((L-1)/2,(L-1)/2,0.5).depth;
+  const st=Math.max(1, Math.ceil(L/12)), hw=st*0.31;
+  for(const wl of [{ax:"x",fix:y0,side:"s",out:-1},{ax:"x",fix:y1,side:"n",out:1},{ax:"y",fix:x0,side:"w",out:-1},{ax:"y",fix:x1,side:"e",out:1}]){
+    const mid=(L-1)/2;
+    const mD=(wl.ax==="x")? proj.project(mid,wl.fix,WH*0.5).depth : proj.project(wl.fix,mid,WH*0.5).depth;
+    if(mD>=cD) continue;                             // near wall -> cut away
+    const P=(u,zz)=>(wl.ax==="x")? proj.project(u,wl.fix,zz) : proj.project(wl.fix,u,zz);
+    fillPoly(ctx,[P(x0,0),P(x1,0),P(x1,WH),P(x0,WH)],"#5b5342");
+    ctx.strokeStyle="rgba(30,25,16,0.9)"; ctx.lineWidth=1; ctx.stroke();
+    const P2=(uu,off,zz)=>(wl.ax==="x")? proj.project(uu,wl.fix+off,zz) : proj.project(wl.fix+off,uu,zz);
+    for(let c=0;c<L;c+=st){
+      const u=Math.min(c+st/2-0.5, L-1), zA=0.5, zB=1.25;
+      let open=false; const wa=State.gbWin?State.gbWin[wl.side]:null;
+      if(wa){ for(let q=c;q<Math.min(L,c+st);q++) if(wa[q]>0){ open=true; break; } }
+      if(open){                                        // flung open: dark hole + sashes swung outward
+        fillPoly(ctx,[P(u-hw,zA),P(u+hw,zA),P(u+hw,zB),P(u-hw,zB)],"#0b1626");
+        ctx.strokeStyle="rgba(255,255,255,0.9)"; ctx.lineWidth=1.1; ctx.stroke();
+        const o=wl.out*0.55;
+        fillPoly(ctx,[P2(u-hw,0,zA),P2(u-hw,0,zB),P2(u-hw*0.45,o,zB),P2(u-hw*0.45,o,zA)],"rgba(159,212,255,0.55)");
+        ctx.strokeStyle="rgba(255,255,255,0.7)"; ctx.stroke();
+        fillPoly(ctx,[P2(u+hw,0,zA),P2(u+hw,0,zB),P2(u+hw*0.45,o,zB),P2(u+hw*0.45,o,zA)],"rgba(159,212,255,0.55)");
+        ctx.stroke();
+      } else {
+        fillPoly(ctx,[P(u-hw,zA),P(u+hw,zA),P(u+hw,zB),P(u-hw,zB)],"#8fc7f2");
+        ctx.strokeStyle="rgba(255,255,255,0.85)"; ctx.lineWidth=1.1; ctx.stroke();
+        const m0=P(u,zA), m1=P(u,zB);
+        ctx.beginPath(); ctx.moveTo(m0.sx,m0.sy); ctx.lineTo(m1.sx,m1.sy); ctx.stroke();
+      }
+    }
+  }
+  /* desks + clerks + stacks, painter's order (back to front) */
+  const ph=State.gbPhase, detail=proj.scale>=18;
+  const order=[];
+  for(let j=0;j<L;j++)for(let i=0;i<L;i++) order.push([i,j,proj.project(i,j,0).depth]);
+  order.sort((a,b)=>a[2]-b[2]);
+  for(const o of order){ const k=idx(o[0],o[1]); gbCell3D(ctx,proj,o[0],o[1],z[k],ph?ph[k]:0,detail,kv,State.gbStacks?State.gbStacks[k]:null); }
+  /* folders in flight; boundary folders sail out of the windows and drop */
+  const fs=State.gbFolders;
+  for(const f of fs){
+    const t=f.t, wi=f.i+f.dx*t, wj=f.j+f.dy*t;
+    let wz=GB_DESK_H+0.10+Math.sin(Math.PI*Math.min(t,1))*0.55;
+    if(f.out && t>1) wz=Math.max(-0.2, GB_DESK_H+0.10-1.8*(t-1)*(t-1));
+    const p=proj.project(wi,wj,wz), ls=gbLocalScale(proj,wi,wj,wz);
+    const al=(f.out && t>1)? Math.max(0,1-(t-1)/1.2) : 1;
+    const fw2=ls*0.34, fh2=Math.max(1.5,ls*0.12);
+    ctx.save(); ctx.translate(p.sx,p.sy); ctx.rotate((f.out?t*4:t*1.4)*(((f.dx-f.dy)>=0)?1:-1));
+    ctx.globalAlpha=al;
+    const fcc=gbShadeRGB(f.sh!==undefined?f.sh:0.5);
+    ctx.fillStyle="rgb("+fcc[0]+","+fcc[1]+","+fcc[2]+")"; ctx.fillRect(-fw2/2,-fh2/2,fw2,fh2);
+    ctx.strokeStyle="rgba(60,40,10,0.85)"; ctx.lineWidth=0.9; ctx.strokeRect(-fw2/2,-fh2/2,fw2,fh2);
+    ctx.restore();
+  }
+  /* the hand of god delivering the next folder */
+  if(State.gbHand){
+    const hd2=State.gbHand, kk=idx(hd2.i,hd2.j);
+    const zTop=GB_DESK_H + Math.min(z[kk],9)*0.11 + 0.30;
+    const ease=q=>q*q*(3-2*q);
+    let zh, ha=1;
+    if(L>6){                               // larger offices: quick materialization above the site
+      if(hd2.stage==="down"){ const q=Math.min(1,hd2.t/hd2.dDown); zh=zTop+0.25*(1-ease(q)); ha=q; }
+      else if(hd2.stage==="place"){ zh=zTop; }
+      else { ha=hd2.a; zh=zTop+0.35*ease(1-hd2.a); }
+    } else {                               // small office: it travels down from the heavens
+      const z0=zTop+0.52*L;
+      if(hd2.stage==="down") zh=z0-(z0-zTop)*ease(Math.min(1,hd2.t/hd2.dDown));
+      else if(hd2.stage==="place") zh=zTop;
+      else { ha=hd2.a; zh=zTop+(z0-zTop)*0.3*ease(1-hd2.a); }
+    }
+    const pp=proj.project(hd2.i,hd2.j,zh);
+    drawGodHandScreen(ctx,pp.sx,pp.sy,gbLocalScale(proj,hd2.i,hd2.j,zh)*1.25,hd2.stage==="down",hd2.sh,ha);
+  }
+  ctx.globalAlpha=1;
+}
+function renderMain(){
+  const canvas=document.getElementById("main"), ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(State.grassberger){ if(View.polar>0) renderGrassberger3D(ctx,canvas); else renderGrassberger(ctx,canvas); return; }
+  const L=State.L, z=State.z;
+  let maxH=1; for(let k=0;k<L*L;k++) if(z[k]>maxH) maxH=z[k];
+  const cden=mainColourMax();   // fixed colour scale for the main pile (BTW 8 / Manna 16; no flicker, any avalanche size)
+  if(L>100){                                           // balls → columns above L=100
+    if(State.flat || View.polar===0) renderSquaresMain(ctx,canvas,maxH);  // top-down → fast flat grid
+    else render3DColumns(ctx,canvas,maxH);                                // tilted → real 3-D columns
+    return;
+  }
+  const proj=makeProjector(canvas,L,{camDist:L*2.4, barTop:maxH*VSPACE});
+  drawGroundPlane(ctx,proj);
+  drawUpdatedFootprint(ctx,proj);
+  if(State.flat){
+    // ----- flat colours only: filled cells on the ground plane, no columns -----
+    const cells=[];
+    for(let j=0;j<L;j++)for(let i=0;i<L;i++){
+      const h=z[idx(i,j)]; if(h<=0) continue;
+      const p0=proj.project(i-0.5,j-0.5,0), p1=proj.project(i+0.5,j-0.5,0),
+            p2=proj.project(i+0.5,j+0.5,0), p3=proj.project(i-0.5,j+0.5,0);
+      cells.push({pts:[p0,p1,p2,p3], col:cmap(h/cden), depth:(p0.depth+p2.depth)/2});
+    }
+    cells.sort((a,b)=>a.depth-b.depth);
+    for(const cl of cells){ const [r,g,b]=cl.col; fillPoly(ctx,cl.pts,`rgb(${r},${g},${b})`); }
+    drawParticles(ctx,proj);
+    drawTraces(ctx,proj);
+    return;
+  }
+  // ----- 3-D sphere columns -----
+  const prims=[];
+  for(let j=0;j<L;j++)for(let i=0;i<L;i++){
+    const h=z[idx(i,j)]; if(h<=0) continue;
+    const col=cmap(h/cden);
+    for(let kk=0;kk<h;kk++){ const p=proj.project(i,j,(kk+0.5)*VSPACE);
+      prims.push({sx:p.sx,sy:p.sy,depth:p.depth,col}); }
+  }
+  prims.sort((a,b)=>a.depth-b.depth);
+  const baseD=SPHERE_D*proj.scale;
+  for(const p of prims){ const sp=sphereSprite(p.col,baseD); ctx.drawImage(sp.cv,p.sx-sp.off,p.sy-sp.off); }
+  drawParticles(ctx,proj);
+  drawTraces(ctx,proj);
+}
+
+/* ---------- A / S / last-avalanche 3D bar plots (shared perspective) ----------
+   Columns are full-width (bw = 0.5, stroke = one full cell) so adjacent sites
+   touch with no gaps between columns in the 3-D view. */
+function drawFieldBars(canvas, field){
+  const ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const L=State.L; let vmax=0; for(let k=0;k<L*L;k++) if(field[k]>vmax) vmax=field[k];
+  const maxBarH=L*0.45;
+  const camDist = (View.asDist===Infinity)? Infinity : View.asDist*maxBarH;
+  const proj=makeProjector(canvas,L,{camDist, barTop:maxBarH});
+  drawGroundPlane(ctx,proj);
+  if(vmax<=0) return 0;
+  if(L>100){
+    if(View.polar!==0){
+      // tilted: cheap 3-D bars (one stroke each, no shaded faces)
+      const lw=Math.max(1, proj.scale*1.04), order=[];   // full-cell width → columns touch
+      for(let j=0;j<L;j++)for(let i=0;i<L;i++){ const v=field[idx(i,j)]; if(v>0) order.push([i,j,v,proj.project(i,j,0).depth]); }
+      order.sort((a,b)=>a[3]-b[3]); ctx.lineCap="butt";
+      for(const o of order){ const i=o[0], j=o[1], t=o[2]/vmax, c=cmap(t);
+        const b=proj.project(i,j,0), tp=proj.project(i,j,t*maxBarH);
+        ctx.strokeStyle=`rgb(${c[0]},${c[1]},${c[2]})`; ctx.lineWidth=lw;
+        ctx.beginPath(); ctx.moveTo(b.sx,b.sy); ctx.lineTo(tp.sx,tp.sy); ctx.stroke(); }
+      return vmax;
+    }
+    // top-down: fast flat colour grid
+    const S=Math.min(canvas.width,canvas.height), P=Math.max(1,Math.floor(S/L));
+    const grid=L*P, ox=Math.floor((canvas.width-grid)/2), oy=Math.floor((canvas.height-grid)/2);
+    const im=ctx.createImageData(grid,grid), d=im.data;
+    for(let py=0;py<grid;py++){ const j=L-1-((py/P)|0), row=j*L;
+      for(let px=0;px<grid;px++){ const v=field[row+((px/P)|0)], o=(py*grid+px)<<2;
+        if(v>0){ const c=cmap(v/vmax); d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; } else { d[o]=5; d[o+1]=5; d[o+2]=11; }
+        d[o+3]=255; } }
+    ctx.putImageData(im, ox, oy); return vmax;
+  }
+  const bw=0.5, boxes=[];   // full half-width → boxes abut, no gaps
+  for(let j=0;j<L;j++)for(let i=0;i<L;i++){
+    const v=field[idx(i,j)]; if(v<=0) continue;
+    const t=v/vmax; boxes.push({i,j,hw:t*maxBarH+0.04,col:cmap(t),depth:proj.project(i,j,0).depth});
+  }
+  boxes.sort((a,b)=>a.depth-b.depth);
+  for(const bx of boxes) drawBox(ctx,proj,bx.i,bx.j,bw,bx.hw,bx.col);
+  return vmax;
+}
+function renderField(canvasId, field, minId, maxId){
+  const canvas=document.getElementById(canvasId);
+  const vmax=drawFieldBars(canvas, field);
+  if(minId) document.getElementById(minId).textContent="0";
+  if(maxId) document.getElementById(maxId).textContent=String(vmax);
+}
+function drawBox(ctx,proj,i,j,bw,h,col){
+  const P=(dx,dy,z)=>proj.project(i+dx,j+dy,z);
+  const top=[P(-bw,-bw,h),P(bw,-bw,h),P(bw,bw,h),P(-bw,bw,h)];
+  const bot=[P(-bw,-bw,0),P(bw,-bw,0),P(bw,bw,0),P(-bw,bw,0)];
+  const [r,g,b]=col;
+  const face=(pts,sh)=>{ fillPoly(ctx,pts,`rgb(${Math.round(r*sh)},${Math.round(g*sh)},${Math.round(b*sh)})`);
+    ctx.strokeStyle="rgba(0,0,0,0.25)"; ctx.lineWidth=0.5; ctx.stroke(); };
+  face([bot[0],bot[1],top[1],top[0]],0.62); face([bot[1],bot[2],top[2],top[1]],0.50);
+  face([bot[3],bot[0],top[0],top[3]],0.74); face([bot[2],bot[3],top[3],top[2]],0.55);
+  face(top,1.0);
+}
+
+/* ---------- last-big-avalanche map (small, same 3-D perspective) ---------- */
+function renderCurrent(){
+  const canvas=document.getElementById("curPlot"), ctx=canvas.getContext("2d");
+  if(State.lastBigSize<=0){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const maxBarH=State.L*0.45, camDist=(View.asDist===Infinity)?Infinity:View.asDist*maxBarH;
+    drawGroundPlane(ctx, makeProjector(canvas,State.L,{camDist, barTop:maxBarH}));
+    ctx.fillStyle="#6b6486"; ctx.font="10px sans-serif";
+    ctx.fillText("none > "+State.bigThresh+" yet", 6, canvas.height-6);
+    return;
+  }
+  drawFieldBars(canvas, State.lastBig);
+  ctx.fillStyle="#cdd3df"; ctx.font="10px sans-serif";
+  ctx.fillText("size "+State.lastBigSize, 6, canvas.height-6);
+}
+
+/* ---------- statistics plots ---------- */
+function axes(ctx,W,H,m,xl,yl){
+  ctx.strokeStyle="#2b2b3d"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(m.l,m.t); ctx.lineTo(m.l,H-m.b); ctx.lineTo(W-m.r,H-m.b); ctx.stroke();
+  ctx.fillStyle="#9a93b5"; ctx.font="9px sans-serif";
+  ctx.fillText(xl,(W-m.l)/2-8,H-3);
+  ctx.save(); ctx.translate(9,(H-m.b)/2+m.t+8); ctx.rotate(-Math.PI/2); ctx.fillText(yl,0,0); ctx.restore();
+}
+function renderTimePlot(){
+  const canvas=document.getElementById("timePlot"), ctx=canvas.getContext("2d");
+  const W=canvas.width,H=canvas.height; ctx.clearRect(0,0,W,H);
+  const m={l:30,r:6,t:6,b:18}; axes(ctx,W,H,m,"t","size");
+  const data=State.sizes; if(data.length<2) return;
+  let vmax=1; for(const v of data) if(v>vmax) vmax=v;
+  const pw=W-m.l-m.r, ph=H-m.t-m.b, N=data.length, cols=Math.min(pw,N);
+  ctx.beginPath(); ctx.strokeStyle="#c084fc"; ctx.lineWidth=1;
+  for(let c=0;c<cols;c++){ const a=Math.floor(c*N/cols), bnd=Math.floor((c+1)*N/cols);
+    let peak=0; for(let k=a;k<Math.max(a+1,bnd);k++) if(data[k]>peak) peak=data[k];
+    const x=m.l+c*pw/cols, y=m.t+ph-(peak/vmax)*ph; if(c===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke();
+}
+function renderDistPlot(){
+  const canvas=document.getElementById("distPlot"), ctx=canvas.getContext("2d");
+  const W=canvas.width,H=canvas.height; ctx.clearRect(0,0,W,H);
+  const m={l:30,r:6,t:6,b:18}; axes(ctx,W,H,m,"log s","log N");
+  const all=State.sizes, start=Math.floor(all.length*0.25), data=[];
+  for(let k=start;k<all.length;k++) if(all[k]>=1) data.push(all[k]);
+  if(data.length<5) return;
+  const binW=0.2, bins={}; let maxLs=0;
+  for(const s of data){ const ls=Math.log10(s); if(ls>maxLs) maxLs=ls; const b=Math.round(ls/binW); bins[b]=(bins[b]||0)+1; }
+  const pts=[];
+  for(const b in bins){ const bn=+b, lo=Math.pow(10,(bn-0.5)*binW), hi=Math.pow(10,(bn+0.5)*binW);
+    const nInt=Math.max(1, Math.floor(hi-1e-9)-Math.ceil(lo)+1);   // # of integer sizes in this log bin -> counts per unit s (bn must be numeric: "b"+0.5 would concatenate!)
+    pts.push([bn*binW, Math.log10(bins[b]/nInt)]); }
+  pts.sort((a,b)=>a[0]-b[0]);
+  let xmin=0,xmax=Math.max(0.5,maxLs), ymin=Infinity,ymax=-Infinity;
+  for(const p of pts){ if(p[1]<ymin)ymin=p[1]; if(p[1]>ymax)ymax=p[1]; }
+  if(!isFinite(ymin)) return; if(ymax-ymin<0.5) ymax=ymin+0.5;
+  const pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const sx=ls=>m.l+(ls-xmin)/(xmax-xmin)*pw, sy=ld=>m.t+ph-(ld-ymin)/(ymax-ymin)*ph;
+
+  ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,pw+1,ph+1); ctx.clip();
+
+  // faint decade gridlines
+  ctx.strokeStyle="rgba(255,255,255,0.07)"; ctx.lineWidth=1;
+  for(let gx=Math.ceil(xmin); gx<=xmax+1e-9; gx++){ ctx.beginPath(); ctx.moveTo(sx(gx),sy(ymax)); ctx.lineTo(sx(gx),sy(ymin)); ctx.stroke(); }
+  for(let gy=Math.ceil(ymin); gy<=ymax+1e-9; gy++){ ctx.beginPath(); ctx.moveTo(sx(xmin),sy(gy)); ctx.lineTo(sx(xmax),sy(gy)); ctx.stroke(); }
+
+  // grey shade for the finite-size cutoff region  s > 0.3*L^2
+  const lsCut=Math.log10(0.3*State.L*State.L);
+  if(lsCut<xmax){ const xc=Math.max(m.l, sx(lsCut));
+    ctx.fillStyle="rgba(140,142,155,0.22)"; ctx.fillRect(xc, m.t, (m.l+pw)-xc, ph); }
+
+  // least-squares fit of the avalanche-size exponent over s in [10, 0.3*L^2]
+  const xLo=1, xHi=Math.log10(0.3*State.L*State.L);          // log10(10)=1
+  const F=pts.filter(p=>p[0]>=xLo-1e-9 && p[0]<=xHi+1e-9);
+  if(F.length>=2){
+    let n=F.length,Sx=0,Sy=0,Sxx=0,Sxy=0;
+    for(const p of F){ Sx+=p[0]; Sy+=p[1]; Sxx+=p[0]*p[0]; Sxy+=p[0]*p[1]; }
+    const b=(n*Sxy-Sx*Sy)/(n*Sxx-Sx*Sx), a=(Sy-b*Sx)/n;     // y = a + b*x, b = fitted slope
+    const xA=xLo, xB=Math.min(xHi, xmax);
+    ctx.strokeStyle="rgba(255,170,90,0.97)"; ctx.lineWidth=1.6; ctx.setLineDash([5,3]);
+    ctx.beginPath(); ctx.moveTo(sx(xA),sy(a+b*xA)); ctx.lineTo(sx(xB),sy(a+b*xB)); ctx.stroke(); ctx.setLineDash([]);
+    const xm=xA+(xB-xA)*0.55;
+    ctx.fillStyle="rgba(255,210,160,0.99)"; ctx.font="9px sans-serif";
+    ctx.fillText("slope "+b.toFixed(2), sx(xm)+4, sy(a+b*xm)-4);
+  }
+
+  // empirical avalanche-size distribution
+  ctx.strokeStyle="#c084fc"; ctx.fillStyle="#c084fc"; ctx.lineWidth=1; ctx.beginPath();
+  pts.forEach((p,i)=>{ const x=sx(p[0]),y=sy(p[1]); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke();
+  for(const p of pts){ ctx.beginPath(); ctx.arc(sx(p[0]),sy(p[1]),1.8,0,Math.PI*2); ctx.fill(); }
+  ctx.restore();
+}
+
+/* ---------- orchestration ---------- */
+let probed=false;
+function renderAll(){
+  renderMain(); renderTimePlot(); renderDistPlot(); renderCurrent();
+  if(probed){ renderField("aPlot",State.Aprobe,"aMin","aMax"); renderField("sPlot",State.Sprobe,"sMin","sMax"); }
+  updateStats();
+}
+function updateStats(){
+  document.getElementById("stGrains").textContent=State.grains;
+  document.getElementById("stAval").textContent=State.sizes.length;
+  document.getElementById("stLast").textContent=State.lastSize;
+  document.getElementById("stMax").textContent=State.maxSize;
+  let sum=0,cnt=0; for(const s of State.sizes){ if(s>0){sum+=s;cnt++;} }
+  document.getElementById("stMean").textContent=cnt?(sum/cnt).toFixed(1):"0";
+  let hs=0; for(let k=0;k<State.L*State.L;k++) hs+=State.z[k];
+  document.getElementById("stHeight").textContent=(hs/(State.L*State.L)).toFixed(3);
+}
+
+const GRAN=[
+  {label:"1 toppling / frame",             kind:"topple", n:()=>1},
+  {label:"1 sweep / frame",                kind:"sweep",  n:()=>1},
+  {label:"1 avalanche / frame",            kind:"aval",   n:()=>1},
+  {label:"8 grains / frame",               kind:"aval",   n:()=>8},
+  {label:"64 grains / frame",              kind:"aval",   n:()=>64},
+  {label:"¼·L² grains / frame",            kind:"aval",   n:()=>Math.max(1,(State.L*State.L)>>2)},
+  {label:"1 per site · L² grains / frame", kind:"aval",   n:()=>State.L*State.L},
+];
+let granIdx=2;
+function stepWork(){
+  if(State.trace){ stepWorkTraced(); return; }
+  if(State.grassberger && granIdx<=2 && State.running){
+    /* the hand of god delivers each new folder; the simulation waits
+       during descent and placing, but the avalanche already runs while
+       the hand fades away */
+    if(State.gbHand && State.gbHand.stage!=="up") return;
+    if(!State.aval.running){
+      if(State.gbFolders.length===0 && !State.gbHand){   // let flights land and the hand vanish first
+        if(State.L<GB_HAND_MAXL) startGbHand();          // big offices: folders just appear
+        else beginGrain();
+      }
+      return;
+    }
+    if(granIdx===2){ resolveFull(); return; }            // one whole avalanche per shown update
+    /* paced steps: previous folders land before the next clerks erupt */
+    if(State.gbTick>0){ State.gbTick--; return; }
+    if(granIdx===0) stepTopple(); else stepSweep();
+    State.gbTick=GB_STEPDELAY; return;
+  }
+  if(State.gbHand){                                    // mode left mid-delivery: finish instantly
+    if(State.gbHand.stage==="down") beginGrainAt(State.gbHand.k,State.gbHand.sh);
+    State.gbHand=null;
+  }
+  if(State.gbPending && State.gbPending.length){       // left slow mode: launch any held folders now
+    for(const p of State.gbPending) State.gbFolders.push(p.fol); State.gbPending.length=0;
+  }
+  const g=GRAN[granIdx], n=g.n();
+  if(g.kind==="topple"){ ensureGrain(); for(let s=0;s<n;s++) stepTopple(); }
+  else if(g.kind==="sweep"){ ensureGrain(); for(let s=0;s<n;s++) stepSweep(); }
+  else { for(let s=0;s<n;s++){ ensureGrain(); resolveFull(); } }
+}
+function advanceOne(){ stepWork(); }
+function frame(){
+  try{ if(State.running) stepWork(); advanceParticles(); advanceGrassberger(); renderAll(); }
+  catch(err){ console.error("frame error:", err); }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- legends ---------- */
+function gradCss(fn){ let s="linear-gradient(to right";
+  for(let t=0;t<=1.001;t+=0.1){ const [r,g,b]=fn(t); s+=`,rgb(${r},${g},${b})`; } return s+")"; }
+function setLegends(){
+  const css=gradCss(cmap);
+  document.getElementById("legHeight").style.background=css;
+  document.getElementById("legJetA").style.background=css;
+  document.getElementById("legJetS").style.background=css;
+}
+
+/* ---------- shared drag-to-tilt ---------- */
+function addTilt(canvasId){
+  const cv=document.getElementById(canvasId);
+  let dragging=false, px=0, py=0;
+  cv.addEventListener("mousedown",e=>{ dragging=true; px=e.clientX; py=e.clientY; cv.style.cursor="grabbing"; });
+  window.addEventListener("mouseup",()=>{ dragging=false; cv.style.cursor="grab"; });
+  window.addEventListener("mousemove",e=>{ if(!dragging) return;
+    const dx=e.clientX-px, dy=e.clientY-py; px=e.clientX; py=e.clientY;
+    View.azimuth=(View.azimuth+dx*0.6+360)%360; View.polar=Math.max(0,Math.min(90,Math.round((View.polar+dy*0.4)/5)*5));
+    syncViewUI(); if(!State.running) renderAll(); });
+  /* touch: one-finger drag tilts & turns (for phones/tablets) */
+  cv.addEventListener("touchstart",e=>{ const t=e.touches[0]; dragging=true; px=t.clientX; py=t.clientY; },{passive:true});
+  window.addEventListener("touchend",()=>{ dragging=false; },{passive:true});
+  window.addEventListener("touchcancel",()=>{ dragging=false; },{passive:true});
+  cv.addEventListener("touchmove",e=>{ if(!dragging) return; const t=e.touches[0];
+    const dx=t.clientX-px, dy=t.clientY-py; px=t.clientX; py=t.clientY;
+    View.azimuth=(View.azimuth+dx*0.6+360)%360; View.polar=Math.max(0,Math.min(90,Math.round((View.polar+dy*0.4)/5)*5));
+    syncViewUI(); if(!State.running) renderAll();
+    if(e.cancelable) e.preventDefault(); },{passive:false});
+}
+function viewTglLabel(){
+  const b=document.getElementById("btnViewTgl"); if(!b) return;
+  b.textContent=(View.polar===0)? "View: top ▸ 3D" : "View: 3D ▸ top";
+}
+function syncViewUI(){
+  document.getElementById("polar").value=Math.round(View.polar);
+  document.getElementById("azimuth").value=Math.round(View.azimuth);
+  document.getElementById("polVal").textContent=Math.round(View.polar);
+  document.getElementById("aziVal").textContent=Math.round(View.azimuth);
+  viewTglLabel();
+}
+
+/* ---------- run-state UI ---------- */
+function updateRunUI(){
+  const s=document.getElementById("btnStart");
+  s.textContent=State.running?"⏸ Pause":"▶ Start"; s.classList.toggle("primary",!State.running);
+  const f=document.getElementById("btnFreeze");
+  f.textContent=State.running?"❄ Freeze & pause":"▶ Restart";
+}
+
+const AS_DIST=[1,2,4,8,16,Infinity], AS_LABEL=["×1","×2","×4","×8","×16","∞"];
+
+/* threshold slider range for the "Last avalanche >" panel: 10 … 0.3·L² */
+function updateBigThrRange(){
+  const maxThr=Math.max(20, Math.round(0.3*State.L*State.L));
+  const bt=document.getElementById("bigThr"); bt.min=10; bt.max=maxThr;
+  const v=Math.min(maxThr, Math.max(10, Math.round(0.03*State.L*State.L)));
+  State.bigThresh=v; bt.value=v;
+  document.getElementById("bigThrLabel").textContent=v;
+}
+
+function updateMainTitle(){
+  const base = State.manna
+    ? 'S.S. Manna, J. Phys. A: Math. Gen. 24, 1991.'
+    : '"Self Organized Criticality" by P. Bak, C. Tang & K. Wiesenfeld. Phys. Rev. Letters 59, 1987.';
+  document.getElementById("mainTitle").textContent = base + (State.grassberger ? " \u2014 Grassberger office version" : "");
+}
+function wire(){
+  document.getElementById("btnStart").onclick=()=>{ State.running=!State.running;
+    document.getElementById("frozenState").textContent=State.running?"running":"paused"; updateRunUI(); };
+  document.getElementById("btnStep").onclick=()=>{ advanceOne(); renderAll(); };
+  document.getElementById("btnReset").onclick=()=>{ alloc(State.L); probed=false; State.running=false;
+    document.getElementById("frozenState").textContent="running"; updateRunUI(); renderAll(); };
+
+  const ls=document.getElementById("Lslider");
+  ls.oninput=()=>setLfromIndex(parseInt(ls.value));
+
+  const bt=document.getElementById("bigThr");
+  bt.oninput=()=>{ State.bigThresh=parseInt(bt.value); document.getElementById("bigThrLabel").textContent=State.bigThresh; };
+
+  const gr=document.getElementById("gran");
+  gr.oninput=()=>{ granIdx=parseInt(gr.value); document.getElementById("granLabel").textContent=GRAN[granIdx].label; };
+
+  const btnTrace=document.getElementById("btnTrace");
+  btnTrace.onclick=()=>{ State.trace=!State.trace;
+    btnTrace.textContent=State.trace?"● Trace grains: on":"○ Trace grains: off";
+    btnTrace.classList.toggle("active",State.trace);
+    if(State.trace){ initStacks(); State.traces=[]; State.traceWait=0; }
+    else { State.stacks=null; State.traces=[]; }
+    renderAll(); };
+  const btnTraceCol=document.getElementById("btnTraceCol");
+  btnTraceCol.onclick=()=>{ State.traceColor=(State.traceColor+1)%TRACE_LABELS.length;
+    btnTraceCol.textContent="Track: "+TRACE_LABELS[State.traceColor]; renderAll(); };
+  const TRACE_DELAYS=[0,1,2,5,10,20,30,60];
+  const td=document.getElementById("traceDelay");
+  td.oninput=()=>{ State.traceDelay=TRACE_DELAYS[parseInt(td.value)]; document.getElementById("traceDelayLabel").textContent=State.traceDelay; };
+
+  const btnLongest=document.getElementById("btnLongest");
+  btnLongest.onclick=()=>{ State.traceLongestOnly=!State.traceLongestOnly;
+    btnLongest.textContent=State.traceLongestOnly?"● Longest walker":"○ Longest walker";
+    btnLongest.classList.toggle("active",State.traceLongestOnly); };
+
+  const btnGrass=document.getElementById("btnGrass");
+  btnGrass.onclick=()=>{ State.grassberger=!State.grassberger;
+    btnGrass.textContent=State.grassberger?"● Grassberger":"○ Grassberger";
+    btnGrass.classList.toggle("active",State.grassberger);
+    if(State.grassberger){
+      View.polar=60; View.azimuth=144; syncViewUI();         // 3-D office preset
+      granIdx=0;                                             // default: true single topplings
+      document.getElementById("gran").value=0;
+      document.getElementById("granLabel").textContent=GRAN[0].label;
+      setLfromIndex(nearestAllowedIndex(5));                 // default office size L = 5
+      State.gbFolders=[]; State.gbPending=[]; State.gbPhase.fill(0); State.gbTimer.fill(0); State.gbTick=0; State.gbHand=null;
+      gbInitStacks();
+    }
+    updateMainTitle();
+    renderAll(); };
+
+  const btnViewTgl=document.getElementById("btnViewTgl");
+  btnViewTgl.onclick=()=>{
+    if(View.polar===0){ View.polar=60; View.azimuth=144; }   // 3-D preset
+    else { View.polar=0; View.azimuth=0; }                   // top-down 2-D
+    syncViewUI(); renderAll(); };
+
+  const btnBTW=document.getElementById("btnBTW"), btnManna=document.getElementById("btnManna");
+  function setModel(m){ State.manna=m; btnBTW.classList.toggle("active",!m); btnManna.classList.toggle("active",m); updateMainTitle(); renderAll(); }
+  btnBTW.onclick=()=>setModel(false);
+  btnManna.onclick=()=>setModel(true);
+
+  document.querySelectorAll("#modeRow button").forEach(b=>{
+    b.onclick=()=>{ document.querySelectorAll("#modeRow button").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active"); State.mode=b.dataset.mode; State.detIndex=0; };
+  });
+
+  document.getElementById("btnFreeze").onclick=()=>{
+    if(State.running){ resolveFull(); freezeLattice(); State.running=false;
+      document.getElementById("frozenState").innerHTML='<span class="frozenBadge">frozen ✓</span>'; }
+    else { State.running=true; document.getElementById("frozenState").textContent="running"; }
+    updateRunUI(); renderAll();
+  };
+  document.getElementById("btnAS").onclick=()=>{ probeAS(); probed=true;
+    renderField("aPlot",State.Aprobe,"aMin","aMax"); renderField("sPlot",State.Sprobe,"sMin","sMax"); };
+
+  document.getElementById("btnScheme").onclick=()=>{
+    const i=SCHEME_ORDER.indexOf(State.scheme), nx=SCHEME_ORDER[(i+1)%SCHEME_ORDER.length];
+    State.scheme=nx; document.getElementById("btnScheme").textContent="Colour: "+SCHEME_LABEL[nx];
+    spriteCacheClear(); setLegends(); renderAll();
+  };
+
+  const fb=document.getElementById("btnFlat");
+  fb.onclick=()=>{ State.flat=!State.flat;
+    fb.textContent=State.flat?"Flat ▸ Columns":"Columns ▸ Flat colours";
+    fb.classList.toggle("active",State.flat); renderAll(); };
+
+  const pol=document.getElementById("polar"), azi=document.getElementById("azimuth");
+  pol.oninput=()=>{ View.polar=parseInt(pol.value); document.getElementById("polVal").textContent=View.polar; viewTglLabel(); renderAll(); };
+  azi.oninput=()=>{ View.azimuth=parseInt(azi.value); document.getElementById("aziVal").textContent=View.azimuth; renderAll(); };
+
+  const ad=document.getElementById("asDist");
+  ad.oninput=()=>{ const i=parseInt(ad.value); View.asDist=AS_DIST[i]; document.getElementById("asDistLabel").textContent=AS_LABEL[i]; if(!State.running) renderAll(); };
+
+  const save=(id,name)=>{ const cv=document.getElementById(id); const a=document.createElement("a");
+    a.download=name; a.href=cv.toDataURL("image/png"); a.click(); };
+  document.getElementById("savMain").onclick=()=>save("main","btw_main.png");
+  document.getElementById("savA").onclick=()=>save("aPlot","btw_A.png");
+  document.getElementById("savS").onclick=()=>save("sPlot","btw_S.png");
+  document.getElementById("savTime").onclick=()=>save("timePlot","btw_size_time.png");
+  document.getElementById("savDist").onclick=()=>save("distPlot","btw_distribution.png");
+  document.getElementById("savCur").onclick=()=>save("curPlot","btw_last_big_avalanche.png");
+  document.getElementById("savAll").onclick=saveCombined;
+
+  addTilt("main"); addTilt("aPlot"); addTilt("sPlot"); addTilt("curPlot");
+}
+
+/* ---------- responsive panel sizing ----------
+   Big lattice panels grow to ~1024 (so L can reach 1024 at 1 px/site) but
+   never exceed the screen's vertical pixel count; the three small plots follow. */
+let BIG=728, SMALL_W=216, SMALL_H=200;
+function applyCanvasSizes(){
+  const screenV = (typeof window!=="undefined" && window.screen && window.screen.height) ? window.screen.height : 1024;
+  BIG = Math.min(1024, Math.max(560, screenV));
+  SMALL_W = Math.round((BIG-24)/3);
+  SMALL_H = Math.round(SMALL_W*0.9);
+  for(const id of ["main","aPlot","sPlot"]){ const c=document.getElementById(id); c.width=BIG; c.height=BIG; }
+  for(const id of ["timePlot","distPlot","curPlot"]){ const c=document.getElementById(id); c.width=SMALL_W; c.height=SMALL_H; }
+}
+
+/* ---------- allowed lattice sizes: a whole number of pixels per site ----------
+   For pixel budget S (=BIG) the valid sizes are L = floor(S/P) for integer
+   pixels-per-site P; scrolling steps between these crisp values. Capped at 1024. */
+let ALLOWED=[];
+function buildAllowedL(){
+  const S=BIG, maxL=Math.min(1024,S), set=new Set();
+  for(let P=1;P<=Math.floor(S/4);P++){ const L=Math.floor(S/P); if(L>=4 && L<=maxL) set.add(L); }
+  for(let L=4;L<=20;L++) if(L<=maxL) set.add(L);   // fine control at the small end
+  ALLOWED=[...set].sort((a,b)=>a-b);
+}
+function nearestAllowedIndex(L){ let bi=0,bd=Infinity;
+  for(let k=0;k<ALLOWED.length;k++){ const dd=Math.abs(ALLOWED[k]-L); if(dd<bd){bd=dd;bi=k;} } return bi; }
+function setLfromIndex(i){
+  i=Math.max(0,Math.min(ALLOWED.length-1,i|0));
+  const L=ALLOWED[i], P=Math.max(1,Math.floor(BIG/L));
+  alloc(L); probed=false; spriteCacheClear();
+  updateBigThrRange();
+  document.getElementById("Lval").textContent=L;
+  { const lp=document.getElementById("LpxInfo"); if(lp) lp.textContent=P+" px/site"; }
+  document.getElementById("Lslider").value=i;
+  renderAll();
+}
+
+function saveCombined(){
+  const pad=14, title=18, gap=12;
+  const W=pad + BIG + pad;
+  const H=pad + title+BIG + gap + title+SMALL_H + gap + title+BIG + gap + title+BIG + pad;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const g=cv.getContext("2d"); g.fillStyle="#0a0a12"; g.fillRect(0,0,W,H);
+  g.font="14px sans-serif";
+  const lab=(t,x,y)=>{ g.fillStyle="#9a93b5"; g.fillText(t,x,y-4); };
+  let x=pad, y=pad+title;
+  lab("Sandpile profile (Bak, Tang & Wiesenfeld 1987)",x,y); g.drawImage(document.getElementById("main"),x,y);
+  let ys=y+BIG+gap+title, sx2=x;
+  for(const [id,t] of [["timePlot","Size vs time"],["distPlot","Distribution"],["curPlot","Last big avalanche"]]){
+    lab(t,sx2,ys); g.drawImage(document.getElementById(id),sx2,ys); sx2+=SMALL_W+gap;
+  }
+  let ya=ys+SMALL_H+gap+title;
+  lab("A — Engsig & Sneppen, PRL 134 (2025)",x,ya); g.drawImage(document.getElementById("aPlot"),x,ya);
+  let ys2=ya+BIG+gap+title;
+  lab("S — Engsig & Sneppen, PRL 134 (2025)",x,ys2); g.drawImage(document.getElementById("sPlot"),x,ys2);
+  const a=document.createElement("a"); a.download="btw_all_figures.png"; a.href=cv.toDataURL("image/png"); a.click();
+}
+
+/* ---------- boot ---------- */
+applyCanvasSizes(); buildAllowedL(); setLegends(); wire();
+document.getElementById("btnScheme").textContent="Colour: "+SCHEME_LABEL[State.scheme];
+const _ls=document.getElementById("Lslider"); _ls.min=0; _ls.max=ALLOWED.length-1; _ls.step=1;
+document.getElementById("asDistLabel").textContent=AS_LABEL[AS_DIST.indexOf(View.asDist)>=0?AS_DIST.indexOf(View.asDist):5];
+
+/* default view: the Grassberger office, ON, in the 3-D preset, single
+   topplings, at L = 5 (a cosy 5×5 room of bureaucrats) */
+State.grassberger=true;
+{ const bg=document.getElementById("btnGrass"); bg.textContent="● Grassberger"; bg.classList.add("active"); }
+View.polar=60; View.azimuth=144; syncViewUI();
+granIdx=0; document.getElementById("gran").value=0; document.getElementById("granLabel").textContent=GRAN[0].label;
+setLfromIndex(nearestAllowedIndex(5));                 // allocates + renders the L = 5 office
+State.gbFolders=[]; State.gbPending=[]; State.gbPhase.fill(0); State.gbTimer.fill(0); State.gbTick=0; State.gbHand=null;
+gbInitStacks();
+updateMainTitle();
+renderAll();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
