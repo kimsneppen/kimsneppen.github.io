@@ -56,7 +56,6 @@ const MODELS: Model[] = [
     description:
       "An agent-based ecosystem on a lattice with plants, rabbits, foxes, and snakes — exploring how predator–prey interactions sustain coexistence and diversity.",
     file: "/models/rabbit-mobile.html",
-    image: "/images/Fox.png",
     status: "live",
   },
   {
