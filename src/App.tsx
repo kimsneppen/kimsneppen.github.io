@@ -30,8 +30,8 @@ const MODELS: Model[] = [
   id: "btw-sandpile",
   title: "BTW Sandpile",
   description:
-    "The classical sandpile model exhibiting Self Organized Criticality.",
-  file: "/models/btw_sandpile_v17.html",
+    "The classical sandpile model exhibiting Self Organized Criticality. Office visualization, variants, analysis and a Game",
+  file: "/models/btw_sandpile_v29.html",
   image: "/images/btw.png",
   status: "live",
 },
@@ -39,7 +39,7 @@ const MODELS: Model[] = [
     id: "talker-listener",
     title: "Talker Listener dynamics",
     description:
-      "A model for people networking through talking and listening about each other and themselves.",
+      "A model for people networking through talking and listening about each other and themselves (Extreme model for USA 2017-2026)",
     file: "/models/talker_listener_applet_v41_mobile.html",
     status: "live",
   },
@@ -47,7 +47,7 @@ const MODELS: Model[] = [
     id: "rabbit-fox-snake-plant",
     title: "Rabbit, Fox, Snake & Plant",
     description:
-      "An agent-based ecosystem on a lattice with plants, rabbits, foxes, and snakes — exploring how predator–prey interactions sustain coexistence and diversity.",
+      "An agent-based ecosystem on a lattice with plants, rabbits, foxes, and snakes — exploring how predator–prey with plants open for increased diversity.",
     file: "/models/Rabbit-mobile.html",
     status: "live",
   },
