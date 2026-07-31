@@ -31,7 +31,7 @@ const MODELS: Model[] = [
   title: "BTW Sandpile",
   description:
     "The classical sandpile model of Self Organized Criticality: Office visualization, Variants, Analysis and Games",
-  file: "/models/btw_sandpile_v33.html",
+  file: "/models/btw_sandpile_v34.html",
   image: "/images/btw.png",
   status: "live",
 },
@@ -39,7 +39,7 @@ const MODELS: Model[] = [
     id: "talker-listener",
     title: "Talker Listener dynamics",
     description:
-      "A model for people networking through talking and listening about each other and themselves (Extreme model for USA 2017-2026)",
+      "People networking by talking about each other and themselves. View Extreme model for USA 2017-2026. (Krebs & Sneppen, PRE 2025)",
     file: "/models/talker_listener_applet_v41_mobile.html",
     status: "live",
   },
@@ -47,7 +47,7 @@ const MODELS: Model[] = [
     id: "rabbit-fox-snake-plant",
     title: "Rabbit, Fox, Snake & Plant",
     description:
-      "An agent-based ecosystem on a lattice with plants, rabbits, foxes, and snakes — exploring how predator–prey with plants open for increased diversity.",
+      "An agent-based ecosystem on a lattice with plants, rabbits, foxes, and snakes: Plants in Predator–Prey systems open for increased diversity.",
     file: "/models/Rabbit-mobile.html",
     status: "live",
   },
@@ -55,7 +55,7 @@ const MODELS: Model[] = [
     id: "spatial-ecosystem",
     title: "Spatial Ecosystem",
     description:
-      "A spatial simulation of how local interactions on a lattice let many species coexist, illustrating the emergence of diversity in a model ecosystem (after Mitarai, Mathiesen & Sneppen, 2012).",
+      "A spatial simulation of how locality on a lattice allow high species diversity (after Mitarai, Mathiesen, Sneppen & Trusina, 2011+2012).",
     file: "/models/Lichen19_activity.html",
     status: "live",
   },
@@ -63,7 +63,7 @@ const MODELS: Model[] = [
     id: "colony-phage",
     title: "Colony & Phage",
     description:
-      "An interactive model of bacteriophage infection spreading through a growing bacterial colony, showing how lysis dynamics shape the colony over time.",
+      "Phage infection spreading through a growing bacterial colony: How infection and immunity dynamics shape survivorship",
     file: "/models/phage_colony_v26_final.html",
     status: "live",
   },
@@ -71,7 +71,7 @@ const MODELS: Model[] = [
     id: "cell-polarity",
     title: "Cell Polarity Morphogenesis",
     description:
-      "A 3D model of how polar interactions between cells fold tissues into sheets, tubes, and invaginations during embryo development (after Nissen et al., 2018).",
+      "A 3D model of how polar interactions between cells: Morphology unerstood in terms of sheets, tubes, and invaginations (after Nissen et al. 2018).",
     file: "/models/cell-polarity-model-mobile.html",
     status: "live",
   },
@@ -87,7 +87,7 @@ const MODELS: Model[] = [
     id: "two-state-gillespie",
     title: "Two-State Gillespie Dynamics",
     description:
-      "A stochastic Gillespie simulation of a nucleosome two-state system, showing how noisy molecular reactions give rise to bistability and switching between epigenetic states.",
+      "Gillespie simulation of men field two-state system of nucleosomes with Swi6: Bistability and switching between local epigenetic states.",
     file: "/models/two-state-gillespie.html",
     status: "live",
   },
@@ -95,7 +95,7 @@ const MODELS: Model[] = [
     id: "Merging-creation",
     title: "Merging Creation network",
     description:
-      "A model for nodes on a network which merge with each other while new nodes are added with a connectivity k (parameter)",
+      "A model for nodes on a network which merge with each other while new nodes are added with a connectivity k (crusial parameter)",
     file: "/models/merging-creation.html",
     status: "live",
   },
