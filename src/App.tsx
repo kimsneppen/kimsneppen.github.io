@@ -43,6 +43,14 @@ const MODELS: Model[] = [
     file: "/models/talker_listener_applet_v41_mobile.html",
     status: "live",
   },
+    {
+    id: "Paradigm shift",
+    title: "Kuhn on computer",
+    description:
+      "Model of paradigmshift in an evolutionary ecology of wrong ideas (Bornholdt, Jensen & Sneppen, PRL 2011)",
+    file: "/models/rise_and_fall_of_wrong_ideas_v12.html",
+    status: "live",
+  },
   {
     id: "rabbit-fox-snake-plant",
     title: "Rabbit, Fox, Snake & Plant",
