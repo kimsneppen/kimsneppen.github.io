@@ -1,0 +1,2691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rise and Fall of Wrong Ideas</title>
+<style>
+  :root{
+    --bg:#0a0e1a; --panel:#121828; --panel2:#1b2440; --line:#2a3550;
+    --fg:#dfe6f5; --dim:#8b97b5; --acc:#6ea8ff; --warm:#f0a04b;
+    --pad:12px; --panelw:264px;
+    --side: min(calc(100vh - 2*12px), calc(100vw - 264px - 3*12px));
+  }
+  body.light{
+    --bg:#e9edf5; --panel:#ffffff; --panel2:#f2f5fb; --line:#c8d2e4;
+    --fg:#131a29; --dim:#5b6880; --acc:#2563eb; --warm:#c8730e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);
+    font:12.5px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  #app{display:flex;gap:var(--pad);padding:var(--pad);align-items:flex-start}
+
+  /* ---------- main display ---------- */
+  #stagecol{flex:0 0 auto;display:flex;flex-direction:column;gap:10px;width:var(--side)}
+  #stage{width:var(--side);height:var(--side);position:relative;background:#000;
+    border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  #lattice{position:absolute;inset:0;width:100%;height:100%;display:block;
+    image-rendering:pixelated;image-rendering:crisp-edges}
+  #view{position:absolute;inset:0;width:100%;height:100%;display:block}
+  body.light #stage{background:#fff}
+  #topbar{position:absolute;left:0;top:0;right:0;z-index:3;display:flex;flex-wrap:wrap;
+    gap:3px;padding:4px 5px;background:rgba(8,12,22,.55);backdrop-filter:blur(5px);
+    border-bottom:1px solid rgba(255,255,255,.08)}
+  body.light #topbar{background:rgba(255,255,255,.72);border-bottom:1px solid rgba(0,0,0,.08)}
+  #topbar button{flex:1 1 0;min-width:30px;padding:5px 2px;font-size:11px;white-space:nowrap;
+    overflow:hidden;text-overflow:clip}
+  #gamebar{position:absolute;left:0;right:0;z-index:3;display:flex;flex-wrap:wrap;
+    align-items:center;justify-content:center;gap:5px;padding:4px 5px;
+    background:rgba(8,12,22,.45);backdrop-filter:blur(5px)}
+  body.light #gamebar{background:rgba(255,255,255,.62)}
+  #gamebar button{flex:0 0 auto;min-width:0;padding:4px 9px;font-size:11px}
+  .gmark{flex:0 0 auto;min-width:62px;padding:4px 8px;border-radius:6px;font-size:11px;
+    font-weight:600;border:1px solid var(--line);color:var(--fg);
+    background:rgba(255,255,255,.06);font-variant-numeric:tabular-nums;white-space:nowrap}
+  body.light .gmark{background:rgba(0,0,0,.04)}
+  .gmark.turn{box-shadow:0 0 0 2px var(--acc) inset}
+  .gmark.p1{border-color:#e33}
+  .gmark.p2{border-color:#39f}
+  .gsl{display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--dim);
+    flex:1 1 90px;min-width:78px;max-width:190px}
+  .gsl input[type=range]{flex:1 1 auto;width:auto;min-width:34px;height:14px}
+  .gsl b{color:var(--fg);font-size:10.5px;min-width:26px;text-align:right;
+    font-variant-numeric:tabular-nums}
+  .gmark span{opacity:.75;margin-right:5px}
+  .gmark b{font-weight:800}
+  .gmark i{font-style:normal;font-weight:600;opacity:.68;margin-left:7px;font-size:10px}
+  .garr{flex:0 0 auto;font-size:17px;line-height:1;font-weight:700;padding:0 1px;
+    visibility:hidden;transition:opacity .15s}
+  .garr.flip{transform:scaleX(-1)}
+  .garr.show{visibility:visible}
+  .gmark b{margin-left:2px}
+  .gsl.gnodes{flex:0 1 118px;max-width:130px}
+  #gwipe{position:absolute;left:0;right:0;z-index:5;text-align:center;cursor:pointer;
+    font-weight:800;letter-spacing:.6px;padding:7px 8px;
+    font-size:clamp(13px,2.6vw,21px);color:#fff;background:rgba(0,0,0,.5)}
+  body.light #gwipe{color:#000;background:rgba(255,255,255,.62)}
+  #gwipe:hover{background:rgba(0,0,0,.68)}
+  body.light #gwipe:hover{background:rgba(255,255,255,.8)}
+  #gstatus{position:absolute;left:0;right:0;z-index:3;text-align:center;font-size:11.5px;
+    font-weight:600;pointer-events:none;color:var(--fg);
+    text-shadow:0 1px 4px rgba(0,0,0,.7)}
+  body.light #gstatus{text-shadow:0 1px 4px rgba(255,255,255,.9)}
+  #hudstats{position:absolute;right:8px;bottom:7px;z-index:3;text-align:right;
+    font-size:11px;line-height:1.4;color:var(--dim);pointer-events:none;
+    font-variant-numeric:tabular-nums;text-shadow:0 1px 3px rgba(0,0,0,.65)}
+  body.light #hudstats{text-shadow:0 1px 3px rgba(255,255,255,.9)}
+  .off{display:none !important}
+
+  /* ---------- pull-down under the display ---------- */
+  details{border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+  summary{cursor:pointer;padding:7px 11px;font-weight:600;font-size:12px;list-style:none;
+    display:flex;justify-content:space-between;align-items:center;gap:8px;user-select:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"▾";color:var(--dim);transition:transform .15s}
+  details[open] summary::after{transform:rotate(180deg)}
+  .dbody{padding:0 11px 10px}
+  #plotdet,#degdet{width:var(--side)}
+  #degwrap{width:100%;height:max(120px, calc(var(--side)/3 - 76px))}
+  #plotwrap{width:100%;height:max(240px, calc(var(--side)*0.62 - 96px))}
+  #plot,#degplot{width:100%;height:100%;display:block;background:var(--panel2);
+    border-radius:6px;border:1px solid var(--line)}
+  .plotctl{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:0 0 7px;
+    font-size:11.5px;color:var(--dim)}
+  .plotctl label{display:flex;gap:5px;align-items:center;cursor:pointer}
+  .legend{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:10.5px;color:var(--dim);
+    padding-top:6px;font-variant-numeric:tabular-nums}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;
+    vertical-align:-1px}
+  .legend .bar{display:inline-block;width:13px;height:4px;border-radius:2px;margin-right:4px;
+    vertical-align:middle}
+
+  /* ---------- control panel (right) ---------- */
+  #panel{flex:0 0 var(--panelw);width:var(--panelw);position:sticky;top:var(--pad);
+    max-height:calc(100vh - 2*var(--pad));overflow-y:auto;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 11px 16px;
+    scrollbar-width:thin;scrollbar-color:#39456b transparent}
+  #panel::-webkit-scrollbar{width:7px}
+  #panel::-webkit-scrollbar-thumb{background:#39456b;border-radius:4px}
+  h1{font-size:15.5px;line-height:1.15;margin:0 0 3px;letter-spacing:.2px}
+  h1 .sub{display:block;font-size:10px;font-weight:400;color:var(--dim);margin-top:3px}
+  .rule{height:1px;background:var(--line);margin:9px 0}
+  .grp{border:1px solid var(--line);border-radius:8px;margin-bottom:8px;overflow:hidden}
+  .grp>summary{background:#151d33;color:var(--acc);text-transform:uppercase;
+    font-size:10.5px;letter-spacing:.5px}
+  body.light .grp>summary{background:#e8eefb}
+  body.light #soPanel{background:#f7f9fe}
+  .grp .dbody{padding:8px 10px 10px}
+  .btns{display:flex;gap:5px;flex-wrap:wrap}
+  button{flex:1 1 auto;min-width:52px;cursor:pointer;background:var(--panel2);color:var(--fg);
+    border:1px solid var(--line);border-radius:6px;padding:6px 5px;font:inherit;font-size:11.5px}
+  button:hover{border-color:var(--acc)}
+  button.on{background:var(--acc);color:#06122c;border-color:var(--acc);font-weight:600}
+  button.go{background:var(--warm);color:#1a1206;border-color:var(--warm);font-weight:600}
+  button.go:hover{background:#f5b467;border-color:#f5b467}
+  .ctl{margin:8px 0 0}
+  .ctl label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+    font-size:11.5px;color:var(--dim);margin-bottom:2px}
+  .ctl label b{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums;font-size:11.5px}
+  input[type=range]{width:100%;accent-color:var(--acc);margin:0;height:16px}
+  .hint{font-size:10px;color:#6b789c;margin-top:2px;line-height:1.35}
+  .two{display:flex;gap:8px}
+  .two>div{flex:1;min-width:0}
+  .stats{display:grid;grid-template-columns:auto auto;gap:1px 10px;font-size:11.5px;
+    font-variant-numeric:tabular-nums;padding:0 2px}
+  .stats span:nth-child(odd){color:var(--dim)}
+  .stats span:nth-child(even){text-align:right}
+  .abstract{font-size:11px;line-height:1.5;color:#c2ccd8;text-align:justify}
+  .abstract p{margin:0 0 7px}
+  .abstract .ref{color:var(--dim);font-size:10.5px}
+  .abstract a{color:var(--acc)}
+  #netInfo{font-size:10px;color:var(--dim);margin-top:7px;line-height:1.4}
+  #warn{color:#ffb057;font-size:10.5px;margin-top:6px}
+
+  @media (max-width:900px){
+    :root{--side: calc(100vw - 2*12px)}
+    #app{flex-direction:column}
+    #panel{position:static;flex:none;width:100%;max-height:none}
+    #stagecol{width:100%}
+    #degwrap{height:min(46vw,230px)}
+    #plotwrap{height:min(90vw,430px)}
+  }
+  @media (max-width:560px){
+    .plotctl{font-size:11px;gap:9px}
+    .legend{font-size:10px}
+    #topbar{gap:2px;padding:3px}
+    #topbar button{font-size:9px;padding:5px 0;border-radius:4px;flex:1 1 15%;min-width:0}
+    #gamebar{gap:3px;padding:3px}
+    #gamebar button{font-size:9.5px;padding:4px 6px}
+    .garr{font-size:14px}
+    .gmark{min-width:0;font-size:9.5px;padding:3px 5px}
+    /* markers + game buttons on the first row, the two sliders on the second */
+    .gmark.p1{order:1} #g1{order:2} #g2{order:3} .gmark.p2{order:4}
+    .gsl{order:5;font-size:9px;flex:0 1 150px;min-width:0;max-width:none}
+    .gsl.gnodes{flex:0 1 150px;max-width:none}
+    #gstatus{font-size:10.5px}
+    #hudstats{font-size:10px;right:6px;bottom:5px}
+  }
+  #botStats{margin-top:10px;text-align:right;font-size:12px;
+    font-variant-numeric:tabular-nums;line-height:1.5;color:var(--dim)}
+  #botStats b{color:var(--fg)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= MAIN DISPLAY ================= -->
+  <div id="stagecol">
+    <div id="stage">
+      <canvas id="lattice" width="128" height="128"></canvas>
+      <canvas id="view" class="off"></canvas>
+      <div id="topbar"></div>
+      <div id="gamebar">
+        <span class="garr" id="garr1">➜</span>
+        <div class="gmark p1" id="gp1"><span>P1</span><b id="gpop1">0</b><i id="gsc1"></i></div>
+        <label class="gsl gnodes">nodes<input type="range" id="gnod" min="1" max="5" step="1" value="1"><b id="gnodv">1</b></label>
+        <div class="gmark p2" id="gp2"><span>P2</span><b id="gpop2">0</b><i id="gsc2"></i></div>
+        <span class="garr flip" id="garr2">➜</span>
+      </div>
+      <div id="gwipe" class="off">All truth eliminated</div>
+      <div id="gstatus"></div>
+      <div id="hudstats"></div>
+    </div>
+
+    <details id="plotdet" open>
+      <summary><span>Population sizes &amp; network diameter vs. time</span>
+        <span id="ymaxlab" style="font-weight:400;color:var(--dim);font-size:11px"></span></summary>
+      <div class="dbody">
+        <div class="plotctl">
+          <label><input type="radio" name="tmode" value="all" checked> all time up to now</label>
+          <label><input type="radio" name="tmode" value="win"> last t<sub>display</sub></label>
+          <span class="legend" id="legend" style="padding-top:0"></span>
+          <button id="exPlot" style="flex:none;min-width:0;padding:3px 9px;font-size:10.5px;margin-left:auto">PNG</button>
+        </div>
+        <div id="plotwrap"><canvas id="plot"></canvas></div>
+        <div class="plotctl" style="padding:8px 0 0">
+          <label><input type="checkbox" id="rwCurve" checked> rewiring rate</label>
+          <span class="legend" id="dialegend" style="padding-top:0"></span>
+          <span id="dialab" style="margin-left:auto;color:var(--dim)"></span>
+        </div>
+      </div>
+    </details>
+
+    <details id="degdet" open>
+      <summary><span>Connectivity distribution P(k)</span>
+        <span id="deglab" style="font-weight:400;color:var(--dim);font-size:11px"></span></summary>
+      <div class="dbody">
+        <div class="plotctl">
+          <label><input type="radio" name="dmode" value="log" checked> log–log</label>
+          <label><input type="radio" name="dmode" value="lin"> linear</label>
+          <button id="exDeg" style="flex:none;min-width:0;padding:3px 9px;font-size:10.5px;margin-left:auto">PNG</button>
+        </div>
+        <div id="degwrap"><canvas id="degplot"></canvas></div>
+        <div class="legend" id="deglegend"></div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ================= CONTROL PANEL (right) ================= -->
+  <div id="panel">
+    <h1>Rise and Fall of Wrong Ideas
+      <span class="sub">Emergence and decline of paradigms — Bornholdt, Jensen &amp; Sneppen (2011)</span></h1>
+
+    <div class="rule"></div>
+
+    <div class="btns">
+      <button id="play" class="go">▶ Run</button>
+      <button id="stepb">Step</button>
+      <button id="resetb">Reset</button>
+    </div>
+    <div class="btns" style="margin-top:6px">
+      <button id="gCar">Sierpiński</button>
+      <button id="gLat" class="on">2-d</button>
+      <button id="gNet">Network</button>
+    </div>
+    <div class="btns" style="margin-top:6px">
+      <button id="soBtn">⇄ Self org. Net</button>
+      <button id="themeBtn" style="flex:0 0 auto;min-width:38px"
+              title="black / white background in all panels">◐</button>
+      <button id="menBtn" style="flex:0 0 auto;min-width:38px"
+              title="network nodes as spheres or as little 3-d men">☻</button>
+    </div>
+    <div class="btns" style="margin-top:6px">
+      <button id="g1">Game 1</button>
+      <button id="g2">Game 2</button>
+    </div>
+    <div id="soPanel" class="off" style="margin-top:6px;border:1px solid var(--line);
+         border-radius:8px;padding:7px 9px 9px">
+      <div class="hint" style="margin:0 0 5px">Links follow the ideas: a successful spread
+        i → k confirmed by r creates the bond k–r and deletes one link on a random shortest
+        path i → r. Starts from whatever the Network pull-down is set to.</div>
+      <div class="ctl" style="margin-top:6px">
+        <label><span>New-link flash</span> <b id="vflash">off</b></label>
+        <input type="range" id="flash" min="0" max="50" step="1" value="0">
+        <div class="hint">Newly formed links are drawn 5× thicker for this long. 0 = off.</div>
+      </div>
+      <div class="stats" style="margin-top:6px">
+        <span>rewirings</span><span id="s_rw">0</span>
+        <span>links</span><span id="s_e">0</span>
+      </div>
+    </div>
+
+    <div class="rule"></div>
+
+    <!-- ---------- idea model ---------- -->
+    <details class="grp" open>
+      <summary>Idea dynamics</summary>
+      <div class="dbody">
+        <div class="ctl">
+          <label><span>Innovation rate α</span> <b id="av">1e-4</b></label>
+          <input type="range" id="alpha" min="0" max="1000" step="1" value="833">
+          <div class="hint">Per elementary update, a random agent invents an idea present nowhere.
+            αN = <span id="aN">0.41</span>/sweep.</div>
+        </div>
+        <div class="ctl">
+          <label><span>Memory τ</span> <b id="tauv">∞</b></label>
+          <input type="range" id="tau" min="0" max="1000" step="1" value="1000">
+          <div class="hint">An abandoned idea may be re-adopted only after τ sweeps. τ = ∞ is the base model.</div>
+        </div>
+        <div class="ctl">
+          <label><span>Horizon</span> <b id="hv">global</b></label>
+          <input type="range" id="hor" min="1" max="256" step="1" value="256">
+          <div class="hint" id="horHint">The confirming third agent is drawn within this Euclidean
+            distance (1 … 2L). Large = whole system (base model).</div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ---------- Sierpiński carpet ---------- -->
+    <details class="grp" id="carGrp">
+      <summary>Sierpiński carpet</summary>
+      <div class="dbody">
+        <div class="hint" style="margin:0 0 5px">Carpet size (3⁵ or 3⁶)</div>
+        <div class="btns">
+          <button id="c243" class="on">L = 243</button>
+          <button id="c729">L = 729</button>
+        </div>
+        <div class="hint" style="margin-top:7px">Agents sit only on the 8<sup>k</sup> filled cells
+          (<span id="carN">32 768</span> of L²); holes are dark. Neighbours and the Euclidean
+          Horizon skip the holes.</div>
+      </div>
+    </details>
+
+    <!-- ---------- 2-d lattice ---------- -->
+    <details class="grp" id="latGrp" open>
+      <summary>2-d lattice</summary>
+      <div class="dbody">
+        <div class="ctl">
+          <label><span>Lattice size</span> <b><span id="Lv">32</span> × <span id="Lv2">32</span></b></label>
+          <input type="range" id="L" min="0" max="10" step="1" value="4">
+          <div class="hint">N = L² agents, periodic boundaries. Changing L restarts the run.</div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ---------- network (all variants from the disease applet) ---------- -->
+    <details class="grp" id="netGrp">
+      <summary>Network</summary>
+      <div class="dbody">
+
+        <div class="hint" style="margin:0 0 6px">Presets</div>
+        <div class="btns">
+          <button id="pA" class="on">A · modular</button>
+          <button id="pB">B · PL clusters</button>
+          <button id="pC">C · PL net</button>
+        </div>
+
+        <div class="hint" style="margin:10px 0 4px">Variant</div>
+        <div class="btns">
+          <button id="mModular" class="on">Modular</button>
+          <button id="mER">Erdős–R</button>
+          <button id="mPL">Power law</button>
+        </div>
+
+        <div class="ctl">
+          <label><span>Nodes N</span> <b id="vN">600</b></label>
+          <input type="range" id="N" min="100" max="5000" step="100" value="600">
+        </div>
+
+        <!-- modular -->
+        <div id="modGrp">
+          <div class="ctl">
+            <label><span>Small cluster avg S</span> <b id="vS">1</b></label>
+            <input type="range" id="S" min="0" max="12" step="1" value="0">
+          </div>
+          <div class="ctl">
+            <label><span>Big cluster avg B</span> <b id="vB">12</b></label>
+            <input type="range" id="B" min="1" max="50" step="1" value="12">
+          </div>
+          <div class="hint" style="margin:8px 0 4px">Big-cluster size distribution</div>
+          <div class="btns">
+            <button id="dUniform" class="on">Uniform</button>
+            <button id="dPower">Power law</button>
+          </div>
+          <div id="modPL" class="off">
+            <div class="hint" style="margin-top:7px">cluster size P(s) ∝ 1/(s+a)<sup>γ</sup></div>
+            <div class="two">
+              <div class="ctl"><label><span>offset a</span> <b id="vaM">2</b></label>
+                <input type="range" id="aM" min="0" max="10" step="1" value="2"></div>
+              <div class="ctl"><label><span>exponent γ</span> <b id="vgM">2.5</b></label>
+                <input type="range" id="gM" min="2" max="3.5" step="0.1" value="2.5"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- power law network -->
+        <div id="plNet" class="off">
+          <div class="hint" style="margin-top:4px">degree P(k) ∝ 1/(k+a)<sup>γ</sup></div>
+          <div class="two">
+            <div class="ctl"><label><span>offset a</span> <b id="vaP">2</b></label>
+              <input type="range" id="aP" min="0" max="10" step="1" value="2"></div>
+            <div class="ctl"><label><span>exponent γ</span> <b id="vgP">2.5</b></label>
+              <input type="range" id="gP" min="2" max="3.5" step="0.1" value="2.5"></div>
+          </div>
+        </div>
+
+        <!-- Erdős–Rényi -->
+        <div id="erGrp" class="off">
+          <div class="ctl">
+            <label><span>Average connectivity ⟨k⟩</span> <b id="vk">6</b></label>
+            <input type="range" id="kdeg" min="1" max="10" step="1" value="6">
+          </div>
+        </div>
+
+        <div class="hint" style="margin:10px 0 4px">Display</div>
+        <div class="two">
+          <div class="ctl" style="margin-top:0">
+            <label><span>Rotation</span> <b id="vrot">0.08</b></label>
+            <input type="range" id="rot" min="0" max="100" step="1" value="8"></div>
+          <div class="ctl" style="margin-top:0">
+            <label><span>Hub repulsion</span> <b id="vrepk">0.0</b></label>
+            <input type="range" id="repk" min="0" max="50" step="0.5" value="0"></div>
+        </div>
+        <div class="ctl">
+          <label><span>Node size</span> <b id="vnsz">1.0</b></label>
+          <input type="range" id="nsz" min="0.3" max="3" step="0.1" value="1">
+        </div>
+        <div class="btns" style="margin-top:8px">
+          <button id="bg">BG: Black</button>
+          <button id="linkBtn" class="on">Links: on</button>
+        </div>
+
+        <div class="btns" style="margin-top:8px">
+          <button id="regen" class="go">⟳ Regenerate</button>
+          <button id="relax">Re-relax</button>
+          <button id="exNet">PNG</button>
+        </div>
+
+        <div class="legend" style="margin-top:7px">
+          <span><span class="bar" style="background:#4f6fd6"></span>big-cluster link</span>
+          <span><span class="bar" style="background:#22c071"></span>small-cluster link</span>
+        </div>
+        <div id="netInfo"></div>
+        <div id="warn"></div>
+      </div>
+    </details>
+
+    <!-- ---------- display timing ---------- -->
+    <details class="grp" open>
+      <summary>Display</summary>
+      <div class="dbody">
+        <div class="ctl">
+          <label><span>Display step Δt</span> <b><span id="dtv">5</span> sweeps</b></label>
+          <input type="range" id="dt" min="0" max="45" step="1" value="13">
+          <div class="hint">0.1 … 1000 updates per site (per node) between frames.</div>
+        </div>
+        <div class="ctl">
+          <label><span>Plot window t<sub>display</sub></span> <b><span id="tdv">2000</span> sweeps</b></label>
+          <input type="range" id="td" min="0" max="1000" step="1" value="575">
+        </div>
+      </div>
+    </details>
+
+    <div class="stats">
+      <span>time t</span><span id="s_t">0</span>
+      <span>agents N</span><span id="s_N">1024</span>
+      <span>distinct ideas</span><span id="s_n">1</span>
+      <span>dominant idea</span><span id="s_d">100.0 %</span>
+      <span>sweeps / s</span><span id="s_r">–</span>
+    </div>
+
+    <div class="rule"></div>
+
+    <details class="grp" id="abs">
+      <summary>Abstract &amp; reference</summary>
+      <div class="dbody abstract">
+        <p><b>Emergence and Decline of Scientific Paradigms</b></p>
+        <p>Scientific paradigms have a tendency to rise fast and decline slowly. This asymmetry
+        reflects the difficulty in developing a truly original idea, compared to the ease at which
+        a concept can be eroded by numerous modifications. Here we formulate a model for the
+        emergence and spread of ideas which deals with this asymmetry by constraining the ability
+        of agents to return to already abandoned concepts. The model exhibits a fairly regular
+        pattern of global paradigm shifts, where older paradigms are eroded and subsequently
+        replaced by new ones. The model sets the theme for a new class of pattern formation models,
+        where local dynamics breaks the detailed balance in a way that prevents old states from
+        defending themselves against new nucleating or invading states. The model allows for frozen
+        events in terms of the coexistence of multiple metastable states.</p>
+        <p class="ref">S. Bornholdt, M. H. Jensen and K. Sneppen,
+        <i>Emergence and Decline of Scientific Paradigms</i>,
+        Phys. Rev. Lett. <b>106</b>, 058701 (2011).<br>
+        DOI: <a href="https://doi.org/10.1103/PhysRevLett.106.058701" target="_blank"
+        rel="noopener">10.1103/PhysRevLett.106.058701</a></p>
+        <p class="ref">Display: drag = orbit · scroll = zoom · click a node = plant a new idea.</p>
+        <p class="ref"><b>Game 1 / Game 2.</b> A player's idea is <i>true</i>: unlike every other
+        idea it may be taken up again by an agent who once abandoned it, so the converted can be
+        re-enlightened. Nodes holding a true idea are drawn 1.6× larger. Each round every player
+        plants their idea on a chosen number of nodes, the network then runs for the chosen window,
+        and play returns to the players. Game 1 (one player) is won at 90 % of the agents,
+        Game 2 (two players) by whoever first passes 50 %.</p>
+        <p class="ref"><b>Rules.</b> A random agent attempts to pass its idea along one of its
+        connections (a lattice bond, or a network link). The receiving agent <i>i</i> accepts only
+        if a third agent, drawn at random within the <b>Horizon</b> of <i>i</i>, already holds that
+        same idea — on the lattice the horizon is a Euclidean distance, on the network a
+        shortest-path distance. This gives the cooperative factor <i>n<sub>j</sub>/N</i> of the
+        paper when the horizon covers the whole system. Crucially, <i>i</i> accepts only if it has
+        <b>never held that idea before</b> (or abandoned it more than τ sweeps ago). With
+        probability α a random agent instead invents an entirely new idea.</p>
+      </div>
+    </details>
+
+    <div id="botStats"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+/* ==========================================================================
+   Rise and Fall of Wrong Ideas
+   Bornholdt, Jensen & Sneppen, PRL 106, 058701 (2011)
+   2-d lattice  +  3-d social networks (modular / Erdős–Rényi / power law)
+   ========================================================================== */
+
+const $ = id => document.getElementById(id);
+const rint = n => Math.floor(Math.random()*n);
+
+/* ---------------- black / white theme for every panel ---------------- */
+const THEMES = {
+  dark : {bg:'#0c1222', grid:'#16203a', text:'#8b97b5', box:'#2a3550',
+          dia:'#f0a04b', rate:'#6ea8ff', c1:'#6ea8ff', c2:'#22c071', c3:'#f0a04b',
+          hole:[13,17,28]},
+  light: {bg:'#ffffff', grid:'#e2e8f4', text:'#5b6880', box:'#c8d2e4',
+          dia:'#c2691a', rate:'#2563eb', c1:'#2563eb', c2:'#12864c', c3:'#c2691a',
+          hole:[206,214,229]}
+};
+let lightMode=false, TH=THEMES.dark;
+
+/* ---------------- jet colour map ---------------- */
+const NCOL = 256;
+const PAL = new Uint8Array(NCOL*3);
+function jet(x){
+  const c = v => Math.max(0, Math.min(1, v));
+  return [c(1.5-Math.abs(4*x-3)), c(1.5-Math.abs(4*x-2)), c(1.5-Math.abs(4*x-1))];
+}
+for(let i=0;i<NCOL;i++){
+  const [r,g,b]=jet(i/(NCOL-1));
+  PAL[3*i]=Math.round(255*r); PAL[3*i+1]=Math.round(255*g); PAL[3*i+2]=Math.round(255*b);
+}
+const colStr = s => 'rgb('+PAL[3*s]+','+PAL[3*s+1]+','+PAL[3*s+2]+')';
+
+/* ---------------- helpers ---------------- */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=rint(i+1);const t=a[i];a[i]=a[j];a[j]=t;} return a; }
+let gaussSpare=null;
+function gauss(){
+  if(gaussSpare!==null){const g=gaussSpare;gaussSpare=null;return g;}
+  let u,v,s; do{u=2*Math.random()-1;v=2*Math.random()-1;s=u*u+v*v;}while(s>=1||s===0);
+  const m=Math.sqrt(-2*Math.log(s)/s); gaussSpare=v*m; return u*m;
+}
+function poisson(lam){
+  if(lam<=0) return 0;
+  if(lam<25){ const L0=Math.exp(-lam); let k=0,p=1; do{k++;p*=Math.random();}while(p>L0); return k-1; }
+  return Math.max(0, Math.round(lam+Math.sqrt(lam)*gauss()));
+}
+const fmtT = t => t>=1e6?(t/1e6).toFixed(2)+'M' : t>=1e4?Math.round(t/1e3)+'k' : t>=100?Math.round(t):t.toFixed(1);
+function fmtSci(x){
+  if(x===0) return '0';
+  let e=Math.floor(Math.log10(x)+1e-9), m=x/Math.pow(10,e);
+  if(m>=9.95) return '1e'+(e+1);
+  return (Math.abs(m-Math.round(m))<0.05?Math.round(m):m.toFixed(1))+'e'+e;
+}
+const DTVALS=(()=>{ const a=[];
+  for(let i=1;i<=10;i++) a.push(+(i/10).toFixed(1));
+  for(let i=2;i<=20;i++) a.push(i);
+  for(let i=30;i<=100;i+=10) a.push(i);
+  for(let i=200;i<=1000;i+=100) a.push(i);
+  return a; })();
+const DTIDX = v => { let bi=0,bd=1e9;
+  for(let i=0;i<DTVALS.length;i++){ const d=Math.abs(Math.log(DTVALS[i]/v)); if(d<bd){bd=d;bi=i;} }
+  return bi; };
+function logmap(v,lo,hi){ return lo*Math.pow(hi/lo, v/1000); }
+function loginv(x,lo,hi){ return 1000*Math.log(x/lo)/Math.log(hi/lo); }
+function dlURL(url,name){ const a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove(); }
+
+/* ==========================================================================
+   IDEA BOOK-KEEPING  (shared by lattice and network)
+   ========================================================================== */
+const M = {
+  N:0, state:null, mem:null, counts:new Map(), slots:new Map(), free:[],
+  nextId:1, steps:0, t:0, alpha:25e-6, tau:Infinity,
+  truth:new Set(),        /* player ideas: may always be re-adopted */
+  reserved:new Set(),     /* colour slots owned by the players      */
+
+  init(N){
+    this.N=N;
+    this.state=new Int32Array(N);
+    this.mem=new Array(N).fill(null);
+    this.counts=new Map(); this.slots=new Map();
+    this.free=shuffle([...Array(NCOL).keys()].filter(k=>!this.reserved.has(k)));
+    this.truth.clear();
+    this.nextId=1; this.steps=0; this.t=0;
+    if(N>0){ this.counts.set(0,N); this.slots.set(0,this.takeSlot()); }
+  },
+  takeSlot(){
+    if(this.free.length) return this.free.pop();
+    for(let t=0;t<24;t++){ const s=rint(NCOL); if(!this.reserved.has(s)) return s; }
+    return rint(NCOL);
+  },
+  giveSlot(s){ if(this.reserved.has(s)) return;
+    if(this.free.length<NCOL) this.free.unshift(s); },
+  dec(id){
+    const c=this.counts.get(id)-1;
+    if(c<=0){ this.counts.delete(id); const s=this.slots.get(id); this.slots.delete(id); this.giveSlot(s); }
+    else this.counts.set(id,c);
+  },
+  inc(id){ this.counts.set(id,(this.counts.get(id)||0)+1); },
+  /* give node k a brand-new idea */
+  innovate(k,t){
+    const old=this.state[k], id=this.nextId++;
+    let m=this.mem[k]; if(!m){ m=new Map(); this.mem[k]=m; }
+    m.set(old,t);
+    this.dec(old);
+    this.state[k]=id; this.counts.set(id,1); this.slots.set(id,this.takeSlot());
+    return id;
+  },
+  /* can node i take up idea r?  (repression of abandoned concepts) */
+  allowed(i,r,now,tauInf,tau){
+    if(this.truth.size && this.truth.has(r)) return true;   /* the truth returns */
+    const m=this.mem[i]; if(m===null) return true;
+    const tb=m.get(r);
+    if(tb===undefined) return true;
+    if(tauInf || (now-tb)<tau) return false;
+    m.delete(r); return true;
+  },
+  adopt(i,rj,now){
+    if(this.truth.size && this.truth.has(rj)) noteConversion(i,rj);
+    const ri=this.state[i];
+    let m=this.mem[i]; if(m===null){ m=new Map(); this.mem[i]=m; }
+    m.set(ri,now);
+    this.state[i]=rj; this.dec(ri); this.inc(rj);
+  },
+  top(n){
+    const a=[]; for(const [id,c] of this.counts) a.push([id,c]);
+    a.sort((p,q)=>q[1]-p[1]);
+    return a.slice(0,n);
+  },
+  colOf(id){ const s=this.slots.get(id); return s===undefined?0:s; }
+};
+
+/* -------- innovation event times inside a block of nsteps -------- */
+function innovationTimes(nsteps){
+  const n=poisson(nsteps*M.alpha);
+  if(n<=0) return null;
+  const a=new Int32Array(n);
+  for(let q=0;q<n;q++) a[q]=rint(nsteps);
+  a.sort();
+  return a;
+}
+
+/* ==========================================================================
+   LATTICE DYNAMICS
+   ========================================================================== */
+const LAT = { L:128, horizon:256 };
+
+function runLattice(nsteps){
+  const L=LAT.L, N=M.N, st=M.state, tau=M.tau, tauInf=!isFinite(tau);
+  const t0=M.t, invN=1/N;
+  const H=LAT.horizon, H2=H*H, half=Math.floor(L/2);
+  const glob=(H2>=2*half*half)||H>=L;
+  const R=Math.min(H,half), span=2*R+1;
+  const inn=innovationTimes(nsteps); let ip=0;
+
+  for(let s=0;s<nsteps;s++){
+    while(inn && ip<inn.length && inn[ip]===s){ M.innovate(rint(N), t0+s*invN); ip++; }
+    const i=rint(N), ri=st[i];
+    const x=i%L, y=(i/L)|0;
+    let jx=x, jy=y; const d=rint(4);
+    if(d===0){ jx=x+1; if(jx===L) jx=0; }
+    else if(d===1){ jx=x-1; if(jx<0) jx=L-1; }
+    else if(d===2){ jy=y+1; if(jy===L) jy=0; }
+    else { jy=y-1; if(jy<0) jy=L-1; }
+    const rj=st[jy*L+jx];
+    if(rj===ri) continue;
+    let k;
+    if(glob){ k=rint(N); }
+    else{
+      let dx,dy;
+      do{ dx=rint(span)-R; dy=rint(span)-R; }
+      while((dx===0&&dy===0)||dx*dx+dy*dy>H2);
+      let kx=x+dx; if(kx>=L)kx-=L; else if(kx<0)kx+=L;
+      let ky=y+dy; if(ky>=L)ky-=L; else if(ky<0)ky+=L;
+      k=ky*L+kx;
+    }
+    if(st[k]!==rj) continue;
+    const now=t0+s*invN;
+    if(!M.allowed(i,rj,now,tauInf,tau)) continue;
+    M.adopt(i,rj,now);
+  }
+  M.steps+=nsteps; M.t=t0+nsteps*invN;
+}
+
+/* ==========================================================================
+   SIERPIŃSKI CARPET  —  agents live on the 8^k filled cells of a 3^k square
+   ========================================================================== */
+const CAR = { L:243, occ:null, siteOf:null, sites:null, n:0, horizon:486, diam:1 };
+
+function carpetFilled(x,y,levels){
+  for(let l=0;l<levels;l++){
+    if(x%3===1 && y%3===1) return false;
+    x=(x/3)|0; y=(y/3)|0;
+  }
+  return true;
+}
+function buildCarpet(L){
+  CAR.L=L;
+  const lev=Math.round(Math.log(L)/Math.log(3));
+  const siteOf=new Int32Array(L*L).fill(-1);
+  const sites=new Int32Array(Math.pow(8,lev));
+  let n=0;
+  for(let y=0;y<L;y++) for(let x=0;x<L;x++){
+    if(carpetFilled(x,y,lev)){ const p=y*L+x; siteOf[p]=n; sites[n++]=p; }
+  }
+  CAR.siteOf=siteOf; CAR.sites=sites; CAR.n=n;
+  CAR.diam=carpetDiameter();
+  return n;
+}
+/* double sweep on the carpet graph (constant once the carpet is built) */
+function carpetDiameter(){
+  const L=CAR.L, so=CAR.siteOf, sites=CAR.sites, n=CAR.n;
+  if(!n) return 1;
+  const dist=new Int32Array(n).fill(-1), q=new Int32Array(n);
+  let best=1, src=0;
+  for(let pass=0;pass<4;pass++){
+    dist.fill(-1);
+    let head=0,tail=0, far=src, ecc=0;
+    q[tail++]=src; dist[src]=0;
+    while(head<tail){
+      const a=q[head++], dv=dist[a];
+      if(dv>ecc){ ecc=dv; far=a; }
+      const p=sites[a], x=p%L, y=(p/L)|0;
+      for(let d=0;d<4;d++){
+        const nx = d===0?(x+1)%L : d===1?(x+L-1)%L : x;
+        const ny = d===2?(y+1)%L : d===3?(y+L-1)%L : y;
+        const w=so[ny*L+nx];
+        if(w>=0 && dist[w]<0){ dist[w]=dv+1; q[tail++]=w; }
+      }
+    }
+    if(ecc>best) best=ecc;
+    src=far;
+  }
+  return best;
+}
+function runCarpet(nsteps){
+  const L=CAR.L, sites=CAR.sites, siteOf=CAR.siteOf;
+  const N=M.N, st=M.state, tau=M.tau, tauInf=!isFinite(tau);
+  const t0=M.t, invN=1/N;
+  const H=CAR.horizon, H2=H*H, half=Math.floor(L/2);
+  const glob=(H2>=2*half*half)||H>=L;
+  const R=Math.min(H,half), span=2*R+1;
+  const inn=innovationTimes(nsteps); let ip=0;
+
+  for(let s=0;s<nsteps;s++){
+    while(inn && ip<inn.length && inn[ip]===s){ M.innovate(rint(N), t0+s*invN); ip++; }
+    const ai=rint(N), p=sites[ai], ri=st[ai];
+    const x=p%L, y=(p/L)|0;
+    let jx=x, jy=y; const d=rint(4);
+    if(d===0){ jx=x+1; if(jx===L) jx=0; }
+    else if(d===1){ jx=x-1; if(jx<0) jx=L-1; }
+    else if(d===2){ jy=y+1; if(jy===L) jy=0; }
+    else { jy=y-1; if(jy<0) jy=L-1; }
+    const aj=siteOf[jy*L+jx];
+    if(aj<0) continue;                       /* neighbour is a hole */
+    const rj=st[aj];
+    if(rj===ri) continue;
+    let k=-1;
+    if(glob) k=rint(N);
+    else{
+      for(let t=0;t<24;t++){
+        let dx,dy;
+        do{ dx=rint(span)-R; dy=rint(span)-R; }
+        while((dx===0&&dy===0)||dx*dx+dy*dy>H2);
+        let kx=x+dx; if(kx>=L)kx-=L; else if(kx<0)kx+=L;
+        let ky=y+dy; if(ky>=L)ky-=L; else if(ky<0)ky+=L;
+        const c=siteOf[ky*L+kx];
+        if(c>=0){ k=c; break; }
+      }
+      if(k<0) continue;
+    }
+    if(st[k]!==rj) continue;
+    const now=t0+s*invN;
+    if(!M.allowed(ai,rj,now,tauInf,tau)) continue;
+    M.adopt(ai,rj,now);
+  }
+  M.steps+=nsteps; M.t=t0+nsteps*invN;
+}
+
+/* ==========================================================================
+   NETWORK GENERATION  (ported from the disease-on-networks applet)
+   ========================================================================== */
+const G = { N:600, mode:'modular', S:2, B:12, dist:'uniform', a:2, gamma:2.5, kdeg:6,
+            rotSpeed:0.08, repK:0, nodeScale:1, horizon:99 };
+
+let nodes=[], adjL=[], adjE=[], deg=null, edges=[], erest=[], etype=[];
+let edgeMap=new Map(), ecount=0, flashUntil=null;
+let fromNode=null;      /* -2 none, -1 originated here (halo), else source node */
+let meanDeg=1, netDiam=6;
+let ballOff=null, ballFlat=null, ballGlobal=true;
+let REST=8, nodeR=1, linkR=0.2;
+let cooling=1, settled=false, framed=false;
+const XSTRETCH=1.3;
+const bgColors=[0x000000,0xffffff], bgNames=['Black','White']; let bgIndex=0;
+let showLinks=true;
+
+function makePowerSampler(a,gamma){
+  const KMAX=400, cdf=[]; let s=0;
+  for(let k=1;k<=KMAX;k++){ s+=1/Math.pow(k+a,gamma); cdf.push(s); }
+  return ()=>{ const r=Math.random()*s; for(let k=0;k<KMAX;k++) if(r<=cdf[k]) return k+1; return KMAX; };
+}
+function addEdge(i,j,map,rest){
+  if(i===j) return; const a=Math.min(i,j), b=Math.max(i,j), key=a*1e7+b;
+  if(!map.has(key)) map.set(key,rest);
+}
+function linkGroup(members,map,rest){
+  const m=members.length; if(m<2) return;
+  if(m<=60){ for(let i=0;i<m;i++) for(let j=i+1;j<m;j++) addEdge(members[i],members[j],map,rest); }
+  else { for(let i=0;i<m;i++) for(let t=0;t<12;t++){ const j=rint(m); if(j!==i) addEdge(members[i],members[j],map,rest); } }
+}
+
+function buildNetwork(){
+  const N=G.N;
+  REST=Math.pow(N,1/3)*1.9+4;
+  const restBig=REST, restSmall=REST*3*Math.pow(N/500,0.2);
+  nodeR=REST*0.085*Math.pow(500/N,1/3);
+  linkR=REST*0.00255;
+  nodes=new Array(N);
+  for(let i=0;i<N;i++){
+    const r=Math.cbrt(Math.random())*Math.pow(N,1/3)*REST*0.5+REST,
+          th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+    nodes[i]={x:r*Math.sin(ph)*Math.cos(th), y:r*Math.sin(ph)*Math.sin(th), z:r*Math.cos(ph),
+              fx:0, fy:0, fz:0};
+  }
+  const map=new Map(); let info='';
+
+  if(G.mode==='er'){
+    const target=Math.round(G.kdeg*N/2); let tries=0, max=target*30;
+    while(map.size<target && tries++<max) addEdge(rint(N),rint(N),map,restBig);
+    info='Erdős–Rényi · target ⟨k⟩='+G.kdeg;
+  } else if(G.mode==='pl'){
+    const samp=makePowerSampler(G.a,G.gamma);
+    const stubs=[]; for(let i=0;i<N;i++){ const k=samp(); for(let q=0;q<k;q++) stubs.push(i); }
+    if(stubs.length%2===1) stubs.pop();
+    shuffle(stubs);
+    for(let s=0;s<stubs.length;s+=2) addEdge(stubs[s],stubs[s+1],map,restBig);
+    info='Power-law network (config model) · a='+G.a+', γ='+G.gamma;
+  } else {
+    const smallCount=Math.max(1,Math.round(N/G.S));
+    const smallMembers=Array.from({length:smallCount},()=>[]);
+    for(let i=0;i<N;i++) smallMembers[rint(smallCount)].push(i);
+    smallMembers.forEach(m=>linkGroup(m,map,restSmall));
+    let bigMembership;
+    if(G.dist==='power'){
+      const samp=makePowerSampler(G.a,G.gamma);
+      const sizes=[]; let tot=0;
+      while(tot<N){ const s=samp(); sizes.push(s); tot+=s; }
+      const pool=[]; sizes.forEach((s,ci)=>{ for(let q=0;q<s;q++) pool.push(ci); });
+      shuffle(pool); bigMembership=pool.slice(0,N);
+      info='Modular · '+smallCount+' small (S≈'+G.S+') · '+sizes.length+' big from power law (a='+G.a+', γ='+G.gamma+')';
+    } else {
+      const bigCount=Math.max(1,Math.round(N/G.B));
+      bigMembership=new Array(N);
+      for(let i=0;i<N;i++) bigMembership[i]=rint(bigCount);
+      info='Modular · '+smallCount+' small (S≈'+G.S+') · '+bigCount+' big (B≈'+G.B+')';
+    }
+    const bigMap=new Map();
+    for(let i=0;i<N;i++){ const c=bigMembership[i]; if(!bigMap.has(c)) bigMap.set(c,[]); bigMap.get(c).push(i); }
+    bigMap.forEach(m=>linkGroup(m,map,restBig));
+  }
+
+  /* ---- adjacency (mutable: the self-organised mode rewires links) ---- */
+  edges=[]; erest=[]; etype=[]; edgeMap=new Map();
+  adjL=Array.from({length:N},()=>[]);
+  adjE=Array.from({length:N},()=>[]);
+  deg=new Int32Array(N);
+  let m=0;
+  map.forEach((rest,key)=>{
+    const a=Math.floor(key/1e7), b=key%1e7;
+    edges.push(a,b); erest.push(rest); etype.push(rest>restBig*1.5?1:0);
+    edgeMap.set(key,m);
+    adjL[a].push(b); adjE[a].push(m); deg[a]++;
+    adjL[b].push(a); adjE[b].push(m); deg[b]++;
+    m++;
+  });
+  ecount=m;
+  flashUntil=new Float64Array(ecount);
+  fromNode=new Int32Array(N).fill(-2);
+  SO.rewires=0;
+  soAlloc(N);
+  let s1=0; for(let i=0;i<N;i++) s1+=deg[i];
+  meanDeg=s1/N||1;
+
+  netDiam=estimateDiameter();
+  $('netInfo').innerHTML=info+' · ⟨k⟩='+meanDeg.toFixed(1)+' · E='+(edges.length/2)+
+    ' · est. diameter ≈ '+netDiam;
+
+  M.init(N);
+  rebuildBalls();
+  rebuildScene();
+  reheat();
+}
+function reheat(){ cooling=1; settled=false; framed=false; }
+
+/* ---- BFS utilities: shortest-path distance is the network "Horizon" ---- */
+let diaDist=null, diaQ=null;
+/* double-sweep estimate from a fixed, evenly spread set of sources:
+   deterministic enough to be plotted as a time series                     */
+function estimateDiameter(){
+  const N=nodes.length; if(!N||!adjL.length) return 1;
+  if(!diaDist||diaDist.length!==N){ diaDist=new Int32Array(N); diaQ=new Int32Array(N); }
+  const dist=diaDist, q=diaQ;
+  let best=1;
+  const S=Math.min(6,N);
+  for(let s=0;s<S;s++){
+    let src=Math.floor(s*N/S);
+    for(let pass=0;pass<2;pass++){
+      dist.fill(-1);
+      let head=0,tail=0, far=src, ecc=0;
+      q[tail++]=src; dist[src]=0;
+      while(head<tail){
+        const v=q[head++], dv=dist[v];
+        if(dv>ecc){ ecc=dv; far=v; }
+        const L=adjL[v];
+        for(let p=0;p<L.length;p++){ const w=L[p];
+          if(dist[w]<0){ dist[w]=dv+1; q[tail++]=w; } }
+      }
+      if(ecc>best) best=ecc;
+      src=far;
+    }
+  }
+  return Math.max(1,best);
+}
+/* ball of radius h around every node (excluding the node itself) */
+function rebuildBalls(){
+  $('warn').textContent='';
+  const N=nodes.length;
+  if(!N||!adjL.length){ ballGlobal=true; return; }
+  const h=G.horizon;
+  if(h>=netDiam){ ballGlobal=true; ballOff=ballFlat=null; return; }
+  const dist=new Int32Array(N).fill(-1), q=new Int32Array(N);
+  const lists=new Array(N); let total=0;
+  for(let s=0;s<N;s++){
+    let head=0,tail=0; q[tail++]=s; dist[s]=0;
+    while(head<tail){
+      const v=q[head++], dv=dist[v];
+      if(dv>=h) continue;
+      const L=adjL[v];
+      for(let p=0;p<L.length;p++){ const w=L[p];
+        if(dist[w]<0){ dist[w]=dv+1; q[tail++]=w; } }
+    }
+    const arr=new Int32Array(tail-1);
+    let c=0;
+    for(let m=0;m<tail;m++){ const v=q[m]; dist[v]=-1; if(v!==s) arr[c++]=v; }
+    lists[s]=arr; total+=arr.length;
+    if(total>3.2e7){
+      ballGlobal=true; ballOff=ballFlat=null;
+      $('warn').textContent='Horizon balls too large — using the whole network.';
+      return;
+    }
+  }
+  ballOff=new Int32Array(N+1); ballFlat=new Int32Array(total);
+  let p=0;
+  for(let s=0;s<N;s++){ ballOff[s]=p; ballFlat.set(lists[s],p); p+=lists[s].length; }
+  ballOff[N]=p; ballGlobal=false;
+}
+
+/* ==========================================================================
+   SELF-ORGANISED NETWORK  —  link rewiring coupled to idea spreading
+   --------------------------------------------------------------------------
+   Whenever speaker i passes its idea to neighbour k with the help of the
+   random confirming agent r, a bond k–r is created (nothing happens if it
+   already exists).  Every created bond is paid for by deleting one link,
+   drawn at random from a uniformly-random shortest path between i and r
+   (computed in the graph as it was *before* the new bond).
+   ========================================================================== */
+const SO = { on:false, flash:0, rewires:0, rate:0, lastRw:0 };
+let soDist=null, soSig=null, soQ=null, soTouch=null;
+function soAlloc(N){
+  soDist=new Int32Array(N).fill(-1); soSig=new Float64Array(N);
+  soQ=new Int32Array(N); soTouch=new Int32Array(N);
+}
+const ekey=(a,b)=> a<b ? a*1e7+b : b*1e7+a;
+
+function removeEdgeSlot(m){
+  const a=edges[2*m], b=edges[2*m+1];
+  edgeMap.delete(ekey(a,b));
+  for(let s=0;s<2;s++){
+    const u = s? b : a, L=adjL[u], E=adjE[u];
+    for(let q=0;q<E.length;q++) if(E[q]===m){
+      L[q]=L[L.length-1]; E[q]=E[E.length-1]; L.pop(); E.pop(); break;
+    }
+    deg[u]--;
+  }
+}
+function addEdgeSlot(m,a,b,rest,type){
+  edges[2*m]=a; edges[2*m+1]=b; erest[m]=rest; etype[m]=type;
+  edgeMap.set(ekey(a,b),m);
+  adjL[a].push(b); adjE[a].push(m); deg[a]++;
+  adjL[b].push(a); adjE[b].push(m); deg[b]++;
+}
+
+/* one edge, uniformly chosen from a uniformly-random shortest path src→dst */
+function shortestPathEdge(src,dst){
+  if(src===dst) return -1;
+  const dist=soDist, sig=soSig, q=soQ, touch=soTouch;
+  let head=0, tail=0, nt=0, dstD=-1;
+  q[tail++]=src; dist[src]=0; sig[src]=1; touch[nt++]=src;
+  while(head<tail){
+    const v=q[head++], dv=dist[v];
+    if(dstD>=0 && dv>=dstD) break;
+    const L=adjL[v], sv=sig[v];
+    for(let p=0;p<L.length;p++){
+      const w=L[p];
+      if(dist[w]<0){ dist[w]=dv+1; sig[w]=sv; q[tail++]=w; touch[nt++]=w;
+                     if(w===dst) dstD=dv+1; }
+      else if(dist[w]===dv+1) sig[w]+=sv;
+    }
+  }
+  let res=-1;
+  if(dstD>0){
+    let v=dst, guard=0, ok=true;
+    const path=[];
+    while(v!==src && guard++<4096){
+      const dv=dist[v], L=adjL[v], E=adjE[v];
+      let tot=0;
+      for(let p=0;p<L.length;p++) if(dist[L[p]]===dv-1) tot+=sig[L[p]];
+      let pick=Math.random()*tot, nxt=-1, ne=-1;
+      for(let p=0;p<L.length;p++){ const u=L[p];
+        if(dist[u]===dv-1){ pick-=sig[u]; if(pick<=0){ nxt=u; ne=E[p]; break; } } }
+      if(nxt<0){ for(let p=0;p<L.length;p++) if(dist[L[p]]===dv-1){ nxt=L[p]; ne=adjE[v][p]; break; } }
+      if(nxt<0){ ok=false; break; }
+      path.push(ne); v=nxt;
+    }
+    if(ok && v===src && path.length) res=path[rint(path.length)];
+  }
+  for(let p=0;p<nt;p++){ dist[touch[p]]=-1; sig[touch[p]]=0; }
+  return res;
+}
+
+/* rewire after a successful spread: i = speaker, k = listener, r = confirmer */
+let dirtyEdges=[];
+function rewire(i,k,r,nowMs){
+  if(k===r || edgeMap.has(ekey(k,r))) return;      /* bond already there */
+  const drop=shortestPathEdge(i,r);
+  if(drop<0) return;                               /* no path — no swap */
+  const rest=erest[drop], type=etype[drop];
+  removeEdgeSlot(drop);
+  addEdgeSlot(drop,k,r,rest,type);
+  flashUntil[drop] = SO.flash>0 ? nowMs+SO.flash*1000 : 0;
+  dirtyEdges.push(drop);
+  SO.rewires++;
+}
+
+/* ==========================================================================
+   NETWORK DYNAMICS  —  a node offers its idea along one of its links
+   ========================================================================== */
+function runNetwork(nsteps){
+  const N=M.N, st=M.state, tau=M.tau, tauInf=!isFinite(tau);
+  const t0=M.t, invN=1/N;
+  const inn=innovationTimes(nsteps); let ip=0;
+  const glob=ballGlobal, bOff=ballOff, bFlat=ballFlat;
+  const so=SO.on, nowMs=performance.now();
+
+  for(let s=0;s<nsteps;s++){
+    while(inn && ip<inn.length && inn[ip]===s){
+      const kk=rint(N); M.innovate(kk, t0+s*invN);
+      if(fromNode) fromNode[kk]=-1; ip++; }
+    /* the speaker */
+    const j=rint(N);
+    const L=adjL[j];
+    if(L.length===0) continue;
+    const rj=st[j];
+    /* the listener: one of its connections */
+    const i=L[rint(L.length)];
+    if(st[i]===rj) continue;
+    /* the confirming third agent, within Horizon (shortest path) of the listener */
+    let k;
+    if(glob) k=rint(N);
+    else{
+      const b0=bOff[i], b1=bOff[i+1];
+      if(b1===b0) continue;
+      k=bFlat[b0+rint(b1-b0)];
+    }
+    if(st[k]!==rj) continue;
+    const now=t0+s*invN;
+    if(!M.allowed(i,rj,now,tauInf,tau)) continue;
+    M.adopt(i,rj,now);
+    if(fromNode) fromNode[i]=j;      /* he heard it from his neighbour j */
+    if(so) rewire(j,i,k,nowMs);      /* speaker j, listener i, confirmer k */
+  }
+  M.steps+=nsteps; M.t=t0+nsteps*invN;
+}
+
+/* ==========================================================================
+   THREE.JS SCENE
+   ========================================================================== */
+const THREEOK = (typeof THREE!=='undefined');
+let renderer,scene,camera,group,balls,links,raycaster,mouse,keyLight,clipPlane;
+let linkMode='cyl';
+const CYL_CAP=60000, FOV=58;
+let camTheta=0.6, camPhi=1.05, camDist=60, camBase=60, zoomUser=1, rotY=0;
+let compLab=null, compQ=null, autoBase=0, lastZoomDiam=-1;
+let dummy=null, Y=null, tmpDir=null, tmpQ=null, UPV=null, panVd=null, panRight=null, panTarget=null;
+let bigLink=null, smallLink=null, THREECOL=null;
+let menTorso=null, menHead=null, menLegs=null, menArms=null, menHalo=null;
+let menMode=false;
+let UPV3=null, FWD3=null, tmpA=null, tmpB=null, qBody=null, qNose=null, qHalo=null;
+
+function initThree(){
+  if(!THREEOK) return;
+  dummy=new THREE.Object3D();
+  Y=new THREE.Vector3(0,1,0); tmpDir=new THREE.Vector3(); tmpQ=new THREE.Quaternion();
+  UPV=new THREE.Vector3(0,1,0); panVd=new THREE.Vector3(); panRight=new THREE.Vector3();
+  panTarget=new THREE.Vector3();
+  bigLink=new THREE.Color(0x4f6fd6); smallLink=new THREE.Color(0x22c071);
+  UPV3=new THREE.Vector3(0,1,0); FWD3=new THREE.Vector3(0,0,1);
+  tmpA=new THREE.Vector3(); tmpB=new THREE.Vector3();
+  qBody=new THREE.Quaternion(); qNose=new THREE.Quaternion(); qHalo=new THREE.Quaternion();
+  qHalo.setFromUnitVectors(FWD3,UPV3);        /* torus ring laid flat  */
+  THREECOL=new Array(NCOL);
+  for(let s=0;s<NCOL;s++) THREECOL[s]=new THREE.Color(PAL[3*s]/255,PAL[3*s+1]/255,PAL[3*s+2]/255);
+
+  const cv=$('view');
+  renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,preserveDrawingBuffer:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.localClippingEnabled=true;
+  clipPlane=new THREE.Plane(new THREE.Vector3(0,0,1),1e9);
+  scene=new THREE.Scene(); scene.background=new THREE.Color(bgColors[0]);
+  scene.fog=new THREE.FogExp2(bgColors[0],0.004);
+  camera=new THREE.PerspectiveCamera(FOV,1,0.1,20000);
+  group=new THREE.Group(); scene.add(group);
+  scene.add(new THREE.AmbientLight(0x8090a8,0.7));
+  keyLight=new THREE.DirectionalLight(0xffffff,0.85);
+  keyLight.castShadow=true; keyLight.shadow.mapSize.set(1024,1024);
+  scene.add(keyLight);
+  const fill=new THREE.DirectionalLight(0xbcccff,0.3); fill.position.set(-1,-0.6,-0.8); scene.add(fill);
+  raycaster=new THREE.Raycaster(); mouse=new THREE.Vector2();
+  resize3D();
+}
+function layoutOverlays(){
+  const tb=$('topbar'), gb=$('gamebar'), gs=$('gstatus'), gw=$('gwipe');
+  if(!tb||!gb||!gs) return;
+  gb.style.top = tb.offsetHeight+'px';
+  if(gw) gw.style.top = tb.offsetHeight+'px';
+  gs.style.top = (tb.offsetHeight+gb.offsetHeight+5)+'px';
+}
+function resize3D(){
+  const st=$('stage'), w=st.clientWidth||600, h=st.clientHeight||600;
+  layoutOverlays();
+  if(THREEOK&&renderer){
+    renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+  } else {
+    const cv=$('view'), dp=Math.min(window.devicePixelRatio||1,2);
+    cv.width=Math.round(w*dp); cv.height=Math.round(h*dp);
+  }
+}
+function applyBg(i){
+  bgIndex=((i%bgColors.length)+bgColors.length)%bgColors.length;
+  const c=bgColors[bgIndex];
+  if(scene){ scene.background.setHex(c); scene.fog.color.setHex(c);
+    scene.fog.density = bgIndex===0?0.004:0.0005; }
+  $('bg').textContent='BG: '+bgNames[bgIndex];
+}
+function disposeMesh(m){ if(!m||!group)return; group.remove(m); m.geometry.dispose(); m.material.dispose(); }
+function fitRadius(){
+  const N=nodes.length; if(!N) return REST;
+  const pl = G.mode==='pl' || (G.mode==='modular'&&G.dist==='power');
+  if(!pl){
+    let r2=0; for(let i=0;i<N;i++){ const n=nodes[i]; const d=n.x*n.x+n.y*n.y+n.z*n.z; if(d>r2)r2=d; }
+    return Math.sqrt(r2);
+  }
+  let cx=0,cy=0,cz=0; for(let i=0;i<N;i++){ cx+=nodes[i].x; cy+=nodes[i].y; cz+=nodes[i].z; }
+  cx/=N;cy/=N;cz/=N;
+  const arr=new Float64Array(N);
+  for(let i=0;i<N;i++){ const dx=nodes[i].x-cx,dy=nodes[i].y-cy,dz=nodes[i].z-cz; arr[i]=dx*dx+dy*dy+dz*dz; }
+  arr.sort();
+  return Math.sqrt(arr[Math.min(N-1,Math.floor(N*0.98))]);
+}
+function fitCamera(){ const R=(fitRadius()||REST)+nodeR*1.5;
+  camBase=R/Math.tan(FOV*Math.PI/360); camDist=camBase*zoomUser; }
+
+/* --- self-organised zoom: the two largest components just fill the panel --- */
+function componentFit(){
+  const N=nodes.length; if(!N||!adjL.length) return null;
+  if(!compLab||compLab.length!==N){ compLab=new Int32Array(N); compQ=new Int32Array(N); }
+  compLab.fill(-1);
+  const q=compQ, sizes=[];
+  for(let s=0;s<N;s++){
+    if(compLab[s]>=0) continue;
+    const id=sizes.length; let head=0,tail=0;
+    q[tail++]=s; compLab[s]=id;
+    while(head<tail){ const v=q[head++], L=adjL[v];
+      for(let p=0;p<L.length;p++){ const w=L[p]; if(compLab[w]<0){ compLab[w]=id; q[tail++]=w; } } }
+    sizes.push(tail);
+  }
+  let a=-1,b=-1,sa=-1,sb=-1;
+  for(let i=0;i<sizes.length;i++){
+    if(sizes[i]>sa){ sb=sa; b=a; sa=sizes[i]; a=i; }
+    else if(sizes[i]>sb){ sb=sizes[i]; b=i; }
+  }
+  const rr=[];
+  for(let i=0;i<N;i++){
+    const c=compLab[i]; if(c!==a && c!==b) continue;
+    const n=nodes[i], x=n.x*XSTRETCH;
+    rr.push(x*x+n.y*n.y+n.z*n.z);
+  }
+  if(!rr.length) return null;
+  rr.sort((u,v)=>u-v);
+  /* a high percentile, not the max: one stray node must not move the camera */
+  const r=Math.sqrt(rr[Math.min(rr.length-1, Math.floor(rr.length*0.995))]);
+  return {r, ncomp:sizes.length};
+}
+let zoomTick=0;
+function autoZoomStep(){
+  if((zoomTick++ % 6)===0){                       /* re-measure ~10×/s      */
+    const cf=componentFit();
+    if(cf && (cf.ncomp<=1 || netDiam!==lastZoomDiam)){
+      lastZoomDiam=netDiam;
+      const want=(cf.r+nodeR*G.nodeScale*1.6)/Math.tan(FOV*Math.PI/360);
+      /* hysteresis: ignore changes under 4 %, so the view stops breathing */
+      if(autoBase<=0 || Math.abs(want-autoBase)>0.04*autoBase) autoBase=want;
+    }
+  }
+  if(autoBase>0) camBase += (autoBase-camBase)*0.06;
+}
+function updateLighting(R){
+  keyLight.position.set(R,R*1.3,R*0.8);
+  const sc=keyLight.shadow.camera;
+  sc.left=-R*1.6; sc.right=R*1.6; sc.top=R*1.3; sc.bottom=-R*1.3; sc.near=1; sc.far=R*6;
+  sc.updateProjectionMatrix();
+}
+/* how tall is this man?  bigger when better connected  */
+function manScale(i){
+  const k = deg && i<deg.length ? deg[i] : 1;
+  const f = 0.55 + 0.62*Math.sqrt(Math.max(0.15, k/Math.max(1,meanDeg)));
+  return nodeR*G.nodeScale*1.55*Math.min(2.6,f);
+}
+/* the horizontal direction this man is facing: towards whoever told him */
+function manFacing(i,out){
+  const src = fromNode ? fromNode[i] : -2;
+  const n=nodes[i];
+  if(src>=0 && src<nodes.length){
+    const m=nodes[src];
+    out.set(m.x-n.x, 0, m.z-n.z);
+    if(out.lengthSq()>1e-9){ out.normalize(); return; }
+  }
+  out.set(n.x, 0, n.z);                       /* nobody told him: face outward */
+  if(out.lengthSq()<1e-9) out.set(0,0,1); else out.normalize();
+}
+function buildMen(N){
+  for(const m of [menTorso,menHead,menLegs,menArms,menHalo]) disposeMesh(m);
+  menTorso=menHead=menLegs=menArms=menHalo=null;
+  if(!THREEOK||!scene||!N) return;
+  const seg = N>2000?5 : 7;
+  const mk=(geo,mat,count)=>{ const m=new THREE.InstancedMesh(geo,mat,count);
+    m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.frustumCulled=false;
+    group.add(m); return m; };
+  const skin=new THREE.MeshPhongMaterial({shininess:28,specular:0x1c2432,clippingPlanes:[clipPlane]});
+  menLegs =mk(new THREE.CylinderGeometry(0.075,0.075,0.60,seg), skin,        2*N);
+  menTorso=mk(new THREE.CylinderGeometry(0.17,0.26,0.62,seg),   skin.clone(),  N);
+  menArms =mk(new THREE.CylinderGeometry(0.065,0.065,0.60,seg), skin.clone(),2*N);
+  menHead =mk(new THREE.SphereGeometry(0.25,seg+3,seg+1),       skin.clone(),  N);
+  const gold=new THREE.MeshPhongMaterial({color:0xffcf33,emissive:0x5a3f00,shininess:70,
+                                          clippingPlanes:[clipPlane]});
+  menHalo =mk(new THREE.TorusGeometry(0.34,0.06,5,12), gold, N);
+  for(const m of [menTorso,menHead,menLegs,menArms,menHalo]) m.visible=false;
+}
+function updateMen(){
+  if(!THREEOK||!menTorso) return;
+  const N=Math.min(nodes.length,M.N);
+  for(let i=0;i<N;i++){
+    const n=nodes[i], s=manScale(i);
+    manFacing(i,tmpA);
+    const fx=tmpA.x, fz=tmpA.z;
+    const rx=fz, rz=-fx;                       /* right = up × forward */
+    qBody.setFromUnitVectors(FWD3,tmpA);
+    const col=THREECOL[M.colOf(M.state[i])];
+    const told = !!(fromNode && fromNode[i]>=0);
+
+    /* two legs, standing */
+    for(let L=0;L<2;L++){
+      const g=L?1:-1;
+      dummy.position.set(n.x+rx*0.15*s*g, n.y+0.30*s, n.z+rz*0.15*s*g);
+      dummy.quaternion.identity(); dummy.scale.setScalar(s); dummy.updateMatrix();
+      menLegs.setMatrixAt(2*i+L,dummy.matrix); menLegs.setColorAt(2*i+L,col);
+    }
+    /* torso, turned towards whoever convinced him */
+    dummy.position.set(n.x, n.y+0.92*s, n.z);
+    dummy.quaternion.copy(qBody); dummy.scale.setScalar(s); dummy.updateMatrix();
+    menTorso.setMatrixAt(i,dummy.matrix); menTorso.setColorAt(i,col);
+    /* head */
+    dummy.position.set(n.x, n.y+1.44*s, n.z);
+    dummy.updateMatrix();
+    menHead.setMatrixAt(i,dummy.matrix); menHead.setColorAt(i,col);
+    /* arms — the right one points at the node he got his idea from */
+    for(let A=0;A<2;A++){
+      const g=A?1:-1;
+      const sx=n.x+rx*0.26*s*g, sy=n.y+1.16*s, sz=n.z+rz*0.26*s*g;
+      let dx,dy,dz;
+      if(A===1 && told){ dx=fx; dy=0.20; dz=fz; }
+      else { dx=rx*0.30*g; dy=-1; dz=rz*0.30*g; }
+      const dl=Math.hypot(dx,dy,dz)||1; dx/=dl; dy/=dl; dz/=dl;
+      tmpB.set(dx,dy,dz); qNose.setFromUnitVectors(UPV3,tmpB);
+      dummy.position.set(sx+dx*0.30*s, sy+dy*0.30*s, sz+dz*0.30*s);
+      dummy.quaternion.copy(qNose); dummy.scale.setScalar(s); dummy.updateMatrix();
+      menArms.setMatrixAt(2*i+A,dummy.matrix); menArms.setColorAt(2*i+A,col);
+    }
+    /* halo — the idea was born in this head */
+    const halo = fromNode && fromNode[i]===-1;
+    dummy.position.set(n.x, n.y+1.90*s, n.z);
+    dummy.quaternion.copy(qHalo); dummy.scale.setScalar(halo?s:0); dummy.updateMatrix();
+    menHalo.setMatrixAt(i,dummy.matrix);
+  }
+  for(const m of [menTorso,menHead,menLegs,menArms,menHalo]){
+    m.instanceMatrix.needsUpdate=true;
+    if(m.instanceColor) m.instanceColor.needsUpdate=true;
+  }
+}
+function applyMenMode(){
+  const netMode = (mode==='network');
+  if(balls) balls.visible = !(menMode&&netMode);
+  for(const m of [menTorso,menHead,menLegs,menArms,menHalo])
+    if(m) m.visible = menMode&&netMode;
+  $('menBtn').classList.toggle('on',menMode);
+  if(menMode&&netMode) updateMen();
+}
+function rebuildScene(){
+  if(!THREEOK||!scene) return;
+  disposeMesh(balls); disposeMesh(links); balls=links=null;
+  group.scale.set(XSTRETCH,1,1);
+  const N=nodes.length, E=edges.length/2;
+  const seg = N>2000?8 : N>800?12 : 16;
+  const sphere=new THREE.SphereGeometry(1,seg,Math.max(6,seg-4));
+  const ballMat=new THREE.MeshPhongMaterial({shininess:45,specular:0x222a38,clippingPlanes:[clipPlane]});
+  balls=new THREE.InstancedMesh(sphere,ballMat,N);
+  balls.instanceMatrix.setUsage(THREE.DynamicDrawUsage); balls.frustumCulled=false;
+  group.add(balls);
+  for(let i=0;i<N;i++) balls.setColorAt(i,THREECOL[0]);
+  if(balls.instanceColor) balls.instanceColor.needsUpdate=true;
+
+  if(E<=CYL_CAP){
+    linkMode='cyl';
+    const cylGeo=new THREE.CylinderGeometry(1,1,1,6,1,true);
+    const linkMat=new THREE.MeshPhongMaterial({color:0xffffff,shininess:15,clippingPlanes:[clipPlane]});
+    links=new THREE.InstancedMesh(cylGeo,linkMat,Math.max(1,E));
+    links.instanceMatrix.setUsage(THREE.DynamicDrawUsage); links.frustumCulled=false;
+    links.receiveShadow=true;
+    group.add(links);
+    for(let m=0;m<E;m++) links.setColorAt(m, etype[m]?smallLink:bigLink);
+    if(links.instanceColor) links.instanceColor.needsUpdate=true;
+  } else {
+    linkMode='line';
+    const lg=new THREE.BufferGeometry();
+    lg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(edges.length*3),3));
+    const col=new Float32Array(edges.length*3);
+    for(let m=0;m<E;m++){ const c=etype[m]?smallLink:bigLink;
+      for(const v of [2*m,2*m+1]){ col[v*3]=c.r; col[v*3+1]=c.g; col[v*3+2]=c.b; } }
+    lg.setAttribute('color',new THREE.BufferAttribute(col,3));
+    links=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,
+      opacity:0.3,clippingPlanes:[clipPlane]}));
+    links.frustumCulled=false;
+    group.add(links);
+  }
+  links.visible=showLinks;
+
+  const Rnet=REST*Math.pow(N,1/3)*0.62+REST*2.5;
+  camBase=Rnet*1.2; zoomUser=1; lastZoomDiam=-1; autoBase=0;
+  camDist=camBase; updateLighting(Rnet);
+  const useShadow = N<=1500 && linkMode==='cyl';
+  renderer.shadowMap.enabled=useShadow;
+  balls.castShadow=useShadow; balls.receiveShadow=useShadow;
+  buildMen(N);
+  updateMatrices(); syncNodeColors(); applyMenMode();
+}
+let frameNow=0;
+function linkRadOf(m){
+  return (flashUntil && flashUntil[m]>frameNow) ? linkR*5 : linkR;
+}
+function updateMatrices(){
+  if(!balls) return;
+  const N=nodes.length, sc=nodeR*G.nodeScale, hasT=M.truth.size>0;
+  for(let i=0;i<N;i++){ const n=nodes[i];
+    const f = (hasT && i<M.N && M.truth.has(M.state[i])) ? 1.6 : 1;
+    dummy.position.set(n.x,n.y,n.z); dummy.scale.setScalar(sc*f); dummy.quaternion.identity();
+    dummy.updateMatrix(); balls.setMatrixAt(i,dummy.matrix); }
+  balls.instanceMatrix.needsUpdate=true;
+  if(menMode && mode==='network') updateMen();
+  if(linkMode==='cyl'){
+    for(let e=0,m=0;e<edges.length;e+=2,m++){
+      const A=nodes[edges[e]], B=nodes[edges[e+1]];
+      tmpDir.set(B.x-A.x,B.y-A.y,B.z-A.z);
+      const len=tmpDir.length()||0.0001;
+      dummy.position.set((A.x+B.x)/2,(A.y+B.y)/2,(A.z+B.z)/2);
+      tmpQ.setFromUnitVectors(Y,tmpDir.multiplyScalar(1/len));
+      dummy.quaternion.copy(tmpQ);
+      const rad=linkRadOf(m);
+      dummy.scale.set(rad,len,rad);
+      dummy.updateMatrix(); links.setMatrixAt(m,dummy.matrix);
+      links.setColorAt(m, etype[m]?smallLink:bigLink);
+    }
+    links.instanceMatrix.needsUpdate=true;
+    if(links.instanceColor) links.instanceColor.needsUpdate=true;
+  } else {
+    const lp=links.geometry.attributes.position.array;
+    for(let e=0,k=0;e<edges.length;e++,k+=3){ const n=nodes[edges[e]]; lp[k]=n.x;lp[k+1]=n.y;lp[k+2]=n.z; }
+    links.geometry.attributes.position.needsUpdate=true;
+  }
+}
+function syncNodeColors(){
+  if(!balls||!M.state) return;
+  const N=Math.min(nodes.length,M.N);
+  for(let i=0;i<N;i++) balls.setColorAt(i, THREECOL[M.colOf(M.state[i])]);
+  if(balls.instanceColor) balls.instanceColor.needsUpdate=true;
+}
+function layoutStep(){
+  const N=nodes.length; if(!N) return;
+  for(let i=0;i<N;i++){ const n=nodes[i]; n.fx=0;n.fy=0;n.fz=0; }
+  const kS=0.6;
+  for(let e=0,m=0;e<edges.length;e+=2,m++){
+    const A=nodes[edges[e]], B=nodes[edges[e+1]];
+    let dx=B.x-A.x, dy=B.y-A.y, dz=B.z-A.z;
+    const d=Math.hypot(dx,dy,dz)||0.001, f=kS*(d-erest[m])/d;
+    dx*=f;dy*=f;dz*=f;
+    A.fx+=dx;A.fy+=dy;A.fz+=dz; B.fx-=dx;B.fy-=dy;B.fz-=dz;
+  }
+  const rep=REST*REST*0.8;
+  const hubPref = G.repK>0 ? G.repK*0.1*REST*REST*REST*REST/(meanDeg*meanDeg) : 0;
+  if(N<=900){
+    for(let i=0;i<N;i++){ const A=nodes[i];
+      for(let j=i+1;j<N;j++){ const B=nodes[j];
+        const dxo=A.x-B.x,dyo=A.y-B.y,dzo=A.z-B.z, d2=dxo*dxo+dyo*dyo+dzo*dzo+0.01;
+        const inv=1/Math.sqrt(d2);
+        let f=rep/d2;
+        if(hubPref) f+=hubPref*deg[i]*deg[j]/(d2*d2)*Math.sqrt(d2);
+        f*=inv;
+        const fx=dxo*f, fy=dyo*f, fz=dzo*f;
+        A.fx+=fx;A.fy+=fy;A.fz+=fz; B.fx-=fx;B.fy-=fy;B.fz-=fz;
+      }}
+  } else {
+    for(let i=0;i<N;i++){ const A=nodes[i];
+      for(let t=0;t<6;t++){ const j=rint(N); if(j===i)continue; const B=nodes[j];
+        const dxo=A.x-B.x,dyo=A.y-B.y,dzo=A.z-B.z, d2=dxo*dxo+dyo*dyo+dzo*dzo+0.01;
+        const inv=1/Math.sqrt(d2);
+        let f=rep*0.5/d2;
+        if(hubPref) f+=hubPref*deg[i]*deg[j]/(d2*d2)*Math.sqrt(d2)*(N/6);
+        f*=inv;
+        A.fx+=dxo*f;A.fy+=dyo*f;A.fz+=dzo*f;
+      }}
+  }
+  const step=0.18*cooling, maxd=REST*0.5; let moved=0;
+  for(let i=0;i<N;i++){ const n=nodes[i];
+    let dx=n.fx*step-n.x*0.002, dy=n.fy*step-n.y*0.002, dz=n.fz*step-n.z*0.002;
+    const dl=Math.hypot(dx,dy,dz); if(dl>maxd){ const s=maxd/dl; dx*=s;dy*=s;dz*=s; }
+    n.x+=dx;n.y+=dy;n.z+=dz; moved+=Math.abs(dx)+Math.abs(dy)+Math.abs(dz);
+  }
+  let mx=0,my=0,mz=0; for(let i=0;i<N;i++){ mx+=nodes[i].x;my+=nodes[i].y;mz+=nodes[i].z; }
+  mx/=N;my/=N;mz/=N;
+  for(let i=0;i<N;i++){ nodes[i].x-=mx; nodes[i].y-=my; nodes[i].z-=mz; }
+  cooling=Math.max(0,cooling*0.992-0.0008);
+  if(cooling<=0.001 || moved/N<REST*0.0008) settled=true;
+}
+function setupControls(cv){
+  let drag=false,px=0,py=0;
+  cv.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY;cv.dragMoved=false;});
+  addEventListener('pointerup',()=>drag=false);
+  addEventListener('pointermove',e=>{
+    if(!drag)return;
+    if(Math.abs(e.clientX-px)+Math.abs(e.clientY-py)>3) cv.dragMoved=true;
+    camTheta-=(e.clientX-px)*0.005; camPhi-=(e.clientY-py)*0.005;
+    camPhi=Math.max(0.12,Math.min(Math.PI-0.12,camPhi)); px=e.clientX;py=e.clientY;
+  });
+  cv.addEventListener('wheel',e=>{e.preventDefault();
+    zoomUser*=(1+Math.sign(e.deltaY)*0.08);
+    zoomUser=Math.max(0.05,Math.min(20,zoomUser));},{passive:false});
+  cv.addEventListener('click',e=>{ if(cv.dragMoved)return; plantIdea(e); });
+}
+function plantIdea(e){
+  let id=-1;
+  if(THREEOK&&balls){
+    const st=$('stage').getBoundingClientRect();
+    mouse.x=((e.clientX-st.left)/st.width)*2-1;
+    mouse.y=-((e.clientY-st.top)/st.height)*2+1;
+    raycaster.setFromCamera(mouse,camera);
+    const hit=raycaster.intersectObject(balls);
+    if(hit.length && hit[0].instanceId!=null) id=hit[0].instanceId;
+  } else id=pick2D(e);
+  if(id<0 || id>=M.N) return;
+  if(GAME.on){ gamePlant(id); }
+  else { M.innovate(id,M.t); if(fromNode&&id<fromNode.length) fromNode[id]=-1; }
+  syncNodeColors(); if(THREEOK&&balls) updateMatrices();
+  updateReadouts();
+}
+function updateCamera(){
+  if(!THREEOK||!camera) return;
+  const cx=camDist*Math.sin(camPhi)*Math.cos(camTheta),
+        cy=camDist*Math.cos(camPhi),
+        cz=camDist*Math.sin(camPhi)*Math.sin(camTheta);
+  panVd.set(-cx,-cy,-cz).normalize();
+  panRight.crossVectors(panVd,UPV).normalize();
+  const panW=2*camDist*Math.tan(FOV*Math.PI/360)*camera.aspect*0.02;
+  camera.position.set(cx-panRight.x*panW, cy-panRight.y*panW, cz-panRight.z*panW);
+  panTarget.set(-panRight.x*panW,-panRight.y*panW,-panRight.z*panW);
+  camera.lookAt(panTarget);
+}
+
+/* --------------------------------------------------------------------------
+   Fallback 2-d projected renderer — used when three.js is unavailable
+   (same camera, same colours; nodes are painted back-to-front)
+   -------------------------------------------------------------------------- */
+let view2D=null, proj=null;
+function ensure2D(){
+  if(!view2D) view2D=$('view').getContext('2d');
+  return view2D;
+}
+function camBasis(){
+  const cx=camDist*Math.sin(camPhi)*Math.cos(camTheta),
+        cy=camDist*Math.cos(camPhi),
+        cz=camDist*Math.sin(camPhi)*Math.sin(camTheta);
+  let fx=-cx, fy=-cy, fz=-cz;
+  const fl=Math.hypot(fx,fy,fz)||1; fx/=fl; fy/=fl; fz/=fl;
+  let rx=fy*0-fz*1, ry=fz*0-fx*0, rz=fx*1-fy*0;   /* f × (0,1,0) */
+  const rl=Math.hypot(rx,ry,rz)||1; rx/=rl; ry/=rl; rz/=rl;
+  const ux=ry*fz-rz*fy, uy=rz*fx-rx*fz, uz=rx*fy-ry*fx; /* r × f */
+  return {cx,cy,cz,fx,fy,fz,rx,ry,rz,ux,uy,uz};
+}
+function render2D(){
+  const N=nodes.length; if(!N) return;
+  const ctx=ensure2D(), cv=$('view');
+  const w=cv.width, h=cv.height;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle = bgIndex===0 ? '#000000' : '#ffffff';
+  ctx.fillRect(0,0,w,h);
+  const B=camBasis(), scale=(h/2)/Math.tan(FOV*Math.PI/360);
+  const cr=Math.cos(rotY), sr=Math.sin(rotY);
+  if(!proj||proj.length<N*3) proj=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    const n=nodes[i];
+    const wx=n.x*XSTRETCH, wy=n.y, wz=n.z;
+    const px= wx*cr + wz*sr, py=wy, pz=-wx*sr + wz*cr;   /* rotate about Y */
+    const vx=px-B.cx, vy=py-B.cy, vz=pz-B.cz;
+    const zv=vx*B.fx+vy*B.fy+vz*B.fz;
+    const xv=vx*B.rx+vy*B.ry+vz*B.rz;
+    const yv=vx*B.ux+vy*B.uy+vz*B.uz;
+    proj[3*i]   = zv>0.05 ? w/2 + xv*scale/zv : NaN;
+    proj[3*i+1] = zv>0.05 ? h/2 - yv*scale/zv : NaN;
+    proj[3*i+2] = zv;
+  }
+  if(showLinks && edges.length){
+    const lw=Math.max(0.6,scale*linkR/Math.max(1,camDist)*2);
+    ctx.lineWidth=lw;
+    ctx.globalAlpha=0.28;
+    for(let t=0;t<2;t++){
+      ctx.strokeStyle = t? '#22c071' : '#4f6fd6';
+      ctx.beginPath();
+      for(let e=0,m=0;e<edges.length;e+=2,m++){
+        if(etype[m]!==t) continue;
+        if(flashUntil && flashUntil[m]>frameNow) continue;
+        const a=edges[e], b=edges[e+1];
+        const ax=proj[3*a], bx=proj[3*b];
+        if(ax!==ax||bx!==bx) continue;
+        ctx.moveTo(ax,proj[3*a+1]); ctx.lineTo(bx,proj[3*b+1]);
+      }
+      ctx.stroke();
+    }
+    if(flashUntil){                       /* freshly rewired links, 5× thicker */
+      ctx.globalAlpha=0.95; ctx.lineWidth=lw*5;
+      for(let t=0;t<2;t++){
+        ctx.strokeStyle = t? '#22c071' : '#4f6fd6';
+        ctx.beginPath();
+        let any=false;
+        for(let e=0,m=0;e<edges.length;e+=2,m++){
+          if(etype[m]!==t || flashUntil[m]<=frameNow) continue;
+          const a=edges[e], b=edges[e+1];
+          const ax=proj[3*a], bx=proj[3*b];
+          if(ax!==ax||bx!==bx) continue;
+          ctx.moveTo(ax,proj[3*a+1]); ctx.lineTo(bx,proj[3*b+1]); any=true;
+        }
+        if(any) ctx.stroke();
+      }
+    }
+    ctx.globalAlpha=1;
+  }
+  const order=Array.from({length:N},(_,i)=>i).filter(i=>proj[3*i]===proj[3*i]);
+  order.sort((a,b)=>proj[3*b+2]-proj[3*a+2]);
+  const rad=nodeR*G.nodeScale*scale, hasT=M.truth.size>0;
+  const men = menMode && mode==='network';
+  for(const i of order){
+    const f = (hasT && i<M.N && M.truth.has(M.state[i])) ? 1.6 : 1;
+    const r=Math.max(1.1, f*rad/proj[3*i+2]);
+    const x=proj[3*i], y=proj[3*i+1];
+    ctx.fillStyle=colStr(M.colOf(M.state[i]));
+    if(!men){
+      ctx.beginPath(); ctx.arc(x,y,r,0,6.2832); ctx.fill();
+      continue;
+    }
+    /* a little man: legs, body, head, one arm pointing at whoever told him */
+    const k = deg && i<deg.length ? deg[i] : 1;
+    const g = Math.min(2.6, 0.55+0.62*Math.sqrt(Math.max(0.15,k/Math.max(1,meanDeg))));
+    const rr=Math.max(1.3, r*g);
+    const src = fromNode ? fromNode[i] : -2;
+    let dx=0, dy=0, told=false;
+    if(src>=0 && src<nodes.length && proj[3*src]===proj[3*src]){
+      dx=proj[3*src]-x; dy=proj[3*src+1]-y;
+      const dl=Math.hypot(dx,dy)||1; dx/=dl; dy/=dl; told=true;
+    }
+    ctx.strokeStyle=ctx.fillStyle;
+    ctx.lineWidth=Math.max(0.9,rr*0.30); ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath();
+    ctx.moveTo(x, y-rr*0.55); ctx.lineTo(x, y+rr*0.55);              /* spine  */
+    ctx.moveTo(x, y+rr*0.55); ctx.lineTo(x-rr*0.55, y+rr*1.45);      /* legs   */
+    ctx.moveTo(x, y+rr*0.55); ctx.lineTo(x+rr*0.55, y+rr*1.45);
+    ctx.moveTo(x, y-rr*0.35); ctx.lineTo(x-rr*0.62, y+rr*0.35);      /* left arm */
+    if(told){ ctx.moveTo(x, y-rr*0.35); ctx.lineTo(x+dx*rr*1.35, y-rr*0.35+dy*rr*1.35); }
+    else    { ctx.moveTo(x, y-rr*0.35); ctx.lineTo(x+rr*0.62, y+rr*0.35); }
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, y-rr*1.05, rr*0.5, 0, 6.2832); ctx.fill();   /* head */
+    if(src===-1){
+      ctx.strokeStyle='#ffcf33'; ctx.lineWidth=Math.max(1,rr*0.22);
+      ctx.beginPath(); ctx.ellipse(x, y-rr*1.75, rr*0.66, rr*0.26, 0, 0, 6.2832); ctx.stroke();
+      ctx.fillStyle=colStr(M.colOf(M.state[i]));
+    }
+  }
+}
+function pick2D(e){
+  const N=nodes.length; if(!N||!proj) return -1;
+  const cv=$('view'), r=cv.getBoundingClientRect();
+  const sx=(e.clientX-r.left)*(cv.width/r.width), sy=(e.clientY-r.top)*(cv.height/r.height);
+  let best=-1, bd=1e18;
+  for(let i=0;i<N;i++){
+    const x=proj[3*i]; if(x!==x) continue;
+    const dx=x-sx, dy=proj[3*i+1]-sy, d=dx*dx+dy*dy;
+    if(d<bd){ bd=d; best=i; }
+  }
+  const lim=Math.pow(Math.max(8, nodeR*G.nodeScale*((cv.height/2)/Math.tan(FOV*Math.PI/360))/camDist*2),2);
+  return bd<=lim ? best : -1;
+}
+
+/* ==========================================================================
+   LATTICE RENDERING
+   ========================================================================== */
+const latC=$('lattice'), latX=latC.getContext('2d',{alpha:false});
+let img=null;
+
+/* which agent did the click land on?  (holes of the carpet snap to the
+   nearest filled cell, so a tap is never simply swallowed)              */
+function latticePick(e){
+  const L = mode==='carpet'?CAR.L:LAT.L;
+  const r=latC.getBoundingClientRect();
+  if(r.width<=0||r.height<=0) return -1;
+  let x=Math.floor((e.clientX-r.left)/r.width*L);
+  let y=Math.floor((e.clientY-r.top )/r.height*L);
+  if(x<0||y<0||x>=L||y>=L) return -1;
+  if(mode!=='carpet') return y*L+x;
+  for(let rad=0;rad<=Math.max(4,L>>6);rad++){
+    for(let dy=-rad;dy<=rad;dy++) for(let dx=-rad;dx<=rad;dx++){
+      if(Math.max(Math.abs(dx),Math.abs(dy))!==rad) continue;
+      const xx=x+dx, yy=y+dy;
+      if(xx<0||yy<0||xx>=L||yy>=L) continue;
+      const a=CAR.siteOf[yy*L+xx];
+      if(a>=0) return a;
+    }
+  }
+  return -1;
+}
+/* on a lattice or carpet one agent is exactly one cell — no marker overlay */
+function markTruthCells(){}
+function drawGeom(){ if(mode==='carpet') drawCarpet(); else drawLattice(); }
+function drawLattice(){
+  if(!img) return;
+  const N=M.N, st=M.state, d=img.data, slots=M.slots;
+  let last=-1,r=0,g=0,b=0;
+  for(let p=0;p<N;p++){
+    const id=st[p];
+    if(id!==last){ last=id; const s=slots.get(id)||0; r=PAL[3*s];g=PAL[3*s+1];b=PAL[3*s+2]; }
+    const q=p<<2; d[q]=r;d[q+1]=g;d[q+2]=b;d[q+3]=255;
+  }
+  latX.putImageData(img,0,0);
+  markTruthCells(LAT.L, a=>a);
+}
+function drawCarpet(){
+  if(!img) return;
+  const L=CAR.L, siteOf=CAR.siteOf, st=M.state, d=img.data, slots=M.slots, tot=L*L;
+  let last=-1,r=0,g=0,b=0;
+  for(let p=0;p<tot;p++){
+    const a=siteOf[p], q=p<<2;
+    if(a<0){ d[q]=TH.hole[0]; d[q+1]=TH.hole[1]; d[q+2]=TH.hole[2]; d[q+3]=255; continue; }
+    const id=st[a];
+    if(id!==last){ last=id; const s=slots.get(id)||0; r=PAL[3*s];g=PAL[3*s+1];b=PAL[3*s+2]; }
+    d[q]=r;d[q+1]=g;d[q+2]=b;d[q+3]=255;
+  }
+  latX.putImageData(img,0,0);
+  markTruthCells(CAR.L, a=>CAR.sites[a]);
+}
+
+/* ==========================================================================
+   PREVALENCE PLOT
+   ========================================================================== */
+const plotC=$('plot'), plotX=plotC.getContext('2d');
+let hist=[], tracked=[];
+const MAXS=24000;
+
+/* diameter of the geometry currently being simulated */
+function currentDiameter(){
+  if(mode==='carpet') return CAR.diam;
+  if(mode==='lattice') return 2*Math.floor(LAT.L/2);
+  if(!nodes.length) return 0;
+  if(SO.on) netDiam=estimateDiameter();      /* the graph keeps changing */
+  return netDiam;
+}
+
+function sample(){
+  const top=M.top(5), set=new Map();
+  for(const [id,c] of top) set.set(id,c);
+  for(const id of tracked){
+    if(set.has(id)) continue;
+    const c=M.counts.get(id);
+    if(c!==undefined) set.set(id,c);
+  }
+  if(set.size>14){
+    const arr=[...set].sort((p,q)=>q[1]-p[1]).slice(0,14);
+    set.clear(); for(const [id,c] of arr) set.set(id,c);
+  }
+  tracked=[...set.keys()];
+  const n=set.size, ids=new Int32Array(n), cts=new Int32Array(n), cols=new Int32Array(n);
+  let q=0;
+  for(const [id,c] of set){ ids[q]=id; cts[q]=c; cols[q]=M.colOf(id); q++; }
+  hist.push({t:M.t, ids, cts, cols, dia:currentDiameter(), rw:SO.rewires});
+  if(hist.length>MAXS){
+    const h=hist, half=h.length>>1, out=[];
+    for(let i=0;i<half;i+=2) out.push(h[i]);
+    for(let i=half;i<h.length;i++) out.push(h[i]);
+    hist=out;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   ONE canvas, two stacked panes sharing exactly the same time axis:
+   top   = population sizes of the five most widespread ideas
+   bottom= network diameter (+ optional rewiring rate)
+   -------------------------------------------------------------------------- */
+function drawTS(){
+  const wrap=$('plotwrap'), dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=wrap.clientWidth, h=wrap.clientHeight;
+  if(w<10||h<10) return;
+  if(plotC.width!==Math.round(w*dpr)||plotC.height!==Math.round(h*dpr)){
+    plotC.width=Math.round(w*dpr); plotC.height=Math.round(h*dpr);
+  }
+  const X=plotX; X.setTransform(dpr,0,0,dpr,0,0);
+  X.clearRect(0,0,w,h); X.fillStyle=TH.bg; X.fillRect(0,0,w,h);
+
+  const showRw = SO.on && $('rwCurve').checked;
+  const ml=56, mr=showRw?52:14, mt=10, mb=28, gap=16;
+  const pw=Math.max(10,w-ml-mr);
+  const hTot=Math.max(40,h-mt-mb-gap);
+  const phA=Math.round(hTot*0.60), phB=hTot-phA;      /* top / bottom pane */
+  const ytA=mt, ytB=mt+phA+gap;
+
+  /* ---------- shared time axis ---------- */
+  const winMode=document.querySelector('input[name=tmode]:checked').value==='win';
+  let t1=M.t, t0=0;
+  if(winMode) t0=Math.max(0,t1-readTd());
+  if(t1<=t0) t1=t0+1e-9;
+  let i0=0;
+  if(winMode){ let lo=0,hi=hist.length;
+    while(lo<hi){ const m=(lo+hi)>>1; if(hist[m].t<t0) lo=m+1; else hi=m; }
+    i0=Math.max(0,lo-1); }
+  const vis=hist.slice(i0);
+  const px=t=>ml+(t-t0)/(t1-t0)*pw;
+
+  X.font='10px system-ui,sans-serif'; X.lineWidth=1;
+
+  /* ================= TOP PANE : populations ================= */
+  let ymax=1;
+  for(const s of vis) for(let q=0;q<s.cts.length;q++) if(s.cts[q]>ymax) ymax=s.cts[q];
+  ymax=Math.max(ymax*1.08,10);
+  const pyA=v=>ytA+phA-v/ymax*phA;
+  for(let g=0;g<=4;g++){
+    const v=ymax*g/4, yy=Math.round(pyA(v))+0.5;
+    X.strokeStyle=TH.grid; X.beginPath(); X.moveTo(ml,yy); X.lineTo(ml+pw,yy); X.stroke();
+    X.fillStyle=TH.text; X.textAlign='right'; X.textBaseline='middle';
+    X.fillText(v>=1000?(v/1000).toFixed(v>=10000?0:1)+'k':Math.round(v), ml-6, yy);
+  }
+  const series=new Map();
+  for(let s=0;s<vis.length;s++){
+    const smp=vis[s];
+    for(let q=0;q<smp.ids.length;q++){
+      const id=smp.ids[q];
+      let a=series.get(id);
+      if(!a){ a={col:smp.cols[q],pts:[],peak:0}; series.set(id,a); }
+      a.col=smp.cols[q];
+      if(smp.cts[q]>a.peak) a.peak=smp.cts[q];
+      a.pts.push(smp.t,smp.cts[q]);
+    }
+  }
+  X.lineWidth=1.7; X.lineJoin='round'; X.lineCap='round';
+  for(const [,ser] of [...series.entries()].sort((a,b)=>a[1].peak-b[1].peak)){
+    X.strokeStyle=colStr(ser.col); X.beginPath();
+    const q=ser.pts;
+    for(let i=0;i<q.length;i+=2){
+      const xx=px(q[i]), yy=pyA(q[i+1]);
+      if(i===0) X.moveTo(xx,yy); else X.lineTo(xx,yy);
+    }
+    X.stroke();
+  }
+  X.strokeStyle=TH.box; X.lineWidth=1; X.strokeRect(ml+0.5,ytA+0.5,pw,phA);
+  X.fillStyle=TH.text; X.textAlign='left'; X.textBaseline='top';
+  X.fillText('n', 6, ytA);
+
+  /* ================= BOTTOM PANE : diameter (+ rewiring rate) ============= */
+  let dmax=1;
+  for(const s of vis) if(s.dia>dmax) dmax=s.dia;
+  dmax=Math.max(dmax*1.15,3);
+  const pyB=v=>ytB+phB-v/dmax*phB;
+
+  let rmax=0; const rate=new Array(vis.length).fill(0);
+  if(showRw){
+    for(let i=1;i<vis.length;i++){
+      const dt=vis[i].t-vis[i-1].t;
+      rate[i]= dt>0 ? (vis[i].rw-vis[i-1].rw)/dt : 0;
+      if(rate[i]>rmax) rmax=rate[i];
+    }
+    rmax=Math.max(rmax*1.15,1);
+  }
+  const pyR=v=>ytB+phB-v/rmax*phB;
+  for(let g=0;g<=3;g++){
+    const v=dmax*g/3, yy=Math.round(pyB(v))+0.5;
+    X.strokeStyle=TH.grid; X.beginPath(); X.moveTo(ml,yy); X.lineTo(ml+pw,yy); X.stroke();
+    X.fillStyle=TH.text; X.textAlign='right'; X.textBaseline='middle';
+    X.fillText(v.toFixed(dmax<10?1:0), ml-6, yy);
+    if(showRw){ X.textAlign='left'; X.fillStyle=TH.rate;
+      const rv=rmax*g/3;
+      X.fillText(rv>=100?Math.round(rv):rv.toFixed(rmax<10?1:0), ml+pw+6, yy); }
+  }
+  if(showRw && vis.length>1){
+    X.strokeStyle=TH.rate; X.lineWidth=1.2; X.globalAlpha=0.8; X.beginPath();
+    for(let i=1;i<vis.length;i++){
+      const xx=px(vis[i].t), yy=pyR(rate[i]);
+      if(i===1) X.moveTo(xx,yy); else X.lineTo(xx,yy);
+    }
+    X.stroke(); X.globalAlpha=1;
+  }
+  if(vis.length){
+    X.strokeStyle=TH.dia; X.lineWidth=1.9; X.beginPath();
+    for(let i=0;i<vis.length;i++){
+      const xx=px(vis[i].t), yy=pyB(vis[i].dia);
+      if(i===0) X.moveTo(xx,yy); else X.lineTo(xx,yy);
+    }
+    X.stroke();
+  }
+  X.strokeStyle=TH.box; X.lineWidth=1; X.strokeRect(ml+0.5,ytB+0.5,pw,phB);
+  X.fillStyle=TH.text; X.textAlign='left'; X.textBaseline='top';
+  X.fillText('D', 6, ytB);
+
+  /* ---------- the one shared x axis, drawn through BOTH panes ---------- */
+  X.textAlign='center'; X.textBaseline='top';
+  for(let g=0;g<=4;g++){
+    const tt=t0+(t1-t0)*g/4, xx=Math.round(px(tt))+0.5;
+    X.strokeStyle=TH.grid;
+    X.beginPath(); X.moveTo(xx,ytA); X.lineTo(xx,ytA+phA); X.stroke();
+    X.beginPath(); X.moveTo(xx,ytB); X.lineTo(xx,ytB+phB); X.stroke();
+    X.fillStyle=TH.text; X.fillText(fmtT(tt), xx, ytB+phB+5);
+  }
+  X.textAlign='right';
+  X.fillText('time  (updates per agent)', ml+pw, ytB+phB+16);
+
+  /* ---------- labels / legends ---------- */
+  $('ymaxlab').textContent = vis.length ? 'N = '+M.N+' · '+series.size+' curves' : '';
+  const lg=$('legend'), top=M.top(5);
+  lg.innerHTML = top.map(([id,c]) =>
+    '<span><i style="background:'+colStr(M.colOf(id))+'"></i>#'+id+' — '+
+    (100*c/M.N).toFixed(1)+'%</span>').join('');
+  $('dialegend').innerHTML =
+    '<span><i style="background:'+TH.dia+'"></i>diameter D</span>' +
+    (showRw?'<span><i style="background:'+TH.rate+'"></i>rewirings per sweep (right axis)</span>':'');
+  const cur=vis.length?vis[vis.length-1].dia:currentDiameter();
+  $('dialab').textContent = mode==='network'
+      ? 'D = '+cur+(SO.on?'':'  (fixed — self-organisation off)')
+      : 'D = '+cur+'  (fixed by the geometry)';
+}
+const drawPlot=drawTS, drawDia=drawTS;
+
+/* ==========================================================================
+   CONNECTIVITY DISTRIBUTION  P(k)
+   ========================================================================== */
+const degC=$('degplot'), degX=degC.getContext('2d');
+let geoHist=null;                  /* fixed histogram for lattice / carpet   */
+let degStart=null, degSnaps=[];    /* self-organised history                 */
+let degRing=[];                    /* recent P(k) samples, <= AVG_SWEEPS old */
+const AVG_SWEEPS=3;                /* average over 3 full sweeps of the net  */
+
+/* push one sample of the instantaneous degree histogram (called at most
+   once per sweep from advance(), so a 3-sweep average is a real average)  */
+function degRingPush(){
+  degRing.push({t:M.t, h:netHist()});
+  const cut=M.t-AVG_SWEEPS*1.05;
+  while(degRing.length>1 && degRing[0].t<cut) degRing.shift();
+  if(degRing.length>400) degRing.splice(0,degRing.length-400);
+}
+/* mean histogram over the last AVG_SWEEPS sweeps (Float64, counts per k) */
+function degAverage(){
+  if(!degRing.length) return netHist();
+  const t0=M.t-AVG_SWEEPS;
+  let n=0, len=0;
+  for(const e of degRing) if(e.t>=t0){ n++; if(e.h.length>len) len=e.h.length; }
+  if(!n){ const e=degRing[degRing.length-1]; return Float64Array.from(e.h); }
+  const out=new Float64Array(len);
+  for(const e of degRing){ if(e.t<t0) continue;
+    for(let k=0;k<e.h.length;k++) out[k]+=e.h[k]; }
+  for(let k=0;k<len;k++) out[k]/=n;
+  return {arr:out, n};
+}
+function avgHist(){ const a=degAverage(); return a.arr?a.arr:a; }
+function avgCount(){ const a=degAverage(); return a.n||1; }
+
+function histFromDegrees(getDeg,n){
+  let mx=0; const tmp=new Int32Array(n);
+  for(let i=0;i<n;i++){ const d=getDeg(i); tmp[i]=d; if(d>mx) mx=d; }
+  const h=new Int32Array(mx+1);
+  for(let i=0;i<n;i++) h[tmp[i]]++;
+  return h;
+}
+function netHist(){
+  const n=Math.min(nodes.length,M.N||nodes.length);
+  if(!n) return new Int32Array(1);
+  return histFromDegrees(i=>adjL[i].length, n);
+}
+function latticeHist(){ const h=new Int32Array(5); h[4]=LAT.L*LAT.L; return h; }
+function carpetHist(){
+  const L=CAR.L, so=CAR.siteOf, sites=CAR.sites, n=CAR.n;
+  return histFromDegrees(a=>{
+    const p=sites[a], x=p%L, y=(p/L)|0; let d=0;
+    if(so[y*L+((x+1)%L)]>=0) d++;
+    if(so[y*L+((x+L-1)%L)]>=0) d++;
+    if(so[((y+1)%L)*L+x]>=0) d++;
+    if(so[((y+L-1)%L)*L+x]>=0) d++;
+    return d;
+  }, n);
+}
+/* snapshots of P(k) versus the number of rewirings, geometrically spaced */
+function degSnapshot(force){
+  if(!SO.on) return;
+  const rw=SO.rewires;
+  const last=degSnaps.length?degSnaps[degSnaps.length-1].rw:-1;
+  if(force || rw>=Math.max(last+1, last*1.06))
+    degSnaps.push({rw, t:M.t, hist:avgHist(), nav:avgCount()});
+  if(degSnaps.length>600) degSnaps=degSnaps.filter((_,i)=>i%2===0||i>degSnaps.length-40);
+}
+function snapAt(target){
+  if(!degSnaps.length) return null;
+  let best=degSnaps[0], bd=Math.abs(best.rw-target);
+  for(const s of degSnaps){ const d=Math.abs(s.rw-target); if(d<=bd){ bd=d; best=s; } }
+  return best;
+}
+function resetDegHistory(){
+  degSnaps=[]; degRing=[];
+  degStart = nodes.length ? netHist() : null;
+  if(degStart){ degRingPush(); degSnaps.push({rw:0, t:M.t, hist:degStart, nav:1}); }
+}
+
+/* link-conservation invariant: one map key per slot, Σk = 2E */
+function linksOK(){
+  if(mode!=='network'||!adjL.length) return true;
+  let s=0; for(let i=0;i<nodes.length;i++) s+=adjL[i].length;
+  return edgeMap.size===ecount && s===2*ecount;
+}
+
+function drawDeg(){
+  const wrap=$('degwrap'); if(!wrap) return;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=wrap.clientWidth, h=wrap.clientHeight;
+  if(w<10||h<10) return;
+  if(degC.width!==Math.round(w*dpr)||degC.height!==Math.round(h*dpr)){
+    degC.width=Math.round(w*dpr); degC.height=Math.round(h*dpr);
+  }
+  const X=degX; X.setTransform(dpr,0,0,dpr,0,0);
+  X.clearRect(0,0,w,h); X.fillStyle=TH.bg; X.fillRect(0,0,w,h);
+
+  /* ---- which curves ---- */
+  const series=[];
+  let N=M.N||1;
+  if(mode==='network'&&nodes.length){
+    N=nodes.length;
+    if(SO.on){
+      const cur=avgHist(), nav=avgCount();
+      if(degStart) series.push({h:degStart, col:TH.c1, lab:'start (0 rewirings)'});
+      const s10=snapAt(0.1*SO.rewires);
+      if(s10 && SO.rewires>0) series.push({h:s10.hist, col:TH.c2,
+        lab:'10 % ('+s10.rw+' rewirings) · 3-sweep avg'});
+      series.push({h:cur, col:TH.c3,
+        lab:'now ('+SO.rewires+' rewirings) · 3-sweep avg ('+nav+' samples)'});
+    } else series.push({h:netHist(), col:TH.c3, lab:'current network'});
+  } else if(mode==='carpet'){
+    if(!geoHist) geoHist=carpetHist();
+    N=CAR.n||1; series.push({h:geoHist, col:TH.c3, lab:'Sierpiński carpet'});
+  } else {
+    if(!geoHist) geoHist=latticeHist();
+    N=LAT.L*LAT.L; series.push({h:geoHist, col:TH.c3, lab:'2-d lattice (k = 4)'});
+  }
+
+  const logMode=document.querySelector('input[name=dmode]:checked').value==='log';
+  const ml=58, mr=52, mt=10, mb=32;
+  const pw=Math.max(10,w-ml-mr), ph=Math.max(10,h-mt-mb);
+
+  /* ---- ranges ---- */
+  let kmax=1, pmax=0, kmin=logMode?1:0, zeros=0;
+  for(const s of series){
+    for(let k=0;k<s.h.length;k++){
+      if(!s.h[k]) continue;
+      if(k===0){ zeros=Math.max(zeros,s.h[0]); if(logMode) continue; }
+      if(k>kmax) kmax=k;
+      const p=s.h[k]/N; if(p>pmax) pmax=p;
+    }
+  }
+  if(pmax<=0) pmax=1;
+  const pmin=Math.max(1/(N*2), pmax*1e-5);
+  const lx0=Math.log10(Math.max(1,kmin)), lx1=Math.log10(Math.max(2,kmax*1.15));
+  const ly0=Math.log10(pmin), ly1=Math.log10(pmax*1.6);
+
+  const px = k => logMode ? ml+(Math.log10(Math.max(1,k))-lx0)/(lx1-lx0)*pw
+                          : ml+(k/(kmax*1.05))*pw;
+  const py = p => logMode ? mt+ph-(Math.log10(Math.max(pmin*0.5,p))-ly0)/(ly1-ly0)*ph
+                          : mt+ph-(p/(pmax*1.1))*ph;
+
+  /* ---- axes ---- */
+  X.font='10px system-ui,sans-serif'; X.lineWidth=1;
+  const decimal = v => {
+    if(v>=1) return String(Math.round(v));
+    const d=Math.max(0,Math.min(8,Math.round(-Math.log10(v))));
+    return v.toFixed(d);
+  };
+  const yticks=[], xticks=[];
+  if(logMode){
+    for(let e=Math.floor(ly0); e<=Math.ceil(ly1); e++){ const v=Math.pow(10,e);
+      if(v>=pmin*0.5&&v<=pmax*1.6) yticks.push([v, e>=-6?decimal(v):('1e'+e)]); }
+    for(let e=Math.floor(lx0); e<=Math.ceil(lx1); e++){
+      for(const m of [1,2,5]){ const v=m*Math.pow(10,e);
+        if(Math.log10(v)>=lx0-1e-9 && Math.log10(v)<=lx1) xticks.push([v,String(v)]); } }
+  } else {
+    for(let g=0;g<=4;g++){ const v=pmax*1.1*g/4; yticks.push([v, decimal(v)]); }
+    for(let g=0;g<=5;g++){ const v=Math.round(kmax*1.05*g/5); xticks.push([v,String(v)]); }
+  }
+  X.textBaseline='middle';
+  for(const [v,lab] of yticks){ const yy=Math.round(py(v))+0.5;
+    if(yy<mt-1||yy>mt+ph+1) continue;
+    X.strokeStyle=TH.grid; X.beginPath(); X.moveTo(ml,yy); X.lineTo(ml+pw,yy); X.stroke();
+    X.textAlign='right'; X.fillStyle=TH.text; X.fillText(lab, ml-6, yy);
+    /* right axis: how many nodes that probability corresponds to */
+    const cnt=v*N;
+    X.textAlign='left'; X.fillStyle=TH.c1;
+    X.fillText(cnt>=10?String(Math.round(cnt)):cnt>=1?cnt.toFixed(1):cnt.toFixed(2), ml+pw+6, yy); }
+  X.textAlign='center'; X.textBaseline='top';
+  for(const [v,lab] of xticks){ const xx=Math.round(px(v))+0.5;
+    if(xx<ml-1||xx>ml+pw+1) continue;
+    X.strokeStyle=TH.grid; X.beginPath(); X.moveTo(xx,mt); X.lineTo(xx,mt+ph); X.stroke();
+    X.fillStyle=TH.text; X.fillText(lab, xx, mt+ph+5); }
+  X.strokeStyle=TH.box; X.strokeRect(ml+0.5,mt+0.5,pw,ph);
+  X.fillStyle=TH.text; X.textAlign='left'; X.textBaseline='top';
+  X.fillText('P(k)', 6, mt);
+  X.fillStyle=TH.c1; X.textAlign='right'; X.fillText('nodes', w-4, mt+11);
+  X.fillStyle=TH.text; X.textAlign='center';
+  X.fillText('k  (number of links)', ml+pw/2, mt+ph+18);
+
+  /* ---- curves ---- */
+  X.lineJoin='round'; X.lineCap='round';
+  for(const s of series){
+    X.strokeStyle=s.col; X.fillStyle=s.col; X.lineWidth=1.8;
+    X.beginPath(); let started=false;
+    for(let k=logMode?1:0;k<s.h.length;k++){
+      if(!s.h[k]) continue;
+      const xx=px(k), yy=py(s.h[k]/N);
+      if(!started){ X.moveTo(xx,yy); started=true; } else X.lineTo(xx,yy);
+    }
+    if(started) X.stroke();
+    for(let k=logMode?1:0;k<s.h.length;k++){
+      if(!s.h[k]) continue;
+      X.beginPath(); X.arc(px(k),py(s.h[k]/N),2.1,0,6.2832); X.fill();
+    }
+  }
+
+  /* ---- legend + header ---- */
+  $('deglegend').innerHTML = series.map(s=>
+    '<span><i style="background:'+s.col+'"></i>'+s.lab+'</span>').join('') +
+    (zeros? '<span style="color:#ffb057">'+zeros+' node'+(zeros>1?'s':'')+' with k = 0</span>':'');
+  if(mode==='network'&&nodes.length){
+    const ok=linksOK();
+    $('deglab').innerHTML = 'N = '+nodes.length+' · E = '+ecount+' · ⟨k⟩ = '+
+      (2*ecount/nodes.length).toFixed(2)+' · links '+
+      (ok?'<b style="color:#22c55e">conserved ✓</b>':'<b style="color:#ef4444">BROKEN ✗</b>');
+  } else {
+    $('deglab').textContent = mode==='carpet' ? 'N = '+CAR.n+' filled cells'
+                                              : 'N = '+(LAT.L*LAT.L)+' sites';
+  }
+}
+
+/* ==========================================================================
+   UI
+   ========================================================================== */
+const Ls=[8,12,16,24,32,48,64,96,128,192,256];
+const Svals=[1,1.2,1.5,2,2.5,3,4,5,6,7,8,9,10];
+const GRP={carpet:'carGrp', lattice:'latGrp', network:'netGrp'};
+let mode='lattice', running=false;
+
+function readAlpha(){ return logmap(+$('alpha').value,1e-9,1e-3); }
+function readDt(){ return DTVALS[Math.max(0,Math.min(DTVALS.length-1,+$('dt').value|0))]; }
+function setDt(v){ $('dt').value=DTIDX(v); syncLabels(); }
+function readTd(){ return logmap(+$('td').value,10,200000); }
+function readTau(){ const v=+$('tau').value; return v>=1000?Infinity:logmap(v,1,200000); }
+
+function syncLabels(){
+  const a=readAlpha();
+  $('av').textContent=fmtSci(a);
+  $('aN').textContent=(a*Math.max(1,M.N)).toPrecision(2);
+  const tau=readTau(); $('tauv').textContent = isFinite(tau)? fmtT(tau)+' sweeps':'∞';
+  const h=+$('hor').value;
+  if(mode==='lattice'||mode==='carpet'){
+    const L = mode==='carpet'?CAR.L:LAT.L;
+    $('hv').textContent = (h*h>=2*Math.floor(L/2)**2||h>=L) ? 'global ('+h+')' : String(h);
+  } else {
+    $('hv').textContent = h>=netDiam ? 'global ('+h+' hops)' : h+' hop'+(h>1?'s':'');
+  }
+  const dt=readDt();
+  $('dtv').textContent = String(parseFloat(dt.toPrecision(2)));
+  $('tdv').textContent = fmtT(readTd());
+  $('Lv').textContent=LAT.L; $('Lv2').textContent=LAT.L;
+  const cn=Math.pow(8,Math.round(Math.log(CAR.L)/Math.log(3)));
+  $('carN').textContent=cn.toLocaleString('en-US').replace(/,/g,' ');
+  $('vN').textContent=G.N; $('vS').textContent=G.S; $('vB').textContent=G.B;
+  $('vaM').textContent=G.a; $('vgM').textContent=(+G.gamma).toFixed(1);
+  $('vaP').textContent=G.a; $('vgP').textContent=(+G.gamma).toFixed(1);
+  $('vk').textContent=G.kdeg;
+  $('vrot').textContent=(+G.rotSpeed).toFixed(2);
+  $('vrepk').textContent=(+G.repK).toFixed(1);
+  $('vnsz').textContent=(+G.nodeScale).toFixed(1);
+  $('vflash').textContent = SO.flash>0 ? SO.flash.toFixed(1)+' s' : 'off';
+  $('s_rw').textContent=SO.rewires;
+  $('s_e').textContent=ecount;
+}
+/* ==========================================================================
+   GAME 1 / GAME 2  —  players inject an idea that is *true*, i.e. one that
+   an agent is always allowed to come back to, no matter how often it has
+   been abandoned.  Game 1: one player, wins at >90 % of the agents.
+   Game 2: two players taking turns, first past 50 % wins.
+   ========================================================================== */
+const PLCOL=[224,32];                    /* fixed jet slots: P1 red, P2 blue */
+const PLNAME=['P1','P2'];
+const WINFRAC=0.10;          /* convince 10 % of the agents to win */
+const GAME={ on:0, idea:[-1,-1], turn:0, phase:'off', left:[0,0], placed:false,
+             nAssign:1, winner:-1,
+             placeN:[0,0],          /* how many times an idea has been planted   */
+             everN:[0,0],           /* distinct agents ever convinced (transient)*/
+             ever:[null,null] };    /* per-agent flags for the above             */
+
+function everAlloc(){
+  GAME.ever=[new Uint8Array(M.N), new Uint8Array(M.N)];
+  GAME.everN=[0,0];
+}
+/* an agent has just taken up idea `id` — book it if it belongs to a player */
+function noteConversion(agent,id){
+  for(let pl=0;pl<2;pl++){
+    if(GAME.idea[pl]!==id) continue;
+    const f=GAME.ever[pl];
+    if(f && agent<f.length && !f[agent]){ f[agent]=1; GAME.everN[pl]++; }
+    return;
+  }
+}
+
+function playerPop(pl){
+  const id=GAME.idea[pl];
+  return id>=0 ? (M.counts.get(id)||0) : 0;
+}
+/* give one node the player's (true) idea */
+function plantPlayer(pl,node){
+  if(node<0||node>=M.N) return false;
+  let id=GAME.idea[pl];
+  if(id<0 || M.nextId<=id){ id=M.nextId++; GAME.idea[pl]=id; }
+  M.truth.add(id);
+  if(!M.slots.has(id)) M.slots.set(id,PLCOL[pl]);
+  const old=M.state[node];
+  if(old===id) return false;
+  let m=M.mem[node]; if(!m){ m=new Map(); M.mem[node]=m; }
+  m.set(old,M.t);
+  /* the true idea makes him immune to everything already in his head — but
+     not to anything that reaches his position later on                    */
+  for(const key of m.keys()) m.set(key, Infinity);
+  M.dec(old); M.state[node]=id; M.inc(id);
+  if(!M.slots.has(id)) M.slots.set(id,PLCOL[pl]);
+  GAME.placed=true; GAME.placeN[pl]++;
+  if(fromNode && node<fromNode.length) fromNode[node]=-1;   /* the truth starts here */
+  noteConversion(node,id);
+  return true;
+}
+function gameStatus(txt){ $('gstatus').textContent=txt; }
+
+function startGame(k){
+  if(GAME.on===k){ stopGame(); return; }
+  /* the game is played on whatever geometry is currently selected:
+     Sierpinski carpet, 2-d lattice, plain network or self-organised network */
+  GAME.on=k; GAME.winner=-1; GAME.idea=[-1,-1]; GAME.placed=false;
+  GAME.placeN=[0,0];
+  M.reserved.clear();
+  for(let d=-10;d<=10;d++){
+    M.reserved.add((PLCOL[0]+d+NCOL)%NCOL);
+    if(k===2) M.reserved.add((PLCOL[1]+d+NCOL)%NCOL);
+  }
+  resetIdeas();                       /* a fresh board, same geometry */
+  everAlloc();
+  GAME.phase='assign'; GAME.turn=0;
+  GAME.left=[GAME.nAssign, k===2?GAME.nAssign:0];
+  running=false; $('play').textContent='▶ Run'; $('play').classList.remove('on');
+  updateGameUI();
+}
+function stopGame(){
+  GAME.on=0; GAME.phase='off'; GAME.winner=-1; GAME.placed=false;
+  M.reserved.clear(); M.truth.clear();
+  $('gwipe').classList.add('off');
+  updateGameUI();
+}
+/* every player idea has died out */
+function gameWiped(){
+  GAME.phase='wiped';
+  running=false; $('play').textContent='▶ Run'; $('play').classList.remove('on');
+  updateGameUI(); syncMirror();
+}
+function resumeAfterWipe(){
+  if(GAME.phase!=='wiped') return;
+  GAME.phase='assign'; GAME.turn=0; GAME.placed=false;
+  if(!GAME.ever[0]||GAME.ever[0].length!==M.N) everAlloc();
+  GAME.left=[GAME.nAssign, GAME.on===2?GAME.nAssign:0];
+  updateGameUI();
+}
+function startRound(){
+  GAME.phase='run';
+  running=true; $('play').textContent='⏸ Pause'; $('play').classList.add('on');
+  updateGameUI(); syncMirror();
+}
+function gameOver(pl){
+  GAME.phase='over'; GAME.winner=pl;
+  running=false; $('play').textContent='▶ Run'; $('play').classList.remove('on');
+  updateGameUI(); syncMirror();
+}
+/* a click on the display during the assignment phase */
+function gamePlant(node){
+  if(!GAME.on || GAME.phase!=='assign') return false;
+  const pl=GAME.turn;
+  if(GAME.left[pl]<=0) return false;
+  plantPlayer(pl,node);
+  GAME.left[pl]--;
+  if(GAME.left[pl]<=0){
+    if(GAME.on===2 && pl===0 && GAME.left[1]>0) GAME.turn=1;
+    else startRound();
+  }
+  updateGameUI();
+  return true;
+}
+function gameTick(){
+  if(!GAME.on || GAME.phase==='over' || GAME.phase==='wiped') return;
+  const N=M.N, n0=playerPop(0), n1=playerPop(1);
+  if(GAME.on===1){
+    if(n0>WINFRAC*N){ gameOver(0); return; }
+    if(GAME.placed && GAME.phase==='run' && n0===0){ gameWiped(); return; }
+  } else {
+    /* won either in one sweep, or on the running count of agents ever convinced */
+    if(n0>WINFRAC*N || GAME.everN[0]>WINFRAC*N){ gameOver(0); return; }
+    if(n1>WINFRAC*N || GAME.everN[1]>WINFRAC*N){ gameOver(1); return; }
+    if(GAME.placed && GAME.phase==='run' && n0===0 && n1===0){ gameWiped(); return; }
+  }
+}
+function updateGameUI(){
+  const on=GAME.on;
+  layoutOverlays();
+  $('g1').classList.toggle('on',on===1);
+  $('g2').classList.toggle('on',on===2);
+  $('gp2').style.visibility = on===2 ? 'visible' : 'hidden';
+  const pct=p=>(100*playerPop(p)/Math.max(1,M.N)).toFixed(1)+'%';
+  for(let pl=0;pl<2;pl++){
+    const el=$('gp'+(pl+1)), po=$('gpop'+(pl+1));
+    const myTurn = on>0 && GAME.phase==='assign' && GAME.turn===pl && GAME.left[pl]>0;
+    const ar=$('garr'+(pl+1));
+    ar.classList.toggle('show', myTurn);
+    ar.style.color = colStr(PLCOL[pl]);
+    el.classList.toggle('turn', myTurn);
+    po.style.color = colStr(PLCOL[pl]);
+    po.textContent = on>0
+      ? playerPop(pl)+(GAME.phase==='assign'&&GAME.turn===pl&&GAME.left[pl]>0?' ▸'+GAME.left[pl]:'')
+      : '0';
+    const sc=$('gsc'+(pl+1));
+    sc.textContent = on>0 ? (on===2 ? '· '+GAME.placeN[pl]+'p '+GAME.everN[pl]+'t'
+                                    : '· '+GAME.placeN[pl]+'p') : '';
+    sc.title = on===2 ? 'placements · agents ever convinced' : 'placements (attempts)';
+  }
+  /* everything the players planted has been erased */
+  const wiped = on>0 && GAME.phase==='wiped';
+  $('gwipe').classList.toggle('off',!wiped);
+  $('gamebar').classList.toggle('off', on===0 || wiped);
+  if(wiped){ gameStatus(''); layoutOverlays(); return; }
+  if(!on){ gameStatus(''); return; }
+  if(GAME.phase==='over'){
+    const w=GAME.winner, N=Math.max(1,M.N);
+    const how = on===2 && !(playerPop(w)>WINFRAC*N)
+      ? GAME.everN[w]+' agents convinced ('+(100*GAME.everN[w]/N).toFixed(1)+'% ever)'
+      : pct(w)+' in one sweep';
+    gameStatus('🏆 '+PLNAME[w]+' wins — '+how+', after '+GAME.placeN[w]+
+               ' placement'+(GAME.placeN[w]===1?'':'s')+
+               ' — press Game '+on+' to play again');
+  } else {
+    gameStatus('');            /* the arrows say whose turn it is */
+  }
+}
+
+/* ---- black / white background in every panel ---- */
+function setTheme(light){
+  lightMode=light; TH = light?THEMES.light:THEMES.dark;
+  document.body.classList.toggle('light',light);
+  $('themeBtn').classList.toggle('on',light);
+  applyBg(light?1:0);
+  if(mode==='carpet') drawCarpet(); else if(mode==='lattice') drawLattice();
+  drawPlot(); drawDia(); drawDeg(); syncMirror();
+}
+
+/* ---- the eight main buttons, mirrored onto the display panel ---- */
+const MIRROR=[['play','▶'],['stepb','Step'],['resetb','Reset'],['gCar','Sierp'],
+              ['gLat','2-d'],['gNet','Net'],['soBtn','S.org'],
+              ['g1','G1'],['g2','G2'],['themeBtn','◐'],['menBtn','☻']];
+function buildTopbar(){
+  const bar=$('topbar');
+  for(const [id,lab] of MIRROR){
+    const b=document.createElement('button');
+    b.dataset.src=id; b.textContent=lab; b.title=$(id).textContent.trim();
+    b.onclick=()=>{ $(id).click(); syncMirror(); };
+    bar.appendChild(b);
+  }
+  syncMirror();
+}
+function syncMirror(){
+  const bar=$('topbar'); if(!bar) return;
+  for(const b of bar.children){
+    const src=$(b.dataset.src); if(!src) continue;
+    b.classList.toggle('on', src.classList.contains('on'));
+    b.classList.toggle('go', src.classList.contains('go'));
+    if(b.dataset.src==='play') b.textContent = running?'❚❚':'▶';
+  }
+}
+
+/* ---- corner read-outs (control panel + display overlay) ---- */
+function maxDegree(){
+  let m=0; for(let i=0;i<nodes.length;i++) if(adjL[i].length>m) m=adjL[i].length;
+  return m;
+}
+function updateReadouts(){
+  const top=M.top(2);
+  const maxIdea = top.length?top[0][1]:0;
+  const secIdea = top.length>1?top[1][1]:0;
+  let s='';
+  if(mode==='network'&&SO.on&&nodes.length){
+    s += 'rewirings = <b>'+(SO.rate>=10?Math.round(SO.rate):SO.rate.toFixed(1))+'</b><br>'+
+         'max k = <b>'+maxDegree()+'</b><br>'+
+         'diameter = <b>'+netDiam+'</b><br>';
+  }
+  s += 'Max idea = <b>'+maxIdea+'</b><br>2nd idea = <b>'+secIdea+'</b>';
+  $('botStats').innerHTML=s;
+  $('hudstats').innerHTML=s;
+}
+
+function setSO(on){
+  SO.on=on;
+  $('soBtn').classList.toggle('on',on);
+  $('soPanel').classList.toggle('off',!on);
+  if(on){
+    if(mode!=='network') setMode('network');
+    $('netGrp').open=true;
+    setDt(2);
+    SO.rewires=0; SO.lastRw=0; SO.rate=0; soWarm=0;
+    resetDegHistory();
+    lastZoomDiam=-1; autoBase=0;      /* re-aim the zoom, do NOT re-heat */
+  }
+  syncLabels(); drawDia(); drawDeg(); updateReadouts(); syncMirror(); updateGameUI();
+}
+function pushParams(){
+  M.alpha=readAlpha(); M.tau=readTau();
+  if(mode==='lattice') LAT.horizon=+$('hor').value;
+  else if(mode==='carpet') CAR.horizon=+$('hor').value;
+  else G.horizon=+$('hor').value;
+}
+function setHorizonSlider(){
+  const s=$('hor');
+  if(mode==='lattice'||mode==='carpet'){
+    const L = mode==='carpet'?CAR.L:LAT.L;
+    const cur = mode==='carpet'?CAR.horizon:LAT.horizon;
+    s.min=1; s.max=2*L; s.value=Math.min(cur,2*L);
+    $('horHint').innerHTML='The confirming third agent is drawn within this <b>Euclidean</b> '+
+      'distance (1 … 2L)'+(mode==='carpet'?', skipping the holes':'')+
+      '. Large = whole system (base model).';
+  } else {
+    const mx=Math.max(2,netDiam);
+    s.min=1; s.max=mx; s.value=Math.min(G.horizon,mx); G.horizon=+s.value;
+    $('horHint').innerHTML='The confirming third agent is drawn within this <b>shortest-path</b> '+
+      'distance in hops (1 … diameter ≈ '+netDiam+'). Top = whole network (base model).';
+  }
+}
+
+/* ---- rebuilds ---- */
+function rebuildLattice(L){
+  LAT.L=L; LAT.horizon=2*L;
+  M.init(L*L);
+  latC.width=L; latC.height=L;
+  img=latX.createImageData(L,L);
+  hist=[]; tracked=[]; geoHist=null;
+  setHorizonSlider(); pushParams(); syncLabels();
+  drawLattice(); drawPlot(); drawDia(); drawDeg(); stats(0);
+}
+function rebuildCarpet(L){
+  const n=buildCarpet(L);
+  CAR.horizon=50;      /* default Sierpinski horizon */
+  M.init(n);
+  latC.width=L; latC.height=L;
+  img=latX.createImageData(L,L);
+  hist=[]; tracked=[]; geoHist=null;
+  $('c243').classList.toggle('on',L===243);
+  $('c729').classList.toggle('on',L===729);
+  setHorizonSlider(); pushParams(); syncLabels();
+  drawCarpet(); drawPlot(); drawDia(); drawDeg(); stats(0);
+}
+function regenNetwork(){
+  running=false; $('play').textContent='▶ Run'; $('play').classList.remove('on');
+  const wasGlobal = G.horizon>=netDiam;
+  buildNetwork();
+  if(wasGlobal) G.horizon=Math.max(2,netDiam);
+  hist=[]; tracked=[];
+  setHorizonSlider(); pushParams(); rebuildBalls(); syncLabels();
+  resetDegHistory(); drawPlot(); drawDia(); drawDeg(); stats(0);
+}
+function resetIdeas(){
+  const n = mode==='network' ? nodes.length : mode==='carpet' ? CAR.n : LAT.L*LAT.L;
+  if(!n) return;
+  GAME.idea=[-1,-1]; GAME.placed=false;
+  if(GAME.on){ GAME.phase='assign'; GAME.turn=0; GAME.winner=-1;
+    GAME.placeN=[0,0];
+    GAME.left=[GAME.nAssign, GAME.on===2?GAME.nAssign:0]; }
+  M.init(n);
+  if(GAME.on) everAlloc();
+  hist=[]; tracked=[];
+  if(mode==='lattice') drawLattice();
+  else if(mode==='carpet') drawCarpet();
+  else syncNodeColors();
+  drawPlot(); drawDia(); drawDeg(); stats(0);
+}
+
+function setMode(m){
+  if(m===mode) return;
+  mode=m; running=false; $('play').textContent='▶ Run'; $('play').classList.remove('on');
+  $('gCar').classList.toggle('on',m==='carpet');
+  $('gLat').classList.toggle('on',m==='lattice');
+  $('gNet').classList.toggle('on',m==='network');
+  if(m!=='network'&&GAME.on){ GAME.on=0; GAME.phase='off'; M.reserved.clear(); }
+  if(m!=='network'&&SO.on){ SO.on=false;
+    $('soBtn').classList.remove('on'); $('soPanel').classList.add('off'); }
+  for(const [m2,id] of Object.entries(GRP)) $(id).open=(m2===m);
+  $('lattice').classList.toggle('off',m==='network');
+  $('view').classList.toggle('off',m!=='network');
+  if(m==='carpet'){
+    rebuildCarpet(CAR.L); setDt(100);
+  } else if(m==='network'){
+    if(!THREEOK){
+      $('warn').textContent='three.js (CDN) unavailable — falling back to the built-in '+
+        'projected renderer. Orbit, zoom and all controls still work.';
+    }
+    if(!nodes.length) regenNetwork();
+    else { setHorizonSlider(); pushParams(); rebuildBalls(); resetIdeas(); }
+    resize3D();
+    setDt(2);
+  } else {
+    rebuildLattice(LAT.L); setDt(5);
+  }
+  setHorizonSlider(); pushParams(); syncLabels(); drawPlot(); drawDia(); drawDeg();
+  stats(0); updateReadouts(); syncMirror(); updateGameUI();
+}
+
+/* ---- stats ---- */
+let lastPerf=performance.now(), sweepAcc=0;
+function stats(sweeps){
+  $('s_t').textContent=fmtT(M.t);
+  $('s_N').textContent=M.N;
+  $('s_n').textContent=M.counts.size;
+  const top=M.top(1);
+  $('s_d').textContent = top.length ? (100*top[0][1]/M.N).toFixed(1)+' %' : '–';
+  if(SO.on){ $('s_rw').textContent=SO.rewires;
+    $('s_e').textContent = ecount + (linksOK()?' ✓':' ✗'); }
+  const now=performance.now(); sweepAcc+=sweeps;
+  if(now-lastPerf>500){
+    const r=sweepAcc/((now-lastPerf)/1000);
+    $('s_r').textContent = r>=10?Math.round(r):r.toFixed(1);
+    sweepAcc=0; lastPerf=now;
+  }
+}
+
+/* ---- main step ---- */
+let lastPlot=0, soTick=0, soWarm=0;
+function advance(){
+  pushParams();
+  const dt=readDt();
+  const nsteps=Math.max(1,Math.round(dt*M.N));
+  if(mode==='lattice'){ runLattice(nsteps); drawLattice(); }
+  else if(mode==='carpet'){ runCarpet(nsteps); drawCarpet(); }
+  else {
+    if(!M.N) return;
+    if(SO.on){
+      const before=SO.rewires;
+      let left=nsteps;
+      while(left>0){                       /* <= one sweep per chunk */
+        const n=Math.min(left, M.N);
+        runNetwork(n); left-=n;
+        degRingPush();
+      }
+      soTick++;
+      if(!ballGlobal || G.horizon<netDiam) rebuildBalls();
+      degSnapshot(false);
+      SO.rate = dt>0 ? (SO.rewires-SO.lastRw)/dt : 0;
+      SO.lastRw = SO.rewires;
+      /* the layout is only loosened while links really move */
+      soWarm = (SO.rewires>before) ? 0.045 : soWarm*0.55;
+    } else runNetwork(nsteps);
+  }
+  sample();
+  const now=performance.now();
+  if(now-lastPlot>90){ drawPlot(); drawDia(); drawDeg(); lastPlot=now; }
+  stats(dt); updateReadouts();
+  if(GAME.on){ gameTick(); updateGameUI(); if(THREEOK&&balls&&settled) updateMatrices(); }
+}
+
+/* ---- render loop ---- */
+let lastT=performance.now();
+function frame(ts){
+  requestAnimationFrame(frame);
+  const dtR=Math.min(0.05,(ts-lastT)/1000); lastT=ts;
+  frameNow=ts;
+  if(mode==='network'&&nodes.length){
+    if(!settled){ layoutStep(); layoutStep(); updateMatrices(); if(!framed) fitCamera(); }
+    else if(!framed){ framed=true; if(THREEOK) updateLighting(fitRadius()||REST); fitCamera(); }
+    else if(SO.on && soWarm>0.004){ cooling=Math.max(cooling,soWarm); settled=false; }
+    if(SO.on){ soWarm*=0.97; autoZoomStep(); }
+    camDist=camBase*zoomUser;
+    const rotOn = !(GAME.on && GAME.phase!=='run');   /* placing: no auto-spin */
+    rotY += dtR*(rotOn?G.rotSpeed:0);
+    if(THREEOK&&group) group.rotation.y=rotY;
+    updateCamera();
+  }
+  syncMirror();
+  if(running) advance();
+  if(mode==='network'&&nodes.length){
+    if(THREEOK&&renderer){
+      syncNodeColors();
+      if(menMode) updateMen();
+      renderer.render(scene,camera);
+    }
+    else render2D();
+  }
+}
+
+/* ---- wiring ---- */
+function bindSlider(id,cb){ const e=$(id); e.addEventListener('input',()=>{ cb(parseFloat(e.value)); syncLabels(); }); }
+
+function updateNetPanels(){
+  $('mModular').classList.toggle('on',G.mode==='modular');
+  $('mER').classList.toggle('on',G.mode==='er');
+  $('mPL').classList.toggle('on',G.mode==='pl');
+  $('modGrp').classList.toggle('off',G.mode!=='modular');
+  $('erGrp').classList.toggle('off',G.mode!=='er');
+  $('plNet').classList.toggle('off',G.mode!=='pl');
+  $('modPL').classList.toggle('off',!(G.mode==='modular'&&G.dist==='power'));
+  $('dUniform').classList.toggle('on',G.dist==='uniform');
+  $('dPower').classList.toggle('on',G.dist==='power');
+  $('aM').value=G.a; $('gM').value=G.gamma; $('aP').value=G.a; $('gP').value=G.gamma;
+}
+function applyPreset(p){
+  $('pA').classList.toggle('on',p==='A');
+  $('pB').classList.toggle('on',p==='B');
+  $('pC').classList.toggle('on',p==='C');
+  G.a=2; G.gamma=2.5;
+  if(p==='A'){ G.mode='modular'; G.dist='uniform'; G.repK=0; applyBg(0); }
+  else if(p==='B'){ G.mode='modular'; G.dist='power'; G.repK=20; applyBg(1); }
+  else { G.mode='pl'; G.repK=10; applyBg(1); }
+  $('repk').value=G.repK;
+  updateNetPanels(); syncLabels();
+  if(mode!=='network') setMode('network'); else regenNetwork();
+}
+
+function wire(){
+  /* run controls */
+  $('play').onclick=()=>{
+    running=!running;
+    $('play').textContent = running?'⏸ Pause':'▶ Run';
+    $('play').classList.toggle('on',running);
+    if(running){ lastPerf=performance.now(); sweepAcc=0; }
+  };
+  $('stepb').onclick=()=>{ if(!running) advance(); };
+  $('resetb').onclick=()=>resetIdeas();
+  $('gCar').onclick=()=>{ stopGame(); setMode('carpet'); };
+  /* men only make sense on a network — the toggle simply idles elsewhere */
+  $('gLat').onclick=()=>{ stopGame(); setMode('lattice'); };
+  $('gNet').onclick=()=>{ stopGame(); setMode('network'); };
+  $('soBtn').onclick=()=>{ stopGame(); setSO(!SO.on); };
+  $('flash').addEventListener('input',()=>{ SO.flash=(+$('flash').value)/10; syncLabels(); });
+  $('c243').onclick=()=>{ CAR.L=243; if(mode!=='carpet') setMode('carpet'); else rebuildCarpet(243); };
+  $('c729').onclick=()=>{ CAR.L=729; if(mode!=='carpet') setMode('carpet'); else rebuildCarpet(729); };
+
+  /* idea model */
+  for(const id of ['alpha','tau','dt','td']) $(id).addEventListener('input',()=>{ pushParams(); syncLabels(); if(!running) drawPlot(); });
+  $('hor').addEventListener('input',()=>{ pushParams(); syncLabels(); });
+  $('hor').addEventListener('change',()=>{ pushParams(); if(mode==='network') rebuildBalls(); syncLabels(); });
+
+  /* lattice */
+  $('L').addEventListener('input',()=>{ $('Lv').textContent=Ls[+$('L').value]; $('Lv2').textContent=Ls[+$('L').value]; });
+  $('L').addEventListener('change',()=>rebuildLattice(Ls[+$('L').value]));
+
+  /* network variants */
+  bindSlider('N',v=>G.N=v|0);
+  bindSlider('S',v=>G.S=Svals[Math.max(0,Math.min(Svals.length-1,v|0))]);
+  bindSlider('B',v=>G.B=v|0);
+  bindSlider('kdeg',v=>G.kdeg=v|0);
+  bindSlider('aM',v=>{G.a=v|0; $('aP').value=G.a;});
+  bindSlider('gM',v=>{G.gamma=v; $('gP').value=G.gamma;});
+  bindSlider('aP',v=>{G.a=v|0; $('aM').value=G.a;});
+  bindSlider('gP',v=>{G.gamma=v; $('gM').value=G.gamma;});
+  ['N','S','B','kdeg','aM','gM','aP','gP'].forEach(id=>$(id).addEventListener('change',()=>{ if(mode==='network') regenNetwork(); }));
+
+  bindSlider('rot',v=>G.rotSpeed=v/100);
+  bindSlider('repk',v=>{G.repK=v; reheat();});
+  bindSlider('nsz',v=>{G.nodeScale=v; if(THREEOK&&balls) updateMatrices();});
+
+  $('mModular').onclick=()=>{ G.mode='modular'; updateNetPanels(); mode==='network'?regenNetwork():setMode('network'); };
+  $('mER').onclick=()=>{ G.mode='er'; updateNetPanels(); mode==='network'?regenNetwork():setMode('network'); };
+  $('mPL').onclick=()=>{ G.mode='pl'; updateNetPanels(); mode==='network'?regenNetwork():setMode('network'); };
+  $('dUniform').onclick=()=>{ G.dist='uniform'; updateNetPanels(); if(mode==='network') regenNetwork(); };
+  $('dPower').onclick=()=>{ G.dist='power'; updateNetPanels(); if(mode==='network') regenNetwork(); };
+  $('pA').onclick=()=>applyPreset('A');
+  $('pB').onclick=()=>applyPreset('B');
+  $('pC').onclick=()=>applyPreset('C');
+  $('g1').onclick=()=>startGame(1);
+  $('g2').onclick=()=>startGame(2);
+  $('gwipe').onclick=()=>resumeAfterWipe();
+  $('gnod').addEventListener('input',()=>{
+    GAME.nAssign=+$('gnod').value; $('gnodv').textContent=GAME.nAssign;
+    if(GAME.on&&GAME.phase==='assign'){
+      GAME.left=[GAME.nAssign, GAME.on===2?GAME.nAssign:0]; GAME.turn=0; }
+    updateGameUI(); });
+  $('menBtn').onclick=()=>{ menMode=!menMode; applyMenMode(); syncMirror(); };
+  $('themeBtn').onclick=()=>setTheme(!lightMode);
+  $('bg').onclick=()=>setTheme(!lightMode);
+  $('linkBtn').onclick=()=>{ showLinks=!showLinks;
+    $('linkBtn').textContent='Links: '+(showLinks?'on':'off');
+    $('linkBtn').classList.toggle('on',showLinks);
+    if(links) links.visible=showLinks; };
+  $('regen').onclick=()=>{ if(mode==='network') regenNetwork(); else setMode('network'); };
+  $('relax').onclick=()=>reheat();
+  $('exNet').onclick=()=>{ if(THREEOK&&renderer){ renderer.render(scene,camera);
+    dlURL(renderer.domElement.toDataURL('image/png'),'network.png'); } };
+  $('exPlot').onclick=()=>dlURL(plotC.toDataURL('image/png'),'prevalence.png');
+
+  /* opening a pull-down selects that geometry */
+  for(const [m,id] of Object.entries(GRP)){
+    $(id).addEventListener('toggle',()=>{
+      if(!$(id).open) return;
+      for(const [,id2] of Object.entries(GRP)) if(id2!==id) $(id2).open=false;
+      if(mode!==m) setMode(m);
+    });
+  }
+
+  for(const r of document.querySelectorAll('input[name=tmode]')) r.onchange=drawPlot;
+  for(const r of document.querySelectorAll('input[name=dmode]')) r.onchange=drawDeg;
+  $('rwCurve').onchange=drawDia;
+  $('plotdet').addEventListener('toggle',()=>{ if($('plotdet').open) drawPlot(); });
+  $('degdet').addEventListener('toggle',()=>{ if($('degdet').open) drawDeg(); });
+  $('exDeg').onclick=()=>dlURL(degC.toDataURL('image/png'),'connectivity.png');
+  addEventListener('resize',()=>{ resize3D(); layoutOverlays(); drawPlot(); drawDeg(); });
+}
+
+/* ---------- boot ---------- */
+G.S=Svals[0]; G.B=12; G.N=600;                    /* network defaults: A · modular */
+$('S').value=0; $('B').value=12; $('N').value=600;
+$('alpha').value=loginv(1e-4,1e-9,1e-3);          /* α = 1e-4 */
+$('tau').value=1000;                              /* τ = ∞      */
+$('dt').value=DTIDX(5);                           /* Δt = 5 sweeps */
+$('L').value=Ls.indexOf(32);                      /* 2-d, L = 32   */
+if(THREEOK) initThree();
+setupControls($('view'));
+latC.addEventListener('click',e=>{
+  if(mode==='network') return;
+  const id=latticePick(e);
+  if(id<0||id>=M.N) return;
+  if(GAME.on){ if(!gamePlant(id)) return; }
+  else M.innovate(id,M.t);
+  drawGeom(); updateReadouts();
+});
+wire();
+buildTopbar();
+updateNetPanels();
+rebuildLattice(32);                               /* Horizon becomes 2L = 64 */
+updateReadouts(); syncMirror(); updateGameUI(); layoutOverlays();
+$('gnodv').textContent=GAME.nAssign;
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
