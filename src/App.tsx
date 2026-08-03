@@ -28,10 +28,10 @@ type Model = {
 const MODELS: Model[] = [
   {
   id: "btw-sandpile",
-  title: "BTW Sandpile",
+  title: "BTW Sandpile + Game",
   description:
     "The classical sandpile model of Self Organized Criticality: Office visualization, Variants, Analysis and Games",
-  file: "/models/btw_sandpile_v37.html",
+  file: "/models/btw_sandpile_v39.html",
   image: "/images/btw.png",
   status: "live",
 },  
