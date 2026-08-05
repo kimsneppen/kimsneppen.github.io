@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Bak–Sneppen model — space–time explorer</title>
+<style>
+  :root{
+    --bg:#07070d; --panel:#11111b; --line:rgba(255,255,255,0.13);
+    --txt:#ffffff; --dim:#a3a1b6; --accent:#ffb648; --sub:rgba(255,255,255,.07);
+  }
+  body.light{
+    --bg:#f4f4f8; --panel:#ffffff; --line:rgba(0,0,0,0.14);
+    --txt:#000000; --dim:#4d4d5e; --accent:#b35c00; --sub:rgba(0,0,0,.05);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%;width:100%;overflow:hidden;background:var(--bg);
+    color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    transition:background .2s,color .2s;}
+  #app{position:fixed;inset:0;display:flex;flex-direction:row;}
+
+  #view{flex:1 1 auto;position:relative;min-width:0;min-height:0;overflow:hidden;
+    display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom);}
+  #stage{flex:1 1 auto;position:relative;min-height:0;min-width:0;}
+  #plot3d{position:absolute;inset:0;touch-action:none;}
+  #plot3d canvas{display:block;position:absolute;left:0;top:0;}
+
+  #oeView{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg);}
+  #oeView.on{display:flex;}
+  #oeHead{flex:0 0 auto;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--dim);
+          white-space:nowrap;padding:6px 8px 4px 8px;flex-wrap:wrap;justify-content:flex-end;}
+  #oeHead input[type=range]{flex:0 1 auto;width:150px;min-width:60px;max-width:150px;}
+  #oeHead b{color:var(--accent);font-variant-numeric:tabular-nums;}
+  #oeStage{flex:1 1 auto;position:relative;min-height:0;touch-action:none;}
+  #oeStage canvas{display:block;position:absolute;}
+
+  /* right-aligned: everything above the plot hugs the control column */
+  #topbar{flex:0 0 auto;z-index:25;display:flex;gap:6px;align-items:center;flex-wrap:wrap;
+    justify-content:flex-end;padding:calc(6px + env(safe-area-inset-top)) 8px 4px 8px;}
+  #topbar .seg{width:auto;flex:0 0 auto;}
+  #topbar>*{flex:0 0 auto;}
+  #topbar button{white-space:nowrap;}   /* one line per button, wrap the bar instead */
+  #flipTop,#flipTimeTop{padding:5px 6px;font-size:10.5px;}
+  #legend{pointer-events:none;font-size:10px;color:var(--dim);display:inline-flex;
+    align-items:center;gap:5px;background:var(--sub);border:1px solid var(--line);
+    padding:2px 5px;border-radius:6px;white-space:nowrap;}
+  #legName{color:var(--txt);font-weight:600;}
+  #legScale{display:flex;flex-direction:column;gap:1px;}
+  #bar{width:73px;height:7px;border-radius:3px;}
+  #legTicks{display:flex;justify-content:space-between;width:73px;font-size:8.5px;
+    line-height:1;font-variant-numeric:tabular-nums;}
+  .s{display:none;}                     /* short labels, shown on narrow screens */
+
+  #panel{flex:0 0 232px;width:232px;background:var(--panel);border-left:1px solid var(--line);
+    display:flex;flex-direction:column;overflow:visible;position:relative;z-index:50;
+    padding-top:env(safe-area-inset-top);transition:background .2s;}
+  #panelScroll{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 12px 6px;}
+  #panel.collapsed{flex-basis:0;width:0;border-left:none;}
+  #panel.collapsed #panelScroll,#panel.collapsed #panelFoot{display:none;}
+  /* vertically centred so it can never sit on top of a control in the top bar */
+  #tabBtn{position:absolute;left:-26px;top:50%;margin-top:-17px;width:26px;height:34px;z-index:60;
+    background:var(--panel);border:1px solid var(--line);border-right:none;border-radius:7px 0 0 7px;
+    color:var(--accent);font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+
+  .sec{margin:0 0 11px;}
+  .sec>h5{margin:0 0 5px;font-size:9.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);}
+  .rowb{display:flex;gap:6px;} .rowb>button{flex:1;}
+  .sl{display:flex;flex-direction:column;gap:2px;margin-bottom:8px;}
+  .sl.dis{opacity:.38;}
+  .sl .top{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:var(--dim);gap:6px;}
+  .sl .top b{color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums;}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:16px;background:transparent;width:100%;cursor:pointer;margin:0;}
+  input[type=range]::-webkit-slider-runnable-track{height:3px;background:var(--sub);border:1px solid var(--line);border-radius:2px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;
+    background:var(--accent);margin-top:-6px;border:none;}
+  input[type=range]::-moz-range-track{height:3px;background:var(--sub);border-radius:2px;}
+  input[type=range]::-moz-range-thumb{width:13px;height:13px;border:none;border-radius:50%;background:var(--accent);}
+  button,select{font:inherit;font-size:11.5px;color:var(--txt);background:var(--sub);border:1px solid var(--line);
+    border-radius:6px;padding:5px 8px;cursor:pointer;}
+  select{background:var(--panel);}
+  button:hover{background:var(--line);}
+  button.on{background:rgba(255,182,72,.24);color:var(--accent);}
+  body.light button.on{background:rgba(179,92,0,.14);}
+  .seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;width:100%;}
+  .seg button{flex:1;border:none;border-radius:0;background:transparent;padding:5px 3px;}
+  .seg button+button{border-left:1px solid var(--line);}
+  .seg button.on{background:rgba(255,182,72,.24);color:var(--accent);font-weight:600;}
+  body.light .seg button.on{background:rgba(179,92,0,.14);}
+  .chk{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);cursor:pointer;user-select:none;margin-bottom:4px;}
+  .chk input{accent-color:var(--accent);width:13px;height:13px;margin:0;}
+  #stats{font-size:10px;color:var(--dim);line-height:1.65;font-variant-numeric:tabular-nums;
+    border-top:1px solid var(--line);padding-top:8px;}
+  #stats b{color:var(--txt);font-weight:600;}
+  .note{font-size:9.5px;color:var(--dim);opacity:.8;margin:-3px 0 8px;}
+
+  #panelFoot{flex:0 0 auto;padding:8px 12px calc(10px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--line);position:relative;}
+  #descBtn{width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;}
+  #descBtn .car{color:var(--accent);transition:transform .18s;}
+  #descBtn.open .car{transform:rotate(180deg);}
+  #descPanel{display:none;position:absolute;right:calc(100% + 8px);bottom:8px;width:min(430px,60vw);
+    max-height:min(74vh,600px);overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--panel);
+    border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:12.3px;line-height:1.55;
+    box-shadow:0 12px 44px rgba(0,0,0,.5);z-index:70;}
+  body.light #descPanel{box-shadow:0 12px 44px rgba(0,0,0,.18);}
+  #descPanel.open{display:block;}
+  #descPanel h3{margin:0 0 8px;font-size:13.5px;color:var(--accent);}
+  #descPanel h4{margin:13px 0 5px;font-size:11.5px;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;}
+  #descPanel p{margin:0 0 8px;}
+  #descPanel ol{margin:0;padding-left:18px;font-size:11.5px;color:var(--dim);}
+  #descPanel li{margin-bottom:6px;}
+  #descPanel .eq{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--sub);
+    padding:1px 5px;border-radius:4px;white-space:nowrap;}
+
+  @media (max-width:820px){
+    #panel{flex-basis:186px;width:186px;} #panelScroll{padding:8px 9px 4px;}
+    #descPanel{width:min(400px,calc(100vw - 40px));}
+    #oeHead{font-size:10px;gap:6px;}
+  }
+  /* short button labels early enough that the top bar stays a single row */
+  @media (max-width:980px){ .l{display:none;} .s{display:inline;} }
+  @media (max-width:760px){
+    #topbar{gap:4px;padding:calc(5px + env(safe-area-inset-top)) 6px 3px 6px;}
+    #topbar button{font-size:10px;padding:4px 5px;}
+    #legend{font-size:9px;gap:4px;padding:2px 5px;}
+    #bar,#legTicks{width:52px;} #legTicks{font-size:8px;}
+    #oeHead{padding:5px 6px 3px;}
+    #oeHead input[type=range]{max-width:76px;}
+  }
+  @media (max-width:560px){
+    #panel{position:absolute;right:0;top:0;bottom:0;flex-basis:172px;width:172px;
+           box-shadow:-6px 0 24px rgba(0,0,0,.45);}
+    body.light #panel{box-shadow:-6px 0 24px rgba(0,0,0,.14);}
+    #descPanel{position:fixed;right:8px;left:8px;bottom:8px;width:auto;max-height:70vh;}
+    #topbar button{font-size:9.5px;padding:4px 4px;}
+    #flipTop,#flipTimeTop{padding:4px 4px;font-size:9.5px;}
+  }
+  /* landscape phone: keep the bar to a single thin strip so the plot gets the height */
+  @media (max-height:460px){
+    #topbar{padding:calc(3px + env(safe-area-inset-top)) 6px 2px 6px;gap:3px;}
+    #topbar button{font-size:9.5px;padding:3px 4px;}
+    #legend{font-size:9px;padding:1px 5px;}
+    #bar{height:6px;} #bar,#legTicks{width:46px;} #legTicks{font-size:8px;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="view">
+    <div id="topbar">
+      <span class="seg" id="varSeg">
+        <button id="vwB" class="on" title="barrier B of every species vs time">B</button>
+        <button id="vwAct" title="only the site that fired, vs time">
+          <span class="l">Active site</span><span class="s">Site</span></button>
+        <button id="vwALin" title="age of every species vs time, linear scale">
+          <span class="l">Age lin</span><span class="s">Age</span></button>
+        <button id="vwALog" title="age of every species vs time, logarithmic scale">
+          <span class="l">Age log</span><span class="s">lg Age</span></button>
+        <button id="vwOe" title="origination time vs extinction time">
+          <span class="l">Orig.–Ext.</span><span class="s">O–E</span></button>
+      </span>
+      <span id="legend" title="colour scale of the quantity on display">
+        <span id="legName">B</span>
+        <span id="legScale">
+          <div id="bar"></div>
+          <span id="legTicks"><span id="legLo">0</span><span id="legMid">0.5</span><span id="legHi">1</span></span>
+        </span>
+      </span>
+      <span class="seg" id="clockSeg">
+        <button id="clkCount" class="on"><span class="l">count time</span><span class="s">count</span></button>
+        <button id="clkMu"><span class="l">time (μ=0.01)</span><span class="s">μ=.01</span></button>
+      </span>
+      <span class="seg" id="projSeg">
+        <button id="prjFlat" class="on" title="orthographic view from straight above">2D</button>
+        <button id="prj3d" title="tilted perspective view">3D</button>
+      </span>
+      <button id="flipTop"><span class="l">Vertical flip</span><span class="s">↕ flip</span></button>
+      <button id="flipTimeTop"><span class="l">Flip time</span><span class="s">↔ time</span></button>
+      <button id="pngBtn" title="Save this plot as PNG">PNG</button>
+    </div>
+    <div id="stage">
+    <div id="plot3d"></div>
+
+    <div id="oeView">
+      <div id="oeHead">
+        <span>show from</span>
+        <input type="range" id="oesl" min="0" max="100" step="1" value="100">
+        <span>t = <b id="oev">0</b></span>
+        <span class="l">bin Δt = <b id="oedt">0</b></span>
+        <button id="oeCntBtn" class="on">counts: log</button>
+      </div>
+      <div id="oeStage">
+      </div>
+    </div>
+
+    </div>
+  </div>
+
+  <div id="panel">
+    <button id="tabBtn" title="Show / hide controls">›</button>
+    <div id="panelScroll">
+
+      <div class="sec">
+        <div class="rowb"><button id="play">❚❚ Pause</button><button id="reset">Reset</button></div>
+      </div>
+
+      <div class="sec">
+        <h5>Display</h5>
+        <div class="seg" style="margin-bottom:6px"><button id="vB" class="on">Barriers B</button><button id="vA">Age</button></div>
+        <div class="seg" style="margin-bottom:6px"><button id="aLin" class="on">age linear</button><button id="aLog">age log</button></div>
+        <div class="seg" style="margin-bottom:6px"><button id="csA">autumn</button><button id="csJ">jet</button><button id="csR" class="on">rainbow</button><button id="csP">plasma</button></div>
+        <div class="seg" style="margin-bottom:6px"><button id="bgD" class="on">black bg</button><button id="bgL">white bg</button></div>
+        <div class="rowb"><button id="flipBtn">Vertical flip</button><button id="flipTimeBtn">Flip time</button></div>
+      </div>
+
+      <div class="sec">
+        <h5>Model</h5>
+        <div class="sl"><div class="top"><span>system size L</span><b id="Lv">100</b></div>
+          <input type="range" id="Lsl" min="20" max="400" step="1" value="100"></div>
+        <div class="sl"><div class="top"><span>mutation rate μ</span><b id="mv">0</b></div>
+          <input type="range" id="msl" min="0" max="22" step="1" value="0"></div>
+        <div class="note" id="muNote">μ = 0 → extremal dynamics, time = updates</div>
+        <div class="seg" style="margin-bottom:8px"><button id="bcRing">ring (periodic)</button><button id="bcWall" class="on">closed ends</button></div>
+        <div class="sl"><div class="top"><span>speed (updates/frame)</span><b id="spv">10</b></div>
+          <input type="range" id="spsl" min="1" max="100" step="1" value="35"></div>
+      </div>
+
+      <div class="sec">
+        <h5>Time axis</h5>
+        <div class="seg" style="margin-bottom:7px"><button id="tWin" class="on">window</button><button id="tAll">full turnover</button></div>
+        <div class="sl"><div class="top"><span id="hslLab">slices shown</span><b id="hv">300</b></div>
+          <input type="range" id="hsl" min="0" max="10" step="1" value="5"></div>
+        <div class="sl" id="rslWrap"><div class="top"><span id="rslLab">updates / slice</span><b id="rv">50</b></div>
+          <input type="range" id="rsl" min="1" max="80" step="1" value="50"></div>
+        <div class="note" id="spanNote"></div>
+      </div>
+
+      <div class="sec">
+        <h5>3D view</h5>
+        <div class="sl" id="azWrap"><div class="top"><span>turn (azimuth)</span><b id="azv">33°</b></div>
+          <input type="range" id="azsl" min="-180" max="180" step="1" value="33"></div>
+        <div class="sl" id="elWrap"><div class="top"><span>tilt (elevation)</span><b id="elv">35°</b></div>
+          <input type="range" id="elsl" min="0" max="89" step="1" value="35"></div>
+        <div class="sl"><div class="top"><span>dot size</span><b id="dsv">125%</b></div>
+          <input type="range" id="dssl" min="25" max="300" step="5" value="125"></div>
+      </div>
+
+      <div class="sec">
+        <h5>Overlays</h5>
+        <label class="chk"><input type="checkbox" id="lines"> profile lines</label>
+        <label class="chk"><input type="checkbox" id="fcp" checked> f<sub>c</sub> ≈ 0.667 plane</label>
+        <label class="chk"><input type="checkbox" id="axes" checked> axes &amp; numbers</label>
+        <button id="rv3d" style="width:100%;margin-top:5px">Reset view</button>
+      </div>
+
+      <div id="stats"></div>
+    </div>
+
+    <div id="panelFoot">
+      <button id="descBtn">Model description <span class="car">▲</span></button>
+      <div id="descPanel">
+        <h3>The Bak–Sneppen model</h3>
+        <p><b>L</b> species sit on a ring. Each species <i>i</i> carries a <b>fitness barrier</b>
+        <span class="eq">B(i) ∈ [0,1]</span> — the height of the barrier it must cross to mutate into a new
+        species. Barriers are drawn uniformly at random.</p>
+
+        <p>Mutation is an activated process with rate <span class="eq">r(i) = exp(−B(i)/μ)</span>, so the waiting
+        time of site <i>i</i> is drawn as <span class="eq">Δt(i) = −ln(u<sub>i</sub>)/r(i)</span> with
+        <span class="eq">u<sub>i</sub></span> uniform on (0,1]. In each Gillespie step the site with the
+        <b>smallest</b> Δt fires; that species <i>and its two nearest neighbours</i> are replaced by fresh random
+        barriers (periodic boundaries), the clock advances by that Δt, and all waiting times are redrawn. For
+        <span class="eq">μ → 0</span> the smallest barrier always wins and the model reduces to pure
+        <b>extremal dynamics</b>: locate min B, replace it and its two neighbours.</p>
+
+        <p><b>Units of time.</b> At μ = 0 time is counted in <i>updates</i> and a slice is recorded every <i>n</i>
+        updates. At μ &gt; 0 the clock is the real Gillespie time, advancing in wildly unequal jumps
+        Δt ≈ e<sup>B/μ</sup>; a slice is then recorded every fixed <i>interval of time</i>, so the depth axis stays
+        linear in time and stasis shows up as depth. The two sliders relabel themselves: number of slices, and the
+        total time window. Moving μ across zero changes the unit of time, so the clock, the ages and the event
+        record restart there (the barrier configuration is kept).</p>
+
+        <p>Although nothing is tuned, the system drives itself into a <b>self-organised critical</b> state: the
+        barrier distribution becomes uniform above <span class="eq">f<sub>c</sub> ≈ 0.6670</span> and empty below,
+        except for the <b>avalanches</b> that punch below it. Avalanche sizes and durations are power-law
+        distributed — long stasis interrupted by bursts, i.e. <b>punctuated equilibrium</b>.</p>
+
+        <h4>The two switches above the plot</h4>
+        <p>The first switch picks <b>what</b> is drawn: <b>B</b>, <b>Age lin</b> or <b>Age log</b> give the
+        barrier or the age of <i>every</i> species as a function of time, with the age axis and the colours
+        calibrated linearly or logarithmically; <b>Active site</b> shows only the site that fired at each
+        step; <b>Orig.–Ext.</b> replaces the landscape by the origination–extinction histogram. The colour
+        bar next to it always carries the scale of the quantity on display — its low, middle and high value,
+        so the middle number is where the linear and the logarithmic calibration part company.</p>
+        <p>The second switch picks <b>how</b> it is drawn. <b>2D</b> looks straight down on species × time
+        from infinitely far away (orthographic, no perspective), so the chosen quantity is carried by colour
+        alone and the value axis, being edge-on, is left out. <b>3D</b> lifts it into the value axis, opening
+        at azimuth 36° and tilt 45° and with the species axis compressed by 30 %, which is what makes room
+        for the depth; the origination–extinction histogram is square and is not compressed, and it opens at
+        azimuth −67°, tilt 40°. From there the mouse, a drag, the two angle sliders and the wheel or a pinch
+        take over. Either way the framing is computed from the window — the whole figure, axes, numbers and
+        labels included, stays inside the frame on a phone as well as on a desktop, pushed up against the
+        control column. <i>Reset view</i> hands the framing back to the applet after you have panned.</p>
+
+        <h4>Reading the plots</h4>
+        <p>Species <i>i</i> = 1…L runs along the horizontal axis, time runs <b>out of the screen toward you</b>;
+        the time axis carries numbered ticks and an arrow pointing at the newest slice.</p>
+        <p><b>Barriers.</b> Vertical axis = B(i), upside down (0 top, 1 bottom), ticked every 0.1. The
+        <i>flip vertical axis</i> button turns both this axis and the age axis the other way round, so the
+        smallest B and the youngest species sit at the bottom.</p>
+        <p><b>Age.</b> The height plotted for a species is the age it <i>reached</i> — its full lifetime — so it
+        stays constant for as long as that species occupies the site and steps only when the species is replaced.
+        Species still alive are drawn at their current age. The axis is inverted (short-lived on top). At μ = 0 it
+        runs from 0 to a rounded bound on the largest lifetime in view; at μ &gt; 0 from 1 to the largest age ever
+        reached in the run.</p>
+        <p><b>Active site.</b> Hides the barrier landscape and plots just the site that fired at each step
+        against time, coloured by the barrier it had. This is the classical avalanche picture: activity
+        localises in bursts that wander along the chain.</p>
+        <p><b>Boundaries.</b> On a <i>ring</i> the chain is periodic, so an avalanche that runs off one edge
+        reappears at the other and the activity seems to jump across the plot. With <b>closed ends</b> the two
+        end sites have only one neighbour inside the system, so a firing end site updates itself and that single
+        neighbour — the activity stays where it is.</p>
+        <p><b>Origination–extinction.</b> Every replaced species contributes one event: the time it appeared
+        against the time it was wiped out, binned on a 50 × 50 grid of the displayed time range and drawn as a
+        3D histogram you can turn; <b>2D</b> views it orthographically from infinitely far away — a plain
+        density map. Both time axes are always linear. The vertical axis carries no numbers, because the
+        colour key in the plot already gives the scale of the count per bin; only that counter switches
+        between a linear and a logarithmic scale.</p>
+        <p><b>Why count time gives a flat diagonal.</b> A species is born when its site is refreshed and dies
+        when that site is refreshed again, so the dot sits off the diagonal by exactly its lifetime — often
+        long, since three fresh barriers may all come out high and then wait. But count the events in one bin
+        of the extinction axis: every update replaces three species, so that bin holds exactly
+        <span class="eq">3 × (bin width)</span> events <i>wherever it sits</i>, and of those exactly
+        <b>L</b> — the species in flight at the bin edge, no more and no fewer — were born in an earlier bin.
+        Bin the whole run and that is L = 100 against 3 × 3090 = 9270: 1 % of the events off the diagonal,
+        and a ridge flat to a fraction of a per cent. It is an identity, not a defect — in count time the
+        clock <i>is</i> the event counter, so the event rate is uniform by construction.</p>
+        <p>Two things follow. Shortening the window does not make the diagonal interesting, but it does lift
+        the off-diagonal band from 0.7 % to about 12 % of the events, so in count time the window defaults to
+        one mean lifetime per bin (the header reports it) until you move the slider. And the punctuation is
+        only visible on the <b>Gillespie clock</b>, where waiting times span <span class="eq">e^(1/μ)</span>:
+        there the per-bin totals vary by a factor of several instead of a fraction of a per cent, and the
+        plot fills with voids and dense patches. That is what the clock switch above the plot is for. Note
+        that at μ = 0.01 the model's own dynamic range, e^100, is far beyond double precision, so once the
+        clock has taken a large jump the tiny steps inside an avalanche no longer register in it at all —
+        those lifetimes read as exactly zero, which on that clock is what they physically are.</p>
+
+        <h4>Time-axis modes</h4>
+        <p>The depth axis is placed by the stored slice <i>times</i>, so it is linear in time and always fills
+        the display; changing the number of slices or the window keeps the run going and keeps what has already
+        been recorded. A <b>PNG</b> button saves whatever is on screen, and the space–time views carry a third
+        switch between <i>count time</i> (μ = 0, time in updates) and <i>time (μ = 0.01)</i>, which runs the
+        finite-mutation-rate simulation on the Gillespie clock.</p>
+        <p><b>Window</b> — a rolling window of the chosen number of slices. <b>Full turnover</b> — the depth axis reaches back to the moment the
+        oldest species still present was born, i.e. as far as one can go while every barrier now on screen is
+        younger than the far edge. It follows that instant as the population turns over.</p>
+
+        <h4>References</h4>
+        <ol>
+          <li>P. Bak and K. Sneppen, "Punctuated equilibrium and criticality in a simple model of evolution,"
+          <i>Physical Review Letters</i> <b>71</b>, 4083 (1993).</li>
+          <li>K. Sneppen, P. Bak, H. Flyvbjerg and M. H. Jensen, "Evolution as a self-organized critical
+          phenomenon," <i>Proceedings of the National Academy of Sciences USA</i> <b>92</b>, 5209 (1995).</li>
+          <li>K. Sneppen, "Extremal dynamics and punctuated co-evolution," <i>Physica A: Statistical Mechanics
+          and its Applications</i> <b>221</b>, 168 (1995).</li>
+          <li>M. Paczuski, S. Maslov and P. Bak, "Field theory for a model of self-organized criticality,"
+          <i>Europhysics Letters</i> <b>27</b>, 97 (1994).</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+(function(){
+
+const SLICE_OPTS=[10,20,50,100,200,300,400,500,1000,1500,2000];
+const MU_OPTS=[0,0.001,0.002,0.003,0.004,0.005,0.007,0.01,0.012,0.015,0.02,0.025,
+               0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10,0.2,0.5,1];
+const OE_CAP=400000, NBIN=50, ACT_CAP=300000, LINE_BUDGET=420000;
+
+/* =====================================================================
+   1.  COLOUR SCHEMES
+   ===================================================================== */
+let SCHEME='autumn';
+function cl01(x){return x<0?0:(x>1?1:x);}
+function schemeRGB(t){
+  t=cl01(t);
+  if(SCHEME==='autumn') return [1,t,0];
+  if(SCHEME==='jet'){
+    return [cl01(1.5-Math.abs(4*t-3)),cl01(1.5-Math.abs(4*t-2)),cl01(1.5-Math.abs(4*t-1))];
+  }
+  if(SCHEME==='plasma'){
+    const A=[[0.050,0.030,0.528],[0.417,0.000,0.658],[0.692,0.165,0.564],
+             [0.881,0.392,0.383],[0.988,0.652,0.211],[0.940,0.975,0.131]];
+    const x=t*(A.length-1), i=Math.min(A.length-2,Math.floor(x)), f=x-i;
+    return [A[i][0]+(A[i+1][0]-A[i][0])*f, A[i][1]+(A[i+1][1]-A[i][1])*f,
+            A[i][2]+(A[i+1][2]-A[i][2])*f];
+  }
+  /* rainbow: hue 240 deg (blue) -> 0 deg (red) */
+  const h=(1-t)*4.0/6.0, i=Math.floor(h*6), f=h*6-i;
+  const q=1-f, u=f;
+  switch(i%6){
+    case 0: return [1,u,0];
+    case 1: return [q,1,0];
+    case 2: return [0,1,u];
+    case 3: return [0,q,1];
+    case 4: return [u,0,1];
+    default:return [1,0,q];
+  }
+}
+/* plasma is brightest at its high end, so invert it for B and age:
+   the interesting, nearly-mutating species are the bright ones          */
+function valT(t){ return SCHEME==='plasma' ? 1-t : t; }
+function cmapV(t,out,k,dim){ cmap(valT(t),out,k,dim); }
+function cmap(t,out,k,dim){
+  const c=schemeRGB(t), f=1-(dim||0);
+  out[k]=c[0]*f; out[k+1]=c[1]*f; out[k+2]=c[2]*f;
+}
+function cssGradient(dir,value){
+  const stops=[];
+  for(let j=0;j<=10;j++){
+    const c=schemeRGB(value?valT(j/10):j/10);
+    stops.push('rgb('+Math.round(c[0]*255)+','+Math.round(c[1]*255)+','+Math.round(c[2]*255)+') '+(j*10)+'%');
+  }
+  return 'linear-gradient('+dir+','+stops.join(',')+')';
+}
+
+/* =====================================================================
+   2.  SIMULATION
+   ===================================================================== */
+let closedBC=true;
+const Sim={
+  L:120,mu:0,B:null,tLast:null,touched:null,virgin:0,Tstar:0,step:0,t:0,lastMin:1,maxAgeEver:1,
+  init(L){
+    this.L=L;this.B=new Float64Array(L);this.tLast=new Float64Array(L);
+    this.touched=new Uint8Array(L);this.virgin=L;this.Tstar=0;this.maxAgeEver=1;
+    for(let i=0;i<L;i++){this.B[i]=Math.random();this.tLast[i]=0;}
+    this.step=0;this.t=0;this.lastMin=1;
+  },
+  resetClock(){
+    this.t=0;this.step=0;this.maxAgeEver=1;this.virgin=this.L;this.Tstar=0;
+    this.touched.fill(0);this.tLast.fill(0);
+  },
+  hit(j,t){
+    const age=t-this.tLast[j];
+    if(age>this.maxAgeEver) this.maxAgeEver=age;
+    OE.push(this.tLast[j],t);
+    Hist.patchLife(j,this.tLast[j],t);
+    this.B[j]=Math.random();this.tLast[j]=t;
+    if(!this.touched[j]){this.touched[j]=1;if(--this.virgin===0)this.Tstar=t;}
+  },
+  update(){
+    const L=this.L,B=this.B,mu=this.mu;
+    let m=0;
+    if(mu<=0){
+      let best=Infinity;
+      for(let i=0;i<L;i++){const b=B[i];if(b<best){best=b;m=i;}}
+      this.lastMin=best;this.t+=1;
+    }else{
+      let best=Infinity;const inv=1/mu;
+      for(let i=0;i<L;i++){
+        const u=1-Math.random();
+        const l=Math.log(-Math.log(u))+B[i]*inv;
+        if(l<best){best=l;m=i;}
+      }
+      this.lastMin=B[m];
+      this.t+=Math.exp(Math.min(best,650));
+      if(!isFinite(this.t)){this.t=Number.MAX_VALUE;}
+    }
+    this.step++;
+    const t=this.t;
+    Act.push(m,t,this.lastMin);
+    this.hit(m,t);
+    if(closedBC){                       /* walls: only neighbours inside the chain */
+      if(m-1>=0) this.hit(m-1,t);
+      if(m+1<L)  this.hit(m+1,t);
+    }else{
+      this.hit((m-1+L)%L,t); this.hit((m+1)%L,t);
+    }
+    return m;
+  },
+  /* window reaching back to the birth of the oldest species still alive:
+     before that instant none of the present B(i) existed                */
+  turnoverWindow(){return Math.max(this.maxAge(),1e-12);},
+  maxAge(){let mn=Infinity;for(let i=0;i<this.L;i++)if(this.tLast[i]<mn)mn=this.tLast[i];
+           return this.t-mn;},
+  meanB(){let s=0;for(let i=0;i<this.L;i++)s+=this.B[i];return s/this.L;},
+  fracAbove(f){let n=0;for(let i=0;i<this.L;i++)if(this.B[i]>f)n++;return n/this.L;}
+};
+
+const OE={
+  o:new Float64Array(OE_CAP),e:new Float64Array(OE_CAP),head:0,n:0,
+  clear(){this.head=0;this.n=0;},
+  push(o,e){this.o[this.head]=o;this.e[this.head]=e;
+            this.head=(this.head+1)%OE_CAP;if(this.n<OE_CAP)this.n++;},
+  idx(k){return (this.head-this.n+k+OE_CAP*2)%OE_CAP;},
+  oldest(){return this.n?this.o[this.idx(0)]:0;}
+};
+/* which site fired, when, and with what barrier */
+const Act={
+  s:new Int32Array(ACT_CAP),t:new Float64Array(ACT_CAP),b:new Float32Array(ACT_CAP),head:0,n:0,
+  clear(){this.head=0;this.n=0;},
+  push(site,t,b){this.s[this.head]=site;this.t[this.head]=t;this.b[this.head]=b;
+                 this.head=(this.head+1)%ACT_CAP;if(this.n<ACT_CAP)this.n++;},
+  idx(k){return (this.head-this.n+k+ACT_CAP*2)%ACT_CAP;}
+};
+
+/* =====================================================================
+   3.  SPACE-TIME SLICE HISTORY  (stores origination times, not ages)
+   ===================================================================== */
+const Hist={
+  cap:100,L:120,head:0,count:0,B:null,A:null,TS:null,sB:null,sA:null,sTS:null,lastT:0,
+  alloc(cap,L){
+    this.cap=cap;this.L=L;this.head=0;this.count=0;this.lastT=0;
+    this.B=new Float32Array(cap*L);this.A=new Float64Array(cap*L);this.TS=new Float64Array(cap);
+    this.sB=new Float32Array(cap*L);this.sA=new Float64Array(cap*L);this.sTS=new Float64Array(cap);
+  },
+  clear(){this.head=0;this.count=0;this.lastT=Sim.t;},
+  thin(){
+    const L=this.L,keep=Math.ceil(this.count/2);
+    for(let s=0;s<keep;s++){
+      const ss=this.slot(2*s),src=ss*L,dst=s*L;
+      for(let i=0;i<L;i++){this.sB[dst+i]=this.B[src+i];this.sA[dst+i]=this.A[src+i];}
+      this.sTS[s]=this.TS[ss];
+    }
+    const b=this.B,a=this.A,ts=this.TS;
+    this.B=this.sB;this.A=this.sA;this.TS=this.sTS;this.sB=b;this.sA=a;this.sTS=ts;
+    this.count=keep;this.head=keep%this.cap;
+  },
+  pushAt(tAt,thinWhenFull){
+    if(this.count>=this.cap){if(thinWhenFull)this.thin();else this.count--;}
+    const L=this.L,o=this.head*L;
+    for(let i=0;i<L;i++){this.B[o+i]=Sim.B[i];this.A[o+i]=tAt-Sim.tLast[i];}
+    this.TS[this.head]=tAt;
+    this.head=(this.head+1)%this.cap;this.count++;this.lastT=tAt;
+  },
+  dropOlderThan(tmin){while(this.count>1&&this.TS[this.slot(0)]<tmin)this.count--;},
+  /* a species at site i, born at 'orig', has just died at 'death': every stored
+     slice from its birth onwards belongs to it, so give them all its final age */
+  patchLife(i,orig,death){
+    const life=death-orig,L=this.L;
+    for(let s=this.count-1;s>=0;s--){
+      const sl=this.slot(s);
+      if(this.TS[sl]<orig) break;
+      this.A[sl*L+i]=life;
+    }
+  },
+  slot(s){return (this.head-this.count+s+this.cap*2)%this.cap;},
+  t0(){return this.count?this.TS[this.slot(0)]:Sim.t;}
+};
+
+/* =====================================================================
+   4.  SHARED HELPERS
+   ===================================================================== */
+const THEMES={
+  dark :{bg:0x07070d,box:0x6a6a88,boxOp:0.34,axis:0xffffff,axOp:0.8,txt:'#ffffff',
+         amb:0.40,dif:0.68,rimK:0.20,rimCol:[0.95,0.90,0.80],fogMul:0.92,plane:0x7ad4ff,planeOp:0.055,
+         lineScale:1.0,lineOp:0.55,diag:0xffffff,diagOp:0.35,dim:0.0},
+  light:{bg:0xf4f4f8,box:0x8b8ba2,boxOp:0.62,axis:0x000000,axOp:0.85,txt:'#000000',
+         amb:0.26,dif:0.52,rimK:0.55,rimCol:[0.10,0.08,0.06],fogMul:0.88,plane:0x1668a8,planeOp:0.075,
+         lineScale:0.70,lineOp:0.7,diag:0x000000,diagOp:0.4,dim:0.28}
+};
+let TH=THEMES.dark;
+const PR=Math.min(window.devicePixelRatio||1,2);
+
+function fmtN(v){
+  if(!isFinite(v))return '∞';
+  const a=Math.abs(v);
+  if(a===0)return '0';
+  if(a>=1e5||a<1e-3)return v.toExponential(1).replace('e+','e');
+  if(a<1000&&Number.isInteger(v))return String(v);
+  if(a>=1e4)return (v/1e3).toFixed(0)+'k';
+  if(a>=1e3)return (v/1e3).toFixed(1)+'k';
+  if(a>=10)return v.toFixed(0);
+  if(a>=1)return v.toFixed(1);
+  return v.toFixed(2);
+}
+/* tick label that keeps enough digits to distinguish neighbouring ticks
+   (plain fmtN turned 19000 / 19200 / 19400 all into "19k")            */
+function fmtAxis(v,step){
+  const a=Math.abs(v);
+  if(a===0) return '0';
+  const se=Math.floor(Math.log10(Math.max(step,1e-300)));
+  if(a>=1e5||a<1e-3){
+    const e=Math.floor(Math.log10(a));
+    const d=Math.max(1,Math.min(6,e-se));
+    return (v/Math.pow(10,e)).toFixed(d)+'e'+e;
+  }
+  return v.toFixed(Math.max(0,Math.min(6,-se)));
+}
+function niceStep(x){
+  const e=Math.pow(10,Math.floor(Math.log10(Math.max(x,1e-300)))),m=x/e;
+  return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*e;
+}
+const CEIL_TIERS=[1,1.5,2,2.5,3,4,5,6,8,10];
+function niceCeil(x){
+  if(!(x>0))return 1;
+  const e=Math.pow(10,Math.floor(Math.log10(x))),m=x/e;
+  for(const c of CEIL_TIERS) if(m<=c*1.0000001) return c*e;
+  return 10*e;
+}
+function makeCam(tx,ty,tz,dist,theta,phi){
+  return{
+    target:new THREE.Vector3(tx,ty,tz),home:[tx,ty,tz,dist,theta,phi],
+    dist:dist,theta:theta,phi:phi,dDist:dist,dTheta:theta,dPhi:phi,
+    offR:0,offU:0,zoomF:1,fitOn:false,fitDefault:false,
+    /* screen-space basis for the current orientation: F points from the aim
+       point toward the camera, U is screen-up, R is screen-right             */
+    basis(theta,phi,out){
+      const sp=Math.sin(phi),cp=Math.cos(phi),st=Math.sin(theta),ct=Math.cos(theta);
+      out.fx=sp*st; out.fy=cp;  out.fz=sp*ct;
+      out.ux=-cp*st;out.uy=sp;  out.uz=-cp*ct;
+      out.rx=out.uy*out.fz-out.uz*out.fy;
+      out.ry=out.uz*out.fx-out.ux*out.fz;
+      out.rz=out.ux*out.fy-out.uy*out.fx;
+      return out;
+    },
+    apply(cam){
+      this.theta+=(this.dTheta-this.theta)*0.22;
+      this.phi+=(this.dPhi-this.phi)*0.22;
+      this.dist+=(this.dDist-this.dist)*0.18;
+      const b=this.basis(this.theta,this.phi,_B);
+      const oR=this.offR||0,oU=this.offU||0;
+      const tx=this.target.x+b.rx*oR+b.ux*oU;
+      const ty=this.target.y+b.ry*oR+b.uy*oU;
+      const tz=this.target.z+b.rz*oR+b.uz*oU;
+      cam.position.set(tx+this.dist*b.fx,ty+this.dist*b.fy,tz+this.dist*b.fz);
+      cam.up.set(b.ux,b.uy,b.uz);
+      cam.lookAt(tx,ty,tz);
+    },
+    set(theta,phi,dist){this.dTheta=theta;this.dPhi=phi;if(dist)this.dDist=dist;},
+    reset(){const h=this.home;this.target.set(h[0],h[1],h[2]);
+            this.dDist=h[3];this.dTheta=h[4];this.dPhi=h[5];
+            this.offR=0;this.offU=0;this.zoomF=1;this.fitOn=this.fitDefault;}
+  };
+}
+const _B={fx:0,fy:0,fz:0,ux:0,uy:0,uz:0,rx:0,ry:0,rz:0};
+function attachControls(el,C){
+  let mode=0,px=0,py=0,pd=0;
+  const cl=p=>Math.max(0.0,Math.min(Math.PI-0.02,p));
+  function rotate(dx,dy){
+    if(C.rotLocked&&C.rotLocked())return;      /* nothing to turn when seen from above */
+    C.dTheta-=dx*0.006;C.dPhi=cl(C.dPhi-dy*0.006);}
+  function pan(dx,dy){
+    const sp=Math.sin(C.theta),cp=Math.cos(C.theta);
+    const right=new THREE.Vector3(cp,0,-sp);
+    const dir=new THREE.Vector3(Math.sin(C.phi)*Math.sin(C.theta),Math.cos(C.phi),Math.sin(C.phi)*Math.cos(C.theta));
+    const up=new THREE.Vector3().crossVectors(right,dir).multiplyScalar(-1);
+    const k=C.dist*0.0016;
+    C.fitOn=false;                              /* hand over the framing to the user */
+    C.target.addScaledVector(right,-dx*k);C.target.addScaledVector(up,dy*k);
+  }
+  function zoom(f){
+    C.zoomF=Math.max(0.22,Math.min(6,(C.zoomF||1)*f));
+    if(!C.fitOn)C.dDist=Math.max(0.5,Math.min(40,C.dDist*f));
+  }
+  el.addEventListener('mousedown',e=>{mode=(e.button===0?1:2);px=e.clientX;py=e.clientY;e.preventDefault();});
+  window.addEventListener('mousemove',e=>{if(!mode)return;
+    const dx=e.clientX-px,dy=e.clientY-py;px=e.clientX;py=e.clientY;
+    if(mode===1)rotate(dx,dy);else pan(dx,dy);});
+  window.addEventListener('mouseup',()=>{mode=0;});
+  el.addEventListener('contextmenu',e=>e.preventDefault());
+  el.addEventListener('wheel',e=>{e.preventDefault();zoom(Math.exp(e.deltaY*0.0012));},{passive:false});
+  el.addEventListener('touchstart',e=>{
+    if(e.touches.length===1){mode=1;px=e.touches[0].clientX;py=e.touches[0].clientY;}
+    else if(e.touches.length===2){mode=3;
+      px=(e.touches[0].clientX+e.touches[1].clientX)/2;py=(e.touches[0].clientY+e.touches[1].clientY)/2;
+      pd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+    e.preventDefault();},{passive:false});
+  el.addEventListener('touchmove',e=>{
+    if(mode===1&&e.touches.length===1){
+      const dx=e.touches[0].clientX-px,dy=e.touches[0].clientY-py;
+      px=e.touches[0].clientX;py=e.touches[0].clientY;rotate(dx,dy);
+    }else if(mode===3&&e.touches.length===2){
+      const cx=(e.touches[0].clientX+e.touches[1].clientX)/2;
+      const cy=(e.touches[0].clientY+e.touches[1].clientY)/2;
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      pan(cx-px,cy-py);if(pd>0)zoom(pd/Math.max(d,1));px=cx;py=cy;pd=d;}
+    e.preventDefault();},{passive:false});
+  el.addEventListener('touchend',e=>{if(e.touches.length===0)mode=0;
+    else if(e.touches.length===1){mode=1;px=e.touches[0].clientX;py=e.touches[0].clientY;}});
+}
+/* axis title: a textured plane that lies along its axis and turns with the
+   scene, instead of a screen-facing sprite                                */
+const _v1=new THREE.Vector3(),_v2=new THREE.Vector3(),_v3=new THREE.Vector3(),
+      _v4=new THREE.Vector3(),_v5=new THREE.Vector3(),_m4=new THREE.Matrix4();
+function makeAxisText(scene,w,h){
+  const CW=1024,CH=256;
+  const c=document.createElement('canvas');c.width=CW;c.height=CH;
+  const g=c.getContext('2d');
+  const t=new THREE.CanvasTexture(c);
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),
+    new THREE.MeshBasicMaterial({map:t,transparent:true,depthTest:false,depthWrite:false,
+      side:THREE.DoubleSide}));
+  m.renderOrder=12;m.frustumCulled=false;
+  m.userData.dir=new THREE.Vector3(1,0,0);
+  m.userData.txt='';m.userData.col='';
+  m.userData.upd=function(txt,col){
+    if(m.userData.txt===txt&&m.userData.col===col)return;
+    m.userData.txt=txt;m.userData.col=col;
+    g.clearRect(0,0,CW,CH);
+    let px=168;const fam=' -apple-system,Helvetica,Arial,sans-serif';
+    g.font='800 '+px+'px'+fam;
+    while(px>28&&g.measureText(txt).width>CW-24){px-=8;g.font='800 '+px+'px'+fam;}
+    g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';
+    g.fillText(txt,CW/2,CH/2+4);t.needsUpdate=true;
+  };
+  scene.add(m);return m;
+}
+function orientAxisText(m,cam){
+  const d=_v1.copy(m.userData.dir).normalize();
+  _v2.copy(d).transformDirection(cam.matrixWorldInverse);
+  if(_v2.x<0) d.multiplyScalar(-1);
+  _v3.copy(cam.position).sub(m.position);
+  const n=_v4.copy(_v3).addScaledVector(d,-_v3.dot(d));
+  if(n.lengthSq()<1e-9) n.set(0,1,0);
+  n.normalize();
+  const up=_v5.crossVectors(n,d).normalize();
+  _m4.makeBasis(d,up,n);
+  m.quaternion.setFromRotationMatrix(_m4);
+}
+function makeLabel(scene,w,h,vertical){
+  const CW=vertical?256:1024, CH=vertical?1024:256;
+  const c=document.createElement('canvas');c.width=CW;c.height=CH;
+  const g=c.getContext('2d');
+  const t=new THREE.CanvasTexture(c);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false,depthWrite:false,fog:false}));
+  s.scale.set(vertical?h:w,vertical?w:h,1);
+  s.userData.txt='';s.userData.col='';
+  s.userData.upd=function(txt,col,bold){
+    if(s.userData.txt===txt&&s.userData.col===col)return;
+    s.userData.txt=txt;s.userData.col=col;
+    g.clearRect(0,0,CW,CH);
+    const LONG=vertical?CH:CW;
+    let px=bold?168:150;
+    const fam=' -apple-system,Helvetica,Arial,sans-serif';
+    g.font='800 '+px+'px'+fam;
+    while(px>28&&g.measureText(txt).width>LONG-24){px-=8;g.font='800 '+px+'px'+fam;}
+    g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';
+    g.save();g.translate(CW/2,CH/2);
+    if(vertical)g.rotate(-Math.PI/2);
+    g.fillText(txt,0,4);g.restore();t.needsUpdate=true;
+  };
+  scene.add(s);return s;
+}
+
+
+/* ---- axis lines as real 3D geometry (thin boxes + arrow heads) ------
+   a screen-space line shader proved unreliable here, so the axes are built
+   from ordinary triangles and drawn with a plain unlit material          */
+const fatMain=[],fatOE=[];
+function makeFat(scene,list,maxSeg,color,opacity,radius){
+  const VPS=36;                                   /* 24 box + 12 arrow head */
+  const arr=new Float32Array(maxSeg*VPS*3);
+  const g=new THREE.BufferGeometry();
+  const at=new THREE.BufferAttribute(arr,3);at.setUsage(THREE.DynamicDrawUsage);
+  g.setAttribute('position',at);g.setDrawRange(0,0);
+  const mat=new THREE.MeshBasicMaterial({color:new THREE.Color(color),
+    transparent:opacity<1,opacity:opacity,side:THREE.DoubleSide,depthWrite:true});
+  const m=new THREE.Mesh(g,mat);m.frustumCulled=false;scene.add(m);
+  const P=[0,0,0],D=[0,0,0],U=[0,0,0],V=[0,0,0];
+  function frame(x0,y0,z0,x1,y1,z1){
+    D[0]=x1-x0;D[1]=y1-y0;D[2]=z1-z0;
+    const l=Math.hypot(D[0],D[1],D[2])||1;
+    D[0]/=l;D[1]/=l;D[2]/=l;
+    const ax=Math.abs(D[0])<0.9?0:1;
+    const a=[ax===0?1:0,ax===0?0:1,0];
+    U[0]=D[1]*a[2]-D[2]*a[1];U[1]=D[2]*a[0]-D[0]*a[2];U[2]=D[0]*a[1]-D[1]*a[0];
+    const lu=Math.hypot(U[0],U[1],U[2])||1;U[0]/=lu;U[1]/=lu;U[2]/=lu;
+    V[0]=D[1]*U[2]-D[2]*U[1];V[1]=D[2]*U[0]-D[0]*U[2];V[2]=D[0]*U[1]-D[1]*U[0];
+    return l;
+  }
+  const obj={mesh:m,mat,geo:g,
+    /* arr6: flat pairs of end points; arrows[i]=true -> head at the far end */
+    setPairs(src,nSeg,arrows){
+      const n=Math.min(nSeg,maxSeg,Math.floor(src.length/6));
+      let k=0;
+      for(let i=0;i<n;i++){
+        const x0=src[i*6],y0=src[i*6+1],z0=src[i*6+2];
+        const x1=src[i*6+3],y1=src[i*6+4],z1=src[i*6+5];
+        const len=frame(x0,y0,z0,x1,y1,z1);
+        const r=radius;
+        const c=[];
+        for(const su of [-1,1]) for(const sv of [-1,1]){
+          c.push([x0+r*(su*U[0]+sv*V[0]),y0+r*(su*U[1]+sv*V[1]),z0+r*(su*U[2]+sv*V[2])]);
+        }
+        const d=[];
+        for(let q=0;q<4;q++) d.push([c[q][0]+D[0]*len,c[q][1]+D[1]*len,c[q][2]+D[2]*len]);
+        const order=[0,1,3,2];                    /* around the cross section */
+        for(let q=0;q<4;q++){
+          const a1=c[order[q]],b1=c[order[(q+1)%4]],a2=d[order[q]],b2=d[order[(q+1)%4]];
+          const tri=[a1,b1,b2, a1,b2,a2];
+          for(const v of tri){arr[k++]=v[0];arr[k++]=v[1];arr[k++]=v[2];}
+        }
+        /* arrow head */
+        const want=arrows&&arrows[i];
+        const hl=want?radius*9:0, hw=want?radius*3.6:0;
+        const bx=x1,by=y1,bz=z1;
+        const tx=bx+D[0]*hl,ty=by+D[1]*hl,tz=bz+D[2]*hl;
+        const bc=[];
+        for(const [su,sv] of [[-1,-1],[1,-1],[1,1],[-1,1]])
+          bc.push([bx+hw*(su*U[0]+sv*V[0]),by+hw*(su*U[1]+sv*V[1]),bz+hw*(su*U[2]+sv*V[2])]);
+        for(let q=0;q<4;q++){
+          const a1=bc[q],b1=bc[(q+1)%4];
+          const tri=[a1,b1,[tx,ty,tz]];
+          for(const v of tri){arr[k++]=v[0];arr[k++]=v[1];arr[k++]=v[2];}
+        }
+      }
+      g.setDrawRange(0,n*VPS);
+      at.needsUpdate=true;
+      at.updateRange={offset:0,count:n*VPS*3};
+    },
+    setStyle(cN,o){mat.color=new THREE.Color(cN);mat.opacity=o;mat.transparent=o<1;},
+    set visible(v){m.visible=v;}, get visible(){return m.visible;}};
+  list.push(obj);return obj;
+}
+const AXIS_W=0.0075;           /* world radius ~ 3 screen px */
+
+/* =====================================================================
+   5.  MAIN SPACE-TIME SCENE
+   ===================================================================== */
+const XW=2.6,YH=1.37,ZD=3.0,FC=0.6670;
+/* the 3D views are compressed along the species axis; the view from above is
+   not, so the whole geometry is built from the current width XWc            */
+const SQ3D=0.70;
+let XWc=XW,AX=-XW/2-0.03,TAX=XW/2+0.05;
+const view=document.getElementById('view');
+const stage=document.getElementById('stage');
+const plot3d=document.getElementById('plot3d');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(PR);
+plot3d.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const fog=new THREE.Fog(TH.bg,3,9);scene.fog=fog;
+const camera=new THREE.PerspectiveCamera(42,1.4,0.05,100);
+const orthoCam=new THREE.OrthographicCamera(-2,2,2,-2,0.01,200);
+orthoCam.position.set(0,8,0);orthoCam.up.set(0,0,-1);orthoCam.lookAt(0,0,0);
+
+const uniforms={
+  uScale:{value:0.013},uAmb:{value:TH.amb},uDif:{value:TH.dif},uRimK:{value:TH.rimK},
+  uRimCol:{value:new THREE.Vector3().fromArray(TH.rimCol)},
+  uFogColor:{value:new THREE.Color(TH.bg)},uFogNear:{value:3},uFogFar:{value:9},
+  uFogMul:{value:TH.fogMul},uPS:{value:6}
+};
+const FOG_F=`
+  float fogf(float vD){ float f=clamp((vD-uFogNear)/(uFogFar-uFogNear),0.0,1.0);
+    return f*f*(3.0-2.0*f); }`;
+
+const sphereMat=new THREE.ShaderMaterial({uniforms,
+  vertexShader:`
+    attribute vec3 iOffset; attribute vec3 iColor;
+    uniform float uScale;
+    varying vec3 vN; varying vec3 vC; varying float vD;
+    void main(){
+      vec3 p=position*uScale+iOffset;
+      vec4 mv=modelViewMatrix*vec4(p,1.0);
+      vN=normalize(normalMatrix*normal); vC=iColor; vD=-mv.z;
+      gl_Position=projectionMatrix*mv;
+    }`,
+  fragmentShader:`
+    precision highp float;
+    varying vec3 vN; varying vec3 vC; varying float vD;
+    uniform vec3 uFogColor; uniform vec3 uRimCol;
+    uniform float uFogNear; uniform float uFogFar; uniform float uFogMul;
+    uniform float uAmb; uniform float uDif; uniform float uRimK;
+    `+FOG_F+`
+    void main(){
+      vec3 n=normalize(vN);
+      float d=max(dot(n,normalize(vec3(0.35,0.72,0.85))),0.0);
+      float rim=pow(1.0-max(dot(n,vec3(0.0,0.0,1.0)),0.0),2.5);
+      vec3 c=vC*(uAmb+uDif*d);
+      c=mix(c,uRimCol,rim*uRimK);
+      c=mix(c,uFogColor,fogf(vD)*uFogMul);
+      gl_FragColor=vec4(c,1.0);
+    }`});
+
+const pointMat=new THREE.ShaderMaterial({uniforms,
+  vertexShader:`
+    attribute vec3 aCol;
+    uniform float uPS; uniform float uScale;
+    varying vec3 vC; varying float vD;
+    void main(){
+      vec4 mv=modelViewMatrix*vec4(position,1.0);
+      vD=-mv.z; vC=aCol;
+      gl_PointSize=max(1.0,uPS*uScale/max(vD,0.001));
+      gl_Position=projectionMatrix*mv;
+    }`,
+  fragmentShader:`
+    precision highp float;
+    varying vec3 vC; varying float vD;
+    uniform vec3 uFogColor; uniform vec3 uRimCol;
+    uniform float uFogNear; uniform float uFogFar; uniform float uFogMul;
+    uniform float uAmb; uniform float uDif; uniform float uRimK;
+    `+FOG_F+`
+    void main(){
+      vec2 q=gl_PointCoord-0.5; float r2=dot(q,q);
+      if(r2>0.25) discard;
+      float d=sqrt(max(0.0,0.25-r2))*2.0;
+      vec3 c=vC*(uAmb+uDif*(0.45+0.55*d));
+      c=mix(c,uRimCol,(1.0-d)*uRimK*0.7);
+      c=mix(c,uFogColor,fogf(vD)*uFogMul);
+      gl_FragColor=vec4(c,1.0);
+    }`});
+
+const geo=new THREE.InstancedBufferGeometry();
+let sphereRes=-1;
+function setSphereRes(n){
+  const res=n>25000?0:(n>9000?1:2);
+  if(res===sphereRes)return;
+  sphereRes=res;
+  const seg=[[6,4],[8,6],[12,9]][res];
+  const src=new THREE.SphereGeometry(1,seg[0],seg[1]);
+  geo.index=src.index;
+  geo.setAttribute('position',src.attributes.position);
+  geo.setAttribute('normal',src.attributes.normal);
+}
+setSphereRes(0);
+const mesh=new THREE.Mesh(geo,sphereMat);mesh.frustumCulled=false;scene.add(mesh);
+const ptGeo=new THREE.BufferGeometry();
+const points=new THREE.Points(ptGeo,pointMat);points.frustumCulled=false;points.visible=false;scene.add(points);
+
+/* the "updated site only" cloud */
+const actGeo=new THREE.BufferGeometry();
+const actPoints=new THREE.Points(actGeo,pointMat);actPoints.frustumCulled=false;actPoints.visible=false;
+scene.add(actPoints);
+const ACT_DRAW=200000;
+const actPosArr=new Float32Array(ACT_DRAW*3),actColArr=new Float32Array(ACT_DRAW*3);
+const actPosA=new THREE.BufferAttribute(actPosArr,3);actPosA.setUsage(THREE.DynamicDrawUsage);
+const actColA=new THREE.BufferAttribute(actColArr,3);actColA.setUsage(THREE.DynamicDrawUsage);
+actGeo.setAttribute('position',actPosA);actGeo.setAttribute('aCol',actColA);actGeo.setDrawRange(0,0);
+
+const lineMat=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:TH.lineOp,fog:true});
+const lineGeo=new THREE.BufferGeometry();
+const lineSeg=new THREE.LineSegments(lineGeo,lineMat);
+lineSeg.frustumCulled=false;lineSeg.visible=false;scene.add(lineSeg);
+let linePos,lineCol,lineStride=1;
+
+const boxLines=makeFat(scene,fatMain,12,TH.axis,0.45,AXIS_W*0.7);
+function buildBox(){const x0=-XWc/2,x1=XWc/2,y0=0,y1=YH,z0=-ZD/2,z1=ZD/2;
+ boxLines.setPairs(
+ [x0,y0,z0,x1,y0,z0, x1,y0,z0,x1,y0,z1, x1,y0,z1,x0,y0,z1, x0,y0,z1,x0,y0,z0,
+  x0,y1,z0,x1,y1,z0, x1,y1,z0,x1,y1,z1, x1,y1,z1,x0,y1,z1, x0,y1,z1,x0,y1,z0,
+  x0,y0,z0,x0,y1,z0, x1,y0,z0,x1,y1,z0, x1,y0,z1,x1,y1,z1, x0,y0,z1,x0,y1,z1],12);}
+buildBox();
+
+const planeMat=new THREE.MeshBasicMaterial({color:TH.plane,transparent:true,opacity:TH.planeOp,
+  side:THREE.DoubleSide,depthWrite:false});
+const planeMesh=new THREE.Mesh(new THREE.PlaneGeometry(XW,ZD),planeMat);
+planeMesh.rotation.x=-Math.PI/2;planeMesh.position.y=(1-FC)*YH;scene.add(planeMesh);
+const planeEdge=makeFat(scene,fatMain,4,TH.plane,0.5,AXIS_W*0.7);
+function buildPlane(){const x0=-XWc/2,x1=XWc/2,z0=-ZD/2,z1=ZD/2,y=barY(FC);
+ planeMesh.scale.x=XWc/XW;planeMesh.position.y=y;
+ planeEdge.setPairs([x0,y,z0,x1,y,z0, x1,y,z0,x1,y,z1, x1,y,z1,x0,y,z1, x0,y,z1,x0,y,z0],4);}
+/* compress the species axis by 30 % in the tilted views: the whole geometry,
+   dots included, is rebuilt at the new width, so the markers stay round and
+   the tick numbers stay unsqueezed - which a squeezed projection would not do */
+function setSquash(on){
+  XWc=XW*(on?SQ3D:1);
+  AX=-XWc/2-0.03;TAX=XWc/2+0.05;
+  buildBox();buildPlane();
+  labT.position.set(XWc/2+0.60,-0.05,0.0);
+  buildXAxis();dirty=true;
+}
+
+const AZ=ZD/2,NT=16,NX=6,NZT=5;
+const axPos=new Float32Array((1+NT)*2*3);
+const axLines=makeFat(scene,fatMain,1+NT,TH.axis,TH.axOp,AXIS_W);
+const xAxPos=new Float32Array((1+NX)*2*3);
+const xAxLines=makeFat(scene,fatMain,1+NX,TH.axis,TH.axOp,AXIS_W);
+
+const TAY=-0.05;
+const tAxPos=new Float32Array((2+NZT)*2*3);
+const tAxLines=makeFat(scene,fatMain,2+NZT,TH.axis,TH.axOp,AXIS_W);
+const AXARROW=[true];
+
+
+const labX=makeAxisText(scene,0.72,0.18);
+const labY=makeAxisText(scene,0.72,0.18),labT=makeAxisText(scene,0.72,0.18);
+labX.userData.dir.set(1,0,0); labY.userData.dir.set(0,1,0); labT.userData.dir.set(0,0,1);
+const labNew=makeLabel(scene,0.56,0.13);
+const tickLabels=[];for(let i=0;i<NT;i++){const s=makeLabel(scene,0.48,0.12);s.visible=false;tickLabels.push(s);}
+const xTickLabels=[];for(let i=0;i<NX;i++){const s=makeLabel(scene,0.40,0.10);s.visible=false;xTickLabels.push(s);}
+const zTickLabels=[];for(let i=0;i<NZT;i++){const s=makeLabel(scene,0.52,0.115);s.visible=false;zTickLabels.push(s);}
+labX.position.set(0,-0.34,ZD/2+0.30);
+labT.position.set(XWc/2+0.60,-0.05,0.0);
+
+
+/* the tilted view the 3D button opens at, one pair per plot */
+const D3_MAIN=[36,45], D3_OE=[-67,40];
+const Cam=makeCam(0,YH*0.5,0,5.55,D3_MAIN[0]*Math.PI/180,(90-D3_MAIN[1])*Math.PI/180);
+Cam.fitOn=true;Cam.fitDefault=true;
+Cam.rotLocked=()=>projFlat;
+attachControls(renderer.domElement,Cam);
+
+/* ---------------------------------------------------------------------
+   AUTOMATIC FRAMING  (used by all four combinations: space-time and
+   origination-extinction, each in 2D and in 3D)
+   A short list of points marks everything that must stay on screen: the
+   corners of the data box plus the anchors of the axis titles, the tick
+   numbers and the colour key.  In 3D the smallest camera distance whose
+   projection contains them all is found by bisection; in 2D the same
+   points fix the orthographic window.  What is left over is pushed to
+   the right, so the picture sits as close to the control column as it
+   can.  The figure therefore fits any window, phone to desktop.
+   ------------------------------------------------------------------- */
+const FITMAX=48;
+const FITP=new Float64Array(FITMAX*3);
+const _qf=new Float64Array(FITMAX),_qr=new Float64Array(FITMAX),_qu=new Float64Array(FITMAX);
+const FITM=1.03;                      /* leave 3 % of the frame as a margin */
+const VOFF=2000;                      /* virtual frame for the projection shift */
+let nFit=0;
+function addFit(x,y,z){if(nFit<FITMAX){const k=nFit*3;FITP[k]=x;FITP[k+1]=y;FITP[k+2]=z;nFit++;}}
+function buildFitPoints(flat){
+  nFit=0;
+  const hx=XWc/2,hz=ZD/2;
+  for(const sx of[-hx,hx])for(const sy of[0,YH])for(const sz of[-hz,hz])addFit(sx,sy,sz);
+  addFit(-hx,-0.25,hz+0.21); addFit(hx,-0.25,hz+0.21);        /* species numbers */
+  addFit(-0.44,-0.46,hz+0.35);addFit(0.44,-0.46,hz+0.35);     /* "species i"     */
+  addFit(hx+0.64,-0.07,-hz);  addFit(hx+0.64,-0.07,hz);       /* time numbers    */
+  addFit(hx+0.67,-0.07,zMap(1.16));                           /* "newest"        */
+  addFit(hx+0.78,-0.07,-0.40);addFit(hx+0.78,-0.07,0.40);     /* "time"          */
+  addFit(hx+0.09,-0.07,zMap(1.10));                           /* arrow tip       */
+  if(!flat){                             /* the value axis is edge-on from above */
+    addFit(-hx-0.62,0,hz);      addFit(-hx-0.62,YH,hz);
+    addFit(-hx-0.75,YH*0.5-0.38,hz); addFit(-hx-0.75,YH*0.5+0.38,hz);
+  }
+}
+function buildOeFitPoints(flat){
+  nFit=0;
+  for(const sx of[-OS,OS])for(const sy of[0,OH])for(const sz of[-OS,OS])addFit(sx,sy,sz);
+  addFit(-OS-0.15,0,OS+0.21); addFit(OS+0.15,0,OS+0.21);      /* origination numbers */
+  addFit(-0.42,-0.09,OS+0.39);addFit(0.42,-0.09,OS+0.39);     /* "origination time"  */
+  addFit(-OS-0.36,0,-OS);     addFit(-OS-0.36,0,OS);          /* extinction numbers  */
+  addFit(-OS-0.41,-0.09,-0.42);addFit(-OS-0.41,-0.09,0.42);   /* "extinction time"   */
+  addFit(OS*0.80+0.14,OH*0.30-0.34,OS*0.62);                  /* colour key          */
+  addFit(OS*0.80+0.14,OH*0.30+0.34,OS*0.62);
+}
+/* orthographic window: both flat cameras look straight down with up = -z,
+   so screen x = world x and screen y = -world z                          */
+function fitOrthoTo(oc,A,zoom,alignRight){
+  let x0=1e9,x1=-1e9,u0=1e9,u1=-1e9;
+  for(let i=0;i<nFit;i++){
+    const x=FITP[i*3],u=-FITP[i*3+2];
+    if(x<x0)x0=x; if(x>x1)x1=x; if(u<u0)u0=u; if(u>u1)u1=u;
+  }
+  A=Math.max(0.05,A);
+  let hw=(x1-x0)*0.5*FITM,hh=(u1-u0)*0.5*FITM;
+  if(hw/hh>A)hh=hw/A; else hw=hh*A;
+  const z=zoom||1; hw*=z; hh*=z;
+  const pad=(x1-x0)*0.5*(FITM-1);
+  const cx=alignRight?(x1+pad-hw):(x0+x1)*0.5, cu=(u0+u1)*0.5;
+  oc.left=cx-hw;oc.right=cx+hw;oc.top=cu+hh;oc.bottom=cu-hh;
+  oc.updateProjectionMatrix();
+}
+/* smallest distance that keeps every marker inside the frustum */
+function fitPerspTo(C,cam,alignRight){
+  const tanV=Math.tan(cam.fov*Math.PI/360),tanH=tanV*Math.max(0.05,cam.aspect);
+  const b=C.basis(C.theta,Math.max(0.02,Math.min(Math.PI-0.02,C.phi)),_B);
+  const ax=C.target.x,ay=C.target.y,az=C.target.z;
+  const qf=_qf,qr=_qr,qu=_qu,n=nFit;
+  for(let i=0;i<n;i++){
+    const x=FITP[i*3]-ax,y=FITP[i*3+1]-ay,z=FITP[i*3+2]-az;
+    qf[i]=x*b.fx+y*b.fy+z*b.fz;
+    qr[i]=x*b.rx+y*b.ry+z*b.rz;
+    qu[i]=x*b.ux+y*b.uy+z*b.uz;
+  }
+  const ext=[0,0,0,0];
+  function spread(d,out){
+    let r0=1e9,r1=-1e9,u0=1e9,u1=-1e9;
+    for(let i=0;i<n;i++){
+      const dep=d-qf[i];
+      if(dep<0.15)return false;
+      const rr=qr[i]/(dep*tanH),uu=qu[i]/(dep*tanV);
+      if(rr<r0)r0=rr; if(rr>r1)r1=rr; if(uu<u0)u0=uu; if(uu>u1)u1=uu;
+    }
+    out[0]=r0;out[1]=r1;out[2]=u0;out[3]=u1;return true;
+  }
+  const fits=d=>spread(d,ext)&&(ext[1]-ext[0])*FITM<=2&&(ext[3]-ext[2])*FITM<=2;
+  let lo=0.4,hi=400;
+  for(let g=0;g<6&&!fits(hi);g++)hi*=2;                      /* safety net */
+  for(let it=0;it<28;it++){const mid=0.5*(lo+hi);if(fits(mid))hi=mid;else lo=mid;}
+  const d=Math.max(0.6,Math.min(4000,hi*(C.zoomF||1)));
+  C.dDist=d;
+  /* The leftover slack is taken up by shifting the projection itself.  Moving
+     the camera target instead would NOT be a plain screen shift - points at
+     different depths would slide by different amounts.                      */
+  if(!spread(d,ext)){cam.clearViewOffset();return;}
+  const sx=alignRight?(ext[1]-1+(FITM-1)):0.5*(ext[0]+ext[1]);
+  const sy=0.5*(ext[2]+ext[3]);
+  const cx=Math.max(-1,Math.min(1,sx)),cy=Math.max(-1,Math.min(1,sy));
+  cam.setViewOffset(VOFF,VOFF,cx*VOFF*0.5,-cy*VOFF*0.5,VOFF,VOFF);
+}
+let viewOffOn=false,oeOffOn=false;
+
+/* =====================================================================
+   6.  MAIN PLOT BUFFERS + REBUILD
+   ===================================================================== */
+let L=120,CAP=100,recEvery=50,allMode=false,actOnly=false,projFlat=true;
+let stageW=1,stageH=1;
+let viewBlend=0,viewTarget=0,logBlend=0,logTarget=0;
+let ageAxisMax=1,dirty=true,usePoints=false,zT0=0,zT1=1,dotScale=1.25;
+const dotByView={'3d':125,act:75,oe:125};
+let winFrac=1,winTime=0,winTouched=false;
+let offArr,colArr,offAttr,colAttr,ptPos,ptCol,baseDot=0.01;
+
+function allocBuffers(){
+  const N=CAP*L;
+  usePoints=N>40000;
+  setSphereRes(N);
+  offArr=new Float32Array(N*3);colArr=new Float32Array(N*3);
+  offAttr=new THREE.InstancedBufferAttribute(offArr,3);offAttr.setUsage(THREE.DynamicDrawUsage);
+  colAttr=new THREE.InstancedBufferAttribute(colArr,3);colAttr.setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('iOffset',offAttr);geo.setAttribute('iColor',colAttr);geo.instanceCount=0;
+  ptPos=new THREE.BufferAttribute(offArr,3);ptPos.setUsage(THREE.DynamicDrawUsage);
+  ptCol=new THREE.BufferAttribute(colArr,3);ptCol.setUsage(THREE.DynamicDrawUsage);
+  ptGeo.setAttribute('position',ptPos);ptGeo.setAttribute('aCol',ptCol);ptGeo.setDrawRange(0,0);
+  applyVisibility();
+  /* profile lines: if they do not all fit, subsample slices UNIFORMLY
+     (drawing only the newest ones produced a visible seam)            */
+  const perSlice=Math.max(1,L-1)*2;
+  lineStride=Math.max(1,Math.ceil(CAP*perSlice/LINE_BUDGET));
+  const SEG=Math.ceil(CAP/lineStride)*perSlice;
+  linePos=new Float32Array(SEG*3);lineCol=new Float32Array(SEG*3);
+  const pa=new THREE.BufferAttribute(linePos,3);pa.setUsage(THREE.DynamicDrawUsage);
+  const ca=new THREE.BufferAttribute(lineCol,3);ca.setUsage(THREE.DynamicDrawUsage);
+  lineGeo.setAttribute('position',pa);lineGeo.setAttribute('color',ca);lineGeo.setDrawRange(0,0);
+}
+function applyVisibility(){
+  mesh.visible=!actOnly&&!usePoints;
+  points.visible=!actOnly&&usePoints;
+  lineSeg.visible=!actOnly&&document.getElementById('lines').checked;
+  actPoints.visible=actOnly;
+  /* seen from straight above the f_c plane would simply tint the whole picture */
+  planeMesh.visible=planeEdge.visible=
+    !actOnly&&!projFlat&&viewTarget===0&&document.getElementById('fcp').checked;
+}
+
+function barY(b){return (flipY?b:1-b)*YH;}
+function zMap(u){return flipT?ZD/2-u*ZD:-ZD/2+u*ZD;}
+function ageBounds(){
+  if(Sim.mu>0) return {lo:1,hi:Math.max(Sim.maxAgeEver,10)};
+  return {lo:0,hi:ageAxisMax};
+}
+function ageU(a,lo,hi){                    /* 1 at the young end, 0 at the old end */
+  const aa=Math.max(a,lo);
+  const lin=1-Math.min(1,(aa-lo)/Math.max(hi-lo,1e-300));
+  const lg=(lo>0)?1-Math.min(1,Math.log(aa/lo)/Math.max(Math.log(hi/lo),1e-300))
+                 :1-Math.min(1,Math.log(1+aa)/Math.log(1+hi));
+  return lin*(1-logBlend)+lg*logBlend;
+}
+function ageY(a,lo,hi){
+  const aa=Math.max(a,lo);
+  const lin=1-Math.min(1,(aa-lo)/Math.max(hi-lo,1e-300));
+  const lg=(lo>0)?1-Math.min(1,Math.log(aa/lo)/Math.max(Math.log(hi/lo),1e-300))
+                 :1-Math.min(1,Math.log(1+aa)/Math.log(1+hi));
+  const u=lin*(1-logBlend)+lg*logBlend;     /* 1 at the young end */
+  return (flipY?1-u:u)*YH;
+}
+const TICK_CANDS=[1,2,5,10,20,25,50,100,200,250,500,1000];
+function speciesTicks(){
+  let st=TICK_CANDS[TICK_CANDS.length-1];
+  for(const c of TICK_CANDS){if(L/c<=NX-1){st=c;break;}}
+  const set=new Set([1,L]);
+  for(let v=st;v<L;v+=st)if(v>1)set.add(v);
+  let u=Array.from(set).sort((a,b)=>a-b);
+  while(u.length>NX)u.splice(u.length-2,1);
+  return u;
+}
+
+/* species that are still alive have no final age yet: show their current one,
+   constant over every slice they appear in                                   */
+function refreshLiving(T){
+  const A=Hist.A,TS=Hist.TS;
+  for(let i=0;i<L;i++){
+    const o=Sim.tLast[i],life=Sim.t-o;
+    for(let s=T-1;s>=0;s--){const sl=Hist.slot(s);if(TS[sl]<o)break;A[sl*L+i]=life;}
+  }
+}
+
+function rebuild(){
+  const T=Hist.count;
+  if(T===0){geo.instanceCount=0;ptGeo.setDrawRange(0,0);lineGeo.setDrawRange(0,0);
+            actGeo.setDrawRange(0,0);return;}
+  if(actOnly){ rebuildAct(); updateAxes(ageBounds()); return; }
+
+  refreshLiving(T);
+  if(viewBlend>0.001&&Sim.mu<=0){
+    let maxA=0;
+    for(let s=0;s<T;s++){const o=Hist.slot(s)*L;
+      for(let i=0;i<L;i++){const a=Hist.A[o+i];if(a>maxA)maxA=a;}}
+    if(maxA>ageAxisMax||maxA<ageAxisMax/1.6) ageAxisMax=niceCeil(Math.max(maxA,1));
+  }
+  const AB=ageBounds();
+
+  const dx=XWc/Math.max(1,L-1);
+  zT0=Hist.TS[Hist.slot(0)]; zT1=Hist.TS[Hist.slot(T-1)];
+  const zSpan=Math.max(zT1-zT0,1e-300);
+  /* markers must not be fatter than the gap between slices, or many slices
+     fuse into an opaque slab and only the front face stays visible        */
+  const dzW=(T>1)?ZD/(T-1):ZD;
+  baseDot=0.5*Math.max(0.0016,Math.min(0.030,Math.min(0.55*XWc/L,0.85*dzW)));
+  uniforms.uScale.value=baseDot*dotScale;
+  const lsc=TH.lineScale,dim=TH.dim;
+  let k=0,kc=0,lp=0,lc2=0,nLineSlices=0;
+  const tmp=[0,0,0];
+
+  for(let s=0;s<T;s++){
+    const o=Hist.slot(s)*L;
+    const z=(T>1)?zMap((Hist.TS[Hist.slot(s)]-zT0)/zSpan):zMap(1);
+    const doLine=((T-1-s)%lineStride===0);
+    if(doLine) nLineSlices++;
+    let pX=0,pY=0,pR=0,pG=0,pB=0;
+    for(let i=0;i<L;i++){
+      const b=Hist.B[o+i],a=Hist.A[o+i];
+      const yB=barY(b),yA=ageY(a,AB.lo,AB.hi);
+      const y=yB+(yA-yB)*viewBlend;
+      const x=-XWc/2+i*dx;
+      offArr[k]=x;offArr[k+1]=y;offArr[k+2]=z;k+=3;
+      /* colour tracks whatever the vertical axis shows */
+      const cval=b+((1-ageU(a,AB.lo,AB.hi))-b)*viewBlend;
+      cmapV(cval,colArr,kc,0);
+      const cr=colArr[kc],cg=colArr[kc+1],cb=colArr[kc+2];kc+=3;
+      if(doLine&&i>0){
+        linePos[lp]=pX;linePos[lp+1]=pY;linePos[lp+2]=z;lp+=3;
+        linePos[lp]=x;linePos[lp+1]=y;linePos[lp+2]=z;lp+=3;
+        lineCol[lc2]=pR*lsc;lineCol[lc2+1]=pG*lsc;lineCol[lc2+2]=pB*lsc;lc2+=3;
+        lineCol[lc2]=cr*lsc;lineCol[lc2+1]=cg*lsc;lineCol[lc2+2]=cb*lsc;lc2+=3;
+      }
+      pX=x;pY=y;pR=cr;pG=cg;pB=cb;
+    }
+  }
+  const N=T*L;
+  const rng={offset:0,count:N*3};
+  if(usePoints){ptGeo.setDrawRange(0,N);
+    ptPos.needsUpdate=true;ptCol.needsUpdate=true;ptPos.updateRange=rng;ptCol.updateRange=rng;}
+  else{geo.instanceCount=N;
+    offAttr.needsUpdate=true;colAttr.needsUpdate=true;offAttr.updateRange=rng;colAttr.updateRange=rng;}
+  lineGeo.attributes.position.needsUpdate=true;
+  lineGeo.attributes.color.needsUpdate=true;
+  lineGeo.setDrawRange(0,nLineSlices*Math.max(0,L-1)*2);
+  updateAxes(AB);
+}
+
+/* only the site that fired, as a function of time */
+function rebuildAct(){
+  const t0=Hist.t0(),t1=Math.max(Hist.lastT,t0+1e-12);
+  zT0=t0;zT1=t1;
+  const dx=XWc/Math.max(1,L-1),inv=1/(t1-t0);
+  let n=0,k=0;
+  for(let q=Act.n-1;q>=0&&n<ACT_DRAW;q--){
+    const j=Act.idx(q),tt=Act.t[j];
+    if(tt<t0) break;
+    const u=(tt-t0)*inv;
+    actPosArr[k]=-XWc/2+Act.s[j]*dx;
+    actPosArr[k+1]=barY(Act.b[j]);
+    actPosArr[k+2]=zMap(Math.min(1,Math.max(0,u)));
+    cmapV(Act.b[j],actColArr,k,0);
+    k+=3;n++;
+  }
+  actGeo.setDrawRange(0,n);
+  actPosA.needsUpdate=true;actColA.needsUpdate=true;
+  setLegend('B',0,0.5,1);
+}
+/* the colour bar: name of the quantity plus its low, middle and high value */
+function setLegend(name,lo,mid,hi){
+  const e=document.getElementById('legName');
+  if(e.textContent!==name)e.textContent=name;
+  document.getElementById('legLo').textContent=fmtN(lo);
+  document.getElementById('legMid').textContent=fmtN(mid);
+  document.getElementById('legHi').textContent=fmtN(hi);
+}
+
+function updateAxes(AB){
+  const p=axPos;
+  const bMode=(viewBlend<0.5||actOnly);
+  const yLo=bMode?barY(0):ageY(AB.lo,AB.lo,AB.hi);
+  const yHi=bMode?barY(1):ageY(AB.hi,AB.lo,AB.hi);
+  p[0]=AX;p[1]=yLo;p[2]=AZ;p[3]=AX;p[4]=yHi;p[5]=AZ;   /* points at growing value */
+  /* clear every slot first: B ticks label only 0, 0.5 and 1, so the unused
+     slots would otherwise keep numbers left over from the age axis        */
+  for(let j=0;j<NT;j++) tickLabels[j].visible=false;
+  let n=0;
+  const push=(y,long)=>{if(n>=NT)return -1;
+    const o=6+n*6,w=long?0.075:0.045;
+    p[o]=AX;p[o+1]=y;p[o+2]=AZ;p[o+3]=AX-w;p[o+4]=y;p[o+5]=AZ;return n++;};
+  const place=(idx,y,txt)=>{const s=tickLabels[idx];s.visible=axesOn&&!projFlat;
+    s.position.set(AX-0.33,y,AZ);s.userData.upd(txt,TH.txt,false);};
+
+  if(bMode){
+    for(let j=0;j<=10;j++){const b=j/10,y=barY(b);
+      const idx=push(y,j%5===0);
+      if(idx>=0&&j%5===0)place(idx,y,b.toFixed(1));}
+    labY.userData.upd('B',TH.txt,true);
+    setLegend('B',0,0.5,1);
+  }else{
+    const lo=AB.lo,hi=AB.hi;
+    if(logBlend>0.5){
+      if(lo<=0){const y0=ageY(0,lo,hi);const i0=push(y0,true);if(i0>=0)place(i0,y0,'0');}
+      const e1=Math.round(Math.log10(hi)),e0=(lo>0)?0:Math.max(0,e1-6);
+      for(let e=e0;e<=e1;e++){
+        const a=Math.pow(10,e);if(a>hi*1.0001)break;
+        const y=ageY(a,lo,hi);const idx=push(y,true);if(idx>=0)place(idx,y,fmtN(a));
+        if(n>=NT)break;
+      }
+      if(n<NT){const y=ageY(hi,lo,hi);const idx=push(y,true);if(idx>=0)place(idx,y,fmtN(hi));}
+    }else{
+      const st=niceStep((hi-lo)/6);
+      for(let j=0;j<=NT;j++){const a=lo+j*st;if(a>hi*1.0001)break;
+        const y=ageY(a,lo,hi);const idx=push(y,true);if(idx>=0)place(idx,y,fmtN(a));}
+    }
+    labY.userData.upd(logBlend>0.5?'age reached (log)':'age reached',TH.txt,true);
+    /* the middle of the bar is where the colour map is half way through, so it
+       is the one number that tells the linear and the log calibration apart   */
+    const mid=(logBlend>0.5)
+      ? ((lo>0)?Math.sqrt(lo*hi):Math.sqrt(1+hi)-1)
+      : lo+(hi-lo)*0.5;
+    setLegend(logBlend>0.5?'log age':'age',lo,mid,hi);
+  }
+  for(let j=n;j<NT;j++){tickLabels[j].visible=false;const o=6+j*6;for(let q=0;q<6;q++)p[o+q]=AX;}
+  axLines.setPairs(axPos,1+n,AXARROW);
+  axLines.visible=axesOn&&!projFlat;      /* a vertical axis seen from above is a dot */
+  labY.position.set(AX-0.60,YH*0.5,AZ);
+
+  /* numbered ticks along the time axis */
+  const t0=zT0,t1=Math.max(zT1,t0+1e-12);
+  const st=niceStep((t1-t0)/(NZT-1));
+  /* the time axis itself, pointing at the newest slice */
+  const zA=zMap(-0.02), zB=zMap(1.075);
+  tAxPos[0]=TAX;tAxPos[1]=TAY;tAxPos[2]=zA; tAxPos[3]=TAX;tAxPos[4]=TAY;tAxPos[5]=zB;
+  tAxPos[6]=TAX-0.05;tAxPos[7]=TAY;tAxPos[8]=zA; tAxPos[9]=TAX+0.05;tAxPos[10]=TAY;tAxPos[11]=zA;
+  labNew.position.set(TAX+0.30,TAY,zMap(1.16));
+  let m=0;
+  for(let v=Math.ceil(t0/st)*st;v<=t1&&m<NZT;v+=st,m++){
+    const z=zMap((v-t0)/(t1-t0)),o=12+m*6;
+    tAxPos[o]=TAX;tAxPos[o+1]=TAY;tAxPos[o+2]=z;
+    tAxPos[o+3]=TAX+0.07;tAxPos[o+4]=TAY;tAxPos[o+5]=z;
+    const s=zTickLabels[m];s.visible=axesOn;
+    s.position.set(TAX+0.30,TAY,z);s.userData.upd(fmtAxis(v,st),TH.txt,false);
+  }
+  for(let j=m;j<NZT;j++){zTickLabels[j].visible=false;
+    const o=12+j*6;for(let r=0;r<6;r++)tAxPos[o+r]=TAX;}
+  tAxLines.setPairs(tAxPos,2+m,AXARROW);
+
+  labX.visible=labT.visible=labNew.visible=axesOn;
+  labY.visible=axesOn&&!projFlat;                 /* edge-on from above */
+  labX.userData.upd('species  i',TH.txt,true);
+  labT.userData.upd('time',TH.txt,true);
+  labNew.userData.upd('newest',TH.txt,true);
+}
+
+function buildXAxis(){
+  const q=xAxPos,y=-0.02,z=ZD/2+0.02;
+  q[0]=-XWc/2;q[1]=y;q[2]=z;q[3]=XWc/2;q[4]=y;q[5]=z;
+  const dx=XWc/Math.max(1,L-1),tk=speciesTicks();
+  for(let j=0;j<NX;j++){
+    const o=6+j*6,s=xTickLabels[j];
+    if(j>=tk.length){s.visible=false;for(let r=0;r<6;r++)q[o+r]=-XWc/2;continue;}
+    const x=-XWc/2+(tk[j]-1)*dx;
+    q[o]=x;q[o+1]=y;q[o+2]=z;q[o+3]=x;q[o+4]=y-0.07;q[o+5]=z+0.05;
+    s.visible=axesOn;s.position.set(x,-0.17,z+0.13);s.userData.upd(String(tk[j]),TH.txt,false);
+  }
+  xAxLines.setPairs(xAxPos,1+tk.length,AXARROW);
+}
+
+/* =====================================================================
+   7.  ORIGINATION – EXTINCTION 3D HISTOGRAM
+   ===================================================================== */
+const oeStage=document.getElementById('oeStage');
+const oeRenderer=new THREE.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true});
+oeRenderer.setPixelRatio(PR);
+oeStage.appendChild(oeRenderer.domElement);
+const oeScene=new THREE.Scene();
+const OS=1.0,OH=0.85;
+const oeCamera=new THREE.PerspectiveCamera(38,1,0.02,100);
+const oeOrthoCam=new THREE.OrthographicCamera(-1.62,1.62,1.62,-1.62,0.01,50);
+oeOrthoCam.position.set(0,4,0);oeOrthoCam.up.set(0,0,-1);oeOrthoCam.lookAt(0,0,0);
+const oeCam=makeCam(0,OH*0.5,0,3.73,D3_OE[0]*Math.PI/180,(90-D3_OE[1])*Math.PI/180);
+oeCam.fitOn=true;oeCam.fitDefault=true;
+oeCam.rotLocked=()=>projFlat;
+attachControls(oeRenderer.domElement,oeCam);
+
+const oeUni={
+  uAmb:{value:TH.amb},uDif:{value:TH.dif},uRimK:{value:TH.rimK},
+  uRimCol:{value:new THREE.Vector3().fromArray(TH.rimCol)},uFlat:{value:0}
+};
+const barMat=new THREE.ShaderMaterial({uniforms:oeUni,
+  vertexShader:`
+    attribute vec3 iPos; attribute vec2 iSize; attribute vec3 iColor;
+    varying vec3 vN; varying vec3 vC;
+    void main(){
+      vec3 p=vec3(position.x*iSize.x+iPos.x, position.y*iSize.y, position.z*iSize.x+iPos.z);
+      vN=normalize(normalMatrix*normal); vC=iColor;
+      gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);
+    }`,
+  fragmentShader:`
+    precision highp float;
+    varying vec3 vN; varying vec3 vC;
+    uniform vec3 uRimCol; uniform float uAmb; uniform float uDif; uniform float uRimK; uniform float uFlat;
+    void main(){
+      vec3 n=normalize(vN);
+      float d=max(dot(n,normalize(vec3(0.35,0.80,0.50))),0.0);
+      vec3 lit=vC*(uAmb+0.35+uDif*d*0.8);
+      gl_FragColor=vec4(mix(lit,vC,uFlat),1.0);
+    }`});
+
+const barGeo=new THREE.InstancedBufferGeometry();
+(function(){
+  const src=new THREE.BoxGeometry(1,1,1);src.translate(0,0.5,0);
+  barGeo.index=src.index;
+  barGeo.setAttribute('position',src.attributes.position);
+  barGeo.setAttribute('normal',src.attributes.normal);
+})();
+const BMAX=NBIN*NBIN;
+const bPos=new Float32Array(BMAX*3),bSize=new Float32Array(BMAX*2),bCol=new Float32Array(BMAX*3);
+const bPosA=new THREE.InstancedBufferAttribute(bPos,3);bPosA.setUsage(THREE.DynamicDrawUsage);
+const bSizeA=new THREE.InstancedBufferAttribute(bSize,2);bSizeA.setUsage(THREE.DynamicDrawUsage);
+const bColA=new THREE.InstancedBufferAttribute(bCol,3);bColA.setUsage(THREE.DynamicDrawUsage);
+barGeo.setAttribute('iPos',bPosA);barGeo.setAttribute('iSize',bSizeA);barGeo.setAttribute('iColor',bColA);
+barGeo.instanceCount=0;
+const bars=new THREE.Mesh(barGeo,barMat);bars.frustumCulled=false;oeScene.add(bars);
+
+const oeFrame=makeFat(oeScene,fatOE,5,TH.axis,TH.axOp,AXIS_W);
+oeFrame.setPairs([
+  -OS,0,OS,  OS,0,OS,        /* origination time, growing to the right */
+  -OS,0,OS, -OS,0,-OS,       /* extinction time, growing away from the viewer */
+  -OS,0,OS, -OS,OH,OS,       /* event count, growing upward */
+   OS,0,OS,  OS,0,-OS,
+  -OS,0,-OS, OS,0,-OS],5,[true,true,true,false,false]);
+const oeDiag=makeFat(oeScene,fatOE,1,TH.diag,TH.diagOp,AXIS_W*0.8);
+oeDiag.setPairs([-OS,0.002,OS, OS,0.002,-OS],1);
+
+const NOT=5;
+const oeTickPos=new Float32Array(NOT*2*2*3);
+const oeTicks=makeFat(oeScene,fatOE,NOT*2,TH.axis,TH.axOp,AXIS_W);
+const oeXLabs=[],oeZLabs=[],oeYLabs=[];
+for(let i=0;i<NOT;i++){oeXLabs.push(makeLabel(oeScene,0.30,0.075));oeZLabs.push(makeLabel(oeScene,0.30,0.075));}
+for(let i=0;i<4;i++){const l=makeLabel(oeScene,0.30,0.075);l.visible=false;oeYLabs.push(l);}
+const oeLabX=makeAxisText(oeScene,0.80,0.16);
+const oeLabZ=makeAxisText(oeScene,0.80,0.16),oeLabY=makeAxisText(oeScene,0.62,0.13);
+oeLabX.userData.dir.set(1,0,0); oeLabZ.userData.dir.set(0,0,-1); oeLabY.userData.dir.set(0,1,0);
+oeLabX.position.set(0,0,OS+0.30);
+oeLabZ.position.set(-OS-0.32,0,0);
+oeLabY.position.set(-OS-0.22,OH*0.55,OS+0.10);
+
+/* colour key, drawn into the scene so it sits inside the plot (and in the PNG) */
+const barCan=document.createElement('canvas');barCan.width=192;barCan.height=512;
+const barTex=new THREE.CanvasTexture(barCan);
+const barSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:barTex,transparent:true,
+  depthTest:false,depthWrite:false}));
+barSprite.scale.set(0.26,0.66,1);
+barSprite.position.set(OS*0.80,OH*0.30,OS*0.62);
+barSprite.renderOrder=14;
+oeScene.add(barSprite);
+let barKey='';
+function drawColourBar(){
+  const key=SCHEME+'|'+TH.txt+'|'+oeMaxCount+'|'+oeCountLog;
+  if(key===barKey)return; barKey=key;
+  const g=barCan.getContext('2d'),W=barCan.width,H=barCan.height;
+  g.clearRect(0,0,W,H);
+  const bx=10,bw=46,by=44,bh=H-70;
+  for(let i=0;i<bh;i++){
+    const c=schemeRGB(1-i/(bh-1));
+    g.fillStyle='rgb('+Math.round(c[0]*255)+','+Math.round(c[1]*255)+','+Math.round(c[2]*255)+')';
+    g.fillRect(bx,by+i,bw,1);
+  }
+  g.strokeStyle=TH.txt;g.lineWidth=2;g.strokeRect(bx,by,bw,bh);
+  g.fillStyle=TH.txt;g.textAlign='left';g.textBaseline='middle';
+  g.font='700 30px -apple-system,Helvetica,Arial,sans-serif';
+  const vals=[oeMaxCount,Math.max(1,Math.round(oeCountLog?Math.sqrt(oeMaxCount):oeMaxCount/2)),1];
+  const fr=[1,oeCountLog?Math.log(1+vals[1])/Math.log(1+oeMaxCount):vals[1]/oeMaxCount,
+            oeCountLog?Math.log(2)/Math.log(1+oeMaxCount):1/oeMaxCount];
+  for(let k=0;k<3;k++){
+    const y=by+bh-fr[k]*bh;
+    g.beginPath();g.moveTo(bx+bw,y);g.lineTo(bx+bw+8,y);g.stroke();
+    g.fillText(String(vals[k]),bx+bw+13,y);
+  }
+  g.textAlign='left';g.font='700 26px -apple-system,Helvetica,Arial,sans-serif';
+  g.fillText('events/bin',2,20);
+  barTex.needsUpdate=true;
+}
+const binBuf=new Int32Array(BMAX);
+let oeMaxCount=1;
+
+/* Mean species lifetime.  Three sites are replaced per update, so each of the L
+   sites turns over every L/3 updates; in Gillespie time that is L/3 times the
+   mean step t/step.  Exact in expectation, and it needs no bookkeeping.      */
+function meanLife(){
+  const dt=(Sim.step>0)?Sim.t/Sim.step:1;
+  return Math.max(L*dt/3,1e-300);
+}
+/* Choosing the window.
+   In COUNT TIME the marginal is an exact identity: every update produces three
+   events, so a bin of the extinction axis holds exactly 3 x (bin width) of
+   them wherever it sits, and of those exactly L - the species in flight - were
+   born in an earlier bin.  Bin the whole run and that is L = 100 against
+   3 x 3090 = 9270, i.e. 1 % off the diagonal: measured 0.7 %.  Nothing can
+   make the diagonal itself interesting there, but one mean lifetime per bin
+   brings the off-diagonal band up to 12 % of the events, so that is the
+   default until the slider is touched.
+   On the GILLESPIE CLOCK the rate is not uniform at all - waiting times run
+   over e^(1/mu) - so the full range is the informative one: measured spread of
+   the per-bin totals 568 %, i.e. real punctuation, voids and bursts.  Keep it. */
+let oeAuto=true;
+function oeAutoOn(){return oeAuto&&Sim.mu<=0;}
+function oeStartTime(){
+  const tmin=OE.n?OE.oldest():0,tnow=Sim.t;
+  const full=Math.max(tnow-tmin,1e-12);
+  let W;
+  if(oeAutoOn()){
+    W=Math.max(Math.min(NBIN*meanLife(),full),full*1e-3);
+    /* keep the slider where the window actually is, so it stays meaningful */
+    const p=Math.max(0,Math.min(100,Math.round(100*(1+Math.log10(W/full)/3))));
+    const sl=document.getElementById('oesl');
+    if(sl.value!==String(p))sl.value=p;
+  }else{
+    const p=parseInt(document.getElementById('oesl').value,10)/100;
+    W=full*Math.pow(10,-3*(1-p));
+  }
+  return tnow-W;
+}
+function cnorm(c){
+  if(c<=0)return 0;
+  return oeCountLog?Math.log(1+c)/Math.log(1+oeMaxCount):c/oeMaxCount;
+}
+function buildOE(){
+  const t0=oeStartTime(),t1=Math.max(Sim.t,t0+1e-12);
+  binBuf.fill(0);
+  let mx=0,shown=0;
+  const inv=1/(t1-t0);
+  for(let q=0;q<OE.n;q++){
+    const j=OE.idx(q),o=OE.o[j],e=OE.e[j];
+    if(e<t0||o<t0)continue;
+    const bx=Math.floor((o-t0)*inv*NBIN),by=Math.floor((e-t0)*inv*NBIN);
+    if(bx<0||bx>=NBIN||by<0||by>=NBIN)continue;
+    const c=++binBuf[by*NBIN+bx];if(c>mx)mx=c;shown++;
+  }
+  oeMaxCount=Math.max(mx,1);
+
+  const cell=2*OS/NBIN,dim=TH.dim;
+  let k=0,ks=0,kc=0,cnt=0;
+  for(let by=0;by<NBIN;by++)for(let bx=0;bx<NBIN;bx++){
+    const c=binBuf[by*NBIN+bx];if(!c)continue;
+    const nrm=cnorm(c);
+    bPos[k]=-OS+(bx+0.5)*cell;bPos[k+1]=0;bPos[k+2]=OS-(by+0.5)*cell;k+=3;
+    bSize[ks]=cell*0.96;bSize[ks+1]=Math.max(nrm*OH,cell*0.3);ks+=2;
+    cmap(nrm,bCol,kc,dim);kc+=3;
+    cnt++;
+  }
+  barGeo.instanceCount=cnt;
+  bPosA.needsUpdate=true;bSizeA.needsUpdate=true;bColA.needsUpdate=true;
+
+  const st=niceStep((t1-t0)/(NOT-1));
+  let n=0;
+  for(let v=Math.ceil(t0/st)*st;v<=t1&&n<NOT;v+=st,n++){
+    const u=(v-t0)*inv,x=-OS+u*2*OS,z=OS-u*2*OS,o=n*12;
+    oeTickPos[o]=x;oeTickPos[o+1]=0;oeTickPos[o+2]=OS;
+    oeTickPos[o+3]=x;oeTickPos[o+4]=0;oeTickPos[o+5]=OS+0.06;
+    oeTickPos[o+6]=-OS;oeTickPos[o+7]=0;oeTickPos[o+8]=z;
+    oeTickPos[o+9]=-OS-0.06;oeTickPos[o+10]=0;oeTickPos[o+11]=z;
+    oeXLabs[n].visible=axesOn;oeXLabs[n].position.set(x,0,OS+0.16);
+    oeXLabs[n].userData.upd(fmtAxis(v,st),TH.txt,false);
+    oeZLabs[n].visible=axesOn;oeZLabs[n].position.set(-OS-0.20,0,z);
+    oeZLabs[n].userData.upd(fmtAxis(v,st),TH.txt,false);
+  }
+  for(let j=n;j<NOT;j++){
+    oeXLabs[j].visible=false;oeZLabs[j].visible=false;
+    const o=j*12;for(let r=0;r<12;r++)oeTickPos[o+r]=-OS;
+  }
+  oeTicks.setPairs(oeTickPos,n*2);
+  /* no numbers on the count axis: the colour key already gives that scale */
+  for(let k=0;k<4;k++)oeYLabs[k].visible=false;
+  oeLabX.userData.upd('origination time',TH.txt,true);
+  oeLabZ.userData.upd('extinction time',TH.txt,true);
+  oeFrame.setStyle(TH.axis,TH.axOp);oeTicks.setStyle(TH.axis,TH.axOp);
+  oeDiag.setStyle(TH.diag,TH.diagOp);
+  oeLabY.visible=false;
+  oeLabX.visible=oeLabZ.visible=axesOn;
+
+  drawColourBar();
+  barSprite.visible=axesOn;
+  document.getElementById('oev').textContent=fmtN(t0);
+  document.getElementById('oedt').textContent=fmtN((t1-t0)/NBIN);
+}
+
+/* =====================================================================
+   8.  UI
+   ===================================================================== */
+const $=id=>document.getElementById(id);
+let playing=true,speed=10,accum=0,oeCountLog=true,oeFlat=false;
+let curView='3d',selVar='B',axesOn=true,flipY=false,flipT=false;
+
+function muFromSlider(p){
+  return MU_OPTS[Math.max(0,Math.min(MU_OPTS.length-1,p|0))];
+}
+function fmtMu(m){
+  if(m===0)return '0';
+  return (m<0.01)?m.toFixed(3):(m<0.1?m.toFixed(3):m.toFixed(2));
+}
+function speedFromSlider(p){return Math.max(1,Math.round(Math.pow(10,(p/100)*2.4)));}
+
+function configTimeControls(){
+  const r=$('rsl');
+  if(Sim.mu>0){
+    $('rslLab').textContent='total time window';
+    if(r.getAttribute('data-mode')!=='t'){
+      r.setAttribute('data-mode','t');r.min=1;r.max=100;r.value=100;
+      winFrac=1;winTouched=false;
+    }
+  }else{
+    $('rslLab').textContent='updates / slice';
+    if(r.getAttribute('data-mode')!=='u'){
+      r.setAttribute('data-mode','u');r.min=1;r.max=60;r.value=recEvery;
+    }
+  }
+  updateWinLabel();
+}
+function currentWindow(){
+  if(!winTouched)winTime=Math.max(Sim.t*winFrac,1e-12);
+  return Math.max(winTime,1e-12);
+}
+function updateWinLabel(){
+  if(Sim.mu>0)$('rv').textContent=fmtN(currentWindow());
+  else $('rv').textContent=String(recEvery);
+}
+/* change the number of stored slices while keeping the run and its history */
+function setSlices(newCap){
+  const oc=Hist.count,oL=Hist.L;
+  const slots=[];for(let s=0;s<oc;s++)slots.push(Hist.slot(s));
+  const oB=Hist.B,oA=Hist.A,oTS=Hist.TS;
+  CAP=newCap;
+  Hist.alloc(newCap,oL);
+  const keep=Math.min(oc,newCap);
+  for(let s=0;s<keep;s++){
+    const src=slots[oc-keep+s]*oL,dst=s*oL;
+    for(let i=0;i<oL;i++){Hist.B[dst+i]=oB[src+i];Hist.A[dst+i]=oA[src+i];}
+    Hist.TS[s]=oTS[slots[oc-keep+s]];
+  }
+  Hist.count=keep;Hist.head=keep%newCap;
+  Hist.lastT=keep?Hist.TS[keep-1]:Sim.t;
+  if(keep===0)Hist.pushAt(Sim.t,false);
+  allocBuffers();
+  dirty=true;updateSpanNote();
+}
+function hardReset(){
+  L=parseInt($('Lsl').value,10);
+  CAP=SLICE_OPTS[parseInt($('hsl').value,10)];
+  Sim.mu=muFromSlider(parseInt($('msl').value,10));
+  if($('rsl').getAttribute('data-mode')!=='t')recEvery=parseInt($('rsl').value,10);
+  Sim.init(L);OE.clear();Act.clear();Hist.alloc(CAP,L);allocBuffers();Hist.pushAt(Sim.t,false);
+  buildXAxis();
+  ageAxisMax=1;accum=0;winTouched=false;dirty=true;oeAuto=true;
+  configTimeControls();updateSpanNote();updateMuNote();syncClockBtns();
+}
+function updateMuNote(){
+  $('muNote').textContent=Sim.mu>0?'μ > 0 → Gillespie clock, Δt ≈ e^(B/μ)'
+                                  :'μ = 0 → extremal dynamics, time = updates';
+}
+function updateSpanNote(){
+  const span=Math.max(0,Hist.lastT-Hist.t0());
+  if(allMode){
+    $('spanNote').innerHTML='back to the birth of the oldest living species, Δt = '
+      +fmtN(Sim.maxAge())+' &nbsp;(shown '+fmtN(span)+')';
+  }else if(Sim.mu>0){
+    const W=currentWindow();
+    $('spanNote').innerHTML='window '+fmtN(W)+' · Δt/slice = '+fmtN(W/CAP)+' &nbsp;(shown '+fmtN(span)+')';
+  }else{
+    $('spanNote').innerHTML='window ≈ '+fmtN(span)+' ('+CAP+' slices × '+recEvery+' upd)'
+      +(lineStride>1?' · lines every '+lineStride+' slices':'');
+  }
+}
+
+$('Lsl').addEventListener('input',e=>{$('Lv').textContent=e.target.value;hardReset();});
+$('hsl').addEventListener('input',e=>{
+  $('hv').textContent=SLICE_OPTS[parseInt(e.target.value,10)];
+  setSlices(SLICE_OPTS[parseInt(e.target.value,10)]);
+});
+$('rsl').addEventListener('input',e=>{
+  if(Sim.mu>0){
+    winFrac=Math.pow(10,-3*(1-parseInt(e.target.value,10)/100));
+    winTime=Math.max(Sim.t*winFrac,1e-12);winTouched=true;
+  }else recEvery=parseInt(e.target.value,10);
+  accum=0;                       /* keep what is already recorded - no jump */
+  updateWinLabel();updateSpanNote();
+});
+$('msl').addEventListener('input',e=>{
+  const m=muFromSlider(parseInt(e.target.value,10));
+  const was=Sim.mu>0;Sim.mu=m;
+  $('mv').textContent=fmtMu(m);
+  if(was!==(m>0)){
+    $('rsl').setAttribute('data-mode','');
+    Sim.resetClock();OE.clear();Act.clear();Hist.clear();Hist.pushAt(Sim.t,false);
+    accum=0;winTouched=false;oeAuto=true;
+    $('oesl').value=100;                 /* the Gillespie clock reads best full range */
+  }
+  ageAxisMax=1;configTimeControls();updateMuNote();updateSpanNote();syncClockBtns();dirty=true;
+});
+$('spsl').addEventListener('input',e=>{speed=speedFromSlider(parseInt(e.target.value,10));$('spv').textContent=speed;});
+$('oesl').addEventListener('input',()=>{oeAuto=false;buildOE();});
+$('oeCntBtn').addEventListener('click',()=>{oeCountLog=!oeCountLog;
+  $('oeCntBtn').textContent=oeCountLog?'counts: log':'counts: lin';
+  $('oeCntBtn').classList.toggle('on',oeCountLog);buildOE();});
+function setOeFlat(on){
+  oeFlat=!!on;
+  oeUni.uFlat.value=oeFlat?1:0;
+  buildOE();
+}
+
+$('play').addEventListener('click',togglePlay);
+function togglePlay(){playing=!playing;$('play').textContent=playing?'❚❚ Pause':'▶ Play';}
+$('reset').addEventListener('click',hardReset);
+$('rv3d').addEventListener('click',()=>{Cam.reset();oeCam.reset();syncAngles();});
+function activeCam(){return curView==='oe'?oeCam:Cam;}
+function syncAngles(){
+  const C=activeCam();
+  let a=Math.round(C.dTheta*180/Math.PI);
+  while(a>180)a-=360; while(a<-180)a+=360;
+  const e=Math.round(90-C.dPhi*180/Math.PI);
+  $('azsl').value=a;$('azv').textContent=a+'°';
+  $('elsl').value=Math.max(0,Math.min(89,e));$('elv').textContent=Math.max(0,Math.min(89,e))+'°';
+}
+$('dssl').addEventListener('input',e=>{
+  const v=parseInt(e.target.value,10);
+  dotByView[curView]=v;
+  dotScale=v/100; $('dsv').textContent=v+'%';
+  uniforms.uScale.value=baseDot*dotScale; dirty=true;});
+$('azsl').addEventListener('input',e=>{
+  const a=parseInt(e.target.value,10);$('azv').textContent=a+'°';
+  activeCam().dTheta=a*Math.PI/180;});
+$('elsl').addEventListener('input',e=>{
+  const el=parseInt(e.target.value,10);$('elv').textContent=el+'°';
+  activeCam().dPhi=(90-el)*Math.PI/180;});
+
+/* ---- the one selector: which quantity (or which plot) is on screen ---- */
+const VARS=['B','alin','alog','act','oe'];
+const VAR_BTN={B:'vwB',alin:'vwALin',alog:'vwALog',act:'vwAct',oe:'vwOe'};
+function selectVar(v){
+  if(VARS.indexOf(v)<0)v='B';
+  selVar=v;
+  for(const k in VAR_BTN)$(VAR_BTN[k]).classList.toggle('on',k===v);
+  /* keep the duplicate switches in the control column in step */
+  $('vB').classList.toggle('on',v==='B');
+  $('vA').classList.toggle('on',v==='alin'||v==='alog');
+  $('aLin').classList.toggle('on',v!=='alog');
+  $('aLog').classList.toggle('on',v==='alog');
+  if(v==='oe'){showPanel('oe');return;}
+  if(v==='act'){showPanel('act');return;}
+  viewTarget=(v==='B')?0:1;
+  logTarget=(v==='alog')?1:0;
+  $('lines').checked=(viewTarget===1&&!projFlat);   /* they smear the flat view */
+  showPanel('3d');
+  applyVisibility();dirty=true;
+}
+$('vwB').addEventListener('click',()=>selectVar('B'));
+$('vwALin').addEventListener('click',()=>selectVar('alin'));
+$('vwALog').addEventListener('click',()=>selectVar('alog'));
+$('vwAct').addEventListener('click',()=>selectVar('act'));
+$('vwOe').addEventListener('click',()=>selectVar('oe'));
+$('vB').addEventListener('click',()=>selectVar('B'));
+$('vA').addEventListener('click',()=>selectVar(selVar==='alog'?'alog':'alin'));
+$('aLin').addEventListener('click',()=>selectVar('alin'));
+$('aLog').addEventListener('click',()=>selectVar('alog'));
+$('bcRing').addEventListener('click',()=>setBC(false));
+$('bcWall').addEventListener('click',()=>setBC(true));
+function setBC(closed){
+  closedBC=closed;
+  $('bcRing').classList.toggle('on',!closed);
+  $('bcWall').classList.toggle('on',closed);
+}
+
+$('tWin').addEventListener('click',()=>setTimeMode(false));
+$('tAll').addEventListener('click',()=>setTimeMode(true));
+function setTimeMode(all){
+  allMode=all;
+  $('tWin').classList.toggle('on',!all);$('tAll').classList.toggle('on',all);
+  $('rslWrap').classList.toggle('dis',all);$('rsl').disabled=all;
+  Hist.clear();Hist.pushAt(Sim.t,false);accum=0;dirty=true;updateSpanNote();
+}
+
+$('lines').addEventListener('change',()=>applyVisibility());
+$('fcp').addEventListener('change',()=>applyVisibility());
+$('axes').addEventListener('change',e=>{
+  const v=e.target.checked; axesOn=v;
+  axLines.visible=xAxLines.visible=tAxLines.visible=boxLines.visible=v;
+  labX.visible=labY.visible=labT.visible=labNew.visible=v;
+  if(!v){tickLabels.forEach(s=>s.visible=false);xTickLabels.forEach(s=>s.visible=false);
+         zTickLabels.forEach(s=>s.visible=false);}
+  else{dirty=true;buildXAxis();}
+});
+
+function setScheme(name){
+  SCHEME=name;
+  $('csA').classList.toggle('on',name==='autumn');
+  $('csJ').classList.toggle('on',name==='jet');
+  $('csR').classList.toggle('on',name==='rainbow');
+  $('csP').classList.toggle('on',name==='plasma');
+  $('bar').style.background=cssGradient('90deg',true);
+  dirty=true;buildOE();
+}
+function doFlip(){
+  flipY=!flipY;
+  $('flipBtn').classList.toggle('on',flipY);
+  $('flipTop').classList.toggle('on',flipY);
+  buildPlane();
+  dirty=true;
+}
+$('flipBtn').addEventListener('click',doFlip);
+$('flipTop').addEventListener('click',doFlip);
+function doFlipTime(){
+  flipT=!flipT;
+  $('flipTimeBtn').classList.toggle('on',flipT);
+  $('flipTimeTop').classList.toggle('on',flipT);
+  dirty=true;
+}
+$('flipTimeBtn').addEventListener('click',doFlipTime);
+$('flipTimeTop').addEventListener('click',doFlipTime);
+$('csA').addEventListener('click',()=>setScheme('autumn'));
+$('csJ').addEventListener('click',()=>setScheme('jet'));
+$('csR').addEventListener('click',()=>setScheme('rainbow'));
+$('csP').addEventListener('click',()=>setScheme('plasma'));
+
+function showPanel(which){
+  curView=which;
+  $('oeView').classList.toggle('on',which==='oe');
+  plot3d.style.visibility=(which==='oe')?'hidden':'visible';
+  actOnly=(which==='act');
+  $('flipTop').style.display=(which==='oe')?'none':'';
+  $('flipTimeTop').style.display=(which==='oe')?'none':'';
+  $('legend').style.display=(which==='oe')?'none':'inline-flex';
+  const dv=dotByView[which]||125;
+  $('dssl').value=dv;$('dsv').textContent=dv+'%';dotScale=dv/100;
+  uniforms.uScale.value=baseDot*dotScale;
+  setProj(projFlat);
+  applyVisibility();dirty=true;
+  resize();if(which==='oe')buildOE();
+}
+function savePNG(){
+  const cv=(curView==='oe')?oeRenderer.domElement:renderer.domElement;
+  if(curView==='oe')renderOE(); else renderMain();
+  const a=document.createElement('a');
+  a.download='bak-sneppen-'+(curView==='3d'?selVar:curView)+'.png';
+  a.href=cv.toDataURL('image/png');
+  document.body.appendChild(a);a.click();a.remove();
+}
+$('pngBtn').addEventListener('click',savePNG);
+const MU_QUICK=MU_OPTS.indexOf(0.01);
+function setClock(idx){
+  const sl=$('msl'); sl.value=idx; sl.dispatchEvent(new Event('input'));
+}
+$('clkCount').addEventListener('click',()=>setClock(0));
+$('clkMu').addEventListener('click',()=>setClock(MU_QUICK));
+function syncClockBtns(){
+  $('clkCount').classList.toggle('on',Sim.mu===0);
+  $('clkMu').classList.toggle('on',Sim.mu===0.01);
+}
+/* ---- one projection switch for whatever is on screen ---- */
+function setProj(flat){
+  const wasFlat=projFlat;
+  projFlat=!!flat;
+  $('prjFlat').classList.toggle('on',projFlat);
+  $('prj3d').classList.toggle('on',!projFlat);
+  if(curView==='oe')setOeFlat(projFlat);
+  setSquash(!projFlat&&curView!=='oe');        /* O-E is square, leave it alone */
+  if(!projFlat&&wasFlat)setHomeAngles();       /* 2D -> 3D opens at the set angle */
+  $('azWrap').classList.toggle('dis',projFlat);$('elWrap').classList.toggle('dis',projFlat);
+  $('azsl').disabled=$('elsl').disabled=projFlat;  /* turn / tilt do nothing in 2D */
+  applyVisibility();resize();dirty=true;
+}
+function setHomeAngles(){
+  const C=activeCam(),A=(curView==='oe')?D3_OE:D3_MAIN;
+  C.dTheta=A[0]*Math.PI/180;C.dPhi=(90-A[1])*Math.PI/180;
+  C.theta=C.dTheta;C.phi=C.dPhi;
+  C.fitOn=C.fitDefault;C.zoomF=1;
+  syncAngles();
+}
+$('prjFlat').addEventListener('click',()=>setProj(true));
+$('prj3d').addEventListener('click',()=>setProj(false));
+
+$('bgD').addEventListener('click',()=>setTheme('dark'));
+$('bgL').addEventListener('click',()=>setTheme('light'));
+function setTheme(name){
+  TH=THEMES[name];
+  document.body.classList.toggle('light',name==='light');
+  $('bgD').classList.toggle('on',name==='dark');$('bgL').classList.toggle('on',name==='light');
+  renderer.setClearColor(TH.bg,1);oeRenderer.setClearColor(TH.bg,1);
+  fog.color=new THREE.Color(TH.bg);
+  uniforms.uFogColor.value=new THREE.Color(TH.bg);
+  uniforms.uAmb.value=TH.amb;uniforms.uDif.value=TH.dif;
+  uniforms.uRimK.value=TH.rimK;uniforms.uRimCol.value.fromArray(TH.rimCol);
+  uniforms.uFogMul.value=TH.fogMul;
+  oeUni.uAmb.value=TH.amb;oeUni.uDif.value=TH.dif;oeUni.uRimK.value=TH.rimK;
+  oeUni.uRimCol.value.fromArray(TH.rimCol);
+  boxLines.setStyle(TH.axis,0.45);
+  axLines.setStyle(TH.axis,TH.axOp);xAxLines.setStyle(TH.axis,TH.axOp);tAxLines.setStyle(TH.axis,TH.axOp);
+  oeFrame.setStyle(TH.axis,TH.axOp);oeTicks.setStyle(TH.axis,TH.axOp);oeDiag.setStyle(TH.diag,TH.diagOp);
+  planeMat.color=new THREE.Color(TH.plane);planeMat.opacity=TH.planeOp;
+  planeEdge.setStyle(TH.plane,0.5);
+  lineMat.opacity=TH.lineOp;
+  [labX,labY,labT,labNew,oeLabX,oeLabZ,oeLabY]
+    .concat(tickLabels,xTickLabels,zTickLabels,oeXLabs,oeZLabs).forEach(s=>{s.userData.col='';});
+  dirty=true;buildXAxis();buildOE();
+}
+
+$('tabBtn').addEventListener('click',()=>{
+  const p=$('panel');p.classList.toggle('collapsed');
+  $('tabBtn').textContent=p.classList.contains('collapsed')?'‹':'›';
+  setTimeout(resize,10);setTimeout(resize,260);
+});
+$('descBtn').addEventListener('click',e=>{e.stopPropagation();
+  $('descPanel').classList.toggle('open');$('descBtn').classList.toggle('open');});
+document.addEventListener('click',e=>{
+  if(!$('panelFoot').contains(e.target)){
+    $('descPanel').classList.remove('open');$('descBtn').classList.remove('open');}});
+
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.code==='Space'){e.preventDefault();togglePlay();}
+  else if(e.key==='r'||e.key==='R')hardReset();
+  else if(e.key==='v'||e.key==='V')selectVar(selVar==='B'?'alin':'B');
+  else if(e.key==='l'||e.key==='L')selectVar(selVar==='alog'?'alin':'alog');
+  else if(e.key==='b'||e.key==='B')setTheme(TH===THEMES.dark?'light':'dark');
+  else if(e.key==='o'||e.key==='O')selectVar(selVar==='oe'?'B':'oe');
+  else if(e.key==='a'||e.key==='A')selectVar(selVar==='act'?'B':'act');
+  else if(e.key==='f'||e.key==='F')setProj(!projFlat);
+});
+
+/* =====================================================================
+   9.  RESIZE + LOOP
+   ===================================================================== */
+let oeW=1,oeH=1;
+function resize(){
+  const W=Math.floor(stage.clientWidth),H=Math.floor(stage.clientHeight);
+  if(W<=0||H<=0)return;
+  stageW=W;stageH=H;
+  renderer.setSize(W,H,false);
+  renderer.domElement.style.width=W+'px';renderer.domElement.style.height=H+'px';
+  camera.aspect=W/H;camera.fov=(H<420||W/H<1)?52:42;camera.updateProjectionMatrix();
+  uniforms.uPS.value=H*PR/Math.tan(camera.fov*Math.PI/360);
+  /* the O-E plot gets the whole rectangle too - its framing is computed, so
+     there is no need to waste the sides on a square canvas                  */
+  const sw=Math.floor(oeStage.clientWidth),sh=Math.floor(oeStage.clientHeight);
+  if(sw>0&&sh>0){
+    oeW=sw;oeH=sh;
+    oeRenderer.setSize(sw,sh,false);
+    const cv=oeRenderer.domElement;
+    cv.style.width=sw+'px';cv.style.height=sh+'px';cv.style.left='0px';cv.style.top='0px';
+    oeCamera.aspect=sw/sh;oeCamera.fov=(sh<420||sw/sh<1)?50:38;oeCamera.updateProjectionMatrix();
+  }
+}
+window.addEventListener('resize',resize);
+if(window.ResizeObserver){new ResizeObserver(resize).observe(view);new ResizeObserver(resize).observe(stage);}
+
+let tick=0;
+function frame(){
+  requestAnimationFrame(frame);
+
+  if(playing){
+    const timeSliced=allMode||Sim.mu>0;
+    if(timeSliced){
+      const PUSH_MAX=Math.min(CAP,600);
+      let Wcur=allMode?Sim.turnoverWindow():currentWindow();
+      const winOf=()=>Wcur;
+      let budget=PUSH_MAX;
+      for(let q=0;q<speed;q++){
+        if(budget>0){
+          const dt=Math.max(winOf()/Math.max(2,CAP),1e-300);
+          const nAdd=Math.min(Math.floor((Sim.t-Hist.lastT)/dt),budget);
+          for(let k=0;k<nAdd;k++)Hist.pushAt(Hist.lastT+dt,allMode);
+          if(nAdd>0){budget-=nAdd;dirty=true;}
+        }
+        Sim.update();
+      }
+      Wcur=allMode?Sim.turnoverWindow():currentWindow();
+      {
+        const dt=Math.max(winOf()/Math.max(2,CAP),1e-300);
+        const nAdd=Math.min(Math.floor((Sim.t-Hist.lastT)/dt),Math.max(budget,0));
+        for(let k=0;k<nAdd;k++)Hist.pushAt(Hist.lastT+dt,allMode);
+        if(nAdd>0)dirty=true;
+      }
+      const W=winOf(),dt=Math.max(W/Math.max(2,CAP),1e-300);
+      if(Sim.t-Hist.lastT>=W){
+        const n=Math.min(CAP,600);
+        Hist.clear();
+        for(let k=n-1;k>=0;k--)Hist.pushAt(Sim.t-k*dt,false);
+        dirty=true;
+      }
+      Hist.dropOlderThan(Sim.t-W);
+    }else{
+      for(let q=0;q<speed;q++){
+        Sim.update();accum++;
+        if(accum>=recEvery){accum=0;Hist.pushAt(Sim.t,false);dirty=true;}
+      }
+    }
+    const ma=Sim.maxAge();
+    if(ma>Sim.maxAgeEver)Sim.maxAgeEver=ma;
+  }
+
+  if(Math.abs(viewBlend-viewTarget)>1e-4){viewBlend+=(viewTarget-viewBlend)*0.14;dirty=true;}else viewBlend=viewTarget;
+  if(Math.abs(logBlend-logTarget)>1e-4){logBlend+=(logTarget-logBlend)*0.14;dirty=true;}else logBlend=logTarget;
+  tick++;
+  /* a full rebuild of a very large cloud is the dominant cost: halve its rate */
+  if(dirty && (CAP*L<=150000 || tick%2===0)){rebuild();dirty=false;}
+
+  if(curView!=='oe')renderMain();
+  else{ if(tick%4===0)buildOE(); renderOE(); }
+  if(tick%12===0){updateStats();updateSpanNote();updateWinLabel();}
+}
+
+function renderMain(){
+  if(projFlat){
+    buildFitPoints(true);
+    fitOrthoTo(orthoCam,stageW/Math.max(1,stageH),Cam.zoomF,true);
+    const ps=uniforms.uPS.value,fm=uniforms.uFogMul.value;
+    /* orthographic: pixels per world unit is fixed, so the point shader needs
+       a different constant than the perspective one                          */
+    uniforms.uPS.value=16*stageH*PR/Math.max(1e-6,orthoCam.top-orthoCam.bottom);
+    uniforms.uFogMul.value=0;
+    /* the axes, the box and the profile lines are ordinary fogged materials;
+       push the fog out of the way instead of detaching it, which would make
+       three.js recompile those programs on every frame                      */
+    fog.near=1e4;fog.far=2e4;
+    orthoCam.updateMatrixWorld();
+    orthoCam.matrixWorldInverse.copy(orthoCam.matrixWorld).invert();
+    orientAxisText(labX,orthoCam);orientAxisText(labY,orthoCam);orientAxisText(labT,orthoCam);
+    renderer.render(scene,orthoCam);
+    uniforms.uPS.value=ps;uniforms.uFogMul.value=fm;
+  }else{
+    if(Cam.fitOn){buildFitPoints(false);fitPerspTo(Cam,camera,true);viewOffOn=true;}
+    else if(viewOffOn){camera.clearViewOffset();viewOffOn=false;}
+    Cam.apply(camera);
+    const d=Cam.dist;
+    uniforms.uFogNear.value=d*0.55;uniforms.uFogFar.value=d*2.05;
+    fog.near=d*0.55;fog.far=d*2.05;
+    camera.updateMatrixWorld();camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+    orientAxisText(labX,camera);orientAxisText(labY,camera);orientAxisText(labT,camera);
+    renderer.render(scene,camera);
+  }
+}
+function renderOE(){
+  buildOeFitPoints(oeFlat);
+  if(oeFlat)fitOrthoTo(oeOrthoCam,oeW/Math.max(1,oeH),oeCam.zoomF,true);
+  else{
+    if(oeCam.fitOn){fitPerspTo(oeCam,oeCamera,true);oeOffOn=true;}
+    else if(oeOffOn){oeCamera.clearViewOffset();oeOffOn=false;}
+    oeCam.apply(oeCamera);
+  }
+  const oc=oeFlat?oeOrthoCam:oeCamera;
+  oc.updateMatrixWorld();oc.matrixWorldInverse.copy(oc.matrixWorld).invert();
+  orientAxisText(oeLabX,oc);orientAxisText(oeLabZ,oc);orientAxisText(oeLabY,oc);
+  oeRenderer.render(oeScene,oc);
+}
+
+function updateStats(){
+  const mu=Sim.mu;
+  const rows=[
+    'L = <b>'+L+'</b> &nbsp; μ = <b>'+fmtMu(mu)+'</b>',
+    'updates <b>'+fmtN(Sim.step)+'</b> &nbsp; sweeps <b>'+fmtN(Sim.step/L)+'</b>',
+    't = <b>'+fmtN(Sim.t)+'</b> ('+(mu>0?'Gillespie':'updates')+')',
+    'min B = <b>'+Sim.lastMin.toFixed(3)+'</b> &nbsp; ⟨B⟩ = <b>'+Sim.meanB().toFixed(3)+'</b>',
+    'frac B &gt; f<sub>c</sub> = <b>'+Sim.fracAbove(FC).toFixed(2)+'</b>',
+    'oldest age now <b>'+fmtN(Sim.maxAge())+'</b>',
+    'largest age ever <b>'+fmtN(Sim.maxAgeEver)+'</b>',
+    'turnover T* = <b>'+(Sim.virgin>0?'—':fmtN(Sim.Tstar))+'</b>',
+    'slices <b>'+Hist.count+'</b>/'+CAP+' &nbsp; O–E <b>'+fmtN(OE.n)+'</b>'
+  ];
+  $('stats').innerHTML=rows.join('<br>');
+}
+
+/* boot */
+$('Lv').textContent=$('Lsl').value;
+$('hv').textContent=SLICE_OPTS[parseInt($('hsl').value,10)];
+$('rv').textContent=$('rsl').value;
+$('mv').textContent='0';
+speed=speedFromSlider(parseInt($('spsl').value,10));$('spv').textContent=speed;
+$('rsl').setAttribute('data-mode','u');
+setScheme('rainbow');
+setTheme('dark');
+setBC(true);                 /* closed ends by default */
+hardReset();
+setProj(true);
+selectVar('B');
+
+if(window.innerWidth<=560){$('panel').classList.add('collapsed');$('tabBtn').textContent='‹';}
+resize();setTimeout(resize,60);setTimeout(resize,400);
+frame();
+
+})();
+</script>
+</body>
+</html>
