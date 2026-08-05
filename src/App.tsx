@@ -40,7 +40,7 @@ const MODELS: Model[] = [
   title: "Bak-Sneppen model for punctuated equilibrium",
   description:
     "Self organized criticality from extremal dynamics: Change minimal B and the B of its neighbors (Bak & Sneppen, PRL 1994)",
-  file: "/models/bak_sneppen_9.html",
+  file: "/models/bak_sneppen_10.html",
   image: "/images/btw.png",
   status: "live",
 },
@@ -48,7 +48,7 @@ const MODELS: Model[] = [
     id: "talker-listener",
     title: "Talker Listener dynamics",
     description:
-      "People networking by talking about each other and themselves. View Extreme model for USA 2017-2026. (Krebs & Sneppen, PRE 2025)",
+      "People networking by talking about each other and themselves. Include model for USA 2017-2026. (Krebs & Sneppen, PRE 2025)",
     file: "/models/talker_listener_applet_v41_mobile.html",
     status: "live",
   },
@@ -64,7 +64,7 @@ const MODELS: Model[] = [
     id: "rabbit-fox-snake-plant",
     title: "Rabbit, Fox, Snake & Plant",
     description:
-      "An agent-based ecosystem on a lattice with plants, rabbits, foxes, and snakes: Plants in Predator–Prey systems open for increased diversity.",
+      "An agent-based ecosystem of plants, rabbits, foxes, and snakes: Plants in Predator–Prey systems open for increased diversity.",
     file: "/models/Rabbit-mobile.html",
     status: "live",
   },
@@ -72,7 +72,7 @@ const MODELS: Model[] = [
     id: "spatial-ecosystem",
     title: "Spatial Ecosystem",
     description:
-      "A spatial simulation of how locality on a lattice allow high species diversity (after Mitarai, Mathiesen, Sneppen & Trusina, 2011+2012).",
+      "A spatial simulation of how locality in 2D allows for high species diversity of Lichens (after Mitarai, Mathiesen, Sneppen & Trusina, 2011+2012).",
     file: "/models/Lichen19_activity.html",
     status: "live",
   },
@@ -88,7 +88,7 @@ const MODELS: Model[] = [
     id: "cell-polarity",
     title: "Cell Polarity Morphogenesis",
     description:
-      "A 3D model of how polar interactions between cells: Morphology unerstood in terms of sheets, tubes, and invaginations (after Nissen et al. 2018).",
+      "A 3D model of polar interactions between cells: Morphology understood in terms of sheets, tubes, and invaginations (after Nissen et al. 2018).",
     file: "/models/cell-polarity-model-mobile.html",
     status: "live",
   },
@@ -102,7 +102,7 @@ const MODELS: Model[] = [
   },
   {
     id: "two-state-gillespie",
-    title: "Two-State Gillespie Dynamics",
+    title: "Mean field model of two-state nucleosome system",
     description:
       "Gillespie simulation of men field two-state system of nucleosomes with Swi6: Bistability and switching between local epigenetic states.",
     file: "/models/two-state-gillespie.html",
@@ -110,9 +110,9 @@ const MODELS: Model[] = [
   },
     {
     id: "Merging-creation",
-    title: "Merging Creation network",
+    title: "Merging-Creation network",
     description:
-      "A model for nodes on a network which merge with each other while new nodes are added with a connectivity k (crusial parameter)",
+      "Modelling nodes in a network that merge with each other while new nodes are added with a connectivity k (crusial parameter)",
     file: "/models/merging-creation.html",
     status: "live",
   },
