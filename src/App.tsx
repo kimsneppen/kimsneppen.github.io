@@ -49,7 +49,7 @@ const MODELS: Model[] = [
     title: "Talker Listener dynamics",
     description:
       "People networking by talking about each other and themselves. Include model for USA 2017-2026. (Krebs & Sneppen, PRE 2025)",
-    file: "/models/talker_listener_applet_v52.html",
+    file: "/models/talker_listener_applet_v54.html",
     status: "live",
   },
     {
