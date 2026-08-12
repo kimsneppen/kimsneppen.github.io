@@ -27,6 +27,15 @@ type Model = {
 
 const MODELS: Model[] = [
   {
+  id: "Evolution",
+  title: "Extinction Explorer",
+  description:
+    "Deep time exploartion of origination and extinction of life on earth",
+  file: "/models/Extinction_Explorer_v72.html",
+  image: "/images/btw.png",
+  status: "live",
+},  
+  {
   id: "btw-sandpile",
   title: "BTW Sandpile + Game",
   description:
