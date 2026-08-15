@@ -30,8 +30,8 @@ const MODELS: Model[] = [
   id: "Evolution",
   title: "Extinction Explorer",
   description:
-    "Deep time exploartion of origination and extinction of life on earth",
-  file: "/models/Extinction_Explorer_v72.html",
+    "Deep time exploration of origination and extinction of (marine) life forms on earth",
+  file: "/models/Extinction_Explorer_v78.html",
   image: "/images/btw.png",
   status: "live",
 },  
