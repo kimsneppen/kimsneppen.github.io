@@ -48,7 +48,7 @@ const MODELS: Model[] = [
   id: "Bak-Sneppen",
   title: "Bak-Sneppen model for punctuated equilibrium",
   description:
-    "Self organized criticality from extremal dynamics: Change minimal B and the B of its neighbors (Bak & Sneppen, PRL 1994)",
+    "Self organized criticality & evolving fitness landscapes: Change minimal B and the B of its neighbors (Bak & Sneppen, PRL 1994)",
   file: "/models/bak_sneppen_10.html",
   image: "/images/btw.png",
   status: "live",
