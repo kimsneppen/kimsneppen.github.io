@@ -40,7 +40,7 @@ const MODELS: Model[] = [
   title: "BTW Sandpile + Game",
   description:
     "The classical sandpile model of Self Organized Criticality: Office visualization, Variants, Analysis and Games",
-  file: "/models/btw_sandpile_v49.html",
+  file: "/models/btw_sandpile_v51.html",
   image: "/images/btw.png",
   status: "live",
 },  
