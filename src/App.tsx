@@ -129,8 +129,8 @@ const MODELS: Model[] = [
     id: "Trimurti",
     title: "Trimurti dynamics",
     description:
-      "Modelling the interplay between creation, growth and destruction in analogy to ancient mythology and Phage Bacteria dynamics.",
-    file: "/models/trimurti_5.html",
+      "Creation, growth and destruction in analogy to ancient mythology and inspiration from Phage-Bacteria.",
+    file: "/models/trimurti_10.html",
     status: "live",
   },
 ];
