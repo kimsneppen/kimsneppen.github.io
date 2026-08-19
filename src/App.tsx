@@ -31,7 +31,7 @@ const MODELS: Model[] = [
   title: "Extinction Explorer",
   description:
     "Deep time exploration of origination and extinction of life forms on earth",
-  file: "/models/Extinction_Explorer_v94.html",
+  file: "/models/Extinction_Explorer_v95.html",
   image: "/images/btw.png",
   status: "live",
 },  
@@ -123,6 +123,14 @@ const MODELS: Model[] = [
     description:
       "Modelling nodes in a network that merge with each other while new nodes are added with a connectivity k (crusial parameter)",
     file: "/models/merging-creation.html",
+    status: "live",
+  },    
+  {
+    id: "Trimurti",
+    title: "Trimurti dynamics",
+    description:
+      "Modelling the interplay between creation, growth and destruction in analogy to ancient mythology and Phage Bacteria dynamics.",
+    file: "/models/trimurti_5.html",
     status: "live",
   },
 ];
