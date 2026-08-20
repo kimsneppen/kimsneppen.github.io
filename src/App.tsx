@@ -415,8 +415,8 @@ function Index() {
         <section id="about" className={sectionClass}>
           <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
             <p>
-            Kim Sneppen is explore life's complexity; listening to the small and the big in the living world, 
-            and writing their stories in the language of physics. 
+            Kim Sneppen explore life's complexity; listening to the small and the big in the living world, 
+            and express their universality in the language of physics. 
             What if life's great richness comes not from battle, but from barriers? 
             The tale is told five times over: in the genome, where chromatin marks are fenced in lest they wander; 
             in the sheets of cells that fold into our organs; 
