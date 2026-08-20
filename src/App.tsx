@@ -417,7 +417,7 @@ function Index() {
           <SectionHeading label="" title="About" />
           <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
             <p>
-            Kim Sneppen is a professor of biocomplexity, which is to say, he listens to the small and the big in the living world, 
+            Kim Sneppen is an explorer of life's complexity, which is to say, he listens to the small and the big in the living world, 
             and writes their stories in the language of physics. 
             What if life's great richness comes not from battle, but from barriers? 
             The tale is told five times over: in the genome, where chromatin marks are fenced in lest they wander; 
