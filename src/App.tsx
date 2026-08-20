@@ -433,9 +433,6 @@ function Index() {
         {/* INTERACTIVE MODELS */}
         <section id="models" className={sectionClass}>
           <SectionHeading label="" title="Interactive models" />
-          <p className="reveal mt-6 measure text-[15px] text-muted-foreground">
-            Applets to explore dynamical models of life:
-          </p>
           <div className="reveal mt-12 grid gap-6 sm:grid-cols-2">
             {MODELS.map((m) => (
               <article
