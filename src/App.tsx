@@ -528,6 +528,17 @@ function Index() {
           <div className="reveal mt-12 grid gap-12 md:grid-cols-[1.25fr_1fr] md:gap-16">
             <div className="space-y-10">
               <div>
+                <h3 className="font-serif text-[1.3rem]">Physics in Molecular Biology</h3>
+                <p className="mt-1 text-[12.5px] uppercase tracking-[0.14em] text-muted-foreground">
+                  Co-authored with G. Zocchi, Cambridge University Press, 2005
+                </p>
+                <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
+                  A graduate-level synthesis of basic concepts in Biophysics, including polymer physics, random walks, 
+                  helix-coil transition, protein folding, 
+                  and Genetic regulation motivated by model organisms from the world of bacteriophages.
+                </p>
+              </div>
+              <div>
                 <h3 className="font-serif text-[1.3rem]">Models of Life</h3>
                 <p className="mt-1 text-[12.5px] uppercase tracking-[0.14em] text-muted-foreground">
                   Cambridge University Press, 2014
