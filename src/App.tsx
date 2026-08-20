@@ -413,7 +413,6 @@ function Index() {
         </section>
         
         <section id="about" className={sectionClass}>
-          <SectionHeading label="" title="About" />
           <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
             <p>
             Kim Sneppen is an explorer of life's complexity, which is to say, he listens to the small and the big in the living world, 
