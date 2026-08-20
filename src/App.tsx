@@ -394,7 +394,7 @@ function Index() {
               Kim Sneppen
             </h1>
             <p className="mt-5 max-w-2xl text-base text-foreground/80 sm:text-lg md:text-xl">
-              Professor of Biocomplexity, Niels Bohr Institute, University of Copenhagen.
+              Professor of Biocomplexity, Niels Bohr Institute.
             </p>
             <p className="mt-7">
               <a
