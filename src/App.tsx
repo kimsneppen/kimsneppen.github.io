@@ -417,12 +417,17 @@ function Index() {
           <SectionHeading label="" title="About" />
           <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
             <p>
-              Kim Sneppen is a professor of biocomplexity at the Niels Bohr Institute,
-              University of Copenhagen. He builds quantitative, physics-based theories
-              of different biological phenomena including how cells hold stable epigenetic states,
-              how growth and collapse dynamics inspired by Indian mythology may provide waves
-              of diversity, how virus deals with space of/in their host, and how polar interactions between cells shapes sheets and tubes during
-              embryo development.
+            Kim Sneppen is a professor of biocomplexity, which is to say, he listens to the small and the big in the living world, 
+            and writes their stories in the language of physics. 
+            What if life's great richness comes not from battle, but from barriers? 
+            The tale is told five times over: in the genome, where chromatin marks are fenced in lest they wander; 
+            in the sheets of cells that fold into our organs; 
+            in colonies of bacteria raising shields against viruses; 
+            in the body's interferon signaling, locking down a neighbourhood to trap infection; 
+            and in the plants of field and forest, giving the animals somewhere to hide. 
+            In each, the same wonder occurs: behind walls and hiding places, 
+            the winner does not take all, and many kinds may live where one alone would remain. 
+            Beyond the smoothness of differential equations lies a world where life protects life by its mere presence.
             </p>
           </div>
         </section>
