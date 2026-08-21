@@ -40,7 +40,7 @@ const MODELS: Model[] = [
   title: "BTW Sandpile + Game",
   description:
     "The classical sandpile model of Self Organized Criticality: Office visualization, Variants, Analysis and Games",
-  file: "/models/btw_sandpile_v53.html",
+  file: "/models/btw_sandpile_v56.html",
   image: "/images/btw.png",
   status: "live",
 },  
@@ -538,8 +538,8 @@ function Index() {
                   Cambridge University Press, 2014
                 </p>
                 <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
-                  A graduate-level synthesis of how concepts from statistical physics — phase
-                  transitions, noise, feedback, networks — illuminate the dynamics of cells,
+                  A graduate-level approach to model building in living systems. Focusses on within cell noise, gene regulation and epigenetics
+                  but also includes introduction to networks,
                   organisms, and ecosystems. The book gathers two decades of teaching and
                   research at the interface of physics and biology.
                 </p>
