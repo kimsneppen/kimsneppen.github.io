@@ -40,7 +40,7 @@ const MODELS: Model[] = [
   title: "BTW Sandpile + Game",
   description:
     "The classical sandpile model of Self Organized Criticality: Office visualization, Variants, Analysis and Games",
-  file: "/models/btw_sandpile_v56.html",
+  file: "/models/btw_sandpile_v58.html",
   image: "/images/btw.png",
   status: "live",
 },  
@@ -417,8 +417,8 @@ function Index() {
             <p>
             An observer of the small and the big in the living world, 
             attempting to catch life's universality in the language of physics. 
-            What if life's great richness comes not from battle, but from barriers? 
-            The tale is told five times over: in the genome, where chromatin marks are fenced in lest they wander; 
+            Perhaps life's great richness comes not from battle, but from barriers? 
+            This tale is explored five times over: in the genome, where chromatin marks are fenced in lest they wander; 
             in the sheets of cells that fold into our organs; 
             in colonies of bacteria protecting each other against viruses; 
             in the body's interferon signaling, providing self organized lockdowns to trap infection; 
