@@ -415,17 +415,16 @@ function Index() {
         <section id="about" className={sectionClass}>
           <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
             <p>
-            Kim Sneppen explore life's complexity; listening to the small and the big in the living world, 
-            and express their universality in the language of physics. 
+            An observer of the small and the big in the living world, 
+            attempting to catch life's universality in the language of physics. 
             What if life's great richness comes not from battle, but from barriers? 
             The tale is told five times over: in the genome, where chromatin marks are fenced in lest they wander; 
             in the sheets of cells that fold into our organs; 
-            in colonies of bacteria raising shields against viruses; 
-            in the body's interferon signaling, locking down a neighbourhood to trap infection; 
-            and in the plants of field and forest, giving the animals somewhere to hide. 
-            In each, the same wonder occurs: behind walls and hiding places, 
-            the winner does not take all, and many kinds may live where one alone would remain. 
-            Beyond the smoothness of differential equations lies a world where life protects life by its mere presence.
+            in colonies of bacteria protecting each other against viruses; 
+            in the body's interferon signaling, providing self organized lockdowns to trap infection; 
+            and in the plants of field and forest, giving hidings to animals. 
+            In each, the same wonder occurs: behind living walls, 
+            the winner does not take all, and many kinds may live where one alone would remain witout protection. 
             </p>
           </div>
         </section>
