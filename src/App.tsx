@@ -231,9 +231,6 @@ function Portrait() {
           className="h-full w-full object-cover object-[50%_25%]"
         />
       </div>
-      <figcaption className="mt-3 text-[11px] italic text-muted-foreground">
-        Photo: Ola Jakup Joensen, NBI
-      </figcaption>
     </figure>
   );
 }
