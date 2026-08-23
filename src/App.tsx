@@ -126,6 +126,14 @@ const MODELS: Model[] = [
     status: "live",
   },    
   {
+    id: "KS",
+    title: "Kuramoto-Sivashinsky",
+    description:
+      "An Extended dynamical system with deterministic chaos",
+    file: "/models/kuramoto_sivashinsky_16.html",
+    status: "live",
+  },    
+  {
     id: "Trimurti",
     title: "Trimurti dynamics",
     description:
