@@ -39,7 +39,7 @@ const MODELS: Model[] = [
   id: "btw-sandpile",
   title: "BTW Sandpile + Game",
   description:
-    "The classical sandpile model of Self Organized Criticality: Office visualization, Variants, Analysis and Games",
+    "The sandpile model of Self Organized Criticality: Office visualization, Variants and Game",
   file: "/models/btw_sandpile_v58.html",
   image: "/images/btw.png",
   status: "live",
@@ -48,7 +48,7 @@ const MODELS: Model[] = [
   id: "Bak-Sneppen",
   title: "Bak-Sneppen model for punctuated equilibrium",
   description:
-    "Self organized criticality & evolving fitness landscapes: Change minimal B and the B of its neighbors (Bak & Sneppen, PRL 1994)",
+    "Self organized criticality & evolving fitness landscapes: Change minimal B and the B of its neighbors",
   file: "/models/bak_sneppen_10.html",
   image: "/images/btw.png",
   status: "live",
@@ -57,7 +57,7 @@ const MODELS: Model[] = [
     id: "talker-listener",
     title: "Talker Listener dynamics",
     description:
-      "People networking by talking about each other and themselves. Include model for USA 2017-2026. (Krebs & Sneppen, PRE 2025)",
+      "People networking by talking about each other and themselves.",
     file: "/models/talker_listener_applet_v54.html",
     status: "live",
   },
@@ -111,7 +111,7 @@ const MODELS: Model[] = [
   },
   {
     id: "two-state-gillespie",
-    title: "Mean field model of two-state nucleosome system",
+    title: "Mean field dynamics of nucleosome epigenetics & condensate",
     description:
       "Equations for two-state epigenetic system of nucleosomes & Swi6 condensate",
     file: "/models/two-state-gillespie.html",
