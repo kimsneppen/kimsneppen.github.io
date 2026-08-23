@@ -81,7 +81,7 @@ const MODELS: Model[] = [
     id: "spatial-ecosystem",
     title: "Spatial Ecosystem",
     description:
-      "A spatial simulation of how locality in 2D allows for high species diversity of Lichens (after Mitarai, Mathiesen, Sneppen & Trusina, 2011+2012).",
+      "A spatial simulation of how locality in 2D allows for high species diversity of Lichens.",
     file: "/models/Lichen19_activity.html",
     status: "live",
   },
@@ -89,7 +89,7 @@ const MODELS: Model[] = [
     id: "colony-phage",
     title: "Colony & Phage",
     description:
-      "Phage infection spreading through a growing bacterial colony: How infection and immunity dynamics shape survivorship",
+      "Phage infection of a growing bacterial colony.",
     file: "/models/phage_colony_v26_final.html",
     status: "live",
   },
@@ -97,7 +97,7 @@ const MODELS: Model[] = [
     id: "cell-polarity",
     title: "Cell Polarity Morphogenesis",
     description:
-      "A 3D model of polar interactions between cells: Morphology understood in terms of sheets, tubes, and invaginations (after Nissen et al. 2018).",
+      "Random Baby Model: Morphology understood in terms of polarity & sheets & tubes.",
     file: "/models/cell-polarity-model-mobile.html",
     status: "live",
   },
@@ -105,7 +105,7 @@ const MODELS: Model[] = [
     id: "nucleosome-swi6",
     title: "Nucleosome & Swi6",
     description:
-      "A turntable visualization of nucleosomes and Swi6-mediated spreading of histone modifications, illustrating how epigenetic states are established and maintained along chromatin.",
+      "Visualization of nucleosomes on DNA and Swi6-mediated epigenetics",
     file: "/models/nucleosome_swi6-19.html",
     status: "live",
   },
@@ -113,7 +113,7 @@ const MODELS: Model[] = [
     id: "two-state-gillespie",
     title: "Mean field model of two-state nucleosome system",
     description:
-      "Gillespie simulation of men field two-state system of nucleosomes with Swi6: Bistability and switching between local epigenetic states.",
+      "Equations for two-state epigenetic system of nucleosomes & Swi6 condensate",
     file: "/models/two-state-gillespie.html",
     status: "live",
   },
@@ -121,7 +121,7 @@ const MODELS: Model[] = [
     id: "Merging-creation",
     title: "Merging-Creation network",
     description:
-      "Modelling nodes in a network that merge with each other while new nodes are added with a connectivity k (crusial parameter)",
+      "Network with merging nodes while new nodes are added with a connectivity k (crusial parameter)",
     file: "/models/merging-creation.html",
     status: "live",
   },    
@@ -130,7 +130,7 @@ const MODELS: Model[] = [
     title: "Kuramoto-Sivashinsky",
     description:
       "An Extended dynamical system with deterministic chaos",
-    file: "/models/kuramoto_sivashinsky_16.html",
+    file: "/models/kuramoto_sivashinsky_19.html",
     status: "live",
   },    
   {
