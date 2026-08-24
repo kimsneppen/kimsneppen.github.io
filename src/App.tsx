@@ -30,7 +30,7 @@ const MODELS: Model[] = [
   id: "Evolution",
   title: "Extinction Explorer",
   description:
-    "Deep time exploration of origination and extinction of life forms on earth",
+    "Deep time exploration of life forms on earth",
   file: "/models/Extinction_Explorer_v95.html",
   image: "/images/btw.png",
   status: "live",
@@ -39,7 +39,7 @@ const MODELS: Model[] = [
   id: "btw-sandpile",
   title: "BTW Sandpile + Game",
   description:
-    "The sandpile model of Self Organized Criticality: Office visualization, Variants and Game",
+    "Self Organized Criticality: Office visualization, Variants and Game",
   file: "/models/btw_sandpile_v58.html",
   image: "/images/btw.png",
   status: "live",
@@ -48,7 +48,7 @@ const MODELS: Model[] = [
   id: "Bak-Sneppen",
   title: "Bak-Sneppen model for punctuated equilibrium",
   description:
-    "Self organized criticality & evolving fitness landscapes: Change minimal B and the B of its neighbors",
+    "Co-evolving fitness landscapes: Change least fit and change its neighbors",
   file: "/models/bak_sneppen_10.html",
   image: "/images/btw.png",
   status: "live",
@@ -65,7 +65,7 @@ const MODELS: Model[] = [
     id: "Paradigm shift",
     title: "Kuhn on computer",
     description:
-      "Model of paradigmshift in an evolutionary ecology of wrong ideas (Bornholdt, Jensen & Sneppen, PRL 2011)",
+      "Paradigmshift in an evolutionary ecology of wrong ideas",
     file: "/models/rise_and_fall_of_wrong_ideas_v12.html",
     status: "live",
   },
@@ -73,7 +73,7 @@ const MODELS: Model[] = [
     id: "rabbit-fox-snake-plant",
     title: "Rabbit, Fox, Snake & Plant",
     description:
-      "An agent-based ecosystem of plants, rabbits, foxes, and snakes: Plants in Predator–Prey systems open for increased diversity.",
+      "Plants in Predator–Prey systems open for increased diversity.",
     file: "/models/Rabbit-mobile.html",
     status: "live",
   },
@@ -81,7 +81,7 @@ const MODELS: Model[] = [
     id: "spatial-ecosystem",
     title: "Spatial Ecosystem",
     description:
-      "A spatial simulation of how locality in 2D allows for high species diversity of Lichens.",
+      "Local competition in 2 dimension opens for high species diversity",
     file: "/models/Lichen19_activity.html",
     status: "live",
   },
@@ -97,7 +97,7 @@ const MODELS: Model[] = [
     id: "cell-polarity",
     title: "Cell Polarity Morphogenesis",
     description:
-      "Random Baby Model: Morphology understood in terms of polarity & sheets & tubes.",
+      "Random Baby Model: Morphology from polarity & sheets & tubes",
     file: "/models/cell-polarity-model-mobile.html",
     status: "live",
   },
@@ -105,13 +105,13 @@ const MODELS: Model[] = [
     id: "nucleosome-swi6",
     title: "Nucleosome & Swi6",
     description:
-      "Visualization of nucleosomes on DNA and Swi6-mediated epigenetics",
+      "Epigenetics from nucleosome & Swi6 condensate",
     file: "/models/nucleosome_swi6-19.html",
     status: "live",
   },
   {
     id: "two-state-gillespie",
-    title: "Mean field dynamics of nucleosome epigenetics & condensate",
+    title: "Mean field dynamics of condensate mediated epigenetics",
     description:
       "Equations for two-state epigenetic system of nucleosomes & Swi6 condensate",
     file: "/models/two-state-gillespie.html",
@@ -121,7 +121,7 @@ const MODELS: Model[] = [
     id: "Merging-creation",
     title: "Merging-Creation network",
     description:
-      "Network with merging nodes while new nodes are added with a connectivity k (crusial parameter)",
+      "Dynamical Network with nodes added and nodes merging",
     file: "/models/merging-creation.html",
     status: "live",
   },    
@@ -137,7 +137,7 @@ const MODELS: Model[] = [
     id: "Trimurti",
     title: "Trimurti dynamics",
     description:
-      "Creation, growth and destruction in analogy to ancient mythology and inspiration from Phage-Bacteria.",
+      "Creation, growth and destruction in analogy with mythology and Phage-Bacteria systems",
     file: "/models/trimurti_12.html",
     status: "live",
   },
@@ -423,7 +423,7 @@ function Index() {
             An observer of the small and the big in the living world, 
             attempting to catch life's universality in the language of physics. 
             Perhaps life's great richness comes not from battle, but from barriers? 
-            This tale is explored five times over: in the genome, where chromatin marks are fenced in lest they wander; 
+            This tale is explored five times over: In the genome, where chromatin marks are fenced in lest they wander; 
             in the sheets of cells that fold into our organs; 
             in colonies of bacteria protecting each other against viruses; 
             in the body's interferon signaling, providing self organized lockdowns to trap infection; 
