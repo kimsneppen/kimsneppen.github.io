@@ -48,7 +48,7 @@ const MODELS: Model[] = [
   id: "Bak-Sneppen",
   title: "Bak-Sneppen model for punctuated equilibrium",
   description:
-    "Co-evolving fitness landscapes: Change least fit and change its neighbors",
+    "Co-evolving fitness landscapes: Change least fit and its neighbors",
   file: "/models/bak_sneppen_10.html",
   image: "/images/btw.png",
   status: "live",
@@ -111,7 +111,7 @@ const MODELS: Model[] = [
   },
   {
     id: "two-state-gillespie",
-    title: "Mean field dynamics of condensate mediated epigenetics",
+    title: "Mean field of condensate mediated epigenetics",
     description:
       "Equations for two-state epigenetics with nucleosomes & Swi6 condensate",
     file: "/models/two-state-gillespie.html",
@@ -121,7 +121,7 @@ const MODELS: Model[] = [
     id: "Merging-creation",
     title: "Merging-Creation network",
     description:
-      "Dynamical Network with nodes added and nodes merging",
+      "Dynamical Network with node creation and node merging",
     file: "/models/merging-creation.html",
     status: "live",
   },    
