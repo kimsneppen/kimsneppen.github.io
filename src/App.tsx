@@ -113,7 +113,7 @@ const MODELS: Model[] = [
     id: "two-state-gillespie",
     title: "Mean field dynamics of condensate mediated epigenetics",
     description:
-      "Equations for two-state epigenetic system of nucleosomes & Swi6 condensate",
+      "Equations for two-state epigenetics with nucleosomes & Swi6 condensate",
     file: "/models/two-state-gillespie.html",
     status: "live",
   },
@@ -129,7 +129,7 @@ const MODELS: Model[] = [
     id: "KS",
     title: "Kuramoto-Sivashinsky",
     description:
-      "An Extended dynamical system with deterministic chaos",
+      "A Large dynamical system with deterministic chaos",
     file: "/models/kuramoto_sivashinsky_19.html",
     status: "live",
   },    
