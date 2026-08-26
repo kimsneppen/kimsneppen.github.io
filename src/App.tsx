@@ -106,7 +106,7 @@ const MODELS: Model[] = [
     title: "Nucleosome & Swi6",
     description:
       "Epigenetics from nucleosome & Swi6 condensate",
-    file: "/models/nucleosome_swi6-19.html",
+    file: "/models/nucleosome_swi6_20.html",
     status: "live",
   },
   {
