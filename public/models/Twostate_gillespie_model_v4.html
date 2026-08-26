@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <title>Two-State Nucleosome Dynamics — Gillespie applet</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121933;
+      --panel2: #182246;
+      --text: #edf2ff;
+      --muted: #aeb9d9;
+      --accent: #7cc7ff;
+      --accent2: #9bffb0;
+      --accent3: #ffcc7c;
+      --border: #2a3767;
+      --shadow: 0 10px 30px rgba(0,0,0,0.22);
+      --ctrlW: clamp(330px, 31vw, 460px);
+      --fs: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-text-size-adjust: 100%;
+    }
+
+    #app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: stretch;
+    }
+
+    /* ---------- main plot column (LEFT) ---------- */
+    #main {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 100%;
+      display: grid;
+      grid-template-rows: 0.78fr 0.78fr 1.6fr;
+      gap: 8px;
+      padding: 8px;
+    }
+
+    /* ---------- control column (RIGHT) ---------- */
+    #controls {
+      flex: 0 0 var(--ctrlW);
+      width: var(--ctrlW);
+      height: 100%;
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border-left: 1px solid var(--border);
+      padding: 10px 10px 24px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 10px 10px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ---------- collapsible panels ---------- */
+    details.panel {
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 9px;
+      overflow: hidden;
+    }
+
+    details.panel > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 10px 12px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+      background: rgba(124,199,255,0.06);
+      min-height: 40px;
+    }
+    details.panel > summary::-webkit-details-marker { display: none; }
+    details.panel > summary::before {
+      content: "▸";
+      font-size: 0.8em;
+      opacity: 0.85;
+      transition: transform 0.15s ease;
+      display: inline-block;
+    }
+    details.panel[open] > summary::before { transform: rotate(90deg); }
+    details.panel > summary:hover { background: rgba(124,199,255,0.12); }
+
+    .panelBody {
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    #titlePanel > summary {
+      font-size: 1.02rem;
+      color: var(--text);
+      background: linear-gradient(90deg, rgba(124,199,255,0.20), rgba(155,255,176,0.08));
+      letter-spacing: 0.01em;
+    }
+    #titlePanel { border-color: rgba(124,199,255,0.45); }
+
+    .about p {
+      font-size: 0.80rem;
+      line-height: 1.55;
+      color: var(--muted);
+      margin: 0 0 9px 0;
+    }
+    .about h4 {
+      font-size: 0.78rem;
+      margin: 12px 0 6px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .about ol {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 0.75rem;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+    .about ol li { margin-bottom: 5px; }
+    .about em { color: var(--text); font-style: italic; }
+
+    .equations {
+      font-size: 0.79rem;
+      line-height: 1.5;
+      color: var(--muted);
+      background: rgba(0,0,0,0.20);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 11px;
+      word-break: break-word;
+    }
+    .equations div + div { margin-top: 6px; }
+    .equations strong { color: var(--text); }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+    .chip {
+      font-size: 0.70rem;
+      color: var(--text);
+      background: rgba(124,199,255,0.10);
+      border: 1px solid rgba(124,199,255,0.28);
+      border-radius: 999px;
+      padding: 4px 9px;
+    }
+
+    /* ---------- sliders ---------- */
+    .grid { display: block; }
+
+    .row {
+      margin-bottom: 9px;
+    }
+    .rowHead {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .rowHead label {
+      font-size: 0.79rem;
+      color: var(--text);
+    }
+    .value {
+      font-variant-numeric: tabular-nums;
+      color: var(--accent3);
+      font-size: 0.78rem;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+      height: 22px;
+      margin: 0;
+      background: transparent;
+      touch-action: pan-y;
+    }
+
+    /* ---------- buttons ---------- */
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: #20305f;
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.79rem;
+      font-family: inherit;
+      min-height: 38px;
+      transition: transform 0.06s ease, filter 0.12s ease;
+    }
+    button:hover { filter: brightness(1.12); }
+    button:active { transform: translateY(1px); }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    button.primary { background: linear-gradient(180deg, #2b7d4f, #1f5f3c); border-color: #3ea36a; }
+    button.secondary { background: #1b274c; }
+    button.warn { background: #5d2b2b; border-color: #8a4141; }
+    button[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+    #runbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      padding: 9px;
+      margin-bottom: 9px;
+      border: 1px solid rgba(124,199,255,0.35);
+      border-radius: 12px;
+      background: rgba(124,199,255,0.07);
+    }
+    #runbar button { flex: 1 1 auto; }
+
+    .groupTitle {
+      font-size: 0.70rem;
+      color: var(--muted);
+      margin: 10px 0 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+    .groupTitle:first-child { margin-top: 0; }
+
+    .status {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .status strong { color: var(--accent3); font-variant-numeric: tabular-nums; }
+
+    .small { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    /* ---------- plot panels ---------- */
+    .plotWrap {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      margin: 0;
+    }
+
+    .plotTitle {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ptTools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 0.70rem;
+      font-weight: 500;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 999px;
+      max-width: 46vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pngBtn {
+      padding: 4px 9px;
+      min-height: 28px;
+      font-size: 0.70rem;
+      border-radius: 8px;
+      background: #1b274c;
+    }
+
+    .plotBox { flex: 1 1 auto; min-height: 0; position: relative; }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 8px;
+      background: #0d1328;
+    }
+
+    /* ---------- mobile quick bar ---------- */
+    #quickbar { display: none; }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 1180px) {
+      :root { --ctrlW: clamp(310px, 36vw, 400px); }
+    }
+
+    @media (max-width: 900px), (max-height: 520px) and (max-width: 1100px) {
+      html, body { overflow: auto; height: auto; }
+      #app { display: block; height: auto; }
+      #main {
+        display: block;
+        height: auto;
+        padding: 8px 8px 4px;
+      }
+      #main .plotWrap { margin-bottom: 8px; }
+      #controls {
+        flex: none;
+        width: 100%;
+        height: auto;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding: 10px 10px calc(84px + env(safe-area-inset-bottom));
+        overflow: visible;
+      }
+      #panelMS .plotBox, #panelVol .plotBox { height: clamp(180px, 27vh, 300px); }
+      #panelPhase .plotBox { height: clamp(280px, 52vh, 480px); }
+      .badge { max-width: 60vw; }
+
+      #quickbar {
+        display: flex;
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        z-index: 60;
+        gap: 7px;
+        padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+        background: rgba(11,16,32,0.94);
+        backdrop-filter: blur(8px);
+        border-top: 1px solid var(--border);
+      }
+      #quickbar button { flex: 1 1 0; min-height: 44px; font-size: 0.80rem; }
+    }
+
+    @media (max-width: 460px) {
+      .plotTitle { font-size: 0.86rem; }
+      #runbar button, .buttons button { flex: 1 1 46%; }
+      .about p, .equations { font-size: 0.78rem; }
+      #panelPhase .plotBox { height: clamp(260px, 46vh, 400px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- ============ MAIN DISPLAY (left) ============ -->
+    <main id="main">
+      <section class="card plotWrap" id="panelMS">
+        <div class="plotTitle">
+          <span>m(t) and s(t)</span>
+          <span class="ptTools">
+            <span class="badge" id="badgeTop">ready</span>
+            <button class="pngBtn" data-fig="ms" title="Download this figure as PNG">PNG ⤓</button>
+          </span>
+        </div>
+        <div class="plotBox"><canvas id="canvasMS"></canvas></div>
+      </section>
+
+      <section class="card plotWrap" id="panelVol">
+        <div class="plotTitle">
+          <span>Volume&nbsp;&nbsp;Vol(t) = L(C − 3m)/(1+s)</span>
+          <span class="ptTools">
+            <span class="badge" id="badgeBottom">screen-fit</span>
+            <button class="pngBtn" data-fig="vol" title="Download this figure as PNG">PNG ⤓</button>
+          </span>
+        </div>
+        <div class="plotBox"><canvas id="canvasVol"></canvas></div>
+      </section>
+
+      <section class="card plotWrap" id="panelPhase">
+        <div class="plotTitle">
+          <span>Phase diagram in (m, s)</span>
+          <span class="ptTools">
+            <span class="badge" id="badgePhase">sign map + trajectory</span>
+            <button class="pngBtn" data-fig="phase" title="Download this figure as PNG">PNG ⤓</button>
+          </span>
+        </div>
+        <div class="plotBox"><canvas id="canvasPhase"></canvas></div>
+      </section>
+    </main>
+
+    <!-- ============ CONTROL PANEL (right) ============ -->
+    <aside id="controls">
+
+      <!-- 1. Title as a pull-down with background + references -->
+      <details class="panel" id="titlePanel">
+        <summary>Nucleosome Gillespie Dynamics — bistable epigenetic states</summary>
+        <div class="panelBody about">
+          <p>Chromosomal regions can adopt stable and heritable alternative states resulting in bistable
+          gene expression without changes to the DNA sequence. Such epigenetic control is often associated
+          with alternative covalent modifications of histones. The stability and heritability of the states
+          are thought to involve positive feedback where modified nucleosomes recruit enzymes that similarly
+          modify nearby nucleosomes. We developed a simplified stochastic model for dynamic nucleosome
+          modification based on the silent mating-type region of the yeast <em>Schizosaccharomyces pombe</em>.
+          We show that the mechanism can give strong bistability that is resistant both to high noise due to
+          random gain or loss of nucleosome modifications and to random partitioning upon DNA replication.
+          However, robust bistability required: (1) cooperativity, the activity of more than one modified
+          nucleosome, in the modification reactions and (2) that nucleosomes occasionally stimulate
+          modification beyond their neighbor nucleosomes, as explored in ref. 1.</p>
+
+          <p>The above model can be extended to include aspects of chromatin structure which is believed to
+          be an important aspect of epigenetic inheritance. It relies on the post-translational modification
+          of histones, the three-dimensional organization of nucleosomal DNA and interactions between
+          chromatin components. To investigate interplays between these elements, we in ref. 6 employed
+          molecular dynamics simulations that integrated polymer modeling with enzymatic reactions on
+          nucleosomes catalyzed by read–write enzymes. We explicitly modeled the diffusible heterochromatic
+          nucleosome reader Swi6 (an HP1 homolog) that engages in homotypic and heterotypic interactions,
+          undergoes and induces conformational changes upon binding to heterochromatic nucleosomes, and
+          facilitates the targeted recruitment of histone deacetylases. The model revealed bistable
+          epigenetic states with a silent state associated to the phase separation of heterochromatic
+          domain condensates.</p>
+
+          <p>In the present applet one can explore a mean-field description of this model (from ref. 6),
+          where condensates are supported by Swi6 in a dosage-dependent manner that can be recapitulated
+          analytically. Our model of heterochromatic condensates further showed how a heterochromatic region
+          can induce silencing of another region through spatial proximity in three dimensions.</p>
+
+          <h4>References</h4>
+          <ol>
+            <li>I. B. Dodd, M. A. Micheelsen, K. Sneppen &amp; G. Thon (2007). Theoretical analysis of
+            epigenetic cell memory by nucleosome modification. <em>Cell</em>, 129(4), 813–822.</li>
+            <li>A. Alsing &amp; K. Sneppen (2013). Differentiation of developing olfactory neurons analysed
+            in terms of coupled epigenetic landscapes. <em>Nucleic Acids Research</em>, 41(9), 4755–4764.</li>
+            <li>K. Sneppen &amp; I. B. Dodd (2012). A simple histone code opens many paths to epigenetics.</li>
+            <li>I. B. Dodd &amp; K. Sneppen (2011). Barriers and silencers: a theoretical toolkit for control
+            and containment of nucleosome-based epigenetic states. <em>Journal of Molecular Biology</em>,
+            414(4), 624–637.</li>
+            <li>K. Sneppen &amp; L. Ringrose (2019). Theoretical analysis of Polycomb-Trithorax systems
+            predicts that poised chromatin is bistable and not bivalent. <em>Nature Communications</em>,
+            10(1), 2133.</li>
+            <li>A. Berard, J. R. Gissinger, K. Sneppen &amp; G. Thon (2026). Epigenetic Memory Achieved
+            Through Chromatin-Induced Phase Separation. <em>PRX Life</em>, 4(3), 033016.</li>
+          </ol>
+        </div>
+      </details>
+
+      <!-- 2. Simulation start + surrounding buttons, at the top -->
+      <div id="runbar">
+        <button id="startContBtn" class="primary">▶ Start simulation</button>
+        <button id="stopContBtn" class="warn">■ Stop</button>
+        <button id="runBtn" class="secondary">Run once</button>
+        <button id="resetBtn" class="secondary">Reset traces</button>
+        <button id="randomBtn" class="secondary">Randomize m(0), s(0)</button>
+      </div>
+
+      <!-- 3. Model equations pull-down (notes below the equations) -->
+      <details class="panel" id="eqPanel">
+        <summary>Model equations</summary>
+        <div class="panelBody">
+          <div class="equations">
+            <div><strong>State variables:</strong> m, s ∈ [0, 1]</div>
+            <div><strong>dm/dt</strong> = k2²·s·m·(1−m) − k1·k2·m·(1−m)² + Γ·(1−m) − Γ·m</div>
+            <div><strong>ds/dt</strong> = γ·[ (ρ / Vol<sup>1/3</sup>)·(mL / Vol)·(1 − (L / Vol) − s) − s·exp[−β(s + mL / Vol)] ]</div>
+            <div><strong>Vol</strong> = L(C − 3m)/(1+s)</div>
+            <div><strong>Cell division</strong> (if generation time &gt; 0): s → 0 and m → nearest lattice
+              value j/L to clamp[N(μ, σ), 0, 1], with μ = 0.25 + m/2 and σ = √(μ(1−μ)/L)</div>
+          </div>
+          <div class="chips">
+            <div class="chip">L step 5; δ follows 1/L</div>
+            <div class="chip">Cell-division option</div>
+            <div class="chip">Discrete γ, β, ρ, Γ controls</div>
+            <div class="chip">Gaussian cell-division inheritance</div>
+            <div class="chip">Deterministic phase rendering</div>
+            <div class="chip">Phase-trajectory time window</div>
+            <div class="chip">White-background PNG exports</div>
+          </div>
+          <div class="small" style="margin-top:10px;">
+            Every display panel uses one common font size for axis numbers and labels, and the number of
+            axis ticks adapts to the panel size so labels never overlap. All PNG exports are rendered on a
+            white background with a parameter block, independent of the screen size. Changing
+            <span class="mono">L</span> resets <span class="mono">δ</span> to <span class="mono">1/L</span>.
+            The generation-time slider uses the discrete values
+            <span class="mono">1000, 2000, 5000, 10000, 20000, 50000</span>. Phase-plot fuzz is
+            deterministic for a given trace, so redraws and PNG exports stay consistent. At cell division,
+            m is redrawn from a Gaussian inheritance model and snapped to the nearest j/L lattice value in
+            [0,1]. The phase-trajectory window sliders select the left and right edge of the plotted time
+            interval; cell-division events inside the window are always added as explicit points.
+          </div>
+        </div>
+      </details>
+
+      <!-- 4. All simulation controls in one pull-down -->
+      <details class="panel" id="ctrlPanel" open>
+        <summary>Simulation controls (all parameters)</summary>
+        <div class="panelBody">
+          <div class="grid" id="controlGrid"></div>
+        </div>
+      </details>
+
+      <!-- 5. Figure downloads -->
+      <details class="panel" id="exportPanel">
+        <summary>Download figures &amp; data</summary>
+        <div class="panelBody">
+          <div class="groupTitle">Single figures (PNG)</div>
+          <div class="buttons">
+            <button class="secondary" data-fig="ms">m, s figure</button>
+            <button class="secondary" data-fig="vol">Volume figure</button>
+            <button class="secondary" data-fig="phase">Phase figure</button>
+          </div>
+          <div class="groupTitle">All figures together</div>
+          <div class="buttons">
+            <button id="exportAllBtn">⤓ All figures (one PNG)</button>
+            <button id="exportBtn" class="secondary">Export CSV trace</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- 6. Status -->
+      <details class="panel" id="statusPanel" open>
+        <summary>Run status</summary>
+        <div class="panelBody">
+          <div class="status" id="status"></div>
+        </div>
+      </details>
+    </aside>
+  </div>
+
+  <div id="quickbar">
+    <button id="qStart" class="primary">▶ Start</button>
+    <button id="qStop" class="warn">■ Stop</button>
+    <button id="qReset" class="secondary">Reset</button>
+    <button id="qJump" class="secondary">Controls</button>
+  </div>
+
+  <script>
+  "use strict";
+  (function () {
+
+    /* ================================================================
+       Parameters
+       ================================================================ */
+    const params = {
+      L: 50,
+      C: 6.0,
+      rhoLog: Math.log10(20),
+      beta: 4.0,
+      gamma: 1.0,
+      k1Log: 0.0,
+      k2Log: 0.0,
+      noiseLog: Math.log10(0.085),
+      delta: 0.02,
+      m0: 0.20,
+      s0: 0.20,
+      divisionInterval: 10000,
+      tMax: 150000,
+      maxEvents: 1000,
+      phaseWindowLeft: 0,
+      phaseWindowRight: 100,
+      sampleEvery: 1
+    };
+
+    const EVENT_SAFETY_CAP = 1e6;
+    const MAX_TRACE_POINTS = 120000;   // trace is decimated above this in continuous mode
+    const FONT_FAMILY = 'Inter, system-ui, sans-serif';
+
+    const clamp = (x, a, b) => (x < a ? a : (x > b ? b : x));
+
+    function makeLinearChoices(min, max, step) {
+      const out = [];
+      for (let v = min; v <= max + 1e-12; v += step) out.push(Number(v.toFixed(6)));
+      return out;
+    }
+
+    function formatDiscreteValue(v) {
+      if (v >= 10) return Number(v).toFixed(0);
+      if (v >= 1) return Number(v).toFixed(v % 1 === 0 ? 0 : 1);
+      return Number(v).toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+    }
+
+    const controls = [
+      { key: 'L', label: 'L (nucleosomes)', min: 10, max: 200, step: 5, mapLabel: v => v.toFixed(0) },
+      { key: 'C', label: 'C', min: 3, max: 12, step: 0.5, mapLabel: v => v.toFixed(1) },
+      { key: 'rhoLog', label: 'ρ (Swi6 dosage)', choices: [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200].map(Math.log10), mapLabel: v => formatDiscreteValue(10 ** v) },
+      { key: 'beta', label: 'β (condensate stabilisation)', min: 0, max: 10, step: 1, mapLabel: v => v.toFixed(0) },
+      { key: 'gamma', label: 'γ (Swi6 rate scale)', choices: [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100], mapLabel: v => formatDiscreteValue(v) },
+      { key: 'k1Log', label: 'k1 [log scale]', min: -2, max: 1, step: 0.01, mapLabel: v => (10 ** v).toFixed(4) },
+      { key: 'k2Log', label: 'k2 [log scale]', min: -2, max: 1, step: 0.01, mapLabel: v => (10 ** v).toFixed(4) },
+      { key: 'noiseLog', label: 'Γ spontaneous conversion', choices: makeLinearChoices(0.005, 1.0, 0.005).map(Math.log10), mapLabel: v => formatDiscreteValue(10 ** v) },
+      { key: 'delta', label: 'δ (step size)', min: 0.005, max: 0.1, step: 0.0005, mapLabel: v => v.toFixed(5) },
+      { key: 'm0', label: 'm(0)', min: 0, max: 1, step: 0.001, mapLabel: v => v.toFixed(3) },
+      { key: 's0', label: 's(0)', min: 0, max: 1, step: 0.001, mapLabel: v => v.toFixed(3) },
+      { key: 'divisionInterval', label: 'generation time / cell-division time', choices: [1000, 2000, 5000, 10000, 20000, 50000], mapLabel: v => v.toFixed(0) },
+      { key: 'tMax', label: 't max', min: 10000, max: 300000, step: 10000, mapLabel: v => v.toFixed(0) },
+      { key: 'maxEvents', label: 'phase-trajectory points in window', min: 100, max: 5000, step: 100, mapLabel: v => v.toFixed(0) },
+      { key: 'sampleEvery', label: 'store every time', choices: [0.5, 1, 2, 5, 10, 20, 50, 100], mapLabel: v => v.toFixed(v < 1 ? 1 : 0) }
+    ];
+
+    /* ================================================================
+       Themes  (phase colours as RGBA tuples for fast ImageData fills)
+       ================================================================ */
+    const DARK_THEME = {
+      name: 'dark',
+      background: '#0d1328',
+      axis: '#7f8bb4',
+      text: '#edf2ff',
+      muted: '#c7d1ef',
+      grid: 'rgba(174,185,217,0.14)',
+      legendBg: 'rgba(13,19,40,0.80)',
+      legendBorder: 'rgba(174,185,217,0.28)',
+      phaseQ1: [255, 80, 80, 122],
+      phaseQ2: [255, 165, 0, 117],
+      phaseQ3: [80, 230, 230, 112],
+      phaseQ4: [70, 110, 255, 133],
+      vector: 'rgba(220, 224, 233, 0.84)',
+      path: 'rgba(255,255,255,0.85)',
+      point: '#ffcc7c',
+      fixedPoint: '#ffd6fb',
+      mSeries: '#ff4d4d',
+      sSeries: '#9bffb0',
+      volSeries: '#ffcc7c'
+    };
+
+    const LIGHT_THEME = {
+      name: 'light',
+      background: '#ffffff',
+      axis: '#4b5563',
+      text: '#111827',
+      muted: '#374151',
+      grid: 'rgba(17,24,39,0.10)',
+      legendBg: 'rgba(255,255,255,0.94)',
+      legendBorder: 'rgba(17,24,39,0.18)',
+      phaseQ1: [239, 68, 68, 61],
+      phaseQ2: [245, 158, 11, 61],
+      phaseQ3: [6, 182, 212, 56],
+      phaseQ4: [59, 130, 246, 56],
+      vector: 'rgba(55, 65, 81, 0.86)',
+      path: 'rgba(17,24,39,0.80)',
+      point: '#b45309',
+      fixedPoint: '#7c3aed',
+      mSeries: '#dc2626',
+      sSeries: '#059669',
+      volSeries: '#d97706'
+    };
+
+    /* Font sets: tick numbers, axis labels and legend all share one size. */
+    function fontSet(base, mode) {
+      return {
+        base,
+        tick: base,
+        label: base,
+        legend: base,
+        mode,                      // 'screen' | 'export'
+        line: mode === 'export' ? base / 16 : Math.max(1, base / 12),
+        trajectory: mode === 'export' ? 1.7 : 0.8,
+        endpointDot: mode === 'export' ? 5.0 : 1.9,
+        endpointCloud: mode === 'export' ? 26 : 16
+      };
+    }
+
+    const EXPORT_BASE = 58;
+    const EXPORT_FONT = fontSet(EXPORT_BASE, 'export');
+
+    /* ================================================================
+       DOM handles
+       ================================================================ */
+    const $ = id => document.getElementById(id);
+    const grid = $('controlGrid');
+    const statusEl = $('status');
+    const badgeTop = $('badgeTop');
+    const badgeBottom = $('badgeBottom');
+    const badgePhase = $('badgePhase');
+    const mainEl = $('main');
+    const canvasMS = $('canvasMS');
+    const canvasVol = $('canvasVol');
+    const canvasPhase = $('canvasPhase');
+
+    let latestTrace = null;
+    let continuousRunning = false;
+    let fixedPointCache = { key: null, value: { m: 0.5, s: 0.5 } };
+    let phaseFieldCache = { key: null, canvas: null };
+
+    /* ================================================================
+       Model
+       ================================================================ */
+    function volume(L, m, s, C) {
+      return Math.max(L * (C - 3 * m) / Math.max(1 + s, 1e-9), 1e-9);
+    }
+
+    /* Pre-resolves the log-scaled parameters once, so grid sweeps of the
+       vector field do not repeat 10**x for every cell. */
+    function driftContext(p) {
+      return {
+        L: p.L, C: p.C, beta: p.beta, gamma: p.gamma,
+        rho: 10 ** p.rhoLog,
+        k1: 10 ** p.k1Log,
+        k2: 10 ** p.k2Log,
+        noise: 10 ** p.noiseLog
+      };
+    }
+
+    function driftWith(dc, m, s, out) {
+      const Vol = Math.max(dc.L * (dc.C - 3 * m) / Math.max(1 + s, 1e-9), 1e-9);
+      const x = m * dc.L / Vol;
+      const nd = dc.L / Vol;
+      const om = 1 - m;
+      const dm = dc.k2 * dc.k2 * s * m * om - dc.k1 * dc.k2 * m * om * om + dc.noise * (1 - 2 * m);
+      const cap = (dc.rho / Math.cbrt(Vol)) * x * (1 - nd - s);
+      const esc = s * Math.exp(-dc.beta * (s + x));
+      const ds = dc.gamma * (cap - esc);
+      if (out) { out.dm = dm; out.ds = ds; return out; }
+      return { dm, ds };
+    }
+
+    function driftAt(m, s, p) { return driftWith(driftContext(p || params), m, s); }
+
+    function modelRates(state, p) {
+      const m = clamp(state.m, 0, 1);
+      const s = clamp(state.s, 0, 1);
+      const L = p.L;
+      const Vol = volume(L, m, s, p.C);
+      const rho = 10 ** p.rhoLog;
+      const k1 = 10 ** p.k1Log;
+      const k2 = 10 ** p.k2Log;
+      const noise = 10 ** p.noiseLog;
+      const x = (m * L) / Vol;
+      const nd = L / Vol;
+
+      const mPlusRecruit = Math.max(0, (k2 * k2) * s * m * (1 - m));
+      const mMinusRecruit = Math.max(0, (k1 * k2) * m * (1 - m) * (1 - m));
+      const mPlusNoise = Math.max(0, noise * (1 - m));
+      const mMinusNoise = Math.max(0, noise * m);
+
+      // ds/dt = gamma*[ (rho/V^(1/3))*(mL/V)*(1 - L/V - s) - s*exp(-beta*(s + mL/V)) ].
+      // A negative capture term is moved into the loss channel so that every
+      // Gillespie propensity stays non-negative while the net drift is exact.
+      const cap = (rho / Math.cbrt(Vol)) * x * (1 - nd - s);
+      const esc = Math.max(0, s * Math.exp(-p.beta * (s + x)));
+      const sPlus = Math.max(0, p.gamma * cap);
+      const sMinus = Math.max(0, p.gamma * esc) + Math.max(0, -p.gamma * cap);
+
+      return {
+        Vol,
+        processes: [
+          { rate: mPlusRecruit, var: 'm', step: +p.delta },
+          { rate: mMinusRecruit, var: 'm', step: -p.delta },
+          { rate: mPlusNoise, var: 'm', step: +p.delta },
+          { rate: mMinusNoise, var: 'm', step: -p.delta },
+          { rate: sPlus, var: 's', step: +p.delta },
+          { rate: sMinus, var: 's', step: -p.delta }
+        ]
+      };
+    }
+
+    function gaussianSample(mean, sigma) {
+      if (!(sigma > 0)) return mean;
+      const u1 = Math.max(Math.random(), Number.EPSILON);
+      const u2 = Math.random();
+      return mean + sigma * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    }
+
+    function quantizeMToLattice(value, L) {
+      const n = Math.max(1, Math.round(L));
+      return clamp(Math.round(clamp(value, 0, 1) * n) / n, 0, 1);
+    }
+
+    function applyCellDivision(state, p) {
+      const oldM = clamp(state.m, 0, 1);
+      const mean = clamp(0.25 + oldM / 2, 0, 1);
+      const sigma = Math.sqrt(Math.max(0, mean * (1 - mean) / Math.max(1, p.L)));
+      const rawDraw = gaussianSample(mean, sigma);
+      const clippedDraw = clamp(rawDraw, 0, 1);
+      const inheritedM = quantizeMToLattice(clippedDraw, p.L);
+      state.s = 0;
+      state.m = inheritedM;
+      return { previousM: oldM, mean, sigma, rawDraw, clippedDraw, inheritedM };
+    }
+
+    function pt(t, m, s, C, L, isDivision, info) {
+      return {
+        t, m, s,
+        Vol: volume(L, m, s, C),
+        isDivision: isDivision ? 1 : 0,
+        divisionMean: info ? info.mean : null,
+        divisionSigma: info ? info.sigma : null,
+        divisionRaw: info ? info.rawDraw : null,
+        divisionClipped: info ? info.clippedDraw : null,
+        divisionNewM: info ? info.inheritedM : null
+      };
+    }
+
+    /* Gillespie stepper.  `eventBudget` lets the animation loop return to the
+       browser regularly instead of freezing the tab on long chunks. */
+    function gillespieSim(p, initialState, startT, existingTrace, eventBudget) {
+      let t = startT || 0;
+      let eventCount = 0;
+      let divisionCount = 0;
+      const budget = eventBudget || EVENT_SAFETY_CAP;
+
+      const state = initialState
+        ? { m: clamp(initialState.m, 0, 1), s: clamp(initialState.s, 0, 1) }
+        : { m: clamp(p.m0, 0, 1), s: clamp(p.s0, 0, 1) };
+
+      const trace = existingTrace || [pt(t, state.m, state.s, p.C, p.L, false, null)];
+
+      let stopReason = 'limit';
+      let lastDivisionInfo = null;
+      const divisionOn = p.divisionInterval > 0;
+      let nextDivisionTime = divisionOn ? (Math.floor(t / p.divisionInterval) + 1) * p.divisionInterval : Infinity;
+      let nextStoreTime = t + p.sampleEvery;
+
+      while (t < p.tMax && eventCount < budget) {
+        const rates = modelRates(state, p);
+        let total = 0;
+        for (let i = 0; i < rates.processes.length; i++) total += rates.processes[i].rate;
+
+        let nextEventTime = Infinity;
+        if (total > 0 && Number.isFinite(total)) {
+          nextEventTime = t - Math.log(Math.max(Math.random(), 1e-12)) / total;
+        }
+
+        if (divisionOn && nextDivisionTime <= p.tMax && nextDivisionTime <= nextEventTime) {
+          t = nextDivisionTime;
+          const info = applyCellDivision(state, p);
+          divisionCount++;
+          lastDivisionInfo = info;
+          trace.push(pt(t, state.m, state.s, p.C, p.L, true, info));
+          nextDivisionTime += p.divisionInterval;
+          continue;
+        }
+
+        if (!(total > 0) || !Number.isFinite(total)) { stopReason = 'zero-rate'; break; }
+
+        t = nextEventTime;
+
+        let u = Math.random() * total;
+        let chosen = rates.processes[rates.processes.length - 1];
+        for (let i = 0; i < rates.processes.length; i++) {
+          u -= rates.processes[i].rate;
+          if (u <= 0) { chosen = rates.processes[i]; break; }
+        }
+
+        state[chosen.var] = clamp(state[chosen.var] + chosen.step, 0, 1);
+        eventCount++;
+
+        if (t >= nextStoreTime || t >= p.tMax || eventCount === 1) {
+          trace.push(pt(t, state.m, state.s, p.C, p.L, false, null));
+          while (nextStoreTime <= t) nextStoreTime += p.sampleEvery;
+        }
+      }
+
+      if (eventCount >= budget && t < p.tMax) {
+        stopReason = eventBudget ? 'chunk-budget' : 'event-safety-cap';
+      }
+      if (trace.length === 0 || trace[trace.length - 1].t < t) {
+        trace.push(pt(t, state.m, state.s, p.C, p.L, false, null));
+      }
+
+      return { trace, finalState: state, t, eventCount, divisionCount, stopReason, lastDivisionInfo };
+    }
+
+    /* Keeps memory bounded during long continuous runs; division events survive. */
+    function compactTrace(trace) {
+      if (trace.length <= MAX_TRACE_POINTS) return trace;
+      const out = [trace[0]];
+      for (let i = 1; i < trace.length - 1; i++) {
+        if (trace[i].isDivision || (i & 1) === 0) out.push(trace[i]);
+      }
+      out.push(trace[trace.length - 1]);
+      return out;
+    }
+
+    /* ================================================================
+       Deterministic RNG for reproducible phase-plot fuzz
+       ================================================================ */
+    function hashStringToSeed(str) {
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return h >>> 0;
+    }
+
+    function mulberry32(seed) {
+      let a = seed >>> 0;
+      return function () {
+        a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function traceSeed(trace, p) {
+      if (!trace || !trace.length) return 1;
+      const f = trace[0], l = trace[trace.length - 1];
+      return hashStringToSeed([
+        trace.length, p.L, p.C, p.delta, p.tMax, p.divisionInterval, p.maxEvents,
+        p.phaseWindowLeft, p.phaseWindowRight,
+        f.t.toFixed(5), f.m.toFixed(5), f.s.toFixed(5),
+        l.t.toFixed(5), l.m.toFixed(5), l.s.toFixed(5)
+      ].join('|'));
+    }
+
+    /* ================================================================
+       Fixed point
+       ================================================================ */
+    function fixedPointKey(p) {
+      return [p.L, p.C, p.rhoLog.toFixed(6), p.beta.toFixed(6), p.gamma.toFixed(6),
+        p.k1Log.toFixed(6), p.k2Log.toFixed(6), p.noiseLog.toFixed(6)].join('|');
+    }
+
+    function classify(dc, m, s) {
+      const h = 0.0025;
+      const a = driftWith(dc, clamp(m + h, 0, 1), s);
+      const b = driftWith(dc, clamp(m - h, 0, 1), s);
+      const c = driftWith(dc, m, clamp(s + h, 0, 1));
+      const d = driftWith(dc, m, clamp(s - h, 0, 1));
+      const dmdm = (a.dm - b.dm) / (2 * h), dmds = (c.dm - d.dm) / (2 * h);
+      const dsdm = (a.ds - b.ds) / (2 * h), dsds = (c.ds - d.ds) / (2 * h);
+      const tr = dmdm + dsds;
+      const det = dmdm * dsds - dmds * dsdm;
+      const disc = tr * tr - 4 * det;
+      const lmax = Number.isFinite(disc) && disc >= 0 ? (tr + Math.sqrt(disc)) / 2 : tr / 2;
+      return det < 0 || lmax > 0;
+    }
+
+    function estimateUnstableFixedPoint(p) {
+      const key = fixedPointKey(p);
+      if (fixedPointCache.key === key) return fixedPointCache.value;
+      const dc = driftContext(p);
+
+      let bestAny = null, bestUnstable = null;
+      const n = 36;
+      for (let i = 2; i <= n - 2; i++) {
+        for (let j = 2; j <= n - 2; j++) {
+          const m = i / n, s = j / n;
+          const d = driftWith(dc, m, s);
+          const score = Math.hypot(d.dm, d.ds);
+          if (!bestAny || score < bestAny.score) bestAny = { m, s, score, unstable: false };
+          if (score < (bestUnstable ? bestUnstable.score : Infinity) && classify(dc, m, s)) {
+            bestUnstable = { m, s, score, unstable: true };
+          }
+        }
+      }
+
+      let best = bestUnstable || bestAny || { m: 0.5, s: 0.5, score: 1e9, unstable: false };
+      let step = 0.06;
+      for (let iter = 0; iter < 7; iter++) {
+        let local = best;
+        for (let a = -3; a <= 3; a++) {
+          for (let b = -3; b <= 3; b++) {
+            const m = clamp(best.m + a * step, 0.02, 0.98);
+            const s = clamp(best.s + b * step, 0.02, 0.98);
+            const d = driftWith(dc, m, s);
+            const score = Math.hypot(d.dm, d.ds);
+            const unstable = classify(dc, m, s);
+            const pen = unstable ? 0 : 1e-4;
+            if (score + pen < local.score + (local.unstable ? 0 : 1e-4)) local = { m, s, score, unstable };
+          }
+        }
+        best = local;
+        step *= 0.45;
+      }
+
+      fixedPointCache = { key, value: { m: best.m, s: best.s } };
+      return fixedPointCache.value;
+    }
+
+    /* ================================================================
+       Axis helpers — adaptive tick counts, measured margins
+       ================================================================ */
+    function niceTicks(min, max, count) {
+      if (!(max > min)) return [min];
+      const rough = (max - min) / Math.max(2, count);
+      const mag = 10 ** Math.floor(Math.log10(rough));
+      const norm = rough / mag;
+      const step = norm < 1.5 ? mag : norm < 3 ? 2 * mag : norm < 7 ? 5 * mag : 10 * mag;
+      const ticks = [];
+      for (let v = Math.ceil(min / step) * step; v <= max + 1e-9 * Math.abs(max); v += step) {
+        ticks.push(Math.abs(v) < 1e-12 ? 0 : v);
+      }
+      return ticks.length ? ticks : [min, max];
+    }
+
+    function formatGroupedInteger(v) {
+      const sign = v < 0 ? '-' : '';
+      return sign + Math.round(Math.abs(v)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
+
+    function formatTick(v) {
+      const av = Math.abs(v);
+      const nearInt = Math.abs(v - Math.round(v)) < 1e-9;
+      if (av === 0) return '0';
+      if (av < 0.001) return v.toExponential(1);
+      if (nearInt && av >= 1000) return formatGroupedInteger(v);
+      if (av >= 100) return v.toFixed(0);
+      if (av >= 10) return v.toFixed(1).replace(/\.0$/, '');
+      return v.toFixed(3).replace(/\.?0+$/, '');
+    }
+
+    /* Drops ticks until neighbouring labels are separated by at least minSep px. */
+    function thinTicks(ticks, positions, minSep) {
+      if (ticks.length <= 2) return ticks;
+      let keep = ticks.slice();
+      let pos = positions.slice();
+      let guard = 0;
+      while (keep.length > 2 && guard++ < 8) {
+        let ok = true;
+        for (let i = 1; i < pos.length; i++) {
+          if (Math.abs(pos[i] - pos[i - 1]) < minSep) { ok = false; break; }
+        }
+        if (ok) break;
+        const nk = [], np = [];
+        for (let i = 0; i < keep.length; i += 2) { nk.push(keep[i]); np.push(pos[i]); }
+        keep = nk; pos = np;
+      }
+      return keep;
+    }
+
+    /* Draws background, grid, ticks and labels; returns the plot geometry. */
+    function drawAxes(ctx, W, H, o, theme, fs) {
+      const yFmt = o.yTickFormatter || formatTick;
+      const xFmt = o.xTickFormatter || formatTick;
+
+      ctx.fillStyle = theme.background;
+      ctx.fillRect(0, 0, W, H);
+
+      const top = Math.round(fs.base * 0.95);
+      let right = Math.round(fs.base * 1.15);
+      const bottom = Math.round(
+        (o.hideXTickLabels ? fs.base * 0.7 : fs.base * 1.75) +
+        (o.hideXLabel || !o.xLabel ? 0 : fs.base * 1.5)
+      );
+
+      // --- y ticks: few enough that labels can never touch ---
+      const plotH0 = Math.max(20, H - top - bottom);
+      const yCount = clamp(Math.floor(plotH0 / (fs.base * 3.2)), 2, 5);
+      let yTicks = o.yTicks || niceTicks(o.yMin, o.yMax, yCount);
+      const yPos0 = yTicks.map(v => (H - bottom) - (v - o.yMin) / Math.max(1e-12, o.yMax - o.yMin) * plotH0);
+      yTicks = thinTicks(yTicks, yPos0, fs.base * 1.8);
+
+      ctx.font = fs.tick + 'px ' + FONT_FAMILY;
+      let maxYW = 0;
+      for (const v of yTicks) maxYW = Math.max(maxYW, ctx.measureText(yFmt(v)).width);
+      const left = Math.round(fs.base * 2.0 + maxYW + fs.base * 0.5);
+
+      // --- x ticks: the right margin grows with the width of the last label,
+      //     so the final number can never be clipped at the panel edge ---
+      const xTicksFor = w => o.xTicks || niceTicks(o.xMin, o.xMax, clamp(Math.round(w / (fs.base * 6)), 2, 6));
+      let plotW = Math.max(20, W - left - right);
+      let xTicks = xTicksFor(plotW);
+      if (!o.hideXTickLabels) {
+        for (let pass = 0; pass < 2; pass++) {
+          const lastW = ctx.measureText(xFmt(xTicks[xTicks.length - 1])).width;
+          const need = Math.ceil(lastW * 0.55 + fs.base * 0.3);
+          if (need <= right) break;
+          right = need;
+          plotW = Math.max(20, W - left - right);
+          xTicks = xTicksFor(plotW);
+        }
+      }
+
+      const plotH = plotH0;
+      const bottomY = H - bottom;
+      const mapX = x => left + (x - o.xMin) / Math.max(1e-12, o.xMax - o.xMin) * plotW;
+      const mapY = y => bottomY - (y - o.yMin) / Math.max(1e-12, o.yMax - o.yMin) * plotH;
+
+      let maxXW = 0;
+      for (const v of xTicks) maxXW = Math.max(maxXW, ctx.measureText(xFmt(v)).width);
+      xTicks = thinTicks(xTicks, xTicks.map(mapX), maxXW + fs.base * 1.2);
+
+      // --- grid ---
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = Math.max(1, fs.line * 0.8);
+      ctx.beginPath();
+      for (const x of xTicks) { const px = mapX(x); ctx.moveTo(px, top); ctx.lineTo(px, bottomY); }
+      for (const y of yTicks) { const py = mapY(y); ctx.moveTo(left, py); ctx.lineTo(left + plotW, py); }
+      ctx.stroke();
+
+      // --- axis lines + tick marks ---
+      const tickLen = fs.base * 0.32;
+      ctx.strokeStyle = theme.axis;
+      ctx.lineWidth = Math.max(1, fs.line * 1.4);
+      ctx.beginPath();
+      ctx.moveTo(left, bottomY); ctx.lineTo(left + plotW, bottomY);
+      ctx.moveTo(left, bottomY); ctx.lineTo(left, top);
+      if (!o.hideXTickLabels) {
+        for (const x of xTicks) { const px = mapX(x); ctx.moveTo(px, bottomY); ctx.lineTo(px, bottomY + tickLen); }
+      }
+      for (const y of yTicks) { const py = mapY(y); ctx.moveTo(left - tickLen, py); ctx.lineTo(left, py); }
+      ctx.stroke();
+
+      // --- tick labels ---
+      ctx.fillStyle = theme.muted;
+      ctx.font = fs.tick + 'px ' + FONT_FAMILY;
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'right';
+      for (const y of yTicks) ctx.fillText(yFmt(y), left - tickLen - fs.base * 0.30, mapY(y));
+
+      if (!o.hideXTickLabels) {
+        ctx.textBaseline = 'top';
+        const ly = bottomY + tickLen + fs.base * 0.28;
+        for (const x of xTicks) {
+          const px = mapX(x);
+          const half = ctx.measureText(xFmt(x)).width / 2;
+          if (px + half > W - 1) { ctx.textAlign = 'right'; ctx.fillText(xFmt(x), W - 1, ly); }
+          else if (px - half < 1) { ctx.textAlign = 'left'; ctx.fillText(xFmt(x), 1, ly); }
+          else { ctx.textAlign = 'center'; ctx.fillText(xFmt(x), px, ly); }
+        }
+      }
+
+      // --- axis titles (same size as the numbers) ---
+      ctx.fillStyle = theme.text;
+      ctx.font = fs.label + 'px ' + FONT_FAMILY;
+      ctx.textAlign = 'center';
+      if (!o.hideXLabel && o.xLabel) {
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(o.xLabel, left + plotW / 2, H - fs.base * 0.25);
+      }
+      ctx.save();
+      ctx.translate(fs.base * 1.05, top + plotH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textBaseline = 'middle';
+      ctx.fillText(o.yLabel, 0, 0);
+      ctx.restore();
+
+      return { left, right: left + plotW, top, bottom: bottomY, plotW, plotH, mapX, mapY };
+    }
+
+    /* ================================================================
+       Series drawing
+       ================================================================ */
+    /* min/max bucket decimation: keeps the visual envelope of noisy traces
+       while capping the number of path segments at ~2 per horizontal pixel. */
+    function decimateTrace(trace, key, targetBuckets) {
+      const n = trace.length;
+      const out = [];
+      if (n === 0) return out;
+      if (n <= targetBuckets * 2) {
+        for (let i = 0; i < n; i++) out.push({ x: trace[i].t, y: trace[i][key] });
+        return out;
+      }
+      const per = n / targetBuckets;
+      for (let b = 0; b < targetBuckets; b++) {
+        const s = Math.floor(b * per);
+        const e = Math.min(n, Math.floor((b + 1) * per));
+        if (e <= s) continue;
+        let lo = s, hi = s;
+        for (let i = s; i < e; i++) {
+          if (trace[i][key] < trace[lo][key]) lo = i;
+          if (trace[i][key] > trace[hi][key]) hi = i;
+        }
+        const a = Math.min(lo, hi), c = Math.max(lo, hi);
+        out.push({ x: trace[a].t, y: trace[a][key] });
+        if (c !== a) out.push({ x: trace[c].t, y: trace[c][key] });
+      }
+      const last = trace[n - 1];
+      out.push({ x: last.t, y: last[key] });
+      return out;
+    }
+
+    function drawSeriesIntoContext(ctx, W, H, series, o, theme, fs) {
+      const axes = drawAxes(ctx, W, H, o, theme, fs);
+
+      // division markers
+      if (o.markers && o.markers.length) {
+        const maxMarks = 400;
+        const stride = Math.max(1, Math.ceil(o.markers.length / maxMarks));
+        ctx.save();
+        ctx.strokeStyle = theme.point;
+        ctx.globalAlpha = 0.30;
+        ctx.lineWidth = Math.max(1, fs.line);
+        ctx.setLineDash(fs.mode === 'export' ? [12, 12] : [5, 5]);
+        ctx.beginPath();
+        for (let i = 0; i < o.markers.length; i += stride) {
+          const mx = o.markers[i];
+          if (mx < o.xMin || mx > o.xMax) continue;
+          const px = axes.mapX(mx);
+          ctx.moveTo(px, axes.top);
+          ctx.lineTo(px, axes.bottom);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      for (const sr of series) {
+        ctx.strokeStyle = sr.color;
+        ctx.lineWidth = fs.mode === 'export' ? 4.2 : Math.max(1.4, fs.base * 0.17);
+        ctx.beginPath();
+        const d = sr.data;
+        for (let i = 0; i < d.length; i++) {
+          const x = axes.mapX(d[i].x), y = axes.mapY(d[i].y);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      // legend, sized from the shared font
+      if (series.length) {
+        ctx.font = fs.legend + 'px ' + FONT_FAMILY;
+        let textW = 0;
+        for (const sr of series) textW = Math.max(textW, ctx.measureText(sr.label).width);
+        const lineLen = fs.base * 1.5;
+        const padX = fs.base * 0.6;
+        const rowH = fs.base * 1.55;
+        const boxW = lineLen + padX * 3 + textW;
+        const boxH = rowH * series.length + fs.base * 0.5;
+
+        // Put the legend in whichever corner of the plot area holds the least data.
+        const inset = fs.base * 0.4;
+        const corners = [
+          { x: axes.right - boxW - inset, y: axes.top + inset },
+          { x: axes.left + inset, y: axes.top + inset },
+          { x: axes.right - boxW - inset, y: axes.bottom - boxH - inset },
+          { x: axes.left + inset, y: axes.bottom - boxH - inset }
+        ];
+        let bestCorner = corners[0], bestScore = Infinity;
+        for (const c of corners) {
+          let score = 0;
+          for (const sr of series) {
+            const d = sr.data;
+            const stride = Math.max(1, Math.floor(d.length / 900));
+            for (let i = 0; i < d.length; i += stride) {
+              const px = axes.mapX(d[i].x), py = axes.mapY(d[i].y);
+              if (px >= c.x - 4 && px <= c.x + boxW + 4 && py >= c.y - 4 && py <= c.y + boxH + 4) score++;
+            }
+          }
+          if (score < bestScore) { bestScore = score; bestCorner = c; }
+          if (score === 0) break;
+        }
+        const bx = bestCorner.x;
+        const by = bestCorner.y;
+
+        ctx.fillStyle = theme.legendBg;
+        ctx.strokeStyle = theme.legendBorder;
+        ctx.lineWidth = Math.max(1, fs.line * 0.8);
+        ctx.beginPath();
+        const r = Math.min(10, fs.base * 0.4);
+        ctx.moveTo(bx + r, by);
+        ctx.arcTo(bx + boxW, by, bx + boxW, by + boxH, r);
+        ctx.arcTo(bx + boxW, by + boxH, bx, by + boxH, r);
+        ctx.arcTo(bx, by + boxH, bx, by, r);
+        ctx.arcTo(bx, by, bx + boxW, by, r);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        series.forEach((sr, i) => {
+          const yy = by + fs.base * 0.25 + rowH * (i + 0.5);
+          ctx.strokeStyle = sr.color;
+          ctx.lineWidth = fs.mode === 'export' ? 6 : Math.max(2.5, fs.base * 0.25);
+          ctx.beginPath();
+          ctx.moveTo(bx + padX, yy);
+          ctx.lineTo(bx + padX + lineLen, yy);
+          ctx.stroke();
+          ctx.fillStyle = theme.text;
+          ctx.fillText(sr.label, bx + padX * 2 + lineLen, yy);
+        });
+      }
+      return axes;
+    }
+
+    /* ================================================================
+       Phase plot
+       ================================================================ */
+    function phaseWindowPercentBounds(p) {
+      const a = clamp(Number(p.phaseWindowLeft), 0, 100);
+      const b = clamp(Number(p.phaseWindowRight), 0, 100);
+      const lo = Math.min(a, b), hi = Math.max(a, b);
+      return hi - lo < 1 ? [Math.max(0, lo - 0.5), Math.min(100, hi + 0.5)] : [lo, hi];
+    }
+
+    function phaseWindowTimeBounds(trace, p) {
+      const startT = trace && trace.length ? trace[0].t : 0;
+      const endT = trace && trace.length ? trace[trace.length - 1].t : startT;
+      const span = Math.max(0, endT - startT);
+      const [lo, hi] = phaseWindowPercentBounds(p);
+      return { start: startT + span * lo / 100, end: startT + span * hi / 100, leftPct: lo, rightPct: hi };
+    }
+
+    function interpolateTraceAt(trace, t) {
+      if (!trace || !trace.length) return null;
+      if (t <= trace[0].t) return { m: trace[0].m, s: trace[0].s };
+      const last = trace[trace.length - 1];
+      if (t >= last.t) return { m: last.m, s: last.s };
+      let lo = 0, hi = trace.length - 1;
+      while (hi - lo > 1) {
+        const mid = (lo + hi) >> 1;
+        if (trace[mid].t <= t) lo = mid; else hi = mid;
+      }
+      const a = trace[lo], b = trace[hi];
+      const al = clamp((t - a.t) / Math.max(1e-12, b.t - a.t), 0, 1);
+      return { m: a.m + al * (b.m - a.m), s: a.s + al * (b.s - a.s) };
+    }
+
+    function buildPhaseDisplayTrace(trace, fixedPoint, p, rng) {
+      if (!trace || !trace.length) return [];
+      const { start, end } = phaseWindowTimeBounds(trace, p);
+      const pointCount = Math.max(2, Math.round(p.maxEvents || 1000));
+      const span = Math.max(0, end - start);
+      const jitter = p.delta / 4;
+      const out = [];
+      let prevRaw = null;
+
+      const add = (rawM, rawS, tag, isDivision, rawT) => {
+        out.push({
+          m: clamp(rawM + (rng() * 2 - 1) * jitter, 0, 1),
+          s: clamp(rawS + (rng() * 2 - 1) * jitter, 0, 1),
+          rawM, rawS, tag, isDivision: !!isDivision, rawT
+        });
+      };
+
+      const entries = [];
+      for (let i = 0; i < pointCount; i++) {
+        entries.push({ t: start + span * (pointCount === 1 ? 0 : i / (pointCount - 1)), isDivision: false, data: null });
+      }
+      for (const d of trace) {
+        if (d.isDivision && d.t >= start - 1e-12 && d.t <= end + 1e-12) {
+          entries.push({ t: d.t, isDivision: true, data: d });
+        }
+      }
+      entries.sort((a, b) => (Math.abs(a.t - b.t) > 1e-12 ? a.t - b.t : Number(b.isDivision) - Number(a.isDivision)));
+
+      const merged = [];
+      for (const e of entries) {
+        const last = merged[merged.length - 1];
+        if (last && Math.abs(last.t - e.t) <= 1e-12) {
+          if (e.isDivision) { last.isDivision = true; last.data = e.data; }
+        } else merged.push({ t: e.t, isDivision: e.isDivision, data: e.data });
+      }
+
+      for (const e of merged) {
+        const raw = e.isDivision && e.data ? { m: e.data.m, s: e.data.s } : interpolateTraceAt(trace, e.t);
+        if (!raw) continue;
+        if (prevRaw && fixedPoint) {
+          const crossed = prevRaw.m < fixedPoint.m && prevRaw.s < fixedPoint.s && raw.m > fixedPoint.m && raw.s > fixedPoint.s;
+          if (crossed) {
+            add((prevRaw.m + fixedPoint.m) / 2, (prevRaw.s + fixedPoint.s) / 2, 'bridge');
+            add(fixedPoint.m, fixedPoint.s, 'bridge');
+            add((fixedPoint.m + raw.m) / 2, (fixedPoint.s + raw.s) / 2, 'bridge');
+          }
+        }
+        add(raw.m, raw.s, e.isDivision ? 'division' : 'sample', e.isDivision, e.t);
+        prevRaw = raw;
+      }
+      return out;
+    }
+
+    /* The drift sign map only changes when the model parameters change, so it is
+       rendered once into a tiny offscreen canvas and blitted on every redraw. */
+    function getPhaseField(nx, ny, theme, p) {
+      const key = fixedPointKey(p) + '|' + nx + 'x' + ny + '|' + theme.name;
+      if (phaseFieldCache.key === key) return phaseFieldCache.canvas;
+
+      const c = document.createElement('canvas');
+      c.width = nx; c.height = ny;
+      const g = c.getContext('2d');
+      const img = g.createImageData(nx, ny);
+      const data = img.data;
+      const dc = driftContext(p);
+      const tmp = { dm: 0, ds: 0 };
+
+      for (let iy = 0; iy < ny; iy++) {
+        const s = 1 - (iy + 0.5) / ny;              // top row = s close to 1
+        for (let ix = 0; ix < nx; ix++) {
+          const m = (ix + 0.5) / nx;
+          driftWith(dc, m, s, tmp);
+          const col = tmp.dm >= 0
+            ? (tmp.ds >= 0 ? theme.phaseQ1 : theme.phaseQ2)
+            : (tmp.ds >= 0 ? theme.phaseQ3 : theme.phaseQ4);
+          const o = (iy * nx + ix) * 4;
+          data[o] = col[0]; data[o + 1] = col[1]; data[o + 2] = col[2]; data[o + 3] = col[3];
+        }
+      }
+      g.putImageData(img, 0, 0);
+      phaseFieldCache = { key, canvas: c };
+      return c;
+    }
+
+    function drawArrow(ctx, x, y, u, v, scale, fs) {
+      const dx = u * scale, dy = -v * scale;
+      const len = Math.hypot(dx, dy);
+      if (len < 0.6) return;
+      const x2 = x + dx, y2 = y + dy;
+      ctx.moveTo(x, y); ctx.lineTo(x2, y2);
+      const ang = Math.atan2(dy, dx);
+      const ah = clamp(0.26 * len, fs.mode === 'export' ? 8 : 4, fs.mode === 'export' ? 16 : 8);
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - ah * Math.cos(ang - Math.PI / 6), y2 - ah * Math.sin(ang - Math.PI / 6));
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - ah * Math.cos(ang + Math.PI / 6), y2 - ah * Math.sin(ang + Math.PI / 6));
+    }
+
+    function drawFuzzyEndpoint(ctx, axes, point, theme, fs, jitter, rng) {
+      const bm = point.rawM !== undefined ? point.rawM : point.m;
+      const bs = point.rawS !== undefined ? point.rawS : point.s;
+      ctx.save();
+      for (let k = 0; k < fs.endpointCloud; k++) {
+        const jm = clamp(bm + (rng() * 2 - 1) * jitter, 0, 1);
+        const js = clamp(bs + (rng() * 2 - 1) * jitter, 0, 1);
+        ctx.fillStyle = theme.point;
+        ctx.globalAlpha = 0.08 + 0.04 * rng();
+        ctx.beginPath();
+        ctx.arc(axes.mapX(jm), axes.mapY(js), fs.endpointDot, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 0.92;
+      ctx.fillStyle = theme.point;
+      ctx.beginPath();
+      ctx.arc(axes.mapX(bm), axes.mapY(bs), fs.mode === 'export' ? 4.6 : 3.0, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawPhaseIntoContext(ctx, W, H, theme, trace, fs) {
+      const axes = drawAxes(ctx, W, H, {
+        xMin: 0, xMax: 1, yMin: 0, yMax: 1,
+        yLabel: 's', xLabel: 'm',
+        yTicks: [0, 0.25, 0.5, 0.75, 1],
+        xTicks: [0, 0.25, 0.5, 0.75, 1]
+      }, theme, fs);
+
+      // sign map
+      const nx = clamp(Math.round(axes.plotW / (fs.mode === 'export' ? 8 : 5)), 40, 260);
+      const ny = clamp(Math.round(axes.plotH / (fs.mode === 'export' ? 8 : 5)), 40, 260);
+      const field = getPhaseField(nx, ny, theme, params);
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(field, axes.left, axes.top, axes.plotW, axes.plotH);
+      ctx.restore();
+
+      // re-draw grid over the field so it stays visible
+      ctx.strokeStyle = theme.grid;
+      ctx.lineWidth = Math.max(1, fs.line * 0.8);
+      ctx.beginPath();
+      for (const v of [0.25, 0.5, 0.75]) {
+        ctx.moveTo(axes.mapX(v), axes.top); ctx.lineTo(axes.mapX(v), axes.bottom);
+        ctx.moveTo(axes.left, axes.mapY(v)); ctx.lineTo(axes.right, axes.mapY(v));
+      }
+      ctx.stroke();
+
+      // vector field
+      const an = fs.mode === 'export' ? 14 : clamp(Math.round(axes.plotW / 34), 7, 13);
+      const dc = driftContext(params);
+      const vecs = [];
+      let maxMag = 1e-12;
+      for (let ix = 0; ix < an; ix++) {
+        for (let iy = 0; iy < an; iy++) {
+          const m = (ix + 0.5) / an, s = (iy + 0.5) / an;
+          const d = driftWith(dc, m, s);
+          const mag = Math.hypot(d.dm, d.ds);
+          if (mag > maxMag) maxMag = mag;
+          vecs.push({ m, s, dm: d.dm, ds: d.ds, mag });
+        }
+      }
+      const baseScale = (fs.mode === 'export' ? 0.065 : 0.055) * Math.min(axes.plotW, axes.plotH);
+      ctx.strokeStyle = theme.vector;
+      ctx.lineWidth = fs.mode === 'export' ? 1.8 : 1.0;
+      ctx.beginPath();
+      for (const v of vecs) {
+        const sc = baseScale / Math.max(v.mag, 1e-12) * (0.34 + 0.92 * v.mag / maxMag);
+        drawArrow(ctx, axes.mapX(v.m), axes.mapY(v.s), v.dm, v.ds, sc, fs);
+      }
+      ctx.stroke();
+
+      // unstable fixed point
+      const fp = estimateUnstableFixedPoint(params);
+      if (fp) {
+        const fx = axes.mapX(fp.m), fy = axes.mapY(fp.s);
+        const cr = fs.mode === 'export' ? 12 : 7;
+        ctx.strokeStyle = theme.fixedPoint;
+        ctx.lineWidth = fs.mode === 'export' ? 2.6 : 1.6;
+        ctx.beginPath();
+        ctx.moveTo(fx - cr, fy - cr); ctx.lineTo(fx + cr, fy + cr);
+        ctx.moveTo(fx - cr, fy + cr); ctx.lineTo(fx + cr, fy - cr);
+        ctx.stroke();
+      }
+
+      // trajectory
+      if (trace && trace.length) {
+        const rng = mulberry32(traceSeed(trace, params));
+        const disp = buildPhaseDisplayTrace(trace, fp, params, rng);
+        if (disp.length) {
+          ctx.strokeStyle = theme.path;
+          ctx.lineWidth = fs.trajectory;
+          ctx.beginPath();
+          for (let i = 0; i < disp.length; i++) {
+            const x = axes.mapX(clamp(disp[i].m, 0, 1));
+            const y = axes.mapY(clamp(disp[i].s, 0, 1));
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+
+          const divs = disp.filter(d => d.isDivision);
+          if (divs.length) {
+            ctx.save();
+            ctx.fillStyle = theme.point;
+            ctx.globalAlpha = 0.95;
+            const r = fs.mode === 'export' ? 5 : 3.1;
+            for (const d of divs) {
+              ctx.beginPath();
+              ctx.arc(axes.mapX(clamp(d.m, 0, 1)), axes.mapY(clamp(d.s, 0, 1)), r, 0, 2 * Math.PI);
+              ctx.fill();
+            }
+            ctx.restore();
+          }
+          drawFuzzyEndpoint(ctx, axes, disp[disp.length - 1], theme, fs, params.delta / 4, rng);
+        }
+      }
+      return axes;
+    }
+
+    /* ================================================================
+       Screen rendering — one shared font size for every panel
+       ================================================================ */
+    function sizeCanvas(canvas) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      const rect = canvas.getBoundingClientRect();
+      const W = Math.max(220, Math.round(rect.width));
+      const H = Math.max(130, Math.round(rect.height));
+      const pw = Math.max(1, Math.round(W * dpr));
+      const ph = Math.max(1, Math.round(H * dpr));
+      if (canvas.width !== pw || canvas.height !== ph) { canvas.width = pw; canvas.height = ph; }
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      return { ctx, W, H };
+    }
+
+    /* A single font size, derived from the narrowest / shortest panel, is used
+       on all three plots so that no panel shows bigger numbers than another. */
+    function sharedDisplayFont(boxes) {
+      let minW = Infinity, minH = Infinity;
+      for (const b of boxes) { minW = Math.min(minW, b.W); minH = Math.min(minH, b.H); }
+      const base = clamp(Math.round(Math.min(minW / 26, minH / 11)), 9, 17);
+      return fontSet(base, 'screen');
+    }
+
+    function traceExtent(trace, key) {
+      let lo = Infinity, hi = -Infinity;
+      for (let i = 0; i < trace.length; i++) {
+        const v = trace[i][key];
+        if (v < lo) lo = v;
+        if (v > hi) hi = v;
+      }
+      if (!Number.isFinite(lo)) { lo = 0; hi = 1; }
+      return { lo, hi };
+    }
+
+    function divisionMarkerTimes(trace) {
+      const out = [];
+      for (let i = 0; i < trace.length; i++) if (trace[i].isDivision) out.push(trace[i].t);
+      return out;
+    }
+
+    let renderQueued = false;
+    function requestRender() {
+      if (renderQueued) return;
+      renderQueued = true;
+      requestAnimationFrame(() => { renderQueued = false; renderNow(); });
+    }
+
+    function renderNow() {
+      const trace = latestTrace && latestTrace.length ? latestTrace : [initialTracePoint()];
+
+      const ms = sizeCanvas(canvasMS);
+      const vol = sizeCanvas(canvasVol);
+      const ph = sizeCanvas(canvasPhase);
+      const fs = sharedDisplayFont([ms, vol, ph]);
+
+      const tMax = Math.max(trace[trace.length - 1].t || 1, 1);
+      const markers = divisionMarkerTimes(trace);
+      const buckets = Math.max(60, Math.round(ms.W * 1.2));
+
+      drawSeriesIntoContext(ms.ctx, ms.W, ms.H, [
+        { label: 'm', color: DARK_THEME.mSeries, data: decimateTrace(trace, 'm', buckets) },
+        { label: 's', color: DARK_THEME.sSeries, data: decimateTrace(trace, 's', buckets) }
+      ], {
+        xMin: 0, xMax: tMax, yMin: 0, yMax: 1,
+        yLabel: 'm, s', xLabel: 'time', markers
+      }, DARK_THEME, fs);
+
+      const ext = traceExtent(trace, 'Vol');
+      const pad = Math.max(1e-6, 0.05 * (ext.hi - ext.lo || 1));
+      drawSeriesIntoContext(vol.ctx, vol.W, vol.H, [
+        { label: 'Vol', color: DARK_THEME.volSeries, data: decimateTrace(trace, 'Vol', buckets) }
+      ], {
+        xMin: 0, xMax: tMax, yMin: 0, yMax: ext.hi + pad,
+        yLabel: 'Vol', xLabel: 'time', markers
+      }, DARK_THEME, fs);
+
+      drawPhaseIntoContext(ph.ctx, ph.W, ph.H, DARK_THEME, trace, fs);
+
+      const [pl, pr] = phaseWindowPercentBounds(params);
+      badgePhase.textContent =
+        `ρ=${formatDiscreteValue(10 ** params.rhoLog)}, β=${params.beta.toFixed(0)}, γ=${formatDiscreteValue(params.gamma)}, ` +
+        `L=${params.L}, window=${pl.toFixed(0)}–${pr.toFixed(0)}%`;
+    }
+
+    /* ================================================================
+       Controls
+       ================================================================ */
+    const controlRefs = {};
+
+    function deltaDefaultForL(L) { return clamp(1 / Math.max(1, Number(L)), 0.005, 0.1); }
+
+    function syncDeltaToCurrentL() {
+      params.delta = deltaDefaultForL(params.L);
+      if (controlRefs.delta) {
+        controlRefs.delta.slider.value = params.delta;
+        controlRefs.delta.updateValue();
+      }
+    }
+
+    function makeControl(control, store, parent) {
+      const row = document.createElement('div');
+      row.className = 'row';
+
+      const head = document.createElement('div');
+      head.className = 'rowHead';
+
+      const label = document.createElement('label');
+      label.textContent = control.label;
+      label.htmlFor = control.key;
+
+      const value = document.createElement('div');
+      value.className = 'value';
+      value.id = control.key + '_value';
+
+      const slider = document.createElement('input');
+      slider.type = 'range';
+      slider.id = control.key;
+
+      function nearestChoiceIndex(val) {
+        let bi = 0, bd = Infinity;
+        control.choices.forEach((c, i) => { const d = Math.abs(c - val); if (d < bd) { bd = d; bi = i; } });
+        return bi;
+      }
+
+      function updateValue() {
+        const raw = control.choices ? control.choices[Number(slider.value)] : Number(slider.value);
+        store[control.key] = raw;
+        value.textContent = control.mapLabel ? control.mapLabel(raw) : String(raw);
+        slider.setAttribute('aria-valuetext', value.textContent);
+      }
+
+      function setBounds() {
+        if (control.choices) {
+          slider.min = 0; slider.max = control.choices.length - 1; slider.step = 1;
+          const idx = nearestChoiceIndex(store[control.key]);
+          slider.value = idx;
+          store[control.key] = control.choices[idx];
+        } else {
+          slider.min = control.min; slider.max = control.max; slider.step = control.step;
+          store[control.key] = clamp(store[control.key], control.min, control.max);
+          slider.value = store[control.key];
+        }
+        updateValue();
+      }
+
+      slider.addEventListener('input', () => {
+        updateValue();
+        if (control.key === 'L') syncDeltaToCurrentL();
+        requestRender();
+      });
+
+      head.appendChild(label);
+      head.appendChild(value);
+      row.appendChild(head);
+      row.appendChild(slider);
+      parent.appendChild(row);
+
+      return { slider, updateValue, setBounds };
+    }
+
+    function makePhaseWindowControl(store, parent) {
+      const row = document.createElement('div');
+      row.className = 'row';
+
+      const head = document.createElement('div');
+      head.className = 'rowHead';
+      const label = document.createElement('label');
+      label.textContent = 'phase-trajectory time window (%)';
+      const value = document.createElement('div');
+      value.className = 'value';
+
+      const leftSlider = document.createElement('input');
+      const rightSlider = document.createElement('input');
+      [leftSlider, rightSlider].forEach(s => {
+        s.type = 'range'; s.min = 0; s.max = 100; s.step = 1;
+        s.style.marginTop = '2px';
+      });
+      leftSlider.id = 'phaseWindowLeft';
+      rightSlider.id = 'phaseWindowRight';
+      leftSlider.title = 'left edge of the phase-trajectory time window';
+      rightSlider.title = 'right edge of the phase-trajectory time window';
+
+      function updateValue() {
+        store.phaseWindowLeft = clamp(Number(leftSlider.value), 0, 100);
+        store.phaseWindowRight = clamp(Number(rightSlider.value), 0, 100);
+        const [lo, hi] = phaseWindowPercentBounds(store);
+        value.textContent = `${lo.toFixed(0)}–${hi.toFixed(0)}%`;
+      }
+
+      function setBounds() {
+        leftSlider.value = clamp(Number(store.phaseWindowLeft), 0, 100);
+        rightSlider.value = clamp(Number(store.phaseWindowRight), 0, 100);
+        updateValue();
+      }
+
+      [leftSlider, rightSlider].forEach(s => s.addEventListener('input', () => { updateValue(); requestRender(); }));
+
+      head.appendChild(label); head.appendChild(value);
+      row.appendChild(head); row.appendChild(leftSlider); row.appendChild(rightSlider);
+      parent.appendChild(row);
+      return { updateValue, setBounds };
+    }
+
+    controls.forEach(c => { controlRefs[c.key] = makeControl(c, params, grid); });
+    controlRefs.phaseWindow = makePhaseWindowControl(params, grid);
+    Object.values(controlRefs).forEach(r => r.setBounds());
+
+    /* ================================================================
+       Status
+       ================================================================ */
+    function updateStatus(result, continuous) {
+      const k1 = 10 ** params.k1Log, k2 = 10 ** params.k2Log;
+      const rho = 10 ** params.rhoLog, noise = 10 ** params.noiseLog;
+      const Vol = volume(params.L, result.finalState.m, result.finalState.s, params.C);
+      const d = result.lastDivisionInfo;
+      statusEl.innerHTML = [
+        `${continuous ? 'Continuous mode' : 'Single run'} — time <strong>${result.t.toFixed(1)}</strong>, stored points <strong>${latestTrace ? latestTrace.length : 0}</strong>`,
+        `m = <strong>${result.finalState.m.toFixed(4)}</strong>, s = <strong>${result.finalState.s.toFixed(4)}</strong>, Vol = <strong>${Vol.toFixed(3)}</strong>`,
+        `L=${params.L}, C=${params.C.toFixed(1)}, γ=${formatDiscreteValue(params.gamma)}, ρ=${formatDiscreteValue(rho)}, β=${params.beta.toFixed(0)}, k1=${k1.toFixed(4)}, k2=${k2.toFixed(4)}, Γ=${noise.toFixed(4)}, δ=${params.delta.toFixed(5)}, T<sub>gen</sub>=${params.divisionInterval}`,
+        d ? `Latest division draw: μ=<strong>${d.mean.toFixed(4)}</strong>, σ=<strong>${d.sigma.toFixed(4)}</strong>, lattice m=<strong>${d.inheritedM.toFixed(4)}</strong>`
+          : 'Latest division draw: <strong>none yet</strong>',
+        `Stop reason: <strong>${result.stopReason}</strong>`
+      ].join('<br>');
+      badgeTop.textContent = `n = ${latestTrace ? latestTrace.length : 0}`;
+      badgeBottom.textContent = `t = ${result.t.toFixed(0)}`;
+    }
+
+    function initialTracePoint() {
+      return pt(0, params.m0, params.s0, params.C, params.L, false, null);
+    }
+
+    /* ================================================================
+       Run control
+       ================================================================ */
+    function setRunning(on) {
+      continuousRunning = on;
+      $('startContBtn').disabled = on;
+      $('qStart').disabled = on;
+      $('runBtn').disabled = on;
+      $('stopContBtn').disabled = !on;
+      $('qStop').disabled = !on;
+    }
+
+    function runSimulation() {
+      badgeTop.textContent = 'running…';
+      const result = gillespieSim(params, null, 0, null, null);
+      latestTrace = result.trace;
+      requestRender();
+      updateStatus(result, false);
+    }
+
+    function resetTraces() {
+      latestTrace = [initialTracePoint()];
+      requestRender();
+      statusEl.innerHTML = 'Trace reset to the initial condition. Division events appear as faint dashed vertical lines in the time-series panels.';
+      badgeTop.textContent = 'reset';
+      badgeBottom.textContent = 'initial';
+    }
+
+    function randomizeInitials() {
+      params.m0 = Math.random();
+      params.s0 = Math.random();
+      controlRefs.m0.slider.value = params.m0;
+      controlRefs.s0.slider.value = params.s0;
+      controlRefs.m0.updateValue();
+      controlRefs.s0.updateValue();
+      resetTraces();
+    }
+
+    async function startContinuousRun() {
+      if (continuousRunning) return;
+      setRunning(true);
+      badgeTop.textContent = 'running';
+
+      if (!latestTrace || !latestTrace.length) latestTrace = [initialTracePoint()];
+
+      let state = { m: latestTrace[latestTrace.length - 1].m, s: latestTrace[latestTrace.length - 1].s };
+      let t = latestTrace[latestTrace.length - 1].t;
+
+      while (continuousRunning) {
+        // Simulate a slice per animation frame so the UI never blocks.
+        const chunkT = Math.max(params.sampleEvery * 20, params.tMax / 60);
+        const chunkParams = Object.assign({}, params, { tMax: t + chunkT });
+        const result = gillespieSim(chunkParams, state, t, latestTrace, 60000);
+
+        latestTrace = compactTrace(result.trace);
+        state = result.finalState;
+        t = result.t;
+
+        renderNow();
+        updateStatus(result, true);
+
+        if (result.stopReason === 'zero-rate' && result.divisionCount === 0) {
+          setRunning(false);
+          badgeTop.textContent = 'stalled';
+          break;
+        }
+        await new Promise(r => requestAnimationFrame(r));
+      }
+      if (!continuousRunning) badgeTop.textContent = 'stopped';
+    }
+
+    function stopContinuousRun() {
+      setRunning(false);
+      badgeTop.textContent = 'stopped';
+    }
+
+    /* ================================================================
+       Export
+       ================================================================ */
+    function exportCSV() {
+      const trace = latestTrace && latestTrace.length ? latestTrace : [initialTracePoint()];
+      const rows = ['time,m,s,Vol,isDivision,divisionMean,divisionSigma,divisionRaw,divisionClipped,divisionNewM'];
+      for (const d of trace) {
+        rows.push([d.t, d.m, d.s, d.Vol, d.isDivision || 0,
+          d.divisionMean != null ? d.divisionMean : '',
+          d.divisionSigma != null ? d.divisionSigma : '',
+          d.divisionRaw != null ? d.divisionRaw : '',
+          d.divisionClipped != null ? d.divisionClipped : '',
+          d.divisionNewM != null ? d.divisionNewM : ''].join(','));
+      }
+      const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'nucleosome_gillespie_trace.csv';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 0);
+    }
+
+    function offscreen(W, H) {
+      const c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      return c;
+    }
+
+    function exportTrace() {
+      return latestTrace && latestTrace.length ? latestTrace : [initialTracePoint()];
+    }
+
+    function msExportCanvas(W, H, o) {
+      const trace = exportTrace();
+      const tMax = Math.max(trace[trace.length - 1].t || 1, 1);
+      const c = offscreen(W, H);
+      drawSeriesIntoContext(c.getContext('2d'), W, H, [
+        { label: 'm', color: LIGHT_THEME.mSeries, data: decimateTrace(trace, 'm', 4000) },
+        { label: 's', color: LIGHT_THEME.sSeries, data: decimateTrace(trace, 's', 4000) }
+      ], Object.assign({
+        xMin: 0, xMax: tMax, yMin: 0, yMax: 1,
+        yLabel: 'm, s', xLabel: 'time', markers: divisionMarkerTimes(trace)
+      }, o || {}), LIGHT_THEME, EXPORT_FONT);
+      return c;
+    }
+
+    function volExportCanvas(W, H, o) {
+      const trace = exportTrace();
+      const tMax = Math.max(trace[trace.length - 1].t || 1, 1);
+      const ext = traceExtent(trace, 'Vol');
+      const pad = Math.max(1e-6, 0.05 * (ext.hi - ext.lo || 1));
+      const c = offscreen(W, H);
+      drawSeriesIntoContext(c.getContext('2d'), W, H, [
+        { label: 'Vol', color: LIGHT_THEME.volSeries, data: decimateTrace(trace, 'Vol', 4000) }
+      ], Object.assign({
+        xMin: 0, xMax: tMax, yMin: 0, yMax: ext.hi + pad,
+        yLabel: 'Vol', xLabel: 'time', markers: divisionMarkerTimes(trace)
+      }, o || {}), LIGHT_THEME, EXPORT_FONT);
+      return c;
+    }
+
+    function phaseExportCanvas(W, H) {
+      const c = offscreen(W, H);
+      drawPhaseIntoContext(c.getContext('2d'), W, H, LIGHT_THEME, exportTrace(), EXPORT_FONT);
+      // the cached field is theme-specific; drop it so the screen redraw is dark again
+      phaseFieldCache = { key: null, canvas: null };
+      return c;
+    }
+
+    function parameterBlockLines() {
+      return [
+        ['L', params.L.toFixed(0)],
+        ['C', params.C.toFixed(1)],
+        ['ρ', formatDiscreteValue(10 ** params.rhoLog)],
+        ['β', params.beta.toFixed(0)],
+        ['γ', formatDiscreteValue(params.gamma)],
+        ['k1', (10 ** params.k1Log).toFixed(4)],
+        ['k2', (10 ** params.k2Log).toFixed(4)],
+        ['Γ', (10 ** params.noiseLog).toFixed(4)],
+        ['δ', params.delta.toFixed(5)],
+        ['Tgen', params.divisionInterval.toFixed(0)]
+      ];
+    }
+
+    function drawParameterBlock(ctx, x, y, w, h) {
+      const lines = parameterBlockLines();
+      const titleSize = EXPORT_FONT.label;
+      const bodySize = EXPORT_FONT.tick;
+      const padX = 46, topPad = 36, ruleGap = 58, firstGap = 52;
+      const labelX = x + padX;
+      const eqX = x + Math.max(200, Math.min(320, w * 0.42));
+      const valueX = eqX + 80;
+      const rightX = x + w - padX;
+      const firstRowY = y + topPad + titleSize + ruleGap + firstGap;
+      const maxGap = lines.length > 1 ? (y + h - bodySize * 0.62 - firstRowY) / (lines.length - 1) : 104;
+      const lineGap = Math.max(bodySize * 1.08, Math.min(110, maxGap));
+
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = 'rgba(17,24,39,0.18)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, w, h);
+
+      let yy = y + topPad + titleSize;
+      ctx.fillStyle = '#111827';
+      ctx.font = `bold ${titleSize}px ${FONT_FAMILY}`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('Parameters', labelX, yy);
+
+      yy += ruleGap;
+      ctx.strokeStyle = 'rgba(17,24,39,0.14)';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(labelX, yy); ctx.lineTo(rightX, yy); ctx.stroke();
+
+      yy += firstGap;
+      ctx.font = `${bodySize}px ${FONT_FAMILY}`;
+      ctx.textBaseline = 'middle';
+      for (const [key, val] of lines) {
+        const sepY = yy + lineGap / 2 - 8;
+        ctx.fillStyle = '#374151'; ctx.textAlign = 'left'; ctx.fillText(key, labelX, yy);
+        ctx.fillStyle = '#6b7280'; ctx.fillText('=', eqX, yy);
+        ctx.fillStyle = '#111827'; ctx.fillText(val, valueX, yy);
+        if (sepY < y + h - 12) {
+          ctx.strokeStyle = 'rgba(17,24,39,0.10)';
+          ctx.lineWidth = 1.6;
+          ctx.beginPath(); ctx.moveTo(labelX, sepY); ctx.lineTo(rightX, sepY); ctx.stroke();
+        }
+        yy += lineGap;
+      }
+      ctx.restore();
+    }
+
+    const FIGURE_META = {
+      ms: { name: 'nucleosome_gillespie_m_s.png' },
+      vol: { name: 'nucleosome_gillespie_volume.png' },
+      phase: { name: 'nucleosome_gillespie_phase.png' }
+    };
+
+    function makeStandaloneFigure(kind) {
+      const plot = kind === 'ms' ? msExportCanvas(2200, 1300)
+        : kind === 'vol' ? volExportCanvas(2200, 1300)
+          : phaseExportCanvas(2200, 1800);
+
+      const padX = 48, topPad = 24, bottomPad = 42, paramGap = 42, paramW = 560;
+      const out = offscreen(plot.width + paramGap + paramW + 2 * padX, plot.height + topPad + bottomPad);
+      const ctx = out.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, out.width, out.height);
+      ctx.drawImage(plot, padX, topPad);
+      drawParameterBlock(ctx, padX + plot.width + paramGap, topPad + 42, paramW, Math.max(720, plot.height - 84));
+      return { canvas: out, filename: FIGURE_META[kind].name };
+    }
+
+    function makeCombinedFigure() {
+      const sharedW = 2178, msH = 780, volH = 860, pairGap = 18;
+      const ms = msExportCanvas(sharedW, msH, {
+        xLabel: '', hideXTickLabels: true, hideXLabel: true
+      });
+      const vol = volExportCanvas(sharedW, volH);
+      const phase = phaseExportCanvas(sharedW, 1720);
+
+      const pad = 48, gap = 40, paramGap = 42, paramW = 600;
+      const upperH = msH + pairGap + volH;
+      const upperW = sharedW + paramGap + paramW;
+      const outW = Math.max(upperW, phase.width) + 2 * pad;
+      const outH = upperH + phase.height + 2 * gap + pad;
+
+      const out = offscreen(outW, outH);
+      const ctx = out.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, outW, outH);
+
+      let y = gap / 2;
+      ctx.drawImage(ms, pad, y);
+      ctx.drawImage(vol, pad, y + msH + pairGap);
+      drawParameterBlock(ctx, pad + sharedW + paramGap, y + 42, paramW, upperH - 84);
+
+      y += upperH + gap;
+      ctx.drawImage(phase, pad + Math.max(0, (upperW - phase.width) / 2), y);
+
+      return { canvas: out, filename: 'nucleosome_gillespie_all_figures.png' };
+    }
+
+    function downloadCanvas(canvas, filename) {
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }, 'image/png');
+    }
+
+    function exportFigure(kind) {
+      const fig = makeStandaloneFigure(kind);
+      downloadCanvas(fig.canvas, fig.filename);
+      requestRender();
+    }
+
+    function exportAll() {
+      const fig = makeCombinedFigure();
+      downloadCanvas(fig.canvas, fig.filename);
+      requestRender();
+    }
+
+    /* ================================================================
+       Wiring
+       ================================================================ */
+    $('runBtn').addEventListener('click', runSimulation);
+    $('startContBtn').addEventListener('click', startContinuousRun);
+    $('stopContBtn').addEventListener('click', stopContinuousRun);
+    $('resetBtn').addEventListener('click', resetTraces);
+    $('randomBtn').addEventListener('click', randomizeInitials);
+    $('exportBtn').addEventListener('click', exportCSV);
+    $('exportAllBtn').addEventListener('click', exportAll);
+
+    document.querySelectorAll('[data-fig]').forEach(btn => {
+      btn.addEventListener('click', () => exportFigure(btn.getAttribute('data-fig')));
+    });
+
+    $('qStart').addEventListener('click', startContinuousRun);
+    $('qStop').addEventListener('click', stopContinuousRun);
+    $('qReset').addEventListener('click', resetTraces);
+    $('qJump').addEventListener('click', () => {
+      const p = $('ctrlPanel');
+      p.open = true;
+      p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    let resizeTimer = null;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(requestRender, 90);
+    };
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    if (window.ResizeObserver) new ResizeObserver(onResize).observe(mainEl);
+    document.querySelectorAll('details.panel').forEach(d => d.addEventListener('toggle', onResize));
+
+    /* ================================================================
+       Boot
+       ================================================================ */
+    params.noiseLog = Math.log10(0.085);
+    controlRefs.noiseLog.setBounds();
+    params.L = 50;
+    controlRefs.L.slider.value = params.L;
+    controlRefs.L.updateValue();
+    syncDeltaToCurrentL();
+    controlRefs.divisionInterval.setBounds();
+    setRunning(false);
+    resetTraces();
+
+  })();
+  </script>
+</body>
+</html>
