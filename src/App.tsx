@@ -130,7 +130,7 @@ const MODELS: Model[] = [
     title: "Kuramoto-Sivashinsky",
     description:
       "A Large dynamical system with deterministic chaos",
-    file: "/models/kuramoto_sivashinsky_19.html",
+    file: "/models/kuramoto_sivashinsky_21.html",
     status: "live",
   },    
   {
