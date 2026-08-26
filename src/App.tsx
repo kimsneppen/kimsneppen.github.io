@@ -46,7 +46,7 @@ const MODELS: Model[] = [
 },  
   {
   id: "Bak-Sneppen",
-  title: "Bak-Sneppen model for punctuated equilibrium",
+  title: "Bak-Sneppen model of punctuated equilibrium",
   description:
     "Co-evolving fitness landscapes: Change least fit and its neighbors",
   file: "/models/bak_sneppen_10.html",
@@ -113,7 +113,7 @@ const MODELS: Model[] = [
     id: "two-state-gillespie",
     title: "Mean field of condensate mediated epigenetics",
     description:
-      "Equations for two-state epigenetics with nucleosomes & Swi6 condensate",
+      "Two-state epigenetics with nucleosome condensate",
     file: "/models/two-state-gillespie.html",
     status: "live",
   },
