@@ -1,0 +1,2312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Kuramoto–Sivashinsky simulator</title>
+<style>
+  :root{
+    --bg:#eef1f6; --panel:#ffffff; --line:#dde3ec; --ink:#16233b; --ink2:#4a5872;
+    --muted:#8391ab; --accent:#4338ca; --accent-soft:rgba(67,56,202,.08);
+    --good:#0f766e; --warn:#b45309;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;overflow-x:hidden}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:1180px;margin:0 auto;padding:14px 16px 26px}
+  header{padding:4px 2px 12px}
+  header h1{font-size:20px;margin:0 0 3px;letter-spacing:-.01em}
+  .titledrop{border-top:0;position:relative}
+  .titledrop summary{padding:2px 0 4px;display:flex;align-items:center;gap:10px}
+  .titledrop summary::after{margin-left:2px}
+  .titledrop h1{margin:0}
+  .dropbox{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:80;
+    width:min(880px, calc(100vw - 40px));
+    max-height:min(72vh, 640px);overflow-y:auto;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px 16px;
+    font-size:13px;color:var(--ink2);line-height:1.55;
+    box-shadow:0 10px 30px rgba(22,35,59,.22);
+  }
+  .dropbox p{margin:6px 0}
+  .dropbox b{color:var(--ink)}
+  .dropbox .eqc{font-family:Georgia,"Times New Roman",serif;font-style:italic;
+    text-align:center;color:var(--ink);font-size:14px;margin:8px 0}
+  .dropbox a{color:var(--accent);text-decoration:none}
+  .dropbox a:hover{text-decoration:underline}
+  .dropbox .refs{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px}
+  .eqrow{display:flex;flex-wrap:wrap;gap:4px 20px;align-items:center}
+  .eq{
+    font-size:13.5px;color:var(--ink2);
+    font-family:Georgia,"Times New Roman",serif;font-style:italic;
+  }
+  .eq .term{color:#b6bfd2;transition:color .2s}
+  .eq .term.on{color:var(--accent);font-weight:600}
+  .tctl{
+    display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);
+    font-family:Georgia,serif;font-style:italic;
+  }
+  .tctl input{width:130px;accent-color:var(--accent);touch-action:pan-y}
+  .tctl b{
+    min-width:40px;font-style:normal;font-weight:600;font-size:11.5px;color:var(--muted);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-variant-numeric:tabular-nums;
+  }
+  .tctl b.on{color:var(--accent)}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 288px;gap:14px;align-items:start}
+  .layout > *{min-width:0}
+
+  /* ---------- display panel ---------- */
+  .display{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:10px 12px 12px;box-shadow:0 1px 3px rgba(22,35,59,.06);
+  }
+  .dispbar{
+    display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;
+    padding:2px 2px 8px;font-size:12.5px;color:var(--ink2);
+  }
+  .dispbar .stat b{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-weight:600;color:var(--ink);font-size:12.5px;
+  }
+  .dispbar .spacer{flex:1}
+  .dispbar select{
+    padding:4px 5px;border:1px solid var(--line);border-radius:8px;background:#fff;
+    font-size:12px;color:var(--ink);
+  }
+  .dispbar .yseg{min-width:0;flex:0 0 auto}
+  .dispbar .yseg button{padding:4px 9px;font-size:11.5px}
+  .ysep{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink2)}
+  .ysep input{width:84px;accent-color:var(--accent)}
+  .ysep .svv{
+    font-size:10.5px;color:var(--muted);font-weight:600;min-width:24px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .canvas-wrap{position:relative;width:100%;min-height:300px;height:420px}
+  canvas#view{position:absolute;inset:0;width:100%;height:100%;border-radius:8px}
+  .diverged{
+    position:absolute;top:10px;left:50%;transform:translateX(-50%);
+    background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:9px;
+    padding:6px 12px;font-size:12.5px;display:none;
+  }
+  .tbtn{
+    border:1px solid var(--line);background:#fff;border-radius:8px;
+    padding:5px 9px;cursor:pointer;font-size:14px;color:var(--ink2);line-height:1;
+  }
+  .bwcirc{
+    display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle;
+    background:linear-gradient(90deg,#16233b 0 50%,#fff 50% 100%);
+    border:1.5px solid #6b7690;
+  }
+  .wfctl{
+    position:absolute;left:52px;bottom:44px;display:none;align-items:center;gap:8px;
+    background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:8px;
+    padding:4px 10px;font-size:11.5px;color:var(--ink2);backdrop-filter:blur(2px);
+  }
+  .wfctl input{width:110px;accent-color:var(--accent)}
+  .wfctl span{cursor:pointer;white-space:nowrap}
+  .wfctl.v3{flex-direction:column;gap:4px;align-items:stretch}
+  .wfctl.v3 div{display:flex;align-items:center;gap:7px}
+  .wfctl.v3 span{width:26px;font-size:11px;cursor:default}
+  #wfSepVal{width:auto;min-width:54px;cursor:pointer}
+  .wfctl .sv{
+    font-size:10.5px;color:var(--muted);min-width:36px;font-weight:600;width:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;cursor:default;
+  }
+  .rdout{
+    position:absolute;top:10px;right:12px;display:flex;gap:12px;align-items:center;
+    font-size:12px;color:var(--ink2);background:rgba(255,255,255,.78);
+    border:1px solid var(--line);border-radius:8px;padding:4px 11px;backdrop-filter:blur(2px);
+  }
+  .rdout b{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;
+  }
+  .display.darkbg .rdout{background:rgba(16,19,28,.78);border-color:#2a3140;color:#aab3c7}
+  .display.darkbg .rdout b{color:#e8ecf5}
+  .presets{position:absolute;left:12px;top:10px;display:flex;flex-direction:column;gap:5px}
+  .presets .prow{display:flex;gap:6px}
+  .presets button{
+    flex:1;padding:4px 10px;font-size:11.5px;border-radius:8px;border:1px solid var(--line);
+    background:rgba(255,255,255,.88);color:var(--accent);font-weight:700;cursor:pointer;
+    white-space:nowrap;
+  }
+  .display.darkbg .presets button{background:rgba(16,19,28,.85);border-color:#2a3140}
+  .wfctl.v3 input{width:96px}
+  .display.darkbg .wfctl{background:rgba(16,19,28,.85);border-color:#2a3140;color:#aab3c7}
+  .seg.mini{min-width:118px}
+  .seg.mini button{padding:5px 2px;font-size:12px}
+  .ordseg{flex:0 0 auto}
+  .ordseg button{
+    font-family:Georgia,"Times New Roman",serif;font-style:italic;
+    font-size:12.5px;padding:4px 10px;white-space:nowrap;
+  }
+  .row input[type=range]#rngN{width:118px}
+  .dispbar .stat b{display:inline-block;font-variant-numeric:tabular-nums}
+  #rt{min-width:46px} #rmean{min-width:52px} #rw{min-width:44px}
+
+  /* ---------- control panel ---------- */
+  .controls{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:12px 14px;box-shadow:0 1px 3px rgba(22,35,59,.06);
+    font-size:13px;
+  }
+  .btnrow{display:flex;gap:7px;margin-bottom:6px}
+  .btn{
+    flex:1;padding:9px 0;border-radius:9px;border:1px solid var(--line);
+    background:#fff;color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.png{
+    flex:0 0 auto;padding:9px 11px;color:var(--accent);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;
+  }
+  .btn.png.busy{opacity:.55}
+  details{border-top:1px solid var(--line)}
+  details:first-of-type{margin-top:8px}
+  summary{
+    cursor:pointer;font-weight:650;padding:10px 2px;font-size:13px;color:var(--ink);
+    list-style:none;display:flex;align-items:center;user-select:none;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::after{
+    content:"";margin-left:auto;width:7px;height:7px;
+    border-right:1.8px solid var(--muted);border-bottom:1.8px solid var(--muted);
+    transform:rotate(-45deg);transition:transform .15s;
+  }
+  details[open] summary::after{transform:rotate(45deg)}
+  .sect{padding:2px 2px 12px}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:9px 0}
+  .row label{color:var(--ink2)}
+  .row select{
+    min-width:118px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;
+    background:#fff;font-size:13px;color:var(--ink);
+  }
+  .seg{display:flex;flex:0 0 auto;min-width:118px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{
+    flex:1;padding:6px 4px;border:0;background:#fff;color:var(--ink2);
+    font-size:12.5px;font-weight:600;cursor:pointer;
+  }
+  .seg button.on{background:var(--accent);color:#fff}
+  .row input[type=range]{flex:0 0 auto;width:118px;accent-color:var(--accent)}
+  .vv{color:var(--muted);font-weight:400;font-size:12px}
+  .hint{font-size:11.5px;color:var(--muted);margin:2px 0 0;line-height:1.4}
+  .about{font-size:12.5px;color:var(--ink2);line-height:1.55}
+  .about p{margin:7px 0}
+  .about i{font-family:Georgia,serif}
+  .about b{color:var(--ink)}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:1080px){
+    .layout{grid-template-columns:minmax(0,1fr) 262px}
+  }
+
+  /* phone / narrow tablet: single column, controls reachable at all times */
+  @media (max-width:860px){
+    :root{--fab:64px}
+    .app{padding:10px 10px calc(var(--fab) + 14px)}
+    .layout{grid-template-columns:minmax(0,1fr);gap:10px}
+    .canvas-wrap{height:min(96vw,460px)}
+    header h1{font-size:17px}
+    header .eq{font-size:12.5px}
+    .eqrow{gap:2px 14px}
+    .tctl input{width:min(162px, 42vw)}
+    .dropbox{width:calc(100vw - 24px);max-height:70vh}
+    .display{padding:8px 8px 10px}
+    .dispbar{gap:7px 10px}
+    .wfctl{left:auto;right:8px;top:44px;bottom:auto}
+    .rdout{top:8px;right:8px;font-size:11px;gap:8px;padding:3px 8px}
+    .presets{top:auto;bottom:8px}
+    .presets button{padding:6px 10px;font-size:12px}
+    .wfctl input{width:96px}
+    .row select{min-width:132px;padding:9px 8px;font-size:14px}
+    .row input[type=range]{width:150px}
+    .seg{min-width:132px}
+    .seg button{padding:9px 4px;font-size:13.5px}
+    .dispbar select{padding:7px 8px;font-size:13px}
+    summary{padding:13px 2px}
+
+    /* Run / Step / Reset / .png always within thumb reach */
+    .btnrow{
+      position:fixed;left:8px;right:8px;bottom:8px;z-index:120;gap:8px;margin:0;
+      background:rgba(255,255,255,.93);backdrop-filter:blur(8px);
+      border:1px solid var(--line);border-radius:14px;padding:7px;
+      box-shadow:0 6px 22px rgba(22,35,59,.18);
+    }
+    .btn{padding:13px 0;font-size:15px}
+    .btn.png{padding:13px 14px;font-size:13.5px}
+    details:first-of-type{margin-top:0}
+  }
+
+  /* small phones */
+  @media (max-width:560px){
+    .app{padding:8px 8px calc(var(--fab) + 12px)}
+    header h1{font-size:15.5px}
+    .eqrow{gap:2px 10px}
+    header .eq{font-size:12px}
+    .tctl{font-size:12px;gap:5px}
+    .tctl input{width:min(150px, 40vw)}
+    .canvas-wrap{height:min(112vw,420px)}
+    /* everything stays visible — the bar wraps onto a second line instead of
+       hiding controls behind a horizontal scroll */
+    .dispbar{flex-wrap:wrap;gap:7px 9px}
+    .dispbar .spacer{flex:0 0 0;width:0}
+    .dispbar select{max-width:44vw}
+    .ysep input{width:70px}
+    .presets button{padding:6px 8px;font-size:11px}
+    .rdout{font-size:10.5px;gap:7px;padding:3px 7px}
+    .row{margin:11px 0}
+    .btn{font-size:14.5px}
+    .btn.png{padding:13px 10px;font-size:12.5px}
+  }
+
+  @media (max-width:420px){
+    .presets .prow{gap:4px}
+    .presets button{padding:5px 6px;font-size:10.5px}
+    .wfctl{font-size:10.5px;padding:3px 7px}
+    .wfctl input{width:78px}
+  }
+
+  /* landscape phone: keep the display usable, shrink chrome */
+  @media (max-height:520px) and (orientation:landscape){
+    .canvas-wrap{height:min(78vh,360px)}
+    header{padding:2px 2px 6px}
+    header h1{font-size:15px}
+  }
+
+  @media (prefers-reduced-motion:reduce){ .btn:active{transform:none} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <details class="titledrop">
+      <summary><h1>Kuramoto–Sivashinsky equation</h1></summary>
+      <div class="dropbox">
+        <p>This is the simplest interface equation with an <b>intrinsic instability</b>. Such an
+        instability occurs whenever the parts of an interface that are ahead tend to propagate
+        faster than the parts that lag behind. A concrete example is the fire front of a burning
+        sheet of paper: the sections of the front that are ahead face the most unburned material,
+        and therefore advance the fastest. To lowest order this self-amplification is the linear
+        instability</p>
+        <p class="eqc">&part;h/&part;t = &minus;&nabla;&sup2;h,</p>
+        <p>a negative diffusion under which an evolving interface grows at <i>all</i> wavelengths —
+        and the shorter the wavelength, the faster the growth, without bound. A physical front must
+        have a short-wavelength cut-off (for a flame, e.g. a minimal ignition heat), supplied by the
+        gentlest possible regularization, &minus;&nabla;&#8308;h. Adding also the simplest possible
+        nonlinearity, the tilt-dependent growth (&nabla;h)&sup2;, one obtains the deterministic
+        Kuramoto–Sivashinsky (KS) equation</p>
+        <p class="eqc">&part;h/&part;t = &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h + (&nabla;h)&sup2;,</p>
+        <p>where the constants in front of the three terms have been rescaled away by an appropriate
+        scaling of space x, time t and height h. The competition between long-wavelength growth,
+        short-wavelength damping and nonlinear mode coupling produces cells of a preferred size
+        (&lambda; = 2&pi;&radic;2 in these units) in a state of perpetual spatiotemporal chaos.</p>
+        <p><b>Chaos as noise: the KPZ connection.</b> The KS equation shares the basic symmetries of
+        the Kardar–Parisi–Zhang (KPZ) equation, and its spatiotemporal chaos acts on large scales as
+        an emergent, self-generated noise. One therefore expects the large-scale behaviour of the
+        Kuramoto–Sivashinsky equation to fall in the same universality class as the KPZ equation, as
+        explored in Refs.&nbsp;[3–5]. In this translation the characteristic cell has wavelength
+        2&pi;/k<sub>max</sub>, where k<sub>max</sub> = 1/&radic;2 is the wavenumber selected by the
+        linearly unstable term, and the emergent large-scale dynamics carries an effective diffusion
+        constant of about 15 (see Refs.&nbsp;[3–5]).</p>
+        <div class="refs">
+          <p>[1] Y. Kuramoto &amp; T. Tsuzuki, <i>Persistent propagation of concentration waves in
+          dissipative media far from thermal equilibrium</i>,
+          <a href="https://doi.org/10.1143/PTP.55.356" target="_blank" rel="noopener">Prog. Theor.
+          Phys. 55, 356 (1976)</a>.</p>
+          <p>[2] G.&thinsp;I. Sivashinsky, <i>Nonlinear analysis of hydrodynamic instability in laminar
+          flames — I. Derivation of basic equations</i>,
+          <a href="https://doi.org/10.1016/0094-5765(77)90096-0" target="_blank" rel="noopener">Acta
+          Astronautica 4, 1177 (1977)</a>.</p>
+          <p>[3] V. Yakhot, <i>Large-scale properties of unstable systems governed by the
+          Kuramoto-Sivashinsky equation</i>,
+          <a href="https://doi.org/10.1103/PhysRevA.24.642" target="_blank" rel="noopener">Phys.
+          Rev. A 24, 642 (1981)</a>.</p>
+          <p>[4] K. Sneppen, J. Krug, M.&thinsp;H. Jensen, C. Jayaprakash &amp; T. Bohr, <i>Dynamic
+          scaling and crossover analysis for the Kuramoto-Sivashinsky equation</i>,
+          <a href="https://doi.org/10.1103/PhysRevA.46.R7351" target="_blank" rel="noopener">Phys.
+          Rev. A 46, R7351 (1992)</a>.</p>
+          <p>[5] I. Procaccia, M.&thinsp;H. Jensen, V.&thinsp;S. L&rsquo;vov, K. Sneppen &amp;
+          R. Zeitak, <i>Surface roughening and the long-wavelength properties of the
+          Kuramoto-Sivashinsky equation</i>,
+          <a href="https://doi.org/10.1103/PhysRevA.46.3220" target="_blank" rel="noopener">Phys.
+          Rev. A 46, 3220 (1992)</a>.</p>
+        </div>
+      </div>
+    </details>
+    <div class="eqrow">
+      <span class="eq">&part;h/&part;t =</span>
+      <span class="seg ordseg" id="segOrd" title="toggle the two linear terms">
+        <button data-v="4" class="on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button>
+        <button data-v="6">+&nabla;&#8308;h +&nabla;&#8310;h</button>
+      </span>
+      <span class="eq">+ (&nabla;h)&sup2;
+        <span class="term" id="termA">+ &alpha;|&nabla;h|</span>
+        <span class="term" id="termB">+ &beta;(&nabla;h)&#8308;</span></span>
+      <span class="tctl">&alpha;
+        <input type="range" id="rngAlpha" min="-2" max="2" step="0.1" value="0">
+        <b id="alphaVal">0</b></span>
+      <span class="tctl">&beta;
+        <input type="range" id="rngBeta" min="0" max="52" step="1" value="26"
+               title="&beta;: 0.1 steps inside |&beta;|&le;2, 0.5 steps out to &plusmn;5">
+        <b id="betaVal">0</b></span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- =============== main display panel =============== -->
+    <section class="display">
+      <div class="dispbar">
+        <select id="dispmode" title="display mode"></select>
+        <div class="seg mini yseg" id="segYvar2" title="y-axis variable on all plots">
+          <button data-v="h" class="on">h</button><button data-v="dx">dh/dx</button>
+        </div>
+        <span class="ysep" id="vsepWrap" title="vertical displacement per curve">
+          <span>&Delta;y</span>
+          <input type="range" id="rngVsep" min="0" max="11" step="1" value="5">
+          <b class="svv" id="vsepVal">3.0</b>
+        </span>
+        <span class="spacer"></span>
+        <select id="qty" title="colour by">
+          <option value="plain">plain</option>
+          <option value="h">h−⟨h⟩</option>
+          <option value="dx">dh/dx</option>
+          <option value="absdx">|dh/dx|</option>
+          <option value="lap">d²h/dx²</option>
+          <option value="nlap">−d²h/dx²</option>
+        </select>
+        <select id="cmap" title="colour map">
+          <optgroup label="diverging">
+            <option value="div">blue–red</option>
+            <option value="spec">spectral</option>
+            <option value="cool">ice–ember</option>
+          </optgroup>
+          <optgroup label="rainbow">
+            <option value="jet">jet</option>
+            <option value="turbo">turbo</option>
+          </optgroup>
+          <optgroup label="sequential">
+            <option value="vir">viridis</option>
+            <option value="plasma">plasma</option>
+            <option value="magma">magma</option>
+            <option value="civ">cividis</option>
+            <option value="ice">ice</option>
+            <option value="ora">yellow</option>
+            <option value="fire">flames</option>
+            <option value="gray">grayscale</option>
+          </optgroup>
+        </select>
+        <button id="bTheme" class="tbtn" title="black / white background (keys + and −)"><span class="bwcirc"></span></button>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="view"></canvas>
+        <div class="rdout" id="rdout">
+          <span>t = <b id="rt">0.0</b></span>
+          <span>&lang;h&rang; = <b id="rmean">0.00</b></span>
+          <span>W = <b id="rw">0.000</b></span>
+        </div>
+        <div class="diverged" id="divergedMsg">Diverged — reduce dt, then Reset</div>
+        <div class="wfctl v3" id="wfCtl">
+          <div><span id="wfSepVal" title="curve spacing — click to reset">&Delta;h auto</span>
+            <input type="range" id="rngSep" min="-2.31" max="0.9" step="0.02" value="0.3"></div>
+          <div class="wfrow3d"><span>tilt</span>
+            <input type="range" id="rngWfTilt" min="20" max="80" step="1" value="25"><b class="sv" id="wfTiltVal">25&deg;</b></div>
+          <div class="wfrow3d"><span>dist</span>
+            <input type="range" id="rngWfDist" min="1.2" max="10" step="0.1" value="3"><b class="sv" id="wfDistVal">3.0&middot;L</b></div>
+        </div>
+        <div class="wfctl v3" id="v3Ctl">
+          <div><span>tilt</span><input type="range" id="rngTilt" min="0" max="85" step="1" value="55"><b class="sv" id="v3TiltVal">55&deg;</b></div>
+          <div><span>rot</span><input type="range" id="rngRot" min="0" max="360" step="5" value="45"><b class="sv" id="v3RotVal">45&deg;</b></div>
+          <div><span>dist</span><input type="range" id="rngDist" min="1.1" max="10" step="0.1" value="2.5"><b class="sv" id="v3DistVal">2.5&middot;L</b></div>
+        </div>
+        <div class="presets">
+          <div class="prow">
+            <button id="bPre1" title="1D KS: open boundary, dx=0.5, dt=0.01, jet &minus;&nabla;&sup2;h">KS 1D</button>
+            <button id="bPre2" title="2D KS: surface 3D, dx=0.5, flames &nabla;&sup2;h, tilt 45&deg;">KS 2D</button>
+          </div>
+          <div class="prow">
+            <button id="bPre1a" title="KS 1D with &alpha; = 1 (extra &alpha;|&nabla;h| growth)">KS 1D abs1</button>
+            <button id="bPre2a" title="KS 2D with &alpha; = 1.4, dt = 0.1">KS 2D abs1</button>
+          </div>
+          <div class="prow">
+            <button id="bPre1n" title="KS 1D with strong nonlinearity &beta; = 1.5, dt = 0.02">KS 1D nnl</button>
+            <button id="bPre2n" title="KS 2D with strong nonlinearity &beta; = 1.5, dt = 0.02">KS 2D nnl</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== control panel =============== -->
+    <aside class="controls">
+      <div class="btnrow">
+        <button class="btn primary" id="bRun">Run</button>
+        <button class="btn" id="bStep">Step</button>
+        <button class="btn" id="bReset">Reset</button>
+        <button class="btn png" id="bPng" title="save the display as a PNG image, without the controls, with the equation and parameters stamped in the corner">.png</button>
+      </div>
+
+      <details open>
+        <summary>Model</summary>
+        <div class="sect">
+          <div class="row"><label>dimension</label>
+            <div class="seg" id="segDim">
+              <button data-v="1" class="on">1D</button><button data-v="2">2D</button>
+            </div>
+          </div>
+          <div class="row"><label>boundary</label>
+            <div class="seg" id="segBC">
+              <button data-v="periodic" class="on">periodic</button><button data-v="open">open</button>
+            </div>
+          </div>
+          <div class="row"><label>lattice size L</label>
+            <select id="selL">
+              <option>32</option><option>64</option><option selected>128</option>
+              <option>256</option><option>512</option>
+            </select>
+          </div>
+          <div class="row"><label>wavenumber n = <span class="vv" id="nVal">4</span></label>
+            <input type="range" id="rngN" min="1" max="16" step="1" value="4" title="n_x = n_y = n">
+          </div>
+          <div class="row"><label>amplitude A</label>
+            <div class="seg mini" id="segAmp">
+              <button data-v="0" class="on">0</button><button data-v="0.01">0.01</button>
+              <button data-v="1">1</button>
+            </div>
+          </div>
+          <div class="row"><label>disturbance &epsilon;</label>
+            <div class="seg mini" id="segEps">
+              <button data-v="0">0</button><button data-v="0.01">0.01</button>
+              <button data-v="0.1" class="on">0.1</button><button data-v="1">1</button>
+            </div>
+          </div>
+          <div class="hint" id="icHint"></div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Numerics &amp; speed</summary>
+        <div class="sect">
+          <div class="row"><label>time step dt</label>
+            <select id="selDt">
+              <option>0.001</option><option>0.002</option><option>0.005</option><option>0.01</option>
+              <option>0.02</option><option>0.05</option><option selected>0.1</option>
+              <option>0.2</option><option>0.25</option><option>0.5</option>
+            </select>
+          </div>
+          <div class="row"><label>lattice step dx</label>
+            <select id="selDx">
+              <option>0.1</option><option>0.2</option><option>0.25</option>
+              <option>0.5</option><option selected>1</option>
+            </select>
+          </div>
+          <div class="row"><label>steps / frame</label>
+            <select id="selSpf">
+              <option>1</option><option>2</option><option selected>5</option>
+              <option>10</option><option>20</option><option>50</option>
+            </select>
+          </div>
+          <div class="hint">ETDRK4 integrates the stiff linear part exactly; dt is limited only by the
+          nonlinearity. dt = 0.1 is accurate; dt = 0.25 is usually still stable. Space is spectral, so
+          dx = 1 costs no accuracy; the dx control shrinks the lattice spacing (physical length
+          L·dx) to resolve the same cells with more points. The time step picks itself from
+          the strength of the nonlinear terms — 0.1 for plain KS, 0.02 up to |&beta;| = 2,
+          0.01 for 2 &lt; |&beta;| &le; 3.5 and 0.005 beyond (0.01 in 2D, where one step
+          costs L times more and the measured error is already ~10&#8315;&sup3;), and 0.02
+          for the +&nabla;&#8308;+&nabla;&#8310; equation — unless a finer display line
+          spacing &Delta;t demands a smaller one. Steps per frame are rescaled at the same
+          time, so the animation keeps roughly its pace when dt drops. Both are yours to
+          override here.</div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Display</summary>
+        <div class="sect">
+          <div class="row"><label>display amplitude</label>
+            <select id="selGain">
+              <option value="0.2">&times;0.2</option><option value="0.5">&times;0.5</option>
+              <option value="1">&times;1</option><option value="2">&times;2</option>
+              <option value="5">&times;5</option><option value="10">&times;10</option>
+              <option value="25" selected>&times;25</option><option value="50">&times;50</option>
+            </select>
+          </div>
+          <div class="row" id="rowKeep"><label>profiles kept</label>
+            <select id="selKeep">
+              <option>200</option><option>500</option><option>1000</option>
+              <option selected>2000</option><option>5000</option>
+            </select>
+          </div>
+          <div class="row"><label>y-axis shows</label>
+            <div class="seg mini" id="segYvar">
+              <button data-v="h" class="on">h</button><button data-v="dx">dh/dx</button>
+            </div>
+          </div>
+          <div class="hint">Display amplitude magnifies heights and colours. The corner slider on
+          the display sets the curve spacing &Delta;h of the stacked profiles, or the line spacing
+          &Delta;t of the 3D modes. In the 3D views, tilt / rotation / distance sliders sit on the
+          display itself (distance at the far end means no perspective); you can also drag on the
+          2D surface to rotate it.</div>
+        </div>
+      </details>
+
+      <details>
+        <summary>About this model</summary>
+        <div class="sect about">
+          <p><b>The equation.</b> <i>&part;h/&part;t = &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h + (&nabla;h)&sup2;</i>
+          describes a growing interface h — a flame front, a solidification front, a falling liquid film.
+          The <b>negative diffusion</b> term pumps energy into long wavelengths: a mode with wavenumber k
+          grows at rate <i>&omega; = k&sup2; &minus; k&#8308;</i>, so the band 0 &lt; k &lt; 1 is unstable,
+          fastest at k = 1/&radic;2 (cell size &lambda; = 2&pi;&radic;2 &asymp; 8.9 lattice units). The
+          fourth derivative damps short wavelengths, and the nonlinearity (&nabla;h)&sup2; couples the modes
+          and saturates the growth. The result is <b>spatiotemporal chaos</b>: a churning pattern of cells
+          of size &asymp; 9 that perpetually split and merge.</p>
+          <p><b>Higher-order variant.</b> The toggle in the header replaces the two linear terms by
+          +&nabla;&#8308;h + &nabla;&#8310;h: the instability then comes from the Laplacian of the
+          Laplacian, with growth rate &omega; = k&#8308; &minus; k&#8310; — the same unstable band
+          0 &lt; k &lt; 1, but flatter near k = 0 and with the fastest-growing mode at
+          k = &radic;(2/3) &asymp; 0.82. The switch acts on the running field, so you can watch one
+          equation's pattern relax into the other's.</p>
+          <p><b>Extra growth terms.</b> The sliders in the header switch on two optional
+          slope-dependent growth terms. <i>&alpha;|&nabla;h|</i> makes the front advance in
+          proportion to the local slope magnitude — a non-analytic term that favours facets and
+          sharp ridges (&alpha; &lt; 0 slows sloped regions instead). <i>&beta;(&nabla;h)&#8308;</i>
+          is the next order in the slope expansion of a growing front: &beta; &lt; 0 tames steep
+          slopes and lets the cells grow taller, while &beta; &gt; 0 rewards steep regions with
+          extra growth, which flattens the surface and speeds up the mean climb. The &beta; slider
+          runs over &plusmn;5 — in steps of 0.1 inside |&beta;| &le; 2 and 0.5 outside — and the
+          time step follows it automatically (0.02 up to |&beta;| = 2, then 0.01 and 0.005), which
+          keeps the fourth-order integration accurate; runs stay bounded over the whole range,
+          but if a combination ever does blow up the run stops with a warning. Both terms act
+          instantly, without a reset.</p>
+          <p><b>Mean growth.</b> Since (&nabla;h)&sup2; &ge; 0 the mean height climbs at rate
+          &lang;(&nabla;h)&sup2;&rang; (KPZ-like). The display shows the fluctuation h &minus; &lang;h&rang;;
+          the readout &lang;h&rang; tracks the climb, and W is the interface width (rms roughness).</p>
+          <p><b>Initial condition.</b> A standing wave that fits the box. Periodic: h = A sin(2&pi;n x/L),
+          n full waves, k = 2&pi;n/L. Open: h = A cos(&pi;n x/L), n half waves, k = &pi;n/L, flat at both
+          walls. In 2D the product of the x and y waves is used. Waves with k &lt; 1 grow; with A = 0.01
+          you can watch the clean exponential growth before chaos sets in.</p>
+          <p><b>Boundaries.</b> Periodic uses the plain Fourier basis. Open boundaries are realised by
+          evenly mirroring the field (cosine basis), which forces <b>all odd derivatives to vanish at the
+          walls</b>; the even derivatives then vanish dynamically as the wall stays flat. Open runs cost
+          2&times; (1D) or 4&times; (2D) the work of periodic ones.</p>
+          <p><b>Numerics.</b> Pseudospectral: derivatives are exact in Fourier space (2/3-rule dealiasing
+          for the nonlinear term), and the time stepper is ETDRK4 (Kassam–Trefethen), a fourth-order
+          exponential integrator that treats the stiff linear operator exactly. Large 2D lattices
+          (256, or open boundaries) are heavy — lower steps/frame if the animation stutters.</p>
+          <p><b>Displays.</b> In 1D: the instantaneous profile h(x)&minus;&lang;h&rang;, the stacked
+          <b>profiles h(x,t)</b> (absolute height, captured continuously; the corner slider sets the curve
+          spacing), or the <b>space–time map</b>, which
+          runs bottom-up: x horizontal, time increasing upward, like the stacked profiles. The
+          stacked profiles use hidden-line removal — the h(x,t) surface seen from behind and above,
+          each curve visible only where it rises over the skyline of the older ones — and scroll
+          smoothly with the mean height. <b>Profiles 3D</b> renders the same surface in perspective
+          (~60° elevation), one line every &Delta;t set by the corner slider. In 2D: a
+          colour map of h(x,y) filling the display, or a rotatable <b>3D surface</b> steered by the
+          tilt / rotation / distance sliders (close distance adds perspective, the far end is
+          orthographic; drag to rotate). The <b>display amplitude</b> control magnifies both heights
+          and colour contrast. Curves and maps can be coloured by h&minus;&lang;h&rang;, by the slope
+          dh/dx, by |dh/dx| (in 2D: &part;h/&part;x and |&nabla;h|), or by the curvature d²h/dx²
+          (2D: &nabla;²h) — all evaluated spectrally. Colour schemes are grouped by type:
+          <b>diverging</b> (blue–red, spectral, ice–ember) put white or grey at zero and are the
+          honest choice for signed quantities; <b>rainbow</b> (jet, turbo) maximize contrast;
+          <b>sequential</b> (viridis, plasma, magma, cividis, ice, yellow, flames, grayscale) run
+          monotonically in lightness and are the right pick for |&nabla;h| and for print.</p>
+          <p><b>Saving a picture.</b> The <b>.png</b> button writes the current display — and only
+          the display, without any of the control overlays — to a PNG at twice the screen
+          resolution, with the equation actually being integrated and its parameter values
+          stamped in blue in the upper right corner.</p>
+          <p><b>Disturbance.</b> The &epsilon; toggle adds &epsilon; to the initial condition at two
+          places: in 1D the strips 8–9&thinsp;L/32 and 19–20&thinsp;L/32, in 2D the patches
+          x,y = 8–9&thinsp;L/32 and x = 11–12, y = 23–24&thinsp;L/32. These positions are chosen
+          deliberately to avoid symmetries — this matters especially for open boundaries, whose
+          mirror walls make reflection about the box centre an exact symmetry of the dynamics: a
+          centred (or symmetrically placed) seed would then lock the entire evolution into an
+          artificially mirror-symmetric pattern forever. The two bumps sit off-centre, at unequal
+          distances from the two walls and from each other, so no reflection maps the seed onto
+          itself; in 2D the second patch also breaks the x&harr;y diagonal symmetry that the first
+          (diagonal) patch alone would preserve. With A = 0 the whole evolution grows from these
+          bumps — watch their edges emit cells that invade the flat state and collide into fully
+          generic, symmetry-free chaos.</p>
+        </div>
+      </details>
+    </aside>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ============================== CORE ==============================
+   Pseudospectral ETDRK4 solver for the Kuramoto–Sivashinsky equation
+        dh/dt = -Lap h - Lap^2 h + |grad h|^2 ,  dx = 1.
+   Open (flat) boundaries via even mirror extension = cosine basis.
+   ================================================================== */
+
+/* ---- FFT with cached twiddle / bit-reversal tables -------------------
+   The tables depend only on the transform length, so they are built once
+   per lattice size and shared by every transform: no trigonometry and no
+   incremental-rotation round-off inside the hot loop.                    */
+const FFTT = new Map();
+function fftTables(n){
+  let T = FFTT.get(n);
+  if(T) return T;
+  const half = n >> 1;
+  const c = new Float64Array(Math.max(1, half)), s = new Float64Array(Math.max(1, half));
+  for(let k=0; k<half; k++){ const a = -2*Math.PI*k/n; c[k]=Math.cos(a); s[k]=Math.sin(a); }
+  const rev = new Uint32Array(n);
+  for(let i=1, j=0; i<n; i++){
+    let bit = n >> 1;
+    for(; j & bit; bit >>= 1) j ^= bit;
+    j |= bit; rev[i] = j;
+  }
+  T = { c, s, rev }; FFTT.set(n, T);
+  return T;
+}
+
+/* in-place radix-2 complex FFT on re/im[off .. off+n) */
+function fftRange(re, im, off, n, inv){
+  if(n < 2) return;
+  const T = fftTables(n), rev = T.rev, C = T.c, S = T.s;
+  for(let i=1; i<n; i++){
+    const j = rev[i];
+    if(i < j){
+      const a=off+i, b=off+j;
+      let t=re[a]; re[a]=re[b]; re[b]=t;
+      t=im[a]; im[a]=im[b]; im[b]=t;
+    }
+  }
+  for(let len=2; len<=n; len<<=1){
+    const half = len>>1, ts = n/len;
+    for(let i=off; i<off+n; i+=len){
+      for(let j=0, k=0; j<half; j++, k+=ts){
+        const cr = C[k], ci = inv ? -S[k] : S[k];
+        const i0 = i+j, i1 = i0+half;
+        const xr = re[i1], xi = im[i1];
+        const vr = xr*cr - xi*ci, vi = xr*ci + xi*cr;
+        re[i1] = re[i0]-vr; im[i1] = im[i0]-vi;
+        re[i0] += vr;       im[i0] += vi;
+      }
+    }
+  }
+  if(inv){
+    const f = 1/n;
+    for(let i=off; i<off+n; i++){ re[i]*=f; im[i]*=f; }
+  }
+}
+
+function fftCore(re, im, inv){ fftRange(re, im, 0, re.length, inv); }
+
+function fft2(re, im, nx, ny, inv, sr, si){   // rows then columns, no sub-array churn
+  for(let y=0; y<ny; y++) fftRange(re, im, y*nx, nx, inv);
+  for(let x=0; x<nx; x++){
+    for(let y=0, p=x; y<ny; y++, p+=nx){ sr[y]=re[p]; si[y]=im[p]; }
+    fftRange(sr, si, 0, ny, inv);
+    for(let y=0, p=x; y<ny; y++, p+=nx){ re[p]=sr[y]; im[p]=si[y]; }
+  }
+}
+
+function cdivRe(ar, ai, br, bi){ return (ar*br + ai*bi)/(br*br + bi*bi); }
+
+/* P = {dim:1|2, L, bc:'periodic'|'open', dt, nwx, nwy, amp} */
+function buildSim(P){
+  const mirror = P.bc === 'open';
+  const nx = mirror ? 2*P.L : P.L;
+  const ny = P.dim === 2 ? nx : 1;
+  const M  = nx*ny;
+  const physNx = P.L, physNy = P.dim === 2 ? P.L : 1;
+
+  // --- mode tables: wavenumbers, linear operator, dealias mask ---
+  const KX = new Float64Array(M), KY = new Float64Array(M), K2 = new Float64Array(M);
+  const LIN = new Float64Array(M), mask = new Float64Array(M);
+  const mlx = Math.floor(nx/3), mly = Math.floor(ny/3);
+  const dxp = P.dx || 1;                    // lattice spacing: physical length = N*dx
+  for(let j=0; j<ny; j++){
+    const mj = (j <= ny/2) ? j : j-ny;
+    const ky = (ny === 1) ? 0 : 2*Math.PI*mj/(ny*dxp);
+    for(let i=0; i<nx; i++){
+      const mi = (i <= nx/2) ? i : i-nx;
+      const kx = 2*Math.PI*mi/(nx*dxp);
+      const p = j*nx+i;
+      KX[p] = (2*Math.abs(mi) === nx) ? 0 : kx;   // zero Nyquist in derivatives
+      KY[p] = (ny > 1 && 2*Math.abs(mj) === ny) ? 0 : ky;
+      const k2 = kx*kx + ky*ky;
+      K2[p] = k2;
+      mask[p] = (Math.abs(mi) <= mlx && (ny === 1 || Math.abs(mj) <= mly)) ? 1 : 0;
+    }
+  }
+
+  /* linear operator: order 4 (KS): w = k^2 - k^4;  order 6: w = k^4 - k^6
+     (instability from the Laplacian of the Laplacian). Same band 0<k<1. */
+  function fillLin(order){
+    for(let p=0;p<M;p++){
+      const k2 = K2[p], k4 = k2*k2;
+      LIN[p] = (order === 6) ? k4 - k4*k2 : k2 - k4;
+    }
+  }
+  fillLin(P.order === 6 ? 6 : 4);
+
+  // --- ETDRK4 coefficients (Kassam & Trefethen) ---
+  const E=new Float64Array(M), E2=new Float64Array(M), Qc=new Float64Array(M),
+        f1=new Float64Array(M), f2=new Float64Array(M), f3=new Float64Array(M);
+  function computeCoeffs(dt){
+    for(let p=0; p<M; p++){
+      const z = LIN[p]*dt;
+      E[p] = Math.exp(z); E2[p] = Math.exp(z/2);
+      if(Math.abs(z) > 0.5){                      // direct formulas, no cancellation danger
+        const ez = E[p], z2 = z*z, z3 = z2*z;
+        Qc[p] = dt*(E2[p]-1)/z;
+        f1[p] = dt*(-4 - z  + ez*(4 - 3*z + z2))/z3;
+        f2[p] = dt*( 2 + z  + ez*(-2 + z))/z3;
+        f3[p] = dt*(-4 - 3*z - z2 + ez*(4 - z))/z3;
+      } else {                                    // contour average around z
+        let q=0, a=0, b=0, c=0; const MC = 16;
+        for(let m=0; m<MC; m++){
+          const th = Math.PI*(m+0.5)/MC;
+          const wr = z + Math.cos(th), wi = Math.sin(th);
+          const ex  = Math.exp(wr),   ewr = ex*Math.cos(wi),   ewi = ex*Math.sin(wi);
+          const ex2 = Math.exp(wr/2), e2r = ex2*Math.cos(wi/2), e2i = ex2*Math.sin(wi/2);
+          const w2r = wr*wr - wi*wi, w2i = 2*wr*wi;
+          const w3r = w2r*wr - w2i*wi, w3i = w2r*wi + w2i*wr;
+          q += cdivRe(e2r-1, e2i, wr, wi);
+          let pr = 4-3*wr+w2r, pi = -3*wi+w2i;
+          a += cdivRe(-4-wr + ewr*pr - ewi*pi, -wi + ewr*pi + ewi*pr, w3r, w3i);
+          pr = -2+wr; pi = wi;
+          b += cdivRe( 2+wr + ewr*pr - ewi*pi,  wi + ewr*pi + ewi*pr, w3r, w3i);
+          pr = 4-wr; pi = -wi;
+          c += cdivRe(-4-3*wr-w2r + ewr*pr - ewi*pi, -3*wi-w2i + ewr*pi + ewi*pr, w3r, w3i);
+        }
+        Qc[p]=dt*q/MC; f1[p]=dt*a/MC; f2[p]=dt*b/MC; f3[p]=dt*c/MC;
+      }
+    }
+  }
+  computeCoeffs(P.dt);
+
+  // --- buffers ---
+  const A = () => new Float64Array(M);
+  const vr=A(), vi=A();                                  // spectral state
+  const nvr=A(), nvi=A(), nar=A(), nai=A(), nbr=A(), nbi=A(), ncr=A(), nci=A();
+  const ar_=A(), ai_=A(), br_=A(), bi_=A();
+  const g1r=A(), g1i=A();
+  const hr=A(), hi=A();
+  const csr = new Float64Array(ny), csi = new Float64Array(ny);
+  const h = A();                                         // real field for display
+
+  const FT = (re,im,inv) => { if(ny===1) fftCore(re,im,inv); else fft2(re,im,nx,ny,inv,csr,csi); };
+
+  /* optional extra growth terms: N = |grad h|^2 + ALPHA*|grad h| + BETA*|grad h|^4 */
+  let ALPHA = P.alpha || 0, BETA = P.beta || 0;
+
+  /* Both gradient components come out of ONE inverse transform: the spectra of
+     dh/dx and dh/dy are Hermitian, so transforming (i·kx·v) + i(i·ky·v) returns
+     dh/dx in the real part and dh/dy in the imaginary part. In 2D that cuts the
+     transforms per nonlinear evaluation from three to two. */
+  function nonlin(inr, ini, outr, outi){                 // dealiased pseudospectral N(v)
+    if(ny > 1){
+      for(let p=0;p<M;p++){
+        const kx = KX[p], ky = KY[p], r = inr[p], i = ini[p];
+        g1r[p] = -kx*i - ky*r;
+        g1i[p] =  kx*r - ky*i;
+      }
+      FT(g1r, g1i, true);                                // g1r = dh/dx, g1i = dh/dy
+      if(ALPHA === 0 && BETA === 0){
+        for(let p=0;p<M;p++){
+          const a = g1r[p], b = g1i[p];
+          outr[p] = a*a + b*b; outi[p] = 0;
+        }
+      } else {
+        for(let p=0;p<M;p++){
+          const a = g1r[p], b = g1i[p], g = a*a + b*b;
+          outr[p] = g + ALPHA*Math.sqrt(g) + BETA*g*g; outi[p] = 0;
+        }
+      }
+    } else {
+      for(let p=0;p<M;p++){ g1r[p] = -KX[p]*ini[p]; g1i[p] = KX[p]*inr[p]; }
+      FT(g1r, g1i, true);
+      if(ALPHA === 0 && BETA === 0){
+        for(let p=0;p<M;p++){ outr[p] = g1r[p]*g1r[p]; outi[p] = 0; }
+      } else {
+        for(let p=0;p<M;p++){
+          const g = g1r[p]*g1r[p];
+          outr[p] = g + ALPHA*Math.abs(g1r[p]) + BETA*g*g; outi[p] = 0;
+        }
+      }
+    }
+    FT(outr, outi, false);
+    for(let p=0;p<M;p++){ outr[p]*=mask[p]; outi[p]*=mask[p]; }
+  }
+
+  const s = { P, nx, ny, M, physNx, physNy, mirror, t:0, meanH:0, h, W:0, hmax:0 };
+
+  function hermitize(){
+    /* h is real, so v must stay Hermitian: v(-k) = conj v(k).  FFT roundoff
+       seeds a tiny anti-Hermitian ghost that would grow at the maximal KS
+       rate e^{t/4} (it feels only the linear operator, never the saturating
+       nonlinearity) and destroy the run near t ~ 300 — so kill it each step. */
+    if(ny === 1){
+      vi[0]=0; vi[nx>>1]=0;
+      for(let i=1;i<nx>>1;i++){
+        const j=nx-i;
+        const rr=(vr[i]+vr[j])/2, ii=(vi[i]-vi[j])/2;
+        vr[i]=rr; vr[j]=rr; vi[i]=ii; vi[j]=-ii;
+      }
+    } else {
+      for(let j=0;j<ny;j++){
+        const jc=(ny-j)%ny;
+        for(let i=0;i<nx;i++){
+          const p=j*nx+i, q=jc*nx+((nx-i)%nx);
+          if(p<q){
+            const rr=(vr[p]+vr[q])/2, ii=(vi[p]-vi[q])/2;
+            vr[p]=rr; vr[q]=rr; vi[p]=ii; vi[q]=-ii;
+          } else if(p===q) vi[p]=0;
+        }
+      }
+    }
+  }
+
+  s.step = function(){
+    nonlin(vr, vi, nvr, nvi);
+    for(let p=0;p<M;p++){ ar_[p]=E2[p]*vr[p]+Qc[p]*nvr[p]; ai_[p]=E2[p]*vi[p]+Qc[p]*nvi[p]; }
+    nonlin(ar_, ai_, nar, nai);
+    for(let p=0;p<M;p++){ br_[p]=E2[p]*vr[p]+Qc[p]*nar[p]; bi_[p]=E2[p]*vi[p]+Qc[p]*nai[p]; }
+    nonlin(br_, bi_, nbr, nbi);
+    for(let p=0;p<M;p++){ br_[p]=E2[p]*ar_[p]+Qc[p]*(2*nbr[p]-nvr[p]); bi_[p]=E2[p]*ai_[p]+Qc[p]*(2*nbi[p]-nvi[p]); }
+    nonlin(br_, bi_, ncr, nci);
+    for(let p=0;p<M;p++){
+      vr[p] = E[p]*vr[p] + f1[p]*nvr[p] + 2*f2[p]*(nar[p]+nbr[p]) + f3[p]*ncr[p];
+      vi[p] = E[p]*vi[p] + f1[p]*nvi[p] + 2*f2[p]*(nai[p]+nbi[p]) + f3[p]*nci[p];
+    }
+    s.meanH += vr[0]/M; vr[0]=0; vi[0]=0;    // absorb mean growth into a scalar
+    hermitize();
+    s.t += s.P.dt;
+  };
+
+  function symmetrize(){                     // re-impose mirror symmetry (kills roundoff drift)
+    if(ny === 1){
+      for(let i=0;i<physNx;i++){ const j=nx-1-i, m=(hr[i]+hr[j])/2; hr[i]=m; hr[j]=m; }
+    } else {
+      for(let j=0;j<physNy;j++) for(let i=0;i<physNx;i++){
+        const jm=ny-1-j, im2=nx-1-i;
+        const p00=j*nx+i, p10=j*nx+im2, p01=jm*nx+i, p11=jm*nx+im2;
+        const m=(hr[p00]+hr[p10]+hr[p01]+hr[p11])/4;
+        hr[p00]=m; hr[p10]=m; hr[p01]=m; hr[p11]=m;
+      }
+    }
+  }
+
+  s.sync = function(){                       // spectral -> real field + stats
+    hr.set(vr); hi.set(vi); FT(hr, hi, true);
+    if(mirror){
+      symmetrize();
+      h.set(hr);
+      for(let p=0;p<M;p++) hi[p]=0;
+      FT(hr, hi, false);
+      vr.set(hr); vi.set(hi);
+      s.meanH += vr[0]/M; vr[0]=0; vi[0]=0;
+    } else h.set(hr);
+    let sum2=0, mx=0;
+    for(let j=0;j<physNy;j++){
+      const row = j*nx;
+      for(let i=0;i<physNx;i++){
+        const x=h[row+i]; sum2+=x*x; const a=x<0?-x:x; if(a>mx) mx=a;
+      }
+    }
+    s.W = Math.sqrt(sum2/(physNx*physNy)); s.hmax = mx;
+  };
+
+  s.frame = function(n){ for(let i=0;i<n;i++) s.step(); s.sync(); };
+  s.setDt = function(dt){ s.P.dt = dt; computeCoeffs(dt); };
+  s.setTerms = function(a, b){ ALPHA = a; BETA = b; };
+  s.setOrder = function(o){ s.P.order = o; fillLin(o); computeCoeffs(s.P.dt); };
+
+  /* derived fields for colouring, computed spectrally:
+     'h' = h - <h>,  'dx' = dh/dx,  'absdx' = |dh/dx| (2D: |grad h|),  'lap' = Laplacian h */
+  s.derived = function(kind, out){
+    if(kind === 'h'){ out.set(h); return; }
+    if(kind === 'lap' || kind === 'nlap'){
+      const sg = (kind === 'nlap') ? 1 : -1;         // lap: -k2 v, nlap: +k2 v
+      for(let p=0;p<M;p++){ g1r[p] = sg*K2[p]*vr[p]; g1i[p] = sg*K2[p]*vi[p]; }
+      FT(g1r, g1i, true); out.set(g1r); return;
+    }
+    if(kind === 'dx' || ny === 1){
+      for(let p=0;p<M;p++){ g1r[p] = -KX[p]*vi[p]; g1i[p] = KX[p]*vr[p]; }
+      FT(g1r, g1i, true);
+      if(kind === 'dx'){ out.set(g1r); return; }
+      for(let p=0;p<M;p++){ const a=g1r[p]; out[p] = a<0?-a:a; }
+      return;
+    }
+    for(let p=0;p<M;p++){                     // both components in one transform
+      const kx = KX[p], ky = KY[p], r = vr[p], i = vi[p];
+      g1r[p] = -kx*i - ky*r;
+      g1i[p] =  kx*r - ky*i;
+    }
+    FT(g1r, g1i, true);
+    for(let p=0;p<M;p++){ const a=g1r[p], b=g1i[p]; out[p] = Math.sqrt(a*a+b*b); }
+  };
+
+  /* localized disturbance at TWO places, strongly asymmetric:
+     1D: strips [8,9)L/32 and [19,20)L/32.
+     2D: patches x,y in [8,9)L/32 and x in [11,12)L/32, y in [23,24)L/32.
+     Mirror images included for open boundaries. */
+  s.perturb = function(eps){
+    hr.set(vr); hi.set(vi); FT(hr, hi, true);
+    const seg = f => {
+      const a = Math.floor(f*P.L/32);
+      return [a, Math.max(a+1, Math.floor((f+1)*P.L/32))];
+    };
+    const add = (i, j) => {
+      hr[j*nx+i] += eps;
+      if(mirror){
+        hr[j*nx+(nx-1-i)] += eps;
+        if(ny > 1){ hr[(ny-1-j)*nx+i] += eps; hr[(ny-1-j)*nx+(nx-1-i)] += eps; }
+      }
+    };
+    if(ny === 1){
+      for(const f of [8, 19]){
+        const [a,b] = seg(f);
+        for(let i=a; i<b; i++) add(i, 0);
+      }
+    } else {
+      let [a,b] = seg(8), [c,d] = seg(8);
+      for(let j=c;j<d;j++) for(let i=a;i<b;i++) add(i, j);
+      [a,b] = seg(11); [c,d] = seg(23);
+      for(let j=c;j<d;j++) for(let i=a;i<b;i++) add(i, j);
+    }
+    for(let p=0;p<M;p++) hi[p]=0;
+    FT(hr, hi, false);
+    vr.set(hr); vi.set(hi);
+    s.meanH += vr[0]/M; vr[0]=0; vi[0]=0;
+    s.sync();
+  };
+
+  // --- initial condition: standing wave matched to the boundary condition ---
+  (function init(){
+    const Lp = P.L, a = P.amp;
+    for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){
+      let f;
+      if(!mirror){
+        f = Math.sin(2*Math.PI*P.nwx*i/Lp);
+        if(ny > 1) f *= Math.sin(2*Math.PI*P.nwy*j/Lp);
+      } else {                                // cosine: flat (all odd derivs = 0) at walls
+        f = Math.cos(Math.PI*P.nwx*(i+0.5)/Lp);
+        if(ny > 1) f *= Math.cos(Math.PI*P.nwy*(j+0.5)/Lp);
+      }
+      hr[j*nx+i] = a*f; hi[j*nx+i] = 0;
+    }
+    FT(hr, hi, false);
+    vr.set(hr); vi.set(hi);
+    s.meanH = vr[0]/M; vr[0]=0; vi[0]=0;
+    s.sync();
+    if(P.eps) s.perturb(P.eps);     // disturbance strip as part of the initial condition
+  })();
+
+  return s;
+}
+/* ============================ END CORE ============================ */
+
+/* ============================== UI =============================== */
+(function(){
+  const $ = id => document.getElementById(id);
+  const cv = $('view');
+  /* `ctx` is a let: the PNG export temporarily points every drawing routine at
+     an off-screen high-resolution canvas and then points it back */
+  let ctx = cv.getContext('2d');
+
+  const params = { dim:1, L:128, bc:'periodic', n:4, amp:0, eps:0.1, dt:0.1, dx:1, alpha:0, beta:0, order:4 };
+  let stepsPerFrame = 5;
+  let dtplot = 0.2, keepN = 2000, dispGain = 25;   // dtplot: internal capture cadence
+  let yvar = 'h';                      // y-axis variable throughout the plots: h or dh/dx
+  let sim = null, running = false, diverged = false;
+  let profScale = 1e-6;
+  let stamp = 0;
+  let qkind = 'plain';
+  const modeSel = { 1:'wf3dsw', 2:'map' };
+  const view = { tilt:55, rot:45, dist:2.5 };
+  let snapshots = [], nextSnap = 0;
+  let wfSepAuto = true, wfSep = 2;
+  let qbuf = null;
+  const qscales = { h:1e-6, dx:1e-6, absdx:1e-6, lap:1e-6, nlap:1e-6 };
+  const scaleStamp = { h:-1, dx:-1, absdx:-1, lap:-1, nlap:-1 };
+  const qCache = { stamp:-1, kind:'' };
+
+  // ----- display themes (white / black background) -----
+  const THEMES = {
+    light:{ bg:'#fbfcfe', grid:'#e8ecf3', grid2:'#eef1f6', zero:'#c3ccdb', label:'#8391ab',
+            curve:'#4338ca', fill:'rgba(67,56,202,.07)', frame:'#dde3ec', wall:'#aab5c8',
+            stBlank:'#f4f6fa', cbtext:'#4a5872' },
+    dark:{  bg:'#0b0d13', grid:'#20242f', grid2:'#191d26', zero:'#3a4152', label:'#98a2b6',
+            curve:'#94a6ff', fill:'rgba(148,166,255,.09)', frame:'#2a3140', wall:'#5d6880',
+            stBlank:'#131722', cbtext:'#98a2b6' }
+  };
+  let darkBG = false, TH = THEMES.light;
+  function applyTheme(){
+    TH = darkBG ? THEMES.dark : THEMES.light;
+    document.querySelector('.display').classList.toggle('darkbg', darkBG);
+    if(stC.width){
+      stCtx.fillStyle = TH.stBlank;
+      stCtx.fillRect(0, 0, stC.width, Math.max(0, stH - stRows));
+    }
+    draw();
+  }
+  function toggleTheme(){ darkBG = !darkBG; applyTheme(); }
+
+  // ----- colormaps -----
+  const ANCH = {
+    /* diverging — neutral at the middle, the honest choice for signed fields */
+    div:  [[5,48,97],[33,102,172],[146,197,222],[247,247,247],[244,165,130],[178,24,43],[103,0,31]],
+    spec: [[70,44,124],[50,136,189],[102,194,165],[171,221,164],[255,255,191],
+           [254,224,139],[253,174,97],[213,62,79],[130,10,42]],
+    cool: [[8,64,129],[41,121,185],[126,184,220],[224,232,240],[247,219,150],
+           [240,151,58],[196,74,22],[110,25,10]],
+    /* rainbow — maximal contrast */
+    jet:  [[0,0,143],[0,0,255],[0,224,255],[110,255,140],[255,235,0],[255,60,0],[128,0,0]],
+    turbo:[[48,18,59],[62,73,180],[38,131,234],[27,184,203],[62,218,130],[141,242,64],
+           [208,229,42],[249,180,42],[251,116,27],[218,58,10],[122,4,3]],
+    /* sequential — monotone lightness */
+    vir:  [[68,1,84],[71,44,122],[59,81,139],[44,113,142],[33,144,141],[39,173,129],[92,200,99],[170,220,50],[253,231,37]],
+    plasma:[[13,8,135],[75,3,161],[125,3,168],[168,34,150],[203,70,121],[229,107,93],
+            [248,148,65],[253,195,40],[240,249,33]],
+    magma:[[0,0,4],[28,16,68],[79,18,123],[129,37,129],[181,54,122],[229,80,100],
+           [251,135,97],[254,194,135],[252,253,191]],
+    civ:  [[0,32,76],[0,67,110],[47,101,120],[87,134,124],[131,166,120],[184,199,110],[253,231,55]],
+    ice:  [[3,5,26],[10,32,80],[13,72,142],[24,124,182],[65,175,199],[143,214,214],[228,248,248]],
+    ora:  [[26,14,3],[92,56,6],[168,110,10],[228,168,22],[255,214,54],[255,240,130],[255,252,225]],
+    fire: [[7,3,8],[45,7,7],[105,15,6],[177,38,4],[229,88,3],[251,150,10],[255,213,64],[255,250,190]],
+    gray: [[28,32,40],[246,247,249]]
+  };
+  /* one 256-entry byte table + one cache of ready-made CSS strings per map, so
+     the drawing loops never build a colour string or allocate an array */
+  let LUT = null, CSS = null, SHADE = null, lutName = 'div';
+  const NSH = 24;                                   // shading buckets for the 3D surface
+  function makeLUT(name){
+    const a = ANCH[name] || ANCH.div, L = new Uint8ClampedArray(256*3);
+    for(let i=0;i<256;i++){
+      const t = i/255*(a.length-1), k = Math.min(a.length-2, Math.floor(t)), f = t-k;
+      for(let c=0;c<3;c++) L[i*3+c] = a[k][c]*(1-f) + a[k+1][c]*f;
+    }
+    return L;
+  }
+  function setLUT(name){
+    lutName = name;
+    LUT = makeLUT(name);
+    CSS = new Array(256);
+    for(let i=0;i<256;i++) CSS[i] = 'rgb('+LUT[3*i]+','+LUT[3*i+1]+','+LUT[3*i+2]+')';
+    SHADE = new Array(256*NSH);
+  }
+  const lutIdx = t => { const i = (t*255+0.5)|0; return i<0 ? 0 : (i>255 ? 255 : i); };
+  const lutCss = t => CSS[lutIdx(t)];
+  /* line art is quantized to 64 levels — indistinguishable by eye, but it lets
+     long runs of neighbouring segments share one path and one stroke call */
+  const QIDX = (function(){
+    const q = new Uint8Array(256);
+    for(let i=0;i<256;i++) q[i] = Math.round(Math.round(i*63/255)*255/63);
+    return q;
+  })();
+  /* diffuse-shaded colour for the 2D surface: quantized so the strings are reused */
+  function shadeCss(ci, dot){
+    let b = (dot*(NSH-1)+0.5)|0; if(b<0) b=0; else if(b>NSH-1) b=NSH-1;
+    const key = ci*NSH + b;
+    let s = SHADE[key];
+    if(s === undefined){
+      const f = 0.7 + 0.3*b/(NSH-1);
+      s = 'rgb('+((LUT[3*ci]*f)|0)+','+((LUT[3*ci+1]*f)|0)+','+((LUT[3*ci+2]*f)|0)+')';
+      SHADE[key] = s;
+    }
+    return s;
+  }
+
+  // ----- derived-field access with per-frame cache -----
+  function getQ(kind){
+    if(kind === 'h') return sim.h;
+    if(qCache.stamp !== stamp || qCache.kind !== kind){
+      sim.derived(kind, qbuf); qCache.stamp = stamp; qCache.kind = kind;
+    }
+    return qbuf;
+  }
+  /* colour scaling adapts to what is actually on screen: the scale is the max
+     of the quantity over two buckets of ~180 displayed frames — the history of
+     the current display page and the previous one. */
+  const qwin = {};
+  function ensureScale(kind){
+    const q = getQ(kind);
+    if(scaleStamp[kind] !== stamp){
+      let mx = 0;
+      for(let j=0;j<sim.physNy;j++) for(let i=0;i<sim.physNx;i++){
+        const a = Math.abs(q[j*sim.nx+i]); if(a>mx) mx = a;
+      }
+      const wnd = qwin[kind] || (qwin[kind] = { cur:0, prev:0, count:0 });
+      if(mx > wnd.cur) wnd.cur = mx;
+      if(++wnd.count >= 180){ wnd.prev = wnd.cur; wnd.cur = mx; wnd.count = 0; }
+      qscales[kind] = Math.max(wnd.cur, wnd.prev, 1e-9);
+      scaleStamp[kind] = stamp;
+    }
+    return { q, s: qscales[kind] };
+  }
+  let gbuf = null; const gCache = { stamp:-1 };
+  function geoField(){
+    if(yvar !== 'dx') return sim.h;
+    if(gCache.stamp !== stamp){
+      if(!gbuf || gbuf.length !== sim.M) gbuf = new Float64Array(sim.M);
+      sim.derived('dx', gbuf); gCache.stamp = stamp;
+    }
+    return gbuf;
+  }
+  const clamp01 = t => t<0?0:(t>1?1:t);
+  const mapT = (kind,v,S) => kind==='absdx' ? clamp01(v/S) : clamp01((v/S+1)/2);
+  const effKind = () => (qkind==='plain' ? (yvar==='dx' ? 'dx' : 'h') : qkind);
+  const scaleFor = kind => niceCeil(ensureScale(kind).s)/dispGain;
+  function kindLabel(kind){
+    const two = params.dim === 2;
+    return { h:'h−⟨h⟩', dx: two?'∂h/∂x':'dh/dx', absdx: two?'|∇h|':'|dh/dx|',
+             lap: two?'∇²h':'d²h/dx²', nlap: two?'−∇²h':'−d²h/dx²' }[kind];
+  }
+
+  // ----- offscreen canvases -----
+  const stH = 900;
+  let stRows = 0;
+  let stC = document.createElement('canvas'), stCtx = stC.getContext('2d');
+  let fldC = document.createElement('canvas'), fldCtx = fldC.getContext('2d');
+
+  function niceCeil(v){
+    if(!(v > 0)) return 1e-6;
+    const p = Math.pow(10, Math.floor(Math.log10(v))), m = v/p;
+    for(const s of [1,1.5,2,3,5,7,10]) if(m <= s*1.0000001) return s*p;
+    return 10*p;
+  }
+  const fmt = v => {
+    const a = Math.abs(v);
+    if(a >= 100) return v.toFixed(0);
+    if(a >= 1)   return +v.toFixed(1) + '';
+    return +v.toPrecision(2) + '';
+  };
+
+  // ----- profiles h(x,t) snapshots -----
+  const is3dMode = m => m === 'wf3d' || m === 'wf3dsw';
+  const capDt = () => (params.dim===1 && is3dMode(modeSel[1])) ? Math.min(dtplot, wfDt) : dtplot;
+  /* the oldest profile's buffer is recycled into the newest one, so a long run
+     does not churn thousands of Float32Arrays through the collector */
+  function capture(){
+    if(params.dim !== 1) return;
+    const n = sim.physNx;
+    let f = null;
+    while(snapshots.length >= keepN){
+      const old = snapshots.shift();
+      if(old.f.length === n) f = old.f;
+    }
+    if(!f) f = new Float32Array(n);
+    f.set(sim.h.subarray(0, n));
+    snapshots.push({ t: sim.t, mean: sim.meanH, f });
+    nextSnap = sim.t + capDt();
+  }
+
+  // ----- full-height display frame -----
+  /* on phones the fixed Run/Step/Reset/.png bar owns the bottom strip, and the
+     display is capped so the top of the control panel peeks in and invites a scroll */
+  function fitHeight(){
+    const wrap = cv.parentElement;
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const top = wrap.getBoundingClientRect().top + window.scrollY;
+    const small = window.innerWidth <= 860;
+    let target = Math.round(vh - top - 14 - (small ? 74 : 0));
+    if(small) target = Math.min(target, Math.round(vh*0.76));
+    target = Math.max(small ? 230 : 300, target);
+    const cur = parseFloat(wrap.style.height) || 0;
+    if(Math.abs(target - cur) > 1){
+      wrap.style.height = target + 'px';   // grows back as readily as it shrinks
+      return true;
+    }
+    return false;
+  }
+
+  // ----- rebuild / reset -----
+  function rebuild(){
+    diverged = false; $('divergedMsg').style.display = 'none';
+    sim = buildSim({ dim:params.dim, L:params.L, bc:params.bc, dt:params.dt, dx:params.dx,
+                     nwx:params.n, nwy:params.n, amp:params.amp, eps:params.eps,
+                     alpha:params.alpha, beta:params.beta, order:params.order });
+    stamp++;
+    qbuf = new Float64Array(sim.M);
+    profScale = Math.max(1e-6, sim.hmax);
+    for(const k in qscales){ qscales[k] = 1e-6; scaleStamp[k] = -1; }
+    for(const k in qwin) delete qwin[k];
+    stC.width = params.L; stC.height = stH; stRows = 0;
+    stCtx.fillStyle = TH.stBlank; stCtx.fillRect(0,0,params.L,stH);
+    fldC.width = sim.physNx; fldC.height = Math.max(1, sim.physNy);
+    snapshots = []; nextSnap = 0; capture();
+    wfScale = 0; gCache.stamp = -1; swReset();
+    updateReadouts(); draw();
+  }
+
+  function updateScales(){
+    const t = Math.max(1e-6, sim.hmax);
+    profScale = t > profScale ? t : profScale*0.92 + t*0.08;
+  }
+
+  function updateReadouts(){
+    $('rt').textContent = sim.t.toFixed(1);
+    $('rmean').textContent = sim.meanH.toFixed(2);
+    $('rw').textContent = sim.W.toFixed(3);
+  }
+
+  // ----- space–time: one row per frame, time running upward -----
+  let stRowImg = null;
+  function pushRow(){
+    const kind = effKind();
+    ensureScale(kind);
+    const S = scaleFor(kind), q = getQ(kind);
+    const n = sim.physNx;
+    if(!stRowImg || stRowImg.width !== n) stRowImg = stCtx.createImageData(n, 1);
+    const img = stRowImg, d = img.data;
+    for(let i=0;i<n;i++){
+      const c = 3*lutIdx(mapT(kind, q[i], S)), o = i*4;
+      d[o]=LUT[c]; d[o+1]=LUT[c+1]; d[o+2]=LUT[c+2]; d[o+3]=255;
+    }
+    if(stRows < stH){
+      stCtx.putImageData(img, 0, stH-1-stRows); stRows++;
+    } else {
+      stCtx.drawImage(stC, 0, 1);
+      stCtx.putImageData(img, 0, 0);
+    }
+  }
+
+  // ----- drawing helpers -----
+  function sizeCanvas(){
+    const dpr = window.devicePixelRatio || 1;
+    const r = cv.parentElement.getBoundingClientRect();
+    const w = Math.max(50, Math.round(r.width)), h = Math.max(50, Math.round(r.height));
+    if(cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)){
+      cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
+    }
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return {w, h};
+  }
+
+  function drawColorbar(x, y, w, h, scale, signed, label){
+    for(let i=0;i<h;i++){
+      ctx.fillStyle = CSS[lutIdx(1 - i/(h-1))];
+      ctx.fillRect(x, y+i, w, 1.5);
+    }
+    ctx.strokeStyle = TH.frame; ctx.lineWidth = 1; ctx.strokeRect(x+0.5, y+0.5, w, h);
+    ctx.fillStyle = TH.cbtext; ctx.font = '10.5px system-ui,sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    if(signed){
+      ctx.fillText('+'+fmt(scale), x+w+4, y+8);
+      ctx.fillText('0',            x+w+4, y+h/2+3);
+      ctx.fillText('−'+fmt(scale), x+w+4, y+h-1);
+    } else {
+      ctx.fillText(fmt(scale),   x+w+4, y+8);
+      ctx.fillText(fmt(scale/2), x+w+4, y+h/2+3);
+      ctx.fillText('0',          x+w+4, y+h-1);
+    }
+    if(label){
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x+w/2+2, y+h+14);
+    }
+  }
+
+  function axisFont(){ ctx.font = '11px system-ui,sans-serif'; }
+
+  function xAxis(x0, x1, y0, y1, grid){
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for(let qi=0;qi<=4;qi++){
+      const xv = qi*params.L*params.dx/4, x = x0 + (x1-x0)*qi/4;
+      if(grid){
+        ctx.strokeStyle = TH.grid2; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1); ctx.stroke();
+      }
+      ctx.fillStyle = TH.label; ctx.fillText(fmt(xv), x, y1+6);
+    }
+    ctx.fillText('x', (x0+x1)/2, y1+18);
+    if(params.bc === 'open'){
+      ctx.strokeStyle = TH.wall; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y1); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x1,y0); ctx.lineTo(x1,y1); ctx.stroke();
+    }
+  }
+
+  // ----- 1D: instantaneous profile -----
+  function drawProfile(w, h){
+    const colored = qkind !== 'plain';
+    const x0=46, y0=12, x1=w-14, y1=h-30, pw=x1-x0, ph=y1-y0;
+    if(yvar === 'dx') ensureScale('dx');
+    const F = geoField();
+    const Sg = niceCeil((yvar==='dx' ? qscales.dx : profScale)/dispGain);
+    const S = Sg*1.15;
+    const n = sim.physNx;
+    axisFont(); ctx.lineWidth = 1;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for(const v of [-Sg, -Sg/2, 0, Sg/2, Sg]){
+      const y = y0 + ph*(1 - (v/S + 1)/2);
+      ctx.strokeStyle = v===0 ? TH.zero : TH.grid;
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+      ctx.fillStyle = TH.label; ctx.fillText(fmt(v), x0-6, y);
+    }
+    xAxis(x0, x1, y0, y1, true);
+    ctx.fillStyle = TH.label;
+    ctx.save(); ctx.translate(14, (y0+y1)/2); ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText(yvar==='dx' ? 'dh/dx' : 'h − ⟨h⟩', 0, 0); ctx.restore();
+    const X = i => x0 + pw*i/(n-1);
+    const Y = v => y0 + ph*(1 - (v/S + 1)/2);
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
+    if(!colored){
+      ctx.beginPath();
+      ctx.moveTo(X(0), Y(F[0]));
+      for(let i=1;i<n;i++) ctx.lineTo(X(i), Y(F[i]));
+      ctx.strokeStyle = TH.curve; ctx.lineWidth = 2; ctx.lineJoin='round'; ctx.stroke();
+      ctx.lineTo(X(n-1), Y(0)); ctx.lineTo(X(0), Y(0)); ctx.closePath();
+      ctx.fillStyle = TH.fill; ctx.fill();
+    } else {
+      ensureScale(qkind);
+      const Sq = scaleFor(qkind), q = getQ(qkind);
+      ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      /* consecutive segments of the same colour level are stroked as one path */
+      let ci = -1, open = false;
+      for(let i=0;i<n-1;i++){
+        const c = lutIdx(mapT(qkind, (q[i]+q[i+1])/2, Sq));
+        if(c !== ci){
+          if(open) ctx.stroke();
+          ci = c; ctx.strokeStyle = CSS[c];
+          ctx.beginPath(); ctx.moveTo(X(i), Y(F[i])); open = true;
+        }
+        ctx.lineTo(X(i+1), Y(F[i+1]));
+      }
+      if(open) ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ----- 1D: stacked profiles h(x,t) -----
+  let wfScale = 0;                 // latched vertical scale: the view scrolls smoothly
+  function latchedScale(){        // and never jumps with the fluctuations at the front
+    const s = (yvar==='dx' ? qscales.dx : profScale)/dispGain;
+    if(!wfScale || s > wfScale*1.6 || s < wfScale/3) wfScale = niceCeil(s);
+    return wfScale;
+  }
+  function hex2rgb(hx){
+    return [parseInt(hx.slice(1,3),16), parseInt(hx.slice(3,5),16), parseInt(hx.slice(5,7),16)];
+  }
+  function mixCurve(t){                  // t=1 full curve colour, t=0 background
+    const a = hex2rgb(TH.curve), b = hex2rgb(TH.bg);
+    const r = Math.round(a[0]*t+b[0]*(1-t)), g = Math.round(a[1]*t+b[1]*(1-t)),
+          b2 = Math.round(a[2]*t+b[2]*(1-t));
+    return `rgb(${r},${g},${b2})`;
+  }
+  let silArr = null;
+  function silBuf(len){
+    if(!silArr || silArr.length < len) silArr = new Float32Array(len);
+    silArr.fill(1e9);
+    return silArr;
+  }
+  /* finite-difference stand-ins used on stored profiles, with the field kind
+     resolved to an integer once per frame instead of a string test per point */
+  const KCODE = { plain:0, h:0, dx:1, absdx:2, lap:3, nlap:4 };
+  function wfDerivC(f, i, n, code, per, dxp){
+    if(code === 0) return f[i];
+    const ip = i+1 < n ? i+1 : (per ? 0 : n-1);
+    const im = i-1 >= 0 ? i-1 : (per ? n-1 : 0);
+    if(code === 1) return (f[ip]-f[im])/(2*dxp);
+    if(code === 2){ const d = (f[ip]-f[im])/(2*dxp); return d<0?-d:d; }
+    const l = (f[ip]-2*f[i]+f[im])/(dxp*dxp);
+    return code === 3 ? l : -l;
+  }
+  function wfDeriv(f, i, n, kind){
+    return wfDerivC(f, i, n, KCODE[kind]|0, params.bc === 'periodic', params.dx);
+  }
+
+  /* stacked profiles with hidden-line removal: the surface is seen from behind
+     and above, so each profile is drawn only where it rises above the skyline
+     of the (nearer, older) profiles below it — clean even at tiny Δh. */
+  function drawWaterfall(w, h){
+    const colored = qkind !== 'plain';
+    const x0=46, y0=12, x1=w-14, y1=h-30, pw=x1-x0, ph=y1-y0;
+    const n = sim.physNx;
+    if(!snapshots.length) return;
+    const nc = snapshots.length;
+    const isU = yvar === 'dx';
+    if(isU) ensureScale('dx');
+    const Sg = latchedScale();
+    const meanLast = isU ? 0 : snapshots[nc-1].mean;
+    const base = k => isU
+      ? -(nc-1-k)*(wfSepAuto ? Sg/3 : wfSep)
+      : (wfSepAuto ? snapshots[k].mean : meanLast - (nc-1-k)*wfSep);
+    const span = base(nc-1) - base(0);     // what the stored profiles can fill
+    const windowH = Math.max(4*Sg, Math.min(12*Sg, span + 3*Sg));
+    const hi = meanLast + 1.6*Sg;          // anchored to the smooth mean
+    const lo = hi - windowH;
+    axisFont();
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    for(let t5=0;t5<=4;t5++){
+      const v = lo + (hi-lo)*t5/4, y = y1 - ph*t5/4;
+      ctx.strokeStyle = TH.grid2; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+      ctx.fillStyle = TH.label; ctx.fillText(fmt(v), x0-6, y);
+    }
+    xAxis(x0, x1, y0, y1, true);
+    ctx.fillStyle = TH.label;
+    ctx.save(); ctx.translate(12,(y0+y1)/2); ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText(w < 520
+      ? (isU?'dh/dx':'h') + ' profiles'
+      : (isU?'dh/dx':'h') + (wfSepAuto ? ' profiles (true ⟨h⟩ spacing)' : ' profiles, spacing Δ = '+(+wfSep.toPrecision(2))), 0, 0);
+    ctx.restore();
+    let k0 = nc;
+    for(let k=0;k<nc;k++){ if(base(k) + 2.5*Sg >= lo){ k0 = k; break; } }
+    const nvis = Math.max(1, nc - k0);
+    const ncols = Math.min(Math.max(2, pw|0), 900);
+    const cstep = Math.max(1, Math.ceil(nvis*ncols/(colored?70000:350000)));
+    const sil = silBuf(ncols);
+    const Sq = colored ? (ensureScale(qkind), scaleFor(qkind)) : 1;
+    const per = params.bc === 'periodic', dxp = params.dx;
+    const qc = KCODE[qkind]|0, signed = qkind !== 'absdx', iSq = 1/Sq;
+    const X = c => x0 + pw*c/(ncols-1);
+    const Y = v => y0 + ph*(1 - (v-lo)/(hi-lo));
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    for(let k=k0;k<nc;k++){
+      const sp = snapshots[k], b = base(k), last = k === nc-1;
+      const fr = (k-k0+1)/nvis;
+      ctx.lineWidth = last ? 2 : 1.1;
+      if(!colored){ ctx.strokeStyle = mixCurve(0.15 + 0.85*fr); ctx.beginPath(); }
+      else ctx.globalAlpha = 0.5 + 0.5*fr;
+      let pen=false, prevx=0, prevy=0, ci=-1, open=false, cont=false;
+      for(let c=0;c<ncols;c+=cstep){
+        const xi = c/(ncols-1)*(n-1), i0 = Math.min(n-2, xi|0), frx = xi-i0;
+        const v = isU
+          ? wfDerivC(sp.f,i0,n,1,per,dxp)*(1-frx) + wfDerivC(sp.f,i0+1,n,1,per,dxp)*frx
+          : sp.f[i0]*(1-frx) + sp.f[i0+1]*frx;
+        const y = Y(b+v), xpx = X(c);
+        if(y < sil[c] - 0.05){
+          if(colored){
+            if(pen){
+              const qv = wfDerivC(sp.f,i0,n,qc,per,dxp)*iSq;
+              const cc2 = QIDX[lutIdx(signed ? (qv+1)*0.5 : qv)];
+              if(cc2 !== ci || !cont){
+                if(open) ctx.stroke();
+                ci = cc2; ctx.strokeStyle = CSS[cc2];
+                ctx.beginPath(); ctx.moveTo(prevx,prevy); open = true;
+              }
+              ctx.lineTo(xpx,y); cont = true;
+            } else cont = false;
+          } else {
+            if(!pen) ctx.moveTo(xpx,y); else ctx.lineTo(xpx,y);
+          }
+          pen = true;
+        } else { pen = false; cont = false; }
+        prevx = xpx; prevy = y;
+        const cend = Math.min(ncols, c+cstep);
+        for(let cc=c; cc<cend; cc++) if(y < sil[cc]) sil[cc] = y;
+      }
+      if(colored){ if(open) ctx.stroke(); }
+      else ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  /* profiles 3D: the h(x,t) surface viewed from behind and above (~60°).
+     Time recedes upward; one line every Δt (corner slider). */
+  let wfDt = 0.1, wf3dTilt = 25, wf3dDist = 3;
+  /* sweep recorder: one row whenever sim time advances by wfDt (at most one per
+     frame), each 1/180 of the page higher — a few pixels apart, so every line
+     appears instantly and distinctly and the front visibly marches upward,
+     restarting at the bottom when it touches the top */
+  let swList = [], swPos = 0, swNextT = 0;
+  let swStepPx = 3;                      // vertical displacement per recorded curve (px-ish)
+  function swRecord(){
+    if(sim.t < swNextT - 1e-9) return;
+    if(swPos > 1.0001){ swList = []; swPos = 0; }   // touched the top: back to the bottom
+    const n = sim.physNx, f = new Float32Array(n);
+    for(let i=0;i<n;i++) f[i] = sim.h[i];
+    swList.push({ f, pos: swPos });
+    swPos += 1/Math.max(50, Math.min(500, Math.round(520/swStepPx)));
+    swNextT = sim.t + wfDt;
+  }
+  function swReset(){ swList = []; swPos = 0; swNextT = 0; }
+
+  function drawWaterfall3D(w, h, sweep){
+    const colored = qkind !== 'plain';
+    const n = sim.physNx;
+    const x0=14, y0=10, x1=w-14, y1=h-26, pw=x1-x0, ph=y1-y0;
+    const isU = yvar === 'dx';
+    if(isU) ensureScale('dx');
+    const Sg = latchedScale();
+    const th = wf3dTilt*Math.PI/180;
+    const dv = wf3dDist >= 10 ? 1e6 : wf3dDist;     // viewpoint distance: perspective strength
+    const yNear = y1 - 4, cx = (x0+x1)/2;
+    // build the row list: {f, mean, dfrac}
+    let rows;
+    let D, zs, meanNear = 0;
+    if(sweep){
+      if(!swList.length){ return; }
+      rows = swList;
+      D = 0.86*ph;                                  // the page spans nearly the full display
+      ensureScale(isU ? 'dx' : 'h');                // relief auto-normalized to the windowed
+      const Hwin = qscales[isU ? 'dx' : 'h'];       // scale of what is currently on screen —
+      zs = 0.5*ph*Math.sin(th)/Math.max(Hwin,1e-9); // real unclamped shape, never off-scale
+    } else {
+      if(snapshots.length < 2){ drawWaterfall(w, h); return; }
+      const nc = snapshots.length;
+      const picks = [];
+      let tNext = snapshots[nc-1].t;
+      for(let k=nc-1; k>=0 && picks.length<500; k--){
+        if(snapshots[k].t <= tNext + 1e-9){ picks.push(k); tNext = snapshots[k].t - wfDt; }
+      }
+      picks.reverse();
+      const nl = picks.length;
+      rows = picks.map((k,j) => ({ f: snapshots[k].f, mean: snapshots[k].mean,
+                                   pos: nl>1 ? j/(nl-1) : 0 }));
+      meanNear = isU ? 0 : snapshots[picks[0]].mean;
+      const meanFar = isU ? 0 : snapshots[picks[nl-1]].mean;
+      D = 0.85*ph*Math.cos(th)*Math.min(1, (nl-1)/200);
+      const maxZ = Math.max(1e-6, (meanFar-meanNear) + 3*Sg);
+      zs = Math.max(0, 0.95*ph - D - 4)/maxZ;       // fill until ~5% of the top is left
+    }
+    const nl = rows.length;
+    const sil = silBuf(Math.max(2, w|0));
+    const istep = Math.max(1, Math.ceil(nl*n/(colored?70000:300000)));
+    const Sq = colored ? (ensureScale(qkind), scaleFor(qkind)) : 1;
+    const per = params.bc === 'periodic', dxp = params.dx;
+    const qc = KCODE[qkind]|0, signed = qkind !== 'absdx', iSq = 1/Sq;
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    for(let j=0;j<nl;j++){
+      const row = rows[j];
+      const dfrac = row.pos;
+      const frI = nl>1 ? j/(nl-1) : 1;              // recency, for colour/alpha
+      const persp = dv/(dv+dfrac);
+      const rowY = yNear - D*dfrac*(dv+1)/(dv+dfrac);
+      const zloc = zs*persp;
+      const boff = (isU || sweep) ? 0 : row.mean - meanNear;
+      ctx.lineWidth = j===nl-1 ? 1.8 : 1;
+      if(!colored){ ctx.strokeStyle = mixCurve(0.25 + 0.75*frI); ctx.beginPath(); }
+      else ctx.globalAlpha = 0.5 + 0.5*frI;
+      let pen=false, prevx=0, prevy=0, prevc=-1, ci=-1, open=false, cont=false;
+      for(let i=0;i<n;i+=istep){
+        const val = isU ? wfDerivC(row.f,i,n,1,per,dxp) : row.f[i];
+        const sx = cx + persp*pw*0.98*(i/(n-1) - 0.5);
+        const sy = rowY - zloc*(boff + val);
+        const c = Math.max(0, Math.min((w|0)-1, sx|0));
+        if(sy < sil[c] - 0.05){
+          if(colored){
+            if(pen){
+              const qv = wfDerivC(row.f,i,n,qc,per,dxp)*iSq;
+              const cc2 = QIDX[lutIdx(signed ? (qv+1)*0.5 : qv)];
+              if(cc2 !== ci || !cont){
+                if(open) ctx.stroke();
+                ci = cc2; ctx.strokeStyle = CSS[cc2];
+                ctx.beginPath(); ctx.moveTo(prevx,prevy); open = true;
+              }
+              ctx.lineTo(sx,sy); cont = true;
+            } else cont = false;
+          } else {
+            if(!pen) ctx.moveTo(sx,sy); else ctx.lineTo(sx,sy);
+          }
+          pen = true;
+        } else { pen = false; cont = false; }
+        if(prevc >= 0 && c !== prevc){
+          const cl = Math.min(prevc,c), cr2 = Math.max(prevc,c);
+          for(let cc=cl; cc<=cr2; cc++){
+            const tt = (cc-prevc)/(c-prevc);
+            const yy = prevy + (sy-prevy)*tt;
+            if(yy < sil[cc]) sil[cc] = yy;
+          }
+        } else if(sy < sil[c]) sil[c] = sy;
+        prevx = sx; prevy = sy; prevc = c;
+      }
+      if(colored){ if(open) ctx.stroke(); }
+      else ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    axisFont(); ctx.fillStyle = TH.label;
+    ctx.textAlign='right'; ctx.textBaseline='alphabetic';
+    /* on a narrow display the preset buttons own the bottom-left corner, so the
+       caption shrinks to what still fits beside them */
+    const stem = (isU?'dh/dx':'h') + '(x,t)';
+    ctx.fillText(w < 520 ? stem
+                : stem + ' from behind/above' + (sweep?' · front sweeps up, restarts at bottom':''),
+                w-14, h-8);
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('x', cx, y1+6);
+  }
+
+  // ----- 1D: space–time, x horizontal, time running upward -----
+  function drawSpacetime(w, h){
+    const x0=46, y0=12, x1=w-58, y1=h-30;
+    ctx.imageSmoothingEnabled = true;
+    const rows = Math.max(1, stRows);
+    ctx.drawImage(stC, 0, stH-rows, stC.width, rows, x0, y0, x1-x0, y1-y0);
+    ctx.strokeStyle = TH.frame; ctx.lineWidth=1; ctx.strokeRect(x0+0.5,y0+0.5,x1-x0,y1-y0);
+    axisFont();
+    xAxis(x0, x1, y0, y1, false);
+    ctx.fillStyle = TH.label;
+    ctx.save(); ctx.translate(14,(y0+y1)/2); ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText('time ↑', 0, 0); ctx.restore();
+    const kind = effKind();
+    drawColorbar(x1+8, y0, 10, y1-y0-16, niceCeil(qscales[kind])/dispGain, kind!=='absdx', kindLabel(kind));
+    rightInset = w - x1;
+  }
+
+  // ----- 2D: colour map — aspect ratio 1, filling the display -----
+  let fldImg = null;
+  function drawField2D(w, h){
+    const kind = effKind();
+    ensureScale(kind);
+    const S = scaleFor(kind), q = getQ(kind);
+    const n = sim.physNx;
+    if(!fldImg || fldImg.width !== n || fldImg.height !== n) fldImg = fldCtx.createImageData(n, n);
+    const img = fldImg, d = img.data, nx = sim.nx;
+    const signed = kind !== 'absdx', inv = 1/S;
+    for(let j=0;j<n;j++){
+      const row = j*nx, orow = j*n*4;
+      for(let i=0;i<n;i++){
+        const v = q[row+i]*inv;
+        const t = signed ? (v+1)*0.5 : v;
+        const c = 3*lutIdx(t), o = orow + i*4;
+        d[o]=LUT[c]; d[o+1]=LUT[c+1]; d[o+2]=LUT[c+2]; d[o+3]=255;
+      }
+    }
+    fldCtx.putImageData(img, 0, 0);
+    const y0=8, y1=h-24, x0=34;
+    const availW = w - x0 - 56;
+    const side = Math.min(y1-y0, availW);
+    const px = x0 + Math.max(0,(availW-side)/2), py = y0 + (y1-y0-side)/2;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(fldC, px, py, side, side);
+    ctx.strokeStyle = params.bc==='open' ? TH.wall : TH.frame;
+    ctx.lineWidth = params.bc==='open' ? 2 : 1;
+    ctx.strokeRect(px+0.5, py+0.5, side, side);
+    axisFont(); ctx.fillStyle = TH.label;
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('0', px+4, py+side+5); ctx.fillText(fmt(params.L*params.dx), px+side-6, py+side+5);
+    ctx.fillText('x', px+side/2, py+side+5);
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText('0', px-5, py+side-6); ctx.fillText(fmt(params.L*params.dx), px-5, py+8);
+    ctx.save(); ctx.translate(px-20, py+side/2); ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText('y', 0, 0); ctx.restore();
+    drawColorbar(px+side+8, py, 10, side-16, S, kind!=='absdx', kindLabel(kind));
+    rightInset = Math.max(0, w - (px+side) - 4);
+  }
+
+  // ----- 2D: 3D surface, auto-fitted, stable z-scale -----
+  const surf = { m:0, px:null, py:null, dep:null, zw:null, order:null };
+  function drawSurface(w, h){
+    const Lp = sim.physNx, kind = effKind();
+    const geoKind = yvar==='dx' ? 'dx' : 'h';
+    ensureScale(kind); ensureScale(geoKind);
+    const Sq = scaleFor(kind), q = getQ(kind);
+    const GEO = geoField();
+    const Sh = niceCeil(qscales[geoKind])/dispGain;   // quantized: no frame-to-frame breathing
+    const stride = Math.max(1, Math.ceil(Lp/384));   // 4x finer mesh
+    const idx = [];
+    for(let i=0;i<Lp;i+=stride) idx.push(i);
+    if(idx[idx.length-1] !== Lp-1) idx.push(Lp-1);
+    const m = idx.length;
+    if(surf.m !== m){
+      surf.m = m;
+      surf.px = new Float32Array(m*m); surf.py = new Float32Array(m*m);
+      surf.zw = new Float32Array(m*m);
+    }
+    const rot = view.rot*Math.PI/180, tilt = view.tilt*Math.PI/180;
+    const cA=Math.cos(rot), sA=Math.sin(rot), cT=Math.cos(tilt), sT=Math.sin(tilt);
+    const x0=10, y0=8, x1=w-12, y1=h-24;
+    const zAmp = 0.13*Lp/Sh;
+    const zClamp = 0.45*Lp;
+    const dcam = view.dist*Lp;
+    const zbox = Math.min(zClamp, 0.15*Lp);
+    let umin=1e9, umax=-1e9, vmin=1e9, vmax=-1e9;
+    for(let ci=0; ci<8; ci++){
+      const Xw=(ci&1?1:-1)*(Lp-1)/2, Yw=(ci&2?1:-1)*(Lp-1)/2, Zc=(ci&4?1:-1)*zbox;
+      const xr=cA*Xw+sA*Yw, yr=-sA*Xw+cA*Yw;
+      const vv=yr*cT+Zc*sT, dp=-yr*sT+Zc*cT;
+      const pf=dcam/Math.max(dcam-dp, 0.1*Lp);
+      const u=pf*xr, v2=pf*vv;
+      if(u<umin)umin=u; if(u>umax)umax=u; if(v2<vmin)vmin=v2; if(v2>vmax)vmax=v2;
+    }
+    const S0 = 1.07*Math.min((x1-x0)/Math.max(umax-umin,1e-6), (y1-y0)/Math.max(vmax-vmin,1e-6));
+    const cx = (x0+x1)/2 - S0*(umin+umax)/2;
+    const cy = (y0+y1)/2 + S0*(vmin+vmax)/2;
+    for(let gj=0;gj<m;gj++){
+      const Yw = idx[gj]-(Lp-1)/2;
+      for(let gi=0;gi<m;gi++){
+        const Xw = idx[gi]-(Lp-1)/2;
+        let Z = GEO[idx[gj]*sim.nx+idx[gi]]*zAmp;
+        if(Z > zClamp) Z = zClamp; else if(Z < -zClamp) Z = -zClamp;
+        const xr =  cA*Xw + sA*Yw;
+        const yr = -sA*Xw + cA*Yw;
+        const v  = yr*cT + Z*sT;
+        const dp = -yr*sT + Z*cT;
+        const pf = dcam/Math.max(dcam-dp, 0.1*Lp);
+        const p = gj*m+gi;
+        surf.px[p] = cx + S0*pf*xr;
+        surf.py[p] = cy - S0*pf*v;
+        surf.zw[p] = Z;
+      }
+    }
+    /* painter's traversal far-to-near in grid order (y' = -sA*X + cA*Y is
+       monotonic in X and Y, so no per-frame sort is needed) */
+    const iAsc = sA >= 0, jDesc = cA >= 0;
+    const doStroke = S0*stride >= 2;               // seal seams only on visible quads
+    const lx=-0.45, ly=0.35, lz=0.82;
+    ctx.lineJoin = 'round';
+    for(let jj=0;jj<m-1;jj++){
+      const gj = jDesc ? (m-2-jj) : jj;
+    for(let ii=0;ii<m-1;ii++){
+      const gi = iAsc ? ii : (m-2-ii);
+      const p00 = gj*m+gi, p10 = p00+1, p01 = p00+m, p11 = p01+1;
+      const ds = idx[gi+1]-idx[gi], dsy = idx[gj+1]-idx[gj];
+      const dzdx = (surf.zw[p10]+surf.zw[p11]-surf.zw[p00]-surf.zw[p01])/(2*ds);
+      const dzdy = (surf.zw[p01]+surf.zw[p11]-surf.zw[p00]-surf.zw[p10])/(2*dsy);
+      const nn = 1/Math.sqrt(dzdx*dzdx+dzdy*dzdy+1);
+      let dot = (-dzdx*lx - dzdy*ly + lz)*nn;
+      if(dot < 0) dot = 0; else if(dot > 1) dot = 1;
+      const i0=idx[gi], i1=idx[gi+1], j0=idx[gj], j1=idx[gj+1];
+      const qv = (q[j0*sim.nx+i0]+q[j0*sim.nx+i1]+q[j1*sim.nx+i0]+q[j1*sim.nx+i1])*0.25;
+      const col = shadeCss(lutIdx(mapT(kind, qv, Sq)), dot);
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.moveTo(surf.px[p00], surf.py[p00]);
+      ctx.lineTo(surf.px[p10], surf.py[p10]);
+      ctx.lineTo(surf.px[p11], surf.py[p11]);
+      ctx.lineTo(surf.px[p01], surf.py[p01]);
+      ctx.closePath(); ctx.fill();
+      if(doStroke){ ctx.strokeStyle = col; ctx.lineWidth = 0.6; ctx.stroke(); }
+    }}
+    if(w >= 480){
+      axisFont(); ctx.fillStyle = TH.label;
+      ctx.textAlign='right'; ctx.textBaseline='alphabetic';
+      ctx.fillText('drag to rotate', w-14, h-8);
+    }
+  }
+
+  /* width of the right-hand margin occupied by a colour bar, so the PNG stamp
+     can keep clear of it */
+  let rightInset = 0;
+  function drawContent(w, h){
+    rightInset = 0;
+    ctx.fillStyle = TH.bg; ctx.fillRect(0,0,w,h);
+    const mode = modeSel[params.dim];
+    if(params.dim === 1){
+      if(mode === 'spacetime') drawSpacetime(w, h);
+      else if(mode === 'profiles') drawWaterfall(w, h);
+      else if(is3dMode(mode)) drawWaterfall3D(w, h, mode === 'wf3dsw');
+      else drawProfile(w, h);
+    } else {
+      if(mode === 'surface') drawSurface(w, h);
+      else drawField2D(w, h);
+    }
+  }
+  function draw(){
+    const {w, h} = sizeCanvas();
+    drawContent(w, h);
+  }
+
+  /* ---------------- PNG export ----------------
+     the plain display, no overlays, at 2x resolution, with the equation that is
+     actually being integrated and its parameters stamped in blue in the corner */
+  function eqLines(){
+    const lin = params.order === 6 ? '+∇⁴h + ∇⁶h' : '−∇²h − ∇⁴h';
+    let eq = '∂h/∂t = ' + lin + ' + (∇h)²';
+    if(params.alpha !== 0) eq += (params.alpha > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.alpha)) + '·|∇h|';
+    if(params.beta  !== 0) eq += (params.beta  > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.beta))  + '·(∇h)⁴';
+    const geom = (params.dim === 1 ? '1+1 D' : '2+1 D') + ',  ' + params.bc +
+                 ',  L = ' + params.L + ' × dx ' + params.dx +
+                 ' = ' + fmt(params.L*params.dx);
+    const num  = 'dt = ' + params.dt + ',  ETDRK4 pseudospectral,  t = ' + sim.t.toFixed(1);
+    const stat = '⟨h⟩ = ' + sim.meanH.toFixed(2) + ',  W = ' + sim.W.toFixed(3) +
+                 ',  colour: ' + (qkind === 'plain' ? '—' : kindLabel(effKind())) + ' (' + lutName + ')';
+    return [eq, geom, num, stat];
+  }
+  function stampEquation(w, h){
+    const lines = eqLines();
+    const blue = darkBG ? '#7fb3ff' : '#1d4ed8';
+    const right = w - 14 - rightInset;
+    const bigF = k => 'italic 600 ' + (15*k).toFixed(1) + 'px Georgia,"Times New Roman",serif';
+    const monF = k => (11.5*k).toFixed(1) + 'px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';
+    let k = 1, pad = 12, bw = 0;
+    for(let pass=0; pass<2; pass++){                 // shrink to fit a narrow display
+      ctx.font = bigF(k);
+      let mx = ctx.measureText(lines[0]).width;
+      ctx.font = monF(k);
+      for(let i=1;i<lines.length;i++) mx = Math.max(mx, ctx.measureText(lines[i]).width);
+      pad = 12*k; bw = mx + 2*pad;
+      const room = right - 10;
+      if(bw <= room || pass) break;
+      k = Math.max(0.6, k*room/bw);
+    }
+    const lh = 15*k, bh = 22*k + lh*(lines.length-1) + 2*pad - 6*k;
+    const bx = Math.max(6, right - bw), by = 12;
+    ctx.fillStyle = darkBG ? 'rgba(11,13,19,.88)' : 'rgba(255,255,255,.92)';
+    ctx.strokeStyle = darkBG ? 'rgba(127,179,255,.35)' : 'rgba(29,78,216,.28)';
+    ctx.lineWidth = 1;
+    if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 9); ctx.fill(); ctx.stroke(); }
+    else { ctx.fillRect(bx, by, bw, bh); ctx.strokeRect(bx+0.5, by+0.5, bw, bh); }
+    ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+    ctx.fillStyle = blue;
+    ctx.font = bigF(k);
+    ctx.fillText(lines[0], bx + bw - pad, by + pad - k);
+    ctx.font = monF(k);
+    for(let i=1;i<lines.length;i++) ctx.fillText(lines[i], bx + bw - pad, by + pad + 18*k + lh*(i-1));
+  }
+  function exportPNG(){
+    const btn = $('bPng');
+    const r = cv.parentElement.getBoundingClientRect();
+    const w = Math.max(360, Math.round(r.width)), h = Math.max(260, Math.round(r.height));
+    const scale = 2;
+    const oc = document.createElement('canvas');
+    oc.width = Math.round(w*scale); oc.height = Math.round(h*scale);
+    const octx = oc.getContext('2d');
+    octx.setTransform(scale, 0, 0, scale, 0, 0);
+    const keep = ctx;
+    ctx = octx;
+    try{
+      drawContent(w, h);
+      stampEquation(w, h);
+    } finally { ctx = keep; }
+    const tag = (params.dim === 1 ? 'KS1D' : 'KS2D') +
+                (params.alpha ? '_a' + fmtTerm(params.alpha) : '') +
+                (params.beta  ? '_b' + fmtTerm(params.beta)  : '') +
+                '_L' + params.L + '_t' + sim.t.toFixed(0);
+    const done = () => { btn.classList.remove('busy'); btn.textContent = '.png'; };
+    btn.classList.add('busy'); btn.textContent = '…';
+    const save = url => {
+      const a = document.createElement('a');
+      a.href = url; a.download = tag.replace(/[^\w.-]/g,'') + '.png';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(done, 400);
+    };
+    if(oc.toBlob){
+      oc.toBlob(b => {
+        if(!b){ save(oc.toDataURL('image/png')); return; }
+        const url = URL.createObjectURL(b);
+        save(url); setTimeout(()=>URL.revokeObjectURL(url), 8000);
+      }, 'image/png');
+    } else save(oc.toDataURL('image/png'));
+  }
+
+  // ----- animation loop -----
+  function advance(nsteps){
+    if(params.dim === 1){
+      for(let k=0;k<nsteps;k++){
+        sim.frame(1);
+        if(sim.t >= nextSnap - 1e-9) capture();
+      }
+    } else {
+      sim.frame(nsteps);
+    }
+    stamp++;
+    if(!isFinite(sim.W)){
+      diverged = true; running = false; $('bRun').textContent = 'Run';
+      $('divergedMsg').style.display = 'block';
+      return;
+    }
+    updateScales();
+    if(yvar === 'dx') ensureScale('dx');
+    if(params.dim === 1){
+      pushRow();
+      if(modeSel[1] === 'wf3dsw') swRecord();
+    }
+    updateReadouts();
+  }
+  /* getBoundingClientRect forces a layout, so the height check is throttled
+     instead of running on every animation frame */
+  let fitDue = true, lastFit = -1e9;
+  function tick(ts){
+    if(fitDue || ts - lastFit > 500){
+      lastFit = ts; fitDue = false;
+      if(fitHeight() && !running) draw();   // track window growth as well as shrink
+    }
+    if(running && !diverged){
+      advance(stepsPerFrame);
+      draw();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // ----- controls wiring -----
+  function seg(el, get, set){
+    el.querySelectorAll('button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(get() === b.dataset.v) return;
+        el.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b));
+        set(b.dataset.v);
+      });
+    });
+  }
+  seg($('segDim'), ()=>''+params.dim, v=>{
+    params.dim = +v; applyDimUI(); if(sim) autoDt(); rebuild();
+  });
+  seg($('segBC'),  ()=>params.bc,     v=>{ params.bc = v; updateHint(); rebuild(); });
+  seg($('segAmp'), ()=>''+params.amp, v=>{ params.amp = +v; rebuild(); });
+  seg($('segEps'), ()=>''+params.eps, v=>{ params.eps = +v; rebuild(); });
+  function setYvar(v){
+    yvar = v; wfScale = 0; gCache.stamp = -1;
+    setSeg('segYvar', v); setSeg('segYvar2', v);
+    if(yvar === 'dx') ensureScale('dx');
+    draw();
+  }
+  seg($('segYvar'), ()=>yvar, setYvar);
+  seg($('segYvar2'), ()=>yvar, setYvar);
+  seg($('segOrd'), ()=>''+params.order, v=>{
+    params.order = +v;
+    sim.setOrder(params.order);          // switches the running equation, keeps the field
+    autoDt();
+    updateHint();
+    if(!running) draw();
+  });
+
+  function updateOverlays(){
+    $('vsepWrap').style.display = params.dim===1 ? 'flex' : 'none';
+    $('segYvar2') && ($('segYvar2').style.display = 'flex');
+    const wfMode = params.dim===1 && (modeSel[1]==='profiles' || is3dMode(modeSel[1]));
+    $('wfCtl').style.display = wfMode ? 'flex' : 'none';
+    document.querySelectorAll('.wfrow3d').forEach(el =>
+      el.style.display = (wfMode && is3dMode(modeSel[1])) ? 'flex' : 'none');
+    $('v3Ctl').style.display = (params.dim===2 && modeSel[2]==='surface') ? 'flex' : 'none';
+    cv.style.touchAction = (params.dim===2 && modeSel[2]==='surface') ? 'none' : 'auto';
+    if(wfMode){
+      if(is3dMode(modeSel[1])){
+        $('rngSep').value = Math.log10(wfDt);
+        $('wfSepVal').textContent = 'Δt ' + (+wfDt.toPrecision(2));
+      } else {
+        $('rngSep').value = Math.log10(Math.max(0.01, wfSep));
+        $('wfSepVal').textContent = wfSepAuto ? 'Δh auto' : 'Δh ' + (+wfSep.toPrecision(2));
+      }
+    }
+  }
+
+  function applyDimUI(){
+    const is2 = params.dim === 2;
+    $('rowKeep').style.display = is2 ? 'none' : '';
+    const dm = $('dispmode');
+    dm.innerHTML = '';
+    const opts = is2
+      ? [['map','map'],['surface','surface']]
+      : [['profile','profile'],['profiles','profiles'],['wf3dsw','3D sw'],['wf3d','3D'],['spacetime','x–t']];
+    for(const [v,t] of opts){
+      const o = document.createElement('option'); o.value=v; o.textContent=t; dm.appendChild(o);
+    }
+    dm.value = modeSel[params.dim];
+    const qsel = $('qty');
+    qsel.querySelector('option[value="plain"]').hidden = is2;
+    qsel.querySelector('option[value="dx"]').textContent    = is2?'∂h/∂x':'dh/dx';
+    qsel.querySelector('option[value="absdx"]').textContent = is2?'|∇h|':'|dh/dx|';
+    qsel.querySelector('option[value="lap"]').textContent   = is2?'∇²h':'d²h/dx²';
+    qsel.querySelector('option[value="nlap"]').textContent  = is2?'−∇²h':'−d²h/dx²';
+    if(is2 && qkind === 'plain'){ qkind = 'h'; qsel.value = 'h'; }
+    updateOverlays();
+    updateHint();
+    autoSpf();                          // the 2D cap on steps/frame differs from 1D
+    fitHeight();
+  }
+
+  function updateHint(){
+    const per = params.bc === 'periodic';
+    const k = per ? 2*Math.PI*params.n/(params.L*params.dx) : Math.PI*params.n/(params.L*params.dx);
+    const om = params.order === 6 ? Math.pow(k,4)-Math.pow(k,6) : k*k-Math.pow(k,4);
+    const wave = per
+      ? (params.dim === 2 ? 'h₀ = A·sin(2πnx/L)·sin(2πny/L)' : 'h₀ = A·sin(2πn·x/L), n full waves')
+      : (params.dim === 2 ? 'h₀ = A·cos(πnx/L)·cos(πny/L), flat walls' : 'h₀ = A·cos(πn·x/L), n half waves, flat walls');
+    $('icHint').textContent = wave + ' (+ ε strip), k = ' + k.toFixed(3) +
+      ', ω = ' + om.toFixed(3) + (om > 0 ? ' — grows' : ' — decays');
+  }
+
+  $('selL').addEventListener('change', e=>{ params.L = +e.target.value; updateHint(); rebuild(); });
+  $('rngN').addEventListener('input', e=>{ $('nVal').textContent = e.target.value; });
+  $('rngN').addEventListener('change', e=>{
+    params.n = +e.target.value; $('nVal').textContent = params.n;
+    updateHint(); rebuild();
+  });
+  $('selDt').addEventListener('change', e=>{ params.dt = +e.target.value; sim.setDt(params.dt); noteSpfRef(); });
+  $('selDx').addEventListener('change', e=>{ params.dx = +e.target.value; updateHint(); rebuild(); });
+  $('selSpf').addEventListener('change', e=>{ stepsPerFrame = +e.target.value; noteSpfRef(); });
+  $('selGain').addEventListener('change', e=>{ dispGain = +e.target.value; wfScale = 0; draw(); });
+  $('selKeep').addEventListener('change', e=>{
+    keepN = +e.target.value;
+    while(snapshots.length > keepN) snapshots.shift();
+    draw();
+  });
+
+  // extra growth terms alpha, beta (header sliders)
+  const fmtTerm = v => (Math.abs(v) < 1e-9 ? '0' : (+v.toFixed(2)).toString());
+  function applyTerms(){
+    sim.setTerms(params.alpha, params.beta);
+    $('alphaVal').textContent = fmtTerm(params.alpha);
+    $('betaVal').textContent = fmtTerm(params.beta);
+    $('alphaVal').classList.toggle('on', params.alpha !== 0);
+    $('betaVal').classList.toggle('on', params.beta !== 0);
+    $('termA').classList.toggle('on', params.alpha !== 0);
+    $('termB').classList.toggle('on', params.beta !== 0);
+  }
+  /* β ladder: 0.1 steps where the term is a perturbation (|β| ≤ 2), 0.5 steps
+     out to ±5 where it dominates.  The slider carries the index. */
+  const BETAV = (function(){
+    const v = [];
+    for(let x=-5; x<-2.01; x+=0.5) v.push(+x.toFixed(1));      // -5 … -2.5
+    for(let i=-20; i<=20; i++)     v.push(+(i/10).toFixed(1)); // -2 … +2
+    for(let x=2.5; x<5.01; x+=0.5) v.push(+x.toFixed(1));      // 2.5 … 5
+    return v;
+  })();
+  const BETA0 = BETAV.indexOf(0);
+  const betaIdx = b => {
+    let best = BETA0, bd = 1e9;
+    for(let i=0;i<BETAV.length;i++){ const d = Math.abs(BETAV[i]-b); if(d < bd){ bd = d; best = i; } }
+    return best;
+  };
+  $('rngBeta').max = BETAV.length - 1;
+  $('rngBeta').value = BETA0;
+
+  /* Integration step, chosen from the strength of the nonlinearity.  ETDRK4 does
+     the stiff linear part exactly, so this is an accuracy limit, not a stability
+     one: measured against a dt = 0.001 reference at t = 20, the relative error of
+     the whole β range is ~3e-4 at dt = 0.02 and ~1e-4 at dt = 0.01, while the
+     |β| ≥ 3 runs at dt ≥ 0.05 visibly drift.  Runs stay bounded to |β| = 5 even
+     at dt = 0.25, so these values leave a wide margin. */
+  function dtForTerms(){
+    const b = Math.abs(params.beta);
+    if(b > 3.5) return params.dim === 2 ? 0.01 : 0.005;   // a 2D step costs L× more
+    if(b > 2)   return 0.01;
+    if(b > 0)   return 0.02;
+    return params.order === 6 ? 0.02 : 0.1;
+  }
+  /* A smaller dt would otherwise make the picture crawl, so the steps per frame
+     follow it: whenever the time step is chosen automatically, the number of
+     steps is rescaled to hold the simulated time per frame that the last
+     deliberate choice (a preset, or the user's own dt / steps setting) asked
+     for — capped so a heavy 2D lattice cannot stall the animation. */
+  const SPFV = [1, 2, 5, 10, 20, 50];
+  let spfRef = { dt: 0.1, spf: 5 };
+  function noteSpfRef(){ spfRef = { dt: params.dt, spf: stepsPerFrame }; }
+  function autoSpf(){
+    const cap = params.dim === 2 ? 8 : 20;
+    const want = Math.min(cap, Math.max(1, spfRef.spf*spfRef.dt/Math.max(params.dt, 1e-9)));
+    let pick = SPFV[0];
+    for(const o of SPFV) if(o <= want + 1e-9) pick = o;
+    if(stepsPerFrame !== pick){ stepsPerFrame = pick; $('selSpf').value = ''+pick; }
+  }
+  function autoDt(){
+    let target = dtForTerms();
+    if(params.dim === 1 && is3dMode(modeSel[1]) && wfDt < target) target = wfDt;
+    const opts = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1];
+    let pick = opts[0];
+    for(const o of opts) if(o <= target + 1e-12) pick = o;
+    if(params.dt !== pick){ params.dt = pick; $('selDt').value = ''+pick; sim.setDt(pick); }
+    autoSpf();
+  }
+  $('rngAlpha').addEventListener('input', e=>{ params.alpha = +e.target.value; applyTerms(); });
+  $('rngBeta').addEventListener('input', e=>{
+    const i = Math.max(0, Math.min(BETAV.length-1, +e.target.value|0));
+    params.beta = BETAV[i]; applyTerms(); autoDt();
+  });
+
+  // top-bar vertical displacement per curve (discrete steps)
+  const DYVALS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 10];
+  $('rngVsep').addEventListener('input', e=>{
+    const v = DYVALS[Math.max(0, Math.min(11, +e.target.value|0))];
+    $('vsepVal').textContent = '' + v;
+    if(params.dim === 1 && modeSel[1] === 'profiles'){
+      wfSep = 0.02*Math.pow(2, v-3); wfSepAuto = false;
+      $('rngSep').value = Math.max(-2.31, Math.log10(wfSep));
+      $('wfSepVal').textContent = 'Δh ' + (+wfSep.toPrecision(2));
+    } else {
+      swStepPx = v;
+    }
+    draw();
+  });
+
+  // waterfall curve-spacing overlay
+  $('rngSep').addEventListener('input', e=>{
+    const v = Math.pow(10, +e.target.value);
+    if(is3dMode(modeSel[1])){
+      wfDt = v;
+      nextSnap = Math.min(nextSnap, sim.t + capDt());
+      $('wfSepVal').textContent = 'Δt ' + (+v.toPrecision(2));
+      autoDt();
+    } else {
+      wfSep = v; wfSepAuto = false;
+      $('wfSepVal').textContent = 'Δh ' + (+v.toPrecision(2));
+    }
+    draw();
+  });
+  $('wfSepVal').addEventListener('click', ()=>{
+    if(is3dMode(modeSel[1])){
+      wfDt = 0.1; $('rngSep').value = -1;
+      nextSnap = Math.min(nextSnap, sim.t + capDt());
+      $('wfSepVal').textContent = 'Δt 0.1';
+      autoDt();
+    } else {
+      wfSepAuto = true;
+      $('wfSepVal').textContent = 'Δh auto';
+    }
+    draw();
+  });
+
+  const distTxt = v => v >= 10 ? '∞' : v.toFixed(1)+'·L';
+  // 3D profiles overlay sliders
+  $('rngWfTilt').addEventListener('input', e=>{
+    wf3dTilt = +e.target.value; $('wfTiltVal').textContent = wf3dTilt+'°'; draw();
+  });
+  $('rngWfDist').addEventListener('input', e=>{
+    wf3dDist = +e.target.value; $('wfDistVal').textContent = distTxt(wf3dDist); draw();
+  });
+
+  // 3D view overlay sliders
+  $('rngTilt').addEventListener('input', e=>{
+    view.tilt = +e.target.value; $('v3TiltVal').textContent = Math.round(view.tilt)+'°'; draw();
+  });
+  $('rngRot').addEventListener('input', e=>{
+    view.rot = +e.target.value; $('v3RotVal').textContent = Math.round(view.rot)+'°'; draw();
+  });
+  $('rngDist').addEventListener('input', e=>{
+    const v = +e.target.value;
+    view.dist = v >= 10 ? 1e9 : v; $('v3DistVal').textContent = distTxt(v); draw();
+  });
+
+  $('cmap').addEventListener('change', e=>{ setLUT(e.target.value); draw(); });
+  $('qty').addEventListener('change', e=>{ qkind = e.target.value; draw(); });
+  $('dispmode').addEventListener('change', e=>{
+    modeSel[params.dim] = e.target.value;
+    if(sim) nextSnap = Math.min(nextSnap, sim.t + capDt());
+    autoDt();
+    updateOverlays();
+    draw();
+  });
+  $('bTheme').addEventListener('click', toggleTheme);
+
+  $('bRun').addEventListener('click', ()=>{
+    if(diverged) return;
+    running = !running; $('bRun').textContent = running ? 'Pause' : 'Run';
+  });
+  $('bStep').addEventListener('click', ()=>{
+    if(diverged) return;
+    advance(1); draw();
+  });
+  $('bReset').addEventListener('click', rebuild);
+  $('bPng').addEventListener('click', exportPNG);
+  window.addEventListener('keydown', e=>{
+    const tag = document.activeElement.tagName;
+    if(/SELECT|BUTTON|INPUT|TEXTAREA/.test(tag)) return;
+    if(e.code === 'Space'){ e.preventDefault(); $('bRun').click(); }
+    else if(e.key === '+' || e.key === '=' || e.key === '-' || e.key === '−'){
+      e.preventDefault(); toggleTheme();
+    }
+    else if(e.key === 'p' || e.key === 'P'){ e.preventDefault(); exportPNG(); }
+  });
+
+  // drag to rotate the 3D surface (sliders follow)
+  let dragging = false, dragX = 0, dragY = 0;
+  cv.addEventListener('pointerdown', e=>{
+    if(params.dim===2 && modeSel[2]==='surface'){
+      dragging = true; dragX = e.clientX; dragY = e.clientY;
+      cv.setPointerCapture(e.pointerId);
+    }
+  });
+  cv.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    view.rot = (view.rot + (e.clientX - dragX)*0.4) % 360;
+    if(view.rot < 0) view.rot += 360;
+    view.tilt = Math.max(0, Math.min(85, view.tilt + (e.clientY - dragY)*0.3));
+    dragX = e.clientX; dragY = e.clientY;
+    $('rngRot').value = Math.round(view.rot);
+    $('rngTilt').value = Math.round(view.tilt);
+    $('v3RotVal').textContent = Math.round(view.rot)+'°';
+    $('v3TiltVal').textContent = Math.round(view.tilt)+'°';
+    if(!running) draw();
+  });
+  cv.addEventListener('pointerup', ()=>{ dragging = false; });
+
+  // ----- one-click presets (lower-left of the display) -----
+  function setSeg(id, val){
+    document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on', b.dataset.v===val));
+  }
+  function syncCommonUI(){
+    setSeg('segDim', ''+params.dim); setSeg('segBC', params.bc);
+    setSeg('segAmp', ''+params.amp); setSeg('segEps', ''+params.eps);
+    setSeg('segOrd', ''+params.order); setSeg('segYvar', yvar); setSeg('segYvar2', yvar);
+    $('selL').value = ''+params.L; $('selDx').value = ''+params.dx;
+    $('selGain').value = ''+dispGain;
+    $('rngN').value = params.n; $('nVal').textContent = params.n;
+    $('rngAlpha').value = params.alpha; $('rngBeta').value = betaIdx(params.beta);
+  }
+  function runPreset(setup){
+    running = false;
+    setup();
+    noteSpfRef();                       // the preset's dt / steps become the reference
+    syncCommonUI();
+    applyDimUI();
+    $('qty').value = qkind;
+    updateOverlays();
+    wfScale = 0; gCache.stamp = -1;
+    rebuild();
+    applyTerms();
+    running = true; $('bRun').textContent = 'Pause';
+  }
+  function base1D(){
+    params.dim=1; params.L=128; params.bc='open'; params.dx=0.5; params.order=4;
+    params.alpha=0; params.beta=0; params.amp=0; params.eps=0.1; params.n=4;
+    params.dt=0.1; $('selDt').value='0.1';
+    stepsPerFrame=2; $('selSpf').value='2';
+    dispGain=2; keepN=5000;
+    yvar='h'; qkind='nlap'; modeSel[1]='wf3dsw';
+    wfDt=0.1; wf3dTilt=25; wf3dDist=10;
+    swStepPx=1.5; $('rngVsep').value=2; $('vsepVal').textContent='1.5';
+    wfSepAuto=false; wfSep=0.02;
+    $('selKeep').value='5000';
+    $('rngWfTilt').value=25; $('wfTiltVal').textContent='25°';
+    $('rngWfDist').value=10; $('wfDistVal').textContent='∞';
+    if(!darkBG){ darkBG = true; applyTheme(); }   // black background by default
+    setLUT('jet'); $('cmap').value='jet';
+  }
+  function base2D(){
+    params.dim=2; params.L=128; params.bc='periodic'; params.dx=0.5; params.order=4;
+    params.alpha=0; params.beta=0; params.amp=0; params.eps=0.1; params.n=4;
+    params.dt=0.2; $('selDt').value='0.2';
+    stepsPerFrame=2; $('selSpf').value='2';
+    dispGain=2; yvar='h'; qkind='lap'; modeSel[2]='surface';
+    view.tilt=45; view.rot=45; view.dist=3;
+    $('rngTilt').value=45; $('v3TiltVal').textContent='45°';
+    $('rngRot').value=45;  $('v3RotVal').textContent='45°';
+    $('rngDist').value=3;  $('v3DistVal').textContent='3.0·L';
+    if(!darkBG){ darkBG = true; applyTheme(); }   // black background by default
+    setLUT('fire'); $('cmap').value='fire';
+  }
+  $('bPre1').addEventListener('click', ()=>runPreset(base1D));
+  $('bPre2').addEventListener('click', ()=>runPreset(base2D));
+  $('bPre1a').addEventListener('click', ()=>runPreset(()=>{ base1D(); params.alpha=1; }));
+  $('bPre2a').addEventListener('click', ()=>runPreset(()=>{
+    base2D(); params.alpha=1.4;
+    params.dt=0.1; $('selDt').value='0.1';
+  }));
+  $('bPre1n').addEventListener('click', ()=>runPreset(()=>{
+    base1D(); params.beta=1.5;
+    params.dt=0.02; $('selDt').value='0.02';
+    stepsPerFrame=5; $('selSpf').value='5';
+  }));
+  $('bPre2n').addEventListener('click', ()=>runPreset(()=>{
+    base2D(); params.beta=1.5;
+    params.dt=0.02; $('selDt').value='0.02';
+  }));
+
+  new ResizeObserver(()=>draw()).observe(cv.parentElement);
+  const reflow = ()=>{ fitDue = true; fitHeight(); draw(); };
+  window.addEventListener('resize', reflow);
+  window.addEventListener('orientationchange', ()=>setTimeout(reflow, 120));
+  window.addEventListener('scroll', ()=>{ fitDue = true; }, {passive:true});
+  if(window.visualViewport) window.visualViewport.addEventListener('resize', reflow);
+
+  // ----- go -----
+  setLUT('div');
+  applyDimUI(); updateHint(); rebuild(); applyTerms();
+  fitHeight(); draw();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
