@@ -133,6 +133,14 @@ const MODELS: Model[] = [
     file: "/models/kuramoto_sivashinsky_22.html",
     status: "live",
   },    
+    {
+    id: "Sneppen model",
+    title: "Self Organized Interfaces",
+    description:
+      "A Large dynamical system with quenched randomnes",
+    file: "/models/sneppen_front_36.html",
+    status: "live",
+  },    
   {
     id: "Trimurti",
     title: "Trimurti dynamics",
