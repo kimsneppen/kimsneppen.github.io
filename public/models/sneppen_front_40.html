@@ -122,6 +122,7 @@
     background:linear-gradient(90deg,#16233b 0 50%,#fff 50% 100%);
     border:1.5px solid #6b7690;
   }
+  .btn.png.ovlpng{position:absolute;left:10px;bottom:10px;z-index:22;padding:5px 10px;font-size:12px}
   .wfctl{
     position:absolute;left:10px;bottom:10px;z-index:20;display:none;align-items:center;gap:8px;
     background:rgba(255,255,255,.86);border:1px solid var(--line);border-radius:10px;
@@ -500,6 +501,7 @@
           <div><span>rot</span><input type="range" id="rngRot" min="0" max="360" step="5" value="45"><b class="sv" id="v3RotVal">45&deg;</b></div>
           <div><span>dist</span><input type="range" id="rngDist" min="1.1" max="10" step="0.1" value="2.5"><b class="sv" id="v3DistVal">2.5&middot;L</b></div>
         </div>
+        <button class="btn png ovlpng" id="bPng2" title="save the display as a PNG image">.png</button>
       </div>
     </section>
 
@@ -1429,6 +1431,7 @@ function wfCurve(cx, sp, Y, X, L, ncols, kind, S, Sg, lw, fillTo){
    the wrong place. The fade control slowly darkens old paint, one veil per
    recorded step, so the depth of visible history is adjustable. */
 let paintH = null;               // per column: height painted up to, in h units
+let wfGeo = null;                // geometry of the last on-screen strip draw, for the export copy
 const colX = (c, colW) => Math.floor(c*colW);
 /* one recorded front enters the strip as painted area either way: 'soft' grades
    the span from the previous front's colour to this one's, 'line' fills the whole
@@ -1516,6 +1519,49 @@ function drawWaterfall(w, h){
   const stripH = STRIP*ph, span = STRIP*windowH;
   const X = c => pw*c/(ncols-1);
   const Ys = v => (wfBase - v)/span*stripH;
+  /* .png export (FS > 1): the export layout differs from the screen, and a
+     rebuild at export geometry could only replay the stored fronts — the field
+     painted before them would be flooded with the oldest front's colours. So
+     the export NEVER rebuilds: it copies the very painted field that is on
+     screen, scaled into the export layout, leaving the strip untouched. */
+  if(FS > 1 && wfGeo && wfKey){
+    const g = wfGeo;
+    const offSrc = (wfBase - hi)/g.span*g.stripH;
+    const offEx = Ys(hi);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
+    ctx.drawImage(wfC, 0, Math.round(offSrc*g.dpr), g.needW, Math.round(g.ph*g.dpr),
+                  x0, y0, pw, ph);
+    ctx.translate(x0, y0);
+    for(let c=0;c<ncols;c++){
+      const cOld = Math.round(c/(ncols-1)*(g.ncols-1));
+      const i = Math.round(c/(ncols-1)*(L-1));
+      const v = newest.f[i];
+      if(!(v > paintH[cOld] + 1e-9)) continue;
+      const yT = Ys(v)-offEx;
+      const yB = Math.min(Ys(0), paintH[cOld] === -Infinity ? stripH : Ys(paintH[cOld]))-offEx;
+      if(yB <= 0 || yT >= ph || yB <= yT) continue;
+      const xa = colX(c, colW), wpx = Math.max(1, colX(c+1, colW)-xa);
+      const tCur = snapT(newest, i, qkind, F.S, Sg);
+      const hpx = yB - yT;
+      if(pMode === 'line'){
+        ctx.fillStyle = CSS[QIDX[lutIdx(tCur)]];
+        ctx.fillRect(xa, yT, wpx, Math.max(0.6, hpx));
+      } else {
+        const tPrev = paintT[cOld] >= 0 ? paintT[cOld] : tCur;
+        const nb2 = Math.max(1, Math.min(64, Math.ceil(hpx/2)));
+        for(let b=0;b<nb2;b++){
+          const f = nb2 > 1 ? (b + 0.5)/nb2 : 0.5;
+          ctx.fillStyle = CSS[QIDX[lutIdx(tCur*(1-f) + tPrev*f)]];
+          ctx.fillRect(xa, yT + hpx*b/nb2, wpx, hpx/nb2 + 0.4);
+        }
+      }
+    }
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    wfCurve(ctx, newest, v => Ys(v)-offEx, X, L, ncols, qkind, F.S, Sg, 2);
+    ctx.restore();
+    return;
+  }
   /* the colour scale is deliberately NOT part of this key: paint keeps the
      calibration it was given at the moment it was laid down, even if the live
      scale later re-latches — only an explicit change (palette, colour quantity,
@@ -1584,6 +1630,7 @@ function drawWaterfall(w, h){
     }
   }
   const off = Ys(hi);
+  wfGeo = { span, stripH, ph, needW, dpr, ncols };
   window.__wfC = wfC; window.__paintH = paintH;
   window.__wf = { x0, y0, pw, ph, off, wfBase, span, stripH, hi, lo, windowH, wfTop,
                   ncols, colW, needH, dpr, key, rebuilds: (window.__wf ? window.__wf.rebuilds : 0) + (window.__wfRebuilt ? 1 : 0) };
@@ -2534,6 +2581,9 @@ function updateOverlays(){
   const three = params.dim === 2 && m === 'surface' && !viewSolid;
   $('wf3dCtl').style.display = (!viewSolid && params.dim === 1 && (m === 'wf3d' || m === 'wf3dsw')) ? 'flex' : 'none';
   $('v3Ctl').style.display   = three ? 'flex' : 'none';
+  /* the corner .png copy climbs above the tilt/dist sliders when those are out */
+  const slidersOut = three || (!viewSolid && params.dim === 1 && (m === 'wf3d' || m === 'wf3dsw'));
+  $('bPng2').style.bottom = slidersOut ? (three ? '108px' : '78px') : '10px';
   const canTransp = params.dim === 2 && m === 'surface';
   $('transpRow').style.display = (canTransp || viewSolid) ? 'flex' : 'none';
   $('frontRow').style.display = (params.dim === 1 && !viewSolid) ? 'flex' : 'none';
@@ -2847,6 +2897,7 @@ $('bPng').addEventListener('click', () => {
   a.href = out.toDataURL('image/png');
   a.click();
 });
+$('bPng2').addEventListener('click', () => $('bPng').click());
 
 /* presets */
 function applyPreset(c){
