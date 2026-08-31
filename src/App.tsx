@@ -2,10 +2,6 @@ import { useEffect, useState } from "react";
 import portraitUrl from "@/assets/kim-sneppen-portrait.jpg";
 import lectureUrl from "@/assets/kim-sneppen-lecture.jpg";
 
-export default function App() {
-  return <Index />;
-}
-
 const SCHOLAR_URL = "https://scholar.google.com/citations?user=LIBL6nQAAAAJ";
 
 // Generic "photo" icon shown in place of a thumbnail that hasn't been added yet, or fails to load.
@@ -284,7 +280,7 @@ function SectionHeading({ title }: { title: string }) {
   );
 }
 
-function Index() {
+export default function App() {
   const year = new Date().getFullYear();
   const scrolled = useScrolled(120);
   const active = useActiveSection();
