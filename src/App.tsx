@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import portraitUrl from "@/assets/kim-sneppen-portrait.jpg";
 import lectureUrl from "@/assets/kim-sneppen-lecture.jpg";
-import complexPhysicsPdf from "@/assets/complex-physics.pdf.asset.json";
 
 export default function App() {
   return <Index />;
@@ -611,7 +610,7 @@ function Index() {
                   statistical mechanics, percolation, self-organization,
                   networks, agent based models and econophysics.{" "}
                   <a
-                    href={complexPhysicsPdf.url}
+                    href="/Complex-Physics.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
