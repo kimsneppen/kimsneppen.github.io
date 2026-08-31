@@ -135,10 +135,10 @@ const MODELS: Model[] = [
   },    
     {
     id: "Sneppen model",
-    title: "Self Organized Interfaces",
+    title: "Self Organization & Interfaces",
     description:
       "A Large dynamical system with quenched randomnes",
-    file: "/models/sneppen_front_36.html",
+    file: "/models/sneppen_front_40.html",
     status: "live",
   },    
   {
