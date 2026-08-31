@@ -36,8 +36,6 @@ type Model = {
   description: string;
   file: string;
   thumbnail?: string;
-  embed?: boolean;
-  status: "live" | "coming_soon";
 };
 
 const MODELS: Model[] = [
@@ -48,7 +46,6 @@ const MODELS: Model[] = [
     "Deep time exploration of life forms on earth",
   file: "/models/Extinction_Explorer_v95.html",
   thumbnail: "/thumbnails/sepkoski_all_origination_extinction.png",
-  status: "live",
 },  
   {
   id: "btw-sandpile",
@@ -57,7 +54,6 @@ const MODELS: Model[] = [
     "Self Organized Criticality: Office visualization, Variants and Game",
   file: "/models/btw_sandpile_v58.html",
   thumbnail: "/thumbnails/sandpile_display4.png",
-  status: "live",
 },  
   {
   id: "bak-sneppen",
@@ -66,7 +62,6 @@ const MODELS: Model[] = [
     "Co-evolving fitness landscapes: Change least fit and its neighbors",
   file: "/models/bak_sneppen_10.html",
   thumbnail: "/thumbnails/bak-sneppen.png",
-  status: "live",
 },
   {
     id: "talker-listener",
@@ -75,7 +70,6 @@ const MODELS: Model[] = [
       "People networking by talking about each other and themselves.",
     file: "/models/talker_listener_applet_v54.html",
     thumbnail: "/thumbnails/talker-listener.png",
-    status: "live",
   },
     {
     id: "paradigm-shift",
@@ -84,7 +78,6 @@ const MODELS: Model[] = [
       "Paradigmshift in an evolutionary ecology of wrong ideas",
     file: "/models/rise_and_fall_of_wrong_ideas_v12.html",
     thumbnail: "/thumbnails/paradigm-shift.png",
-    status: "live",
   },
   {
     id: "rabbit-fox-snake-plant",
@@ -93,7 +86,6 @@ const MODELS: Model[] = [
       "Plants in Predator–Prey systems open for increased diversity.",
     file: "/models/Rabbit-mobile.html",
     thumbnail: "/thumbnails/Fox.png",
-    status: "live",
   },
   {
     id: "spatial-ecosystem",
@@ -102,7 +94,6 @@ const MODELS: Model[] = [
       "Local competition in 2 dimension opens for high species diversity",
     file: "/models/Lichen19_activity.html",
     thumbnail: "/thumbnails/spatial-ecosystem.png",
-    status: "live",
   },
   {
     id: "colony-phage",
@@ -111,7 +102,6 @@ const MODELS: Model[] = [
       "Phage infection of a growing bacterial colony.",
     file: "/models/phage_colony_v26_final.html",
     thumbnail: "/thumbnails/colony-phage.png",
-    status: "live",
   },
   {
     id: "cell-polarity",
@@ -120,7 +110,6 @@ const MODELS: Model[] = [
       "Random Baby Model: Morphology from polarity & sheets & tubes",
     file: "/models/cell-polarity-model-mobile.html",
     thumbnail: "/thumbnails/baby.png",
-    status: "live",
   },
   {
     id: "nucleosome-swi6",
@@ -129,7 +118,6 @@ const MODELS: Model[] = [
       "Epigenetics from nucleosome & Swi6 condensate",
     file: "/models/nucleosome_swi6_20.html",
     thumbnail: "/thumbnails/nucleosome-swi6.png",
-    status: "live",
   },
   {
     id: "two-state-gillespie",
@@ -138,7 +126,6 @@ const MODELS: Model[] = [
       "Two-state epigenetics with nucleosome condensate",
     file: "/models/Twostate_gillespie_model_v4.html",
     thumbnail: "/thumbnails/two-state-gillespie.png",
-    status: "live",
   },
     {
     id: "merging-creation",
@@ -147,7 +134,6 @@ const MODELS: Model[] = [
       "Dynamical Network with node creation and node merging",
     file: "/models/merging-creation.html",
     thumbnail: "/thumbnails/merging-creation.png",
-    status: "live",
   },    
   {
     id: "ks",
@@ -156,7 +142,6 @@ const MODELS: Model[] = [
       "A Large dynamical system with deterministic chaos",
     file: "/models/kuramoto_sivashinsky_22.html",
     thumbnail: "/thumbnails/ks.png",
-    status: "live",
   },    
     {
     id: "sneppen-model",
@@ -165,7 +150,6 @@ const MODELS: Model[] = [
       "A Large dynamical system with quenched randomness",
     file: "/models/sneppen_front_41.html",
     thumbnail: "/thumbnails/sneppen_1d_L2048.png",
-    status: "live",
   },    
   {
     id: "trimurti",
@@ -174,7 +158,6 @@ const MODELS: Model[] = [
       "Creation, growth and destruction in analogy with mythology and Phage-Bacteria systems",
     file: "/models/trimurti_12.html",
     thumbnail: "/thumbnails/trimurti.png",
-    status: "live",
   },
 ];
 
@@ -289,11 +272,10 @@ function LectureFrame() {
   );
 }
 
-function SectionHeading({ label, title }: { label: string; title: string }) {
+function SectionHeading({ title }: { title: string }) {
   return (
     <header className="reveal">
-      {label && <span className="eyebrow">{label}</span>}
-      <h2 className={`${label ? "mt-3" : ""} text-3xl md:text-4xl lg:text-[2.6rem]`}>{title}</h2>
+      <h2 className="text-3xl md:text-4xl lg:text-[2.6rem]">{title}</h2>
       <span
         aria-hidden
         className="mt-5 block h-px w-12 bg-accent/60"
@@ -471,7 +453,7 @@ function Index() {
 
         {/* INTERACTIVE MODELS */}
         <section id="models" className={sectionClass}>
-          <SectionHeading label="" title="Interactive models" />
+          <SectionHeading title="Interactive models" />
           <div className="reveal mt-12 grid gap-6 sm:grid-cols-2">
             {MODELS.map((m) => (
               <article
@@ -483,48 +465,16 @@ function Index() {
                   <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
                     {m.description}
                   </p>
-                  {m.embed && m.status === "live" ? (
-                    <div className="mt-6">
-                      <div className="overflow-hidden rounded-md border border-border">
-                        <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-                          <iframe
-                            src={m.file}
-                            title={m.title}
-                            loading="lazy"
-                            className="absolute inset-0 h-full w-full"
-                          />
-                        </div>
-                      </div>
-                      <a
-                        href={m.file}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 inline-block text-[13px] text-accent"
-                      >
-                        Open full screen ↗
-                      </a>
-                    </div>
-                  ) : m.status === "live" ? (
-                    <div className="mt-auto pt-6">
-                      <a
-                        href={m.file}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block rounded-md border border-accent/70 px-5 py-2.5 text-[13px] font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
-                      >
-                        Launch model →
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="mt-auto pt-6">
-                      <span
-                        aria-label="Coming soon"
-                        className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                      >
-                        Coming soon
-                      </span>
-                    </div>
-                  )}
+                  <div className="mt-auto pt-6">
+                    <a
+                      href={m.file}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block rounded-md border border-accent/70 px-5 py-2.5 text-[13px] font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      Launch model →
+                    </a>
+                  </div>
                 </div>
                 <div className="flex-1 shrink-0">
                   <img
@@ -548,7 +498,7 @@ function Index() {
 
         {/* CV */}
         <section id="cv" className={sectionClass}>
-          <SectionHeading label="" title="Career" />
+          <SectionHeading title="Career" />
           <ol className="reveal mt-12 max-w-3xl">
             {CV.map((c, i) => (
               <li
@@ -574,7 +524,7 @@ function Index() {
 
         {/* WORK & BOOK */}
         <section id="work" className={sectionClass}>
-          <SectionHeading label="" title="Work & book" />
+          <SectionHeading title="Work & book" />
           <div className="reveal mt-12 grid gap-12 md:grid-cols-[1.25fr_1fr] md:gap-16">
             <div className="space-y-10">
               <div>
@@ -639,7 +589,7 @@ function Index() {
 
         {/* CONTACT */}
         <section id="contact" className={sectionClass}>
-          <SectionHeading label="" title="Contact" />
+          <SectionHeading title="Contact" />
           <div className="reveal mt-12 grid max-w-3xl gap-12 md:grid-cols-2">
             <dl className="space-y-6 text-[15px]">
               <div>
