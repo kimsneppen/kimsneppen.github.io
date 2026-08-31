@@ -93,7 +93,7 @@ const MODELS: Model[] = [
     description:
       "Plants in Predator–Prey systems open for increased diversity.",
     file: "/models/Rabbit-mobile.html",
-    thumbnail: "/thumbnails/rabbit-fox-snake-plant.png",
+    thumbnail: "/thumbnails/Fox.png",
     status: "live",
   },
   {
@@ -120,7 +120,7 @@ const MODELS: Model[] = [
     description:
       "Random Baby Model: Morphology from polarity & sheets & tubes",
     file: "/models/cell-polarity-model-mobile.html",
-    thumbnail: "/thumbnails/cell-polarity.png",
+    thumbnail: "/thumbnails/baby.png",
     status: "live",
   },
   {
