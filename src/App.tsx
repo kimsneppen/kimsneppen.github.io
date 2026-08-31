@@ -48,7 +48,7 @@ const MODELS: Model[] = [
   description:
     "Deep time exploration of life forms on earth",
   file: "/models/Extinction_Explorer_v95.html",
-  thumbnail: "/thumbnails/evolution.png",
+  thumbnail: "/thumbnails/sepkoski_all_origination_extinction.png",
   status: "live",
 },  
   {
