@@ -57,7 +57,7 @@ const MODELS: Model[] = [
   description:
     "Self Organized Criticality: Office visualization, Variants and Game",
   file: "/models/btw_sandpile_v58.html",
-  thumbnail: "/thumbnails/btw-sandpile.png",
+  thumbnail: "/thumbnails/sandpile_display4.png",
   status: "live",
 },  
   {
