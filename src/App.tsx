@@ -9,10 +9,25 @@ export default function App() {
 
 const SCHOLAR_URL = "https://scholar.google.com/citations?user=LIBL6nQAAAAJ";
 
+// Generic "photo" icon shown in place of a thumbnail that hasn't been added yet, or fails to load.
+const PLACEHOLDER_THUMB =
+  "data:image/svg+xml," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+      <rect width="200" height="200" fill="#F1EFE9"/>
+      <g stroke="#B7B2A6" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="40" y="52" width="120" height="96" rx="8"/>
+        <circle cx="76" cy="86" r="9"/>
+        <path d="M40 128 L78 96 L108 118 L134 98 L160 126"/>
+      </g>
+    </svg>`,
+  );
+
 const NAV = [
   { href: "about", label: "About" },
   { href: "models", label: "Interactive Models" },
   { href: "cv", label: "CV" },
+  { href: "work", label: "Work & Book" },
   { href: "contact", label: "Contact" },
 ];
 
@@ -21,18 +36,19 @@ type Model = {
   title: string;
   description: string;
   file: string;
+  thumbnail?: string;
   embed?: boolean;
   status: "live" | "coming_soon";
 };
 
 const MODELS: Model[] = [
   {
-  id: "Evolution",
+  id: "evolution",
   title: "Extinction Explorer",
   description:
     "Deep time exploration of life forms on earth",
   file: "/models/Extinction_Explorer_v95.html",
-  image: "/images/btw.png",
+  thumbnail: "/thumbnails/evolution.png",
   status: "live",
 },  
   {
@@ -41,16 +57,16 @@ const MODELS: Model[] = [
   description:
     "Self Organized Criticality: Office visualization, Variants and Game",
   file: "/models/btw_sandpile_v58.html",
-  image: "/images/btw.png",
+  thumbnail: "/thumbnails/btw-sandpile.png",
   status: "live",
 },  
   {
-  id: "Bak-Sneppen",
+  id: "bak-sneppen",
   title: "Bak-Sneppen model of punctuated equilibrium",
   description:
     "Co-evolving fitness landscapes: Change least fit and its neighbors",
   file: "/models/bak_sneppen_10.html",
-  image: "/images/btw.png",
+  thumbnail: "/thumbnails/bak-sneppen.png",
   status: "live",
 },
   {
@@ -59,14 +75,16 @@ const MODELS: Model[] = [
     description:
       "People networking by talking about each other and themselves.",
     file: "/models/talker_listener_applet_v54.html",
+    thumbnail: "/thumbnails/talker-listener.png",
     status: "live",
   },
     {
-    id: "Paradigm shift",
+    id: "paradigm-shift",
     title: "Kuhn on computer",
     description:
       "Paradigmshift in an evolutionary ecology of wrong ideas",
     file: "/models/rise_and_fall_of_wrong_ideas_v12.html",
+    thumbnail: "/thumbnails/paradigm-shift.png",
     status: "live",
   },
   {
@@ -75,6 +93,7 @@ const MODELS: Model[] = [
     description:
       "Plants in Predator–Prey systems open for increased diversity.",
     file: "/models/Rabbit-mobile.html",
+    thumbnail: "/thumbnails/rabbit-fox-snake-plant.png",
     status: "live",
   },
   {
@@ -83,6 +102,7 @@ const MODELS: Model[] = [
     description:
       "Local competition in 2 dimension opens for high species diversity",
     file: "/models/Lichen19_activity.html",
+    thumbnail: "/thumbnails/spatial-ecosystem.png",
     status: "live",
   },
   {
@@ -91,6 +111,7 @@ const MODELS: Model[] = [
     description:
       "Phage infection of a growing bacterial colony.",
     file: "/models/phage_colony_v26_final.html",
+    thumbnail: "/thumbnails/colony-phage.png",
     status: "live",
   },
   {
@@ -99,6 +120,7 @@ const MODELS: Model[] = [
     description:
       "Random Baby Model: Morphology from polarity & sheets & tubes",
     file: "/models/cell-polarity-model-mobile.html",
+    thumbnail: "/thumbnails/cell-polarity.png",
     status: "live",
   },
   {
@@ -107,6 +129,7 @@ const MODELS: Model[] = [
     description:
       "Epigenetics from nucleosome & Swi6 condensate",
     file: "/models/nucleosome_swi6_20.html",
+    thumbnail: "/thumbnails/nucleosome-swi6.png",
     status: "live",
   },
   {
@@ -115,38 +138,43 @@ const MODELS: Model[] = [
     description:
       "Two-state epigenetics with nucleosome condensate",
     file: "/models/Twostate_gillespie_model_v4.html",
+    thumbnail: "/thumbnails/two-state-gillespie.png",
     status: "live",
   },
     {
-    id: "Merging-creation",
+    id: "merging-creation",
     title: "Merging-Creation network",
     description:
       "Dynamical Network with node creation and node merging",
     file: "/models/merging-creation.html",
+    thumbnail: "/thumbnails/merging-creation.png",
     status: "live",
   },    
   {
-    id: "KS",
+    id: "ks",
     title: "Kuramoto-Sivashinsky",
     description:
       "A Large dynamical system with deterministic chaos",
     file: "/models/kuramoto_sivashinsky_22.html",
+    thumbnail: "/thumbnails/ks.png",
     status: "live",
   },    
     {
-    id: "Sneppen model",
+    id: "sneppen-model",
     title: "Self Organization & Interfaces",
     description:
-      "A Large dynamical system with quenched randomnes",
+      "A Large dynamical system with quenched randomness",
     file: "/models/sneppen_front_41.html",
+    thumbnail: "/thumbnails/sneppen-model.png",
     status: "live",
   },    
   {
-    id: "Trimurti",
+    id: "trimurti",
     title: "Trimurti dynamics",
     description:
       "Creation, growth and destruction in analogy with mythology and Phage-Bacteria systems",
     file: "/models/trimurti_12.html",
+    thumbnail: "/thumbnails/trimurti.png",
     status: "live",
   },
 ];
@@ -437,7 +465,7 @@ function Index() {
             in the body's interferon signaling, providing self organized lockdowns to trap infection; 
             and in the plants of field and forest, giving hidings to animals. 
             In each, the same wonder occurs: behind living walls, 
-            the winner does not take all, and many kinds may live where one alone would remain witout protection. 
+            the winner does not take all, and many kinds may live where one alone would remain without protection.
             </p>
           </div>
         </section>
@@ -449,54 +477,71 @@ function Index() {
             {MODELS.map((m) => (
               <article
                 key={m.id}
-                className="flex flex-col rounded-lg border border-border bg-card p-7 transition-colors hover:border-accent/40 md:p-8"
+                className="flex gap-5 rounded-lg border border-border bg-card p-7 transition-colors hover:border-accent/40 md:p-8"
               >
-                <h3 className="font-serif text-[1.3rem] leading-snug">{m.title}</h3>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
-                  {m.description}
-                </p>
-                {m.embed && m.status === "live" ? (
-                  <div className="mt-6">
-                    <div className="overflow-hidden rounded-md border border-border">
-                      <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-                        <iframe
-                          src={m.file}
-                          title={m.title}
-                          loading="lazy"
-                          className="absolute inset-0 h-full w-full"
-                        />
+                <div className="flex min-w-0 flex-[2] flex-col">
+                  <h3 className="font-serif text-[1.3rem] leading-snug">{m.title}</h3>
+                  <p className="mt-3 text-[14.5px] leading-relaxed text-muted-foreground">
+                    {m.description}
+                  </p>
+                  {m.embed && m.status === "live" ? (
+                    <div className="mt-6">
+                      <div className="overflow-hidden rounded-md border border-border">
+                        <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
+                          <iframe
+                            src={m.file}
+                            title={m.title}
+                            loading="lazy"
+                            className="absolute inset-0 h-full w-full"
+                          />
+                        </div>
                       </div>
+                      <a
+                        href={m.file}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-block text-[13px] text-accent"
+                      >
+                        Open full screen ↗
+                      </a>
                     </div>
-                    <a
-                      href={m.file}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 inline-block text-[13px] text-accent"
-                    >
-                      Open full screen ↗
-                    </a>
-                  </div>
-                ) : m.status === "live" ? (
-                  <div className="mt-auto pt-6">
-                    <a
-                      href={m.file}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block rounded-md border border-accent/70 px-5 py-2.5 text-[13px] font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
-                    >
-                      Launch model →
-                    </a>
-                  </div>
-                ) : (
-                  <div className="mt-auto pt-6">
-                    <span
-                      aria-label="Coming soon"
-                      className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground"
-                    >
-                      Coming soon
-                    </span>
-                  </div>
-                )}
+                  ) : m.status === "live" ? (
+                    <div className="mt-auto pt-6">
+                      <a
+                        href={m.file}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block rounded-md border border-accent/70 px-5 py-2.5 text-[13px] font-medium text-accent no-underline transition-colors hover:bg-accent hover:text-accent-foreground"
+                      >
+                        Launch model →
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="mt-auto pt-6">
+                      <span
+                        aria-label="Coming soon"
+                        className="inline-flex items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground"
+                      >
+                        Coming soon
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 shrink-0">
+                  <img
+                    src={m.thumbnail ?? PLACEHOLDER_THUMB}
+                    alt=""
+                    loading="lazy"
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      if (!img.dataset.fallback) {
+                        img.dataset.fallback = "true";
+                        img.src = PLACEHOLDER_THUMB;
+                      }
+                    }}
+                    className="h-full w-full rounded-md border border-border object-cover"
+                  />
+                </div>
               </article>
             ))}
           </div>
