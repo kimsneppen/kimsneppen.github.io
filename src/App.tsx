@@ -138,7 +138,7 @@ const MODELS: Model[] = [
     title: "Self Organization & Interfaces",
     description:
       "A Large dynamical system with quenched randomnes",
-    file: "/models/sneppen_front_40.html",
+    file: "/models/sneppen_front_41.html",
     status: "live",
   },    
   {
