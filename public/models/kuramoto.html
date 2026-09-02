@@ -160,6 +160,11 @@
   .lyaphead label{display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
   .lyaphead input[type=checkbox]{accent-color:var(--accent);margin:0}
   .lyaphead .tbtn{padding:3px 8px;font-size:13px}
+  .lyaphead .seg.mini{min-width:0}
+  .lyaphead .seg.mini button{padding:4px 9px;font-size:11.5px}
+  .lyaphead .lfree{display:none}
+  .lyap.free .lfree{display:inline}
+  .lyap.free.closed .lfree{display:none}
   .lyaphead .lhint{font-size:11.5px;color:var(--muted);display:none}
   .lyap.closed .lhint{display:inline}
   .lyap.closed .lstat{display:none}
@@ -384,8 +389,17 @@
         cells that are just about to split or merge, the red marker sits on the most unstable
         node (the point where |&delta;h| peaks), &lambda;<sub>loc</sub> is its present growth
         rate (the eigenvalue belonging to that vector), and k&#772; is its rms wavenumber,
-        close to the cell wavenumber 1/&radic;2. The twin doubles the work per step — close
-        the section to run at full speed.</p>
+        close to the cell wavenumber 1/&radic;2. The <b>free run</b> switch in the section is
+        the long-time check: the twin is then never pulled back, and the panel plots the
+        distance |&delta;h| between the two interfaces on a logarithmic scale against time.
+        A straight line means the separation grows as e<sup>&lambda;t</sup> — the exponent
+        stays positive — all the way up to the dashed level &radic;2&middot;W, the distance of
+        two completely diverged, uncorrelated interfaces, where the curve must bend over and
+        saturate; &lambda; is then read off as the fitted slope of the straight stretch, and
+        the readout |&delta;h|/&radic;2W tells how far the divergence has come (1 = complete).
+        Starting from &epsilon; = 10<sup>&minus;6</sup> with &lambda; &asymp; 0.09 this takes
+        about ln(10<sup>6</sup>)/&lambda; &asymp; 150 time units; press &#8635; for another
+        run. The twin doubles the work per step — close the section to run at full speed.</p>
         <div class="refs">
           <p>[1] Y. Kuramoto &amp; T. Tsuzuki, <i>Persistent propagation of concentration waves in
           dissipative media far from thermal equilibrium</i>,
@@ -527,7 +541,11 @@
         <span class="lstat" title="growth rate of the vector shown right now (2 time-unit average) — the eigenvalue belonging to it">&lambda;<sub>loc</sub> = <b id="lLoc">—</b></span>
         <span class="lstat" title="most unstable node: where |&delta;h| is largest">max at <b id="lNode">—</b></span>
         <span class="lstat" title="rms wavenumber of &delta;h (KS cells: 1/&radic;2 &asymp; 0.71)">k&#772; = <b id="lK">—</b></span>
+        <span class="lstat lfree" title="distance of the two interfaces relative to &radic;2&middot;W, the distance of two completely diverged (uncorrelated) interfaces">|&delta;h|/&radic;2W = <b id="lD">—</b></span>
         <span class="spacer"></span>
+        <div class="seg mini lstat" id="segLyMode" title="Benettin: twin pulled back to &epsilon; every frame, &lambda; = running average. Free: twin runs off until the interfaces have completely diverged, &lambda; = slope of log|&delta;h|">
+          <button data-v="renorm" class="on">Benettin</button><button data-v="free">free run</button>
+        </div>
         <button class="tbtn lstat" id="bLyapReset" title="restart the twin trajectory and the average">&#8635;</button>
         <span class="lhint" id="lyapHint">closed — open to measure (doubles the work per step)</span>
       </div>
@@ -743,7 +761,11 @@
           k&#772; of &delta;h. The &#8635; button restarts the twin and the average; changing
           &alpha;, &beta; or the linear terms restarts the average automatically. The twin
           doubles the work per step and runs only while the section is open — close it to run
-          at full speed.</p>
+          at full speed. The <b>free run</b> mode never pulls the twin back: it records
+          |&delta;h|(t) on a log scale until the two interfaces have completely diverged
+          (|&delta;h| &rarr; &radic;2&middot;W, the dashed line), fits &lambda; as the slope of the
+          exponential stretch, and reports |&delta;h|/&radic;2W and the time of saturation
+          — a check that the exponent stays positive right up to full divergence.</p>
           <p><b>Disturbance.</b> The &epsilon; toggle adds &epsilon; to the initial condition at two
           places: in 1D the strips 8–9&thinsp;L/32 and 19–20&thinsp;L/32, in 2D the patches
           x,y = 8–9&thinsp;L/32 and x = 11–12, y = 23–24&thinsp;L/32. These positions are chosen
@@ -1020,8 +1042,14 @@ function buildSim(P){
      vector — the most unstable perturbation of the current state. ---- */
   const wr=A(), wi=A(), dr=A(), di=A();
   const NP = physNx*physNy;
-  const lyap = { on:true, eps:1e-6, sumLog:0, T:0, lam:NaN, loc:NaN, tLast:0,
-                 vec:new Float64Array(M), node:0, kbar:NaN, ready:false };
+  /* mode 'renorm': Benettin, twin pulled back to ε after every frame (λ = running
+     average).  mode 'free': the twin is never pulled back; |δh|(t) is recorded
+     until it saturates at √2·W — two completely diverged interfaces — and λ is
+     the fitted slope of log|δh| over its exponential stretch. */
+  const lyap = { on:true, mode:'renorm', eps:1e-6, sumLog:0, T:0, lam:NaN, loc:NaN, tLast:0,
+                 vec:new Float64Array(M), node:0, kbar:NaN, ready:false,
+                 histT:[], histD:[], every:1, cnt:0, dPrev:NaN, tSat:NaN,
+                 fit:{ t0:NaN, t1:NaN, lam:NaN } };
   s.lyap = lyap;
   /* twin := h + ε·d/rms(d), where d is the real field held in dr on the
      physical domain (mirrored into the extension for open boundaries) */
@@ -1041,6 +1069,8 @@ function buildSim(P){
   s.lyapReset = function(keepAvg){          // fresh twin from a random direction
     if(!keepAvg){ lyap.sumLog=0; lyap.T=0; lyap.lam=NaN; lyap.loc=NaN; }
     lyap.tLast = s.t; lyap.ready = false; lyap.kbar = NaN; lyap.vec.fill(0);
+    lyap.histT = []; lyap.histD = []; lyap.every = 1; lyap.cnt = 0; lyap.dPrev = NaN;
+    lyap.tSat = NaN; lyap.fit = { t0:NaN, t1:NaN, lam:NaN };
     let sd = 1234567;
     for(let j=0;j<physNy;j++){ const row=j*nx; for(let i=0;i<physNx;i++){
       sd = (sd*1664525 + 1013904223) >>> 0;
@@ -1070,18 +1100,57 @@ function buildSim(P){
     const norm = Math.sqrt(sum2/NP);
     if(!(norm > 0) || !isFinite(norm)){ s.lyapReset(true); return; }
     const dtSeg = s.t - lyap.tLast;
-    if(dtSeg > 1e-12){
+    const a = 1 - Math.exp(-dtSeg/2);                 // local rate: ~2 time-unit memory
+    if(lyap.mode === 'free'){
+      if(dtSeg > 1e-12 && lyap.dPrev > 0){
+        const r = Math.log(norm/lyap.dPrev)/dtSeg;
+        lyap.loc = isFinite(lyap.loc) ? lyap.loc + a*(r - lyap.loc) : r;
+      }
+      lyap.dPrev = norm;
+      /* record |δh|(t); the record is thinned in place when it grows long */
+      /* keep recording until a plateau of clear length follows the saturation */
+      const done = lyap.tSat >= 0 && s.t > lyap.tSat + Math.max(20, 0.5*(lyap.tSat - lyap.histT[0]));
+      if(!done && (lyap.cnt++ % lyap.every) === 0){
+        lyap.histT.push(s.t); lyap.histD.push(norm);
+        if(lyap.histT.length > 6000){
+          lyap.histT = lyap.histT.filter((_,i)=>!(i&1)); lyap.histD = lyap.histD.filter((_,i)=>!(i&1));
+          lyap.every *= 2;
+        }
+      }
+      const dsat = Math.SQRT2*s.W;
+      if(!(lyap.tSat >= 0) && norm > 0.8*dsat) lyap.tSat = s.t;
+      fitSlope(dsat);
+      lyap.lam = lyap.fit.lam;
+    } else if(dtSeg > 1e-12){
       const g = Math.log(norm/lyap.eps), r = g/dtSeg;
       lyap.sumLog += g; lyap.T += dtSeg; lyap.lam = lyap.sumLog/lyap.T;
-      const a = 1 - Math.exp(-dtSeg/2);               // local rate: ~2 time-unit memory
       lyap.loc = isFinite(lyap.loc) ? lyap.loc + a*(r - lyap.loc) : r;
     }
     lyap.tLast = s.t;
     const inv = 1/mx;
     for(let j=0;j<physNy;j++){ const row=j*nx; for(let i=0;i<physNx;i++) lyap.vec[row+i] = dr[row+i]*inv; }
     lyap.node = node; lyap.ready = true;
-    seedTwin();                                       // back to distance ε, same direction
+    if(lyap.mode !== 'free') seedTwin();              // back to distance ε, same direction
   };
+  /* least-squares slope of ln|δh| against t over the exponential stretch: from
+     the minimum of the record (the white-noise seed first loses its damped
+     short waves) up to a tenth of the saturation distance */
+  function fitSlope(dsat){
+    const T = lyap.histT, D = lyap.histD, n = T.length;
+    let i0 = 0;
+    for(let i=1;i<n;i++) if(D[i] < D[i0]) i0 = i;
+    let sx=0, sy=0, sxx=0, sxy=0, m=0, t1=NaN;
+    for(let i=i0;i<n;i++){
+      if(D[i] >= 0.1*dsat) break;
+      const x = T[i], y = Math.log(D[i]);
+      sx+=x; sy+=y; sxx+=x*x; sxy+=x*y; m++; t1 = x;
+    }
+    if(m >= 5 && t1 - T[i0] >= 2){
+      const den = m*sxx - sx*sx;
+      lyap.fit = { t0:T[i0], t1, lam: den > 0 ? (m*sxy - sx*sy)/den : NaN,
+                   b: (sy - ((m*sxy - sx*sy)/den)*sx)/m };
+    } else lyap.fit = { t0:NaN, t1:NaN, lam:NaN };
+  }
 
   s.step = function(){
     stepv(vr, vi);
@@ -1443,7 +1512,7 @@ function buildSim(P){
     sim = buildSim({ dim:params.dim, L:params.L, bc:params.bc, dt:params.dt, dx:params.dx,
                      nwx:params.n, nwy:params.n, amp:params.amp, eps:params.eps,
                      alpha:params.alpha, beta:params.beta, order:params.order });
-    sim.lyap.on = lyapOpen;
+    sim.lyap.on = lyapOpen; sim.lyap.mode = lyMode;
     stamp++;
     qbuf = new Float64Array(sim.M);
     profScale = Math.max(1e-6, sim.hmax);
@@ -1463,7 +1532,7 @@ function buildSim(P){
   }
 
   const fmtLam = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(3);
-  const lyapTxt = { lam:'', loc:'', node:'', k:'' };
+  const lyapTxt = { lam:'', loc:'', node:'', k:'', d:'' };
   function setTxt(id, key, s){ if(lyapTxt[key] !== s){ lyapTxt[key] = s; $(id).textContent = s; } }
   function updateReadouts(){
     $('rt').textContent = sim.t.toFixed(1);
@@ -1482,6 +1551,10 @@ function buildSim(P){
                             : '(x, y) = (' + fmt(i*dxp) + ', ' + fmt(j*dxp) + ')';
     }
     setTxt('lNode', 'node', nd);
+    if(ly.mode === 'free'){
+      const dsat = Math.SQRT2*sim.W, dl = ly.histD.length ? ly.histD[ly.histD.length-1] : NaN;
+      setTxt('lD', 'd', ok && dsat > 0 && isFinite(dl) ? (dl/dsat < 0.001 ? dl.toExponential(1) + ' abs' : (dl/dsat).toFixed(2)) : '—');
+    }
   }
 
   // ----- space–time: one row per frame, time running upward -----
@@ -2070,6 +2143,7 @@ function buildSim(P){
   const lc = $('lyapView'), lctx = lc.getContext('2d');
   const lyapPanel = $('lyapPanel');
   let lyapOpen = false;                             // closed = twin off
+  let lyMode = 'renorm';                            // 'renorm' (Benettin) or 'free'
   const lyFld = document.createElement('canvas'), lyFldCtx = lyFld.getContext('2d');
   let lyImg = null;
   const LUTD = makeLUT('div');                       // fixed diverging map for δh
@@ -2077,7 +2151,9 @@ function buildSim(P){
   function lyapHeight(){
     const wrap = lc.parentElement;
     const w = wrap.getBoundingClientRect().width || 600;
-    const target = params.dim === 2 ? Math.round(Math.min(260, Math.max(170, w*0.42))) : 150;
+    const free = lyMode === 'free';
+    const target = params.dim === 2 ? Math.round(Math.min(260, Math.max(170, w*(free?0.36:0.42))))
+                                    : (free ? 200 : 150);
     if(Math.abs((parseFloat(wrap.style.height) || 0) - target) > 0.5) wrap.style.height = target + 'px';
   }
   function drawLyap(){
@@ -2098,8 +2174,70 @@ function buildSim(P){
         ctx.fillText(ly.on ? 'measuring — run or step the model' : 'λ is off — tick “compute” to follow the twin trajectory', w/2, h/2);
         return;
       }
-      if(params.dim === 1) drawLyap1D(w, h, ly); else drawLyap2D(w, h, ly);
+      if(ly.mode === 'free'){
+        /* vector on the left, |δh|(t) on the right */
+        const wl = Math.round(w*(params.dim === 2 ? 0.44 : 0.5));
+        ctx.save(); ctx.beginPath(); ctx.rect(0,0,wl,h); ctx.clip();
+        if(params.dim === 1) drawLyap1D(wl, h, ly); else drawLyap2D(wl, h, ly);
+        ctx.restore();
+        ctx.save(); ctx.translate(wl, 0); ctx.beginPath(); ctx.rect(0,0,w-wl,h); ctx.clip();
+        drawDivergence(w-wl, h, ly);
+        ctx.restore();
+      } else if(params.dim === 1) drawLyap1D(w, h, ly); else drawLyap2D(w, h, ly);
     } finally { ctx = keep; }
+  }
+  /* free run: log10|δh| against t, the saturation level √2·W of two completely
+     diverged interfaces, and the fitted exponential stretch */
+  function drawDivergence(w, h, ly){
+    const T = ly.histT, D = ly.histD, n = T.length;
+    const x0=44, y0=22, x1=w-12, y1=h-28, pw=x1-x0, ph=y1-y0;
+    axisFont(); ctx.fillStyle = TH.label; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText(w < 300 ? '|δh|(t), log' : '|δh|(t) on a log scale — free run, never pulled back', x0, 4);
+    if(n < 2){ ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('recording…', (x0+x1)/2, (y0+y1)/2); return; }
+    const dsat = Math.SQRT2*sim.W;
+    let lmin = Infinity, lmax = -Infinity;
+    for(let i=0;i<n;i++){ const l = Math.log10(D[i]); if(l<lmin) lmin=l; if(l>lmax) lmax=l; }
+    if(dsat > 0) lmax = Math.max(lmax, Math.log10(dsat));
+    lmin = Math.floor(lmin - 0.2); lmax = Math.ceil(lmax + 0.2) + 0.6;   // headroom for labels
+    const tA = T[0], tB = Math.max(T[n-1], tA + 10);
+    const X = t => x0 + pw*(t - tA)/(tB - tA), Y = l => y1 - ph*(l - lmin)/(lmax - lmin);
+    ctx.lineWidth = 1;
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    const step = Math.max(1, Math.ceil((lmax - lmin)/6));
+    for(let l = lmin; l <= lmax - 0.6; l += step){
+      ctx.strokeStyle = TH.grid2; ctx.beginPath(); ctx.moveTo(x0, Y(l)); ctx.lineTo(x1, Y(l)); ctx.stroke();
+      ctx.fillStyle = TH.label; ctx.fillText(l === 0 ? '1' : '10' + (l<0?'⁻':'') + String(Math.abs(l)).replace(/\d/g, c => '⁰¹²³⁴⁵⁶⁷⁸⁹'[c]), x0-5, Y(l));
+    }
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    for(let q=0;q<=4;q++){ const t = tA + (tB-tA)*q/4; ctx.fillText(fmt(t), X(t), y1+5); }
+    ctx.fillText('t', (x0+x1)/2, y1+16);
+    ctx.strokeStyle = TH.frame; ctx.strokeRect(x0+0.5, y0+0.5, pw, ph);
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
+    if(dsat > 0){                                    // two completely diverged interfaces
+      ctx.setLineDash([5,4]); ctx.strokeStyle = TH.wall; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(x0, Y(Math.log10(dsat))); ctx.lineTo(x1, Y(Math.log10(dsat))); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = TH.label; ctx.textAlign='right'; ctx.textBaseline='bottom';
+      ctx.fillText(w < 300 ? '√2·W' : '√2·W: completely diverged', x1-4, Y(Math.log10(dsat))-2);
+    }
+    ctx.strokeStyle = TH.curve; ctx.lineWidth = 1.8; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(X(T[0]), Y(Math.log10(D[0])));
+    for(let i=1;i<n;i++) ctx.lineTo(X(T[i]), Y(Math.log10(D[i])));
+    ctx.stroke();
+    const f = ly.fit;
+    if(isFinite(f.lam)){                             // fitted e^{λt} stretch, extended a bit
+      const L10 = Math.LOG10E, ta = f.t0, tb = Math.min(tB, f.t1 + 0.35*(f.t1 - f.t0));
+      ctx.strokeStyle = MARK; ctx.lineWidth = 1.4; ctx.setLineDash([2,3]);
+      ctx.beginPath(); ctx.moveTo(X(ta), Y((f.b + f.lam*ta)*L10)); ctx.lineTo(X(tb), Y((f.b + f.lam*tb)*L10)); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = MARK; ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.fillText((w < 300 ? 'λ = ' : 'slope λ = ') + fmtLam(f.lam), x0+6, y0+4);
+    }
+    ctx.restore();
+    if(ly.tSat >= 0){
+      ctx.fillStyle = TH.label; ctx.textAlign='right'; ctx.textBaseline='bottom';
+      ctx.fillText((w < 300 ? 'diverged t ≈ ' : 'completely diverged at t ≈ ') + fmt(ly.tSat), x1-4, y1-4);
+    }
   }
   function drawLyap1D(w, h, ly){
     const x0=46, y0=10, x1=w-14, y1=h-28, pw=x1-x0, ph=y1-y0, n=sim.physNx, ym=y0+ph/2;
@@ -2608,6 +2746,10 @@ function buildSim(P){
     updateReadouts(); fitDue = true; draw();
   }
   $('lyapToggle').addEventListener('click', ()=>setLyapOpen(!lyapOpen));
+  seg($('segLyMode'), ()=>lyMode, v=>{
+    lyMode = v; sim.lyap.mode = v; lyapPanel.classList.toggle('free', v === 'free');
+    sim.lyapReset(false); lyapHeight(); updateReadouts(); draw();
+  });
   $('bLyapReset').addEventListener('click', ()=>{ sim.lyapReset(false); updateReadouts(); draw(); });
   new ResizeObserver(()=>{ if(lyapOpen) drawLyap(); }).observe(lc.parentElement);
 
