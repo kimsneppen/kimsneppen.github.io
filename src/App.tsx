@@ -152,7 +152,7 @@ const MODELS: Model[] = [
     title: "Trimurti dynamics",
     description:
       "Creation, growth and destruction in analogy with mythology and Phage-Bacteria systems",
-    file: "/models/trimurti_12.html",
+    file: "/models/trimurti-aug.html",
     thumbnail: "/thumbnails/trimurti.png",
   },
 ];
