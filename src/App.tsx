@@ -144,8 +144,8 @@ const MODELS: Model[] = [
     title: "Self Organization & Interfaces",
     description:
       "A Large dynamical system with quenched randomness",
-    file: "/models/sneppen_front_41.html",
-    thumbnail: "/thumbnails/sneppen_1d_L2048.png",
+    file: "/models/sneppen.html",
+    thumbnail: "/thumbnails/sneppen_2d.png",
   },    
   {
     id: "trimurti",
