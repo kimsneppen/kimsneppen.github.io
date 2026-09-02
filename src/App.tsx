@@ -89,7 +89,7 @@ const MODELS: Model[] = [
     description:
       "Local competition in 2 dimension opens for high species diversity",
     file: "/models/Lichen19_activity.html",
-    thumbnail: "/thumbnails/spatial-ecosystem.png",
+    thumbnail: "/thumbnails/lichen.png",
   },
   {
     id: "colony-phage",
