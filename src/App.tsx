@@ -137,7 +137,7 @@ const MODELS: Model[] = [
     description:
       "A Large dynamical system with deterministic chaos",
     file: "/models/kuramoto.html",
-    thumbnail: "/thumbnails/kuramoto.png",
+    thumbnail: "/thumbnails/kuramoto_2d.png",
   },    
     {
     id: "sneppen-model",
