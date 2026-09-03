@@ -111,9 +111,9 @@ const MODELS: Model[] = [
     id: "nucleosome-swi6",
     title: "Nucleosome & Swi6",
     description:
-      "Epigenetics from nucleosome & Swi6 condensate",
-    file: "/models/nucleosome_swi6_20.html",
-    thumbnail: "/thumbnails/nucleosome-swi6.png",
+      "Epigenetics from nucleosomes & Swi6 condensate",
+    file: "/models/nucleosome_swi6.html",
+    thumbnail: "/thumbnails/nucleosome.png",
   },
   {
     id: "two-state-gillespie",
