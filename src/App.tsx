@@ -128,8 +128,8 @@ const MODELS: Model[] = [
     title: "Merging-Creation network",
     description:
       "Dynamical Network with node creation and node merging",
-    file: "/models/merging-creation.html",
-    thumbnail: "/thumbnails/merging-creation.png",
+    file: "/models/merging.html",
+    thumbnail: "/thumbnails/merging.png",
   },    
   {
     id: "ks",
