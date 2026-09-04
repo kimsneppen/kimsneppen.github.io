@@ -157,6 +157,31 @@
   }
   .lyaphead .lam b{color:var(--accent)}
   .lyaphead .spacer{flex:1}
+  .lyaphead{flex-direction:column;align-items:stretch;gap:0}
+  .lyrow{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;min-height:26px}
+  .lyrow + .lyrow{margin-top:2px}
+  /* fixed-width value fields: the digits change, the line does not move */
+  #lLam,#lLoc{min-width:50px} #lK{min-width:32px} #lD{min-width:60px}
+  #lNode{min-width:58px} .lyap.two #lNode{min-width:124px}
+  /* colour bars: the scale of the main display, in the head of the Lyapunov
+     panel (long) and beside the y-axis switch above the display (short) */
+  .cbar{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--ink2);white-space:nowrap}
+  .cbar canvas{height:10px;border-radius:3px;border:1px solid var(--line);display:block}
+  #cbLyCan{width:160px} #cbTopCan{width:72px}
+  .cbar b{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:600;
+    font-size:10.5px;color:var(--ink);font-variant-numeric:tabular-nums;display:inline-block;
+  }
+  .cbar .cbmin{min-width:32px;text-align:right} .cbar .cbmax{min-width:32px}
+  .cbar .cblab{font-family:Georgia,"Times New Roman",serif;font-style:italic;color:var(--ink);margin-right:2px;min-width:44px}
+  .cbar.off{display:none}
+  .cbar.clickable{cursor:pointer}
+  .cbar.clickable canvas{box-shadow:0 0 0 1px var(--accent-soft)}
+  .splitbtn{font-size:11.5px;padding:5px 8px;color:var(--ink2);white-space:nowrap}
+  .splitbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .dispbar{gap:6px 10px}
+  .dispbar .yseg button{padding:4px 8px}
+  .ysep input{width:74px}
   .lyaphead label{display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
   .lyaphead input[type=checkbox]{accent-color:var(--accent);margin:0}
   .lyaphead .tbtn{padding:3px 8px;font-size:13px}
@@ -276,7 +301,10 @@
     .cornerpng{right:8px;bottom:8px}
     .cornerpng button{padding:7px 11px;font-size:12.5px}
     .lyap{padding:8px 8px 10px}
-    .lyaphead{font-size:12px;gap:3px 9px}
+    .lyaphead{font-size:12px}
+    .lyrow{gap:3px 9px}
+    #cbLyCan{width:120px}
+    .cbar .cbmin,.cbar .cbmax{min-width:30px}
     .presets button{padding:6px 10px;font-size:12px}
     .wfctl input{width:96px}
     .row select{min-width:132px;padding:9px 8px;font-size:14px}
@@ -317,6 +345,8 @@
     .rdout{font-size:10.5px;gap:2px 7px;padding:3px 7px}
     .cornerpng button{padding:6px 9px;font-size:12px}
     .lyaphead .ttl{width:100%}
+    #cbTopCan{width:64px}
+    .cbar.cbtop{font-size:10.5px}
     .row{margin:11px 0}
     .btn{font-size:14.5px}
     .btn.png{padding:13px 10px;font-size:12.5px}
@@ -399,7 +429,15 @@
         the readout |&delta;h|/&radic;2W tells how far the divergence has come (1 = complete).
         Starting from &epsilon; = 10<sup>&minus;6</sup> with &lambda; &asymp; 0.09 this takes
         about ln(10<sup>6</sup>)/&lambda; &asymp; 150 time units; press &#8635; for another
-        run. The twin doubles the work per step — close the section to run at full speed.</p>
+        run; the |&delta;h|(t) record then appears as a second plot underneath the vector.
+        While the section is open the colour menu of the display also offers the <b>local
+        Lyapunov exponent</b> &lambda;(x) = ln(|&delta;h(x)|/&epsilon;)/&Delta;t of the twin —
+        positive where the two surfaces run apart, zero where they are still &epsilon; apart,
+        in the units of &lambda; — and its negative &minus;&lambda;(x) with the colour scale
+        reversed, so the instability can be painted directly on the profiles, the space–time
+        map or the 2D surface; the &delta;h(x) curve in the panel then takes the same colours
+        point for point, with the colour scale in its corner. The twin doubles the work per
+        step — close the section to run at full speed.</p>
         <div class="refs">
           <p>[1] Y. Kuramoto &amp; T. Tsuzuki, <i>Persistent propagation of concentration waves in
           dissipative media far from thermal equilibrium</i>,
@@ -435,7 +473,7 @@
         <span class="term" id="termA">+ &alpha;|&nabla;h|</span>
         <span class="term" id="termB">+ &beta;(&nabla;h)&#8308;</span></span>
       <span class="tctl">&alpha;
-        <input type="range" id="rngAlpha" min="-2" max="2" step="0.1" value="0">
+        <input type="range" id="rngAlpha" min="-3" max="3" step="0.1" value="0" title="&alpha;: &minus;3 … 3 in steps of 0.1">
         <b id="alphaVal">0</b></span>
       <span class="tctl">&beta;
         <input type="range" id="rngBeta" min="0" max="52" step="1" value="26"
@@ -453,6 +491,10 @@
         <div class="seg mini yseg" id="segYvar2" title="y-axis variable on all plots">
           <button data-v="h" class="on">h</button><button data-v="dx">dh/dx</button>
         </div>
+        <span class="cbar cbtop" id="cbTop" title="colour scale of the display: extreme values of the coloured quantity">
+          <b class="cbmin" id="cbTopMin">−1</b><canvas class="cbcan" id="cbTopCan" width="90" height="10"></canvas><b class="cbmax" id="cbTopMax">+1</b>
+        </span>
+        <button id="bSplit" class="tbtn splitbtn" hidden title="standard: the chosen colour map over the whole λ range. grey λ&lt;0: the colour map only where λ &gt; 0, grey (λ = 0) to black (most negative λ) where λ &lt; 0">standard</button>
         <span class="ysep" id="vsepWrap" title="vertical displacement per curve">
           <span>&Delta;y</span>
           <input type="range" id="rngVsep" min="0" max="11" step="1" value="5">
@@ -466,6 +508,8 @@
           <option value="absdx">|dh/dx|</option>
           <option value="lap">d²h/dx²</option>
           <option value="nlap">−d²h/dx²</option>
+          <option value="lydiv" class="lyopt" hidden title="local Lyapunov exponent of the twin: λ(x) = ln(|δh(x)|/ε)/Δt, ε = 10⁻⁶, Δt the time the separation has grown">λ(x)</option>
+          <option value="nlydiv" class="lyopt" hidden title="the same with the colour scale reversed: −λ(x)">−λ(x)</option>
         </select>
         <select id="cmap" title="colour map">
           <optgroup label="diverging">
@@ -485,7 +529,7 @@
             <option value="ice">ice</option>
             <option value="ora">yellow</option>
             <option value="fire">flames</option>
-            <option value="gray">grayscale</option>
+            <option value="gray">gray</option>
           </optgroup>
         </select>
         <button id="bTheme" class="tbtn" title="black / white background (keys + and −)"><span class="bwcirc"></span></button>
@@ -536,18 +580,29 @@
     <!-- =============== Lyapunov panel =============== -->
     <section class="display lyap closed" id="lyapPanel">
       <div class="lyaphead">
-        <span class="ttl" id="lyapToggle" title="open to compute the largest Lyapunov exponent and show its vector — close to run at full speed"><span class="chev"></span>Largest Lyapunov exponent &lambda; and its vector &delta;h</span>
-        <span class="lstat lam" title="largest Lyapunov exponent: time average of the growth rate of the twin separation">&lambda; = <b id="lLam">—</b></span>
-        <span class="lstat" title="growth rate of the vector shown right now (2 time-unit average) — the eigenvalue belonging to it">&lambda;<sub>loc</sub> = <b id="lLoc">—</b></span>
-        <span class="lstat" title="most unstable node: where |&delta;h| is largest">max at <b id="lNode">—</b></span>
-        <span class="lstat" title="rms wavenumber of &delta;h (KS cells: 1/&radic;2 &asymp; 0.71)">k&#772; = <b id="lK">—</b></span>
-        <span class="lstat lfree" title="distance of the two interfaces relative to &radic;2&middot;W, the distance of two completely diverged (uncorrelated) interfaces">|&delta;h|/&radic;2W = <b id="lD">—</b></span>
-        <span class="spacer"></span>
-        <div class="seg mini lstat" id="segLyMode" title="Benettin: twin pulled back to &epsilon; every frame, &lambda; = running average. Free: twin runs off until the interfaces have completely diverged, &lambda; = slope of log|&delta;h|">
-          <button data-v="renorm" class="on">Benettin</button><button data-v="free">free run</button>
+        <!-- line 1: title and the measured numbers (fixed-width fields, so the
+             line never re-wraps as the digits change) -->
+        <div class="lyrow">
+          <span class="ttl" id="lyapToggle" title="open to compute the largest Lyapunov exponent and show its vector — close to run at full speed"><span class="chev"></span>Largest Lyapunov exponent &lambda; and its vector &delta;h</span>
+          <span class="lstat lam" title="largest Lyapunov exponent: time average of the growth rate of the twin separation">&lambda; = <b id="lLam">—</b></span>
+          <span class="lstat" title="growth rate of the vector shown right now (2 time-unit average) — the eigenvalue belonging to it">&lambda;<sub>loc</sub> = <b id="lLoc">—</b></span>
+          <span class="lstat" title="most unstable node: where |&delta;h| is largest">max at <b id="lNode">—</b></span>
+          <span class="lstat" title="rms wavenumber of &delta;h (KS cells: 1/&radic;2 &asymp; 0.71)">k&#772; = <b id="lK">—</b></span>
+          <span class="lhint" id="lyapHint">closed — open to measure (doubles the work per step)</span>
         </div>
-        <button class="tbtn lstat" id="bLyapReset" title="restart the twin trajectory and the average">&#8635;</button>
-        <span class="lhint" id="lyapHint">closed — open to measure (doubles the work per step)</span>
+        <!-- line 2: the colour scale of the main display, and the mode controls -->
+        <div class="lyrow lstat">
+          <span class="cbar" id="cbLy" title="colour scale of the main display panel: the quantity coloured and its extreme values">
+            <span class="cblab" id="cbLyLab">h−⟨h⟩</span>
+            <b class="cbmin" id="cbLyMin">−1</b><canvas class="cbcan" id="cbLyCan" width="160" height="10"></canvas><b class="cbmax" id="cbLyMax">+1</b>
+          </span>
+          <span class="lfree" title="distance of the two interfaces relative to &radic;2&middot;W, the distance of two completely diverged (uncorrelated) interfaces">|&delta;h|/&radic;2W = <b id="lD">—</b></span>
+          <span class="spacer"></span>
+          <div class="seg mini" id="segLyMode" title="Benettin: twin pulled back to &epsilon; every frame, &lambda; = running average. Free: twin runs off until the interfaces have completely diverged, &lambda; = slope of log|&delta;h|">
+            <button data-v="renorm" class="on">Benettin</button><button data-v="free">free run</button>
+          </div>
+          <button class="tbtn" id="bLyapReset" title="restart the twin trajectory and the average">&#8635;</button>
+        </div>
       </div>
       <div class="lyap-wrap"><canvas id="lyapView"></canvas></div>
     </section>
@@ -688,7 +743,9 @@
           <p><b>Extra growth terms.</b> The sliders in the header switch on two optional
           slope-dependent growth terms. <i>&alpha;|&nabla;h|</i> makes the front advance in
           proportion to the local slope magnitude — a non-analytic term that favours facets and
-          sharp ridges (&alpha; &lt; 0 slows sloped regions instead). <i>&beta;(&nabla;h)&#8308;</i>
+          sharp ridges (&alpha; &lt; 0 slows sloped regions instead); the slider runs over
+          &plusmn;3 in steps of 0.1, and beyond |&alpha;| = 2 the time step drops to 0.05 to
+          follow the steeper facets. <i>&beta;(&nabla;h)&#8308;</i>
           is the next order in the slope expansion of a growing front: &beta; &lt; 0 tames steep
           slopes and lets the cells grow taller, while &beta; &gt; 0 rewards steep regions with
           extra growth, which flattens the surface and speeds up the mean climb. The &beta; slider
@@ -729,7 +786,38 @@
           <b>diverging</b> (blue–red, spectral, ice–ember) put white or grey at zero and are the
           honest choice for signed quantities; <b>rainbow</b> (jet, turbo) maximize contrast;
           <b>sequential</b> (viridis, plasma, magma, cividis, ice, yellow, flames, grayscale) run
-          monotonically in lightness and are the right pick for |&nabla;h| and for print.</p>
+          monotonically in lightness and are the right pick for |&nabla;h| and for print.
+          While the Lyapunov section below the display is open, two further colourings appear
+          at the end of the list: the <b>local Lyapunov exponent</b>
+          &lambda;(x) = ln(|&delta;h(x)|/&epsilon;)/&Delta;t of the twin trajectory — the
+          point-wise version of the growth rate log(|&delta;h|/&epsilon;)/&Delta;t whose
+          spatial and temporal average is &lambda; itself, so the colours are in the same units
+          as the exponent — and its negative &minus;&lambda;(x), the same picture with the colour
+          scale reversed. Here &Delta;t is the time the separation has had to grow: in Benettin
+          mode one frame since the last pull-back, so the colours show <i>where</i> and how
+          fast the instability acts right now; in a free run the whole time since the seed, so
+          &lambda;(x) settles towards the global exponent as the run proceeds. Zero (white in
+          the diverging maps) marks points whose separation still equals the initial displacement
+          &epsilon; = 10<sup>&minus;6</sup>; positive values are the places where the two
+          surfaces have run apart, i.e. where the Lyapunov vector lives, the cells about to
+          split or merge. Nodal points, where &delta;h crosses zero, are floored at 1% of the
+          rms separation so the logarithm stays finite. The display amplitude does not act on
+          this quantity, and the colour bar shows its actual range. While one of these two
+          colourings is selected the Lyapunov panel is <b>linked</b> to the display: the curve
+          &delta;h(x)/max|&delta;h| (in 2D the map) is painted point by point in the very colour
+          the display gives the same x, and a small copy of the colour scale with its extreme
+          values sits in the lower right corner of the panel, so a feature can be identified
+          between the two figures at a glance. In 2D the panel shows two maps: on the left the
+          vector &delta;h/max|&delta;h| (or &lambda;(x,y) in the display's colours when linked),
+          on the right &lambda;(x,y) split by sign — the display's colours for &lambda; &gt; 0,
+          the growing spots, and a grey-to-black scale for &lambda; &lt; 0, grey at zero and
+          black at the most negative value — so the unstable islands stand out against the
+          contracting background; on a phone the two maps stack vertically. The main display
+          can be switched to the same convention: with &lambda;(x) selected, the <b>standard /
+          grey &lambda;&lt;0</b> button beside the short colour bar above the display (2D), or a
+          click on that colour bar itself (1D and 2D), paints &lambda; &gt; 0 with the chosen
+          colour map and &lambda; &lt; 0 from grey to black, each side scaled to its own
+          extreme; all colour bars follow.</p>
           <p><b>Saving a picture.</b> The <b>.png</b> button in the control panel writes the
           current display — and only the display, without any of the control overlays — to a
           PNG at twice the screen resolution, with the equation actually being integrated and
@@ -758,11 +846,14 @@
           <b>most unstable node</b> — the lattice point where |&delta;h| peaks — together with
           &lambda;<sub>loc</sub>, the current growth rate (the eigenvalue belonging to that
           vector, averaged over the last two time units), and the rms wavenumber
-          k&#772; of &delta;h. The &#8635; button restarts the twin and the average; changing
+          k&#772; of &delta;h. The same separation can be painted onto the main display:
+          while the section is open the colour menu gains the local exponent
+          &lambda;(x) = ln(|&delta;h|/&epsilon;)/&Delta;t and &minus;&lambda;(x), and the panel's
+          &delta;h(x) curve then borrows the display's colours (see <i>Displays</i>). The &#8635; button restarts the twin and the average; changing
           &alpha;, &beta; or the linear terms restarts the average automatically. The twin
           doubles the work per step and runs only while the section is open — close it to run
           at full speed. The <b>free run</b> mode never pulls the twin back: it records
-          |&delta;h|(t) on a log scale until the two interfaces have completely diverged
+          |&delta;h|(t) on a log scale, in a second plot below the vector, until the two interfaces have completely diverged
           (|&delta;h| &rarr; &radic;2&middot;W, the dashed line), fits &lambda; as the slope of the
           exponential stretch, and reports |&delta;h|/&radic;2W and the time of saturation
           — a check that the exponent stays positive right up to full divergence.</p>
@@ -1047,7 +1138,7 @@ function buildSim(P){
      until it saturates at √2·W — two completely diverged interfaces — and λ is
      the fitted slope of log|δh| over its exponential stretch. */
   const lyap = { on:true, mode:'renorm', eps:1e-6, sumLog:0, T:0, lam:NaN, loc:NaN, tLast:0,
-                 vec:new Float64Array(M), node:0, kbar:NaN, ready:false,
+                 vec:new Float64Array(M), node:0, kbar:NaN, ready:false, norm:NaN, span:NaN, tStart:0,
                  histT:[], histD:[], every:1, cnt:0, dPrev:NaN, tSat:NaN,
                  fit:{ t0:NaN, t1:NaN, lam:NaN } };
   s.lyap = lyap;
@@ -1068,7 +1159,7 @@ function buildSim(P){
   }
   s.lyapReset = function(keepAvg){          // fresh twin from a random direction
     if(!keepAvg){ lyap.sumLog=0; lyap.T=0; lyap.lam=NaN; lyap.loc=NaN; }
-    lyap.tLast = s.t; lyap.ready = false; lyap.kbar = NaN; lyap.vec.fill(0);
+    lyap.tLast = s.t; lyap.tStart = s.t; lyap.ready = false; lyap.kbar = NaN; lyap.norm = NaN; lyap.span = NaN; lyap.vec.fill(0);
     lyap.histT = []; lyap.histD = []; lyap.every = 1; lyap.cnt = 0; lyap.dPrev = NaN;
     lyap.tSat = NaN; lyap.fit = { t0:NaN, t1:NaN, lam:NaN };
     let sd = 1234567;
@@ -1127,6 +1218,10 @@ function buildSim(P){
       lyap.loc = isFinite(lyap.loc) ? lyap.loc + a*(r - lyap.loc) : r;
     }
     lyap.tLast = s.t;
+    lyap.norm = norm;                                 // rms |δh| of the field held in dr
+    /* time over which that separation has grown: one frame since the pull-back
+       (Benettin) or the whole run since the seed (free run) */
+    lyap.span = lyap.mode === 'free' ? s.t - lyap.tStart : dtSeg;
     const inv = 1/mx;
     for(let j=0;j<physNy;j++){ const row=j*nx; for(let i=0;i<physNx;i++) lyap.vec[row+i] = dr[row+i]*inv; }
     lyap.node = node; lyap.ready = true;
@@ -1151,6 +1246,22 @@ function buildSim(P){
                    b: (sy - ((m*sxy - sx*sy)/den)*sx)/m };
     } else lyap.fit = { t0:NaN, t1:NaN, lam:NaN };
   }
+
+  /* local Lyapunov exponent λ(x) = ln(max(|δh(x)|, 0.01·rms δh)/ε) / Δt on the
+     physical domain, Δt being the time the separation has had to grow — so the
+     colours are in the same units as λ itself; sg = −1 gives −λ(x).
+     Zero everywhere while the twin is off or has not been measured yet */
+  s.lyapDiv = function(out, sg){
+    if(!lyap.on || !lyap.ready || !(lyap.norm > 0) || !(lyap.span > 0)){ out.fill(0); return; }
+    const floor = 0.01*lyap.norm, ieps = 1/lyap.eps, f = sg/lyap.span;
+    for(let j=0;j<physNy;j++){
+      const row = j*nx;
+      for(let i=0;i<physNx;i++){
+        const d = dr[row+i], ad = d<0?-d:d;
+        out[row+i] = f*Math.log((ad > floor ? ad : floor)*ieps);
+      }
+    }
+  };
 
   s.step = function(){
     stepv(vr, vi);
@@ -1202,6 +1313,16 @@ function buildSim(P){
      'h' = h - <h>,  'dx' = dh/dx,  'absdx' = |dh/dx| (2D: |grad h|),  'lap' = Laplacian h */
   s.derived = function(kind, out){
     if(kind === 'h'){ out.set(h); return; }
+    if(kind === 'lydiv' || kind === 'nlydiv'){
+      /* local Lyapunov exponent λ(x) = ln(|δh(x)|/ε)/Δt: the point-wise version
+         of the growth rate log(|δh|/ε)/Δt whose average is λ. dr holds the last
+         measured separation δh(x) (Benettin: grown over one frame since the
+         previous pull-back; free run: since the seed). Nodal points, where δh
+         crosses zero, are floored at 1% of the rms separation so the logarithm
+         stays finite. 'nlydiv' is −λ(x): the reversed colour scale. */
+      s.lyapDiv(out, kind === 'nlydiv' ? -1 : 1);
+      return;
+    }
     if(kind === 'lap' || kind === 'nlap'){
       const sg = (kind === 'nlap') ? 1 : -1;         // lap: -k2 v, nlap: +k2 v
       for(let p=0;p<M;p++){ g1r[p] = sg*K2[p]*vr[p]; g1i[p] = sg*K2[p]*vi[p]; }
@@ -1311,8 +1432,13 @@ function buildSim(P){
   let snapshots = [], nextSnap = 0;
   let wfSepAuto = true, wfSep = 2;
   let qbuf = null;
-  const qscales = { h:1e-6, dx:1e-6, absdx:1e-6, lap:1e-6, nlap:1e-6 };
-  const scaleStamp = { h:-1, dx:-1, absdx:-1, lap:-1, nlap:-1 };
+  const qscales = { h:1e-6, dx:1e-6, absdx:1e-6, lap:1e-6, nlap:1e-6, lydiv:1e-6, nlydiv:1e-6 };
+  const scaleStamp = { h:-1, dx:-1, absdx:-1, lap:-1, nlap:-1, lydiv:-1, nlydiv:-1 };
+  const isLyKind = k => k === 'lydiv' || k === 'nlydiv';
+  const qscalesP = {}, qscalesN = {};          // extremes of λ>0 and λ<0 (split mode)
+  /* 'grey λ<0' mode: colours only where λ > 0, grey→black where λ < 0 */
+  let lySplit = false;
+  const splitOn = kind => lySplit && isLyKind(kind);
   const qCache = { stamp:-1, kind:'' };
 
   // ----- display themes (white / black background) -----
@@ -1364,28 +1490,34 @@ function buildSim(P){
      the drawing loops never build a colour string or allocate an array */
   let LUT = null, CSS = null, SHADE = null, lutName = 'div';
   const NSH = 24;                                   // shading buckets for the 3D surface
+  /* entries 0…255 hold the colour map; entries 256…383 a grey ramp from
+     G0 (grey, λ = 0) down to black (most negative λ) for the 'grey λ<0' mode */
+  const NGREY = 128, G0 = 168, NCOL = 256 + NGREY;
   function makeLUT(name){
-    const a = ANCH[name] || ANCH.div, L = new Uint8ClampedArray(256*3);
+    const a = ANCH[name] || ANCH.div, L = new Uint8ClampedArray(NCOL*3);
     for(let i=0;i<256;i++){
       const t = i/255*(a.length-1), k = Math.min(a.length-2, Math.floor(t)), f = t-k;
       for(let c=0;c<3;c++) L[i*3+c] = a[k][c]*(1-f) + a[k+1][c]*f;
     }
+    for(let i=0;i<NGREY;i++){ const g = G0*(1 - i/(NGREY-1)); L[(256+i)*3]=g; L[(256+i)*3+1]=g; L[(256+i)*3+2]=g; }
     return L;
   }
   function setLUT(name){
     lutName = name;
     LUT = makeLUT(name);
-    CSS = new Array(256);
-    for(let i=0;i<256;i++) CSS[i] = 'rgb('+LUT[3*i]+','+LUT[3*i+1]+','+LUT[3*i+2]+')';
-    SHADE = new Array(256*NSH);
+    CSS = new Array(NCOL);
+    for(let i=0;i<NCOL;i++) CSS[i] = 'rgb('+LUT[3*i]+','+LUT[3*i+1]+','+LUT[3*i+2]+')';
+    SHADE = new Array(NCOL*NSH);
   }
   const lutIdx = t => { const i = (t*255+0.5)|0; return i<0 ? 0 : (i>255 ? 255 : i); };
+  const greyIdx = t => { const i = (t*(NGREY-1)+0.5)|0; return 256 + (i<0 ? 0 : (i>NGREY-1 ? NGREY-1 : i)); };
   const lutCss = t => CSS[lutIdx(t)];
   /* line art is quantized to 64 levels — indistinguishable by eye, but it lets
      long runs of neighbouring segments share one path and one stroke call */
   const QIDX = (function(){
-    const q = new Uint8Array(256);
+    const q = new Uint16Array(NCOL);
     for(let i=0;i<256;i++) q[i] = Math.round(Math.round(i*63/255)*255/63);
+    for(let i=256;i<NCOL;i++) q[i] = 256 + Math.round(Math.round((i-256)*31/(NGREY-1))*(NGREY-1)/31);
     return q;
   })();
   /* diffuse-shaded colour for the 2D surface: quantized so the strings are reused */
@@ -1420,14 +1552,29 @@ function buildSim(P){
       for(let j=0;j<sim.physNy;j++) for(let i=0;i<sim.physNx;i++){
         const a = Math.abs(q[j*sim.nx+i]); if(a>mx) mx = a;
       }
-      const wnd = qwin[kind] || (qwin[kind] = { cur:0, prev:0, count:0 });
+      const wnd = qwin[kind] || (qwin[kind] = { cur:0, prev:0, count:0, curP:0, prevP:0, curN:0, prevN:0 });
       if(mx > wnd.cur) wnd.cur = mx;
-      if(++wnd.count >= 180){ wnd.prev = wnd.cur; wnd.cur = mx; wnd.count = 0; }
+      let mp = 0, mn = 0;
+      if(isLyKind(kind)){                 // separate extremes of λ > 0 and λ < 0
+        const sg = kind === 'nlydiv' ? -1 : 1;
+        for(let j=0;j<sim.physNy;j++) for(let i=0;i<sim.physNx;i++){
+          const v = sg*q[j*sim.nx+i]; if(v>mp) mp = v; else if(-v>mn) mn = -v;
+        }
+        if(mp > wnd.curP) wnd.curP = mp; if(mn > wnd.curN) wnd.curN = mn;
+      }
+      if(++wnd.count >= (isLyKind(kind) ? 40 : 180)){
+        wnd.prev = wnd.cur; wnd.cur = mx; wnd.prevP = wnd.curP; wnd.curP = mp;
+        wnd.prevN = wnd.curN; wnd.curN = mn; wnd.count = 0;
+      }
       qscales[kind] = Math.max(wnd.cur, wnd.prev, 1e-9);
+      qscalesP[kind] = niceCeil(Math.max(wnd.curP, wnd.prevP, 1e-9));
+      qscalesN[kind] = niceCeil(Math.max(wnd.curN, wnd.prevN, 1e-9));
       scaleStamp[kind] = stamp;
     }
     return { q, s: qscales[kind] };
   }
+  /* a new twin (reset, mode switch) starts a fresh λ(x) colour scale */
+  function resetLyScale(){ for(const k of ['lydiv','nlydiv']){ delete qwin[k]; qscales[k] = 1e-6; scaleStamp[k] = -1; } }
   let gbuf = null; const gCache = { stamp:-1 };
   function geoField(){
     if(yvar !== 'dx') return sim.h;
@@ -1439,12 +1586,25 @@ function buildSim(P){
   }
   const clamp01 = t => t<0?0:(t>1?1:t);
   const mapT = (kind,v,S) => kind==='absdx' ? clamp01(v/S) : clamp01((v/S+1)/2);
+  /* colour index (0…NCOL-1) of a value: the map for every quantity, except that
+     in 'grey λ<0' mode λ > 0 takes the upper half of the map (scaled to the
+     largest positive λ) and λ < 0 the grey→black ramp (scaled to the most
+     negative λ). For −λ(x) the coloured half runs downward instead. */
+  function cidx(kind, v, S){
+    if(!splitOn(kind)) return lutIdx(mapT(kind, v, S));
+    const neg = kind === 'nlydiv', lam = neg ? -v : v;
+    if(lam > 0){ const t = clamp01(lam/qscalesP[kind]); return lutIdx(neg ? 0.5 - 0.5*t : 0.5 + 0.5*t); }
+    return greyIdx(clamp01(-lam/qscalesN[kind]));
+  }
   const effKind = () => (qkind==='plain' ? (yvar==='dx' ? 'dx' : 'h') : qkind);
-  const scaleFor = kind => niceCeil(ensureScale(kind).s)/dispGain;
+  /* the display amplitude magnifies heights and derivative colours; the
+     logarithmic divergence ln(|δh|/ε) is already a pure number and keeps its scale */
+  const scaleFor = kind => isLyKind(kind) ? niceCeil(ensureScale(kind).s) : niceCeil(ensureScale(kind).s)/dispGain;
   function kindLabel(kind){
     const two = params.dim === 2;
     return { h:'h−⟨h⟩', dx: two?'∂h/∂x':'dh/dx', absdx: two?'|∇h|':'|dh/dx|',
-             lap: two?'∇²h':'d²h/dx²', nlap: two?'−∇²h':'−d²h/dx²' }[kind];
+             lap: two?'∇²h':'d²h/dx²', nlap: two?'−∇²h':'−d²h/dx²',
+             lydiv:'λ(x)', nlydiv:'−λ(x)' }[kind];
   }
 
   // ----- offscreen canvases -----
@@ -1471,6 +1631,16 @@ function buildSim(P){
   const capDt = () => (params.dim===1 && is3dMode(modeSel[1])) ? Math.min(dtplot, wfDt) : dtplot;
   /* the oldest profile's buffer is recycled into the newest one, so a long run
      does not churn thousands of Float32Arrays through the collector */
+  /* ln(|δh|/ε) of the current twin separation, stored with each 1D profile so
+     the stacked views can be coloured by it; null while the twin is off */
+  let lyTmp = null;
+  function lyField(){
+    if(!lyapOpen || !sim.lyap.ready) return null;
+    const n = sim.physNx;
+    if(!lyTmp || lyTmp.length !== sim.M) lyTmp = new Float64Array(sim.M);
+    sim.lyapDiv(lyTmp, 1);
+    return Float32Array.from(lyTmp.subarray(0, n));
+  }
   function capture(){
     if(params.dim !== 1) return;
     const n = sim.physNx;
@@ -1481,7 +1651,7 @@ function buildSim(P){
     }
     if(!f) f = new Float32Array(n);
     f.set(sim.h.subarray(0, n));
-    snapshots.push({ t: sim.t, mean: sim.meanH, f });
+    snapshots.push({ t: sim.t, mean: sim.meanH, f, ly: lyField() });
     nextSnap = sim.t + capDt();
   }
 
@@ -1567,7 +1737,7 @@ function buildSim(P){
     if(!stRowImg || stRowImg.width !== n) stRowImg = stCtx.createImageData(n, 1);
     const img = stRowImg, d = img.data;
     for(let i=0;i<n;i++){
-      const c = 3*lutIdx(mapT(kind, q[i], S)), o = i*4;
+      const c = 3*cidx(kind, q[i], S), o = i*4;
       d[o]=LUT[c]; d[o+1]=LUT[c+1]; d[o+2]=LUT[c+2]; d[o+3]=255;
     }
     if(stRows < stH){
@@ -1590,15 +1760,26 @@ function buildSim(P){
     return {w, h};
   }
 
-  function drawColorbar(x, y, w, h, scale, signed, label){
+  /* colour index along a vertical bar, t = 1 at the top … 0 at the bottom:
+     the map, or in 'grey λ<0' mode colours above the middle and greys below */
+  function barIdx(kind, t){
+    if(!splitOn(kind)) return lutIdx(t);
+    if(t >= 0.5){ const u = (t-0.5)*2; return lutIdx(kind === 'nlydiv' ? 0.5 - 0.5*u : 0.5 + 0.5*u); }
+    return greyIdx(1 - t*2);
+  }
+  function drawColorbar(x, y, w, h, scale, signed, label, kind){
     for(let i=0;i<h;i++){
-      ctx.fillStyle = CSS[lutIdx(1 - i/(h-1))];
+      ctx.fillStyle = CSS[barIdx(kind, 1 - i/(h-1))];
       ctx.fillRect(x, y+i, w, 1.5);
     }
     ctx.strokeStyle = TH.frame; ctx.lineWidth = 1; ctx.strokeRect(x+0.5, y+0.5, w, h);
     ctx.fillStyle = TH.cbtext; ctx.font = '10.5px system-ui,sans-serif';
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-    if(signed){
+    if(splitOn(kind)){
+      ctx.fillText('+'+fmt(qscalesP[kind]), x+w+4, y+8);
+      ctx.fillText('0',                     x+w+4, y+h/2+3);
+      ctx.fillText('−'+fmt(qscalesN[kind]), x+w+4, y+h-1);
+    } else if(signed){
       ctx.fillText('+'+fmt(scale), x+w+4, y+8);
       ctx.fillText('0',            x+w+4, y+h/2+3);
       ctx.fillText('−'+fmt(scale), x+w+4, y+h-1);
@@ -1637,6 +1818,7 @@ function buildSim(P){
   function drawProfile(w, h){
     const colored = qkind !== 'plain';
     const x0=clean?0:46, y0=clean?0:12, x1=clean?w:w-14, y1=clean?h:h-30, pw=x1-x0, ph=y1-y0;
+    noteX(x0, x1, w);
     if(yvar === 'dx') ensureScale('dx');
     const F = geoField();
     const Sg = niceCeil((yvar==='dx' ? qscales.dx : profScale)/dispGain);
@@ -1674,7 +1856,7 @@ function buildSim(P){
       /* consecutive segments of the same colour level are stroked as one path */
       let ci = -1, open = false;
       for(let i=0;i<n-1;i++){
-        const c = lutIdx(mapT(qkind, (q[i]+q[i+1])/2, Sq));
+        const c = cidx(qkind, (q[i]+q[i+1])/2, Sq);
         if(c !== ci){
           if(open) ctx.stroke();
           ci = c; ctx.strokeStyle = CSS[c];
@@ -1711,7 +1893,7 @@ function buildSim(P){
   }
   /* finite-difference stand-ins used on stored profiles, with the field kind
      resolved to an integer once per frame instead of a string test per point */
-  const KCODE = { plain:0, h:0, dx:1, absdx:2, lap:3, nlap:4 };
+  const KCODE = { plain:0, h:0, dx:1, absdx:2, lap:3, nlap:4, lydiv:5, nlydiv:6 };
   function wfDerivC(f, i, n, code, per, dxp){
     if(code === 0) return f[i];
     const ip = i+1 < n ? i+1 : (per ? 0 : n-1);
@@ -1731,6 +1913,7 @@ function buildSim(P){
   function drawWaterfall(w, h){
     const colored = qkind !== 'plain';
     const x0=clean?0:46, y0=clean?0:12, x1=clean?w:w-14, y1=clean?h:h-30, pw=x1-x0, ph=y1-y0;
+    noteX(x0, x1, w);
     const n = sim.physNx;
     if(!snapshots.length) return;
     const nc = snapshots.length;
@@ -1771,7 +1954,7 @@ function buildSim(P){
     const sil = silBuf(ncols);
     const Sq = colored ? (ensureScale(qkind), scaleFor(qkind)) : 1;
     const per = params.bc === 'periodic', dxp = params.dx;
-    const qc = KCODE[qkind]|0, signed = qkind !== 'absdx', iSq = 1/Sq;
+    const qc = KCODE[qkind]|0;
     const X = c => x0 + pw*c/(ncols-1);
     const Y = v => y0 + ph*(1 - (v-lo)/(hi-lo));
     ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
@@ -1792,8 +1975,9 @@ function buildSim(P){
         if(y < sil[c] - 0.05){
           if(colored){
             if(pen){
-              const qv = wfDerivC(sp.f,i0,n,qc,per,dxp)*iSq;
-              const cc2 = QIDX[lutIdx(signed ? (qv+1)*0.5 : qv)];
+              const qv = qc >= 5 ? (sp.ly ? (qc === 5 ? sp.ly[i0] : -sp.ly[i0]) : 0)
+                                 : wfDerivC(sp.f,i0,n,qc,per,dxp);
+              const cc2 = QIDX[cidx(qkind, qv, Sq)];
               if(cc2 !== ci || !cont){
                 if(open) ctx.stroke();
                 ci = cc2; ctx.strokeStyle = CSS[cc2];
@@ -1831,7 +2015,7 @@ function buildSim(P){
     if(swPos > 1.0001){ swList = []; swPos = 0; }   // touched the top: back to the bottom
     const n = sim.physNx, f = new Float32Array(n);
     for(let i=0;i<n;i++) f[i] = sim.h[i];
-    swList.push({ f, pos: swPos });
+    swList.push({ f, pos: swPos, ly: lyField() });
     swPos += 1/Math.max(50, Math.min(500, Math.round(520/swStepPx)));
     swNextT = sim.t + wfDt;
   }
@@ -1847,6 +2031,7 @@ function buildSim(P){
     const th = wf3dTilt*Math.PI/180;
     const dv = wf3dDist >= 10 ? 1e6 : wf3dDist;     // viewpoint distance: perspective strength
     const yNear = y1 - 4, cx = (x0+x1)/2;
+    noteX(cx - 0.49*pw, cx + 0.49*pw, w);
     // build the row list: {f, mean, dfrac}
     let rows;
     let D, zs, meanNear = 0;
@@ -1880,7 +2065,7 @@ function buildSim(P){
     const istep = Math.max(1, Math.ceil(nl*n/(colored?70000:300000)));
     const Sq = colored ? (ensureScale(qkind), scaleFor(qkind)) : 1;
     const per = params.bc === 'periodic', dxp = params.dx;
-    const qc = KCODE[qkind]|0, signed = qkind !== 'absdx', iSq = 1/Sq;
+    const qc = KCODE[qkind]|0;
     ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
     ctx.lineJoin='round'; ctx.lineCap='round';
     for(let j=0;j<nl;j++){
@@ -1903,8 +2088,9 @@ function buildSim(P){
         if(sy < sil[c] - 0.05){
           if(colored){
             if(pen){
-              const qv = wfDerivC(row.f,i,n,qc,per,dxp)*iSq;
-              const cc2 = QIDX[lutIdx(signed ? (qv+1)*0.5 : qv)];
+              const qv = qc >= 5 ? (row.ly ? (qc === 5 ? row.ly[i] : -row.ly[i]) : 0)
+                                 : wfDerivC(row.f,i,n,qc,per,dxp);
+              const cc2 = QIDX[cidx(qkind, qv, Sq)];
               if(cc2 !== ci || !cont){
                 if(open) ctx.stroke();
                 ci = cc2; ctx.strokeStyle = CSS[cc2];
@@ -1948,6 +2134,7 @@ function buildSim(P){
   // ----- 1D: space–time, x horizontal, time running upward -----
   function drawSpacetime(w, h){
     const x0=clean?0:46, y0=clean?0:12, x1=clean?w:w-58, y1=clean?h:h-30;
+    noteX(x0, x1, w);
     ctx.imageSmoothingEnabled = true;
     const rows = Math.max(1, stRows);
     ctx.drawImage(stC, 0, stH-rows, stC.width, rows, x0, y0, x1-x0, y1-y0);
@@ -1960,7 +2147,8 @@ function buildSim(P){
     ctx.textAlign='center'; ctx.textBaseline='alphabetic';
     ctx.fillText('time ↑', 0, 0); ctx.restore();
     const kind = effKind();
-    drawColorbar(x1+8, y0, 10, y1-y0-16, niceCeil(qscales[kind])/dispGain, kind!=='absdx', kindLabel(kind));
+    /* on screen the clean-PNG buttons sit below the bar: keep its label clear of them */
+    drawColorbar(x1+8, y0, 10, y1-y0-16-(onScreen?20:0), scaleFor(kind), kind!=='absdx', kindLabel(kind), kind);
     rightInset = w - x1;
   }
 
@@ -1973,13 +2161,10 @@ function buildSim(P){
     const n = sim.physNx;
     if(!fldImg || fldImg.width !== n || fldImg.height !== n) fldImg = fldCtx.createImageData(n, n);
     const img = fldImg, d = img.data, nx = sim.nx;
-    const signed = kind !== 'absdx', inv = 1/S;
     for(let j=0;j<n;j++){
       const row = j*nx, orow = j*n*4;
       for(let i=0;i<n;i++){
-        const v = q[row+i]*inv;
-        const t = signed ? (v+1)*0.5 : v;
-        const c = 3*lutIdx(t), o = orow + i*4;
+        const c = 3*cidx(kind, q[row+i], S), o = orow + i*4;
         d[o]=LUT[c]; d[o+1]=LUT[c+1]; d[o+2]=LUT[c+2]; d[o+3]=255;
       }
     }
@@ -2007,7 +2192,7 @@ function buildSim(P){
     ctx.save(); ctx.translate(px-20, py+side/2); ctx.rotate(-Math.PI/2);
     ctx.textAlign='center'; ctx.textBaseline='alphabetic';
     ctx.fillText('y', 0, 0); ctx.restore();
-    drawColorbar(px+side+8, py, 10, side-16, S, kind!=='absdx', kindLabel(kind));
+    drawColorbar(px+side+8, py, 10, side-16, S, kind!=='absdx', kindLabel(kind), kind);
     rightInset = Math.max(0, w - (px+side) - 4);
   }
 
@@ -2085,7 +2270,7 @@ function buildSim(P){
       if(dot < 0) dot = 0; else if(dot > 1) dot = 1;
       const i0=idx[gi], i1=idx[gi+1], j0=idx[gj], j1=idx[gj+1];
       const qv = (q[j0*sim.nx+i0]+q[j0*sim.nx+i1]+q[j1*sim.nx+i0]+q[j1*sim.nx+i1])*0.25;
-      const col = shadeCss(lutIdx(mapT(kind, qv, Sq)), dot);
+      const col = shadeCss(cidx(kind, qv, Sq), dot);
       ctx.fillStyle = col;
       ctx.beginPath();
       if(doStroke){
@@ -2117,6 +2302,10 @@ function buildSim(P){
   /* width of the right-hand margin occupied by a colour bar, so the PNG stamp
      can keep clear of it */
   let rightInset = 0;
+  /* horizontal extent of the x axis of the main 1D display on screen, so the
+     δh(x) plot in the Lyapunov panel can put its x axis exactly underneath */
+  const mainXr = { x0:46, x1:-14, w:0 };
+  function noteX(x0, x1, w){ if(onScreen && !clean){ mainXr.x0 = x0; mainXr.x1 = x1; mainXr.w = w; } }
   function drawContent(w, h){
     rightInset = 0;
     ctx.fillStyle = TH.bg; ctx.fillRect(0,0,w,h);
@@ -2134,7 +2323,58 @@ function buildSim(P){
   function draw(){
     const {w, h} = sizeCanvas();
     drawContent(w, h);
+    updateColourBars();
     drawLyap();
+  }
+
+  /* ---- the two small colour bars (above the display, in the Lyapunov head):
+     the map currently in use, with the extreme values of its scale. The gradient
+     is repainted only when the colour map changes and the labels only when their
+     text changes, so a running model does not touch the layout. ---- */
+  const CB = { key:'', top:{min:'',max:''}, ly:{min:'',max:'',lab:''}, off:null, split:null };
+  function paintBar(can, kind){
+    const cw = can.width, ch = can.height;
+    const c2 = can.getContext('2d');
+    for(let x=0;x<cw;x++){ c2.fillStyle = CSS[barIdx(kind, x/(cw-1))]; c2.fillRect(x, 0, 1, ch); }
+  }
+  function setLab(id, key, obj, txt){ if(obj[key] !== txt){ obj[key] = txt; $(id).textContent = txt; } }
+  function updateColourBars(){
+    /* colours are in use unless a 1D curve view is drawn plain */
+    const used = qkind !== 'plain' || params.dim === 2 || modeSel[1] === 'spacetime';
+    if(CB.off !== !used){
+      CB.off = !used;
+      $('cbTop').classList.toggle('off', !used); $('cbLy').classList.toggle('off', !used);
+    }
+    if(!used) return;
+    const kind = effKind();
+    ensureScale(kind);
+    const sp = splitOn(kind);
+    const key = lutName + (sp ? '|split' + kind : '');
+    if(CB.key !== key){
+      CB.key = key;
+      /* crisp on high-dpi screens: the backing store is twice the CSS width */
+      for(const id of ['cbTopCan','cbLyCan']){
+        const can = $(id), cssw = parseFloat(getComputedStyle(can).width) || can.width;
+        const bw = Math.round(2*cssw); if(can.width !== bw) can.width = bw;
+        paintBar(can, kind);
+      }
+    }
+    /* the standard / grey-λ<0 switch: a button in 2D, the bar itself in 1D */
+    const canSplit = isLyKind(kind);
+    const showBtn = canSplit && params.dim === 2;
+    if(CB.split !== (showBtn ? lySplit : null)){
+      CB.split = showBtn ? lySplit : null;
+      $('bSplit').hidden = !showBtn;
+      $('bSplit').textContent = lySplit ? 'grey λ<0' : 'standard';
+      $('bSplit').classList.toggle('on', lySplit);
+    }
+    $('cbTop').classList.toggle('clickable', canSplit);
+    const S = scaleFor(kind), signed = kind !== 'absdx';
+    const lo = sp ? '−' + fmt(qscalesN[kind]) : (signed ? '−' + fmt(S) : '0');
+    const hi = sp ? '+' + fmt(qscalesP[kind]) : ((signed ? '+' : '') + fmt(S));
+    setLab('cbTopMin', 'min', CB.top, lo); setLab('cbTopMax', 'max', CB.top, hi);
+    setLab('cbLyMin',  'min', CB.ly,  lo); setLab('cbLyMax',  'max', CB.ly,  hi);
+    setLab('cbLyLab',  'lab', CB.ly,  kindLabel(kind));
   }
 
   /* ---------------- Lyapunov panel ----------------
@@ -2148,12 +2388,21 @@ function buildSim(P){
   let lyImg = null;
   const LUTD = makeLUT('div');                       // fixed diverging map for δh
   const MARK = '#dc2626';
+  /* the vector plot keeps its full size in both modes; a free run adds the
+     |δh|(t) record as a second plot underneath */
+  const DIVH = 190;                                   // height of the |δh|(t) plot
+  /* 2D: two maps side by side; on a narrow (phone) panel they stack vertically
+     and the panel grows to keep each map large enough to read */
+  const lyStacked = w => w < 480;
+  function vecPlotHeight(w){
+    if(params.dim !== 2) return 150;
+    if(lyStacked(w)){ const side = Math.min(200, w - 34 - 58 - 14); return 2*(side + 26) + 16; }
+    return Math.round(Math.min(260, Math.max(170, w*0.42)));
+  }
   function lyapHeight(){
     const wrap = lc.parentElement;
     const w = wrap.getBoundingClientRect().width || 600;
-    const free = lyMode === 'free';
-    const target = params.dim === 2 ? Math.round(Math.min(260, Math.max(170, w*(free?0.36:0.42))))
-                                    : (free ? 200 : 150);
+    const target = vecPlotHeight(w) + (lyMode === 'free' ? DIVH : 0);
     if(Math.abs((parseFloat(wrap.style.height) || 0) - target) > 0.5) wrap.style.height = target + 'px';
   }
   function drawLyap(){
@@ -2175,14 +2424,18 @@ function buildSim(P){
         return;
       }
       if(ly.mode === 'free'){
-        /* vector on the left, |δh|(t) on the right */
-        const wl = Math.round(w*(params.dim === 2 ? 0.44 : 0.5));
-        ctx.save(); ctx.beginPath(); ctx.rect(0,0,wl,h); ctx.clip();
-        if(params.dim === 1) drawLyap1D(wl, h, ly); else drawLyap2D(wl, h, ly);
+        /* vector plot on top at full width, |δh|(t) underneath */
+        const ht = Math.min(h, vecPlotHeight(w));
+        ctx.save(); ctx.beginPath(); ctx.rect(0,0,w,ht); ctx.clip();
+        if(params.dim === 1) drawLyap1D(w, ht, ly); else drawLyap2D(w, ht, ly);
         ctx.restore();
-        ctx.save(); ctx.translate(wl, 0); ctx.beginPath(); ctx.rect(0,0,w-wl,h); ctx.clip();
-        drawDivergence(w-wl, h, ly);
-        ctx.restore();
+        if(h - ht > 40){
+          ctx.strokeStyle = TH.grid; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(8, ht+0.5); ctx.lineTo(w-8, ht+0.5); ctx.stroke();
+          ctx.save(); ctx.translate(0, ht); ctx.beginPath(); ctx.rect(0,0,w,h-ht); ctx.clip();
+          drawDivergence(w, h-ht, ly);
+          ctx.restore();
+        }
       } else if(params.dim === 1) drawLyap1D(w, h, ly); else drawLyap2D(w, h, ly);
     } finally { ctx = keep; }
   }
@@ -2240,7 +2493,10 @@ function buildSim(P){
     }
   }
   function drawLyap1D(w, h, ly){
-    const x0=46, y0=10, x1=w-14, y1=h-28, pw=x1-x0, ph=y1-y0, n=sim.physNx, ym=y0+ph/2;
+    /* x axis aligned with the display above: same canvas width, same extent */
+    const same = Math.abs(mainXr.w - w) < 2 && mainXr.x1 - mainXr.x0 > 40;
+    const x0 = same ? Math.round(mainXr.x0) : 46, x1 = same ? Math.round(mainXr.x1) : w-14;
+    const y0=10, y1=h-28, pw=x1-x0, ph=y1-y0, n=sim.physNx, ym=y0+ph/2;
     const X = i => x0 + pw*i/(n-1), Y = v => ym - 0.44*ph*v;
     ctx.strokeStyle = TH.grid; ctx.lineWidth = 1;
     for(const v of [-1, 1]){ ctx.beginPath(); ctx.moveTo(x0, Y(v)); ctx.lineTo(x1, Y(v)); ctx.stroke(); }
@@ -2257,11 +2513,35 @@ function buildSim(P){
     ctx.stroke(); ctx.globalAlpha = 1;
     /* the Lyapunov vector */
     const V = ly.vec;
+    const linked = isLyKind(qkind);                   // main display coloured by λ(x)?
     ctx.beginPath(); ctx.moveTo(X(0), Y(V[0]));
     for(let i=1;i<n;i++) ctx.lineTo(X(i), Y(V[i]));
-    ctx.strokeStyle = TH.curve; ctx.lineWidth = 1.8; ctx.lineJoin = 'round'; ctx.stroke();
     ctx.lineTo(X(n-1), ym); ctx.lineTo(X(0), ym); ctx.closePath();
     ctx.fillStyle = TH.fill; ctx.fill();
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    let Sq = 0;
+    if(linked){
+      /* every point of δh(x) gets the colour the main display gives the same x,
+         so features can be identified between the two figures */
+      ensureScale(qkind); Sq = scaleFor(qkind);
+      const q = getQ(qkind);
+      ctx.lineWidth = 2.4;
+      let ci = -1, open = false;
+      for(let i=0;i<n-1;i++){
+        const c = cidx(qkind, (q[i]+q[i+1])/2, Sq);
+        if(c !== ci){
+          if(open) ctx.stroke();
+          ci = c; ctx.strokeStyle = CSS[c];
+          ctx.beginPath(); ctx.moveTo(X(i), Y(V[i])); open = true;
+        }
+        ctx.lineTo(X(i+1), Y(V[i+1]));
+      }
+      if(open) ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.moveTo(X(0), Y(V[0]));
+      for(let i=1;i<n;i++) ctx.lineTo(X(i), Y(V[i]));
+      ctx.strokeStyle = TH.curve; ctx.lineWidth = 1.8; ctx.stroke();
+    }
     /* most unstable node */
     const nd = ly.node, mx = X(nd), my = Y(V[nd]);
     ctx.setLineDash([3,3]); ctx.strokeStyle = MARK; ctx.lineWidth = 1;
@@ -2270,49 +2550,149 @@ function buildSim(P){
     ctx.restore();
     ctx.fillStyle = TH.label; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
     ctx.fillText(w < 520 ? 'δh / max|δh|' : 'δh(x) / max|δh|   —   grey: h − ⟨h⟩, for orientation', x0+5, y0+2);
+    if(linked){
+      /* the colour scale of the upper display, with its extreme values, in the
+         lower right corner: the key that links the two figures */
+      const cbw = 8, cbh = Math.min(ph - 30, 64), lab = kindLabel(qkind);
+      const sp = splitOn(qkind);
+      const tx = '+' + fmt(sp ? qscalesP[qkind] : Sq), tn = '−' + fmt(sp ? qscalesN[qkind] : Sq);
+      ctx.font = '10.5px system-ui,sans-serif';
+      const tw = Math.max(ctx.measureText(tx).width, ctx.measureText(tn).width, ctx.measureText(lab).width);
+      const bw = cbw + 8 + tw + 10, bh = cbh + 26;
+      const bx = x1 - bw - 4, by = y1 - bh - 4;
+      ctx.fillStyle = darkBG ? 'rgba(11,13,19,.8)' : 'rgba(255,255,255,.82)';
+      ctx.fillRect(bx, by, bw, bh);
+      ctx.strokeStyle = TH.frame; ctx.lineWidth = 1; ctx.strokeRect(bx+0.5, by+0.5, bw, bh);
+      const cx0 = bx + 6, cy0 = by + 6;
+      for(let k=0;k<cbh;k++){ ctx.fillStyle = CSS[barIdx(qkind, 1 - k/(cbh-1))]; ctx.fillRect(cx0, cy0+k, cbw, 1.5); }
+      ctx.strokeRect(cx0+0.5, cy0+0.5, cbw, cbh);
+      ctx.fillStyle = TH.cbtext; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(tx, cx0+cbw+5, cy0+8);
+      ctx.fillText('0', cx0+cbw+5, cy0+cbh/2+3);
+      ctx.fillText(tn, cx0+cbw+5, cy0+cbh);
+      ctx.textAlign = 'center';
+      ctx.fillText(lab, bx + bw/2, by + bh - 5);
+    }
   }
+  /* second offscreen field for the signed-λ map */
+  const lyFld2 = document.createElement('canvas'), lyFld2Ctx = lyFld2.getContext('2d');
+  let lyImg2 = null, lamBuf = null;
   function drawLyap2D(w, h, ly){
     const n = sim.physNx, nx = sim.nx;
     if(lyFld.width !== n){ lyFld.width = n; lyFld.height = n; lyImg = lyFldCtx.createImageData(n, n); }
+    if(lyFld2.width !== n){ lyFld2.width = n; lyFld2.height = n; lyImg2 = lyFld2Ctx.createImageData(n, n); }
+    /* ---- left map: the vector δh/max|δh|, or λ(x,y) in the display's colours ---- */
     const d = lyImg.data, V = ly.vec;
+    const linked = isLyKind(qkind);                   // main display coloured by λ(x,y)?
+    let Sq = 0, q = null, LT = LUTD;
+    if(linked){ ensureScale(qkind); Sq = scaleFor(qkind); q = getQ(qkind); LT = LUT; }
+    const iSq = linked ? 1/Sq : 0;
     for(let j=0;j<n;j++){
       const row = j*nx, orow = j*n*4;
       for(let i=0;i<n;i++){
-        const c = 3*lutIdx((V[row+i]+1)*0.5), o = orow + i*4;
-        d[o]=LUTD[c]; d[o+1]=LUTD[c+1]; d[o+2]=LUTD[c+2]; d[o+3]=255;
+        const c = 3*(linked ? cidx(qkind, q[row+i], Sq) : lutIdx((V[row+i]+1)*0.5)), o = orow + i*4;
+        d[o]=LT[c]; d[o+1]=LT[c+1]; d[o+2]=LT[c+2]; d[o+3]=255;
       }
     }
     lyFldCtx.putImageData(lyImg, 0, 0);
-    const y0=8, y1=h-22, x0=34, availW = w-x0-14;
-    const side = Math.min(y1-y0, availW);
-    const px = x0 + Math.max(0,(availW-side)/2), py = y0 + (y1-y0-side)/2;
-    ctx.imageSmoothingEnabled = true;
-    ctx.save(); ctx.translate(px, py+side); ctx.scale(1,-1);
-    ctx.drawImage(lyFld, 0, 0, side, side); ctx.restore();
-    ctx.strokeStyle = TH.frame; ctx.lineWidth = 1; ctx.strokeRect(px+0.5, py+0.5, side, side);
-    axisFont(); ctx.fillStyle = TH.label;
-    ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillText('0', px+4, py+side+5); ctx.fillText(fmt(params.L*params.dx), px+side-6, py+side+5);
-    ctx.fillText('x', px+side/2, py+side+5);
-    ctx.textAlign='right'; ctx.textBaseline='middle';
-    ctx.fillText('0', px-5, py+side-6); ctx.fillText(fmt(params.L*params.dx), px-5, py+8);
-    ctx.save(); ctx.translate(px-20, py+side/2); ctx.rotate(-Math.PI/2);
-    ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.fillText('y', 0, 0); ctx.restore();
-    /* most unstable node: a ring readable on both ends of the colour map */
-    const i = ly.node % nx, j = (ly.node - i)/nx;
-    const mx = px + (i+0.5)/n*side, my = py + side - (j+0.5)/n*side;
-    ctx.beginPath(); ctx.arc(mx, my, 8, 0, 2*Math.PI);
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5; ctx.stroke();
-    ctx.strokeStyle = MARK; ctx.lineWidth = 1.8; ctx.stroke();
-    ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillStyle = TH.label;
-    ctx.fillText('δh(x,y) / max|δh|', px+side+8, py);
-    /* tiny fixed colour bar */
-    const cbx = px+side+8, cbh = Math.min(90, side-40);
-    if(w - cbx > 40){
-      for(let k=0;k<cbh;k++){ const c = 3*lutIdx(1-k/(cbh-1)); ctx.fillStyle = 'rgb('+LUTD[c]+','+LUTD[c+1]+','+LUTD[c+2]+')'; ctx.fillRect(cbx, py+18+k, 8, 1.5); }
-      ctx.fillStyle = TH.label; ctx.textBaseline='alphabetic';
-      ctx.fillText('+1', cbx+12, py+26); ctx.fillText('−1', cbx+12, py+18+cbh);
+    /* ---- right map: λ(x,y) split by sign — the display's colours (upper half
+       of the map) for λ > 0, grey (zero) to black (most negative) for λ < 0 ---- */
+    if(!lamBuf || lamBuf.length !== sim.M) lamBuf = new Float64Array(sim.M);
+    sim.lyapDiv(lamBuf, 1); const lam = lamBuf;
+    let lmax = 0, lmin = 0;
+    for(let j=0;j<n;j++){ const row=j*nx; for(let i=0;i<n;i++){ const v=lam[row+i]; if(v>lmax) lmax=v; else if(v<lmin) lmin=v; } }
+    lmax = niceCeil(lmax); lmin = -niceCeil(-lmin);   // quantized: no breathing
+    const d2 = lyImg2.data, ipos = lmax > 0 ? 1/lmax : 0, ineg = lmin < 0 ? 1/lmin : 0;
+    for(let j=0;j<n;j++){
+      const row = j*nx, orow = j*n*4;
+      for(let i=0;i<n;i++){
+        const v = lam[row+i], o = orow + i*4;
+        if(v > 0){
+          const c = 3*lutIdx(0.5 + 0.5*clamp01(v*ipos));
+          d2[o]=LUT[c]; d2[o+1]=LUT[c+1]; d2[o+2]=LUT[c+2];
+        } else {
+          const g = Math.round(G0*(1 - clamp01(v*ineg)));
+          d2[o]=g; d2[o+1]=g; d2[o+2]=g;
+        }
+        d2[o+3]=255;
+      }
     }
+    lyFld2Ctx.putImageData(lyImg2, 0, 0);
+
+    /* ---- layout: two squares side by side, each with a key to its right ---- */
+    const y0=8, y1=h-22, x0=34, keyW = 58, gap = 14, stacked = lyStacked(w);
+    let side, pxL, pxR, pyL, pyR;
+    if(stacked){
+      side = Math.max(40, Math.min(w - x0 - keyW - 14, (h - 16)/2 - 26));
+      pxL = pxR = x0; pyL = y0; pyR = y0 + side + 26;
+    } else {
+      const availW = w - x0 - 2*keyW - gap;
+      side = Math.max(40, Math.min(y1-y0, availW/2));
+      const total = 2*side + 2*keyW + gap;
+      pxL = x0 + Math.max(0, (w - x0 - total)/2); pyL = pyR = y0 + (y1-y0-side)/2;
+      pxR = pxL + side + keyW + gap;
+    }
+    ctx.imageSmoothingEnabled = true;
+    const Lbox = fmt(params.L*params.dx);
+    const nodeI = ly.node % nx, nodeJ = (ly.node - nodeI)/nx;
+    function square(px, py, fld, yAxis){
+      ctx.save(); ctx.translate(px, py+side); ctx.scale(1,-1);
+      ctx.drawImage(fld, 0, 0, side, side); ctx.restore();
+      ctx.strokeStyle = TH.frame; ctx.lineWidth = 1; ctx.strokeRect(px+0.5, py+0.5, side, side);
+      axisFont(); ctx.fillStyle = TH.label;
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText('0', px+4, py+side+5); ctx.fillText(Lbox, px+side-6, py+side+5);
+      ctx.fillText('x', px+side/2, py+side+5);
+      if(yAxis){
+        ctx.textAlign='right'; ctx.textBaseline='middle';
+        ctx.fillText('0', px-5, py+side-6); ctx.fillText(Lbox, px-5, py+8);
+        ctx.save(); ctx.translate(px-20, py+side/2); ctx.rotate(-Math.PI/2);
+        ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.fillText('y', 0, 0); ctx.restore();
+      }
+      /* most unstable node: a ring readable on both ends of the colour map */
+      const mx = px + (nodeI+0.5)/n*side, my = py + side - (nodeJ+0.5)/n*side;
+      ctx.beginPath(); ctx.arc(mx, my, 8, 0, 2*Math.PI);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 3.5; ctx.stroke();
+      ctx.strokeStyle = MARK; ctx.lineWidth = 1.8; ctx.stroke();
+    }
+    /* a vertical key: colour function col(t), t = 1 top … 0 bottom */
+    function key(x, y, hgt, col){
+      for(let k=0;k<hgt;k++){ ctx.fillStyle = col(1 - k/(hgt-1)); ctx.fillRect(x, y+k, 8, 1.5); }
+      ctx.strokeStyle = TH.frame; ctx.lineWidth = 1; ctx.strokeRect(x+0.5, y+0.5, 8, hgt);
+    }
+    /* left / upper square */
+    let py = pyL;
+    square(pxL, py, lyFld, true);
+    ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillStyle = TH.label;
+    const kx = pxL + side + 8;
+    /* the caption must fit in the key column beside the square */
+    const room = stacked ? w - kx - 4 : keyW + gap - 6;
+    const longL = linked ? kindLabel(qkind) + ', as above' : 'δh(x,y) / max|δh|';
+    const shortL = linked ? kindLabel(qkind) : 'δh/max|δh|';
+    ctx.fillText(ctx.measureText(longL).width <= room ? longL : shortL, kx, py);
+    const cbh = Math.max(30, Math.min(90, side-40));
+    const spl = splitOn(qkind);
+    key(kx, py+18, cbh, t => { const c = 3*(linked ? barIdx(qkind, t) : lutIdx(t)); return 'rgb('+LT[c]+','+LT[c+1]+','+LT[c+2]+')'; });
+    ctx.fillStyle = TH.label; ctx.textBaseline='alphabetic';
+    ctx.fillText(linked ? '+'+fmt(spl ? qscalesP[qkind] : Sq) : '+1', kx+12, py+26);
+    ctx.fillText('0', kx+12, py+18+cbh/2+3);
+    ctx.fillText(linked ? '−'+fmt(spl ? qscalesN[qkind] : Sq) : '−1', kx+12, py+18+cbh);
+    /* right / lower square */
+    py = pyR;
+    square(pxR, py, lyFld2, stacked);
+    const kx2 = pxR + side + 8;
+    ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillStyle = TH.label;
+    ctx.fillText('λ(x,y)', kx2, py);
+    ctx.fillText('Colour λ>0,', kx2, py+13);
+    ctx.fillText('grey λ<0', kx2, py+26);
+    const kh = Math.max(24, Math.min(50, (side-70)/2));
+    const ky = py + 44;
+    key(kx2, ky, kh, t => { const c = 3*lutIdx(0.5 + 0.5*t); return 'rgb('+LUT[c]+','+LUT[c+1]+','+LUT[c+2]+')'; });
+    key(kx2, ky+kh, kh, t => { const g = Math.round(G0*t); return 'rgb('+g+','+g+','+g+')'; });
+    ctx.fillStyle = TH.label; ctx.textBaseline='alphabetic';
+    ctx.fillText('+'+fmt(lmax), kx2+12, ky+8);
+    ctx.fillText('0', kx2+12, ky+kh+3);
+    ctx.fillText('−'+fmt(-lmin), kx2+12, ky+2*kh);
   }
 
   /* ---------------- PNG export ----------------
@@ -2536,6 +2916,7 @@ function buildSim(P){
     dm.value = modeSel[params.dim];
     const qsel = $('qty');
     qsel.querySelector('option[value="plain"]').hidden = is2;
+    $('lyapPanel').classList.toggle('two', is2);      // wider field for the (x, y) node
     qsel.querySelector('option[value="dx"]').textContent    = is2?'∂h/∂x':'dh/dx';
     qsel.querySelector('option[value="absdx"]').textContent = is2?'|∇h|':'|dh/dx|';
     qsel.querySelector('option[value="lap"]').textContent   = is2?'∇²h':'d²h/dx²';
@@ -2616,6 +2997,7 @@ function buildSim(P){
     if(b > 3.5) return params.dim === 2 ? 0.01 : 0.005;   // a 2D step costs L× more
     if(b > 2)   return 0.01;
     if(b > 0)   return 0.02;
+    if(Math.abs(params.alpha) > 2) return 0.05;            // steep facets at large |α|
     return params.order === 6 ? 0.02 : 0.1;
   }
   /* A smaller dt would otherwise make the picture crawl, so the steps per frame
@@ -2642,7 +3024,7 @@ function buildSim(P){
     if(params.dt !== pick){ params.dt = pick; $('selDt').value = ''+pick; sim.setDt(pick); }
     autoSpf();
   }
-  $('rngAlpha').addEventListener('input', e=>{ params.alpha = +e.target.value; applyTerms(); });
+  $('rngAlpha').addEventListener('input', e=>{ params.alpha = +e.target.value; applyTerms(); autoDt(); });
   $('rngBeta').addEventListener('input', e=>{
     const i = Math.max(0, Math.min(BETAV.length-1, +e.target.value|0));
     params.beta = BETAV[i]; applyTerms(); autoDt();
@@ -2721,6 +3103,14 @@ function buildSim(P){
     draw();
   });
   $('bTheme').addEventListener('click', toggleTheme);
+  /* standard ↔ grey λ<0: the button (2D) or a click on the colour bar itself */
+  function toggleSplit(){
+    if(!isLyKind(effKind())) return;
+    lySplit = !lySplit; draw();
+  }
+  $('bSplit').addEventListener('click', toggleSplit);
+  $('cbTop').addEventListener('click', toggleSplit);
+  $('cbTop').title = 'colour scale of the display — click to switch between the standard map and "grey λ<0" when colouring by λ(x)';
 
   $('bRun').addEventListener('click', ()=>{
     if(diverged) return;
@@ -2743,15 +3133,19 @@ function buildSim(P){
     $('rlamWrap').style.display = o ? '' : 'none';
     sim.lyap.on = o;
     if(o){ sim.lyapReset(false); lyapHeight(); } else sim.lyap.ready = false;
+    resetLyScale();
+    /* the two divergence colourings exist only while the twin is integrated */
+    document.querySelectorAll('#qty .lyopt').forEach(op => { op.hidden = !o; });
+    if(!o && isLyKind(qkind)){ qkind = params.dim === 2 ? 'h' : 'plain'; $('qty').value = qkind; }
     updateReadouts(); fitDue = true; draw();
   }
   $('lyapToggle').addEventListener('click', ()=>setLyapOpen(!lyapOpen));
   seg($('segLyMode'), ()=>lyMode, v=>{
     lyMode = v; sim.lyap.mode = v; lyapPanel.classList.toggle('free', v === 'free');
-    sim.lyapReset(false); lyapHeight(); updateReadouts(); draw();
+    sim.lyapReset(false); resetLyScale(); lyapHeight(); updateReadouts(); draw();
   });
-  $('bLyapReset').addEventListener('click', ()=>{ sim.lyapReset(false); updateReadouts(); draw(); });
-  new ResizeObserver(()=>{ if(lyapOpen) drawLyap(); }).observe(lc.parentElement);
+  $('bLyapReset').addEventListener('click', ()=>{ sim.lyapReset(false); resetLyScale(); updateReadouts(); draw(); });
+  new ResizeObserver(()=>{ if(lyapOpen){ lyapHeight(); drawLyap(); } }).observe(lc.parentElement);
 
   window.addEventListener('keydown', e=>{
     const tag = document.activeElement.tagName;
