@@ -64,8 +64,8 @@ const MODELS: Model[] = [
     title: "Talker Listener dynamics",
     description:
       "People networking by talking about each other and themselves.",
-    file: "/models/talker_listener_applet_v54.html",
-    thumbnail: "/thumbnails/talker-listener.png",
+    file: "/models/talker_listener.html",
+    thumbnail: "/thumbnails/talker100.png",
   },
     {
     id: "paradigm-shift",
