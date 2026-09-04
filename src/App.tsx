@@ -56,8 +56,8 @@ const MODELS: Model[] = [
   title: "Bak-Sneppen model of punctuated equilibrium",
   description:
     "Co-evolving fitness landscapes: Change least fit and its neighbors",
-  file: "/models/bak_sneppen_10.html",
-  thumbnail: "/thumbnails/bak-sneppen.png",
+  file: "/models/bak_snep.html",
+  thumbnail: "/thumbnails/bak_sneppen.png",
 },
   {
     id: "talker-listener",
