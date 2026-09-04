@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merging &amp; Creation Networks</title>
+<style>
+  html,body{margin:0;background:#10141c;color:#cfd8e3;
+    font-family:"Segoe UI",Arial,sans-serif}
+  body{overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;min-height:100vh}
+  #modebar{display:flex;align-items:center;gap:10px;padding:5px 6px 2px;flex:0 0 auto}
+  #modebar h1{font-size:14px;margin:0;color:#e8eef6;flex:1;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;cursor:pointer;user-select:none}
+  #modebar h1:hover{color:#8fb6ff}
+  #modebar h1 .tri{display:inline-block;font-size:12px;color:#7f8ea3;width:12px;transition:transform .15s}
+  #modebar h1.open .tri{transform:rotate(90deg)}
+  #introbox{margin:2px 6px 4px;padding:8px 12px;background:#1a2029;border:1px solid #2c3542;
+    border-radius:8px;font-size:12.5px;line-height:1.5;color:#b8c4d3;max-width:1100px}
+  #introbox p{margin:0}
+  #introbox p.refs{margin-top:8px;font-size:11.5px;color:#9fb0c4;line-height:1.45}
+  #introbox p.refs b{color:#dfe7f2}
+  #introbox p.credit{margin-top:8px;font-size:11.5px;color:#7f8ea3;font-style:italic}
+  #introbox i{color:#dfe7f2}
+  .seg{display:flex;border:1px solid #3a4656;border-radius:7px;overflow:hidden;flex:0 0 auto}
+  .seg button{margin:0;width:auto;border:0;border-radius:0;padding:6px 16px;text-align:center;
+    font-weight:600;font-size:12px}
+  .seg button+button{border-left:1px solid #3a4656}
+  #top{display:grid;grid-template-columns:215px 1fr;gap:4px;
+    height:calc(100vh - 44px);padding:2px 4px 0;box-sizing:border-box;flex:0 0 auto}
+  #panel{background:#1a2029;border:1px solid #2c3542;border-radius:8px;
+    padding:10px;overflow-y:auto;box-sizing:border-box}
+  #netbox{position:relative;background:#0b0e14;border:1px solid #2c3542;
+    border-radius:8px;overflow:hidden}
+  #plotbox{background:#0b0e14;border:1px solid #2c3542;border-radius:8px;
+    overflow:hidden;height:280px;margin:4px 4px 4px 223px;box-sizing:border-box;flex:0 0 auto}
+  canvas{display:block}
+  h2{font-size:13px;margin:0 0 2px;color:#e8eef6}
+  #ref{font-size:9.5px;color:#7f8ea3;margin:0 0 6px;line-height:1.4}
+  .sec{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7f8ea3;
+    margin:14px 0 5px;border-bottom:1px solid #2c3542;padding-bottom:3px}
+  label{font-size:12px;display:block;margin:6px 0 2px}
+  input[type=number]{width:64px;background:#0b0e14;color:#e8eef6;border:1px solid #3a4656;
+    border-radius:4px;padding:3px 5px;font-size:13px}
+  input[type=range]{width:100%;margin:2px 0 0}
+  .val{color:#8fb6ff;font-size:11px;float:right}
+  button{display:block;width:100%;margin:5px 0;padding:7px 6px;font-size:11.5px;
+    background:#242d3a;color:#cfd8e3;border:1px solid #3a4656;border-radius:6px;
+    cursor:pointer;text-align:left;line-height:1.3;font-family:"Segoe UI",Arial,sans-serif}
+  button:hover{background:#2d3949}
+  button.active{background:#1f4d8f;border-color:#4d8de0;color:#fff}
+  button.run{background:#1d5c3a;border-color:#2e8a58;text-align:center;font-weight:600}
+  button.run.paused{background:#6e2f2f;border-color:#a04848}
+  button.reset,button.toggle{text-align:center}
+  .row{display:flex;gap:3px}
+  .row button{flex:1;margin:3px 0;padding:6px 0;text-align:center}
+  .stat{font-size:11px;color:#9fb0c4;margin:2px 0}
+  .stat b{color:#e8eef6;font-weight:600}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:-1px;margin-right:2px}
+  /* p control bar, upper right of the main display (directed model only) */
+  #pbar{position:absolute;right:8px;top:8px;z-index:2;width:180px;padding:6px 9px 5px;
+    border-radius:8px;border:1px solid rgba(90,100,115,.55);background:rgba(120,130,145,.16);
+    font-size:11.5px;color:#3d4756;box-sizing:border-box}
+  #pbar span{display:block;margin-bottom:1px}
+  #pbar b{color:#1f4d8f}
+  #pbar input{width:100%;margin:0}
+  body.dark #pbar{color:#c8d2de} body.dark #pbar b{color:#8fb6ff}
+  /* corner buttons on the main display */
+  #corner{position:absolute;left:8px;bottom:8px;display:flex;gap:7px;z-index:2}
+  .cbtn{width:34px;height:34px;margin:0;padding:0;display:flex;align-items:center;justify-content:center;
+    border:1px solid rgba(90,100,115,.55);background:rgba(120,130,145,.14);cursor:pointer}
+  .cbtn:hover{background:rgba(120,130,145,.32)}
+  #btnBW{border-radius:50%}
+  #bwIcon{width:20px;height:20px;border-radius:50%;border:1px solid #666;
+    background:linear-gradient(90deg,#111 50%,#fff 50%)}
+  #btnSq{border-radius:7px;font-size:9px;font-weight:700;letter-spacing:.04em;color:#3d4756;
+    flex-direction:column;line-height:1.05}
+  #btnSq span{display:block;width:14px;height:14px;border:2px solid #3d4756;border-radius:2px;margin-bottom:2px}
+  body.dark #btnSq{color:#c8d2de} body.dark #btnSq span{border-color:#c8d2de}
+  /* explanation pull-down */
+  details{margin-top:16px;border-top:1px solid #2c3542;padding-top:6px}
+  summary{cursor:pointer;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7f8ea3;
+    list-style:none}
+  summary::before{content:"\25B8  ";font-size:10px}
+  details[open] summary::before{content:"\25BE  "}
+  .ex{font-size:11.5px;line-height:1.45;color:#b8c4d3;margin-top:6px}
+  .ex p{margin:0 0 8px}
+  .ex b{color:#e8eef6}
+  .ex i{color:#dfe7f2}
+  .hide{display:none!important}
+  @media (max-width:700px){
+    #modebar{padding:6px 6px 2px}
+    #modebar h1{font-size:13px}
+    .seg button{padding:8px 14px;font-size:13px}
+    #top{display:contents}
+    #netbox{order:1;height:55vh;height:55svh;min-height:280px;margin:4px 4px 0}
+    #plotbox{order:2;margin:4px;height:750px}
+    #panel{order:3;margin:4px;max-height:none;overflow:visible}
+    input[type=number]{font-size:16px}
+    .cbtn{width:40px;height:40px}
+    #pbar{width:160px;font-size:12px}
+    button{padding:9px 8px;font-size:13px}
+  }
+</style>
+</head>
+<body class="dark">
+<div id="modebar">
+  <h1 id="titleBtn" title="Click for an introduction"><span class="tri">&#9656;</span> Merging &amp; Creation networks</h1>
+  <div class="seg">
+    <button id="segU" class="active">Undirected</button>
+    <button id="segD">Directed</button>
+  </div>
+</div>
+<div id="introbox" class="hide">
+  <p>This applet illustrates a dynamic network which naturally evolves to a steady state where
+  nodes of a large variety of sizes appear. In fact, for some <i>k</i> values, and more robustly for
+  the directed network, the resulting network becomes scale free. There exists little evidence
+  for such dynamics actually playing a role in real-world networks, but for the directed network
+  one may imagine the merging events as company mergers, and the links as business connections.
+  The undirected networks, on the other hand, may be seen as simplified models of the merging of
+  magnetic field lines in the solar atmosphere, as envisioned by Hughes et al. (2003), ref. 4.
+  The variations with <i>p</i> away from 0.5 are taken from a preprint by Riz Noronha and Kim
+  Sneppen (ref. 5).</p>
+  <p class="refs"><b>References</b><br>
+  1) Kim, B. J., Trusina, A., Minnhagen, P. &amp; Sneppen, K. (2005). Self organized scale-free
+  networks from merging and regeneration. <i>Eur. Phys. J. B</i> <b>43</b>(3), 369&ndash;372.<br>
+  2) Minnhagen, P., Rosvall, M., Sneppen, K. &amp; Trusina, A. (2004). Self-organization of
+  structures and networks from merging and small-scale fluctuations. <i>Physica A</i> <b>340</b>(4), 725&ndash;732.<br>
+  3) Sneppen, K., Rosvall, M., Trusina, A. &amp; Minnhagen, P. (2004). A simple model for
+  self-organization of bipartite networks. <i>EPL (Europhysics Letters)</i> <b>67</b>(3), 349&ndash;354.<br>
+  4) Hughes, D., Paczuski, M., Dendy, R. O., Helander, P. &amp; McClements, K. G. (2003). Solar
+  flares as cascades of reconnecting magnetic loops. <i>Phys. Rev. Lett.</i> <b>90</b>(13), 131101.<br>
+  5) Noronha, R. &amp; Sneppen, K. Preprint (merging of directed networks with same-sign
+  probability <i>p</i>).</p>
+  <p class="credit">This applet was made by Kim Sneppen, September 2026.</p>
+</div>
+<div id="top">
+  <div id="panel">
+    <h2 id="title">Merging &amp; Creation</h2>
+    <div id="ref">(B.J. Kim, A. Trusina, P. Minnhagen,<br>
+      K. Sneppen, <i>Self organized scale-free networks from merging and regeneration</i>,
+      Eur. Phys. J. B <b>43</b>, 369 (2005))</div>
+    <div class="sec">Parameters</div>
+    <label>Nodes N <input id="inN" type="number" min="10" max="2000" value="800"></label>
+    <label>New links k <input id="inK" type="number" min="0.5" max="10" step="0.1" value="4"></label>
+    <button class="reset" id="btnReset">Reseed (Erd&#337;s&ndash;R&eacute;nyi)</button>
+
+    <div class="sec">Model</div>
+    <div id="modesU">
+      <button class="mode active" id="m0">Neighbor merging,<br>random creation</button>
+      <button class="mode" id="m1">Foreign merging,<br>random creation</button>
+      <button class="mode" id="m2">Neighbor merging,<br>weighted creation</button>
+    </div>
+    <div id="modesD" class="hide">
+      <button class="mode active" id="d0">Random partner<br>(sign chosen with prob. p)</button>
+      <button class="mode" id="d1">Opposite sign along an arrow<br>(same sign: random node)</button>
+    </div>
+
+    <div class="sec">Run</div>
+    <button class="run" id="btnRun">&#9646;&#9646; Pause</button>
+    <label>Speed <span class="val" id="vSpeed"></span>
+      <input id="sSpeed" type="range" min="0" max="100" step="0.5" value="72.5"></label>
+
+    <div class="sec">Node size</div>
+    <div class="row" id="sizeRow">
+      <button data-s="0.5">&frac12;</button>
+      <button data-s="1" class="active">1</button>
+      <button data-s="2">2</button>
+      <button data-s="3">3</button>
+      <button data-s="25">25</button>
+    </div>
+    <button class="toggle" id="btnVol">Volume &prop; k</button>
+
+    <div class="sec">Layout</div>
+    <label>Repulsion k&#8321;k&#8322;/d&sup3; <span class="val" id="vRep"></span>
+      <input id="sRep" type="range" min="0" max="100" value="35"></label>
+    <label>Angle widening <span class="val" id="vAng"></span>
+      <input id="sAng" type="range" min="0" max="100" value="40"></label>
+    <label>Damping <span class="val" id="vDamp"></span>
+      <input id="sDamp" type="range" min="0" max="100" value="60"></label>
+    <label>Rotation <span class="val" id="vRot"></span>
+      <input id="sRot" type="range" min="0" max="100" value="7"></label>
+
+    <div class="sec">Appearance</div>
+    <label>Link width <span class="val" id="vLw"></span>
+      <input id="sLw" type="range" min="5" max="200" value="15"></label>
+    <div class="row hide" id="wscRow">
+      <button data-p="0.5" class="active">Width &prop; &radic;w</button>
+      <button data-p="0.25">Width &prop; &#8732;w</button>
+    </div>
+    <label>Opacity <span class="val" id="vTr"></span>
+      <input id="sTr" type="range" min="0" max="100" value="50"></label>
+    <button class="toggle active" id="btnFlash">Merge flash: ON</button>
+    <label>Flash time <span class="val" id="vFl"></span>
+      <input id="sFl" type="range" min="0.2" max="4" step="0.1" value="0.6"></label>
+    <button class="toggle" id="btnGlow">Afterglow: OFF</button>
+
+    <div class="sec">Export</div>
+    <button class="toggle" id="btnPngNet">Save network .png (as shown)</button>
+    <button class="toggle" id="btnPngPlot">Save histogram .png</button>
+    <button class="toggle" id="btnPngBoth">Save both .png</button>
+
+    <div class="sec">Status</div>
+    <div class="stat">step: <b id="stT">0</b></div>
+    <div class="stat">nodes: <b id="stN">0</b>&nbsp; links: <b id="stE">0</b></div>
+    <div class="stat hide" id="stDirRow">
+      <span class="dot" style="background:#4f92ea"></span>donors: <b id="stD">0</b>&nbsp;
+      <span class="dot" style="background:#e8573d"></span>acceptors: <b id="stA">0</b><br>
+      arrow units: <b id="stU">0</b>&nbsp; w<sub>max</sub>: <b id="stWm">0</b></div>
+    <div class="stat">&lt;k&gt;: <b id="stAvg">0</b>&nbsp; k<sub>max</sub>: <b id="stMax">0</b></div>
+    <div class="stat">fit: <b id="stFit">&ndash;</b></div>
+
+    <details id="expl">
+      <summary>About the models</summary>
+      <div class="ex">
+        <p><b>Undirected merging &amp; creation.</b> At every step two nodes are merged into one
+        (a node and one of its neighbors, or two random &ldquo;foreign&rdquo; nodes) and the merged node
+        inherits the union of their links. Then one new node is created with <i>k</i> links to random
+        nodes (or, in the weighted variant, to nodes chosen with probability &prop; degree). Merging
+        makes hubs grow, creation feeds small nodes in; the steady state is a scale-free network
+        with P(k) &prop; k<sup>&minus;&gamma;</sup> (Kim, Trusina, Minnhagen &amp; Sneppen 2005).</p>
+
+        <p><b>Directed donors &amp; acceptors.</b> Every node is either a <i>donor</i> (+, blue), with
+        only outgoing arrows, or an <i>acceptor</i> (&minus;, red), with only incoming arrows. An arrow
+        of thickness <i>w</i> = 1, 2, 3, &hellip; stands for <i>w</i> individual arrows between the same
+        pair. At every step a random node A is merged with a partner B: with probability <i>p</i>
+        (slider in the upper-right corner of the display) B is a random node of the <i>same</i>
+        sign, otherwise a random node of the opposite sign. <i>p</i> = 0.5 corresponds to
+        picking B uniformly among all nodes; <i>p</i> = 1 only pools, <i>p</i> = 0 only rewires.
+        If A and B have the <i>same sign</i>, A+B
+        takes over all their arrows, so arrows to a common neighbor add up and get thicker. If they
+        have <i>opposite signs</i>, the merged node takes the sign of the one with more arrow units
+        (ties at random), and every arrow end of the other sign is rewired, one unit at a time: a
+        random incoming unit C&rarr;A is paired with a random outgoing unit B&rarr;D and replaced by a
+        new arrow C&rarr;D between the former neighbors. Any arrows between A and B themselves are
+        removed. The result is a pure node A+B with |k<sub>A</sub>&minus;k<sub>B</sub>| units and new
+        arrows spread among the old neighbors, which lets thick arrows dissolve into thinner ones.
+        Whenever the number of nodes drops to N&minus;2, two nodes are created: a donor with <i>k</i>
+        outgoing units to random acceptors and an acceptor with <i>k</i> incoming units from random
+        donors. In the second variant the opposite-sign partner is not a random node but a
+        neighbor reached along one of A's arrows (chosen &prop; thickness); same-sign partners
+        are still random nodes.</p>
+
+        <p><b>References.</b><br>
+        1) Kim, B. J., Trusina, A., Minnhagen, P. &amp; Sneppen, K. (2005). Self organized
+        scale-free networks from merging and regeneration. <i>Eur. Phys. J. B</i> <b>43</b>(3), 369&ndash;372.<br>
+        2) Minnhagen, P., Rosvall, M., Sneppen, K. &amp; Trusina, A. (2004). Self-organization of
+        structures and networks from merging and small-scale fluctuations. <i>Physica A</i>
+        <b>340</b>(4), 725&ndash;732.<br>
+        3) Sneppen, K., Rosvall, M., Trusina, A. &amp; Minnhagen, P. (2004). A simple model for
+        self-organization of bipartite networks. <i>EPL (Europhysics Letters)</i> <b>67</b>(3), 349&ndash;354.<br>
+        4) Hughes, D., Paczuski, M., Dendy, R. O., Helander, P. &amp; McClements, K. G. (2003). Solar
+        flares as cascades of reconnecting magnetic loops. <i>Phys. Rev. Lett.</i> <b>90</b>(13), 131101.<br>
+        5) Noronha, R. &amp; Sneppen, K. Preprint (merging of directed networks with same-sign
+        probability <i>p</i>).</p>
+
+        <p><b>Parameters.</b> <i>N</i> is the number of nodes at seeding, <i>k</i> the number of
+        links given to each new node (fractional <i>k</i> is rounded stochastically).
+        <i>Speed</i> is the number of merge steps per second. Node volume is &prop; degree
+        (or &radic;degree). Layout: nodes repel as k<sub>1</sub>k<sub>2</sub>/d<sup>3</sup>, links act as
+        springs, and neighbors of the same hub repel each other (angle widening).</p>
+
+        <p><b>Plots.</b> Left: current degree distribution (circles, blue donors / red acceptors in the
+        directed model, yellow diamonds for the distribution of arrow thickness w), the
+        time-averaged P(k) over the last 3/4 of the run (orange) and a power-law fit
+        for 5 &le; k &lt; k<sub>max</sub>/10. Middle: distribution of merge <i>event sizes</i>
+        s, the number of link ends that disappear when two nodes merge (2 per lost link; in the
+        directed model a thick arrow counts as w unit arrows), accumulated over all merges
+        since the last reseed, with a power-law fit for 10 &le; s &lt; s<sub>max</sub>/10.
+        Fits never use points below k = 5 or s = 10. Right: the three largest degrees versus
+        time (click the button on the plot to switch the window).</p>
+
+        <p><b>Display.</b> Each merge sets off a flash of D small stars around the merged
+        node, where D is the number of link ends that dissolved; the stars fill a sphere whose
+        volume is proportional to D, fly outward and fade over the &ldquo;Flash time&rdquo; set
+        in the panel (yellow on a white background, white on black). Pause also freezes the rotation. In the directed model the arrows are
+        shaded cylinders running from the donor surface to a cone whose tip touches the
+        acceptor surface; their width grows as &radic;w or &#8732;w (button under &ldquo;Link
+        width&rdquo;), capped at the diameter of the thinner end node. The two buttons in the
+        lower-left corner of the display toggle a black/white background and save a square .png
+        that just contains the whole network.</p>
+      </div>
+    </details>
+  </div>
+  <div id="netbox">
+    <canvas id="net"></canvas>
+    <div id="pbar" class="hide" title="Probability that the merge partner has the same sign">
+      <span>p(same sign) = <b id="vP">0.50</b></span>
+      <input id="sP" type="range" min="0" max="1" step="0.05" value="0.5">
+    </div>
+    <div id="corner">
+      <button class="cbtn" id="btnBW" title="Toggle black / white background"><div id="bwIcon"></div></button>
+      <button class="cbtn" id="btnSq" title="Save square .png of the whole network"><span></span>PNG</button>
+    </div>
+  </div>
+</div>
+<div id="plotbox"><canvas id="plot"></canvas></div>
+
+<script>
+"use strict";
+/* ================= model =================
+   Undirected: Kim, Trusina, Minnhagen, Sneppen, Eur. Phys. J. B 43, 369 (2005)
+   Directed:   donor (+) / acceptor (-) nodes, multi-arrows rewired on merging.
+   Storage: every node has nb: Map(neighborId -> weight) and deg = sum of weights.
+   Undirected: all weights 1.  Directed: donors store their out-arrows, acceptors
+   their in-arrows (the same arrow is stored at both ends). */
+
+let N = 800, K = 4;
+let directed = true;          // default view: directed model
+let umode = 0;                // 0 nbr+random, 1 foreign+random, 2 nbr+weighted
+let dmode = 0;                // 0 random partner, 1 along an arrow
+let pSame = 0.5;              // directed: probability that the merge partner has the same sign
+let nodes = [];               // {id,x,y,z,sign,nb:Map,deg}
+let nodeById = new Map();
+let nextId = 0;
+let step = 0;
+let running = true;
+let glows = [];               // red afterglows {x,y,z,r,a}
+let glowOn = false;
+
+/* time-averaged distribution over last 3/4: cumulative histogram + checkpoints */
+const HMAX = 4096;
+let cumHist = new Float64Array(HMAX);
+let snaps = [], nextSnap = 25;
+const SNAP = 25;
+
+/* traces of the 3 largest degrees vs time */
+let trAll1=[], trAll2=[], trAll3=[], trStride=1;
+let trA1=0, trA2=0, trA3=0, trAccN=0;
+const TRLIMIT=4000;
+let ringSize=16000, ring1, ring2, ring3, ringPos=0, ringLen=0;
+let traceMode=0;              // 0: all time, 1: last 20*N steps
+let traceBtnRect=[0,0,0,0];
+
+function rnd(n){ return Math.floor(Math.random()*n); }
+/* fractional k: floor(k) links plus one more with probability frac(k) */
+function drawK(){
+  const f=Math.floor(K);
+  return f + (Math.random()<K-f ? 1 : 0);
+}
+
+function makeNode(x,y,z,sign){
+  const nd = {id:nextId++, x:x, y:y, z:z, sign:sign||0, nb:new Map(), deg:0};
+  nodes.push(nd); nodeById.set(nd.id, nd);
+  return nd;
+}
+function removeNode(t){
+  nodeById.delete(t.id);
+  nodes.splice(nodes.indexOf(t),1);
+}
+/* add / remove w units between a and b (stored symmetrically) */
+let totUnits=0;               // total number of unit links / arrows in the network
+function addW(a,b,w){
+  if(a===b || w<=0) return;
+  a.nb.set(b.id,(a.nb.get(b.id)||0)+w);
+  b.nb.set(a.id,(b.nb.get(a.id)||0)+w);
+  a.deg+=w; b.deg+=w; totUnits+=w;
+}
+function subW(a,b,w){
+  const c=a.nb.get(b.id)||0, r=Math.min(w,c);
+  if(r<=0) return;
+  if(c-r>0){ a.nb.set(b.id,c-r); b.nb.set(a.id,c-r); }
+  else{ a.nb.delete(b.id); b.nb.delete(a.id); }
+  a.deg-=r; b.deg-=r; totUnits-=r;
+}
+/* merge events: size s = number of link ends (counted with weights) that disappear
+   in one merge = 2 * (unit links before - unit links after) */
+let evH={}, evN=0, evMax=1;
+function link(a,b){ if(a!==b && !a.nb.has(b.id)) addW(a,b,1); }   // simple undirected link
+
+function seed(){
+  nodes = []; nodeById.clear(); nextId = 0; step = 0; glows = []; totUnits=0;
+  evH={}; evN=0; evMax=1; nextSnap=SNAP; stars=[];
+  cumHist = new Float64Array(HMAX); snaps = [];
+  trAll1=[]; trAll2=[]; trAll3=[]; trStride=1; trA1=trA2=trA3=0; trAccN=0;
+  ringSize=Math.max(100, 20*N);               // "last 20*N steps" window
+  ring1=new Float32Array(ringSize); ring2=new Float32Array(ringSize); ring3=new Float32Array(ringSize);
+  ringPos=0; ringLen=0;
+  const R = 240;
+  for(let i=0;i<N;i++){                       // random points in a ball
+    let x,y,z;
+    do{ x=(2*Math.random()-1); y=(2*Math.random()-1); z=(2*Math.random()-1); }
+    while(x*x+y*y+z*z>1);
+    makeNode(R*x, R*y, R*z, directed ? (i%2 ? -1 : 1) : 0);
+  }
+  if(!directed){
+    const p = K/(N-1);                        // ER with <k> = K
+    for(let i=0;i<N;i++) for(let j=i+1;j<N;j++)
+      if(Math.random()<p) link(nodes[i],nodes[j]);
+  }else{
+    const D=nodes.filter(n=>n.sign>0), A=nodes.filter(n=>n.sign<0);
+    const p = K/Math.max(1,A.length);         // each donor expects K arrows
+    for(const d of D) for(const a of A) if(Math.random()<p) addW(d,a,1);
+  }
+}
+
+function randomNode(){ return nodes[rnd(nodes.length)]; }
+function randomNodeWithLink(){
+  for(let t=0;t<200;t++){ const n=randomNode(); if(n.deg>0) return n; }
+  return null;
+}
+function randomNodeOfSign(s,not){
+  for(let t=0;t<300;t++){ const n=randomNode(); if(n.sign===s && n!==not) return n; }
+  const l=nodes.filter(n=>n.sign===s && n!==not);
+  return l.length ? l[rnd(l.length)] : null;
+}
+/* merge partner of a in the directed model: same sign with probability pSame,
+   otherwise opposite sign (random node, or along an arrow in mode 1) */
+function pickPartner(a){
+  if(Math.random()<pSame) return randomNodeOfSign(a.sign,a);
+  if(dmode===1 && a.deg>0) return pickWeighted(a);
+  return randomNodeOfSign(-a.sign,a);
+}
+/* neighbor of n chosen with probability proportional to arrow weight */
+function pickWeighted(n){
+  let r=Math.random()*n.deg, last=null;
+  for(const [id,w] of n.nb){ last=id; r-=w; if(r<0) return nodeById.get(id); }
+  return last===null ? null : nodeById.get(last);
+}
+function edgeList(){
+  const E=[];
+  for(const n of nodes) for(const id of n.nb.keys()) if(id>n.id) E.push([n,nodeById.get(id)]);
+  return E;
+}
+function glowAt(t){ if(glowOn) glows.push({x:t.x, y:t.y, z:t.z, r:radius(t.deg)+6, a:1}); }
+
+/* ---- undirected merging ---- */
+function mergeU(a,b){
+  let s=a, t=b;
+  if(b.deg>a.deg){ s=b; t=a; }                // survivor = larger degree
+  glowAt(t);
+  for(const id of [...t.nb.keys()]){
+    const u=nodeById.get(id);
+    subW(t,u,1);
+    if(u!==s) link(s,u);
+  }
+  removeNode(t);
+  return s;
+}
+
+/* ---- directed merging with rewiring ---- */
+function mergeD(a,b){
+  if(a.sign===b.sign){                        // same sign: pool all arrows
+    let s=a, t=b;
+    if(b.deg>a.deg){ s=b; t=a; }
+    glowAt(t);
+    for(const [id,w] of [...t.nb]){
+      const u=nodeById.get(id);
+      subW(t,u,w); addW(s,u,w);               // thickness adds up on common neighbors
+    }
+    removeNode(t);
+    return s;
+  }
+  // opposite signs: drop arrows between A and B, decide the sign of A+B
+  const wi=a.nb.get(b.id)||0;
+  if(wi) subW(a,b,wi);
+  let s=a, t=b;                               // s keeps its sign, t's arrow ends are rewired
+  if(b.deg>a.deg || (b.deg===a.deg && Math.random()<0.5)){ s=b; t=a; }
+  glowAt(t);
+  // one unit at a time: an arrow end at t is paired with an arrow beginning at s
+  // (or vice versa) and replaced by an arrow between their far ends
+  while(t.deg>0 && s.deg>0){
+    const u=pickWeighted(t), v=pickWeighted(s);
+    subW(t,u,1); subW(s,v,1);
+    addW(u,v,1);                              // u and v have opposite signs
+  }
+  if(t.deg>0){                                // s ran out first (only after a tie): keep t's sign
+    s.sign=t.sign;
+    for(const [id,w] of [...t.nb]){ const u=nodeById.get(id); subW(t,u,w); addW(s,u,w); }
+  }
+  removeNode(t);
+  return s;
+}
+
+function addNewNodeU(weighted){
+  const kk = Math.min(drawK(), nodes.length);
+  const targets = new Set();
+  if(weighted){
+    const E = edgeList();                     // random link, random end: p ~ degree
+    let tries=0;
+    while(targets.size<kk && tries++<400 && E.length){
+      const e=E[rnd(E.length)];
+      targets.add(Math.random()<0.5 ? e[0] : e[1]);
+    }
+  }
+  while(targets.size<kk) targets.add(randomNode());
+  const nd = makeNode(0,0,0,0);
+  placeNear(nd,[...targets]);
+  for(const t of targets) link(nd,t);
+}
+/* new donor (sign +1) with k outgoing units, or acceptor (-1) with k incoming units */
+function addNewNodeD(sign){
+  const kk = drawK();
+  const targets=[];
+  for(let i=0;i<kk;i++){ const t=randomNodeOfSign(-sign); if(t) targets.push(t); }
+  const nd = makeNode(0,0,0,sign);
+  placeNear(nd,targets);
+  for(const t of targets) addW(nd,t,1);       // repeated target -> thicker arrow
+}
+function placeNear(nd,targets){
+  let cx=0, cy=0, cz=0;
+  if(targets.length){
+    for(const t of targets){ cx+=t.x; cy+=t.y; cz+=t.z; }
+    cx/=targets.length; cy/=targets.length; cz/=targets.length;
+  }
+  nd.x=cx+(Math.random()-0.5)*40; nd.y=cy+(Math.random()-0.5)*40; nd.z=cz+(Math.random()-0.5)*40;
+}
+
+function recordTraces(){
+  let k1=0,k2=0,k3=0;
+  for(const nd of nodes){
+    const d=nd.deg;
+    if(d>=k1){ k3=k2; k2=k1; k1=d; }
+    else if(d>=k2){ k3=k2; k2=d; }
+    else if(d>k3){ k3=d; }
+  }
+  ring1[ringPos]=k1; ring2[ringPos]=k2; ring3[ringPos]=k3;
+  ringPos=(ringPos+1)%ringSize;
+  if(ringLen<ringSize) ringLen++;
+  trA1+=k1; trA2+=k2; trA3+=k3;
+  if(++trAccN>=trStride){
+    trAll1.push(trA1/trAccN); trAll2.push(trA2/trAccN); trAll3.push(trA3/trAccN);
+    trA1=trA2=trA3=0; trAccN=0;
+    if(trAll1.length>=TRLIMIT){                    // decimate, double the stride
+      const m=trAll1.length>>1;
+      for(let i=0;i<m;i++){
+        trAll1[i]=(trAll1[2*i]+trAll1[2*i+1])/2;
+        trAll2[i]=(trAll2[2*i]+trAll2[2*i+1])/2;
+        trAll3[i]=(trAll3[2*i]+trAll3[2*i+1])/2;
+      }
+      trAll1.length=trAll2.length=trAll3.length=m;
+      trStride*=2;
+    }
+  }
+}
+
+function recordEvent(u0,s){
+  const D=2*(u0-totUnits);
+  if(D>0){ evH[D]=(evH[D]||0)+1; evN++; if(D>evMax) evMax=D; if(s) flashSpawn(s,D); }
+}
+function modelStep(){
+  if(nodes.length<3) return;
+  const u0=totUnits;
+  let m=null;
+  if(!directed){
+    if(umode===1){
+      const a=randomNode(); let b=randomNode(), t=0;
+      while(b===a && t++<50) b=randomNode();
+      if(a!==b) m=mergeU(a,b);
+    }else{
+      const a=randomNodeWithLink();
+      if(!a) return;
+      m=mergeU(a, pickWeighted(a));
+    }
+    recordEvent(u0,m);
+    addNewNodeU(umode===2);
+  }else{
+    const a=randomNode(), b=pickPartner(a);
+    if(!b || b===a) return;
+    m=mergeD(a,b);
+    recordEvent(u0,m);
+    if(nodes.length<=N-2){ addNewNodeD(1); addNewNodeD(-1); }
+  }
+  step++;
+  for(const n of nodes){ const d=Math.min(n.deg,HMAX-1); cumHist[d]++; }
+  if(step>=nextSnap){                          // checkpoints for the "last 3/4" average
+    snaps.push({t:step, cum:cumHist.slice()});
+    nextSnap=step+Math.max(SNAP, Math.floor(step/100));   // spacing grows with time ...
+    const t0=step*0.25; let keep=0;                        // ... and older ones are pruned
+    while(keep+1<snaps.length && snaps[keep+1].t<=t0) keep++;
+    if(keep>0) snaps.splice(0,keep);
+  }
+  recordTraces();
+}
+
+/* ============== merge flash: D stars in a sphere of volume ~ D ============== */
+
+let stars=[];                 // {ox,oy,oz, dx,dy,dz, R, t0, life, ph}
+let flashOn=true, flashT=0.6; // lifetime in seconds (slider)
+let tNow=0;
+const STARMAX=5000;
+function flashSpawn(nd,D){
+  if(!flashOn || stars.length>STARMAX) return;
+  const R=7*Math.cbrt(D);     // volume of the flash ~ D
+  const n=Math.min(D,300);
+  for(let i=0;i<n;i++){
+    let x,y,z,r2;
+    do{ x=2*Math.random()-1; y=2*Math.random()-1; z=2*Math.random()-1; r2=x*x+y*y+z*z; }
+    while(r2>1 || r2<1e-4);
+    const r=Math.sqrt(r2);
+    stars.push({ox:nd.x, oy:nd.y, oz:nd.z, dx:x/r, dy:y/r, dz:z/r,
+                R:R*(0.6+0.4*Math.random()), t0:tNow, life:flashT*(0.7+0.6*Math.random()),
+                ph:Math.random()*6.28});
+  }
+}
+function starPath(ctx,x,y,r){
+  const q=0.32*r;
+  ctx.moveTo(x,y-r); ctx.lineTo(x+q,y-q); ctx.lineTo(x+r,y); ctx.lineTo(x+q,y+q);
+  ctx.lineTo(x,y+r); ctx.lineTo(x-q,y+q); ctx.lineTo(x-r,y); ctx.lineTo(x-q,y-q); ctx.closePath();
+}
+
+/* ============== node size ============== */
+
+let sizeMult = 1;
+let volMode = 0;              // 0: volume ~ k (r ~ k^1/3);  1: volume ~ sqrt(k) (r ~ k^1/6)
+function radius(deg){
+  const k=Math.max(deg,1);
+  // directed degrees count arrow units (~2.5x larger): shrink so arrows stay visible
+  return (directed?3.3:4.5)*sizeMult*(volMode ? Math.pow(k,1/6) : Math.cbrt(k));
+}
+
+/* ============== theme ============== */
+
+let lightBg = false;          // default: black background
+function bgArr(){ return lightBg ? [247,248,250] : [11,14,20]; }
+function bgCss(){ return lightBg ? '#f7f8fa' : '#0b0e14'; }
+function linkCol(){
+  if(directed) return lightBg
+    ? {body:'#c9961a', core:'#ffe98a', dark:'#6e5206'}    // gold on white
+    : {body:'#d4b21e', core:'#fff5a8', dark:'#5e4c06'};   // yellow on black
+  return lightBg
+    ? {body:'#a51d1d', core:'#ff8a75', cone:'#c22525'}      // red on white
+    : {body:'#b89f14', core:'#ffef8f', cone:'#e0c928'};     // yellow on black
+}
+function plotTheme(){
+  return lightBg
+    ? {grid:'#c9cfd8', txt:'#556070', fit:'#39424e', cur:'#2f6ad0', acc:'#d4432f', thick:'#b8860b',
+       avg:'#c04818', ev:'#7b3fb5', leg:'#333c48',
+       k1:'#6a7280', k1fill:'rgba(120,128,140,0.18)', k2:'#2f6ad0', k3:'#1f8a4d'}
+    : {grid:'#2c3542', txt:'#7f8ea3', fit:'#dfe7f2', cur:'#6aa7f8', acc:'#ff7b6e', thick:'#f2d43a',
+       avg:'#e08a2e', ev:'#b48cff', leg:'#cfd8e3',
+       k1:'#c8cdd6', k1fill:'rgba(200,205,214,0.20)', k2:'#6aa7f8', k3:'#5fc98a'};
+}
+const FONT='"Segoe UI",Arial,sans-serif';    // same font as control panel
+
+/* ============== 3D layout: overdamped Kamada-Kawai-style relaxation ============== */
+
+const netC = document.getElementById('net'), nctx = netC.getContext('2d');
+const plotC = document.getElementById('plot'), pctx = plotC.getContext('2d');
+let W=800, H=600, PW=800, PH=280, DPR=1;
+
+function resize(){
+  const nb=document.getElementById('netbox'), pb=document.getElementById('plotbox');
+  DPR = window.devicePixelRatio||1;
+  W=nb.clientWidth;  H=nb.clientHeight;
+  PW=pb.clientWidth; PH=pb.clientHeight;
+  netC.width=Math.round(W*DPR);   netC.height=Math.round(H*DPR);
+  netC.style.width=W+'px';        netC.style.height=H+'px';
+  plotC.width=Math.round(PW*DPR); plotC.height=Math.round(PH*DPR);
+  plotC.style.width=PW+'px';      plotC.style.height=PH+'px';
+}
+window.addEventListener('resize', resize);
+
+let repC = 35, angC = 40, speed = 800, rotC = 7, dampC = 60, lwC = 15, trC = 50;
+let wPow = 0.5;               // arrow width ~ w^wPow : 0.5 (sqrt) or 0.25 (4th root)
+
+function relax(){
+  const n = nodes.length; if(!n) return;
+  const fx=new Float64Array(n), fy=new Float64Array(n), fz=new Float64Array(n);
+  const idx = new Map(); nodes.forEach((nd,i)=>idx.set(nd.id,i));
+  const L0 = 46;
+
+  // springs along links
+  for(let i=0;i<n;i++){
+    const a=nodes[i];
+    for(const id of a.nb.keys()){ if(id<a.id) continue;
+      const b=nodeById.get(id), j=idx.get(id);
+      const dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z;
+      const d=Math.hypot(dx,dy,dz)||1e-6;
+      const ideal = L0 + radius(a.deg) + radius(b.deg);
+      const f = 0.06*(d-ideal)/d;
+      fx[i]+=f*dx; fy[i]+=f*dy; fz[i]+=f*dz;
+      fx[j]-=f*dx; fy[j]-=f*dy; fz[j]-=f*dz;
+    }
+  }
+  // node-node repulsion  C * k1*k2 / d^3
+  const C = 12*repC;
+  if(C>0) for(let i=0;i<n;i++){
+    const a=nodes[i], ka=a.deg||0.5;
+    for(let j=i+1;j<n;j++){
+      const b=nodes[j], kb=b.deg||0.5;
+      const dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z;
+      let d2=dx*dx+dy*dy+dz*dz; if(d2<25) d2=25;
+      const d=Math.sqrt(d2);
+      let f = C*ka*kb/(d2*d);
+      if(f>4) f=4;
+      const ux=dx/d, uy=dy/d, uz=dz/d;
+      fx[i]-=f*ux; fy[i]-=f*uy; fz[i]-=f*uz;
+      fx[j]+=f*ux; fy[j]+=f*uy; fz[j]+=f*uz;
+    }
+  }
+  // angle widening: repel neighbors of the same hub from each other
+  if(angC>0){
+    const A = 0.05*angC;
+    for(const h of nodes){
+      const deg=h.nb.size; if(deg<2) continue;
+      const nbs=[...h.nb.keys()];
+      const nPairs = Math.min(deg*(deg-1)/2, 3*deg);   // sample pairs on big hubs
+      for(let s=0;s<nPairs;s++){
+        let ia=rnd(deg), ib=rnd(deg);
+        if(ia===ib) continue;
+        const u=nodeById.get(nbs[ia]), v=nodeById.get(nbs[ib]);
+        const i=idx.get(u.id), j=idx.get(v.id);
+        const dx=v.x-u.x, dy=v.y-u.y, dz=v.z-u.z;
+        const d2=dx*dx+dy*dy+dz*dz+100;
+        let f=A*L0*L0/(d2*Math.sqrt(d2));
+        if(f>1.5) f=1.5;
+        fx[i]-=f*dx; fy[i]-=f*dy; fz[i]-=f*dz;
+        fx[j]+=f*dx; fy[j]+=f*dy; fz[j]+=f*dz;
+      }
+    }
+  }
+  // gentle centering + overdamped move, mobility set by damping slider
+  let cx=0, cy=0, cz=0;
+  for(const nd of nodes){ cx+=nd.x; cy+=nd.y; cz+=nd.z; }
+  cx/=n; cy/=n; cz/=n;
+  const mob = 0.5*Math.max(0.05, 1.05 - dampC/100);   // strongly overdamped, slow
+  for(let i=0;i<n;i++){
+    let mx=fx[i]-0.002*cx, my=fy[i]-0.002*cy, mz=fz[i]-0.002*cz;
+    const m=Math.hypot(mx,my,mz), cap=6;
+    if(m>cap){ const s=cap/m; mx*=s; my*=s; mz*=s; }
+    nodes[i].x+=mob*mx; nodes[i].y+=mob*my; nodes[i].z+=mob*mz;
+  }
+}
+
+/* ============== 3D projection ============== */
+
+let theta=0;                       // slow rotation about vertical axis
+const TILT=0.32, F=1400;           // camera tilt and focal length
+let vs=1;                          // smoothed view scale
+
+function project(x,y,z,ct,st,cp,sp){
+  const xr =  ct*x + st*z;
+  const z1 = -st*x + ct*z;
+  const yr =  cp*y - sp*z1;
+  const zr =  sp*y + cp*z1;        // + : away from viewer
+  const pers = F/(F+Math.max(zr,-0.8*F));
+  return {sx:xr*pers, sy:yr*pers, zr:zr, pers:pers};
+}
+
+/* center of mass of all nodes */
+function getCM(){
+  let x=0,y=0,z=0;
+  const n=nodes.length||1;
+  for(const nd of nodes){ x+=nd.x; y+=nd.y; z+=nd.z; }
+  return [x/n, y/n, z/n];
+}
+
+/* scale that makes the network just fill a w x h frame, CM in the center */
+function viewScale(w,h){
+  if(!nodes.length) return 1;
+  const ct=Math.cos(theta), st=Math.sin(theta);
+  const cp=Math.cos(TILT), sp=Math.sin(TILT);
+  const [cmx,cmy,cmz]=getCM();
+  let mx=1, my=1;
+  for(const nd of nodes){
+    const p=project(nd.x-cmx,nd.y-cmy,nd.z-cmz,ct,st,cp,sp);
+    const r=(radius(nd.deg)+8)*p.pers;
+    mx=Math.max(mx,Math.abs(p.sx)+r);
+    my=Math.max(my,Math.abs(p.sy)+r);
+  }
+  return Math.min(20*Math.max(1,w/800), (w/2-4)/mx, (h/2-4)/my);
+}
+function fitView(hard){
+  if(!nodes.length) return;
+  const s=viewScale(W,H);
+  vs += (hard?1:0.08)*(s-vs);
+}
+/* tight fit: bounding box of the projected network, centered in a w x h frame.
+   Returns scale and the box center (projected units, relative to the CM). */
+function viewFit(w,h){
+  if(!nodes.length) return {s:1,cx:0,cy:0};
+  const ct=Math.cos(theta), st=Math.sin(theta);
+  const cp=Math.cos(TILT), sp=Math.sin(TILT);
+  const [cmx,cmy,cmz]=getCM();
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for(const nd of nodes){
+    const p=project(nd.x-cmx,nd.y-cmy,nd.z-cmz,ct,st,cp,sp);
+    const r=(radius(nd.deg)+2)*p.pers;
+    x0=Math.min(x0,p.sx-r); x1=Math.max(x1,p.sx+r);
+    y0=Math.min(y0,p.sy-r); y1=Math.max(y1,p.sy+r);
+  }
+  const hx=Math.max(1,(x1-x0)/2), hy=Math.max(1,(y1-y0)/2);
+  const s=Math.min(20*Math.max(1,w/800), (w/2-12)/hx, (h/2-12)/hy);
+  return {s:s, cx:(x0+x1)/2, cy:(y0+y1)/2};
+}
+
+/* ============== drawing ============== */
+
+function shade(hex,f){             // blend hex colour toward background by (1-f)
+  const bg=bgArr();
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return 'rgb('+Math.round(bg[0]+(r-bg[0])*f)+','+Math.round(bg[1]+(g-bg[1])*f)+','
+               +Math.round(bg[2]+(b-bg[2])*f)+')';
+}
+const COL_BLUE=['#ffffff','#bcd9ff','#4f92ea','#0e3269'];
+const COL_RED =['#ffffff','#ffd2c6','#e8573d','#6e1408'];
+
+/* draw the network into ctx (w x h css px, scale V, pixel ratio dpr).
+   live: advance afterglows;  fillBg: paint an opaque background first */
+function drawNetTo(ctx,w,h,V,dpr,live,fillBg,offx,offy){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  if(fillBg){ ctx.fillStyle=bgCss(); ctx.fillRect(0,0,w,h); }
+  ctx.setTransform(dpr,0,0,dpr,dpr*w/2,dpr*h/2);
+  if(offx||offy) ctx.translate(-(offx||0)*V,-(offy||0)*V);   // optional recentering
+
+  const ct=Math.cos(theta), st=Math.sin(theta);
+  const cp=Math.cos(TILT), sp=Math.sin(TILT);
+  const [cmx,cmy,cmz]=getCM();          // CM always in the center of the frame
+  const P=new Map();
+  let zmin=1e9, zmax=-1e9;
+  for(const nd of nodes){
+    const p=project(nd.x-cmx,nd.y-cmy,nd.z-cmz,ct,st,cp,sp);
+    P.set(nd.id,p);
+    zmin=Math.min(zmin,p.zr); zmax=Math.max(zmax,p.zr);
+  }
+  const zspan=Math.max(zmax-zmin,1);
+  const depth=z=>0.42+0.58*(1-(z-zmin)/zspan);   // 1 near ... fades to background far
+
+  const items=[];
+  if(directed){
+    for(const a of nodes){ if(a.sign<=0) continue;         // arrows donor -> acceptor
+      for(const [id,w] of a.nb){
+        const b=nodeById.get(id);
+        items.push({z:(P.get(a.id).zr+P.get(b.id).zr)/2, t:0, a:a, b:b, w:w});
+      }
+    }
+  }else{
+    for(const a of nodes) for(const id of a.nb.keys()){ if(id<a.id) continue;
+      const b=nodeById.get(id);
+      items.push({z:(P.get(a.id).zr+P.get(b.id).zr)/2, t:0, a:a, b:b, w:1});
+    }
+  }
+  for(const g of glows){
+    const p=project(g.x-cmx,g.y-cmy,g.z-cmz,ct,st,cp,sp);
+    items.push({z:p.zr, t:1, g:g, p:p});
+    if(live) g.a-=0.022;
+  }
+  if(live) glows=glows.filter(g=>g.a>0);
+  for(const nd of nodes) items.push({z:P.get(nd.id).zr, t:2, n:nd});
+  items.sort((u,v)=>v.z-u.z);                     // far first
+
+  const lwMult=lwC/100, alpha=trC/100, LC=linkCol();
+  ctx.lineCap='round';
+  for(const it of items){
+    if(it.t===0){
+      const a=it.a, b=it.b;
+      const dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z;
+      const d3=Math.hypot(dx,dy,dz)||1;
+      const ra=radius(a.deg)/d3, rb=radius(b.deg)/d3;
+      const pa=project(a.x+dx*ra-cmx, a.y+dy*ra-cmy, a.z+dz*ra-cmz, ct,st,cp,sp);
+      const pb=project(b.x-dx*rb-cmx, b.y-dy*rb-cmy, b.z-dz*rb-cmz, ct,st,cp,sp);
+      const ax=pa.sx*V, ay=pa.sy*V, bx=pb.sx*V, by=pb.sy*V;
+      const ddx=bx-ax, ddy=by-ay, dd=Math.hypot(ddx,ddy)||1e-6;
+      const ux=ddx/dd, uy=ddy/dd;
+      const f=depth(it.z), sc=V*(pa.pers+pb.pers)/2;
+      let nx=-uy, ny=ux;                          // perpendicular, toward upper-left light
+      if(nx+ny>0){ nx=-nx; ny=-ny; }
+      if(directed){
+        /* shaded cylinder from the donor surface to the cone base, cone tip on the
+           acceptor surface.  Width ~ w^wPow (sqrt or 4th root), never wider than the
+           smaller end sphere. */
+        const capW=1.8*radius(Math.min(a.deg,b.deg))*sc;
+        const lw=Math.max(0.5, Math.min(3.2*sc*lwMult*Math.pow(it.w,wPow), capW));
+        const coneL=Math.min(Math.max(6*sc*(0.6+lwMult), 2.2*lw), 0.35*dd);
+        const coneHW=lw/2+Math.max(0.9, 1.6*sc*(0.4+lwMult));   // only a little wider
+        const cxb=bx-ux*coneL, cyb=by-uy*coneL;                 // cone base
+        const cBody=shade(LC.body,f), cLit=shade(LC.core,f), cDark=shade(LC.dark,f);
+        ctx.globalAlpha=alpha;
+        ctx.lineCap='butt';
+        if(lw>1.4){                                             // gradient across the axis
+          const mx=(ax+cxb)/2, my=(ay+cyb)/2;
+          const gr=ctx.createLinearGradient(mx+nx*lw/2,my+ny*lw/2, mx-nx*lw/2,my-ny*lw/2);
+          gr.addColorStop(0,cBody); gr.addColorStop(0.3,cLit); gr.addColorStop(0.75,cBody); gr.addColorStop(1,cDark);
+          ctx.strokeStyle=gr;
+        }else ctx.strokeStyle=cBody;
+        ctx.lineWidth=lw;
+        ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(cxb,cyb); ctx.stroke();
+        // cone with the same lighting
+        if(coneHW>1.4){
+          const gc=ctx.createLinearGradient(cxb+nx*coneHW,cyb+ny*coneHW, cxb-nx*coneHW,cyb-ny*coneHW);
+          gc.addColorStop(0,cBody); gc.addColorStop(0.3,cLit); gc.addColorStop(0.75,cBody); gc.addColorStop(1,cDark);
+          ctx.fillStyle=gc;
+        }else ctx.fillStyle=cBody;
+        ctx.beginPath(); ctx.moveTo(bx,by);
+        ctx.lineTo(cxb+nx*coneHW,cyb+ny*coneHW); ctx.lineTo(cxb-nx*coneHW,cyb-ny*coneHW);
+        ctx.closePath(); ctx.fill();
+        ctx.lineCap='round';
+        ctx.globalAlpha=1;
+      }else{
+        /* 3D stick + translucent cones at both ends */
+        const lw=Math.max(0.4, 3.0*sc*lwMult);
+        const coneL=Math.min(7*sc*(0.6+0.8*lwMult), 0.22*dd);
+        const coneW=Math.max(0.8, 2.6*sc*lwMult);
+        const x1=ax+ux*coneL, y1=ay+uy*coneL;
+        const x2=bx-ux*coneL, y2=by-uy*coneL;
+        ctx.globalAlpha=alpha;
+        ctx.strokeStyle=shade(LC.body,f);
+        ctx.lineWidth=lw;
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+        ctx.strokeStyle=shade(LC.core,f);
+        ctx.lineWidth=Math.max(0.3,lw*0.42);
+        const off=0.22*lw;
+        ctx.beginPath();
+        ctx.moveTo(x1+nx*off, y1+ny*off);
+        ctx.lineTo(x2+nx*off, y2+ny*off);
+        ctx.stroke();
+        ctx.globalAlpha=0.55*alpha;
+        ctx.fillStyle=shade(LC.cone,f);
+        const cone=(tx,ty,dxn,dyn)=>{
+          ctx.beginPath();
+          ctx.moveTo(tx,ty);
+          ctx.lineTo(tx-dxn*coneL-dyn*coneW, ty-dyn*coneL+dxn*coneW);
+          ctx.lineTo(tx-dxn*coneL+dyn*coneW, ty-dyn*coneL-dxn*coneW);
+          ctx.closePath(); ctx.fill();
+        };
+        cone(ax,ay,-ux,-uy);
+        cone(bx,by, ux, uy);
+        ctx.globalAlpha=1;
+      }
+    }else if(it.t===1){                           // red afterglow
+      const g=it.g, p=it.p;
+      const R=g.r*(1.6+2.2*(1-g.a))*p.pers*V;
+      const gx=p.sx*V, gy=p.sy*V;
+      const gr=ctx.createRadialGradient(gx,gy,0,gx,gy,R);
+      gr.addColorStop(0,'rgba(255,70,40,'+(0.75*g.a*depth(it.z))+')');
+      gr.addColorStop(1,'rgba(255,70,40,0)');
+      ctx.fillStyle=gr;
+      ctx.beginPath(); ctx.arc(gx,gy,R,0,7); ctx.fill();
+    }else{                                        // sphere with highlight: blue (+/undirected), red (-)
+      const nd=it.n, p=P.get(nd.id);
+      const r=Math.max(1,radius(nd.deg)*p.pers*V);
+      const x=p.sx*V, y=p.sy*V, f=depth(it.z);
+      const C=nd.sign<0 ? COL_RED : COL_BLUE;
+      ctx.save();
+      ctx.globalAlpha=alpha;
+      ctx.shadowColor='rgba(0,0,0,'+(0.55*f)+')';
+      ctx.shadowBlur=8*f*dpr; ctx.shadowOffsetX=3; ctx.shadowOffsetY=4;
+      const gr=ctx.createRadialGradient(x-0.35*r, y-0.35*r, 0.08*r, x, y, r);
+      gr.addColorStop(0,   shade(C[0],f));
+      gr.addColorStop(0.28,shade(C[1],f));
+      gr.addColorStop(0.6, shade(C[2],f));
+      gr.addColorStop(1,   shade(C[3],f));
+      ctx.fillStyle=gr;
+      ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  /* merge flashes: stars fly outward from the merged node and fade */
+  if(stars.length){
+    if(live) stars=stars.filter(s=>tNow-s.t0<s.life);
+    ctx.fillStyle = lightBg ? '#f4b400' : '#ffffff';
+    ctx.beginPath();
+    for(const s of stars){
+      const u=Math.min(1,(tNow-s.t0)/s.life);
+      const e=1-(1-u)*(1-u);                      // decelerating flight
+      const d=s.R*e;
+      const p=project(s.ox+s.dx*d-cmx, s.oy+s.dy*d-cmy, s.oz+s.dz*d-cmz, ct,st,cp,sp);
+      const r=Math.max(1.2, (2.6-1.4*u)*Math.min(3,Math.sqrt(V*p.pers)));
+      ctx.globalAlpha=(1-u)*(0.75+0.25*Math.sin(s.ph+14*u));
+      ctx.beginPath(); starPath(ctx,p.sx*V,p.sy*V,r); ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  }
+}
+function drawNet(){ drawNetTo(nctx,W,H,vs,DPR,true,false); }
+
+/* ---------- log-log degree distribution plot ---------- */
+
+function currentHist(){
+  const h={}, hD={}, hA={}, hw={};
+  let mx=1, nD=0, nA=0, nw=0, mxw=1;
+  for(const nd of nodes){
+    const d=nd.deg;
+    if(d>0){ h[d]=(h[d]||0)+1; mx=Math.max(mx,d); }
+    if(directed){
+      if(nd.sign>0){ nD++; if(d>0) hD[d]=(hD[d]||0)+1; }
+      else{ nA++; if(d>0) hA[d]=(hA[d]||0)+1; }
+    }
+  }
+  if(directed) for(const nd of nodes){ if(nd.sign<=0) continue;
+    for(const w of nd.nb.values()){ hw[w]=(hw[w]||0)+1; nw++; mxw=Math.max(mxw,w); }
+  }
+  return {h:h, mx:mx, hD:hD, nD:nD, hA:hA, nA:nA, hw:hw, nw:nw, mxw:mxw};
+}
+function averagedHist(){
+  if(step<8) return null;
+  const t0=step*0.25;                     // average over last 3/4 of run
+  let base=null;
+  for(const s of snaps){ if(s.t<=t0) base=s; else break; }
+  const bt=base?base.t:0, bc=base?base.cum:null;
+  const span=step-bt; if(span<=0) return null;
+  const h={}; let mx=1;
+  for(let d=1;d<HMAX;d++){
+    const v=cumHist[d]-(bc?bc[d]:0);
+    if(v>0){ h[d]=v/span; mx=Math.max(mx,d); }
+  }
+  return {h:h, mx:mx};
+}
+
+/* least-squares power-law fit of h[k]/n, k in [lo, kmax/10) */
+/* logarithmic binning: bins [1.2^i, 1.2^(i+1)) over the integers; each bin's density
+   is count / (norm * number of integers in the bin), plotted at the geometric mean
+   of the bin's integer range.  Returns [{x,p}] sorted by x, plus the min density. */
+const LOGB=Math.log(1.2);
+function logBin(h,norm){
+  const bins=new Map();
+  for(const ks in h){
+    const k=+ks; if(!(k>=1)) continue;
+    const i=Math.floor(Math.log(k)/LOGB+1e-9);
+    let b=bins.get(i);
+    if(!b){
+      const lo=Math.pow(1.2,i), hi=Math.pow(1.2,i+1);
+      const li=Math.max(1,Math.ceil(lo-1e-9)), ui=Math.max(li,Math.ceil(hi-1e-9)-1);
+      b={c:0, li:li, ui:ui}; bins.set(i,b);
+    }
+    b.c+=h[ks];
+  }
+  const out=[];
+  for(const b of bins.values()) out.push({x:Math.sqrt(b.li*b.ui), p:b.c/((norm||1)*(b.ui-b.li+1))});
+  out.sort((u,v)=>u.x-v.x);
+  return out;
+}
+/* least-squares power-law fit of binned points with lo <= x < xmax/10 */
+function fitPowerLaw(pts,xmax,lo){
+  let hi=xmax/10;
+  let ps=pts.filter(q=>q.x>=lo&&q.x<hi&&q.p>0);
+  if(ps.length<4){ hi=xmax; ps=pts.filter(q=>q.x>=lo&&q.x<hi&&q.p>0); }
+  if(ps.length<4) return null;
+  let sx=0,sy=0,sxx=0,sxy=0;
+  for(const q of ps){
+    const x=Math.log(q.x), y=Math.log(q.p);
+    sx+=x; sy+=y; sxx+=x*x; sxy+=x*y;
+  }
+  const m=ps.length;
+  const slope=(m*sxy-sx*sy)/(m*sxx-sx*sx);
+  const icpt=(sy-slope*sx)/m;
+  return {slope:slope, icpt:icpt, lo:lo, hi:hi};
+}
+function plotPts(pts,X,Y,marker,col,r){       // marker: 'line','circle','diamond'
+  if(marker==='line'){
+    pctx.strokeStyle=col; pctx.lineWidth=1.4; pctx.beginPath();
+    pts.forEach((q,i)=>{ const x=X(q.x), y=Y(q.p); i?pctx.lineTo(x,y):pctx.moveTo(x,y); });
+    pctx.stroke();
+    pctx.fillStyle=col;
+    for(const q of pts){ pctx.beginPath(); pctx.arc(X(q.x),Y(q.p),r,0,7); pctx.fill(); }
+  }else{
+    pctx.strokeStyle=col; pctx.lineWidth=1.4;
+    for(const q of pts){
+      if(marker==='diamond') diamond(X(q.x),Y(q.p),r);
+      else{ pctx.beginPath(); pctx.arc(X(q.x),Y(q.p),r,0,7); pctx.stroke(); }
+    }
+  }
+}
+function minP(pts,m){ for(const q of pts) if(q.p>0&&q.p<m) m=q.p; return m; }
+
+/* log-log axes with decade grid; returns the mapping functions */
+function logAxes(ml,mt,pw,ph,hp,lxmax,lymin,lymax,T,xlabel,ylabel){
+  const X=k=>ml+pw*Math.log10(k)/lxmax;
+  const Y=p=>mt+ph*(lymax-Math.log10(p))/(lymax-lymin);
+  pctx.strokeStyle=T.grid; pctx.fillStyle=T.txt;
+  pctx.font='15px '+FONT; pctx.textAlign='center'; pctx.lineWidth=1;
+  pctx.strokeRect(ml,mt,pw,ph);
+  for(let e=0;e<=Math.ceil(lxmax);e++){
+    const k=Math.pow(10,e); if(Math.log10(k)>lxmax) break;
+    const x=X(k);
+    pctx.beginPath(); pctx.moveTo(x,mt); pctx.lineTo(x,mt+ph); pctx.stroke();
+    pctx.fillText(e===0?'1':'10'+sup(e), x, hp-24);
+  }
+  pctx.textAlign='right';
+  for(let e=0;e>=Math.floor(lymin);e--){
+    const p=Math.pow(10,e); if(Math.log10(p)<lymin) continue;
+    const y=Y(p);
+    pctx.beginPath(); pctx.moveTo(ml,y); pctx.lineTo(ml+pw,y); pctx.stroke();
+    pctx.fillText(e===0?'1':'10'+sup(e), ml-6, y+5);
+  }
+  pctx.textAlign='center';
+  pctx.fillText(xlabel, ml+pw/2, hp-5);
+  pctx.save(); pctx.translate(17,mt+ph/2); pctx.rotate(-Math.PI/2);
+  pctx.fillText(ylabel,0,0); pctx.restore();
+  return {X:X, Y:Y};
+}
+/* dashed fit line across [lo, kmax] plus label, inside the clip region */
+function drawFit(fit,kmax,X,Y,ml,pw,T,name){
+  const k1=fit.lo, k2=kmax;
+  const p1=Math.exp(fit.icpt+fit.slope*Math.log(k1));
+  const p2=Math.exp(fit.icpt+fit.slope*Math.log(k2));
+  pctx.strokeStyle=T.fit; pctx.lineWidth=1.3;
+  pctx.setLineDash([7,5]);
+  pctx.beginPath(); pctx.moveTo(X(k1),Y(p1)); pctx.lineTo(X(k2),Y(p2)); pctx.stroke();
+  pctx.setLineDash([]);
+  const km=Math.sqrt(k1*k2), pm=Math.exp(fit.icpt+fit.slope*Math.log(km));
+  pctx.fillStyle=T.fit; pctx.font='18px '+FONT; pctx.textAlign='left';
+  const ftxt=name+' ∝ '+name.slice(2,3)+'^'+fit.slope.toFixed(2);
+  const fx0=Math.min(X(km)+12, ml+pw-8-pctx.measureText(ftxt).width);
+  pctx.fillText(ftxt, fx0, Y(pm)-10);
+  pctx.font='15px '+FONT;
+}
+
+const ML=72, MR=14, MT=16, MB=44;      // panel margins
+
+/* ===== panel 1: degree distribution ===== */
+function panelDegree(pwid,hp,T){
+  const ml=ML, mt=MT, pw=pwid-ML-MR, ph=hp-MT-MB;
+  const cur=currentHist(), avg=averagedHist();
+  const n=nodes.length||1;
+  let kmax=cur.mx; if(avg) kmax=Math.max(kmax,avg.mx);
+  const lxmax=Math.log10(Math.max(kmax,10)*1.3);
+  // log-binned densities (bins of a factor 1.2, normalized per unit k)
+  const bAvg=avg?logBin(avg.h,n):null;
+  const bCur=directed?null:logBin(cur.h,n);
+  const bD=directed?logBin(cur.hD,cur.nD||1):null, bA=directed?logBin(cur.hA,cur.nA||1):null;
+  const bW=directed?logBin(cur.hw,cur.nw||1):null;
+  let pmin=1/n;
+  for(const b of [bAvg,bCur,bD,bA,bW]) if(b) pmin=minP(b,pmin);
+  const lymin=Math.floor(Math.log10(Math.max(pmin,1e-7)))-0.2, lymax=0.15;
+  const {X,Y}=logAxes(ml,mt,pw,ph,hp,lxmax,lymin,lymax,T,
+    directed ? 'degree k (arrow units),  thickness w' : 'degree k', 'P(k)');
+
+  pctx.save();
+  pctx.beginPath(); pctx.rect(ml-1,mt-1,pw+2,ph+2); pctx.clip();
+  let fit=null;
+  if(bAvg){
+    plotPts(bAvg,X,Y,'line',T.avg,1.8);
+    fit=fitPowerLaw(bAvg,avg.mx,5);
+    if(fit) drawFit(fit,avg.mx,X,Y,ml,pw,T,'P(k)');
+  }
+  document.getElementById('stFit').textContent = fit ? 'P(k) ∝ k^'+fit.slope.toFixed(2) : '–';
+  if(directed){
+    plotPts(bD,X,Y,'circle',T.cur,3);
+    plotPts(bA,X,Y,'circle',T.acc,3);
+    plotPts(bW,X,Y,'diamond',T.thick,4);
+  }else plotPts(bCur,X,Y,'circle',T.cur,3);
+  pctx.restore();
+
+  // legend, lower left
+  pctx.textAlign='left'; pctx.font=(directed?'13px ':'15px ')+FONT;
+  const lx=ml+14, dyl=directed?20:24;
+  let ly=mt+ph-14;
+  pctx.strokeStyle=T.fit; pctx.setLineDash([5,4]); pctx.lineWidth=1.3;
+  pctx.beginPath(); pctx.moveTo(lx,ly-5); pctx.lineTo(lx+24,ly-5); pctx.stroke();
+  pctx.setLineDash([]);
+  pctx.fillStyle=T.leg; pctx.fillText('power-law fit (5 ≤ k < kₘₐₓ/10)', lx+32, ly);
+  ly-=dyl;
+  pctx.fillStyle=T.avg; pctx.fillRect(lx, ly-9, 24, 4);
+  pctx.fillStyle=T.leg; pctx.fillText('time-avg P(k), log-binned ×1.2', lx+32, ly);
+  ly-=dyl;
+  pctx.lineWidth=1.4;
+  if(directed){
+    pctx.strokeStyle=T.thick; diamond(lx+12, ly-6, 4);
+    pctx.fillStyle=T.leg; pctx.fillText('arrow thickness P(w)', lx+32, ly);
+    ly-=dyl;
+    pctx.strokeStyle=T.acc;
+    pctx.beginPath(); pctx.arc(lx+12, ly-6, 4, 0, 7); pctx.stroke();
+    pctx.fillStyle=T.leg; pctx.fillText('acceptors (−) P(k)', lx+32, ly);
+    ly-=dyl;
+    pctx.strokeStyle=T.cur;
+    pctx.beginPath(); pctx.arc(lx+12, ly-6, 4, 0, 7); pctx.stroke();
+    pctx.fillStyle=T.leg; pctx.fillText('donors (+) P(k)', lx+32, ly);
+  }else{
+    pctx.strokeStyle=T.cur;
+    pctx.beginPath(); pctx.arc(lx+12, ly-6, 4, 0, 7); pctx.stroke();
+    pctx.fillStyle=T.leg; pctx.fillText('current P(k)', lx+32, ly);
+  }
+}
+
+/* ===== panel 2: distribution of merge event sizes ===== */
+function panelEvents(pwid,hp,T){
+  const ml=ML, mt=MT, pw=pwid-ML-MR, ph=hp-MT-MB;
+  const smax=Math.max(evMax,10);
+  const lxmax=Math.log10(smax*1.3);
+  const bEv=evN>0?logBin(evH,evN):null;
+  const pmin=bEv ? minP(bEv,1/evN) : 1e-3;
+  const lymin=Math.floor(Math.log10(Math.max(pmin,1e-7)))-0.2, lymax=0.15;
+  const {X,Y}=logAxes(ml,mt,pw,ph,hp,lxmax,lymin,lymax,T,'event size s  (link ends removed)','P(s)');
+  pctx.save();
+  pctx.beginPath(); pctx.rect(ml-1,mt-1,pw+2,ph+2); pctx.clip();
+  if(bEv){
+    plotPts(bEv,X,Y,'line',T.ev,2.2);
+    const fit=fitPowerLaw(bEv,evMax,10);
+    if(fit) drawFit(fit,evMax,X,Y,ml,pw,T,'P(s)');
+  }else{
+    pctx.font='15px '+FONT; pctx.fillStyle=T.txt; pctx.textAlign='center';
+    pctx.fillText('collecting data…', ml+pw/2, mt+ph/2);
+  }
+  pctx.restore();
+  // legend
+  pctx.textAlign='left'; pctx.font='13px '+FONT;
+  const lx=ml+14; let ly=mt+ph-14;
+  pctx.strokeStyle=T.fit; pctx.setLineDash([5,4]); pctx.lineWidth=1.3;
+  pctx.beginPath(); pctx.moveTo(lx,ly-5); pctx.lineTo(lx+24,ly-5); pctx.stroke();
+  pctx.setLineDash([]);
+  pctx.fillStyle=T.leg; pctx.fillText('power-law fit (10 ≤ s < sₘₐₓ/10)', lx+32, ly);
+  ly-=20;
+  pctx.fillStyle=T.ev; pctx.fillRect(lx, ly-9, 24, 4);
+  pctx.fillStyle=T.leg; pctx.fillText('all merges since reseed ('+evN+'), bins ×1.2', lx+32, ly);
+  ly-=20;
+  pctx.fillStyle=T.leg;
+  pctx.fillText(directed ? 's = 2 × arrow units lost in a merge' : 's = 2 × links lost in a merge', lx, ly);
+}
+
+/* ===== panel 3: traces of the 3 largest degrees vs time ===== */
+function panelTraces(pwid,hp,T,x0,y0){
+  const ml2=58, mr2=16, mt=MT;
+  const pw2=pwid-ml2-mr2, ph2=hp-MT-MB;
+  pctx.strokeStyle=T.grid; pctx.lineWidth=1;
+  pctx.strokeRect(ml2,mt,pw2,ph2);
+
+  let xs=null, y1=null, y2=null, y3=null, t0=0, t1=1;
+  if(traceMode===0 && trAll1.length>1){
+    y1=trAll1; y2=trAll2; y3=trAll3;
+    xs=i=>(i+0.5)*trStride; t0=0; t1=Math.max(step,1);
+  }else if(traceMode===1 && ringLen>1){
+    y1=[]; y2=[]; y3=[];
+    for(let i=0;i<ringLen;i++){
+      const idx=(ringPos-ringLen+i+ringSize)%ringSize;
+      y1.push(ring1[idx]); y2.push(ring2[idx]); y3.push(ring3[idx]);
+    }
+    xs=i=>step-ringLen+i+1; t0=step-ringLen+1; t1=Math.max(step,t0+1);
+  }
+  if(y1 && y1.length>1){
+    let km2=1;
+    for(let i=0;i<y1.length;i++) km2=Math.max(km2,y1[i]);
+    km2*=1.08;
+    const Xt=t=>ml2+pw2*(t-t0)/(t1-t0);
+    const Yt=v=>mt+ph2*(1-v/km2);
+    pctx.font='15px '+FONT; pctx.fillStyle=T.txt; pctx.textAlign='right';
+    const yt=niceStep(km2);
+    for(let v=yt; v<km2; v+=yt){
+      pctx.strokeStyle=T.grid;
+      pctx.beginPath(); pctx.moveTo(ml2,Yt(v)); pctx.lineTo(ml2+pw2,Yt(v)); pctx.stroke();
+      pctx.fillText(v, ml2-6, Yt(v)+5);
+    }
+    pctx.textAlign='center';
+    pctx.fillText(Math.round(t0), ml2+8, hp-24);
+    pctx.fillText(Math.round((t0+t1)/2), ml2+pw2/2, hp-24);
+    pctx.fillText(Math.round(t1), ml2+pw2-14, hp-24);
+    pctx.fillText('time (steps)', ml2+pw2/2, hp-5);
+    pctx.save(); pctx.translate(18,mt+ph2/2); pctx.rotate(-Math.PI/2);
+    pctx.fillText('k',0,0); pctx.restore();
+
+    const trace=(arr,col,lw2)=>{
+      pctx.strokeStyle=col; pctx.lineWidth=lw2; pctx.beginPath();
+      for(let i=0;i<arr.length;i++){
+        const x=Xt(xs(i)), yv=Yt(arr[i]);
+        i?pctx.lineTo(x,yv):pctx.moveTo(x,yv);
+      }
+      pctx.stroke();
+    };
+    pctx.fillStyle=T.k1fill;
+    pctx.beginPath();
+    pctx.moveTo(Xt(xs(0)), Yt(y1[0]));
+    for(let i=1;i<y1.length;i++) pctx.lineTo(Xt(xs(i)), Yt(y1[i]));
+    pctx.lineTo(Xt(xs(y1.length-1)), mt+ph2);
+    pctx.lineTo(Xt(xs(0)), mt+ph2);
+    pctx.closePath(); pctx.fill();
+    trace(y1,T.k1,1.8);
+    trace(y2,T.k2,1.5);
+    trace(y3,T.k3,1.5);
+
+    pctx.textAlign='left'; pctx.font='13px '+FONT;
+    let lyt=mt+20;
+    pctx.fillStyle=T.k1fill; pctx.fillRect(ml2+14, lyt-12, 24, 12);
+    pctx.strokeStyle=T.k1; pctx.lineWidth=1.8;
+    pctx.beginPath(); pctx.moveTo(ml2+14,lyt-12); pctx.lineTo(ml2+38,lyt-12); pctx.stroke();
+    pctx.fillStyle=T.leg; pctx.fillText('largest k', ml2+46, lyt);
+    lyt+=19;
+    pctx.strokeStyle=T.k2; pctx.lineWidth=1.5;
+    pctx.beginPath(); pctx.moveTo(ml2+14,lyt-5); pctx.lineTo(ml2+38,lyt-5); pctx.stroke();
+    pctx.fillStyle=T.leg; pctx.fillText('2nd largest', ml2+46, lyt);
+    lyt+=19;
+    pctx.strokeStyle=T.k3;
+    pctx.beginPath(); pctx.moveTo(ml2+14,lyt-5); pctx.lineTo(ml2+38,lyt-5); pctx.stroke();
+    pctx.fillStyle=T.leg; pctx.fillText('3rd largest', ml2+46, lyt);
+  }else{
+    pctx.font='15px '+FONT; pctx.fillStyle=T.txt; pctx.textAlign='center';
+    pctx.fillText('collecting data…', ml2+pw2/2, mt+ph2/2);
+  }
+  // window switch button (top right of trace panel)
+  const bw=128, bh=24, bx=ml2+pw2-bw-8, by=mt+6;
+  traceBtnRect=[bx+x0, by+y0, bw, bh];
+  pctx.fillStyle=lightBg?'rgba(210,216,224,0.9)':'rgba(44,53,66,0.9)';
+  pctx.strokeStyle=T.grid;
+  pctx.beginPath();
+  pctx.roundRect ? pctx.roundRect(bx,by,bw,bh,6) : pctx.rect(bx,by,bw,bh);
+  pctx.fill(); pctx.stroke();
+  pctx.fillStyle=T.leg; pctx.font='12px '+FONT; pctx.textAlign='center';
+  pctx.fillText(traceMode===0 ? 'window: all time' : 'window: 20·N steps', bx+bw/2, by+16);
+}
+
+function drawPlot(){
+  const w=PW, hgt=PH, T=plotTheme();
+  pctx.setTransform(DPR,0,0,DPR,0,0);
+  pctx.setLineDash([]);
+  pctx.clearRect(0,0,w,hgt);
+  const stacked = w<760;                        // phones: three panels stacked
+  const hp = stacked ? Math.floor(hgt/3) : hgt;
+  const pwid = stacked ? w : Math.floor(w/3);
+  [panelDegree, panelEvents, panelTraces].forEach((fn,i)=>{
+    const x0 = stacked ? 0 : i*pwid, y0 = stacked ? i*hp : 0;
+    pctx.save(); pctx.translate(x0,y0);
+    fn(pwid,hp,T,x0,y0);
+    pctx.restore();
+  });
+}
+function diamond(x,y,r){
+  pctx.beginPath(); pctx.moveTo(x,y-r); pctx.lineTo(x+r,y); pctx.lineTo(x,y+r); pctx.lineTo(x-r,y);
+  pctx.closePath(); pctx.stroke();
+}
+function niceStep(mx){
+  const raw=mx/4;
+  const p=Math.pow(10,Math.floor(Math.log10(raw)));
+  for(const m of [1,2,5,10]) if(m*p>=raw) return m*p;
+  return 10*p;
+}
+function sup(e){
+  const map={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³',
+             '4':'⁴','5':'⁵','6':'⁶','7':'⁷'};
+  return String(e).split('').map(c=>map[c]||c).join('');
+}
+
+/* ---------- PNG export ---------- */
+
+function withBg(src){
+  const c=document.createElement('canvas');
+  c.width=src.width; c.height=src.height;
+  const g=c.getContext('2d');
+  g.fillStyle=bgCss(); g.fillRect(0,0,c.width,c.height);
+  g.drawImage(src,0,0);
+  return c;
+}
+function download(cnv,name){
+  const a=document.createElement('a');
+  a.download=name;
+  a.href=cnv.toDataURL('image/png');
+  a.click();
+}
+function saveBoth(){
+  drawPlot();
+  const gap=8;
+  const c=document.createElement('canvas');
+  c.width=Math.max(netC.width,plotC.width);
+  c.height=netC.height+gap+plotC.height;
+  const g=c.getContext('2d');
+  g.fillStyle=bgCss(); g.fillRect(0,0,c.width,c.height);
+  g.drawImage(netC,0,0);
+  g.drawImage(plotC,0,netC.height+gap);
+  download(c,'network+histogram.png');
+}
+/* square image that just contains the whole network */
+function saveSquare(){
+  const S=1600;
+  const c=document.createElement('canvas'); c.width=S; c.height=S;
+  const g=c.getContext('2d');
+  const fit=viewFit(S,S);                     // bounding box, not CM: minimal empty margin
+  drawNetTo(g,S,S,fit.s,1,false,true,fit.cx,fit.cy);
+  download(c,(directed?'directed':'undirected')+'_network_square.png');
+}
+
+/* ================= main loop / UI ================= */
+
+let acc=0, last=performance.now(), frame=0;
+function loop(now){
+  const dt=Math.min(0.1,(now-last)/1000); last=now; tNow=now/1000;
+  if(running && speed>0){
+    acc+=dt*speed;
+    let done=0;
+    while(acc>=1 && done<400){ modelStep(); acc-=1; done++; }
+    if(acc>=1) acc=0;
+  }
+  if(running) theta += dt*0.012*rotC;  // slow 3D rotation, frozen while paused
+  for(let i=0;i<3;i++) relax();
+  fitView(false);
+  drawNet();
+  if(frame%10===0){
+    drawPlot();
+    let units=0, links=0, km=0, nD=0, nA=0, wm=0;
+    for(const nd of nodes){
+      units+=nd.deg; links+=nd.nb.size; km=Math.max(km,nd.deg);
+      if(nd.sign>0){ nD++; for(const w of nd.nb.values()) wm=Math.max(wm,w); }
+      else if(nd.sign<0) nA++;
+    }
+    units/=2; links/=2;
+    document.getElementById('stT').textContent=step;
+    document.getElementById('stN').textContent=nodes.length;
+    document.getElementById('stE').textContent=links;
+    document.getElementById('stAvg').textContent=(2*units/(nodes.length||1)).toFixed(2);
+    document.getElementById('stMax').textContent=km;
+    if(directed){
+      document.getElementById('stD').textContent=nD;
+      document.getElementById('stA').textContent=nA;
+      document.getElementById('stU').textContent=units;
+      document.getElementById('stWm').textContent=wm;
+    }
+  }
+  frame++;
+  requestAnimationFrame(loop);
+}
+
+/* title pull-down with the introduction */
+const titleBtn=document.getElementById('titleBtn'), introBox=document.getElementById('introbox');
+titleBtn.onclick=()=>{
+  const open=introBox.classList.toggle('hide');
+  titleBtn.classList.toggle('open',!open);
+};
+/* undirected / directed toggle (top of applet) */
+const segU=document.getElementById('segU'), segD=document.getElementById('segD');
+function setDirected(d){
+  directed=d;
+  segU.classList.toggle('active',!d); segD.classList.toggle('active',d);
+  document.getElementById('modesU').classList.toggle('hide',d);
+  document.getElementById('modesD').classList.toggle('hide',!d);
+  document.getElementById('stDirRow').classList.toggle('hide',!d);
+  document.getElementById('wscRow').classList.toggle('hide',!d);
+  document.getElementById('pbar').classList.toggle('hide',!d);
+  document.getElementById('title').innerHTML = d ? 'Directed merging &amp; creation' : 'Merging &amp; Creation';
+  document.getElementById('ref').innerHTML = d
+    ? 'Donor (+, blue) and acceptor (&minus;, red) nodes joined by arrows of integer thickness;<br>'+
+      'merging pools or rewires the arrows. Cf. Sneppen, Rosvall, Trusina &amp; Minnhagen, '+
+      'EPL <b>67</b>, 349 (2004) and refs. in &ldquo;About the models&rdquo;.'
+    : '(B.J. Kim, A. Trusina, P. Minnhagen,<br>K. Sneppen, <i>Self organized scale-free networks from '+
+      'merging and regeneration</i>, Eur. Phys. J. B <b>43</b>, 369 (2005))';
+  document.getElementById('btnReset').innerHTML = d ? 'Reseed (bipartite random)' : 'Reseed (Erd&#337;s&ndash;R&eacute;nyi)';
+  seed(); fitView(true);
+}
+segU.onclick=()=>{ if(directed) setDirected(false); };
+segD.onclick=()=>{ if(!directed) setDirected(true); };
+
+const modeBtns=[document.getElementById('m0'),document.getElementById('m1'),document.getElementById('m2')];
+modeBtns.forEach((b,i)=>b.onclick=()=>{
+  umode=i;
+  modeBtns.forEach((x,j)=>x.classList.toggle('active',j===i));
+});
+const dmodeBtns=[document.getElementById('d0'),document.getElementById('d1')];
+dmodeBtns.forEach((b,i)=>b.onclick=()=>{
+  dmode=i;
+  dmodeBtns.forEach((x,j)=>x.classList.toggle('active',j===i));
+});
+document.getElementById('btnReset').onclick=()=>{
+  N=Math.max(10,Math.min(2000, +document.getElementById('inN').value||800));
+  K=Math.max(0.5,Math.min(10, +document.getElementById('inK').value||4));
+  document.getElementById('inN').value=N; document.getElementById('inK').value=K;
+  seed(); fitView(true);
+};
+const runBtn=document.getElementById('btnRun');
+runBtn.onclick=()=>{
+  running=!running;
+  runBtn.classList.toggle('paused',!running);
+  runBtn.innerHTML = running ? '&#9646;&#9646; Pause' : '&#9654; Run';
+};
+const sizeBtns=[...document.getElementById('sizeRow').children];
+sizeBtns.forEach(b=>b.onclick=()=>{
+  sizeMult=+b.dataset.s;
+  sizeBtns.forEach(x=>x.classList.toggle('active',x===b));
+});
+const wscBtns=[...document.getElementById('wscRow').children];
+wscBtns.forEach(b=>b.onclick=()=>{
+  wPow=+b.dataset.p;
+  wscBtns.forEach(x=>x.classList.toggle('active',x===b));
+});
+const volBtn=document.getElementById('btnVol');
+volBtn.onclick=()=>{
+  volMode=1-volMode;
+  volBtn.innerHTML = volMode ? 'Volume &prop; &radic;k' : 'Volume &prop; k';
+};
+const flashBtn=document.getElementById('btnFlash');
+flashBtn.onclick=()=>{
+  flashOn=!flashOn;
+  if(!flashOn) stars=[];
+  flashBtn.textContent = flashOn ? 'Merge flash: ON' : 'Merge flash: OFF';
+  flashBtn.classList.toggle('active',flashOn);
+};
+const glowBtn=document.getElementById('btnGlow');
+glowBtn.onclick=()=>{
+  glowOn=!glowOn;
+  if(!glowOn) glows=[];
+  glowBtn.textContent = glowOn ? 'Afterglow: ON' : 'Afterglow: OFF';
+  glowBtn.classList.toggle('active',glowOn);
+};
+/* black / white background: corner button on the display */
+document.getElementById('btnBW').onclick=()=>{
+  lightBg=!lightBg;
+  document.body.classList.toggle('dark',!lightBg);
+  document.getElementById('netbox').style.background=bgCss();
+  document.getElementById('plotbox').style.background=bgCss();
+};
+document.getElementById('btnSq').onclick=saveSquare;
+document.getElementById('btnPngNet').onclick=()=>download(withBg(netC),'network.png');
+document.getElementById('btnPngPlot').onclick=()=>{ drawPlot(); download(withBg(plotC),'histogram.png'); };
+document.getElementById('btnPngBoth').onclick=saveBoth;
+/* click on the plot toggles the trace window */
+plotC.addEventListener('click',e=>{
+  const r=plotC.getBoundingClientRect();
+  const x=e.clientX-r.left, y=e.clientY-r.top;
+  if(x>=traceBtnRect[0] && x<=traceBtnRect[0]+traceBtnRect[2] &&
+     y>=traceBtnRect[1] && y<=traceBtnRect[1]+traceBtnRect[3]){
+    traceMode=1-traceMode;
+    drawPlot();
+  }
+});
+/* speed slider: 0-50 -> 0-100/s linear, 50-100 -> 100-10000/s exponential */
+function speedOf(v){
+  return v<=50 ? 2*v : 100*Math.pow(100,(v-50)/50);
+}
+function bindSlider(id,vid,fn,fmt){
+  const s=document.getElementById(id), v=document.getElementById(vid);
+  const up=()=>{ fn(+s.value); v.textContent=fmt(+s.value); };
+  s.oninput=up; up();
+}
+bindSlider('sSpeed','vSpeed',x=>speed=speedOf(x),x=>Math.round(speedOf(x))+' /s');
+bindSlider('sRep','vRep',x=>repC=x,x=>x);
+bindSlider('sAng','vAng',x=>angC=x,x=>x);
+bindSlider('sDamp','vDamp',x=>dampC=x,x=>x);
+bindSlider('sRot','vRot',x=>rotC=x,x=>x);
+bindSlider('sLw','vLw',x=>lwC=x,x=>x+'%');
+bindSlider('sTr','vTr',x=>trC=x,x=>x+'%');
+bindSlider('sFl','vFl',x=>flashT=x,x=>x.toFixed(1)+' s');
+bindSlider('sP','vP',x=>pSame=x,x=>x.toFixed(2));
+
+resize();
+setDirected(true);            // default: directed model (seeds the network)
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
