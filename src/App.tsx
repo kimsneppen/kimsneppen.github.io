@@ -96,8 +96,8 @@ const MODELS: Model[] = [
     title: "Colony & Phage",
     description:
       "Phage infection of a growing bacterial colony.",
-    file: "/models/phage_colony_v26_final.html",
-    thumbnail: "/thumbnails/colony-phage.png",
+    file: "/models/phage_colony.html",
+    thumbnail: "/thumbnails/phage_colony.png",
   },
   {
     id: "cell-polarity",
