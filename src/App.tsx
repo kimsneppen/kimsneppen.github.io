@@ -72,8 +72,8 @@ const MODELS: Model[] = [
     title: "Kuhn on computer",
     description:
       "Paradigmshift in an evolutionary ecology of wrong ideas",
-    file: "/models/rise_and_fall_of_wrong_ideas_v12.html",
-    thumbnail: "/thumbnails/paradigm-shift.png",
+    file: "/models/rise_and_fall_of_wrong_ideas.html",
+    thumbnail: "/thumbnails/kuhn.png",
   },
   {
     id: "rabbit-fox-snake-plant",
