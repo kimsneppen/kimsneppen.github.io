@@ -120,8 +120,8 @@ const MODELS: Model[] = [
     title: "Mean field of epigenetic condensate",
     description:
       "Two-state epigenetics with nucleosome condensate",
-    file: "/models/Twostate_gillespie_model_v4.html",
-    thumbnail: "/thumbnails/two-state-gillespie.png",
+    file: "/models/Twostate_gillespie.html",
+    thumbnail: "/thumbnails/two-state.png",
   },
     {
     id: "merging-creation",
