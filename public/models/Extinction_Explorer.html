@@ -537,32 +537,61 @@
     <section class="stage">
       <div class="toprow" role="group" aria-label="Introductions">
         <button type="button" class="topbtn" data-box="aboutbox" aria-expanded="false" aria-controls="aboutbox">An Applet on the History of Life</button>
-        <button type="button" class="topbtn" data-box="startbox" aria-expanded="true" aria-controls="startbox">Start here for understanding Survival Luck</button>
+        <button type="button" class="topbtn" data-box="startbox" aria-expanded="false" aria-controls="startbox">Start here for understanding Survival Luck</button>
       </div>
       <details class="startbox aboutbox" id="aboutbox">
         <summary>An Applet on the History of Life</summary>
 
-        <p class="ctl-label">Why the two records are never pooled</p>
-        <p class="cthint">The two compilations do not use the same boundaries. About four
-        fifths of the land genera die on a horizon the marine record also recognises, but the
-        land record subdivides the Cenozoic far more finely, and the marine record reaches
-        back further. That difference is not harmless, because of how the model works: at each
-        horizon it kills a given <i>number</i> of genera drawn from a list of everything alive.
-        Pool the two records and, at a horizon only the land record uses, the model has to find
-        its victims partly among <b>marine</b> genera that Sepkoski records as surviving &mdash;
-        and the reverse at a marine-only horizon. That is an artefact of pooling, not a
-        result.</p>
-        <p class="cthint">An earlier version answered this by keeping only the horizons the two
-        records share and driving them with a single stress threshold. It worked, but it was a
-        strange animal: it discarded roughly a third of the genera in order to pretend the two
-        compilations had one event grid, and it then applied one extinction stress to sea and
-        land alike &mdash; which is exactly the assumption the separate grids exist to avoid.
-        <b>It has been removed.</b></p>
-        <p class="cthint">Combining the records now always means <b>separate stress below and
-        above water</b>. Each record keeps its own event grid; each event takes exactly the
-        number of victims that record shows, from that record's own pool; the sea and the land
-        share only the toughness draw (an order carries one toughness wherever it lives) and
-        the single luck value. Nothing is set aside, and nothing crosses the shoreline.</p>
+        <p class="ctl-label">What this applet is about</p>
+        <p class="cthint">This applet lets you explore how animal life has come and gone over the last
+        550 million years: when new kinds of animals appeared, and when they died out. The data are
+        divided into <b>marine</b> and <b>land</b> animals, so you can explore each on its own or the two
+        together. The marine animals are a little more numerous &mdash; about 36,000 genera against
+        28,000 &mdash; simply because they tend to leave better fossils: many of them had hard shells,
+        like the ammonites.</p>
+        <p class="cthint">Rather than counting species, the applet counts <b>genera</b> &mdash; a genus is a
+        small family of closely related species. We humans, for example, are the last surviving species
+        of the genus <i>Homo</i>, which began with <i>Homo habilis</i> some 2.4 million years ago and
+        later also held the Neanderthals and the Denisovans; the Cro-Magnon people were early members of
+        our own species.</p>
+        <p class="cthint">Everything here rests on what palaeontologists have collected over the last two
+        centuries: the first and last appearance of every genus with a fossil record. The animals of the
+        <b>sea</b> and the animals of the <b>land</b> come from two separate, publicly available databases.
+        The applet shows the same record in several different ways, and all of them lean on one shared
+        idea: history is cut into roughly a hundred <b>geological stages</b>, separated from one another
+        by well-defined events whose causes are, for the most part, still unknown.</p>
+        <p class="cthint">You can look at how large the extinction at each of these stage boundaries was, at
+        how many genera were alive at any one time, at the pattern of origination and extinction across
+        time, and at the fate of the larger groups that genera belong to: the <b>orders</b> and the
+        <b>classes</b>. We humans, for example, share the order Primates with the gibbons, the lemurs and
+        the baboons; one step up we belong to the class of mammals; and one step further to the phylum
+        of chordates, the animals with a backbone or something like one.</p>
+        <p class="cthint">Each order and each class is placed by two numbers: how diverse it became, and how
+        long its genera lasted on average. It is then drawn as a stack of disks running through time,
+        where the area of the disk at any moment equals the number of genera the group had just then.
+        As these stacks widen and narrow along the time axis, they let you watch groups of animals
+        flourish, dwindle and sometimes vanish altogether &mdash; on the timescale over which mountain
+        ranges are raised and worn down, and the continents themselves are shuffled around the planet.</p>
+
+        <p class="ctl-label">One record switch, three places</p>
+        <p class="cthint">The record switch &mdash; <b>Marine</b>, <b>Land</b>,
+        <b>All</b>, <b>All&minus;</b> &mdash; appears on the <b>Basic data</b> heading, on the
+        <b>Luck versus toughness</b> control line, and on the <b>Technical analysis</b> heading
+        (where it shows only while that section is open). They are one control in three places:
+        turn any of them and the other two follow, so there is never a question of which record
+        selector is the one in force. Beside each is <b>#genera</b>, the size of the record now
+        selected, and under each a line in small letters saying what that record is and
+        &mdash; for the two combined options &mdash; how the extinction stress is applied:
+        always <b>each record apart</b>, two thresholds per horizon, one below the waterline and
+        one above it. <b>All</b> and <b>All&minus;</b> differ in one thing only: All&minus; drops
+        the singletons, the genera whose whole recorded range lies inside a single interval. It
+        is not a different treatment of the data, only a different answer to what to do about
+        the short-ranged genera that a preservation window can manufacture.</p>
+        <p class="cthint">Each panel in section 2 also carries a one-sentence caption saying what
+        it plots. &ldquo;Fractional survival&rdquo; and &ldquo;Event survival curves&rdquo; are
+        exact names and opaque ones, and a reader who cannot tell them apart cannot tell whether
+        the model is doing well on either.</p>
+
         <p class="ctl-label">Finding your way around</p>
         <p class="cthint">A box at the top, <b>Start here</b>, names the claim the applet is
         about and the one plot that makes the argument, so a first visit does not begin with
@@ -592,25 +621,6 @@
         <p class="cthint">Where the window is wide enough the record switch appears as four
         visible segments instead of a button you have to click through; below that it falls back
         to the cycle button. Both do the same thing.</p>
-
-        <p class="ctl-label">One record switch, three places</p>
-        <p class="cthint">The record switch &mdash; <b>Marine</b>, <b>Land</b>,
-        <b>All</b>, <b>All&minus;</b> &mdash; appears on the <b>Basic data</b> heading, on the
-        <b>Luck versus toughness</b> control line, and on the <b>Technical analysis</b> heading
-        (where it shows only while that section is open). They are one control in three places:
-        turn any of them and the other two follow, so there is never a question of which record
-        selector is the one in force. Beside each is <b>#genera</b>, the size of the record now
-        selected, and under each a line in small letters saying what that record is and
-        &mdash; for the two combined options &mdash; how the extinction stress is applied:
-        always <b>each record apart</b>, two thresholds per horizon, one below the waterline and
-        one above it. <b>All</b> and <b>All&minus;</b> differ in one thing only: All&minus; drops
-        the singletons, the genera whose whole recorded range lies inside a single interval. It
-        is not a different treatment of the data, only a different answer to what to do about
-        the short-ranged genera that a preservation window can manufacture.</p>
-        <p class="cthint">Each panel in section 2 also carries a one-sentence caption saying what
-        it plots. &ldquo;Fractional survival&rdquo; and &ldquo;Event survival curves&rdquo; are
-        exact names and opaque ones, and a reader who cannot tell them apart cannot tell whether
-        the model is doing well on either.</p>
 
         <p class="ctl-label">The switches on the Basic data bar</p>
         <p class="cthint">Three small buttons ride on the <b>Basic data</b> heading. The first
@@ -775,7 +785,7 @@
         wrote the code of this applet and drew the class silhouettes. The dataset, the model and the
         analysis are those of refs.&nbsp;2, 1 and 4.</p>
       </details>
-      <details class="startbox" id="startbox" open>
+      <details class="startbox" id="startbox">
         <summary>Start here for understanding Survival Luck</summary>
         <p><span class="step">1 &middot; the claim</span>In the fossil record it is the old who
         survive: a genus that has already lived through several extinction events is less likely
