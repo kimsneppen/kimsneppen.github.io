@@ -40,8 +40,8 @@ const MODELS: Model[] = [
   title: "Extinction Explorer",
   description:
     "Deep time exploration of life forms on earth",
-  file: "/models/Extinction_Explorer_v95.html",
-  thumbnail: "/thumbnails/sepkoski_all_origination_extinction.png",
+  file: "/models/Extinction_Explorer",
+  thumbnail: "/thumbnails/class.png",
 },  
   {
   id: "btw-sandpile",
