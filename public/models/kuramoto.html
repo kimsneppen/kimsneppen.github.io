@@ -47,6 +47,29 @@
   }
   .eq .term{color:#b6bfd2;transition:color .2s}
   .eq .term.on{color:var(--accent);font-weight:600}
+  .eqterms{display:inline-flex;flex-wrap:wrap;align-items:center;gap:3px 5px}
+  /* the (∇h)² switch: a term that can be crossed out */
+  .eq .term.nl2{cursor:pointer;position:relative;display:inline-block;padding:0 3px;
+    border-radius:6px;user-select:none;-webkit-tap-highlight-color:transparent}
+  .eq .term.nl2:hover{background:var(--accent-soft)}
+  .eq .term.nl2.off{color:#b6bfd2;font-weight:400}
+  .eq .term.nl2.off::before,.eq .term.nl2.off::after{
+    content:"";position:absolute;left:50%;top:50%;width:105%;height:1.5px;
+    background:#dc2626;border-radius:2px;pointer-events:none;opacity:.85;
+  }
+  .eq .term.nl2.off::before{transform:translate(-50%,-50%) rotate(22deg)}
+  .eq .term.nl2.off::after{transform:translate(-50%,-50%) rotate(-22deg)}
+  /* 2D: the two readings of |∇h| on a toggle switch, the active one shown */
+  .absseg{vertical-align:middle;margin:0 2px}
+  .absseg[hidden]{display:none}
+  .absseg button{font-size:12.5px;padding:3px 8px}
+  .absseg button sub{font-size:.7em;font-style:normal}
+  .absseg.zero button.on{background:#b6bfd2}
+  .absseg button:not(.on){color:#b6bfd2}
+  .linwarn{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-style:normal;
+    font-size:11px;font-weight:600;color:#c2410c;background:#fff7ed;border:1px solid #fed7aa;
+    border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:middle}
+  .linwarn[hidden]{display:none}
   .tctl{
     display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);
     font-family:Georgia,serif;font-style:italic;
@@ -80,6 +103,13 @@
     font-size:12px;color:var(--ink);
   }
   .dispbar .yseg{min-width:0;flex:0 0 auto}
+  /* 2D: one button cycling through the plotted field, showing the one in use */
+  .ycycle{display:inline-flex;align-items:center;gap:6px;padding:4px 8px 4px 10px;
+    background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;
+    font-size:12.5px;white-space:nowrap;line-height:1.2}
+  .ycycle[hidden]{display:none}
+  .ycycle .ylab{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:13.5px;min-width:1.4em;text-align:center}
+  .ycycle .ychev{font-size:12px;opacity:.8;font-style:normal}
   .dispbar .yseg button{padding:4px 9px;font-size:11.5px}
   .ysep{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink2)}
   .ysep input{width:84px;accent-color:var(--accent)}
@@ -214,6 +244,9 @@
   .wfctl.v3 input{width:96px}
   .display.darkbg .wfctl{background:rgba(16,19,28,.85);border-color:#2a3140;color:#aab3c7}
   .seg.mini{min-width:118px}
+  .seg.seg4{min-width:150px}
+  .seg.seg4 button{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:12.5px;padding:5px 2px}
+  .seg.seg4 button sub{font-size:.7em}
   .seg.mini button{padding:5px 2px;font-size:12px}
   .ordseg{flex:0 0 auto}
   .ordseg button{
@@ -311,6 +344,10 @@
     .row input[type=range]{width:150px}
     .seg{min-width:132px}
     .seg button{padding:9px 4px;font-size:13.5px}
+    .absseg button{padding:6px 8px;font-size:12px}
+    .seg.seg4 button{padding:9px 2px;font-size:13px}
+    .ycycle{padding:7px 10px}
+    .eq .term.nl2{padding:2px 4px}
     .dispbar select{padding:7px 8px;font-size:13px}
     summary{padding:13px 2px}
 
@@ -469,9 +506,16 @@
         <button data-v="4" class="on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button>
         <button data-v="6">+&nabla;&#8308;h +&nabla;&#8310;h</button>
       </span>
-      <span class="eq">+ (&nabla;h)&sup2;
+      <span class="eq eqterms"><span class="term on nl2" id="termNL2" role="button" tabindex="0"
+              title="the KS nonlinearity (&nabla;h)&sup2; — click to switch it off (crossed out) or on. Without it the equation is linear and blows up unless &alpha; or &beta; supplies the saturation">+ (&nabla;h)&sup2;</span>
         <span class="term" id="termA">+ &alpha;|&nabla;h|</span>
-        <span class="term" id="termB">+ &beta;(&nabla;h)&#8308;</span></span>
+        <span class="seg ordseg absseg" id="segAbs" hidden
+              title="meaning of |&nabla;h| in 2D: the Euclidean norm &radic;((&part;h/&part;x)&sup2;+(&part;h/&part;y)&sup2;) (standard), or the sum |&part;h/&part;x| + |&part;h/&part;y|">
+          <button data-v="euclid" class="on">+ &alpha;&radic;(h<sub>x</sub>&sup2;+h<sub>y</sub>&sup2;)</button>
+          <button data-v="sum">+ &alpha;(|h<sub>x</sub>|+|h<sub>y</sub>|)</button>
+        </span>
+        <span class="term" id="termB">+ &beta;(&nabla;h)&#8308;</span>
+        <span class="linwarn" id="linWarn" hidden title="no nonlinear term is active: the equation is linear and its unstable modes grow without bound">linear — add &alpha; or &beta;</span></span>
       <span class="tctl">&alpha;
         <input type="range" id="rngAlpha" min="-3" max="3" step="0.1" value="0" title="&alpha;: &minus;3 … 3 in steps of 0.1">
         <b id="alphaVal">0</b></span>
@@ -491,6 +535,10 @@
         <div class="seg mini yseg" id="segYvar2" title="y-axis variable on all plots">
           <button data-v="h" class="on">h</button><button data-v="dx">dh/dx</button>
         </div>
+        <button class="tbtn ycycle" id="bYvar2" hidden
+                title="plotted field — click to cycle: h → ∂h/∂x → |∇h| = √((∂h/∂x)²+(∂h/∂y)²) → ∇²h. It is the height of the 3D surface, and the colour of the map">
+          <span class="ylab" id="yvarLab">h</span><span class="ychev">&#8635;</span>
+        </button>
         <span class="cbar cbtop" id="cbTop" title="colour scale of the display: extreme values of the coloured quantity">
           <b class="cbmin" id="cbTopMin">−1</b><canvas class="cbcan" id="cbTopCan" width="90" height="10"></canvas><b class="cbmax" id="cbTopMax">+1</b>
         </span>
@@ -710,9 +758,15 @@
               <option selected>2000</option><option>5000</option>
             </select>
           </div>
-          <div class="row"><label>y-axis shows</label>
+          <div class="row" id="rowYvar1"><label>y-axis shows</label>
             <div class="seg mini" id="segYvar">
               <button data-v="h" class="on">h</button><button data-v="dx">dh/dx</button>
+            </div>
+          </div>
+          <div class="row" id="rowYvar2" style="display:none"><label title="the height of the 3D surface and the coloured field of the map">plotted field</label>
+            <div class="seg mini seg4" id="segYvar4">
+              <button data-v="h" class="on">h</button><button data-v="dx">&part;<sub>x</sub>h</button>
+              <button data-v="absdx">|&nabla;h|</button><button data-v="lap">&nabla;&sup2;h</button>
             </div>
           </div>
           <div class="hint">Display amplitude magnifies heights and colours. The corner slider on
@@ -740,6 +794,14 @@
           0 &lt; k &lt; 1, but flatter near k = 0 and with the fastest-growing mode at
           k = &radic;(2/3) &asymp; 0.82. The switch acts on the running field, so you can watch one
           equation's pattern relax into the other's.</p>
+          <p><b>Switching the KS nonlinearity off.</b> The term <i>(&nabla;h)&sup2;</i> in the
+          header is a switch: click it and it is crossed out and dropped from the equation. What
+          remains is then linear, and the unstable band 0 &lt; k &lt; 1 grows without bound — the run
+          stops with a warning — unless one of the two extra terms below is switched on to take
+          over the saturation. This lets you see how far the KS picture depends on the particular
+          form of its nonlinearity: with &alpha;|&nabla;h| or &beta;(&nabla;h)&#8308; alone the
+          pattern still forms cells of the same size, since the cell size is fixed by the linear
+          terms, but their shape and dynamics change.</p>
           <p><b>Extra growth terms.</b> The sliders in the header switch on two optional
           slope-dependent growth terms. <i>&alpha;|&nabla;h|</i> makes the front advance in
           proportion to the local slope magnitude — a non-analytic term that favours facets and
@@ -753,7 +815,12 @@
           time step follows it automatically (0.02 up to |&beta;| = 2, then 0.01 and 0.005), which
           keeps the fourth-order integration accurate; runs stay bounded over the whole range,
           but if a combination ever does blow up the run stops with a warning. Both terms act
-          instantly, without a reset.</p>
+          instantly, without a reset. In 2D the slope magnitude |&nabla;h| has two natural
+          readings, and the header shows them on a toggle switch: the Euclidean norm
+          <i>&radic;(h<sub>x</sub>&sup2; + h<sub>y</sub>&sup2;)</i>, the isotropic standard, or the
+          sum <i>|h<sub>x</sub>| + |h<sub>y</sub>|</i>, which is anisotropic — it prefers facets
+          aligned with the lattice axes, like a crystal growing with cubic anisotropy. The
+          reading in action is the highlighted one; in 1D both reduce to |dh/dx|.</p>
           <p><b>Mean growth.</b> Since (&nabla;h)&sup2; &ge; 0 the mean height climbs at rate
           &lang;(&nabla;h)&sup2;&rang; (KPZ-like). The display shows the fluctuation h &minus; &lang;h&rang;;
           the readout &lang;h&rang; tracks the climb, and W is the interface width (rms roughness).</p>
@@ -769,6 +836,14 @@
           for the nonlinear term), and the time stepper is ETDRK4 (Kassam–Trefethen), a fourth-order
           exponential integrator that treats the stiff linear operator exactly. Large 2D lattices
           (256, or open boundaries) are heavy — lower steps/frame if the animation stutters.</p>
+          <p><b>Plotted field in 2D.</b> The button next to the display-mode menu (and the
+          <i>plotted field</i> row above) cycles through what is drawn: the height h, the slope
+          &part;h/&part;x, the slope magnitude |&nabla;h| = &radic;((&part;h/&part;x)&sup2; +
+          (&part;h/&part;y)&sup2;), or the Laplacian &nabla;&sup2;h — the curvature that drives the
+          instability, largest on the cell tops and in the valleys. In the map the chosen field
+          is the coloured one; on the 3D surface it is the <i>height</i>, while the colour menu
+          still paints any quantity on top of it, so you can e.g. show the surface h coloured by
+          its Laplacian, or the surface of |&nabla;h| coloured by h. The default is h.</p>
           <p><b>Displays.</b> In 1D: the instantaneous profile h(x)&minus;&lang;h&rang;, the stacked
           <b>profiles h(x,t)</b> (absolute height, captured continuously; the corner slider sets the curve
           spacing), or the <b>space–time map</b>, which
@@ -1034,8 +1109,14 @@ function buildSim(P){
 
   const FT = (re,im,inv) => { if(ny===1) fftCore(re,im,inv); else fft2(re,im,nx,ny,inv,csr,csi); };
 
-  /* optional extra growth terms: N = |grad h|^2 + ALPHA*|grad h| + BETA*|grad h|^4 */
+  /* nonlinearity: N = NL2*(grad h)^2 + ALPHA*|grad h| + BETA*(grad h)^4.
+     NL2 is 1 or 0 (the (∇h)² term can be switched off in the header — then α or β
+     must supply the saturation).  In 2D |grad h| is either the Euclidean norm
+     sqrt(hx²+hy²) (absMode 'euclid', the standard) or the taxicab sum
+     |hx|+|hy| (absMode 'sum'); in 1D both are |dh/dx|. */
   let ALPHA = P.alpha || 0, BETA = P.beta || 0;
+  let NL2 = (P.nl2 === undefined) ? 1 : (P.nl2 ? 1 : 0);
+  let ABS_SUM = P.absMode === 'sum';
 
   /* Both gradient components come out of ONE inverse transform: the spectra of
      dh/dx and dh/dy are Hermitian, so transforming (i·kx·v) + i(i·ky·v) returns
@@ -1049,26 +1130,31 @@ function buildSim(P){
         g1i[p] =  kx*r - ky*i;
       }
       FT(g1r, g1i, true);                                // g1r = dh/dx, g1i = dh/dy
-      if(ALPHA === 0 && BETA === 0){
+      if(ALPHA === 0 && BETA === 0 && NL2 === 1){
         for(let p=0;p<M;p++){
           const a = g1r[p], b = g1i[p];
           outr[p] = a*a + b*b; outi[p] = 0;
         }
+      } else if(ABS_SUM){
+        for(let p=0;p<M;p++){
+          const a = g1r[p], b = g1i[p], g = a*a + b*b;
+          outr[p] = NL2*g + ALPHA*((a<0?-a:a) + (b<0?-b:b)) + BETA*g*g; outi[p] = 0;
+        }
       } else {
         for(let p=0;p<M;p++){
           const a = g1r[p], b = g1i[p], g = a*a + b*b;
-          outr[p] = g + ALPHA*Math.sqrt(g) + BETA*g*g; outi[p] = 0;
+          outr[p] = NL2*g + ALPHA*Math.sqrt(g) + BETA*g*g; outi[p] = 0;
         }
       }
     } else {
       for(let p=0;p<M;p++){ g1r[p] = -KX[p]*ini[p]; g1i[p] = KX[p]*inr[p]; }
       FT(g1r, g1i, true);
-      if(ALPHA === 0 && BETA === 0){
+      if(ALPHA === 0 && BETA === 0 && NL2 === 1){
         for(let p=0;p<M;p++){ outr[p] = g1r[p]*g1r[p]; outi[p] = 0; }
       } else {
         for(let p=0;p<M;p++){
           const g = g1r[p]*g1r[p];
-          outr[p] = g + ALPHA*Math.abs(g1r[p]) + BETA*g*g; outi[p] = 0;
+          outr[p] = NL2*g + ALPHA*Math.abs(g1r[p]) + BETA*g*g; outi[p] = 0;
         }
       }
     }
@@ -1306,7 +1392,11 @@ function buildSim(P){
 
   s.frame = function(n){ for(let i=0;i<n;i++) s.step(); s.sync(); };
   s.setDt = function(dt){ s.P.dt = dt; computeCoeffs(dt); };
-  s.setTerms = function(a, b){ ALPHA = a; BETA = b; };
+  s.setTerms = function(a, b, nl2, absMode){
+    ALPHA = a; BETA = b;
+    if(nl2 !== undefined) NL2 = nl2 ? 1 : 0;
+    if(absMode !== undefined) ABS_SUM = absMode === 'sum';
+  };
   s.setOrder = function(o){ s.P.order = o; fillLin(o); computeCoeffs(s.P.dt); };
 
   /* derived fields for colouring, computed spectrally:
@@ -1419,10 +1509,16 @@ function buildSim(P){
   let clean = false, onScreen = true;
   const capInset = () => onScreen ? 96 : 0;
 
-  const params = { dim:1, L:128, bc:'periodic', n:4, amp:0, eps:0.1, dt:0.1, dx:1, alpha:0, beta:0, order:4 };
+  const params = { dim:1, L:128, bc:'periodic', n:4, amp:0, eps:0.1, dt:0.1, dx:1, alpha:0, beta:0, order:4,
+                   nl2:true, absMode:'euclid' };
   let stepsPerFrame = 5;
   let dtplot = 0.2, keepN = 2000, dispGain = 25;   // dtplot: internal capture cadence
-  let yvar = 'h';                      // y-axis variable throughout the plots: h or dh/dx
+  /* plotted variable: 1D — 'h' or 'dx' (dh/dx) on the y axis of every plot;
+     2D — 'h', 'dx' (∂h/∂x), 'absdx' (|∇h| = √(hx²+hy²)) or 'lap' (∇²h): the
+     height of the 3D surface, and the coloured field of the map */
+  let yvar = 'h';
+  const YCYCLE = ['h','dx','absdx','lap'];
+  const geoKindOf = () => (params.dim === 2 ? (YCYCLE.includes(yvar) ? yvar : 'h') : (yvar === 'dx' ? 'dx' : 'h'));
   let sim = null, running = false, diverged = false;
   let profScale = 1e-6;
   let stamp = 0;
@@ -1575,12 +1671,13 @@ function buildSim(P){
   }
   /* a new twin (reset, mode switch) starts a fresh λ(x) colour scale */
   function resetLyScale(){ for(const k of ['lydiv','nlydiv']){ delete qwin[k]; qscales[k] = 1e-6; scaleStamp[k] = -1; } }
-  let gbuf = null; const gCache = { stamp:-1 };
+  let gbuf = null; const gCache = { stamp:-1, kind:'' };
   function geoField(){
-    if(yvar !== 'dx') return sim.h;
-    if(gCache.stamp !== stamp){
+    const gk = geoKindOf();
+    if(gk === 'h') return sim.h;
+    if(gCache.stamp !== stamp || gCache.kind !== gk){
       if(!gbuf || gbuf.length !== sim.M) gbuf = new Float64Array(sim.M);
-      sim.derived('dx', gbuf); gCache.stamp = stamp;
+      sim.derived(gk, gbuf); gCache.stamp = stamp; gCache.kind = gk;
     }
     return gbuf;
   }
@@ -1681,7 +1778,8 @@ function buildSim(P){
     diverged = false; $('divergedMsg').style.display = 'none';
     sim = buildSim({ dim:params.dim, L:params.L, bc:params.bc, dt:params.dt, dx:params.dx,
                      nwx:params.n, nwy:params.n, amp:params.amp, eps:params.eps,
-                     alpha:params.alpha, beta:params.beta, order:params.order });
+                     alpha:params.alpha, beta:params.beta, order:params.order,
+                     nl2:params.nl2, absMode:params.absMode });
     sim.lyap.on = lyapOpen; sim.lyap.mode = lyMode;
     stamp++;
     qbuf = new Float64Array(sim.M);
@@ -2200,11 +2298,13 @@ function buildSim(P){
   const surf = { m:0, px:null, py:null, dep:null, zw:null, order:null };
   function drawSurface(w, h){
     const Lp = sim.physNx, kind = effKind();
-    const geoKind = yvar==='dx' ? 'dx' : 'h';
+    const geoKind = geoKindOf();
     ensureScale(kind); ensureScale(geoKind);
     const Sq = scaleFor(kind), q = getQ(kind);
     const GEO = geoField();
     const Sh = niceCeil(qscales[geoKind])/dispGain;   // quantized: no frame-to-frame breathing
+    /* |∇h| ≥ 0: lift the base plane so the surface still sits around the middle */
+    const zOff = geoKind === 'absdx' ? -0.5*niceCeil(qscales[geoKind]) : 0;
     const stride = Math.max(1, Math.ceil(Lp/384));   // 4x finer mesh
     const idx = [];
     for(let i=0;i<Lp;i+=stride) idx.push(i);
@@ -2238,7 +2338,7 @@ function buildSim(P){
       const Yw = idx[gj]-(Lp-1)/2;
       for(let gi=0;gi<m;gi++){
         const Xw = idx[gi]-(Lp-1)/2;
-        let Z = GEO[idx[gj]*sim.nx+idx[gi]]*zAmp;
+        let Z = (GEO[idx[gj]*sim.nx+idx[gi]] + zOff)*zAmp;
         if(Z > zClamp) Z = zClamp; else if(Z < -zClamp) Z = -zClamp;
         const xr =  cA*Xw + sA*Yw;
         const yr = -sA*Xw + cA*Yw;
@@ -2292,10 +2392,18 @@ function buildSim(P){
       }
       ctx.closePath(); ctx.fill();
     }}
-    if(!clean && onScreen && w >= 480){
-      axisFont(); ctx.fillStyle = TH.label;
-      ctx.textAlign='right'; ctx.textBaseline='alphabetic';
-      ctx.fillText('drag to rotate', w-14-capInset(), h-8);
+    if(!clean){
+      axisFont(); ctx.fillStyle = TH.label; ctx.textBaseline='alphabetic';
+      if(onScreen && w >= 480){
+        ctx.textAlign='right';
+        ctx.fillText('drag to rotate', w-14-capInset(), h-8);
+      }
+      /* which field is the height (on screen the toolbar button says so too; on
+         phones the preset buttons occupy this corner, so only wide displays) */
+      if(!onScreen || window.innerWidth > 860){
+        ctx.textAlign='left';
+        ctx.fillText('height: ' + kindLabel(geoKind) + (kind === geoKind ? '  (= colour)' : ''), 12, h-8);
+      }
     }
   }
 
@@ -2700,8 +2808,9 @@ function buildSim(P){
      actually being integrated and its parameters stamped in blue in the corner */
   function eqLines(){
     const lin = params.order === 6 ? '+∇⁴h + ∇⁶h' : '−∇²h − ∇⁴h';
-    let eq = '∂h/∂t = ' + lin + ' + (∇h)²';
-    if(params.alpha !== 0) eq += (params.alpha > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.alpha)) + '·|∇h|';
+    let eq = '∂h/∂t = ' + lin + (params.nl2 ? ' + (∇h)²' : '');
+    const absTxt = params.dim === 2 ? (params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·√(hₓ²+hᵧ²)') : '·|∇h|';
+    if(params.alpha !== 0) eq += (params.alpha > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.alpha)) + absTxt;
     if(params.beta  !== 0) eq += (params.beta  > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.beta))  + '·(∇h)⁴';
     const geom = (params.dim === 1 ? '1+1 D' : '2+1 D') + ',  ' + params.bc +
                  ',  L = ' + params.L + ' × dx ' + params.dx +
@@ -2780,8 +2889,8 @@ function buildSim(P){
       sctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, side, side);
       oc = sq;
     }
-    const tag = (params.dim === 1 ? 'KS1D' : 'KS2D') +
-                (params.alpha ? '_a' + fmtTerm(params.alpha) : '') +
+    const tag = (params.dim === 1 ? 'KS1D' : 'KS2D') + (params.nl2 ? '' : '_nosq') +
+                (params.alpha ? '_a' + fmtTerm(params.alpha) + (params.dim === 2 && params.absMode === 'sum' ? 'sum' : '') : '') +
                 (params.beta  ? '_b' + fmtTerm(params.beta)  : '') +
                 '_L' + params.L + '_t' + sim.t.toFixed(0) +
                 (kind === 'clean' ? '_clean' : kind === 'sq' ? '_sq' : '');
@@ -2827,7 +2936,7 @@ function buildSim(P){
       return;
     }
     updateScales();
-    if(yvar === 'dx') ensureScale('dx');
+    if(yvar !== 'h') ensureScale(geoKindOf());
     if(params.dim === 1){
       pushRow();
       if(modeSel[1] === 'wf3dsw') swRecord();
@@ -2860,19 +2969,37 @@ function buildSim(P){
     });
   }
   seg($('segDim'), ()=>''+params.dim, v=>{
-    params.dim = +v; applyDimUI(); if(sim) autoDt(); rebuild();
+    params.dim = +v;
+    if(params.dim === 1 && yvar !== 'h' && yvar !== 'dx'){   // 1D plots only h or dh/dx
+      yvar = 'h'; setSeg('segYvar', yvar); setSeg('segYvar2', yvar); setSeg('segYvar4', yvar);
+    }
+    applyDimUI(); if(sim) autoDt(); rebuild(); applyTerms();
   });
   seg($('segBC'),  ()=>params.bc,     v=>{ params.bc = v; updateHint(); rebuild(); });
   seg($('segAmp'), ()=>''+params.amp, v=>{ params.amp = +v; rebuild(); });
   seg($('segEps'), ()=>''+params.eps, v=>{ params.eps = +v; rebuild(); });
   function setYvar(v){
     yvar = v; wfScale = 0; gCache.stamp = -1;
-    setSeg('segYvar', v); setSeg('segYvar2', v);
-    if(yvar === 'dx') ensureScale('dx');
+    setSeg('segYvar', v); setSeg('segYvar2', v); setSeg('segYvar4', v);
+    syncYvarBtn();
+    /* 2D map: the plotted field is the coloured field — the colour menu follows */
+    if(params.dim === 2 && modeSel[2] === 'map' && !isLyKind(qkind) && YCYCLE.includes(v)){
+      qkind = v; $('qty').value = v;
+    }
+    if(sim && yvar !== 'h') ensureScale(geoKindOf());
     draw();
+  }
+  function syncYvarBtn(){
+    const lab = { h:'h', dx:'∂h/∂x', absdx:'|∇h|', lap:'∇²h' }[yvar] || 'h';
+    $('yvarLab').textContent = lab;
   }
   seg($('segYvar'), ()=>yvar, setYvar);
   seg($('segYvar2'), ()=>yvar, setYvar);
+  seg($('segYvar4'), ()=>yvar, setYvar);
+  $('bYvar2').addEventListener('click', ()=>{
+    const i = YCYCLE.indexOf(yvar);
+    setYvar(YCYCLE[(i < 0 ? 0 : i + 1) % YCYCLE.length]);
+  });
   seg($('segOrd'), ()=>''+params.order, v=>{
     params.order = +v;
     sim.setOrder(params.order);          // switches the running equation, keeps the field
@@ -2884,7 +3011,12 @@ function buildSim(P){
 
   function updateOverlays(){
     $('vsepWrap').style.display = params.dim===1 ? 'flex' : 'none';
-    $('segYvar2') && ($('segYvar2').style.display = 'flex');
+    /* 1D: the h / dh/dx switch; 2D: one button cycling h → ∂h/∂x → |∇h| → ∇²h */
+    $('segYvar2').style.display = params.dim===1 ? 'flex' : 'none';
+    $('bYvar2').hidden = params.dim !== 2;
+    $('rowYvar1').style.display = params.dim===1 ? '' : 'none';
+    $('rowYvar2').style.display = params.dim===2 ? '' : 'none';
+    syncYvarBtn();
     const wfMode = params.dim===1 && (modeSel[1]==='profiles' || is3dMode(modeSel[1]));
     $('wfCtl').style.display = wfMode ? 'flex' : 'none';
     document.querySelectorAll('.wfrow3d').forEach(el =>
@@ -2922,6 +3054,7 @@ function buildSim(P){
     qsel.querySelector('option[value="lap"]').textContent   = is2?'∇²h':'d²h/dx²';
     qsel.querySelector('option[value="nlap"]').textContent  = is2?'−∇²h':'−d²h/dx²';
     if(is2 && qkind === 'plain'){ qkind = 'h'; qsel.value = 'h'; }
+    syncEqHeader();
     updateOverlays();
     updateHint();
     autoSpf();                          // the 2D cap on steps/frame differs from 1D
@@ -2959,15 +3092,33 @@ function buildSim(P){
   // extra growth terms alpha, beta (header sliders)
   const fmtTerm = v => (Math.abs(v) < 1e-9 ? '0' : (+v.toFixed(2)).toString());
   function applyTerms(){
-    sim.setTerms(params.alpha, params.beta);
+    sim.setTerms(params.alpha, params.beta, params.nl2, params.absMode);
     sim.lyapResetAvg();
+    syncEqHeader();
+  }
+  /* the equation line: which terms are active, (∇h)² on or crossed out, and in
+     2D the two readings of |∇h| on their toggle switch */
+  function syncEqHeader(){
+    const is2 = params.dim === 2, aOn = params.alpha !== 0;
     $('alphaVal').textContent = fmtTerm(params.alpha);
     $('betaVal').textContent = fmtTerm(params.beta);
-    $('alphaVal').classList.toggle('on', params.alpha !== 0);
+    $('alphaVal').classList.toggle('on', aOn);
     $('betaVal').classList.toggle('on', params.beta !== 0);
-    $('termA').classList.toggle('on', params.alpha !== 0);
+    $('termA').classList.toggle('on', aOn);
     $('termB').classList.toggle('on', params.beta !== 0);
+    $('termNL2').classList.toggle('on', params.nl2);
+    $('termNL2').classList.toggle('off', !params.nl2);
+    $('termNL2').setAttribute('aria-pressed', params.nl2 ? 'true' : 'false');
+    $('termA').hidden = is2;                     // 1D: the plain α|∇h| term
+    $('segAbs').hidden = !is2;                   // 2D: the switch between the two norms
+    $('segAbs').classList.toggle('zero', !aOn);
+    setSeg('segAbs', params.absMode);
+    $('linWarn').hidden = params.nl2 || aOn || params.beta !== 0;
   }
+  $('termNL2').addEventListener('click', toggleNL2);
+  $('termNL2').addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleNL2(); } });
+  function toggleNL2(){ params.nl2 = !params.nl2; applyTerms(); autoDt(); if(!running) draw(); }
+  seg($('segAbs'), ()=>params.absMode, v=>{ params.absMode = v; applyTerms(); if(!running) draw(); });
   /* β ladder: 0.1 steps where the term is a perturbation (|β| ≤ 2), 0.5 steps
      out to ±5 where it dominates.  The slider carries the index. */
   const BETAV = (function(){
@@ -3094,9 +3245,20 @@ function buildSim(P){
   });
 
   $('cmap').addEventListener('change', e=>{ setLUT(e.target.value); draw(); });
-  $('qty').addEventListener('change', e=>{ qkind = e.target.value; draw(); });
+  $('qty').addEventListener('change', e=>{
+    qkind = e.target.value;
+    /* 2D map: the coloured field is the plotted field — keep the field button in step */
+    if(params.dim === 2 && modeSel[2] === 'map' && YCYCLE.includes(qkind) && qkind !== yvar){
+      yvar = qkind; gCache.stamp = -1; setSeg('segYvar', yvar); setSeg('segYvar2', yvar); setSeg('segYvar4', yvar); syncYvarBtn();
+    }
+    draw();
+  });
   $('dispmode').addEventListener('change', e=>{
     modeSel[params.dim] = e.target.value;
+    /* entering the 2D map: the plotted field becomes the coloured field */
+    if(params.dim === 2 && modeSel[2] === 'map' && !isLyKind(qkind) && YCYCLE.includes(yvar) && qkind !== yvar){
+      qkind = yvar; $('qty').value = yvar;
+    }
     if(sim) nextSnap = Math.min(nextSnap, sim.t + capDt());
     autoDt();
     updateOverlays();
@@ -3188,7 +3350,8 @@ function buildSim(P){
   function syncCommonUI(){
     setSeg('segDim', ''+params.dim); setSeg('segBC', params.bc);
     setSeg('segAmp', ''+params.amp); setSeg('segEps', ''+params.eps);
-    setSeg('segOrd', ''+params.order); setSeg('segYvar', yvar); setSeg('segYvar2', yvar);
+    setSeg('segOrd', ''+params.order); setSeg('segYvar', yvar); setSeg('segYvar2', yvar); setSeg('segYvar4', yvar);
+    setSeg('segAbs', params.absMode); syncYvarBtn();
     $('selL').value = ''+params.L; $('selDx').value = ''+params.dx;
     $('selGain').value = ''+dispGain;
     $('rngN').value = params.n; $('nVal').textContent = params.n;
@@ -3209,7 +3372,7 @@ function buildSim(P){
   }
   function base1D(){
     params.dim=1; params.L=128; params.bc='open'; params.dx=0.5; params.order=4;
-    params.alpha=0; params.beta=0; params.amp=0; params.eps=0.1; params.n=4;
+    params.alpha=0; params.beta=0; params.amp=0; params.eps=0.1; params.n=4; params.nl2=true; params.absMode='euclid';
     params.dt=0.1; $('selDt').value='0.1';
     stepsPerFrame=2; $('selSpf').value='2';
     dispGain=2; keepN=5000;
@@ -3225,7 +3388,7 @@ function buildSim(P){
   }
   function base2D(){
     params.dim=2; params.L=128; params.bc='periodic'; params.dx=0.5; params.order=4;
-    params.alpha=0; params.beta=0; params.amp=0; params.eps=0.1; params.n=4;
+    params.alpha=0; params.beta=0; params.amp=0; params.eps=0.1; params.n=4; params.nl2=true; params.absMode='euclid';
     params.dt=0.2; $('selDt').value='0.2';
     stepsPerFrame=2; $('selSpf').value='2';
     dispGain=2; yvar='h'; qkind='lap'; modeSel[2]='surface';
