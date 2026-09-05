@@ -326,6 +326,8 @@
   .aboutbox p.cthint{color:var(--ink);opacity:.88;font-size:12.5px;}
   .aboutbox ol.refs{margin:0 14px 12px 34px;}
   .aboutbox .artcredit{margin:12px 14px 12px;}
+  .aboutbox .refhead{margin:14px 14px 8px;}
+  .aboutbox p.abstract{margin:0 14px 12px;color:var(--ink);opacity:.88;text-align:left;hyphens:manual;}
   @media (max-width:560px){ .aboutbox .ctl-label,.aboutbox .artcredit{margin-left:12px;margin-right:12px;} .aboutbox ol.refs{margin-left:30px;margin-right:12px;} }
   /* collapsible abstract + references at the foot of the control panel */
   details.about{margin-top:16px;border-top:1px solid var(--panel-edge);padding-top:14px;}
@@ -573,204 +575,134 @@
         flourish, dwindle and sometimes vanish altogether &mdash; on the timescale over which mountain
         ranges are raised and worn down, and the continents themselves are shuffled around the planet.</p>
 
-        <p class="ctl-label">One record switch, three places</p>
-        <p class="cthint">The record switch &mdash; <b>Marine</b>, <b>Land</b>,
-        <b>All</b>, <b>All&minus;</b> &mdash; appears on the <b>Basic data</b> heading, on the
-        <b>Luck versus toughness</b> control line, and on the <b>Technical analysis</b> heading
-        (where it shows only while that section is open). They are one control in three places:
-        turn any of them and the other two follow, so there is never a question of which record
-        selector is the one in force. Beside each is <b>#genera</b>, the size of the record now
-        selected, and under each a line in small letters saying what that record is and
-        &mdash; for the two combined options &mdash; how the extinction stress is applied:
-        always <b>each record apart</b>, two thresholds per horizon, one below the waterline and
-        one above it. <b>All</b> and <b>All&minus;</b> differ in one thing only: All&minus; drops
-        the singletons, the genera whose whole recorded range lies inside a single interval. It
-        is not a different treatment of the data, only a different answer to what to do about
-        the short-ranged genera that a preservation window can manufacture.</p>
-        <p class="cthint">Each panel in section 2 also carries a one-sentence caption saying what
-        it plots. &ldquo;Fractional survival&rdquo; and &ldquo;Event survival curves&rdquo; are
-        exact names and opaque ones, and a reader who cannot tell them apart cannot tell whether
-        the model is doing well on either.</p>
+        <p class="ctl-label">A Model for Luck versus Resilience</p>
+        <p class="cthint">Here is a curious fact about the fossil record: <b>the old survive</b>. A genus
+        that has already lived through several extinction events is less likely to die in the next one
+        than a genus that has just appeared. The obvious explanation is that the survivors are simply
+        tougher &mdash; that lineages somehow get hardier as they age.</p>
+        <p class="cthint">This applet turns that idea on its head (ref.&nbsp;1). Imagine that nothing about a
+        genus ever changes. Every genus is dealt a fixed amount of <b>toughness</b> at birth, and at every
+        extinction event it also gets a random kick of good or bad <b>luck</b>. The weakest combination
+        dies. Then, after a few events, whoever is still standing is mostly the tough ones &mdash; not
+        because they got tougher, but because the frail were swept away long ago. That is called
+        <b>survivorship bias</b>, and it is the same reason old cars on the road all seem to be well
+        built: the badly built ones went to the scrapyard years ago.</p>
+        <p class="cthint">The surprising result is that this one idea, with a single number to adjust
+        &mdash; how much luck counts compared with toughness &mdash; reproduces how survival chances rise
+        with the age of a genus, how extinction risk falls with age, and how long genera typically live.
+        The best fit says that luck weighs a little <i>heavier</i> than toughness. And "luck" is not an
+        idle word here: it stands for the fact that no two catastrophes are alike. One may be an
+        ecosystem stumbling over its own feet (ref.&nbsp;5), another the work of volcanoes, and one was a
+        rock that fell out of the sky.</p>
+        <p class="cthint">The applet also lets you tell the story a little differently. Instead of dealing
+        toughness to each genus separately, you can give every genus in an <b>order</b> the same
+        toughness &mdash; as if fortune were handed out by family rather than by individual. That
+        toughness can be random, or it can be set from how long the genera of that order really lasted,
+        which is the more careful version because it lets relatives face the crises of history
+        together, as they truly did. Told that way, luck becomes more modest: the best fit drops from
+        about 1.5 to about 0.9.</p>
+        <p class="cthint">Beyond the model, the applet opens the door to the orders and classes themselves,
+        to how diverse and how robust they were (ref.&nbsp;4). The <b>Origination&ndash;Extinction</b> map
+        gathers the whole family of Raup's survivorship curves (ref.&nbsp;3) into one picture, and the
+        <b>Class 3D map</b> shows each class through the orders it is made of &mdash; a bird's-eye view of
+        how the big branches of animal life relate to one another.</p>
+
+        <p class="ctl-label">Choosing which animals to look at</p>
+        <p class="cthint">The most important control is the <b>record switch</b>: <b>Marine</b>, <b>Land</b>,
+        <b>All</b> or <b>All&minus;</b>. You will find it in three places &mdash; on the <b>Basic data</b>
+        bar, on the <b>Luck versus toughness</b> control line and on the <b>Technical analysis</b> heading
+        &mdash; but it is one control: change it anywhere and the other two follow. Next to it,
+        <b>#genera</b> tells you how many genera are in the record you have chosen, and a small line
+        underneath says what that record is.</p>
+        <p class="cthint"><b>All</b> puts the sea and the land on one list. They are still treated as two
+        records: each keeps its own timeline of events, and at every event the sea and the land each lose
+        their own share. <b>All&minus;</b> is the same, except that it leaves out the <i>singletons</i>: genera
+        that appear and disappear within a single geological stage, and so were never seen to live through
+        anything. That is a big edit &mdash; about <b>39%</b> of the marine genera and <b>42%</b> of the land
+        genera are singletons. For Marine and Land on their own, the <b>Singleton+ / Singleton&minus;</b>
+        button in the control panel does the same job, and its setting is shown under the record
+        switch.</p>
+        <p class="cthint">Whichever you choose, the choice is made once, on the list of genera itself, before
+        anything is calculated. So every picture in the applet &mdash; extinctions, diversity, the maps,
+        the model and its survival curves &mdash; is always drawn from the same set of animals.</p>
 
         <p class="ctl-label">Finding your way around</p>
-        <p class="cthint">A box at the top, <b>Start here</b>, names the claim the applet is
-        about and the one plot that makes the argument, so a first visit does not begin with
-        twelve panels and no order to read them in. Fold it away once you know the route.</p>
-        <p class="cthint">Under <b>All</b>, where the two records are driven by separate stress
-        thresholds, the <b>extinction fraction</b> panel splits each horizon into two bars
-        &mdash; the marine fraction in ochre, the land fraction in green, the same two colours
-        the toughness panel gives those two stress series. They are placed side by side and
-        never stacked: they are fractions of different denominators, and stacking them would
-        invent a quantity that does not exist. It is worth seeing how far apart they can be.
-        At the youngest horizon the marine record loses 1.7% and the land record 46%; the
-        single pooled number the panel used to draw was 14.8%, which describes neither.</p>
-        <p class="cthint">Every time axis carries the <b>big five</b> mass extinctions as
-        dashed lines with a lettered chip above them: <b>O</b> end-Ordovician (443.8&nbsp;Ma),
-        <b>D</b> Late Devonian (372&nbsp;Ma), <b>P</b> end-Permian (251.9&nbsp;Ma),
-        <b>Tr</b> end-Triassic (201.4&nbsp;Ma), <b>K</b> end-Cretaceous (66&nbsp;Ma). They are
-        drawn behind the data on the extinction fractions, the counts, both diversity panels,
-        the toughness map and the per-event fit, always at the same five ages, so the eye can
-        move between panels instead of re-deriving the axis in each one.</p>
-        <p class="cthint">The <b>Luck</b> slider now says in words what its number means. Luck is
-        a ratio: the width of the random kick a genus takes at an event, divided by the spread of
-        intrinsic toughness across genera. At <b>0</b> the weakest by toughness die in strict
-        order and nothing else matters; at <b>1</b> the kick is exactly as wide as the toughness
-        spread and the two weigh the same; above that, who dies at any one event is mostly
-        chance and toughness only tells over many events. The line under the slider follows the
-        value as you drag it.</p>
-        <p class="cthint">Where the window is wide enough the record switch appears as four
-        visible segments instead of a button you have to click through; below that it falls back
-        to the cycle button. Both do the same thing.</p>
+        <p class="cthint">The <b>Start here</b> button next to this one names the claim the applet is about
+        and the single plot that makes the argument, so that a first visit does not begin with a dozen
+        panels and no idea where to look. Fold it away once you know the route.</p>
+        <p class="cthint">The display column has four numbered sections &mdash; <b>Basic data</b>, <b>Luck
+        versus toughness</b>, <b>Extinction&ndash;Origination</b> and <b>Taxonomic Orders</b> &mdash; and the
+        control column on the right (on a phone, behind the <b>Controls</b> button) has a matching
+        pull-down for each. Opening one opens its partner, and only one section is ever open at a time,
+        so the page never becomes a wall of graphs. Under each plot a one-line caption says what it shows
+        and how to read it.</p>
+        <p class="cthint">Every time axis carries the <b>big five</b> mass extinctions as dashed lines with a
+        letter above them: <b>O</b> end-Ordovician (444 million years ago), <b>D</b> Late Devonian
+        (372), <b>P</b> end-Permian (252), <b>Tr</b> end-Triassic (201) and <b>K</b> end-Cretaceous
+        (66) &mdash; the one that ended the dinosaurs. They sit at the same five places in every panel,
+        so you can move between pictures without losing your place.</p>
+        <p class="cthint">The <b>Luck</b> slider is the one number of the model, and the line under it says in
+        words what the number means. Luck is a ratio: the size of the random kick a genus takes at an
+        event, divided by how much the genera differ in toughness. At <b>0</b> the weakest always die
+        first and nothing else matters. At <b>1</b> luck and toughness weigh the same. Above that, who
+        dies in any single event is mostly chance, and toughness only tells over many events.</p>
+        <p class="cthint">A few practical things. The <b>◐</b> button flips the plots between a black and a
+        white background. The <b>Extinction fractions</b> and <b>Extinction counts</b> panels can be
+        zoomed along the time axis &mdash; pinch or drag on a phone, scroll or drag with a mouse, and a
+        double-tap brings the whole record back &mdash; which is how you get from "somewhere around 250
+        million years ago" down to the exact stage. The small <b>&#9635;</b> button in the corner of every
+        plot saves that plot alone as a square picture, with no axes or labels, ready for a slide or a
+        poster.</p>
 
-        <p class="ctl-label">The switches on the Basic data bar</p>
-        <p class="cthint">Three small buttons ride on the <b>Basic data</b> heading. The first
-        (◐) turns the plot background from black to white and back. The last cycles through the
-        six panels of that section. Between them sits the <b>record switch</b>, which is the
-        whole conditioning of the data in one control: <b>Marine</b>, <b>Land</b>,
-        <b>All</b> (everything both files hold, each record on its own event grid) and
-        <b>All&minus;</b> (the same, with the singletons removed). It is a shorthand for the
-        buttons in the drawer, and it moves them with it. The two combined options settle the
-        singleton question by definition; <b>Marine</b> and <b>Land</b> leave that switch
-        exactly where you last put it, and the line under the switch says which way it is
-        set, because the count moves by about a third between the two.</p>
-        <p class="cthint">The <b>Extinction fractions</b> and <b>Extinction counts</b> panels
-        both carry a zoom on the time axis: pinch or drag on a touch screen, wheel or drag with a
-        mouse, and a double-tap puts the whole record back. The bars keep a fixed width in
-        pixels through all of it &mdash; a bar marks a horizon, and a horizon has no duration to
-        widen &mdash; so zooming separates crowded horizons rather than thickening them, and the
-        tick labels re-space themselves to the window. That last part is the point of it: at
-        full extent the axis can only be read to the nearest hundred million years, while the
-        events themselves are stages a few Myr wide. Zoom to a 30&nbsp;Myr window around the
-        end-Permian and the axis reads in fives.</p>
-        <p class="cthint">The <b>Origination&ndash;Extinction</b> view opens showing the
-        <b>record alone</b>. Putting a synthetic map on the screen beside the real one before the
-        reader has looked at either invites reading the two as one picture; the switch above the
-        panel brings the model in when it is wanted. With the model showing, the two maps are
-        placed <b>side by side</b> on anything wider than a phone, because the eye compares
-        left-to-right far better than top-to-bottom &mdash; the same cell then sits at the same
-        height in both. On a phone they stack, since there is no width to spare. The switch is
-        page furniture and never appears in a downloaded PNG; nor does the toughness-mode
-        switch, which is replaced there by the name of the mode in force.</p>
-        <p class="cthint">Each of the six views in section 1 now carries a line under it saying
-        what it plots and how to read it, as the Luck-versus-toughness panels already did.</p>
+        <p class="ctl-label">The pictures, one by one</p>
+        <p class="cthint"><b>Extinction fractions</b> is the main view of section 1. At every stage boundary
+        it counts the genera that disappear there, divided by the genera that were alive just before.
+        The <i>fraction</i>, not the raw number, is what makes the end-Permian a catastrophe and a
+        crowded, well-preserved recent stage an ordinary day. With <b>All</b> selected each boundary gets
+        two bars &mdash; ochre for the sea, green for the land &mdash; side by side, because each is a
+        share of its own record. They can be very different: at the youngest boundary the sea loses
+        under 2% and the land nearly half.</p>
+        <p class="cthint"><b>Standing diversity</b> is the same list read the other way round: how many genera
+        are alive at each moment in time.</p>
+        <p class="cthint">The <b>Origination&ndash;Extinction</b> map puts the birth of every genus along one
+        axis and its death along the other, so each genus is a dot, and the colour says how many genera
+        share that spot. A dot on the diagonal is a genus that appeared and vanished in the same stage;
+        the further below the diagonal, the longer it lived. It opens showing the real record alone; the
+        switch above it brings in the model's version next to it for comparison.</p>
+        <p class="cthint">The <b>Order diversity</b> and the two <b>3D maps</b> are where the bookkeeping
+        becomes biology. Each order or class is one cylinder, placed by how long its genera lasted and
+        how many it had, running up through the time it existed, and coloured by class. Tap a cylinder
+        and you get that group's statistics and a drawing of a typical member. Both maps share the same
+        lifetime axis, so a position means the same thing in either. This is where you can ask the
+        applet's question for yourself: are long-lived orders long-lived because their genera are tough,
+        or because a big order is simply unlikely to lose every genus at once?</p>
+        <p class="cthint">Under <b>Luck versus toughness</b> the top panel draws one line per genus at its
+        toughness, from birth to death, with the stress of each event as a vertical bar: everything below
+        the bar dies. The views below it &mdash; <b>Genera vs time</b>, <b>Event survival</b>,
+        <b>Fractional survival</b> and <b>Survivorship</b> &mdash; compare the record (solid) with the
+        model (dashed) in four different ways. <b>Technical analysis</b> holds the arithmetic: a curve of
+        how well each luck value fits, and the distributions of genus lifetimes and event sizes the model
+        is asked to reproduce. The lifetime and event-size plots use logarithmic axes, because both
+        short-lived and very long-lived genera, and both small and enormous events, have to fit on the
+        same page.</p>
 
-        <p class="ctl-label">All and All&minus;</p>
-        <p class="cthint">Both are everything the two files hold, on one list, with each record
-        on its own event grid and its own stress threshold at every horizon. The count beside
-        the record switch says how many genera that is. They differ in one thing: <b>All&minus;</b>
-        removes the <i>singletons</i> &mdash; every genus whose whole recorded range lies inside
-        a single stratigraphic interval &mdash; on both sides of the shoreline. That is roughly
-        two genera in five, and it is not a small edit.</p>
-        <p class="cthint">What ties the two halves of a combined record together is what the
-        model says a genus <i>is</i>, not when it dies. The <b>toughness draw is shared</b>: it
-        is made once over both files at once and keyed by order name, so an order that occurs in
-        both carries the same toughness above and below the waterline. Under <b>Luck order</b>
-        and <b>Luck Real</b> that is what an order means here. Under <b>Luck genera</b> toughness
-        is drawn per genus, and a genus recorded in both files would be two rows the applet
-        cannot match &mdash; neither compilation is keyed by genus name in this build. In
-        practice the aquatic groups where such overlap would live are already excluded from the
-        combined records, so the fifteen orders that remain in common are handled by the
-        order-level rule above. The <b>luck value is one number for both</b>: it is never fitted
-        separately.</p>
-        <p class="ctl-label">Event sizes, and do all orders look alike?</p>
-        <p class="cthint">Under <b>Technical analysis</b>, below the three lifetime histograms,
-        two square panels give the distribution of <b>event size</b> &mdash; the fraction of the
-        standing diversity a horizon removes &mdash; on a linear axis and on log&ndash;log. The
-        model is constrained to take exactly that many victims at every horizon, so these two
-        are a property of the record rather than of the fit: they say what the luck model is
-        being asked to reproduce. The log&ndash;log version is the useful one, because the fat
-        tail is where the mass extinctions live and a linear axis buries it.</p>
-        <p class="cthint">The two <b>log&ndash;log</b> panels &mdash; genus lifetimes and event
-        sizes &mdash; plot a <b>density</b>, not a raw count. Logarithmic bins are equally wide
-        in log(x) and therefore not equally wide in x: in these histograms the last bin is about
-        <b>350 times wider</b> than the first. Plotting counts against a log axis then reports
-        N&nbsp;per&nbsp;bin, which for a power law p(x)&nbsp;~&nbsp;x<sup>&minus;a</sup> has slope
-        (1&minus;a) rather than &minus;a &mdash; off by exactly one in the exponent. It is not a
-        cosmetic difference: on the raw counts the event-size distribution appeared to
-        <i>rise</i> with a slope of +0.32, while the density <i>falls</i> with a slope of about
-        &minus;0.68. Each bin is now divided by its width in x, so dN/dx can be read straight off
-        the axes. The panels with linear bins keep plain counts, where no correction is
-        due.</p>
-        <p class="cthint">The axes were tidied to match: a logarithmic y axis runs over whole
-        decades from the smallest non-empty bin to the largest and never more than five of them,
-        adding the 2 and 5 of each decade when the span is short; linear axes step in
-        1&ndash;2&ndash;2.5&ndash;5 so the labels are round numbers rather than the quarters of
-        an arbitrary maximum.</p>
-        <p class="cthint">The two lifetime axes are now <b>fixed at 600&nbsp;Myr</b> for every
-        record. This matters more than it sounds. Letting the <b>Order mean lifetimes</b> panel
-        follow its own data made the land record look as though every order had nearly the same
-        mean lifetime &mdash; the land file reaches down to hundredths of a Myr, so the axis
-        stretched and the distribution collapsed into a spike. It is an artefact of the axis.
-        Measured properly, land orders are <i>more</i> dispersed than marine ones, not less:
-        the spread of log(mean lifetime) is <b>1.22</b> on land against <b>0.81</b> at sea over
-        all orders, and <b>0.90</b> against <b>0.65</b> if only orders with five or more genera
-        are counted. The 90th percentile is 14 times the 10th on land and 7 times at sea. That
-        number, sd(log), is now printed in the panel so the two records can be compared without
-        trusting the picture.</p>
+        <p class="ctl-label">Sea and land together</p>
+        <p class="cthint">When the two records are shown together, what links them is not <i>when</i> a genus
+        dies but <i>what</i> the model says a genus is. The toughness is dealt out once, by order name, so
+        an order that lives both in the sea and on land carries the same toughness in both. The luck
+        value is likewise one number for both records; it is never fitted separately for each.</p>
 
-        <p class="cthint">The two <b>3&nbsp;D maps</b> share that axis too. Each puts
-        log(average genus lifetime) along one edge of the cube, and each used to take its own
-        range from its own data &mdash; so a cylinder's position meant one thing in the order
-        map and something else in the class map. Worse, in the land record a handful of orders
-        dated to hundredths of a Myr pulled the low end down to 0.01, spreading the axis over
-        four and a half decades and packing the middle 80% of orders into a fifth of it. That
-        is the narrow band. The range is now taken once from the order data, trimmed at the
-        2nd percentile and capped at 2.2 decades, and the class map is given the identical
-        axis: the middle 80% now occupies about half the edge instead of a fifth, and the two
-        maps can be read against each other. Nothing is dropped &mdash; anything beyond the
-        ends is clamped to the end face, and the end labels state the range in Myr.</p>
-
-        <p class="ctl-label">Singleton+ and Singleton&minus;</p>
-        <p class="cthint">A <i>singleton</i> is a genus whose whole known range lies inside one
-        stratigraphic interval: it appears and disappears at neighbouring horizons, never
-        observed to live through anything. They are <b>39%</b> of the marine file and
-        <b>42%</b> of the land file. <b>Singleton+</b> (the default) keeps them.
-        <b>Singleton&minus;</b> removes them, testing each compilation against its own interval
-        scale, since the two are resolved differently.</p>
-        <p class="cthint">The switch acts on the genus list itself, before anything is computed
-        from it, so every panel in the applet &mdash; extinction fractions, standing diversity,
-        origination&ndash;extinction, the 3D maps, the model and all its survival curves &mdash;
-        is drawn from the same set of genera. There is no plot that keeps the singletons while
-        another drops them.</p>
-        <p class="cthint">This matters most on land. Around 100&nbsp;Ma the record carries two
-        narrow windows of extraordinary insect preservation &mdash; Burmese amber near
-        99&nbsp;Ma and the Crato and Santana Formations near 113&ndash;121&nbsp;Ma. Of the
-        genera originating between 94 and 116&nbsp;Ma, 69% are insects and <b>73% die within
-        6&nbsp;Myr of appearing</b>. Those are not extinctions; they are the opening and
-        closing of a sampling window, and the luck model has no mechanism for such a thing, so
-        this is where it fails hardest. It is not a land-only correction: the marine file is
-        nearly as full of singletons.</p>
-        <p class="cthint">Turning singletons off removes the amber spike almost entirely
-        &mdash; standing land diversity at 98&nbsp;Ma falls from about <b>2900</b> to
-        <b>1150</b>, back onto the surrounding trend &mdash; but it leaves the older
-        Aptian&ndash;Albian plateau near <b>113&ndash;125&nbsp;Ma</b> standing. Those genera
-        are dated to coarser intervals and so span more than one horizon: by the definition
-        above they are not singletons, and no filter of this kind will touch them. That
-        second bump has to be read for what it is, a preservation window, rather than
-        subtracted away.</p>
-
-        <p class="abstract">In the fossil record it is the old who survive. A genus that has already weathered many an
-        extinction is the more likely to weather the next, while the young perish easily. Must we then suppose that
-        lineages grow hardier as they age? Using the Sepkoski marine genus compendium, this applet follows ref.&nbsp;1 and
-        asks the question the other way about: what if nothing in a genus ever changes, and the old merely appear sturdy
-        because the frail were long ago swept away? That single idea — survivorship bias — with a single fitted parameter,
-        reproduces the whole set of age-conditioned survival probabilities, the way extinction risk falls with genus age,
-        and the distribution of genus lifetimes. The verdict is that Luck weighs a little heavier than intrinsic
-        properties in the game of species survival. And Luck is here no idle word: it carries the fact that no two
-        catastrophes are alike — one may be the ecosystem stumbling over its own feet (ref.&nbsp;5), another the work of
-        volcanoes, or of a stone that fell out of the sky.</p>
-        <p class="abstract">The applet also lets the story be told a little differently, by giving every genus in a
-        taxonomic order the same intrinsic toughness — as though fortune were dealt out by family rather than by
-        individual. That toughness may be drawn at random; or it may be set in proportion to the average lifetime of the
-        genera within the order, which is the more careful telling, for it lets kin meet the stresses of history together,
-        as in truth they did. Fitted in that manner Luck grows more modest than intrinsic toughness: the best fit falls to
-        0.9, where before it stood at 1.5.</p>
-        <p class="abstract">The applet opens the door to the orders themselves, to their diversity and their robustness
-        (ref.&nbsp;4). Among these views stands the Origination&ndash;Extinction matrix, which is, by its very construction,
-        the whole family of Raup's (1978) survivorship curves gathered into a single picture — the same curves that were
-        integrated along the extinction times in each of the survivorship curves of the analyses above.</p>
-        <p class="abstract">Finally the applet opens for analyzing taxonomic classes in terms of the orders that they
-        consist of, giving a bird's eye view on evolutionary relationships.</p>
+        <p class="ctl-label">A caution about the land record</p>
+        <p class="cthint">Fossils are not collected evenly through time. Around 100 million years ago the
+        land record has two short windows of extraordinary insect preservation &mdash; Burmese amber near
+        99 million years, and the Crato and Santana rocks of Brazil near 113&ndash;121 million years. Of the
+        genera that appear between 94 and 116 million years ago, 69% are insects, and 73% of them vanish
+        within 6 million years. Those are not extinctions; they are a window opening and closing, and no
+        model of survival can reproduce them. Try the <b>Land</b> record and look near 100 million years:
+        this is where the model fails hardest. Switching the singletons off removes most of that spike,
+        but not the older plateau near 113&ndash;125 million years, whose genera span more than one stage
+        and so do not count as singletons. That bump has to be read for what it is, a lucky patch of
+        preservation, rather than subtracted away.</p>
         <p class="refhead">References</p>
         <ol class="refs">
           <li>M.&nbsp;Tikhonov, K.&nbsp;Sneppen, S.&nbsp;Bornholdt, &amp; S.&nbsp;Maslov (2026). Survivorship Bias Explains Age-Dependent Extinction in Fossil Genera. <i>bioRxiv</i>, 2026-07.</li>
@@ -784,6 +716,7 @@
         <p class="artcredit">Built with <b>Claude</b> (Anthropic, model <i>claude-opus-5</i>), which
         wrote the code of this applet and drew the class silhouettes. The dataset, the model and the
         analysis are those of refs.&nbsp;2, 1 and 4.</p>
+      
       </details>
       <details class="startbox" id="startbox">
         <summary>Start here for understanding Survival Luck</summary>
