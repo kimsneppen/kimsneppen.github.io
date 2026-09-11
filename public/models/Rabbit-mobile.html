@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rabbit-Fox-Snake-Plant ABM — v48</title>
+<title>Rabbit-Fox-Snake-Plant ABM — v54</title>
 <style>
   :root {
     --lattice-w: 792px;
@@ -124,6 +124,20 @@
     line-height: 1.5;
   }
   .about b { color: #41493f; }
+  /* v51: the explainer now lives in the head of the display card */
+  .card-head .about { flex: 1 1 auto; margin: 0; order: -1; }
+  .card-head .about[open] { flex-basis: 100%; }
+  .card-head .about > summary { padding: 0; }
+  .card-head .about > summary::before { display: none; }
+  .card-head .about > summary .card-title { color: #232b25; }
+  .card-head .about > summary:hover .card-title { color: var(--accent-d); }
+  .card-head .legend { margin-left: auto; }
+  .about-body { max-width: 76ch; }
+  .about-body p { font-size: 12.5px; color: #3d453f; line-height: 1.55; margin: 6px 0 0; }
+  .about-body p.intro { font-style: italic; color: #2b332d; border-left: 3px solid var(--accent); padding-left: 10px; margin-top: 8px; }
+  .about-body h4 { font-family: var(--serif); font-size: 14px; font-weight: 600; color: #1f6b3a; margin: 14px 0 0; }
+  .about-body sub { font-size: 9px; }
+  .about-body p.refs { font-size: 12px; color: #4a524c; }
 
   /* ---- Buttons ---- */
   .group-label {
@@ -187,7 +201,7 @@
   /* ---- Parameter controls ---- */
   .control {
     display: grid;
-    grid-template-columns: 1fr 72px 42px;
+    grid-template-columns: 1fr 72px;
     gap: 7px;
     align-items: center;
     margin: 9px 0;
@@ -203,7 +217,7 @@
     font-size: 11.5px;
   }
   .control select {
-    grid-column: 1 / 4;
+    grid-column: 1 / 3;
     width: 100%;
     padding: 6px;
     border: 1px solid var(--line-2);
@@ -212,7 +226,7 @@
     font-size: 12px;
   }
   .control input[type="range"] {
-    grid-column: 1 / 4;
+    grid-column: 1 / 3;
     width: 100%;
     accent-color: var(--accent);
   }
@@ -374,7 +388,7 @@
   .scenario-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
   .scenario-row button { text-align: center; font-size: 11.5px; line-height: 1.25; padding: 8px 5px; }
   .controls-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; }
-  .controls-2col .control { grid-template-columns: 1fr 66px 28px; gap: 4px; margin: 8px 0; }
+  .controls-2col .control { grid-template-columns: 1fr 66px; gap: 4px; margin: 8px 0; }
   .controls-2col .control label { font-size: 11.5px; line-height: 1.2; }
   .controls-2col .control input[type="number"] { width: 66px; }
   .controls-2col .lock-btn { width: 28px; padding: 5px 1px; }
@@ -427,9 +441,9 @@
     body { background-attachment: scroll; }
     .control input[type="number"], .mini-control input, .mini-control select,
     .control select { font-size: 16px; }
-    .control { grid-template-columns: 1fr 84px 42px; }
+    .control { grid-template-columns: 1fr 84px; }
     .control input[type="number"] { width: 84px; padding: 6px; }
-    .controls-2col .control { grid-template-columns: 1fr 84px 34px; }
+    .controls-2col .control { grid-template-columns: 1fr 84px; }
     .controls-2col .control input[type="number"] { width: 84px; }
     .controls-2col .lock-btn { width: 34px; }
     .lock-btn, .L-toggle button, #fastBtn { min-height: 34px; }
@@ -559,20 +573,94 @@
     box-shadow: none;
     background: linear-gradient(#ffffff, #fafbf8);
   }
+
+  /* ---- v49: overlay controls on the main display ---- */
+  .canvas-wrap { position: relative; }
+  .canvas-wrap.dark { background: radial-gradient(120% 120% at 50% 0%, #1c2226 0%, #12171a 70%, #0d1114 100%); }
+  .canvas-wrap.dark #world { border-color: #2b3336; }
+  .hud {
+    position: absolute;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .hud > * { pointer-events: auto; }
+  .hud.tl { top: 12px; left: 12px; }
+  .hud.bl { bottom: 12px; left: 12px; }
+  .hud.br { bottom: 12px; right: 12px; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .hud-row { display: flex; gap: 5px; align-items: center; justify-content: flex-end; }
+  #runBtn2 { min-width: 58px; }
+  .hud button, .hud select {
+    appearance: none;
+    -webkit-appearance: none;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.1;
+    padding: 5px 8px;
+    min-height: 26px;
+    border-radius: 8px;
+    border: 1px solid rgba(30,40,30,.22);
+    background: rgba(255,255,255,.82);
+    color: #2b332d;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 1px 4px rgba(20,30,20,.18);
+    cursor: pointer;
+  }
+  .hud select { padding-right: 20px; background-image: linear-gradient(45deg, transparent 50%, #555 50%), linear-gradient(135deg, #555 50%, transparent 50%); background-position: calc(100% - 11px) 55%, calc(100% - 7px) 55%; background-size: 4px 4px; background-repeat: no-repeat; }
+  .hud button:hover, .hud select:hover { background-color: #fff; border-color: rgba(30,40,30,.4); }
+  .hud button.primary { background: var(--accent); color: #fff; border-color: var(--accent-d); }
+  .canvas-wrap.dark .hud button, .canvas-wrap.dark .hud select {
+    background-color: rgba(20,26,28,.78); color: #e7ebe6; border-color: rgba(255,255,255,.22);
+  }
+  .canvas-wrap.dark .hud select { background-image: linear-gradient(45deg, transparent 50%, #ccc 50%), linear-gradient(135deg, #ccc 50%, transparent 50%); }
+  .canvas-wrap.dark .hud button:hover, .canvas-wrap.dark .hud select:hover { background-color: rgba(30,38,40,.95); }
+  .hud .hud-label { font-size: 10px; font-weight: 700; color: #4a524c; background: rgba(255,255,255,.7); padding: 2px 5px; border-radius: 6px; }
+  .canvas-wrap.dark .hud .hud-label { color: #d5dbd5; background: rgba(20,26,28,.7); }
+  #modeSelect { max-width: 230px; }
+  #speedSelect { width: 84px; }
+  .plot-wrap { position: relative; }
+  .plot-wrap .hud.tr { top: 10px; right: 10px; }
+  #radialCard { display: none; }
+  #radialCard.show { display: block; }
+  #radial {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    width: 100%;
+    max-width: var(--lattice-w);
+    height: auto;
+    aspect-ratio: 1 / 1;
+    display: block;
+    margin: 0 auto;
+  }
+  .v3dist-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .v3dist-row button { padding: 5px 0; font-size: 11px; font-weight: 700; flex: 1 1 34px; min-width: 34px; border-radius: 7px; }
+  .v3dist-row button.primary { background: var(--accent); color: #fff; border-color: var(--accent-d); }
+  @media (max-width: 640px) {
+    .hud.tl { top: 8px; left: 8px; }
+    .hud.bl { bottom: 8px; left: 8px; }
+    .hud.br { bottom: 8px; right: 8px; }
+    .hud button, .hud select { font-size: 11px; padding: 5px 7px; min-height: 30px; }
+    .hud .hud-label { display: none; }
+    #modeSelect { max-width: 215px; font-size: 11px; }
+    #speedSelect { width: 76px; font-size: 12px; }
+    .hud button, .hud select { font-size: 12px; }
+  }
 </style>
 </head>
 <body>
 <div class="app">
   <aside>
-        <div class="brand">
-      <h1>Protective Plants</h1>
-      <span class="brand-tag">ABM · v48</span>
+    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v54</span></div>
+    <div class="button-row run-row">
+      <button id="runBtn" class="primary">Start</button>
+      <button id="stepBtn">One step</button>
+      <button id="resetBtn">Reset / reseed</button>
     </div>
-    <div class="species-rule" aria-hidden="true"></div>
-    <details class="about">
-      <summary>About this model</summary>
-      <p class="subtitle">Foxes eat exposed rabbits; snakes move freely but eat only rabbits sheltering below a plant. The lattice has periodic boundaries. Three presets set the starting state. <b>1 — Rabbits clear plants:</b> a rabbit removes a plant (probability σ) only when it <i>successfully</i> moves onto a covered site; foxes never clear plants. <b>2 — Fixed plant cover:</b> plants start at density 0.5 and are frozen — no growth and no removal by any species. <b>3 — Foxes clear plants:</b> only foxes remove plants, and only when a rabbit is sheltering below. <b>5 — Frozen circular forest:</b> plants are frozen into one dense disc of cover at the lattice centre whose size follows the tree density, and animals roam a fixed island. <b>6 — Snakes kill plants:</b> only snakes erode plants (rate σ); rabbits and foxes never disturb cover. The <b>Rabbit shelter</b> switch chooses whether rabbits always hide under plants (default) or adapt — hiding while foxes dominate and staying exposed while snakes dominate. All presets use L=20, γ=1, σ=0.064, μR=μF=μS=10, f=fS=0.1, δF=δS=0.1, and ½ step per animation frame. <b>Export lattice PNG</b> saves just the lattice exactly as displayed, cropped tightly with no free space around it; <b>Export figure</b> saves the lattice together with the population-vs-time plot. <b>3D view:</b> for L ≤ 20 the lattice renders as a three-dimensional scene — bushes, rabbits and foxes on a meadow, and a transparent underground where the snakes hunt and where rabbits sheltering below a bush hide in burrows. View angle, rotation and distance are set with the sliders in the <i>3D visualization</i> panel, or by dragging/scrolling on the scene itself. At 1 or ½ steps per animation frame the animals move visibly between lattice sites — rabbits hop, foxes run and snakes wiggle — and a rabbit hopping under a plant gradually lowers its ears until it crouches in its burrow. Plants are drawn as small trees whose broad stems root a little way into the transparent underground, leaving space for the rabbits beneath. The <b>L20★</b> size preset runs a full 20×20 system but displays only its lower-left 10×10 corner; <b>L20★★</b> shows the very same running corner simulation from a low side view (tilt 16°, rotation 60°) — the two buttons switch viewpoint without restarting the run. When a fox catches a rabbit it leaps with open jaws and briefly holds the rabbit dangling by its ears; a snake that strikes a sheltering rabbit swells visibly while it swallows its meal. In the 3-D scene snakes are drawn yellow and roam the surface, diving into the underground only where a bush provides a burrow — each burrow box is created and removed together with its plant, so there is no underground at all where nothing grows. The layout adapts to phone screens: on a touch display, dragging the scene with one finger orbits the 3-D view and a two-finger pinch zooms it.</p>
-    </details>
+    <div class="species-rule" aria-hidden="true" style="margin-top:14px;"></div>
 
     <div class="group-label">Scenario presets</div>
     <div class="scenario-row">
@@ -592,9 +680,9 @@
         <input id="frozenDensity" type="range" min="0" max="0.5" step="0.01" value="0.24" />
         <div class="L-toggle" role="group" aria-label="Preset lattice size">
           <button type="button" id="Lpreset10">L10</button>
-          <button type="button" id="Lpreset20c" class="primary" title="Runs a full 20×20 system but displays only the lower-left 10×10 corner">L20★</button>
-          <button type="button" id="Lpreset20cc" title="Same running L20★ corner simulation, viewed from tilt 16° and rotation 60° — switching does not restart the run">L20★★</button>
+          <button type="button" id="Lpreset20c" class="primary" title="Runs a full 20×20 system but displays only the lower-left 10×10 quarter">L20★</button>
           <button type="button" id="Lpreset20">L20</button>
+          <button type="button" id="Lpreset30c" title="Runs a full 30×30 system but displays only the lower-left 15×15 quarter, in the same perspective as L20★">L30★</button>
           <button type="button" id="Lpreset30">L30</button>
           <button type="button" id="Lpreset50">L50</button>
         </div>
@@ -602,12 +690,6 @@
     </div>
     <p class="hint">Each preset reseeds with its own rules.</p>
 
-    <div class="group-label">Run</div>
-    <div class="button-row run-row">
-      <button id="runBtn" class="primary">Start</button>
-      <button id="stepBtn">One step</button>
-      <button id="resetBtn">Reset / reseed</button>
-    </div>
     <details id="miniTracePanel" class="mini-trace">
       <summary>Population trace</summary>
       <div class="mini-trace-body">
@@ -665,16 +747,17 @@
           <button id="view3DBtn" class="primary">3D view: on</button>
         </div>
         <div class="frozen-control">
-          <div class="frozen-head"><label for="v3Tilt">View angle (tilt)</label><span class="frozen-val" id="v3TiltVal">35°</span></div>
-          <input id="v3Tilt" type="range" min="8" max="85" step="1" value="35" />
+          <div class="frozen-head"><label for="v3Tilt">View angle (tilt; 90° = top view)</label><span class="frozen-val" id="v3TiltVal">35°</span></div>
+          <input id="v3Tilt" type="range" min="8" max="90" step="1" value="35" />
         </div>
         <div class="frozen-control">
-          <div class="frozen-head"><label for="v3Rot">Rotation</label><span class="frozen-val" id="v3RotVal">-34°</span></div>
-          <input id="v3Rot" type="range" min="-180" max="180" step="1" value="-34" />
+          <div class="frozen-head"><label for="v3Rot">Rotation</label><span class="frozen-val" id="v3RotVal">35°</span></div>
+          <input id="v3Rot" type="range" min="-180" max="180" step="1" value="35" />
         </div>
         <div class="frozen-control">
-          <div class="frozen-head"><label for="v3Dist">Viewing distance</label><span class="frozen-val" id="v3DistVal">2.35 × L</span></div>
-          <input id="v3Dist" type="range" min="120" max="450" step="5" value="235" />
+          <div class="frozen-head"><label>Viewing distance (perspective strength)</label><span class="frozen-val" id="v3DistVal">2.5 × L</span></div>
+          <div class="v3dist-row" id="v3DistRow" role="group" aria-label="Viewing distance"></div>
+          <p class="hint" style="margin-top:5px;">The scene is always zoomed to fill the display; the distance only sets how strong the perspective is — close (1.2) exaggerates near vs far, distant (10) is almost orthographic.</p>
         </div>
         <div class="frozen-control">
           <div class="frozen-head"><label for="v3Alpha">Ground opacity</label><span class="frozen-val" id="v3AlphaVal">60%</span></div>
@@ -693,45 +776,14 @@
           <input id="v3Floor" type="range" min="0" max="100" step="1" value="70" />
         </div>
         <div class="frozen-control">
-          <div class="frozen-head"><label for="v3Kill">Catch &amp; digestion time (fox &amp; snake)</label><span class="frozen-val" id="v3KillVal">1.50 s</span></div>
-          <input id="v3Kill" type="range" min="300" max="3000" step="20" value="1500" />
+          <div class="frozen-head"><label for="v3Kill">Catch &amp; digestion time (fox &amp; snake)</label><span class="frozen-val" id="v3KillVal">2.00 s</span></div>
+          <input id="v3Kill" type="range" min="300" max="4000" step="20" value="2000" />
         </div>
-        <p class="hint">Active for L ≤ 20 — larger lattices fall back to the flat map. Snakes (yellow in 3D) travel on the surface and dive into the burrow layer, which exists only beneath bushes; rabbits sheltering below a bush hide down there too. You can also drag the scene to orbit and scroll on it to zoom.</p>
+        <p class="hint">Active when the displayed lattice is ≤ 20 sites wide (L ≤ 20, L20★, L30★) — larger lattices fall back to the flat map. Snakes (yellow in 3D) travel on the surface and dive into the burrow layer, which exists only beneath bushes; rabbits sheltering below a bush hide down there too. You can also drag the scene to orbit and scroll on it to zoom.</p>
       </div>
     </details>
 
 
-    <details open>
-      <summary>Parameter search</summary>
-      <div class="search-panel">
-        <div class="button-row">
-          <button id="searchBtn">Start search</button>
-          <button id="searchTrialBtn">One search trial</button>
-          <button id="storeWinnerBtn">Store winner</button>
-          <button id="loadSavedBtn">Load selected + reset</button>
-        </div>
-        <div class="mini-control">
-          <label for="searchMaxTime">Max survival time tested (≤ 5000)</label>
-          <input id="searchMaxTime" type="number" value="5000" min="1" max="5000" step="1" />
-        </div>
-        <div class="mini-control">
-          <label for="searchTrialsPerFrame">Trials per animation frame</label>
-          <input id="searchTrialsPerFrame" type="number" value="1" min="1" max="20" step="1" />
-        </div>
-        <div class="mini-control">
-          <label for="searchMutation">Search mutation size</label>
-          <input id="searchMutation" type="number" value="0.25" min="0.01" max="2" step="0.01" />
-        </div>
-        <div class="mini-control">
-          <label for="savedSets">Stored winners</label>
-          <select id="savedSets"></select>
-        </div>
-        <button id="birthRuleLockBtn" class="lock-btn" style="width:100%;margin-top:4px;">Rabbit birth rule free in search</button>
-        <button id="rabbitPlantLockBtn" class="lock-btn" style="width:100%;margin-top:4px;">Rabbit plant-removal free in search</button>
-        <div class="search-status" id="searchStatus">Search idle. The search always runs L=15, starts each test with 20% plants, 20% rabbits, 20% foxes, and 20% snakes, and caps every trial at 5000 time units.</div>
-        <p class="hint">Small lock buttons beside rate parameters freeze those parameters during search. Unlocked rates are varied around the current winning set. If a new trial keeps all four populations alive longer, it becomes the new winner and is copied to the controls. σ is searched on factor-of-two steps between 0.001 and 1; in this variant σ sets the probability that a rabbit removes a plant when it moves onto a plant-covered site. Rabbit and fox plant-removal toggles are stored with winners and can be locked during search. The rabbit removal trigger (on move attempt vs. on successful move) is held at its current setting during search and stored with each winner.</p>
-      </div>
-    </details>
 
     <p class="hint"><b>Freeze plants now</b> locks the current plant cover: no plant growth, no rabbit plant-removal, and no optional fox plant-removal. Press again to unfreeze.</p>
     <p class="hint"><b>Random-neighbor model</b> sends movement, reproduction, and plant growth targets to a random lattice site instead of a nearest neighbor.</p>
@@ -740,7 +792,6 @@
     <main>
     <section class="card col-track">
       <div class="card-head">
-        <span class="card-title">Lattice</span>
         <div class="legend">
           <span class="legend-item"><span class="swatch plant"></span>Plant</span>
           <span class="legend-item"><span class="swatch rabbit"></span>Rabbit</span>
@@ -750,9 +801,71 @@
           <span class="legend-item"><span class="swatch glow-fox"></span>Fox kill</span>
           <span class="legend-item"><span class="swatch glow-snake"></span>Snake kill</span>
         </div>
+        <details class="about">
+          <summary><span class="card-title">Foxes and Snakes eating Rabbits: See about &raquo;</span></summary>
+          <div class="about-body">
+            <p class="intro">Classical predator-prey models limit the coexistence of different predators due to competitive exclusion [1, 2]. However, real ecosystems contain interactions that go beyond mere predation. Here, we propose to extend these systems by allowing for plants that allow for shelters. We explore the interaction rules that make plants facilitate biodiversity.</p>
+
+            <h4>1. The cast: four species on a chessboard</h4>
+            <p>The world is a square grid of sites (a lattice) that wraps around at the edges, like the map in an old video game. Four kinds of things live on it. <b>Plants</b> (green trees) cover some sites and spread slowly to neighbouring sites. <b>Rabbits</b> (grey) hop between neighbouring sites, breed, and eat nothing in the model — they are simply food. <b>Foxes</b> (orange) run around and eat rabbits, but only rabbits standing in the open. <b>Snakes</b> (yellow in the 3-D scene) also roam, but they only eat rabbits that are hiding under a plant. So the plant is both a shelter <i>and</i> a trap: it protects a rabbit from foxes but exposes it to snakes.</p>
+
+            <h4>2. Why two predators normally cannot share one prey</h4>
+            <p>In textbook ecology, two predators competing for exactly the same food usually cannot coexist: whichever one is slightly better at catching rabbits will eventually crowd the other out. This is called <i>competitive exclusion</i>. Our twist is that foxes and snakes do not hunt the same rabbits — foxes hunt the exposed ones, snakes hunt the hidden ones. The plants split one prey into two "kinds", and that can be enough to let both predators survive. The question the model asks is: which rules about plants, rabbits and predators make this coexistence work?</p>
+
+            <h4>3. How one time step works</h4>
+            <p>Time advances in small steps of length Δt. In each step every plant, rabbit, fox and snake gets a chance to act, with probabilities set by the rates in the control panel. A plant spreads to a random neighbouring site with probability γσΔt. A rabbit tries to hop to a random neighbour (μ<sub>R</sub>Δt), breeds a new rabbit onto a free neighbour (εΔt), and — in most presets — may trample the plant it moves onto (probability σ). Foxes and snakes move (μ<sub>F</sub>Δt, μ<sub>S</sub>Δt), die of old age (δΔt), and when they land on a rabbit they can eat, they eat it and with probability f (foxes) or f<sub>S</sub> (snakes) produce a cub or hatchling. Several foxes or snakes may share one site; a small number badge shows how many.</p>
+
+            <h4>4. What the rabbits know</h4>
+            <p>The pull-down in the upper-left corner of the display (and the <b>Rabbit shelter</b> button in the control panel) chooses how clever the rabbits are. <b>Rabbits damage and hide</b>: a rabbit never leaves a plant for open ground, so once it finds cover it stays there — and it damages plants when it moves onto them. <b>Rabbits damage and optimize</b>: each rabbit looks at its 5×5 surroundings, multiplies the number of foxes by the fox mobility and the number of snakes by the snake mobility (that product is how often each predator would run into it), and then keeps to whichever kind of site is safer — under a plant if foxes are the bigger local danger, in the open if snakes are. <b>Stupid rabbits</b> hop wherever chance takes them, cover or no cover. <b>Frozen forest, stupid rabbits</b> starts from one round forest covering half the lattice, with plants that neither grow nor get trampled, and stupid rabbits. The control panel also has an <i>adaptive</i> option, which uses the fox and snake numbers of the whole system instead of the local neighbourhood.</p>
+
+            <h4>5. The six scenario presets</h4>
+            <p><b>1 · Rabbits clear plants</b> — the default: rabbits trample plants (probability σ) when they successfully move onto one. <b>2 · Fixed plant cover</b> — plants are scattered at a chosen density and then frozen. <b>3 · Foxes clear plants</b> — only a fox arriving above a hidden rabbit can remove the plant (this one is bistable: runs end up either with foxes or with plants, rarely both). <b>4 · Rabbits kill plants</b> — a rabbit erodes the plant it ends up below on every move attempt; the plant growth γ is raised to compensate. <b>5 · Frozen circular forest</b> — one solid disc of plants at the centre; use the density slider to change its size. <b>6 · Snakes kill plants</b> — snakes, not rabbits, erode the plants they crawl into. All presets use L = 20, γ = 1, σ = 0.064, μ<sub>R</sub> = μ<sub>F</sub> = 10, μ<sub>S</sub> = 5, f = f<sub>S</sub> = 0.1, δ<sub>F</sub> = δ<sub>S</sub> = 0.1 and ½ simulation step per animation frame.</p>
+
+            <h4>6. Reading the plots</h4>
+            <p>The population plot below the scene shows the fraction of sites occupied by each species against time: green for plants, orange for foxes, black for snakes, dark green for rabbits hiding under plants, and a grey band for all rabbits. When any curve hits zero that species is extinct, and the fun is over — so the interesting question is how long all four can be kept alive. For the circular forest a third panel shows the time-averaged density of rabbits, foxes and snakes as a function of distance from the forest centre: you can see where the rabbits crowd, where the snakes ambush them, and how the foxes patrol the open edge.</p>
+
+            <h4>7. The 3-D scene and the buttons on it</h4>
+            <p>When the displayed lattice is at most 20 sites wide it is drawn as a 3-D landscape: trees and animals on a meadow, and a see-through underground beneath each tree where hidden rabbits crouch and snakes go hunting. The scene always zooms to fill the display; the <i>viewing distance</i> (1.2 … 10 × L) only sets how strong the perspective is. Drag the scene to orbit it, scroll or pinch to change the perspective. The lower-left button cycles four camera presets (3D view A, 3D view B, 3D side, top view); next to it you can switch the background between white and black and save the picture as a PNG cropped tightly around the system. The lower-right corner has small copies of the Start/Pause and Reset buttons and the "steps per frame" setting. At ½ or 1 step per frame you see the animals move: rabbits hop, foxes run, snakes wiggle, a rabbit slipping under a tree lowers its ears as it crouches, a fox that catches a rabbit leaps and holds it in its jaws, and a snake that strikes swells while it swallows. At higher speeds the animation is skipped so the simulation can run fast.</p>
+
+            <h4>8. Sizes: L10, L20★, L30★ …</h4>
+            <p>L is the number of sites along one side. The starred presets <b>L20★</b> and <b>L30★</b> simulate the full 20×20 or 30×30 system but display only its lower-left quarter, so that each animal is big enough to see while the dynamics still happen on a large lattice. L30 and L50 are shown as a flat map instead of the 3-D scene.</p>
+
+            <h4>9. Things to try</h4>
+            <p>Start with the default and watch whether all four species survive. Then switch the rabbits to <i>optimize</i> — do smarter rabbits help or hurt the predators? Try <i>stupid rabbits</i>: without the hiding rule, do foxes and snakes still both make a living? Lower the frozen plant density in preset 2 until one predator disappears, and raise it until the other does. In the circular forest, look at the radial plot and ask where you would sit if you were a snake.</p>
+
+            <h4>References</h4>
+            <p class="refs">[1] G. F. Gause, <i>The struggle for existence</i>, Soil Science <b>41</b>, 159 (1936).<br>[2] G. Hardin, <i>The competitive exclusion principle</i>, Science <b>131</b>, 1292 (1960).</p>
+          </div>
+        </details>
       </div>
       <div class="card-body">
-        <div class="canvas-wrap"><canvas id="world" width="792" height="792"></canvas></div>
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="world" width="792" height="792"></canvas>
+          <div class="hud tl">
+            <select id="modeSelect" title="Rabbit behaviour and starting conditions">
+              <option value="hide">Rabbits damage and hide</option>
+              <option value="optimize">Rabbits damage and optimize</option>
+              <option value="stupid">Stupid rabbits</option>
+              <option value="forest">Frozen forest, stupid rabbits</option>
+              <option value="custom" disabled hidden>Custom settings</option>
+            </select>
+          </div>
+          <div class="hud bl">
+            <button type="button" id="viewPresetBtn" title="Cycle the camera: 3D view A, 3D view B, 3D side, top view">3D view A</button>
+            <button type="button" id="bgBtn" title="Switch the display background between white and black">Black bg</button>
+            <button type="button" id="latticePngBtn" title="Save the display as a PNG, cropped tightly around the system">PNG</button>
+          </div>
+          <div class="hud br">
+            <div class="hud-row">
+              <button type="button" id="runBtn2" class="primary" title="Start / pause the simulation">Start</button>
+              <button type="button" id="resetBtn2" title="Reset / reseed the lattice">Reset</button>
+            </div>
+            <div class="hud-row">
+              <span class="hud-label">steps / frame</span>
+              <select id="speedSelect" title="Simulation steps per animation frame"></select>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -762,8 +875,19 @@
     </details>
 
     <section class="card col-track">
-      <div class="card-body">
+      <div class="card-body plot-wrap">
         <canvas id="plot" width="1100" height="460"></canvas>
+        <div class="hud tr"><button type="button" id="plotPngBtn" title="Save the population-vs-time plot as a PNG">PNG</button></div>
+      </div>
+    </section>
+
+    <section class="card col-track" id="radialCard">
+      <div class="card-head">
+        <span class="card-title">Radial profile — time-averaged density vs distance from forest centre</span>
+      </div>
+      <div class="card-body plot-wrap">
+        <canvas id="radial" width="792" height="792"></canvas>
+        <div class="hud tr"><button type="button" id="radialPngBtn" title="Save the radial-profile plot as a PNG">PNG</button><button type="button" id="radialPng3Btn" title="Save the same radial plot compressed to one third of the height">PNG/3</button></div>
       </div>
     </section>
   </main>
@@ -772,8 +896,6 @@
 <script>
 (() => {
   "use strict";
-
-  const searchParameterIds = ["gamma", "sigma", "epsilon", "muR", "muF", "f", "deltaF", "muS", "fS", "deltaS"];
 
   const controls = {
     core: [
@@ -790,7 +912,7 @@
       { id: "muF", label: "Fox mobility μF", value: 10, min: 1, max: 100, step: 1 },
       { id: "f", label: "Fox conversion f", value: 0.10, min: 0, max: 1, step: 0.005 },
       { id: "deltaF", label: "Fox mortality δF", value: 0.10, min: 0, max: 2, step: 0.01 },
-      { id: "muS", label: "Snake mobility μS", value: 10, min: 1, max: 100, step: 1 },
+      { id: "muS", label: "Snake mobility μS", value: 5, min: 1, max: 100, step: 1 },
       { id: "fS", label: "Snake conversion fS", value: 0.10, min: 0, max: 1, step: 0.005 },
       { id: "deltaS", label: "Snake mortality δS", value: 0.10, min: 0, max: 2, step: 0.01 }
     ],
@@ -807,7 +929,6 @@
 
   const params = {};
   const inputs = {};
-  const searchLocked = {};
   const birthRules = ["anywhere", "under", "exposed"];
   let rabbitBirthRule = "anywhere";
   let rabbitPlantRemoval = true;
@@ -815,8 +936,14 @@
   let rabbitRemovalEndedBelow = false; // preset 4: each move attempt erodes the plant the rabbit ends BELOW
   let foxPlantRemoval = false;
   let snakePlantRemoval = false;      // scenario 6: snakes erode the plants they enter
-  let rabbitShelterMode = "always";   // "always" = shelter under plants whenever possible (option 1, default);
-                                       // "adaptive" = shelter when foxes outnumber snakes, seek open ground when snakes outnumber foxes
+  // v49: four rabbit behaviours
+  //   "always"   = shelter under plants whenever possible (default);
+  //   "optimize" = each rabbit compares foxes and snakes in its 5×5 surroundings and
+  //                stays on (or moves to) the site type where it is least likely to be eaten;
+  //   "adaptive" = global version: hide while foxes outnumber snakes, stay exposed otherwise;
+  //   "none"     = stupid rabbits: moves are independent of cover.
+  const shelterModes = ["always", "optimize", "adaptive", "none"];
+  let rabbitShelterMode = "always";
   let plantSeedMode = "random";       // "random" = scatter plants by density; "circle" = one dense circular forest
   let activeScenario = 1;
   let frozenDensity = 0.24;   // preset 2 fixed plant cover (default in coexistence window)
@@ -828,22 +955,14 @@
     5: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "circle", frozen: true },
     6: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: true,  plantSeedMode: "random", frozen: false }
   };
-  let birthRuleLocked = false;
-  let rabbitPlantLocked = false;
-  let searchRunning = false;
-  let searchBest = null;
-  let searchTrials = 0;
-  const savedKey = "rabbitFoxSnakePlantSavedWinnersV10LongRunStable";
   const maxLocalPredators = 1000; // browser-safety cap per site; still allows many predators per site.
   const maxStoredHistoryPoints = 50000; // adaptive thinning keeps long runs from exhausting memory.
   const maxPlotPoints = 3200; // draw a representative subset; the full retained curve is still compressed across time.
   let L = 20, N = 400;
-  // v34: L20★ — run the full lattice but display only its lower-left corner window
+  // v34/v49: L20★ and L30★ — run the full lattice but display only its lower-left quarter
   let cornerView = true;
-  // v40: L20★★ — same corner simulation, low side camera (tilt 16°, rot 94°)
-  let starView = false;
-  let savedStarCam = { tilt: 35, rot: -34 };
-  function dispL() { return (cornerView && L > 10) ? 10 : L; }
+  let darkBg = false;          // v49: black display background
+  function dispL() { return cornerView ? Math.max(2, Math.round(L / 2)) : L; }
   function cellView(i) {
     const Ld = dispL();
     const gx = xOf(i), gy = yOf(i) - (L - Ld);
@@ -865,6 +984,8 @@
   const plotCanvas = document.getElementById("plot");
   const plotCtx = plotCanvas.getContext("2d");
   const statusEl = document.getElementById("status");
+  const radialCanvas = document.getElementById("radial");
+  const radialCtx = radialCanvas ? radialCanvas.getContext("2d") : null;
 
   function clampProb(x) { return Math.max(0, Math.min(1, x)); }
   function randInt(n) { return Math.floor(Math.random() * n); }
@@ -881,13 +1002,6 @@
       case 2: return idxXY(x, (y + 1) % L);
       default: return idxXY(x, (y + L - 1) % L);
     }
-  }
-
-  function updateParamLockButton(button, id) {
-    const locked = !!searchLocked[id];
-    button.textContent = locked ? "lock" : "free";
-    button.classList.toggle("locked", locked);
-    button.title = locked ? "Frozen during parameter search" : "Varied during parameter search";
   }
 
   function getControlMeta(id) {
@@ -931,11 +1045,6 @@
     const label = rabbitBirthRule === "anywhere" ? "anywhere" : (rabbitBirthRule === "under" ? "only under plants" : "only outside plants");
     const b = document.getElementById("birthRuleBtn");
     if (b) b.textContent = "Rabbit births: " + label;
-    const lb = document.getElementById("birthRuleLockBtn");
-    if (lb) {
-      lb.textContent = birthRuleLocked ? "Rabbit birth rule locked in search" : "Rabbit birth rule free in search";
-      lb.classList.toggle("locked", birthRuleLocked);
-    }
   }
 
 
@@ -946,11 +1055,6 @@
       b.title = rabbitPlantRemoval
         ? "Rabbits remove plants with probability σ when they successfully move onto a plant-covered site"
         : "Rabbits do not remove plants";
-    }
-    const lock = document.getElementById("rabbitPlantLockBtn");
-    if (lock) {
-      lock.textContent = rabbitPlantLocked ? "Rabbit plant-removal locked in search" : "Rabbit plant-removal free in search";
-      lock.classList.toggle("locked", rabbitPlantLocked);
     }
   }
 
@@ -989,14 +1093,67 @@
   function updateRabbitShelterButton() {
     const b = document.getElementById("rabbitShelterBtn");
     if (!b) return;
-    const adaptive = rabbitShelterMode === "adaptive";
-    b.textContent = adaptive
-      ? "Rabbit shelter: adaptive (foxes ↔ snakes)"
-      : "Rabbit shelter: always under plants";
-    b.classList.toggle("primary", adaptive);
-    b.title = adaptive
-      ? "Rabbits stay under plants while foxes outnumber snakes, but stay in open ground when snakes outnumber foxes"
-      : "Rabbits always stay under a plant whenever they can (option 1, default)";
+    const m = rabbitShelterMode;
+    const labels = {
+      always:   ["Rabbit shelter: always under plants", "Rabbits always stay under a plant whenever they can (default)"],
+      optimize: ["Rabbit shelter: optimize (local threat)", "Each rabbit compares fox density × fox mobility with snake density × snake mobility within its 5×5 surroundings and keeps to the site type (covered or open) where it is least likely to be eaten"],
+      adaptive: ["Rabbit shelter: adaptive (global foxes ↔ snakes)", "Rabbits stay under plants while foxes outnumber snakes in the whole system, but stay in open ground when snakes outnumber foxes"],
+      none:     ["Rabbit shelter: stupid rabbits (random moves)", "Rabbit moves are independent of cover — they wander in and out of plants at random"]
+    };
+    b.textContent = labels[m][0];
+    b.title = labels[m][1];
+    b.classList.toggle("primary", m !== "always");
+    updateModeSelect();
+  }
+  function shelterModeLabel() {
+    return { always: "always under plants", optimize: "optimize (local threat)", adaptive: "adaptive (global foxes↔snakes)", none: "stupid (random moves)" }[rabbitShelterMode];
+  }
+
+  // v49: the upper-left switch on the display bundles behaviour + starting conditions
+  function currentModeKey() {
+    if (activeScenario === 5 && rabbitShelterMode === "none" && Math.abs(frozenDensity - 0.5) < 1e-9) return "forest";
+    if (activeScenario === 1) {
+      if (rabbitShelterMode === "always") return "hide";
+      if (rabbitShelterMode === "optimize") return "optimize";
+      if (rabbitShelterMode === "none") return "stupid";
+    }
+    return "custom";
+  }
+  function updateModeSelect() {
+    const sel = document.getElementById("modeSelect");
+    if (sel) sel.value = currentModeKey();
+  }
+  function applyModeKey(key) {
+    if (key === "forest") {
+      rabbitShelterMode = "none";
+      frozenDensity = 0.5;
+      const fs = document.getElementById("frozenDensity"), fv = document.getElementById("frozenDensityVal");
+      if (fs) fs.value = "0.5";
+      if (fv) fv.textContent = "0.50";
+      applyScenario(5);
+    } else if (key === "optimize" || key === "stupid" || key === "hide") {
+      rabbitShelterMode = key === "hide" ? "always" : (key === "optimize" ? "optimize" : "none");
+      applyScenario(1);
+    }
+    updateRabbitShelterButton();
+    drawStatus();
+  }
+
+  // v49: local threat assessment for "optimize" rabbits — foxes vs snakes within a
+  // (2r+1)×(2r+1) window around the rabbit (periodic boundaries).
+  function localThreat(site, r) {
+    const x = xOf(site), y = yOf(site);
+    let f = 0, s = 0;
+    for (let dy = -r; dy <= r; dy++) {
+      const yy = ((y + dy) % L + L) % L;
+      const row = yy * L;
+      for (let dx = -r; dx <= r; dx++) {
+        const xx = ((x + dx) % L + L) % L;
+        f += foxes[row + xx];
+        s += snakes[row + xx];
+      }
+    }
+    return [f, s];
   }
 
   function rabbitMayReproduceAt(site, plantArray = plants) {
@@ -1021,26 +1178,8 @@
     number.max = item.max;
     number.step = item.values ? "any" : item.step;
 
-    const lock = document.createElement("button");
-    lock.type = "button";
-    lock.className = "lock-btn";
-    if (searchParameterIds.includes(item.id)) {
-      searchLocked[item.id] = false;
-      updateParamLockButton(lock, item.id);
-      lock.title = "Toggle whether this parameter is frozen during parameter search";
-      lock.addEventListener("click", () => {
-        searchLocked[item.id] = !searchLocked[item.id];
-        updateParamLockButton(lock, item.id);
-      });
-    } else {
-      lock.textContent = "";
-      lock.disabled = true;
-      lock.style.visibility = "hidden";
-    }
-
     wrap.appendChild(label);
     wrap.appendChild(number);
-    wrap.appendChild(lock);
 
     if (item.values) {
       const select = document.createElement("select");
@@ -1056,7 +1195,7 @@
       select.addEventListener("change", () => update(select.value));
       number.addEventListener("change", () => update(number.value));
       wrap.appendChild(select);
-      inputs[item.id] = { select, number, lock };
+      inputs[item.id] = { select, number };
     } else {
       const range = document.createElement("input");
       range.type = "range";
@@ -1070,7 +1209,7 @@
       range.addEventListener("input", () => update(range.value));
       number.addEventListener("change", () => update(number.value));
       wrap.appendChild(range);
-      inputs[item.id] = { range, number, lock };
+      inputs[item.id] = { range, number };
     }
 
     document.getElementById(containerId).appendChild(wrap);
@@ -1085,8 +1224,10 @@
     const s = Math.round(params.worldSize || 792);
     worldCanvas.width = s;
     worldCanvas.height = s;
+    if (radialCanvas) { radialCanvas.width = s; radialCanvas.height = s; }
     document.documentElement.style.setProperty("--lattice-w", s + "px");
     drawWorld();
+    if (typeof drawRadial === "function") drawRadial();
   }
 
   function reset() {
@@ -1123,9 +1264,148 @@
       foxes[i] = Math.random() < params.initFox ? 1 : 0;
       snakes[i] = Math.random() < params.initSnake ? 1 : 0;
     }
+    setupRadial(forestCx, forestCy, Math.sqrt(forestR2));
     recordHistory();
     if (typeof update3DPanel === "function") update3DPanel();
     drawAll();
+  }
+
+  // ---- v49: radial density profile for the frozen circular forest ----
+  // Densities of rabbits, foxes, snakes (and plants) are averaged over time and
+  // over annuli of width one lattice unit around the forest centre.
+  const radial = { bins: 0, site: null, count: null, r: null, f: null, s: null, p: null, samples: 0, forestR: 0, cx: 0, cy: 0 };
+  function setupRadial(cx, cy, forestR) {
+    radial.cx = cx; radial.cy = cy; radial.forestR = forestR;
+    let maxD = 0;
+    const dist = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const d = Math.hypot(xOf(i) - cx, yOf(i) - cy);
+      dist[i] = d;
+      if (d > maxD) maxD = d;
+    }
+    radial.bins = Math.floor(maxD + 0.5) + 1;
+    radial.site = new Uint16Array(N);
+    radial.count = new Float64Array(radial.bins);
+    for (let i = 0; i < N; i++) { const b = Math.min(radial.bins - 1, Math.floor(dist[i] + 0.5)); radial.site[i] = b; radial.count[b]++; }
+    clearRadial();
+  }
+  function clearRadial() {
+    radial.r = new Float64Array(radial.bins);
+    radial.f = new Float64Array(radial.bins);
+    radial.s = new Float64Array(radial.bins);
+    radial.p = new Float64Array(radial.bins);
+    radial.samples = 0;
+  }
+  function sampleRadial() {
+    if (plantSeedMode !== "circle" || !radial.site) return;
+    const site = radial.site;
+    for (let i = 0; i < N; i++) {
+      const b = site[i];
+      if (rabbits[i]) radial.r[b] += 1;
+      if (plants[i]) radial.p[b] += 1;
+      radial.f[b] += foxes[i];
+      radial.s[b] += snakes[i];
+    }
+    radial.samples++;
+  }
+  function updateRadialCard() {
+    const card = document.getElementById("radialCard");
+    if (card) card.classList.toggle("show", plantSeedMode === "circle");
+  }
+  function drawRadial(target) {
+    const cv = target || radialCanvas;
+    if (!cv || plantSeedMode !== "circle" || !radial.site) return;
+    const ctx = cv.getContext("2d");
+    const W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, W, H);
+    const k = W / 792;
+    const x0 = 86 * k, y0 = 58 * k, w = W - 116 * k, h = H - 140 * k;
+    const n = radial.bins, S = Math.max(1, radial.samples);
+    const dens = (arr) => Array.from({ length: n }, (_, b) => radial.count[b] ? arr[b] / (S * radial.count[b]) : 0);
+    const R = dens(radial.r), F = dens(radial.f), Sn = dens(radial.s), P = dens(radial.p);
+    let yMax = 0.02;
+    for (let b = 0; b < n; b++) { yMax = Math.max(yMax, R[b], F[b], Sn[b]); }
+    yMax *= 1.18;
+    const xMax = n - 1;
+    const px = (b) => x0 + (b / Math.max(1, xMax)) * w;
+    const py = (v) => y0 + h - (v / yMax) * h;
+
+    // forest disc as a soft green band (the edge is not perfectly sharp, so no line)
+    const fr = Math.min(xMax, radial.forestR);
+    ctx.fillStyle = "rgba(68,170,85,0.13)";
+    ctx.fillRect(x0, y0, px(fr) - x0, h);
+
+    // grid + axes — v53: "usual" y steps: labelled majors (e.g. 0, 0.3, 0.6) with a
+    // thin unlabelled line at each midpoint
+    ctx.strokeStyle = "#d8d8d8"; ctx.lineWidth = 1;
+    ctx.font = `${24 * k}px sans-serif`; ctx.fillStyle = "#666"; ctx.textBaseline = "alphabetic";
+    let major = 0.1;
+    {
+      const pow = Math.pow(10, Math.floor(Math.log10(yMax)));
+      // v54: labels on "even" values — largest of 1, 2, 5 × 10ⁿ that gives at least two
+      // labelled steps (0.2 for densities up to ~1: 0, 0.2, 0.4, 0.6 …), midpoints unlabelled
+      const cands = [5, 2, 1, 0.5, 0.2, 0.1].map(m => m * pow);
+      major = cands.find(m => yMax / m >= 2) || cands[cands.length - 1];
+    }
+    const decimals = major >= 1 ? 0 : (String(major).split(".")[1] || "").length;
+    for (let v = 0; v <= yMax + 1e-12; v += major / 2) {
+      const y = py(v);
+      const isMajor = Math.abs(v / major - Math.round(v / major)) < 1e-9;
+      ctx.strokeStyle = isMajor ? "#d8d8d8" : "#ececec";
+      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
+      if (isMajor) {
+        const lab = v.toFixed(decimals);
+        ctx.fillStyle = "#666";
+        ctx.fillText(lab, x0 - ctx.measureText(lab).width - 8 * k, y + 8 * k);
+      }
+    }
+    const tick = niceTickStep(xMax, 7);
+    for (let d = 0; d <= xMax + 1e-9; d += tick) {
+      const x = px(d);
+      ctx.strokeStyle = "#e6e6e6";
+      ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
+      const lab = String(Math.round(d * 100) / 100);
+      ctx.fillStyle = "#555";
+      ctx.fillText(lab, x - ctx.measureText(lab).width / 2, y0 + h + 30 * k);
+    }
+    ctx.strokeStyle = "#888"; ctx.strokeRect(x0, y0, w, h);
+
+    // curves
+    const line = (arr, color, lw) => {
+      ctx.strokeStyle = color; ctx.lineWidth = lw * k; ctx.lineJoin = "round";
+      ctx.beginPath();
+      let started = false;
+      for (let b = 0; b < n; b++) {
+        if (!radial.count[b]) continue; // annuli without any lattice site (e.g. r = 0 for even L)
+        const x = px(b), y = py(Math.min(arr[b], yMax));
+        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    };
+    line(F, "#f08a24", 3);
+    line(Sn, "#050505", 3);
+    ctx.setLineDash([10 * k, 10 * k]); line(Sn, "#d92b1f", 3); ctx.setLineDash([]); // v54: alternating red / black
+    line(R, "#9a9a9a", 3); // v54: lighter grey for rabbits
+
+    // icons on the curves
+    const iconS = Math.min(88 * k, h * 0.5); // v54: animals twice as big
+    const put = (arr, frac, fn, extra) => {
+      const b = Math.max(0, Math.min(n - 1, Math.round(frac * (n - 1))));
+      let y = py(Math.min(arr[b], yMax));
+      y = Math.max(y0 + iconS / 2, Math.min(y0 + h - iconS / 2, y));
+      fn(ctx, px(b) - iconS / 2, y - iconS / 2, iconS, extra);
+    };
+    put(F, 0.30, drawFox, 1);
+    put(Sn, 0.50, drawSnake, 1);
+    put(R, 0.70, drawRabbit, 0);
+
+    // titles
+    ctx.fillStyle = "#333"; ctx.font = `${24 * k}px sans-serif`;
+    ctx.fillText("density per site", 10 * k, 30 * k);
+    const xl = "distance from forest centre (lattice units)";
+    ctx.fillText(xl, x0 + w - ctx.measureText(xl).width, H - 14 * k);
   }
 
   function collectBinaryPositions(arr) {
@@ -1157,6 +1437,8 @@
   function shelterAllowsMove(protectedNow, protectedTarget, preferShelter) {
     // preferShelter true  -> classic rule: never leave cover for open ground.
     // preferShelter false -> inverse: never leave open ground to hide under a plant.
+    // preferShelter null  -> indifferent (stupid rabbits): every move is allowed.
+    if (preferShelter === null) return true;
     if (preferShelter) return (!protectedNow || protectedTarget);
     return (protectedNow || !protectedTarget);
   }
@@ -1192,7 +1474,7 @@
 
   // v35: fox-catch pounces — the killer leaps and grips the rabbit's ears in its jaws
   const killTraces = [];
-  let killDur = 1500; // catch-and-digestion time (ms), set by the 3D panel slider
+  let killDur = 2000; // v51: 2.0 s default; catch-and-digestion time (ms), set by the 3D panel slider
   function traceKill(kind, site, from) {
     if (params.speed > 1) return;
     for (let k = 0; k < killTraces.length; k++) {
@@ -1238,12 +1520,17 @@
 
     // Adaptive shelter rule: rabbits hide under plants while foxes are the bigger
     // threat, but stay in the open when snakes (which strike under cover) dominate.
-    let preferShelter = true;
-    if (rabbitShelterMode === "adaptive") {
+    let globalPref = true;
+    const optimize = rabbitShelterMode === "optimize";
+    // v50: smart (optimize) rabbits weigh each predator's density by its mobility —
+    // the encounter rate is ∝ density × mobility — while "adaptive" compares raw numbers.
+    const wF = optimize ? params.muF : 1, wS = optimize ? params.muS : 1;
+    if (rabbitShelterMode === "adaptive" || optimize) {
       let foxTotal = 0, snakeTotal = 0;
       for (let i = 0; i < N; i++) { foxTotal += foxes[i]; snakeTotal += snakes[i]; }
-      if (snakeTotal > foxTotal) preferShelter = false;
+      if (snakeTotal * wS > foxTotal * wF) globalPref = false;
     }
+    const stupid = rabbitShelterMode === "none";
 
     for (const start of positions) {
       if (!rabbits[start]) continue;
@@ -1253,6 +1540,15 @@
         const j = targetFrom(current);
         const protectedNow = plants[current] === 1;
         const protectedTarget = plants[j] === 1;
+        let preferShelter = stupid ? null : globalPref;
+        if (optimize && protectedNow !== protectedTarget) {
+          // v49: only consulted when the move would change cover type
+          const [lf0, ls0] = localThreat(current, 2);
+          const lf = lf0 * wF, ls = ls0 * wS;
+          if (lf > ls) preferShelter = true;
+          else if (ls > lf) preferShelter = false;
+          else if (lf0 === 0 && ls0 === 0) preferShelter = null; // no predators nearby: roam freely
+        }
         const canMove = !rabbits[j] && shelterAllowsMove(protectedNow, protectedTarget, preferShelter);
 
         if (rabbitRemovalEndedBelow) {
@@ -1470,6 +1766,7 @@
     history.push(row);
     historyYMax = Math.max(historyYMax, row.plants, row.allRabbits, row.rabbitsBelowPlants, row.foxes, row.snakes);
     thinHistoryIfNeeded();
+    sampleRadial();
   }
 
   function getPlotData() {
@@ -1676,45 +1973,53 @@
     const O_HI = "#f7ad57", O = "#e57f22", O_SH = "#c2641a", LINE = "#8a3f0e";
     const WHITE = "#fbf3e4", BLACK = "#2a2320", EYE = "#1c130d";
 
-    // ground shadow
-    ctx.fillStyle = "rgba(40,25,10,0.13)";
-    ctx.beginPath(); ctx.ellipse(cx, y + s * 0.90, s * 0.34, s * 0.085, 0, 0, Math.PI * 2); ctx.fill();
+    // ground shadow — v51: softer, wider contact shadow for a grounded 3-D look
+    const gs = ctx.createRadialGradient(cx + s * 0.02, y + s * 0.90, s * 0.04, cx + s * 0.02, y + s * 0.90, s * 0.42);
+    gs.addColorStop(0, "rgba(40,25,10,0.30)"); gs.addColorStop(0.6, "rgba(40,25,10,0.12)"); gs.addColorStop(1, "rgba(40,25,10,0)");
+    ctx.fillStyle = gs;
+    ctx.beginPath(); ctx.ellipse(cx + s * 0.02, y + s * 0.90, s * 0.42, s * 0.11, 0, 0, Math.PI * 2); ctx.fill();
 
-    // render the fox ~12% larger and sitting a little higher in the cell
+    // render the fox larger and sitting a little higher in the cell
     ctx.save();
     const fpx = cx, fpy = y + s * 0.90;
     ctx.translate(0, -s * 0.04);
     ctx.translate(fpx, fpy);
-    ctx.scale(1.12, 1.12);
+    ctx.scale(1.23, 1.23); // v51: fox 10% larger than before
     ctx.translate(-fpx, -fpy);
 
-    // bushy tail (behind, sweeping up to the left)
-    const tailGrad = ctx.createLinearGradient(x + s * 0.05, y + s * 0.5, x + s * 0.36, y + s * 0.8);
-    tailGrad.addColorStop(0, O); tailGrad.addColorStop(1, O_SH);
+    // bushy tail (behind, sweeping up to the left) — rounded, with its own shading
+    const tailGrad = ctx.createRadialGradient(x + s * 0.14, y + s * 0.50, s * 0.02, x + s * 0.18, y + s * 0.58, s * 0.30);
+    tailGrad.addColorStop(0, O_HI); tailGrad.addColorStop(0.45, O); tailGrad.addColorStop(1, O_SH);
     ctx.fillStyle = tailGrad;
     ctx.beginPath();
-    ctx.moveTo(x + s * 0.34, y + s * 0.62);
-    ctx.quadraticCurveTo(x + s * 0.02, y + s * 0.66, x + s * 0.07, y + s * 0.36);
-    ctx.quadraticCurveTo(x + s * 0.17, y + s * 0.52, x + s * 0.34, y + s * 0.80);
+    ctx.moveTo(x + s * 0.34, y + s * 0.60);
+    ctx.bezierCurveTo(x + s * 0.06, y + s * 0.70, x - s * 0.02, y + s * 0.42, x + s * 0.09, y + s * 0.33);
+    ctx.bezierCurveTo(x + s * 0.20, y + s * 0.30, x + s * 0.24, y + s * 0.60, x + s * 0.36, y + s * 0.80);
     ctx.closePath(); ctx.fill();
-    if (detail) { ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.018; ctx.stroke(); }
+    if (detail) { ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.016; ctx.stroke(); }
     ctx.fillStyle = WHITE;
-    ctx.beginPath(); ctx.ellipse(x + s * 0.095, y + s * 0.40, s * 0.058, s * 0.05, -0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + s * 0.10, y + s * 0.38, s * 0.065, s * 0.055, -0.6, 0, Math.PI * 2); ctx.fill();
 
-    // body — radial shading for a rounded, 3-D look
-    const bodyGrad = ctx.createRadialGradient(x + s * 0.42, y + s * 0.55, s * 0.05, x + s * 0.47, y + s * 0.72, s * 0.38);
-    bodyGrad.addColorStop(0.00, O_HI); bodyGrad.addColorStop(0.20, "#f3974a"); bodyGrad.addColorStop(0.58, O); bodyGrad.addColorStop(1.00, O_SH);
+    // body — v51: two overlapping rounded volumes (rump + chest) with a highlight
+    // off-centre to the upper left and a dark rim to the lower right, plus a soft
+    // drop shadow, so the fox reads as a plump three-dimensional animal.
+    if (detail) { ctx.shadowColor = "rgba(30,15,5,0.28)"; ctx.shadowBlur = s * 0.08; ctx.shadowOffsetX = s * 0.03; ctx.shadowOffsetY = s * 0.05; }
+    const rumpGrad = ctx.createRadialGradient(x + s * 0.38, y + s * 0.60, s * 0.03, x + s * 0.45, y + s * 0.71, s * 0.30);
+    rumpGrad.addColorStop(0.00, O_HI); rumpGrad.addColorStop(0.30, "#f3974a"); rumpGrad.addColorStop(0.70, O); rumpGrad.addColorStop(1.00, "#a9541a");
+    ctx.fillStyle = rumpGrad;
+    ctx.beginPath(); ctx.ellipse(x + s * 0.44, y + s * 0.70, s * 0.20, s * 0.185, -0.12, 0, Math.PI * 2); ctx.fill();
+    const bodyGrad = ctx.createRadialGradient(x + s * 0.50, y + s * 0.58, s * 0.03, x + s * 0.54, y + s * 0.70, s * 0.26);
+    bodyGrad.addColorStop(0.00, O_HI); bodyGrad.addColorStop(0.30, "#f3974a"); bodyGrad.addColorStop(0.72, O); bodyGrad.addColorStop(1.00, "#a9541a");
     ctx.fillStyle = bodyGrad;
-    ctx.beginPath();
-    ctx.moveTo(x + s * 0.34, y + s * 0.50);
-    ctx.quadraticCurveTo(x + s * 0.66, y + s * 0.46, x + s * 0.62, y + s * 0.86);
-    ctx.quadraticCurveTo(x + s * 0.46, y + s * 0.93, x + s * 0.34, y + s * 0.86);
-    ctx.quadraticCurveTo(x + s * 0.29, y + s * 0.66, x + s * 0.34, y + s * 0.50);
-    ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + s * 0.54, y + s * 0.68, s * 0.15, s * 0.19, 0.18, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
     if (detail) {
-      ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.02; ctx.stroke();
-      ctx.fillStyle = "rgba(255,242,214,0.42)";
-      ctx.beginPath(); ctx.ellipse(x + s * 0.42, y + s * 0.58, s * 0.06, s * 0.04, -0.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.018;
+      ctx.beginPath(); ctx.ellipse(x + s * 0.44, y + s * 0.70, s * 0.20, s * 0.185, -0.12, 0.9, Math.PI * 2 + 0.5); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(x + s * 0.54, y + s * 0.68, s * 0.15, s * 0.19, 0.18, -1.4, 1.9); ctx.stroke();
+      // specular sheen on the back
+      ctx.fillStyle = "rgba(255,242,214,0.45)";
+      ctx.beginPath(); ctx.ellipse(x + s * 0.40, y + s * 0.57, s * 0.07, s * 0.04, -0.4, 0, Math.PI * 2); ctx.fill();
     }
 
     // white chest
@@ -1750,9 +2055,9 @@
       }
     }
 
-    // head with snout to the right
-    const headGrad = ctx.createRadialGradient(hx - s * 0.03, hy - s * 0.03, s * 0.02, hx, hy, s * 0.22);
-    headGrad.addColorStop(0, O_HI); headGrad.addColorStop(0.7, O); headGrad.addColorStop(1, O_SH);
+    // head with snout to the right — rounder, lit from the upper left
+    const headGrad = ctx.createRadialGradient(hx - s * 0.05, hy - s * 0.05, s * 0.015, hx + s * 0.01, hy + s * 0.02, s * 0.22);
+    headGrad.addColorStop(0, "#ffc478"); headGrad.addColorStop(0.35, O_HI); headGrad.addColorStop(0.75, O); headGrad.addColorStop(1, "#a9541a");
     ctx.fillStyle = headGrad;
     ctx.beginPath();
     ctx.moveTo(hx - s * 0.13, hy - s * 0.05);
@@ -2099,26 +2404,80 @@
     ctx.restore();
   }
 
+  // ---- v49: sprite cache — every static plant / rabbit / fox / snake is painted
+  // once per (kind, variant, integer size) into an offscreen bitmap and then
+  // blitted, instead of rebuilding dozens of gradient paths per creature per frame.
+  const spriteCache = new Map();
+  const SPRITE_CACHE_MAX = 900;
+  function drawCachedSprite(key, s, painter, ctx, x, y) {
+    if (!(s > 0)) return;
+    const si = s < 40 ? Math.max(1, Math.round(s)) : Math.round(s / 2) * 2;
+    const pad = Math.ceil(si * 0.34) + 2;
+    const k = key + "|" + si + (snake3DYellow ? "|y" : "");
+    let c = spriteCache.get(k);
+    if (!c) {
+      if (spriteCache.size >= SPRITE_CACHE_MAX) spriteCache.clear();
+      c = document.createElement("canvas");
+      c.width = si + 2 * pad; c.height = si + 2 * pad;
+      painter(c.getContext("2d"), pad, pad, si);
+      c._pad = pad;
+      spriteCache.set(k, c);
+    }
+    const sc = s / si;
+    ctx.drawImage(c, x - c._pad * sc, y - c._pad * sc, c.width * sc, c.height * sc);
+  }
+  function drawPlantC(ctx, x, y, s) {
+    if (s < 5) { drawPlant(ctx, x, y, s); return; }
+    drawCachedSprite("plant", s, (c, xx, yy, ss) => drawPlant(c, xx, yy, ss), ctx, x, y);
+  }
+  function drawRabbitC(ctx, x, y, s, crouch) {
+    if (s < 5) { drawRabbit(ctx, x, y, s, crouch); return; }
+    const cq = crouch === true ? 8 : Math.round(Math.max(0, Math.min(1, Number(crouch) || 0)) * 8);
+    drawCachedSprite("rabbit" + cq, s, (c, xx, yy, ss) => drawRabbit(c, xx, yy, ss, cq / 8), ctx, x, y);
+  }
+  function drawFoxC(ctx, x, y, s, count) {
+    if (s < 5) { drawFox(ctx, x, y, s, count); return; }
+    drawCachedSprite("fox", s, (c, xx, yy, ss) => drawFox(c, xx, yy, ss, 1), ctx, x, y);
+    drawCountBadge(ctx, x, y, s, count);
+  }
+  function drawSnakeC(ctx, x, y, s, count) {
+    if (s < 5) { drawSnake(ctx, x, y, s, count); return; }
+    drawCachedSprite("snake", s, (c, xx, yy, ss) => drawSnake(c, xx, yy, ss, 1), ctx, x, y);
+    drawCountBadge(ctx, x, y, s, count);
+  }
+
   // ---- v32: 3D visualization (active when L ≤ 20) ----
-  const view3D = { enabled: true, tilt: 35, rot: -34, dist: 2.35, groundAlpha: 0.6, wallAlpha: 0.25, floorDark: 0.7, rootAlpha: 0.38 };
+  const view3D = { enabled: true, tilt: 35, rot: 90, dist: 5, groundAlpha: 0.6, wallAlpha: 0.25, floorDark: 0.7, rootAlpha: 0.38 };
+  // v49: viewing distance is a discrete perspective setting; the scene is always auto-zoomed to fill the display
+  const distValues = [1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 10];
+  const viewPresets = [
+    { key: "A",   label: "3D view A", tilt: 35, rot: 35,  dist: 2.5 },
+    { key: "B",   label: "3D view B", tilt: 35, rot: 125, dist: 2.5 },
+    { key: "side", label: "3D side",  tilt: 35, rot: 90,  dist: 5 },
+    { key: "top", label: "Top view",  tilt: 90, rot: 0,   dist: 10 }
+  ];
+  let viewPresetIndex = 2; // v52: default "3D side"
   let snake3DYellow = false; // v38: snakes render yellow in the 3-D scene only
   let exportNoSky = false;   // v47: render without the sky so the export can be cropped
   function is3DActive() { return view3D.enabled && dispL() <= 20; }
-
-  function drawBush(ctx, x, y, s) {
-    // Plants render as small bushes everywhere since v33.
-    drawPlant(ctx, x, y, s);
+  function nearestDistIndex(d) {
+    let bi = 0, bd = Infinity;
+    distValues.forEach((v, i) => { const e = Math.abs(Math.log(v / d)); if (e < bd) { bd = e; bi = i; } });
+    return bi;
+  }
+  function stepDist(delta) {
+    const i = Math.max(0, Math.min(distValues.length - 1, nearestDistIndex(view3D.dist) + delta));
+    view3D.dist = distValues[i];
   }
 
-  function drawWorld3D() {
-    const ctx = worldCtx;
-    const W = worldCanvas.width, Hc = worldCanvas.height;
-    const UD = 1.6;                        // underground depth in cell units
-    const Ld = dispL();
-    const offY = L - Ld;
+  // v49: camera set-up shared by the renderer and the export — builds the basis
+  // vectors and then fits the projected bounding box of the lattice block
+  // (surface, underground and plant height) into the display, so that any
+  // distance / tilt / rotation fills the panel.
+  function makeCamera(W, Hc, Ld, UD) {
     const h = Ld / 2;
     const az = view3D.rot * Math.PI / 180;
-    const el = view3D.tilt * Math.PI / 180;
+    const el = Math.min(90, Math.max(5, view3D.tilt)) * Math.PI / 180;
     const dist = Math.max(1.1, view3D.dist) * Ld;
     const target = [0, -0.6, 0];
     const cam = [
@@ -2131,15 +2490,48 @@
     const crossp = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
     const normv = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
     const fwd = normv(sub(target, cam));
-    const rgt = normv(crossp(fwd, [0, 1, 0]));
+    // straight-down views: "up" on screen is the direction away from the camera azimuth
+    const upRef = Math.cos(el) < 0.05 ? [-Math.sin(az), 0, -Math.cos(az)] : [0, 1, 0];
+    const rgt = normv(crossp(fwd, upRef));
     const upv = crossp(rgt, fwd);
-    const focal = Hc * 1.584; // v45: whole 3-D scene 20% larger in linear dimension
+    // fit: project the block corners with unit focal length
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const px of [-h, h]) for (const pz of [-h, h]) for (const py of [-UD, 0, 1.15]) {
+      const d = sub([px, py, pz], cam);
+      const zc = Math.max(0.25, dotp(d, fwd));
+      const sx = dotp(d, rgt) / zc, sy = -dotp(d, upv) / zc;
+      if (sx < minX) minX = sx; if (sx > maxX) maxX = sx;
+      if (sy < minY) minY = sy; if (sy > maxY) maxY = sy;
+    }
+    const k = W / 792;                     // overlay bands scale with the canvas size
+    const mx = 10 * k, my = 40 * k;        // side margin, top/bottom margin (room for the HUD buttons)
+    const focal = Math.min((W - 2 * mx) / Math.max(1e-6, maxX - minX), (Hc - 2 * my) / Math.max(1e-6, maxY - minY));
+    const cx = W / 2 - focal * (minX + maxX) / 2;
+    const cy = Hc / 2 - focal * (minY + maxY) / 2;
     const proj = (p) => {
       const d = sub(p, cam);
       const zc = dotp(d, fwd);
       if (zc < 0.25) return null;
-      return { x: W / 2 + focal * dotp(d, rgt) / zc, y: Hc / 2 - focal * dotp(d, upv) / zc, z: zc, s: focal / zc };
+      return { x: cx + focal * dotp(d, rgt) / zc, y: cy - focal * dotp(d, upv) / zc, z: zc, s: focal / zc };
     };
+    // sprites are anchored at their feet for oblique views and at their centre for the top view
+    const anchor = 0.92 - 0.42 * Math.max(0, (view3D.tilt - 60) / 30);
+    return { cam, fwd, rgt, upv, proj, sub, dotp, h, anchor };
+  }
+
+  function drawBush(ctx, x, y, s) {
+    // Plants render as small bushes everywhere since v33.
+    drawPlantC(ctx, x, y, s);
+  }
+
+  function drawWorld3D() {
+    const ctx = worldCtx;
+    const W = worldCanvas.width, Hc = worldCanvas.height;
+    const UD = 1.6;                        // underground depth in cell units
+    const Ld = dispL();
+    const offY = L - Ld;
+    const C = makeCamera(W, Hc, Ld, UD);
+    const { cam, fwd, proj, sub, dotp, h } = C;
     const quad = (pts, fill, stroke, lw) => {
       const q = pts.map(proj);
       if (q.some(p => !p)) return;
@@ -2156,9 +2548,15 @@
     ctx.clearRect(0, 0, W, Hc);
     if (!exportNoSky) {
       const sky = ctx.createLinearGradient(0, 0, 0, Hc);
-      sky.addColorStop(0, "#dcebf7");
-      sky.addColorStop(0.55, "#eef4ec");
-      sky.addColorStop(1, "#e4e8dc");
+      if (darkBg) {
+        sky.addColorStop(0, "#05080b");
+        sky.addColorStop(0.55, "#0b1013");
+        sky.addColorStop(1, "#0e1412");
+      } else {
+        sky.addColorStop(0, "#dcebf7");
+        sky.addColorStop(0.55, "#eef4ec");
+        sky.addColorStop(1, "#e4e8dc");
+      }
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, W, Hc);
     }
@@ -2171,7 +2569,7 @@
       const p = proj([gx, yy, gz]);
       if (!p) return;
       const s = p.s * scale;
-      drawFlipped(fn, ctx, p.x - s / 2, p.y - s * 0.92, s, count, flip);
+      drawFlipped(fn, ctx, p.x - s / 2, p.y - s * C.anchor, s, count, flip);
     };
     const glowBillboard = (gx, yy, gz, g, blue) => {
       const p = proj([gx, yy, gz]);
@@ -2237,12 +2635,13 @@
       const dpt = dotp(sub([gx, -UD, gz], cam), fwd);
       const sShow = snakes[i] - (moving.s ? (moving.s.get(i) || 0) : 0) - (moving.ks ? (moving.ks.get(i) || 0) : 0);
       if (plants[i]) {
-        under.push({ gx, gz, depth: dpt + 0.03, kind: "pit" });
+        const cell = { w: null }; // v49: pit walls computed once, shared by back and front passes
+        under.push({ gx, gz, depth: dpt + 0.03, kind: "pit", cell });
         under.push({ gx, gz, depth: dpt + 0.02, kind: "root" });
         if (rabbits[i] && !(moving.r && moving.r.has(i))) under.push({ gx, gz, depth: dpt + 0.01, kind: "rabbit" });
         if (sShow > 0) under.push({ gx, gz, depth: dpt, kind: "snake", count: sShow });
         if (glow[i] > 0.02 && glowType[i] === 1) under.push({ gx, gz, depth: dpt - 0.01, kind: "glow", g: glow[i] });
-        under.push({ gx, gz, depth: dpt - 0.03, kind: "pitFront" });
+        under.push({ gx, gz, depth: dpt - 0.03, kind: "pitFront", cell });
       } else {
         if (sShow > 0) surfExtra.push({ gx, gz, kind: "snake", count: sShow });
         if (glow[i] > 0.02 && glowType[i] === 1) surfExtra.push({ gx, gz, kind: "glow", g: glow[i], blue: true });
@@ -2277,17 +2676,18 @@
     const fk = Math.max(0, Math.min(1, view3D.floorDark));
     const floorFill = `rgba(${Math.round(70 + (1 - fk) * 135)},${Math.round(49 + (1 - fk) * 129)},${Math.round(33 + (1 - fk) * 107)},0.92)`;
     const floorEdge = `rgba(40,28,18,${(0.15 + 0.45 * fk).toFixed(3)})`;
+    const wallsOf = (u) => (u.cell && u.cell.w) || (u.cell ? (u.cell.w = pitWalls(u)) : pitWalls(u));
     const drawPit = (u) => {
       const x0 = u.gx - 0.5, x1 = u.gx + 0.5, z0 = u.gz - 0.5, z1 = u.gz + 0.5;
       quad([[x0, -UD, z0], [x1, -UD, z0], [x1, -UD, z1], [x0, -UD, z1]], floorFill, floorEdge, 1);
       if (wa <= 0.003) return;
-      const w = pitWalls(u);
+      const w = wallsOf(u);
       quad(w[0].pts, `rgba(92,65,44,${waF(1)})`, `rgba(48,34,22,${waF(0.7)})`, 0.8);
       quad(w[1].pts, `rgba(92,65,44,${waF(1)})`, `rgba(48,34,22,${waF(0.7)})`, 0.8);
     };
     const drawPitFront = (u) => {
       if (wa <= 0.003) return;
-      const w = pitWalls(u);
+      const w = wallsOf(u);
       quad(w[2].pts, `rgba(120,89,61,${waF(0.85)})`, `rgba(70,50,32,${waF(0.6)})`, 0.8);
       quad(w[3].pts, `rgba(120,89,61,${waF(0.85)})`, `rgba(70,50,32,${waF(0.6)})`, 0.8);
     };
@@ -2326,7 +2726,7 @@
       if (u.kind === "pitFront") { drawPitFront(u); continue; }
       if (u.kind === "root") { drawRoot(u); continue; }
       if (u.kind === "glow") { glowBillboard(u.gx, -UD, u.gz, u.g, true); continue; }
-      if (u.kind === "moveSnake") { sprite(drawSnake, u.gx, u.y, u.gz, 1.10, 1, u.flip); continue; }
+      if (u.kind === "moveSnake") { sprite(drawSnakeC, u.gx, u.y, u.gz, 1.10, 1, u.flip); continue; }
       if (u.kind === "killSnake") {
         const pk = proj([u.gx, -UD, u.gz]);
         if (pk) {
@@ -2344,7 +2744,7 @@
           ctx.fillStyle = "rgba(46,30,17,0.6)";
           ctx.beginPath(); ctx.ellipse(p.x, p.y - p.s * 0.10, p.s * 0.42, p.s * 0.19, 0, 0, Math.PI * 2); ctx.fill();
         }
-        sprite(drawRabbit, u.gx, -UD, u.gz, 0.86, true);
+        sprite(drawRabbitC, u.gx, -UD, u.gz, 0.86, true);
       } else {
         const p = proj([u.gx, -UD, u.gz]);
         if (p) {
@@ -2352,7 +2752,7 @@
           ctx.fillStyle = "rgba(150,118,82,0.55)";
           ctx.beginPath(); ctx.ellipse(p.x, p.y - p.s * 0.12, p.s * 0.46, p.s * 0.20, 0, 0, Math.PI * 2); ctx.fill();
         }
-        sprite(drawSnake, u.gx, -UD, u.gz, 1.10, u.count);
+        sprite(drawSnakeC, u.gx, -UD, u.gz, 1.10, u.count);
       }
     }
 
@@ -2374,7 +2774,7 @@
         ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.lineTo(d.x, d.y);
         ctx.closePath();
         const ti = (gy + offY) * L + gx;
-        const ta = plants[ti] ? ga : 0.77;
+        const ta = plants[ti] ? ga : (darkBg ? 0.8 : 0.67); // v52: grass 10% more transparent
         ctx.fillStyle = ((gx + gy) & 1) ? `rgba(128,169,99,${ta})` : `rgba(116,157,90,${ta})`;
         ctx.fill();
         ctx.strokeStyle = "rgba(42,62,36,0.12)";
@@ -2421,14 +2821,14 @@
     surf.sort((a, b) => b.depth - a.depth);
     for (const u of surf) {
       if (u.kind === "glow") glowBillboard(u.gx, 0, u.gz, u.g, !!u.blue);
-      else if (u.kind === "plant") sprite(drawBush, u.gx, 0, u.gz, 1.12);
-      else if (u.kind === "rabbit") sprite(drawRabbit, u.gx, 0, u.gz, 1.03);
-      else if (u.kind === "snake") sprite(drawSnake, u.gx, 0, u.gz, 1.10, u.count);
-      else if (u.kind === "moveSnake") sprite(drawSnake, u.gx, u.y, u.gz, 1.10, 1, u.flip);
-      else if (u.kind === "moveRabbit") sprite(drawRabbit, u.gx, u.y, u.gz, 1.03, u.cr, u.flip);
-      else if (u.kind === "moveFox") sprite(drawFox, u.gx, u.y, u.gz, 1.10, 1, u.flip);
+      else if (u.kind === "plant") sprite(drawBush, u.gx, 0, u.gz, 1.01); // v51: 10% smaller
+      else if (u.kind === "rabbit") sprite(drawRabbitC, u.gx, 0, u.gz, 1.03);
+      else if (u.kind === "snake") sprite(drawSnakeC, u.gx, 0, u.gz, 1.10, u.count);
+      else if (u.kind === "moveSnake") sprite(drawSnakeC, u.gx, u.y, u.gz, 1.10, 1, u.flip);
+      else if (u.kind === "moveRabbit") sprite(drawRabbitC, u.gx, u.y, u.gz, 1.03, u.cr, u.flip);
+      else if (u.kind === "moveFox") sprite(drawFoxC, u.gx, u.y, u.gz, 1.10, 1, u.flip);
       else if (u.kind === "kill") sprite(drawFoxPounce, u.gx, 0, u.gz, 1.15, u.u, u.flip);
-      else sprite(drawFox, u.gx, 0, u.gz, 1.10, u.count);
+      else sprite(drawFoxC, u.gx, 0, u.gz, 1.10, u.count);
     }
 
     // fade the kill afterglow exactly as the flat view does (slow fade since v37)
@@ -2442,9 +2842,9 @@
   function update3DPanel() {
     const b = document.getElementById("view3DBtn");
     if (!b) return;
-    const ok = L <= 20;
+    const ok = dispL() <= 20;
     b.textContent = view3D.enabled
-      ? (ok ? "3D view: on" : "3D view: on — needs L ≤ 20 (flat view shown)")
+      ? (ok ? "3D view: on" : "3D view: on — needs a displayed size ≤ 20 (flat view shown)")
       : "3D view: off";
     b.classList.toggle("primary", view3D.enabled && ok);
     worldCanvas.style.cursor = is3DActive() ? "grab" : "default";
@@ -2456,7 +2856,7 @@
     const pairs = [
       ["v3Tilt", "v3TiltVal", Math.round(view3D.tilt), Math.round(view3D.tilt) + "°"],
       ["v3Rot", "v3RotVal", Math.round(view3D.rot), Math.round(view3D.rot) + "°"],
-      ["v3Dist", "v3DistVal", Math.round(view3D.dist * 100), view3D.dist.toFixed(2) + " × L"],
+      ["v3DistNone", "v3DistVal", 0, view3D.dist + " × L"],
       ["v3Alpha", "v3AlphaVal", Math.round(view3D.groundAlpha * 100), Math.round(view3D.groundAlpha * 100) + "%"],
       ["v3Wall", "v3WallVal", Math.round(view3D.wallAlpha * 100), view3D.wallAlpha.toFixed(2)],
       ["v3Root", "v3RootVal", Math.round(view3D.rootAlpha * 100), view3D.rootAlpha.toFixed(2)],
@@ -2469,6 +2869,33 @@
       const lab = document.getElementById(valId);
       if (lab) lab.textContent = txt;
     }
+    const di = nearestDistIndex(view3D.dist);
+    document.querySelectorAll("#v3DistRow button").forEach((b, i) => b.classList.toggle("primary", i === di));
+    updateViewPresetButton();
+  }
+
+  // v49: lower-left corner button cycles through three camera presets
+  function updateViewPresetButton() {
+    const b = document.getElementById("viewPresetBtn");
+    if (!b) return;
+    const p = viewPresets[viewPresetIndex];
+    const matches = Math.abs(view3D.tilt - p.tilt) < 0.5 && Math.abs((((view3D.rot - p.rot) % 360) + 540) % 360 - 180) < 0.5 && Math.abs(view3D.dist - p.dist) < 1e-9;
+    b.textContent = p.label + (matches ? "" : " ·");
+    b.title = "Camera presets — click to cycle: 3D view A (tilt 35°, rotation 35°, distance 2.5), 3D view B (rotation +90°), 3D side (tilt 35°, rotation 90°, distance 5), top view. A dot means the view was changed by hand.";
+  }
+  function applyViewPreset(i) {
+    viewPresetIndex = ((i % viewPresets.length) + viewPresets.length) % viewPresets.length;
+    const p = viewPresets[viewPresetIndex];
+    view3D.tilt = p.tilt; view3D.rot = p.rot; view3D.dist = p.dist;
+    syncViewSliders();
+    drawWorld();
+  }
+  function updateBgButton() {
+    const b = document.getElementById("bgBtn");
+    if (b) { b.textContent = darkBg ? "White bg" : "Black bg"; b.classList.toggle("primary", darkBg); }
+    const wrap = document.getElementById("canvasWrap");
+    if (wrap) wrap.classList.toggle("dark", darkBg);
+    worldCanvas.style.background = darkBg ? "#0b1013" : "#fff";
   }
 
   (function wire3DControls() {
@@ -2481,7 +2908,35 @@
     };
     bind("v3Tilt", v => { view3D.tilt = v; });
     bind("v3Rot", v => { view3D.rot = v; });
-    bind("v3Dist", v => { view3D.dist = v / 100; });
+    const distRow = document.getElementById("v3DistRow");
+    if (distRow) {
+      for (const d of distValues) {
+        const db = document.createElement("button");
+        db.type = "button";
+        db.textContent = String(d);
+        db.title = `Viewing distance ${d} × L`;
+        db.addEventListener("click", () => { view3D.dist = d; syncViewSliders(); drawWorld(); });
+        distRow.appendChild(db);
+      }
+    }
+    const vpBtn = document.getElementById("viewPresetBtn");
+    if (vpBtn) vpBtn.addEventListener("click", () => applyViewPreset(viewPresetIndex + 1));
+    const bgBtn = document.getElementById("bgBtn");
+    if (bgBtn) bgBtn.addEventListener("click", () => { darkBg = !darkBg; spriteCache.clear(); updateBgButton(); drawWorld(); });
+    const lpBtn = document.getElementById("latticePngBtn");
+    if (lpBtn) lpBtn.addEventListener("click", () => exportLatticePNG());
+    const ppBtn = document.getElementById("plotPngBtn");
+    if (ppBtn) ppBtn.addEventListener("click", () => { drawPlot(); downloadCanvasPNG(plotCanvas, `abm_population_t${time.toFixed(2)}`); });
+    const rpBtn = document.getElementById("radialPngBtn");
+    if (rpBtn) rpBtn.addEventListener("click", () => { drawRadial(); downloadCanvasPNG(radialCanvas, `abm_radial_t${time.toFixed(2)}`); });
+    const rp3Btn = document.getElementById("radialPng3Btn");
+    if (rp3Btn) rp3Btn.addEventListener("click", () => {
+      // v52: same plot, one third of the height (fonts and line widths unchanged)
+      const c = document.createElement("canvas");
+      c.width = radialCanvas.width; c.height = Math.round(radialCanvas.width / 3);
+      drawRadial(c);
+      downloadCanvasPNG(c, `abm_radial_wide_t${time.toFixed(2)}`);
+    });
     bind("v3Alpha", v => { view3D.groundAlpha = v / 100; });
     bind("v3Wall", v => { view3D.wallAlpha = v / 100; });
     bind("v3Root", v => { view3D.rootAlpha = v / 100; });
@@ -2513,14 +2968,16 @@
       if (activePointers.has(e.pointerId)) activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (activePointers.size >= 2) {
         if (pinchStartDist > 0) {
-          view3D.dist = Math.max(1.2, Math.min(4.5, pinchStartView * pinchStartDist / pinchGap()));
+          // pinch steps through the listed perspective distances (spread = closer)
+          const target = pinchStartView * pinchStartDist / pinchGap();
+          view3D.dist = distValues[nearestDistIndex(Math.max(1.2, Math.min(10, target)))];
           syncViewSliders(); drawWorld();
         }
         return;
       }
       if (!dragging) return;
       view3D.rot = ((view3D.rot + (e.clientX - lastX) * 0.4 + 540) % 360) - 180;
-      view3D.tilt = Math.max(8, Math.min(85, view3D.tilt + (e.clientY - lastY) * 0.3));
+      view3D.tilt = Math.max(8, Math.min(90, view3D.tilt + (e.clientY - lastY) * 0.3));
       lastX = e.clientX; lastY = e.clientY;
       syncViewSliders(); drawWorld();
     });
@@ -2541,7 +2998,7 @@
     worldCanvas.addEventListener("wheel", (e) => {
       if (!is3DActive()) return;
       e.preventDefault();
-      view3D.dist = Math.max(1.2, Math.min(4.5, view3D.dist * (e.deltaY > 0 ? 1.08 : 0.925)));
+      stepDist(e.deltaY > 0 ? 1 : -1);
       syncViewSliders(); drawWorld();
     }, { passive: false });
   })();
@@ -2558,7 +3015,7 @@
     const Ld = dispL();
     const s = W / Ld;
     ctx.clearRect(0, 0, W, W);
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = darkBg ? "#0b1013" : "#ffffff";
     ctx.fillRect(0, 0, W, W);
 
     const nowMs = performance.now();
@@ -2572,7 +3029,7 @@
       if (!plants[i]) continue;
       const v = cellView(i);
       if (!v) continue;
-      drawPlant(ctx, v[0] * s, v[1] * s, s);
+      drawPlantC(ctx, v[0] * s + s * 0.05, v[1] * s + s * 0.05, s * 0.9); // v51: 10% smaller
     }
     for (let i = 0; i < N; i++) {
       if (!rabbits[i] && !foxes[i] && !snakes[i]) continue;
@@ -2580,11 +3037,11 @@
       if (!v) continue;
       const x = v[0] * s;
       const y = v[1] * s;
-      if (rabbits[i] && !(moving.r && moving.r.has(i))) drawRabbit(ctx, x + o2, y + o2, s2, plants[i] === 1);
+      if (rabbits[i] && !(moving.r && moving.r.has(i))) drawRabbitC(ctx, x + o2, y + o2, s2, plants[i] === 1);
       const fShow = foxes[i] - (moving.f ? (moving.f.get(i) || 0) : 0) - (moving.k ? (moving.k.get(i) || 0) : 0);
-      if (fShow > 0) drawFox(ctx, x + o2, y + o2, s2, fShow);
+      if (fShow > 0) drawFoxC(ctx, x + o2, y + o2, s2, fShow);
       const sShow = snakes[i] - (moving.s ? (moving.s.get(i) || 0) : 0) - (moving.ks ? (moving.ks.get(i) || 0) : 0);
-      if (sShow > 0) drawSnake(ctx, x + o2, y + o2, s2, sShow);
+      if (sShow > 0) drawSnakeC(ctx, x + o2, y + o2, s2, sShow);
     }
 
     // animals in motion between lattice sites: rabbits hop, foxes run, snakes wiggle
@@ -2598,15 +3055,15 @@
       const flip = tr.tx < tr.fx;
       if (tr.kind === "rabbit") {
         py -= Math.sin(Math.PI * u) * s * 0.35;
-        drawFlipped(drawRabbit, ctx, px + o2, py + o2, s2, tr.cf + (tr.ct - tr.cf) * u, flip);
+        drawFlipped(drawRabbitC, ctx, px + o2, py + o2, s2, tr.cf + (tr.ct - tr.cf) * u, flip);
       } else if (tr.kind === "fox") {
         py -= Math.abs(Math.sin(2 * Math.PI * u)) * s * 0.10;
-        drawFlipped(drawFox, ctx, px + o2, py + o2, s2, 1, flip);
+        drawFlipped(drawFoxC, ctx, px + o2, py + o2, s2, 1, flip);
       } else {
         const wig = Math.sin(u * Math.PI * 4) * s * 0.10;
         px += -(tr.ty - tr.fy) * wig;
         py += (tr.tx - tr.fx) * wig;
-        drawFlipped(drawSnake, ctx, px + o2, py + o2, s2, 1, flip);
+        drawFlipped(drawSnakeC, ctx, px + o2, py + o2, s2, 1, flip);
       }
     }
     for (const kt of killTraces) {
@@ -2652,7 +3109,7 @@
     }
 
     if (s >= 12) {
-      ctx.strokeStyle = "rgba(0,0,0,0.07)";
+      ctx.strokeStyle = darkBg ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)";
       ctx.lineWidth = 1;
       for (let k = 0; k <= Ld; k++) {
         const a = k * s;
@@ -2783,8 +3240,9 @@
 
       drawLine(ctx, data, "foxes", "#f08a24", x0, y0, w, h, niceMax, firstT, lastT);
       drawLine(ctx, data, "snakes", "#050505", x0, y0, w, h, niceMax, firstT, lastT);
+      ctx.setLineDash([10, 10]); drawLine(ctx, data, "snakes", "#d92b1f", x0, y0, w, h, niceMax, firstT, lastT); ctx.setLineDash([]);
       drawLine(ctx, data, "rabbitsBelowPlants", "#2d8a43", x0, y0, w, h, niceMax, firstT, lastT);
-      drawLine(ctx, data, "allRabbits", "#666666", x0, y0, w, h, niceMax, firstT, lastT);
+      drawLine(ctx, data, "allRabbits", "#9a9a9a", x0, y0, w, h, niceMax, firstT, lastT);
       drawLine(ctx, data, "plants", "#44aa55", x0, y0, w, h, niceMax, firstT, lastT);
     }
 
@@ -2794,7 +3252,7 @@
 
     // Label the four single-species curves with their creature icon, sitting on the curve.
     if (data.length >= 2) {
-      const iconS = 44;
+      const iconS = 88; // v54: animals twice as big
       const onCurve = (field, frac) => {
         const i = Math.max(0, Math.min(data.length - 1, Math.round(frac * (data.length - 1))));
         const px = plotX(data[i], firstT, lastT, x0, w, i, data.length);
@@ -2893,12 +3351,37 @@
 
   function updateFastButton() {
     const b = document.getElementById("fastBtn");
-    if (!b) return;
-    const fast = Math.round(params.speed) >= 80;
-    b.innerHTML = fast ? "&times;&frac12; normal" : "&times;80 fast";
-    b.classList.toggle("primary", fast);
-    b.title = fast ? "Back to the default &frac12; step per animation frame" : "Run 80 steps per animation frame";
+    if (b) {
+      const fast = Math.round(params.speed) >= 80;
+      b.innerHTML = fast ? "&times;&frac12; normal" : "&times;80 fast";
+      b.classList.toggle("primary", fast);
+      b.title = fast ? "Back to the default &frac12; step per animation frame" : "Run 80 steps per animation frame";
+    }
+    updateSpeedSelect();
   }
+
+  // v49: copy of "steps per animation frame" in the lower-right corner of the display
+  const speedChoices = [0.25, 0.5, 1, 2, 5, 10, 20, 40, 80];
+  const speedSelectEl = document.getElementById("speedSelect");
+  function updateSpeedSelect() {
+    if (!speedSelectEl) return;
+    const v = params.speed;
+    const listed = speedChoices.some(c => Math.abs(c - v) < 1e-9);
+    const opts = listed ? speedChoices : speedChoices.concat([v]).sort((a, b) => a - b);
+    const want = opts.map(c => String(c)).join("|");
+    if (speedSelectEl.dataset.opts !== want) {
+      speedSelectEl.innerHTML = "";
+      for (const c of opts) {
+        const o = document.createElement("option");
+        o.value = String(c);
+        o.textContent = (c === 0.5 ? "½" : c === 0.25 ? "¼" : String(c)) + " step" + (c === 1 ? "" : "s");
+        speedSelectEl.appendChild(o);
+      }
+      speedSelectEl.dataset.opts = want;
+    }
+    speedSelectEl.value = String(v);
+  }
+  if (speedSelectEl) speedSelectEl.addEventListener("change", () => setControlValue("speed", Number(speedSelectEl.value)));
 
   if (miniTracePanel) miniTracePanel.addEventListener("toggle", drawMiniPlot);
   const fastBtnEl = document.getElementById("fastBtn");
@@ -2906,367 +3389,11 @@
     setControlValue("speed", Math.round(params.speed) >= 80 ? 0.5 : 80);
   });
 
-  function getRateMeta(id) {
-    return controls.rates.find(x => x.id === id) || controls.core.find(x => x.id === id) || controls.init.find(x => x.id === id);
-  }
-
-  function roundToStep(v, step, min) {
-    if (!step || step <= 0) return v;
-    return min + Math.round((v - min) / step) * step;
-  }
-
   function randn() {
     let u = 0, v = 0;
     while (u === 0) u = Math.random();
     while (v === 0) v = Math.random();
     return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-  }
-
-  function snapshotSearchParams() {
-    const out = { dt: params.dt, randomNeighborModel, rabbitBirthRule, rabbitPlantRemoval, rabbitRemovalOnAttempt, foxPlantRemoval };
-    for (const id of searchParameterIds) out[id] = params[id];
-    return normalizeParameterSet(out);
-  }
-
-  function normalizeParameterSet(set) {
-    const src = set || {};
-    const out = { dt: Number(src.dt ?? params.dt), randomNeighborModel: !!src.randomNeighborModel, rabbitBirthRule: src.rabbitBirthRule || "anywhere", rabbitPlantRemoval: src.rabbitPlantRemoval !== false, rabbitRemovalOnAttempt: src.rabbitRemovalOnAttempt !== false, foxPlantRemoval: !!src.foxPlantRemoval };
-    if (!birthRules.includes(out.rabbitBirthRule)) out.rabbitBirthRule = "anywhere";
-    for (const id of searchParameterIds) {
-      const meta = getControlMeta(id);
-      let v = Number(src[id]);
-      if (!Number.isFinite(v)) v = Number(params[id] ?? (meta ? meta.value : 0));
-      if (meta) {
-        if (meta.values) v = nearestListedValue(v, meta.values);
-        else v = Math.max(Number(meta.min), Math.min(Number(meta.max), v));
-      }
-      out[id] = v;
-    }
-    return out;
-  }
-
-  function stopSearchIfRunning() {
-    searchRunning = false;
-    const b = document.getElementById("searchBtn");
-    if (b) {
-      b.textContent = "Start search";
-      b.classList.remove("primary");
-    }
-  }
-
-  function applyParameterSetToControls(set, resetAfter = true) {
-    const clean = normalizeParameterSet(set);
-    for (const id of searchParameterIds) {
-      if (clean[id] !== undefined) setControlValue(id, clean[id]);
-    }
-    if (clean.dt !== undefined) setControlValue("dt", clean.dt);
-    randomNeighborModel = !!clean.randomNeighborModel;
-    document.getElementById("modeBtn").textContent = randomNeighborModel ? "Random-neighbor model" : "Local neighbors";
-    rabbitBirthRule = clean.rabbitBirthRule;
-    rabbitPlantRemoval = clean.rabbitPlantRemoval !== false;
-    rabbitRemovalOnAttempt = clean.rabbitRemovalOnAttempt !== false;
-    foxPlantRemoval = !!clean.foxPlantRemoval;
-    updateBirthRuleButton();
-    updateRabbitPlantButton();
-    updateRabbitPlantModeButton();
-    updateFoxPlantButton();
-    if (resetAfter) reset(); else drawAll();
-  }
-
-  function mutateSearchParams(base) {
-    const cand = { ...base };
-    const scale = Math.max(0.001, Number(document.getElementById("searchMutation").value) || 0.25);
-    for (const id of searchParameterIds) {
-      if (searchLocked[id]) continue;
-      const meta = getRateMeta(id);
-      if (meta.values) {
-        const values = meta.values;
-        const currentIndex = Math.max(0, values.findIndex(v => v === nearestListedValue(Number(cand[id]), values)));
-        const jump = Math.max(1, Math.round(Math.abs(randn()) * (1 + scale * 4)));
-        const direction = Math.random() < 0.5 ? -1 : 1;
-        const newIndex = Math.max(0, Math.min(values.length - 1, currentIndex + direction * jump));
-        cand[id] = values[newIndex];
-        continue;
-      }
-      const min = Number(meta.min), max = Number(meta.max), step = Number(meta.step);
-      const current = Math.max(Number(cand[id]), min + 1e-12);
-      let v;
-      if (current <= min + 1e-10) {
-        v = min + Math.random() * (max - min) * 0.08;
-      } else {
-        v = current * Math.exp(randn() * scale);
-      }
-      v = Math.max(min, Math.min(max, v));
-      cand[id] = Number(roundToStep(v, step, min).toFixed(6));
-    }
-    if (!birthRuleLocked && Math.random() < 0.25) {
-      cand.rabbitBirthRule = birthRules[randInt(birthRules.length)];
-    }
-    if (!rabbitPlantLocked && Math.random() < 0.20) {
-      cand.rabbitPlantRemoval = !cand.rabbitPlantRemoval;
-    }
-    cand.randomNeighborModel = randomNeighborModel;
-    cand.foxPlantRemoval = foxPlantRemoval;
-    cand.rabbitRemovalOnAttempt = rabbitRemovalOnAttempt;
-    cand.dt = params.dt;
-    return cand;
-  }
-
-  function runSurvivalTest(testParams) {
-    testParams = normalizeParameterSet(testParams);
-    const sL = 15;
-    const sN = sL * sL;
-    const splants = new Uint8Array(sN);
-    const srabbits = new Uint8Array(sN);
-    const sfoxes = new Uint16Array(sN);
-    const ssnakes = new Uint16Array(sN);
-    const dt = Math.max(0.0001, Number(testParams.dt) || 0.01);
-    const maxTime = Math.min(5000, Math.max(dt, Number(document.getElementById("searchMaxTime").value) || 5000));
-    const maxSteps = Math.max(1, Math.floor(maxTime / dt));
-
-    for (let i = 0; i < sN; i++) {
-      splants[i] = Math.random() < 0.20 ? 1 : 0;
-      srabbits[i] = Math.random() < 0.20 ? 1 : 0;
-      sfoxes[i] = Math.random() < 0.20 ? 1 : 0;
-      ssnakes[i] = Math.random() < 0.20 ? 1 : 0;
-    }
-
-    const sxOf = i => i % sL;
-    const syOf = i => Math.floor(i / sL);
-    const sIdx = (x, y) => y * sL + x;
-    const sRandTarget = (i) => {
-      if (testParams.randomNeighborModel) return randInt(sN);
-      const x = sxOf(i), y = syOf(i);
-      switch (randInt(4)) {
-        case 0: return sIdx((x + 1) % sL, y);
-        case 1: return sIdx((x + sL - 1) % sL, y);
-        case 2: return sIdx(x, (y + 1) % sL);
-        default: return sIdx(x, (y + sL - 1) % sL);
-      }
-    };
-    const collectBin = (arr) => {
-      const out = [];
-      for (let i = 0; i < sN; i++) if (arr[i]) out.push(i);
-      return out;
-    };
-    const collectCount = (arr) => {
-      const out = [];
-      for (let i = 0; i < sN; i++) if (arr[i] > 0) out.push([i, arr[i]]);
-      return out;
-    };
-    const birthAllowed = (site) => {
-      if (testParams.rabbitBirthRule === "under") return splants[site] === 1;
-      if (testParams.rabbitBirthRule === "exposed") return splants[site] === 0;
-      return true;
-    };
-    const aliveStats = () => {
-      let pc = 0, rc = 0, fc = 0, sc = 0;
-      for (let i = 0; i < sN; i++) {
-        pc += splants[i];
-        rc += srabbits[i];
-        fc += sfoxes[i];
-        sc += ssnakes[i];
-      }
-      return { pc, rc, fc, sc };
-    };
-
-    for (let step = 0; step < maxSteps; step++) {
-      const pGrow = clampProb(testParams.gamma * (testParams.sigma ?? 1) * dt);
-      if (pGrow > 0) {
-        for (const i of collectBin(splants)) {
-          if (splants[i] && Math.random() < pGrow) {
-            const j = sRandTarget(i);
-            if (!splants[j]) splants[j] = 1;
-          }
-        }
-      }
-
-      const pRMove = clampProb(testParams.muR * dt);
-      const pRBirth = clampProb(testParams.epsilon * dt);
-      for (const start of collectBin(srabbits)) {
-        if (!srabbits[start]) continue;
-        let current = start;
-        if (Math.random() < pRMove) {
-          const j = sRandTarget(current);
-          const protectedNow = splants[current] === 1;
-          const protectedTarget = splants[j] === 1;
-          const canMove = !srabbits[j] && (!protectedNow || protectedTarget);
-          // Search variant honors the same trigger mode as the live model.
-          if (testParams.rabbitPlantRemoval && protectedTarget &&
-              (testParams.rabbitRemovalOnAttempt || canMove) &&
-              Math.random() < clampProb(testParams.sigma ?? 1)) {
-            splants[j] = 0;
-          }
-          if (canMove) {
-            srabbits[current] = 0;
-            srabbits[j] = 1;
-            current = j;
-          }
-        }
-        if (srabbits[current] && birthAllowed(current) && Math.random() < pRBirth) {
-          const j = sRandTarget(current);
-          if (!srabbits[j]) srabbits[j] = 1;
-        }
-      }
-
-      const pFMove = clampProb(testParams.muF * dt);
-      const pFBirth = clampProb(testParams.f);
-      const pFDeath = clampProb(testParams.deltaF * dt);
-      for (const [start, originalCount] of collectCount(sfoxes)) {
-        for (let c = 0; c < originalCount; c++) {
-          if (sfoxes[start] === 0) break;
-          let current = start;
-          if (Math.random() < pFMove) {
-            const j = sRandTarget(start);
-            if (sfoxes[j] < maxLocalPredators) {
-              sfoxes[start]--;
-              sfoxes[j]++;
-              current = j;
-            } else {
-              current = start;
-            }
-            if (current === j && srabbits[j]) {
-              if (splants[j]) {
-                if (testParams.foxPlantRemoval && Math.random() < clampProb(testParams.sigma ?? 1)) splants[j] = 0;
-              } else {
-                srabbits[j] = 0;
-                if (Math.random() < pFBirth) {
-                  const k = sRandTarget(j);
-                  if (sfoxes[k] < maxLocalPredators) sfoxes[k]++;
-                }
-              }
-            }
-          }
-          if (Math.random() < pFDeath && sfoxes[current] > 0) sfoxes[current]--;
-        }
-      }
-
-      const pSMove = clampProb(testParams.muS * dt);
-      const pSBirth = clampProb(testParams.fS);
-      const pSDeath = clampProb(testParams.deltaS * dt);
-      for (const [start, originalCount] of collectCount(ssnakes)) {
-        for (let c = 0; c < originalCount; c++) {
-          if (ssnakes[start] === 0) break;
-          let current = start;
-          if (Math.random() < pSMove) {
-            const j = sRandTarget(start);
-            if (ssnakes[j] < maxLocalPredators) {
-              ssnakes[start]--;
-              ssnakes[j]++;
-              current = j;
-            } else {
-              current = start;
-            }
-            if (current === j && splants[j] && srabbits[j]) {
-              srabbits[j] = 0;
-              if (Math.random() < pSBirth) {
-                const k = sRandTarget(j);
-                if (ssnakes[k] < maxLocalPredators) ssnakes[k]++;
-              }
-            }
-          }
-          if (Math.random() < pSDeath && ssnakes[current] > 0) ssnakes[current]--;
-        }
-      }
-
-      const a = aliveStats();
-      if (a.pc === 0 || a.rc === 0 || a.fc === 0 || a.sc === 0) return (step + 1) * dt;
-    }
-    return maxTime;
-  }
-
-  function formatSet(set) {
-    if (!set) return "none";
-    return `γ=${set.gamma}, σ=${set.sigma}, ε=${set.epsilon}, μR=${set.muR}, μF=${set.muF}, f=${set.f}, δF=${set.deltaF}, μS=${set.muS}, fS=${set.fS}, δS=${set.deltaS}, birth=${set.rabbitBirthRule}, rabbitPlantRemoval=${set.rabbitPlantRemoval !== false ? "on" : "off"} (${set.rabbitRemovalOnAttempt !== false ? "attempt" : "move"}), foxPlantRemoval=${set.foxPlantRemoval ? "on" : "off"}`;
-  }
-
-  function updateSearchStatus(message = "") {
-    const el = document.getElementById("searchStatus");
-    const bestText = searchBest ? `Best survival: ${searchBest.survival.toFixed(2)} time units after ${searchTrials} trial(s).<br>${formatSet(searchBest.params)}` : "No winner tested yet.";
-    el.innerHTML = `${message ? message + "<br>" : ""}${bestText}<br><span class="small">Search uses L=15, initial densities P=R=F=S=0.20, and a hard cap of 5000 time units every trial.</span>`;
-  }
-
-  function runOneSearchTrial() {
-    if (!searchBest) {
-      const base = snapshotSearchParams();
-      const survival = runSurvivalTest(base);
-      searchBest = { params: normalizeParameterSet(base), survival };
-      searchTrials = 1;
-      updateSearchStatus("Initialized baseline from current controls.");
-      return;
-    }
-    const cand = mutateSearchParams(searchBest.params);
-    const survival = runSurvivalTest(cand);
-    searchTrials++;
-    if (survival > searchBest.survival) {
-      searchBest = { params: normalizeParameterSet(cand), survival };
-      applyParameterSetToControls(cand, false);
-      updateSearchStatus("New winning parameter set found and copied to controls.");
-    } else {
-      updateSearchStatus(`Trial survived ${survival.toFixed(2)}; no improvement.`);
-    }
-  }
-
-  function readSavedSets() {
-    try {
-      const raw = JSON.parse(localStorage.getItem(savedKey) || "[]");
-      return Array.isArray(raw) ? raw.map(entry => ({ ...entry, params: normalizeParameterSet(entry.params), survival: Number(entry.survival) || 0 })) : [];
-    } catch { return []; }
-  }
-
-  function writeSavedSets(list) {
-    const clean = list.map(entry => ({ ...entry, params: normalizeParameterSet(entry.params), survival: Number(entry.survival) || 0 }));
-    localStorage.setItem(savedKey, JSON.stringify(clean));
-  }
-
-  function populateSavedSets() {
-    const select = document.getElementById("savedSets");
-    const list = readSavedSets();
-    select.innerHTML = "";
-    if (!list.length) {
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "No stored winners";
-      select.appendChild(opt);
-      return;
-    }
-    list.forEach((entry, i) => {
-      const opt = document.createElement("option");
-      opt.value = String(i);
-      opt.textContent = `${entry.date} · survival ${Number(entry.survival).toFixed(2)} · σ=${entry.params.sigma} · ${entry.params.rabbitBirthRule} · rabbitPlant=${entry.params.rabbitPlantRemoval !== false ? "on" : "off"} · foxPlant=${entry.params.foxPlantRemoval ? "on" : "off"}`;
-      select.appendChild(opt);
-    });
-  }
-
-  function storeWinner() {
-    if (!searchBest) {
-      updateSearchStatus("Run at least one search trial before storing a winner.");
-      return;
-    }
-    const list = readSavedSets();
-    list.unshift({
-      date: new Date().toLocaleString(),
-      survival: searchBest.survival,
-      params: normalizeParameterSet(searchBest.params)
-    });
-    writeSavedSets(list.slice(0, 30));
-    populateSavedSets();
-    updateSearchStatus("Stored current winning parameter set in this browser.");
-  }
-
-  function loadSelectedWinner() {
-    const list = readSavedSets();
-    const sel = document.getElementById("savedSets");
-    const i = Number(sel.value);
-    if (!list.length || !Number.isFinite(i) || !list[i]) {
-      updateSearchStatus("No stored winner selected.");
-      return;
-    }
-    stopSearchIfRunning();
-    const loaded = normalizeParameterSet(list[i].params);
-    searchBest = { params: loaded, survival: Number(list[i].survival) || 0 };
-    applyParameterSetToControls(loaded, true);
-    updateSearchStatus("Loaded selected stored winner, stopped the search, applied controls, and reset the main simulation.");
   }
 
   function drawStatus() {
@@ -3276,7 +3403,7 @@
     statusEl.innerHTML = `
       <span><b>t</b> ${time.toFixed(2)}</span>
       <span><b>step</b> ${stepNumber}</span>
-      <span><b>L</b> ${L}×${L}${cornerView && dispL() < L ? " (showing lower-left 10×10)" : ""}</span>
+      <span><b>L</b> ${L}×${L}${cornerView && dispL() < L ? ` (showing lower-left ${dispL()}×${dispL()})` : ""}</span>
       <span><b>plants</b> ${(c.plantCount / N).toFixed(3)}</span>
       <span><b>all rabbits</b> ${(c.rabbitCount / N).toFixed(3)}</span>
       <span><b>rabbits below plants</b> ${(c.rabbitBelowPlant / N).toFixed(3)}</span>
@@ -3289,7 +3416,7 @@
       <span class="pill">σ=${params.sigma}, γeff=${(params.gamma * params.sigma).toFixed(4)}, rabbit plant-removal ${rabbitPlantRemoval ? ("p=σ, " + (rabbitRemovalOnAttempt ? "on move attempt" : "on successful move")) : "off"}</span>
       <span class="pill">rabbit births: ${rabbitBirthRule === "anywhere" ? "anywhere" : (rabbitBirthRule === "under" ? "under plants only" : "outside plants only")}</span>
       <span class="pill">plant removal: ${[rabbitPlantRemoval ? "rabbits" : null, foxPlantRemoval ? "foxes" : null, snakePlantRemoval ? "snakes" : null].filter(Boolean).join(" + ") || "none"}</span>
-      <span class="pill">rabbit shelter: ${rabbitShelterMode === "adaptive" ? "adaptive (foxes↔snakes)" : "always under plants"}</span>
+      <span class="pill">rabbit shelter: ${shelterModeLabel()}</span>
       <span class="pill">${freeze}</span>
     `;
   }
@@ -3325,23 +3452,31 @@
       maxX = Math.min(W - 1, maxX + pad); maxY = Math.min(H - 1, maxY + pad);
       out.width = maxX - minX + 1;
       out.height = maxY - minY + 1;
-      out.getContext("2d").drawImage(worldCanvas, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
+      const octx = out.getContext("2d");
+      octx.fillStyle = darkBg ? "#0b1013" : "#ffffff"; // v49: opaque background matching the display
+      octx.fillRect(0, 0, out.width, out.height);
+      octx.drawImage(worldCanvas, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
       drawWorld(); // restore the on-screen view with its sky
     } else {
       out.width = worldCanvas.width;
       out.height = worldCanvas.height;
       out.getContext("2d").drawImage(worldCanvas, 0, 0);
     }
+    downloadCanvasPNG(out, `abm_lattice_t${time.toFixed(2)}`);
+  }
+
+  // v49: shared PNG download for any canvas
+  function downloadCanvasPNG(canvas, baseName) {
     let url;
     try {
-      url = out.toDataURL("image/png");
+      url = canvas.toDataURL("image/png");
     } catch (err) {
       statusEl.innerHTML += `<span class="pill" style="border-color:#c44;color:#922;">PNG export failed: ${err && err.message ? err.message : err}</span>`;
       return;
     }
     const a = document.createElement("a");
     const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-    a.download = `abm_lattice_t${time.toFixed(2)}_${stamp}.png`;
+    a.download = `${baseName}_${stamp}.png`;
     a.href = url;
     document.body.appendChild(a);
     a.click();
@@ -3519,10 +3654,13 @@
     document.body.removeChild(a);
   }
 
+  let radialFrame = 0;
   function drawAll() {
     drawWorld();
     drawPlot();
     drawMiniPlot();
+    // the radial profile changes slowly — redraw it every 10th frame while running
+    if (plantSeedMode === "circle" && (!running || (radialFrame++ % 10) === 0)) drawRadial();
     drawStatus();
   }
 
@@ -3540,17 +3678,9 @@
       } else if (motionTraces.length || killTraces.length) {
         drawWorld(); // finish playing motion animations after a pause or single step
       }
-      if (searchRunning) {
-        const n = Math.max(1, Math.min(20, Math.round(Number(document.getElementById("searchTrialsPerFrame").value) || 1)));
-        for (let i = 0; i < n; i++) runOneSearchTrial();
-      }
     } catch (err) {
       running = false;
-      searchRunning = false;
-      const runButton = document.getElementById("runBtn");
-      if (runButton) { runButton.textContent = "Start"; runButton.classList.add("primary"); }
-      const searchButton = document.getElementById("searchBtn");
-      if (searchButton) { searchButton.textContent = "Start search"; searchButton.classList.remove("primary"); }
+      updateRunButtons();
       try { if (!history.length || history[history.length - 1].t < time) recordHistory(); drawAll(); } catch (_) {}
       const msg = err && err.message ? err.message : String(err);
       statusEl.innerHTML += `<span class="pill" style="border-color:#c44;color:#922;">simulation paused after error: ${msg}</span>`;
@@ -3559,12 +3689,18 @@
     requestAnimationFrame(loop);
   }
 
-  document.getElementById("runBtn").addEventListener("click", () => {
-    running = !running;
-    const b = document.getElementById("runBtn");
-    b.textContent = running ? "Pause" : "Start";
-    b.classList.toggle("primary", !running);
-  });
+  function updateRunButtons() {
+    for (const id of ["runBtn", "runBtn2"]) {
+      const b = document.getElementById(id);
+      if (!b) continue;
+      b.textContent = running ? "Pause" : "Start";
+      b.classList.toggle("primary", !running);
+    }
+  }
+  function toggleRunning() { running = !running; updateRunButtons(); }
+  document.getElementById("runBtn").addEventListener("click", toggleRunning);
+  document.getElementById("runBtn2").addEventListener("click", toggleRunning);
+  document.getElementById("resetBtn2").addEventListener("click", () => reset());
 
   document.getElementById("stepBtn").addEventListener("click", () => {
     stepSimulation();
@@ -3613,10 +3749,11 @@
   });
 
   document.getElementById("rabbitShelterBtn").addEventListener("click", () => {
-    rabbitShelterMode = rabbitShelterMode === "adaptive" ? "always" : "adaptive";
+    rabbitShelterMode = shelterModes[(shelterModes.indexOf(rabbitShelterMode) + 1) % shelterModes.length];
     updateRabbitShelterButton();
     drawStatus();
   });
+  document.getElementById("modeSelect").addEventListener("change", (e) => applyModeKey(e.target.value));
 
   document.getElementById("freezeBtn").addEventListener("click", () => {
     plantsFrozen = !plantsFrozen;
@@ -3629,9 +3766,11 @@
     history = [];
     historyYMax = 0.02;
     historyStride = 1;
+    clearRadial();
     recordHistory();
     drawPlot();
     drawMiniPlot();
+    drawRadial();
   });
 
 
@@ -3642,28 +3781,6 @@
     drawStatus();
   });
 
-  document.getElementById("birthRuleLockBtn").addEventListener("click", () => {
-    birthRuleLocked = !birthRuleLocked;
-    updateBirthRuleButton();
-  });
-
-  document.getElementById("rabbitPlantLockBtn").addEventListener("click", () => {
-    rabbitPlantLocked = !rabbitPlantLocked;
-    updateRabbitPlantButton();
-  });
-
-  document.getElementById("searchBtn").addEventListener("click", () => {
-    searchRunning = !searchRunning;
-    const b = document.getElementById("searchBtn");
-    b.textContent = searchRunning ? "Stop search" : "Start search";
-    b.classList.toggle("primary", searchRunning);
-    updateSearchStatus(searchRunning ? "Search running." : "Search stopped.");
-  });
-
-  document.getElementById("searchTrialBtn").addEventListener("click", () => runOneSearchTrial());
-  document.getElementById("storeWinnerBtn").addEventListener("click", () => storeWinner());
-  document.getElementById("loadSavedBtn").addEventListener("click", () => loadSelectedWinner());
-
   function updateScenarioButtons() {
     for (const k of [1, 2, 3, 4, 5, 6]) {
       const b = document.getElementById("scenario" + k + "Btn");
@@ -3673,6 +3790,7 @@
   function clearScenarioHighlight() {
     activeScenario = 0;
     updateScenarioButtons();
+    updateModeSelect();
   }
   function applyScenario(n) {
     const sc = scenarios[n];
@@ -3680,6 +3798,7 @@
     setControlValue("speed", 0.5);
     setControlValue("gamma", sc.gamma);
     setControlValue("sigma", sc.sigma);
+    setControlValue("muS", 5); // v50: all presets use snake mobility 5
     setControlValue("initPlant", (n === 2 || n === 5) ? frozenDensity : sc.initPlant);
     rabbitPlantRemoval = sc.rabbitPlantRemoval;
     rabbitRemovalOnAttempt = sc.rabbitRemovalOnAttempt;
@@ -3700,6 +3819,8 @@
     activeScenario = n;
     updateScenarioButtons();
     updateLToggle();
+    updateModeSelect();
+    updateRadialCard();
     drawAll();
   }
   document.getElementById("scenario1Btn").addEventListener("click", () => applyScenario(1));
@@ -3720,16 +3841,16 @@
     const cur = Math.round(params.L);
     for (const n of [10, 20, 30, 50]) {
       const btn = document.getElementById("Lpreset" + n);
-      if (btn) btn.classList.toggle("primary", cur === n && !(n === 20 && cornerView));
+      if (btn) btn.classList.toggle("primary", cur === n && !cornerView);
     }
-    const starBtn = document.getElementById("Lpreset20c");
-    if (starBtn) starBtn.classList.toggle("primary", cur === 20 && cornerView && !starView);
-    const star2Btn = document.getElementById("Lpreset20cc");
-    if (star2Btn) star2Btn.classList.toggle("primary", cur === 20 && cornerView && starView);
+    for (const n of [20, 30]) {
+      const btn = document.getElementById("Lpreset" + n + "c");
+      if (btn) btn.classList.toggle("primary", cur === n && cornerView);
+    }
+    update3DPanel();
   }
   function setPresetL(n, corner) {
     cornerView = !!corner;
-    starView = false;
     setControlValue("L", n);
     if (activeScenario) applyScenario(activeScenario); else { reset(); drawAll(); }
     updateLToggle();
@@ -3737,37 +3858,8 @@
   [10, 20, 30, 50].forEach((n) => {
     const btn = document.getElementById("Lpreset" + n);
     if (btn) btn.addEventListener("click", () => setPresetL(n, false));
-  });
-  const starBtnEl = document.getElementById("Lpreset20c");
-  if (starBtnEl) starBtnEl.addEventListener("click", () => {
-    if (cornerView && starView && Math.round(params.L) === 20) {
-      // coming from L20★★: keep the running simulation, restore the saved view
-      starView = false;
-      view3D.tilt = savedStarCam.tilt;
-      view3D.rot = savedStarCam.rot;
-      syncViewSliders();
-      updateLToggle();
-      drawWorld();
-      return;
-    }
-    setPresetL(20, true);
-  });
-  const star2BtnEl = document.getElementById("Lpreset20cc");
-  if (star2BtnEl) star2BtnEl.addEventListener("click", () => {
-    const inCorner = cornerView && Math.round(params.L) === 20;
-    if (!inCorner || starView) {
-      // from another size (or pressing the active ★★ again): (re)start the corner run
-      setPresetL(20, true);
-    } else {
-      // coming from L20★: keep the running simulation, remember its view
-      savedStarCam = { tilt: view3D.tilt, rot: view3D.rot };
-    }
-    starView = true;
-    view3D.tilt = 16;
-    view3D.rot = 60;
-    syncViewSliders();
-    updateLToggle();
-    drawWorld();
+    const cbtn = document.getElementById("Lpreset" + n + "c");
+    if (cbtn) cbtn.addEventListener("click", () => setPresetL(n, true));
   });
   const frozenSlider = document.getElementById("frozenDensity");
   const frozenVal = document.getElementById("frozenDensityVal");
@@ -3785,14 +3877,16 @@
   updateFoxPlantButton();
   updateSnakePlantButton();
   updateRabbitShelterButton();
-  populateSavedSets();
-  updateSearchStatus();
   updateLToggle();
   updateFastButton();
   update3DPanel();
   syncViewSliders();
+  updateBgButton();
 
-  applyScenario(1);
+  applyModeKey("forest");      // v52: default is the frozen forest with stupid rabbits
+  updateRadialCard();
+  running = true;              // v52: start the simulation right away
+  updateRunButtons();
   loop();
 })();
 </script>
