@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rabbit-Fox-Snake-Plant ABM — v63</title>
+<title>Rabbit-Fox-Snake-Plant ABM — v66</title>
 <style>
   :root {
     --lattice-w: 792px;
@@ -665,7 +665,7 @@
 <body>
 <div class="app">
   <aside>
-    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v63</span></div>
+    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v66</span></div>
     <div class="button-row run-row">
       <button id="runBtn" class="primary">Start</button>
       <button id="stepBtn">One step</button>
@@ -833,7 +833,7 @@
             <p><b>1 · Rabbits clear plants</b> — the default: rabbits trample plants (probability σ) when they successfully move onto one. <b>2 · Fixed plant cover</b> — plants are scattered at a chosen density and then frozen. <b>3 · Foxes clear plants</b> — only a fox arriving above a hidden rabbit can remove the plant (this one is bistable: runs end up either with foxes or with plants, rarely both). <b>4 · Rabbits kill plants</b> — a rabbit erodes the plant it ends up below on every move attempt; the plant growth γ is raised to compensate. <b>5 · Frozen circular forest</b> — one solid disc of plants at the centre; use the density slider to change its size. <b>6 · Snakes kill plants</b> — snakes, not rabbits, erode the plants they crawl into. All presets use L = 20, γ = 1, σ = 0.064, μ<sub>R</sub> = μ<sub>F</sub> = 10, μ<sub>S</sub> = 5, f = f<sub>S</sub> = 0.1, δ<sub>F</sub> = δ<sub>S</sub> = 0.1 and ½ simulation step per animation frame.</p>
 
             <h4>6. Reading the plots</h4>
-            <p>The population plot below the scene shows the fraction of sites occupied by each species against time: green for plants, orange for foxes, black for snakes, dark green for rabbits hiding under plants, and a grey band for all rabbits. The pull-down in its upper-right corner limits the plot to the last 1 … 200 time units (the same units as on the time axis), so that fast dynamics stay visible in a long run. When any curve hits zero that species is extinct (its icon gets a red cross), and the fun is over — so the interesting question is how long all four can be kept alive. For the circular forest a density panel directly below the scene shows the time-averaged density of rabbits, foxes and snakes as a function of distance from the forest centre: you can see where the rabbits crowd, where the snakes ambush them, and how the foxes patrol the open edge. Its x axis has exactly the length of the front edge of the lattice above it (from the forest centre at the left to the lattice edge at the right in the L20★ view, or across the whole lattice for L10 and L20), and the green shading marks the forest: the band from x−1 to x is green whenever some site at that distance carries a plant. The <b>PNG-C</b> button saves the scene and this profile as one figure with matching x axes.</p>
+            <p>The population plot below the scene shows the fraction of sites occupied by each species against time: green for plants, orange for foxes, black for snakes, dark green for rabbits hiding under plants, and a grey band for all rabbits. The pull-down in its upper-right corner limits the plot to the last 50 … 1000 time units (the same units as on the time axis), so that fast dynamics stay visible in a long run. When any curve hits zero that species is extinct (its icon gets a red cross), and the fun is over — so the interesting question is how long all four can be kept alive. For the circular forest a density panel directly below the scene shows the time-averaged density of rabbits, foxes and snakes as a function of distance from the forest centre: you can see where the rabbits crowd, where the snakes ambush them, and how the foxes patrol the open edge. Its x axis has exactly the length of the front edge of the lattice above it (from the forest centre at the left to the lattice edge at the right in the L20★ view, or across the whole lattice for L10 and L20), and the green shading marks the forest: the band from x−1 to x is green whenever some site at that distance carries a plant. The <b>PNG-C</b> button saves the scene and this profile as one figure with matching x axes.</p>
 
             <p>The <b>interaction diagram</b> at the bottom (and its miniature in the lower-left corner of the population plot) summarises what the current rules assume: green arrows are activating links — a prey feeds its predator, and plants expose hidden rabbits to snakes — while red bars are repressing links — a predator eats its prey, plants hide rabbits from foxes, and whichever species erodes plants in the active preset (rabbits, foxes or snakes) gets a bar pointing at the plant. The diagram updates when you change the rules.</p>
 
@@ -902,17 +902,16 @@
         <canvas id="plot" width="1100" height="460"></canvas>
         <div class="hud tr">
           <select id="plotWindowSelect" title="Show only the last part of the run (time units, as on the x axis)">
-            <option value="1">last 1</option>
-            <option value="2">last 2</option>
-            <option value="5">last 5</option>
-            <option value="10">last 10</option>
-            <option value="20">last 20</option>
             <option value="50">last 50</option>
             <option value="100">last 100</option>
             <option value="200">last 200</option>
+            <option value="300">last 300</option>
+            <option value="500">last 500</option>
+            <option value="1000">last 1000</option>
             <option value="0" selected>all</option>
           </select>
           <button type="button" id="plotPngBtn" title="Save the population-vs-time plot as a PNG">PNG</button>
+          <button type="button" id="plotPngCBtn" title="Save the system (a) above the population-vs-time plot (b) as one figure">PNG-C</button>
         </div>
       </div>
     </section>
@@ -3423,6 +3422,8 @@
     if (lpBtn) lpBtn.addEventListener("click", () => exportLatticePNG());
     const pwSel = document.getElementById("plotWindowSelect");
     if (pwSel) pwSel.addEventListener("change", () => { plotWindowTime = Number(pwSel.value) || 0; drawPlot(); drawMiniPlot(); });
+    const ppCBtn = document.getElementById("plotPngCBtn");
+    if (ppCBtn) ppCBtn.addEventListener("click", () => exportPlotCompositePNG());
     const ppBtn = document.getElementById("plotPngBtn");
     if (ppBtn) ppBtn.addEventListener("click", () => { drawPlot(); downloadCanvasPNG(plotCanvas, `abm_population_t${time.toFixed(2)}`); });
     const rpBtn = document.getElementById("radialPngBtn");
@@ -3809,20 +3810,36 @@
     // v56: mini interaction diagram in the lower-left corner of the plot
     drawInteractionMini(ctx, x0 + 6, y0 + h - 6 - 180, 180, 180); // v57: 20% larger
 
-    // Only the two rabbit bands need words; centre them along the top.
-    ctx.font = "24px sans-serif";
-    const two = [["Rabbits below plants", "#2d8a43"], ["Exposed rabbit band", "rgba(128,128,128,0.45)"]];
-    const swW = 34, swGap = 10, itemGap = 46;
-    const widths = two.map(([name]) => swW + swGap + ctx.measureText(name).width);
-    const total = widths.reduce((a, b) => a + b, 0) + itemGap * (two.length - 1);
-    let tx = x0 + (w - total) / 2;
-    const ty = y0 + 26;
-    for (let k = 0; k < two.length; k++) {
-      const [name, color] = two[k];
-      ctx.fillStyle = color; ctx.fillRect(tx, ty - 16, swW, 9);
-      ctx.fillStyle = "#333"; ctx.fillText(name, tx + swW + swGap, ty - 8);
-      tx += widths[k] + itemGap;
-    }
+    // v64: no legend text — the icons on the curves identify the species
+  }
+
+  // v64: PNG-C for the population plot — the scene above, the dynamics below,
+  // panels labelled a) and b) in their upper-left corners
+  function exportPlotCompositePNG() {
+    if (!history.length || history[history.length - 1].t < time) recordHistory();
+    drawAll();
+    const { canvas: sys } = renderCroppedLattice();
+    const W = plotCanvas.width;                         // figure width = plot width
+    const sc = W / sys.width;
+    const sysH = Math.round(sys.height * sc);
+    const gap = Math.round(W * 0.02);
+    const out = document.createElement("canvas");
+    out.width = W;
+    out.height = sysH + gap + plotCanvas.height;
+    const ctx = out.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, out.height);
+    ctx.drawImage(sys, 0, 0, W, sysH);
+    ctx.drawImage(plotCanvas, 0, sysH + gap);
+    const label = (txt, x, y) => {
+      ctx.font = "bold 43px sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; // v65: 20% larger
+      ctx.lineWidth = 6; ctx.strokeStyle = "rgba(255,255,255,0.9)"; ctx.strokeText(txt, x, y);
+      ctx.fillStyle = "#111"; ctx.fillText(txt, x, y);
+    };
+    const lx = 12;                                      // v66: both labels at the figure's left edge, same x
+    label("a)", lx, 50);
+    label("b)", lx, sysH + gap + 44);                   // in the y-label margin, just below the plot's top edge
+    downloadCanvasPNG(out, `abm_system_dynamics_t${time.toFixed(2)}`);
   }
 
 
