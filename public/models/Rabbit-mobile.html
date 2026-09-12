@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rabbit-Fox-Snake-Plant ABM — v54</title>
+<title>Rabbit-Fox-Snake-Plant ABM — v59</title>
 <style>
   :root {
     --lattice-w: 792px;
@@ -636,6 +636,16 @@
     display: block;
     margin: 0 auto;
   }
+  #interaction {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    width: 100%;
+    max-width: var(--lattice-w);
+    height: auto;
+    aspect-ratio: 792 / 660;
+    display: block;
+    margin: 0 auto;
+  }
   .v3dist-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
   .v3dist-row button { padding: 5px 0; font-size: 11px; font-weight: 700; flex: 1 1 34px; min-width: 34px; border-radius: 7px; }
   .v3dist-row button.primary { background: var(--accent); color: #fff; border-color: var(--accent-d); }
@@ -654,7 +664,7 @@
 <body>
 <div class="app">
   <aside>
-    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v54</span></div>
+    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v59</span></div>
     <div class="button-row run-row">
       <button id="runBtn" class="primary">Start</button>
       <button id="stepBtn">One step</button>
@@ -684,7 +694,7 @@
           <button type="button" id="Lpreset20">L20</button>
           <button type="button" id="Lpreset30c" title="Runs a full 30×30 system but displays only the lower-left 15×15 quarter, in the same perspective as L20★">L30★</button>
           <button type="button" id="Lpreset30">L30</button>
-          <button type="button" id="Lpreset50">L50</button>
+          <button type="button" id="Lpreset50c" title="Runs a full 50×50 system but displays only the lower-left 25×25 quarter in 3D, rotation 180°">L50★</button>
         </div>
       </div>
     </div>
@@ -760,8 +770,8 @@
           <p class="hint" style="margin-top:5px;">The scene is always zoomed to fill the display; the distance only sets how strong the perspective is — close (1.2) exaggerates near vs far, distant (10) is almost orthographic.</p>
         </div>
         <div class="frozen-control">
-          <div class="frozen-head"><label for="v3Alpha">Ground opacity</label><span class="frozen-val" id="v3AlphaVal">60%</span></div>
-          <input id="v3Alpha" type="range" min="5" max="95" step="1" value="60" />
+          <div class="frozen-head"><label for="v3Alpha">Ground opacity</label><span class="frozen-val" id="v3AlphaVal">57%</span></div>
+          <input id="v3Alpha" type="range" min="5" max="95" step="1" value="57" />
         </div>
         <div class="frozen-control">
           <div class="frozen-head"><label for="v3Wall">Burrow side opacity (0 = invisible, 1 = solid)</label><span class="frozen-val" id="v3WallVal">0.25</span></div>
@@ -779,7 +789,7 @@
           <div class="frozen-head"><label for="v3Kill">Catch &amp; digestion time (fox &amp; snake)</label><span class="frozen-val" id="v3KillVal">2.00 s</span></div>
           <input id="v3Kill" type="range" min="300" max="4000" step="20" value="2000" />
         </div>
-        <p class="hint">Active when the displayed lattice is ≤ 20 sites wide (L ≤ 20, L20★, L30★) — larger lattices fall back to the flat map. Snakes (yellow in 3D) travel on the surface and dive into the burrow layer, which exists only beneath bushes; rabbits sheltering below a bush hide down there too. You can also drag the scene to orbit and scroll on it to zoom.</p>
+        <p class="hint">Active when the displayed lattice is ≤ 25 sites wide (L ≤ 20, L20★, L30★, L50★) — larger lattices fall back to the flat map. Snakes (yellow in 3D) travel on the surface and dive into the burrow layer, which exists only beneath bushes; rabbits sheltering below a bush hide down there too. You can also drag the scene to orbit and scroll on it to zoom.</p>
       </div>
     </details>
 
@@ -822,13 +832,15 @@
             <p><b>1 · Rabbits clear plants</b> — the default: rabbits trample plants (probability σ) when they successfully move onto one. <b>2 · Fixed plant cover</b> — plants are scattered at a chosen density and then frozen. <b>3 · Foxes clear plants</b> — only a fox arriving above a hidden rabbit can remove the plant (this one is bistable: runs end up either with foxes or with plants, rarely both). <b>4 · Rabbits kill plants</b> — a rabbit erodes the plant it ends up below on every move attempt; the plant growth γ is raised to compensate. <b>5 · Frozen circular forest</b> — one solid disc of plants at the centre; use the density slider to change its size. <b>6 · Snakes kill plants</b> — snakes, not rabbits, erode the plants they crawl into. All presets use L = 20, γ = 1, σ = 0.064, μ<sub>R</sub> = μ<sub>F</sub> = 10, μ<sub>S</sub> = 5, f = f<sub>S</sub> = 0.1, δ<sub>F</sub> = δ<sub>S</sub> = 0.1 and ½ simulation step per animation frame.</p>
 
             <h4>6. Reading the plots</h4>
-            <p>The population plot below the scene shows the fraction of sites occupied by each species against time: green for plants, orange for foxes, black for snakes, dark green for rabbits hiding under plants, and a grey band for all rabbits. When any curve hits zero that species is extinct, and the fun is over — so the interesting question is how long all four can be kept alive. For the circular forest a third panel shows the time-averaged density of rabbits, foxes and snakes as a function of distance from the forest centre: you can see where the rabbits crowd, where the snakes ambush them, and how the foxes patrol the open edge.</p>
+            <p>The population plot below the scene shows the fraction of sites occupied by each species against time: green for plants, orange for foxes, black for snakes, dark green for rabbits hiding under plants, and a grey band for all rabbits. When any curve hits zero that species is extinct (its icon gets a red cross), and the fun is over — so the interesting question is how long all four can be kept alive. For the circular forest a density panel directly below the scene shows the time-averaged density of rabbits, foxes and snakes as a function of distance from the forest centre: you can see where the rabbits crowd, where the snakes ambush them, and how the foxes patrol the open edge. Its x axis has exactly the length of the front edge of the lattice above it (from the forest centre at the left to the lattice edge at the right in the L20★ view, or across the whole lattice for L10 and L20), and the green shading marks the forest: the band from x−1 to x is green whenever some site at that distance carries a plant. The <b>PNG-C</b> button saves the scene and this profile as one figure with matching x axes.</p>
+
+            <p>The <b>interaction diagram</b> at the bottom (and its miniature in the lower-left corner of the population plot) summarises what the current rules assume: green arrows are activating links — a prey feeds its predator, and plants expose hidden rabbits to snakes — while red bars are repressing links — a predator eats its prey, plants hide rabbits from foxes, and whichever species erodes plants in the active preset (rabbits, foxes or snakes) gets a bar pointing at the plant. The diagram updates when you change the rules.</p>
 
             <h4>7. The 3-D scene and the buttons on it</h4>
-            <p>When the displayed lattice is at most 20 sites wide it is drawn as a 3-D landscape: trees and animals on a meadow, and a see-through underground beneath each tree where hidden rabbits crouch and snakes go hunting. The scene always zooms to fill the display; the <i>viewing distance</i> (1.2 … 10 × L) only sets how strong the perspective is. Drag the scene to orbit it, scroll or pinch to change the perspective. The lower-left button cycles four camera presets (3D view A, 3D view B, 3D side, top view); next to it you can switch the background between white and black and save the picture as a PNG cropped tightly around the system. The lower-right corner has small copies of the Start/Pause and Reset buttons and the "steps per frame" setting. At ½ or 1 step per frame you see the animals move: rabbits hop, foxes run, snakes wiggle, a rabbit slipping under a tree lowers its ears as it crouches, a fox that catches a rabbit leaps and holds it in its jaws, and a snake that strikes swells while it swallows. At higher speeds the animation is skipped so the simulation can run fast.</p>
+            <p>When the displayed lattice is at most 25 sites wide it is drawn as a 3-D landscape: trees and animals on a meadow, and a see-through underground beneath each tree where hidden rabbits crouch and snakes go hunting. The scene always zooms to fill the display; the <i>viewing distance</i> (1.2 … 10 × L) only sets how strong the perspective is. Drag the scene to orbit it, scroll or pinch to change the perspective. The lower-left button cycles four camera presets (3D view A, 3D view B, 3D side, top view); next to it you can switch the background between white and black and save the picture as a PNG cropped tightly around the system. The lower-right corner has small copies of the Start/Pause and Reset buttons and the "steps per frame" setting. At ½ or 1 step per frame you see the animals move: rabbits hop, foxes run, snakes wiggle, a rabbit slipping under a tree lowers its ears as it crouches, a fox that catches a rabbit leaps and holds it in its jaws, and a snake that strikes swells while it swallows. At higher speeds the animation is skipped so the simulation can run fast. Foxes also show how long ago they last ate: right after a catch a fox sits fat and content, then it slims down and looks ever hungrier — ears back and a worried brow after about 3 time units without a rabbit, ribs showing and tongue out after 6 — until the next catch makes it fat again. In the close-up scenes (L10 and L20★ at ½ or ¼ step per frame) a fox or snake that dies keels over and slowly turns into a small skeleton, which then fades away; the time scale is the catch &amp; digestion time.</p>
 
             <h4>8. Sizes: L10, L20★, L30★ …</h4>
-            <p>L is the number of sites along one side. The starred presets <b>L20★</b> and <b>L30★</b> simulate the full 20×20 or 30×30 system but display only its lower-left quarter, so that each animal is big enough to see while the dynamics still happen on a large lattice. L30 and L50 are shown as a flat map instead of the 3-D scene.</p>
+            <p>L is the number of sites along one side. The starred presets <b>L20★</b> and <b>L30★</b> simulate the full 20×20 or 30×30 system but display only its lower-left quarter, so that each animal is big enough to see while the dynamics still happen on a large lattice. <b>L30★</b> and <b>L50★</b> likewise show the lower-left quarter (15×15 and 25×25 sites) in 3-D, always with the camera at rotation 180° so that the forest centre sits at the front-left corner; plain L30 is shown as a flat map.</p>
 
             <h4>9. Things to try</h4>
             <p>Start with the default and watch whether all four species survive. Then switch the rabbits to <i>optimize</i> — do smarter rabbits help or hurt the predators? Try <i>stupid rabbits</i>: without the hiding rule, do foxes and snakes still both make a living? Lower the frozen plant density in preset 2 until one predator disappears, and raise it until the other does. In the circular forest, look at the radial plot and ask where you would sit if you were a snake.</p>
@@ -851,7 +863,7 @@
             </select>
           </div>
           <div class="hud bl">
-            <button type="button" id="viewPresetBtn" title="Cycle the camera: 3D view A, 3D view B, 3D side, top view">3D view A</button>
+            <button type="button" id="viewPresetBtn" title="Cycle the camera: 3D view A, 3D view B, 3D side, top view, 3D forest">3D view A</button>
             <button type="button" id="bgBtn" title="Switch the display background between white and black">Black bg</button>
             <button type="button" id="latticePngBtn" title="Save the display as a PNG, cropped tightly around the system">PNG</button>
           </div>
@@ -869,6 +881,16 @@
       </div>
     </section>
 
+    <section class="card col-track" id="radialCard">
+      <div class="card-head">
+        <span class="card-title">Density profile — time-averaged density vs distance from forest centre (x axis matches the lattice above)</span>
+      </div>
+      <div class="card-body plot-wrap">
+        <canvas id="radial" width="792" height="792"></canvas>
+        <div class="hud tr"><button type="button" id="radialPngBtn" title="Save the radial-profile plot as a PNG">PNG</button><button type="button" id="radialPng3Btn" title="Save the same radial plot compressed to one third of the height">PNG/3</button><button type="button" id="radialPngCBtn" title="Save the system as shown above with the density profile directly beneath it (profile at 40% height, x axis matching the lattice)">PNG-C</button></div>
+      </div>
+    </section>
+
     <details class="status-panel col-track">
       <summary>Run statistics &amp; parameters <span class="summary-hint">— optional readout</span></summary>
       <div class="status" id="status"></div>
@@ -881,15 +903,16 @@
       </div>
     </section>
 
-    <section class="card col-track" id="radialCard">
+    <section class="card col-track" id="interactionCard">
       <div class="card-head">
-        <span class="card-title">Radial profile — time-averaged density vs distance from forest centre</span>
+        <span class="card-title">Assumed interactions — arrows activate, bars repress (follows the current rules)</span>
       </div>
       <div class="card-body plot-wrap">
-        <canvas id="radial" width="792" height="792"></canvas>
-        <div class="hud tr"><button type="button" id="radialPngBtn" title="Save the radial-profile plot as a PNG">PNG</button><button type="button" id="radialPng3Btn" title="Save the same radial plot compressed to one third of the height">PNG/3</button></div>
+        <canvas id="interaction" width="792" height="660"></canvas>
+        <div class="hud tr"><button type="button" id="interactionPngBtn" title="Save the interaction diagram as a PNG">PNG</button></div>
       </div>
     </section>
+
   </main>
 </div>
 
@@ -970,6 +993,7 @@
     return [gx, gy];
   }
   let plants, rabbits, foxes, snakes, glow, glowType;
+  let foxMeal; // v55: per-site clock of the last fox meal (drives the fat → hungry look)
   let time = 0;
   let stepNumber = 0;
   let running = false;
@@ -1131,6 +1155,7 @@
       if (fs) fs.value = "0.5";
       if (fv) fv.textContent = "0.50";
       applyScenario(5);
+      applyViewPreset(4); // v55: dense forest is shown with rotation 180° (forest centre at the left)
     } else if (key === "optimize" || key === "stupid" || key === "hide") {
       rabbitShelterMode = key === "hide" ? "always" : (key === "optimize" ? "optimize" : "none");
       applyScenario(1);
@@ -1225,6 +1250,7 @@
     worldCanvas.width = s;
     worldCanvas.height = s;
     if (radialCanvas) { radialCanvas.width = s; radialCanvas.height = s; }
+    if (interactionCanvas) { interactionCanvas.width = s; interactionCanvas.height = Math.round(s * 660 / 792); drawInteraction(true); }
     document.documentElement.style.setProperty("--lattice-w", s + "px");
     drawWorld();
     if (typeof drawRadial === "function") drawRadial();
@@ -1239,6 +1265,7 @@
     snakes = new Uint16Array(N);
     glow = new Float32Array(N);
     glowType = new Uint8Array(N); // 0 = fox kill (red afterglow), 1 = snake kill (yellow afterglow)
+    foxMeal = new Float32Array(N); // v55: simulation time of the last rabbit caught by the fox(es) on each site
     time = 0;
     stepNumber = 0;
     history = [];
@@ -1247,6 +1274,7 @@
     plantsFrozen = false;
     motionTraces.length = 0;
     killTraces.length = 0;
+    deathTraces.length = 0;
     document.getElementById("freezeBtn").textContent = "Freeze plants now";
 
     const forestCx = (L - 1) / 2, forestCy = (L - 1) / 2;
@@ -1284,6 +1312,7 @@
       if (d > maxD) maxD = d;
     }
     radial.bins = Math.floor(maxD + 0.5) + 1;
+    radial.dist = dist; // v56: per-site distance, used for the forest shading intervals
     radial.site = new Uint16Array(N);
     radial.count = new Float64Array(radial.bins);
     for (let i = 0; i < N; i++) { const b = Math.min(radial.bins - 1, Math.floor(dist[i] + 0.5)); radial.site[i] = b; radial.count[b]++; }
@@ -1312,30 +1341,85 @@
     const card = document.getElementById("radialCard");
     if (card) card.classList.toggle("show", plantSeedMode === "circle");
   }
-  function drawRadial(target) {
+  // v55: where does the front edge of the displayed lattice sit on a W×H world
+  // canvas?  Used to give the density profile exactly the lattice's length, so the
+  // profile can be read straight below the scene. Returns canvas-x of the two
+  // front corners, whether the forest centre is on the right (reverse), and
+  // whether the whole lattice (symmetric profile) or only the quarter next to the
+  // forest centre (corner view) is displayed.
+  function latticeEdgeSpan(W, H) {
+    const Ld = dispL();
+    if (is3DActive()) {
+      const C = makeCamera(W, H, Ld, 1.6);
+      const h = C.h;
+      const pts = [];
+      for (const px of [-h, h]) for (const pz of [-h, h]) {
+        const q = C.proj([px, 0, pz]);
+        if (q) pts.push({ x: q.x, y: q.y, near: Math.abs(px - h) + Math.abs(pz + h) < 1e-6 });
+      }
+      if (pts.length === 4) {
+        pts.sort((a, b) => b.y - a.y);           // the two lowest points on screen form the front edge
+        const f = pts.slice(0, 2);
+        const xa = Math.min(f[0].x, f[1].x), xb = Math.max(f[0].x, f[1].x);
+        const nearPt = f.find(q => q.near);
+        // the forest-centre corner (+h, −h) is on the right when it is the right-hand front point
+        const reverse = cornerView && !!nearPt && nearPt.x > (xa + xb) / 2;
+        // v56: whole-lattice views use the right half of the front edge (centre → edge),
+        // so one lattice unit still has the same length in scene and profile
+        if (!cornerView) return { xa: (xa + xb) / 2, xb, reverse: false, symmetric: false };
+        return { xa, xb, reverse, symmetric: false };
+      }
+    }
+    return cornerView ? { xa: 0, xb: W, reverse: true, symmetric: false } : { xa: W / 2, xb: W, reverse: false, symmetric: false };
+  }
+
+  // opts (all optional): x0 / w = plot-area x range in canvas pixels, reverse,
+  // symmetric, k = font scale. Without opts the plot area follows the lattice
+  // edge of the world canvas (same width as the radial canvas).
+  function drawRadial(target, opts) {
     const cv = target || radialCanvas;
     if (!cv || plantSeedMode !== "circle" || !radial.site) return;
+    opts = opts || {};
     const ctx = cv.getContext("2d");
     const W = cv.width, H = cv.height;
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, W, H);
-    const k = W / 792;
-    const x0 = 86 * k, y0 = 58 * k, w = W - 116 * k, h = H - 140 * k;
+    const k = opts.k || W / 792;
+    const span = (opts.x0 !== undefined) ? null : latticeEdgeSpan(worldCanvas.width, worldCanvas.height);
+    const sc = span ? W / worldCanvas.width : 1;
+    const x0 = span ? span.xa * sc : opts.x0;
+    const w = span ? (span.xb - span.xa) * sc : opts.w;
+    const reverse = span ? span.reverse : !!opts.reverse;
+    const symmetric = false; // v56: the profile always runs from 0 upwards
+    const y0 = 58 * k, h = H - 140 * k;
     const n = radial.bins, S = Math.max(1, radial.samples);
     const dens = (arr) => Array.from({ length: n }, (_, b) => radial.count[b] ? arr[b] / (S * radial.count[b]) : 0);
     const R = dens(radial.r), F = dens(radial.f), Sn = dens(radial.s), P = dens(radial.p);
+    // empty annuli (e.g. r = 0 for even L) borrow the plant fraction of the next one
+    for (let b = n - 2; b >= 0; b--) if (!radial.count[b]) P[b] = P[b + 1];
+    // distance range: 0 … L/2 from the forest centre to the lattice edge
+    const dMax = L / 2, dMin = 0;
     let yMax = 0.02;
-    for (let b = 0; b < n; b++) { yMax = Math.max(yMax, R[b], F[b], Sn[b]); }
-    yMax *= 1.18;
-    const xMax = n - 1;
-    const px = (b) => x0 + (b / Math.max(1, xMax)) * w;
+    for (let b = 0; b < n; b++) { if (b <= dMax + 0.5) yMax = Math.max(yMax, R[b], F[b], Sn[b]); }
+    yMax = Math.min(1, yMax * 1.18); // v56: the y axis never extends beyond 1
+    const px = (d) => { const f = (d - dMin) / (dMax - dMin); return x0 + (reverse ? 1 - f : f) * w; };
     const py = (v) => y0 + h - (v / yMax) * h;
+    const pxc = (d) => Math.max(x0, Math.min(x0 + w, px(d)));
 
-    // forest disc as a soft green band (the edge is not perfectly sharp, so no line)
-    const fr = Math.min(xMax, radial.forestR);
-    ctx.fillStyle = "rgba(68,170,85,0.13)";
-    ctx.fillRect(x0, y0, px(fr) - x0, h);
+    // v56: forest shading — the interval (x−1, x] is green when some site at a
+    // distance in that interval carries a plant
+    {
+      const nInt = Math.ceil(dMax) + 1;
+      const treeIn = new Uint8Array(nInt);
+      if (radial.dist) for (let i = 0; i < N; i++) if (plants[i]) { const xi = Math.ceil(radial.dist[i]); if (xi < nInt) treeIn[xi] = 1; }
+      ctx.fillStyle = "rgba(68,170,85,0.13)";
+      for (let xi = 0; xi < nInt; xi++) {
+        if (!treeIn[xi]) continue;
+        const xa = pxc(Math.max(0, xi - 1)), xb = pxc(Math.min(dMax, xi));
+        ctx.fillRect(Math.min(xa, xb), y0, Math.abs(xb - xa), h);
+      }
+    }
 
     // grid + axes — v53: "usual" y steps: labelled majors (e.g. 0, 0.3, 0.6) with a
     // thin unlabelled line at each midpoint
@@ -1350,19 +1434,21 @@
       major = cands.find(m => yMax / m >= 2) || cands[cands.length - 1];
     }
     const decimals = major >= 1 ? 0 : (String(major).split(".")[1] || "").length;
+    const labelsOutside = x0 >= 70 * k; // v55: no room to the left when the axis sits at the lattice edge
     for (let v = 0; v <= yMax + 1e-12; v += major / 2) {
       const y = py(v);
       const isMajor = Math.abs(v / major - Math.round(v / major)) < 1e-9;
       ctx.strokeStyle = isMajor ? "#d8d8d8" : "#ececec";
       ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
-      if (isMajor) {
+      if (isMajor && (v > 0 || labelsOutside)) {
         const lab = v.toFixed(decimals);
         ctx.fillStyle = "#666";
-        ctx.fillText(lab, x0 - ctx.measureText(lab).width - 8 * k, y + 8 * k);
+        if (labelsOutside) ctx.fillText(lab, x0 - ctx.measureText(lab).width - 8 * k, y + 8 * k);
+        else ctx.fillText(lab, x0 + 44 * k, y - 4 * k);
       }
     }
-    const tick = niceTickStep(xMax, 7);
-    for (let d = 0; d <= xMax + 1e-9; d += tick) {
+    const tick = niceTickStep(dMax - dMin, 5);
+    for (let d = Math.ceil(dMin / tick) * tick; d <= dMax + 1e-9; d += tick) {
       const x = px(d);
       ctx.strokeStyle = "#e6e6e6";
       ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
@@ -1375,14 +1461,20 @@
     // curves
     const line = (arr, color, lw) => {
       ctx.strokeStyle = color; ctx.lineWidth = lw * k; ctx.lineJoin = "round";
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x0 - 1, y0 - 1, w + 2, h + 2); ctx.clip();
+      // one polyline; in the mirrored view it runs from −dMax through the centre to +dMax
+      const bs = [];
+      for (let b = 0; b < n && b <= dMax + 1; b++) if (radial.count[b]) bs.push(b); // skip empty annuli (r = 0 for even L)
+      const seq = symmetric ? bs.slice().reverse().map(b => -b).concat(bs.filter(b => b > 0)) : bs;
       ctx.beginPath();
-      let started = false;
-      for (let b = 0; b < n; b++) {
-        if (!radial.count[b]) continue; // annuli without any lattice site (e.g. r = 0 for even L)
-        const x = px(b), y = py(Math.min(arr[b], yMax));
-        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
-      }
+      if (!symmetric && bs.length && bs[0] > 0) ctx.moveTo(px(0), py(Math.min(arr[bs[0]], yMax))); // carry the innermost value to the centre
+      seq.forEach((sb, i) => {
+        const x = px(sb), y = py(Math.min(arr[Math.abs(sb)], yMax));
+        if (i === 0 && (symmetric || !(bs[0] > 0))) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
       ctx.stroke();
+      ctx.restore();
     };
     line(F, "#f08a24", 3);
     line(Sn, "#050505", 3);
@@ -1392,18 +1484,25 @@
     // icons on the curves
     const iconS = Math.min(88 * k, h * 0.5); // v54: animals twice as big
     const put = (arr, frac, fn, extra) => {
-      const b = Math.max(0, Math.min(n - 1, Math.round(frac * (n - 1))));
+      const b = Math.max(0, Math.min(n - 1, Math.round(frac * dMax)));
       let y = py(Math.min(arr[b], yMax));
       y = Math.max(y0 + iconS / 2, Math.min(y0 + h - iconS / 2, y));
-      fn(ctx, px(b) - iconS / 2, y - iconS / 2, iconS, extra);
+      const x = Math.max(x0 + iconS / 2, Math.min(x0 + w - iconS / 2, px(b)));
+      fn(ctx, x - iconS / 2, y - iconS / 2, iconS, extra);
     };
     put(F, 0.30, drawFox, 1);
-    put(Sn, 0.50, drawSnake, 1);
+    snake3DYellow = true; try { put(Sn, 0.50, drawSnake, 1); } finally { snake3DYellow = false; } // v56: yellow as in the scene
     put(R, 0.70, drawRabbit, 0);
 
-    // titles
+    // titles — v55: "Density" runs vertically along the y axis
     ctx.fillStyle = "#333"; ctx.font = `${24 * k}px sans-serif`;
-    ctx.fillText("density per site", 10 * k, 30 * k);
+    ctx.save();
+    const tx = labelsOutside ? x0 - 60 * k : x0 + 26 * k;
+    ctx.translate(tx, y0 + h / 2);
+    ctx.rotate(-Math.PI / 2);
+    const yl = "Density";
+    ctx.fillText(yl, -ctx.measureText(yl).width / 2, 0);
+    ctx.restore();
     const xl = "distance from forest centre (lattice units)";
     ctx.fillText(xl, x0 + w - ctx.measureText(xl).width, H - 14 * k);
   }
@@ -1470,6 +1569,29 @@
     for (let k = killTraces.length - 1; k >= 0; k--) {
       if (nowMs - killTraces[k].start >= killTraces[k].dur) killTraces.splice(k, 1);
     }
+    for (let k = deathTraces.length - 1; k >= 0; k--) {
+      if (nowMs - deathTraces[k].start >= deathTraces[k].dur) deathTraces.splice(k, 1);
+    }
+  }
+
+  // ---- v55: hunger and death ----
+  // Time since the last meal (simulation time units) picks the fox's look: fat right
+  // after a catch, then normal, hungry and starving — thresholds foxHungerT.
+  const foxHungerT = [1.0, 3.0, 6.0];
+  function foxHungerAge(site) {
+    if (!foxMeal) return foxHungerT[0] + 0.5;
+    return Math.max(0, time - foxMeal[site]);
+  }
+  // Dying foxes and snakes slowly turn into small skeletons that then vanish —
+  // only in the close-up scenes (L10, L20★) at ½ or ¼ step per frame, where the
+  // eye can follow it; the time scale is the catch & digestion time.
+  const deathTraces = [];
+  function deathAnimOK() { return params.speed <= 0.5 && is3DActive() && dispL() <= 10; }
+  function traceDeath(kind, site, n) {
+    if (!deathAnimOK() || !cellView(site)) return;
+    if (deathTraces.length > 60) deathTraces.shift();
+    deathTraces.push({ kind, site, fx: xOf(site), fy: yOf(site), under: kind === "snake" && plants[site] === 1,
+      flip: Math.random() < 0.5, age: foxHungerAge(site), start: performance.now(), dur: killDur * 1.6, n: Math.min(3, n) });
   }
 
   // v35: fox-catch pounces — the killer leaps and grips the rabbit's ears in its jaws
@@ -1613,7 +1735,7 @@
 
   function addFoxOffspring(parentSite, arr = foxes) {
     const j = targetFrom(parentSite);
-    addCapped(arr, j, 1);
+    return addCapped(arr, j, 1) ? j : -1;
   }
 
   function foxActions() {
@@ -1623,20 +1745,27 @@
     const nextFoxes = new Uint16Array(N);
     const arrivals = new Uint32Array(N);
     const arriveFrom = new Uint32Array(N);
+    // v55: the "last meal" clock travels with the foxes — a site inherits the most
+    // recent meal time among the foxes that stay on it or arrive at it
+    const nextMeal = new Float32Array(N).fill(-1e9);
+    const meal = foxMeal || new Float32Array(N);
 
     for (let start = 0; start < N; start++) {
       const n = foxes[start];
       if (!n) continue;
       const deaths = binomialSample(n, pDeath);
+      if (deaths) traceDeath("fox", start, deaths);
       const survivors = n - deaths;
       if (survivors <= 0) continue;
       const movers = binomialSample(survivors, pMove);
       const stayers = survivors - movers;
       addCapped(nextFoxes, start, stayers);
+      if (stayers > 0 && meal[start] > nextMeal[start]) nextMeal[start] = meal[start];
       for (let m = 0; m < movers; m++) {
         const t = targetFrom(start);
         arrivals[t]++;
         arriveFrom[t] = start;
+        if (meal[start] > nextMeal[t]) nextMeal[t] = meal[start];
         traceMove("fox", start, t);
       }
     }
@@ -1658,11 +1787,18 @@
         glow[j] = 1;
         glowType[j] = 0; // fox kill -> red afterglow
         traceKill("fox", j, arriveFrom[j]);
-        if (Math.random() < pBirth) addFoxOffspring(j, nextFoxes);
+        nextMeal[j] = time; // the fox that ate is well fed again
+        if (Math.random() < pBirth) {
+          const k = addFoxOffspring(j, nextFoxes);
+          // a newborn cub starts out looking normally fed (neither fat nor hungry)
+          if (k >= 0 && time - foxHungerT[0] > nextMeal[k]) nextMeal[k] = time - foxHungerT[0];
+        }
       }
     }
+    for (let i = 0; i < N; i++) if (nextMeal[i] < -1e8) nextMeal[i] = time; // sites without a fox history
 
     foxes = nextFoxes;
+    foxMeal = nextMeal;
   }
 
   function addSnakeOffspring(parentSite, arr = snakes) {
@@ -1682,6 +1818,7 @@
       const n = snakes[start];
       if (!n) continue;
       const deaths = binomialSample(n, pDeath);
+      if (deaths) traceDeath("snake", start, deaths);
       const survivors = n - deaths;
       if (survivors <= 0) continue;
       const movers = binomialSample(survivors, pMove);
@@ -1956,9 +2093,23 @@
     ctx.restore();
   }
 
-  function drawFox(ctx, x, y, s, count) {
+  // v55: hunger — age = simulation time since the fox's last meal (undefined = normal).
+  // Level 0 (fat, just fed), 1 (normal), 2 (hungry), 3 (starving); the body also
+  // slims continuously as the age grows.
+  function foxHungerLevel(age) {
+    if (age === undefined || age === null) return 1;
+    return age < foxHungerT[0] ? 0 : age < foxHungerT[1] ? 1 : age < foxHungerT[2] ? 2 : 3;
+  }
+  function foxSlimness(age) {
+    if (age === undefined || age === null) return 1;
+    if (age < foxHungerT[0]) return 1.15 - 0.15 * (age / foxHungerT[0]);           // fat → normal
+    const u = Math.min(1, (age - foxHungerT[0]) / (foxHungerT[2] - foxHungerT[0]));  // normal → starving
+    return 1 - 0.24 * u;
+  }
+  function drawFox(ctx, x, y, s, count, age) {
     ctx.save();
     const cx = x + s * 0.5, cy = y + s * 0.5;
+    const lvl = foxHungerLevel(age), slim = foxSlimness(age);
 
     if (s < 7) {
       ctx.fillStyle = "#df741a";
@@ -2007,16 +2158,23 @@
     const rumpGrad = ctx.createRadialGradient(x + s * 0.38, y + s * 0.60, s * 0.03, x + s * 0.45, y + s * 0.71, s * 0.30);
     rumpGrad.addColorStop(0.00, O_HI); rumpGrad.addColorStop(0.30, "#f3974a"); rumpGrad.addColorStop(0.70, O); rumpGrad.addColorStop(1.00, "#a9541a");
     ctx.fillStyle = rumpGrad;
-    ctx.beginPath(); ctx.ellipse(x + s * 0.44, y + s * 0.70, s * 0.20, s * 0.185, -0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + s * 0.44, y + s * 0.70 + s * 0.185 * (1 - slim) * 0.5, s * 0.20 * (0.85 + 0.15 * slim), s * 0.185 * slim, -0.12, 0, Math.PI * 2); ctx.fill();
     const bodyGrad = ctx.createRadialGradient(x + s * 0.50, y + s * 0.58, s * 0.03, x + s * 0.54, y + s * 0.70, s * 0.26);
     bodyGrad.addColorStop(0.00, O_HI); bodyGrad.addColorStop(0.30, "#f3974a"); bodyGrad.addColorStop(0.72, O); bodyGrad.addColorStop(1.00, "#a9541a");
     ctx.fillStyle = bodyGrad;
-    ctx.beginPath(); ctx.ellipse(x + s * 0.54, y + s * 0.68, s * 0.15, s * 0.19, 0.18, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + s * 0.54, y + s * 0.68 + s * 0.19 * (1 - slim) * 0.5, s * 0.15 * (0.85 + 0.15 * slim), s * 0.19 * slim, 0.18, 0, Math.PI * 2); ctx.fill();
     ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
     if (detail) {
       ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.018;
-      ctx.beginPath(); ctx.ellipse(x + s * 0.44, y + s * 0.70, s * 0.20, s * 0.185, -0.12, 0.9, Math.PI * 2 + 0.5); ctx.stroke();
-      ctx.beginPath(); ctx.ellipse(x + s * 0.54, y + s * 0.68, s * 0.15, s * 0.19, 0.18, -1.4, 1.9); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(x + s * 0.44, y + s * 0.70 + s * 0.185 * (1 - slim) * 0.5, s * 0.20 * (0.85 + 0.15 * slim), s * 0.185 * slim, -0.12, 0.9, Math.PI * 2 + 0.5); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(x + s * 0.54, y + s * 0.68 + s * 0.19 * (1 - slim) * 0.5, s * 0.15 * (0.85 + 0.15 * slim), s * 0.19 * slim, 0.18, -1.4, 1.9); ctx.stroke();
+      if (lvl === 3) {
+        // starving: ribs show through the coat
+        ctx.strokeStyle = "rgba(120,60,15,0.55)"; ctx.lineWidth = s * 0.014;
+        for (const rx of [0.36, 0.41, 0.46]) {
+          ctx.beginPath(); ctx.arc(x + s * (rx + 0.06), y + s * 0.72, s * 0.075, Math.PI * 0.75, Math.PI * 1.35); ctx.stroke();
+        }
+      }
       // specular sheen on the back
       ctx.fillStyle = "rgba(255,242,214,0.45)";
       ctx.beginPath(); ctx.ellipse(x + s * 0.40, y + s * 0.57, s * 0.07, s * 0.04, -0.4, 0, Math.PI * 2); ctx.fill();
@@ -2035,13 +2193,15 @@
     ctx.beginPath(); ctx.ellipse(x + s * 0.45, y + s * 0.87, s * 0.05, s * 0.06, 0, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(x + s * 0.55, y + s * 0.86, s * 0.045, s * 0.055, 0, 0, Math.PI * 2); ctx.fill();
 
-    const hx = x + s * 0.58, hy = y + s * 0.42;
-    // ears
+    const hx = x + s * 0.58, hy = y + s * 0.42 + (lvl >= 2 ? s * 0.02 * (lvl - 1) : 0); // hungry heads hang a little lower
+    // ears — laid back (tips swept left and lower) when hungry or starving
+    const earBack = lvl === 2 ? 0.05 : lvl === 3 ? 0.10 : 0;
+    const earDrop = lvl === 2 ? 0.03 : lvl === 3 ? 0.07 : 0;
     for (const e of [-0.075, 0.075]) {
       ctx.fillStyle = O;
       ctx.beginPath();
       ctx.moveTo(hx + e * s - s * 0.05, hy - s * 0.04);
-      ctx.lineTo(hx + e * s, hy - s * 0.24);
+      ctx.lineTo(hx + e * s - s * earBack, hy - s * (0.24 - earDrop));
       ctx.lineTo(hx + e * s + s * 0.07, hy - s * 0.03);
       ctx.closePath(); ctx.fill();
       if (detail) {
@@ -2049,7 +2209,7 @@
         ctx.fillStyle = BLACK;
         ctx.beginPath();
         ctx.moveTo(hx + e * s - s * 0.022, hy - s * 0.045);
-        ctx.lineTo(hx + e * s, hy - s * 0.20);
+        ctx.lineTo(hx + e * s - s * earBack * 0.85, hy - s * (0.20 - earDrop));
         ctx.lineTo(hx + e * s + s * 0.032, hy - s * 0.04);
         ctx.closePath(); ctx.fill();
       }
@@ -2080,12 +2240,34 @@
     // nose
     ctx.fillStyle = EYE;
     ctx.beginPath(); ctx.arc(hx + s * 0.20, hy + s * 0.085, s * 0.028, 0, Math.PI * 2); ctx.fill();
-    // eye
+    // eye + expression (v55): 0 = content and sleepy after a meal, 1 = alert,
+    // 2 = worried brow and drooping mouth, 3 = wide hollow eye, tongue out
     if (detail) {
       ctx.fillStyle = EYE;
-      ctx.beginPath(); ctx.ellipse(hx + s * 0.02, hy - s * 0.005, s * 0.034, s * 0.024, -0.3, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.beginPath(); ctx.arc(hx + s * 0.03, hy - s * 0.018, s * 0.01, 0, Math.PI * 2); ctx.fill();
+      const eyeH = lvl === 0 ? 0.013 : lvl === 3 ? 0.03 : 0.024;
+      ctx.beginPath(); ctx.ellipse(hx + s * 0.02, hy - s * 0.005, s * 0.034, s * eyeH, -0.3, 0, Math.PI * 2); ctx.fill();
+      if (lvl !== 0) {
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+        ctx.beginPath(); ctx.arc(hx + s * 0.03, hy - s * 0.018, s * 0.01, 0, Math.PI * 2); ctx.fill();
+      }
+      if (lvl === 0) {
+        // relaxed eyelid and a little satisfied smile
+        ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.014; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.arc(hx + s * 0.02, hy - s * 0.012, s * 0.036, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+        ctx.beginPath(); ctx.arc(hx + s * 0.13, hy + s * 0.10, s * 0.05, 0.25, 1.35); ctx.stroke();
+      } else if (lvl >= 2) {
+        // worried brow slanting down toward the nose, mouth corner turned down
+        ctx.strokeStyle = LINE; ctx.lineWidth = s * 0.016; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(hx - s * 0.03, hy - s * 0.055); ctx.lineTo(hx + s * 0.055, hy - s * 0.03); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(hx + s * 0.10, hy + s * 0.13); ctx.quadraticCurveTo(hx + s * 0.15, hy + s * 0.115, hx + s * 0.185, hy + s * 0.125); ctx.stroke();
+        if (lvl === 3) {
+          // hollow cheek and a lolling tongue
+          ctx.strokeStyle = "rgba(120,60,15,0.35)"; ctx.lineWidth = s * 0.012;
+          ctx.beginPath(); ctx.arc(hx - s * 0.01, hy + s * 0.07, s * 0.05, 0.4, 1.9); ctx.stroke();
+          ctx.fillStyle = "#d9534f";
+          ctx.beginPath(); ctx.ellipse(hx + s * 0.155, hy + s * 0.155, s * 0.022, s * 0.038, 0.35, 0, Math.PI * 2); ctx.fill();
+        }
+      }
     } else {
       ctx.fillStyle = EYE;
       ctx.beginPath(); ctx.arc(hx + s * 0.02, hy - s * 0.005, s * 0.03, 0, Math.PI * 2); ctx.fill();
@@ -2404,6 +2586,269 @@
     ctx.restore();
   }
 
+
+  // ---- v55: skeletons — a dead fox or snake crossfades into a small skeleton that fades away ----
+  function drawSkeleton(ctx, x, y, s, kind) {
+    const BONE = "#f3eee2", BL = "#7a7368";
+    ctx.save();
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.strokeStyle = BL; ctx.fillStyle = BONE;
+    if (kind === "snake") {
+      // wavy spine with rib pairs and a small skull at the right-hand end
+      const n = 22, x0 = x + s * 0.14, x1 = x + s * 0.80, midY = y + s * 0.62, amp = s * 0.12;
+      const pts = [];
+      for (let k = 0; k <= n; k++) { const t = k / n; pts.push([x0 + (x1 - x0) * t, midY + Math.sin(t * Math.PI * 2 - 0.3) * amp * (0.55 + 0.45 * t)]); }
+      ctx.lineWidth = Math.max(0.8, s * 0.016);
+      for (let k = 1; k < n; k += 2) {
+        const p = pts[k], a = pts[k - 1], b = pts[k + 1];
+        const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len, ny = dx / len, r = s * (0.03 + 0.05 * (k / n));
+        ctx.beginPath(); ctx.moveTo(p[0] - nx * r, p[1] - ny * r); ctx.lineTo(p[0] + nx * r, p[1] + ny * r); ctx.stroke();
+      }
+      ctx.strokeStyle = BONE; ctx.lineWidth = Math.max(1.2, s * 0.045);
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let k = 1; k <= n; k++) ctx.lineTo(pts[k][0], pts[k][1]); ctx.stroke();
+      ctx.strokeStyle = BL; ctx.lineWidth = Math.max(0.6, s * 0.012);
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let k = 1; k <= n; k++) ctx.lineTo(pts[k][0], pts[k][1]); ctx.stroke();
+      const hp = pts[n];
+      ctx.fillStyle = BONE;
+      ctx.beginPath(); ctx.ellipse(hp[0] + s * 0.07, hp[1], s * 0.10, s * 0.065, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#3b3833";
+      ctx.beginPath(); ctx.arc(hp[0] + s * 0.06, hp[1] - s * 0.02, s * 0.022, 0, Math.PI * 2); ctx.fill();
+      ctx.restore(); return;
+    }
+    // fox: lying on its side, head to the right
+    const sy = y + s * 0.60;
+    ctx.lineWidth = Math.max(0.8, s * 0.018);
+    // ribs hang from the spine
+    for (const rx of [0.36, 0.42, 0.48, 0.54]) {
+      ctx.beginPath(); ctx.arc(x + s * rx, sy, s * 0.085, 0.1, Math.PI - 0.1); ctx.stroke();
+    }
+    // legs
+    for (const [lx0, lx1] of [[0.28, 0.22], [0.31, 0.27], [0.58, 0.60], [0.61, 0.65]]) {
+      ctx.beginPath(); ctx.moveTo(x + s * lx0, sy + s * 0.02); ctx.lineTo(x + s * lx1, sy + s * 0.20); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x + s * lx1, sy + s * 0.21, s * 0.02, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+    // spine + tail vertebrae
+    ctx.strokeStyle = BONE; ctx.lineWidth = Math.max(1.4, s * 0.05);
+    ctx.beginPath(); ctx.moveTo(x + s * 0.26, sy); ctx.lineTo(x + s * 0.64, sy); ctx.stroke();
+    ctx.strokeStyle = BL; ctx.lineWidth = Math.max(0.6, s * 0.012);
+    ctx.beginPath(); ctx.moveTo(x + s * 0.26, sy); ctx.lineTo(x + s * 0.64, sy); ctx.stroke();
+    for (let k = 0; k < 4; k++) {
+      const tx = x + s * (0.22 - k * 0.045), ty = sy - s * k * k * 0.012;
+      ctx.beginPath(); ctx.arc(tx, ty, s * (0.022 - k * 0.003), 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+    // pelvis and shoulder blades
+    ctx.beginPath(); ctx.ellipse(x + s * 0.28, sy, s * 0.045, s * 0.06, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(x + s * 0.60, sy, s * 0.04, s * 0.055, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    // skull with snout, eye socket and a row of teeth
+    ctx.beginPath();
+    ctx.moveTo(x + s * 0.66, sy - s * 0.09);
+    ctx.quadraticCurveTo(x + s * 0.80, sy - s * 0.15, x + s * 0.84, sy - s * 0.04);
+    ctx.lineTo(x + s * 0.95, sy + s * 0.02);
+    ctx.quadraticCurveTo(x + s * 0.90, sy + s * 0.07, x + s * 0.80, sy + s * 0.06);
+    ctx.quadraticCurveTo(x + s * 0.66, sy + s * 0.06, x + s * 0.66, sy - s * 0.09);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#3b3833";
+    ctx.beginPath(); ctx.ellipse(x + s * 0.76, sy - s * 0.045, s * 0.035, s * 0.03, -0.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x + s * 0.80, sy + s * 0.04); ctx.lineTo(x + s * 0.93, sy + s * 0.015); ctx.stroke();
+    for (const tx of [0.84, 0.88]) { ctx.beginPath(); ctx.moveTo(x + s * tx, sy + s * 0.045); ctx.lineTo(x + s * (tx + 0.012), sy + s * 0.07); ctx.stroke(); }
+    ctx.restore();
+  }
+  // u runs 0..1 over the death: the animal fades and tips over while the skeleton
+  // appears and shrinks; from u = 0.8 the small skeleton fades away.
+  function drawDeath(ctx, x, y, s, kind, u, age, flip) {
+    u = Math.max(0, Math.min(1, u));
+    const a = Math.min(1, u / 0.5);
+    const fade = u > 0.8 ? 1 - (u - 0.8) / 0.2 : 1;
+    const cx = x + s * 0.5, fy = y + s * 0.92;
+    if (a < 1) {
+      ctx.save();
+      ctx.globalAlpha = 1 - a;
+      ctx.translate(cx, fy);
+      if (kind === "fox") ctx.rotate(-1.35 * a); // the fox keels over onto its back
+      ctx.scale(1 - 0.15 * a, 1 - 0.15 * a);
+      ctx.translate(-cx, -fy);
+      if (kind === "fox") drawFox(ctx, x, y, s, 1, age); else drawSnake(ctx, x, y, s, 1);
+      ctx.restore();
+    }
+    if (a > 0) {
+      const sc = 0.9 - 0.4 * Math.min(1, u / 0.8);
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, a) * fade;
+      const ss = s * sc;
+      drawSkeleton(ctx, cx - ss / 2, fy - ss * 0.85, ss, kind);
+      ctx.restore();
+    }
+  }
+
+
+  // ---- v56: interaction diagram — the four species with the interactions the
+  // current rules assume. An arrow (→) from A to B means A boosts B; a bar (⊣)
+  // means A suppresses B. Prey feed predators, predators reduce prey, plants
+  // shelter rabbits from foxes (⊣ fox) and expose them to snakes (→ snake),
+  // and whichever species erodes plants in the active preset gets a bar to Plant.
+  function interactionEdges() {
+    const eat = !plantsFrozen;
+    return [
+      { from: "rabbit", to: "fox",   type: "act" },
+      { from: "fox",    to: "rabbit", type: "rep" },
+      { from: "rabbit", to: "snake", type: "act" },
+      { from: "snake",  to: "rabbit", type: "rep" },
+      { from: "plant",  to: "fox",   type: "rep" },
+      { from: "plant",  to: "snake", type: "act" },
+      ...(eat && rabbitPlantRemoval ? [{ from: "rabbit", to: "plant", type: "rep" }] : []),
+      ...(eat && foxPlantRemoval    ? [{ from: "fox",    to: "plant", type: "rep" }] : []),
+      ...(eat && snakePlantRemoval  ? [{ from: "snake",  to: "plant", type: "rep" }] : [])
+    ];
+  }
+  function interactionKey() { return interactionEdges().map(e => e.from[0] + e.to[0] + e.type[0]).join(",") + "|" + (darkBg ? "d" : "l"); }
+
+  // Draws the diagram into the box (X, Y, W, H). labels = species names + legend.
+  function drawInteractionDiagram(ctx, X, Y, W, H, labels, legend) {
+    if (legend === undefined) legend = labels;
+    const m = Math.min(W, H);
+    const sN = (labels ? 0.30 : 0.36) * m;       // icon size
+    const nodes = {
+      rabbit: { x: X + W * 0.50, y: Y + H * (labels ? 0.20 : 0.18), name: "Rabbit" },
+      fox:    { x: X + W * 0.16, y: Y + H * (labels ? 0.47 : 0.52), name: "Fox" },
+      snake:  { x: X + W * 0.84, y: Y + H * (labels ? 0.47 : 0.52), name: "Snake" },
+      plant:  { x: X + W * 0.50, y: Y + H * (labels ? 0.72 : 0.84), name: "Plant" }
+    };
+    const edges = interactionEdges();
+    const R = sN * 0.50;                          // clearance around a node
+    const lw = Math.max(1.5, m * (labels ? 0.011 : 0.016));
+    ctx.save();
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+    // soft "floor" plates under each animal give the drawing depth
+    for (const k in nodes) {
+      const nd = nodes[k];
+      const g = ctx.createRadialGradient(nd.x, nd.y + sN * 0.30, sN * 0.05, nd.x, nd.y + sN * 0.30, sN * 0.62);
+      g.addColorStop(0, "rgba(90,110,80,0.28)"); g.addColorStop(0.7, "rgba(90,110,80,0.10)"); g.addColorStop(1, "rgba(90,110,80,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.ellipse(nd.x, nd.y + sN * 0.30, sN * 0.62, sN * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // arrows: paired directions are offset to either side of the connecting line
+    const pairKey = (a, b) => [a, b].sort().join("-");
+    const paired = new Set();
+    for (const e of edges) for (const f of edges) if (e !== f && e.from === f.to && e.to === f.from) paired.add(pairKey(e.from, e.to));
+    for (const e of edges) {
+      const A = nodes[e.from], B = nodes[e.to];
+      const dx = B.x - A.x, dy = B.y - A.y, len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
+      const off = paired.has(pairKey(e.from, e.to)) ? sN * 0.16 : 0;   // right-hand side of travel
+      const ax = A.x + ux * R + nx * off, ay = A.y + uy * R + ny * off;
+      const bx = B.x - ux * R + nx * off, by = B.y - uy * R + ny * off;
+      const act = e.type === "act";
+      const col = act ? "#2f9e54" : "#c63a23", colD = act ? "#1f6b3a" : "#8f2716";
+      // shadow pass
+      ctx.save();
+      ctx.shadowColor = "rgba(20,30,20,0.35)"; ctx.shadowBlur = lw * 2.2; ctx.shadowOffsetX = lw * 0.6; ctx.shadowOffsetY = lw * 1.1;
+      const grad = ctx.createLinearGradient(ax, ay, bx, by);
+      grad.addColorStop(0, col); grad.addColorStop(1, colD);
+      ctx.strokeStyle = grad; ctx.fillStyle = colD; ctx.lineWidth = lw;
+      const headL = lw * 4.2, headW = lw * 2.4;
+      if (act) {
+        const sx = bx - ux * headL * 0.85, sy = by - uy * headL * 0.85;
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(sx, sy); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx - ux * headL + nx * headW, by - uy * headL + ny * headW);
+        ctx.lineTo(bx - ux * headL * 0.72, by - uy * headL * 0.72);
+        ctx.lineTo(bx - ux * headL - nx * headW, by - uy * headL - ny * headW);
+        ctx.closePath(); ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+        ctx.lineWidth = lw * 1.25;
+        ctx.beginPath(); ctx.moveTo(bx + nx * headW * 1.1, by + ny * headW * 1.1); ctx.lineTo(bx - nx * headW * 1.1, by - ny * headW * 1.1); ctx.stroke();
+      }
+      ctx.restore();
+      // a thin highlight along the shaft for a rounded, tube-like look
+      ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.lineWidth = Math.max(0.6, lw * 0.28);
+      const hs = act ? headL : 0;
+      ctx.beginPath(); ctx.moveTo(ax - nx * lw * 0.22, ay - ny * lw * 0.22); ctx.lineTo(bx - ux * hs - nx * lw * 0.22, by - uy * hs - ny * lw * 0.22); ctx.stroke();
+    }
+
+    // the animals on top
+    for (const k in nodes) {
+      const nd = nodes[k], x = nd.x - sN / 2, y = nd.y - sN / 2;
+      if (k === "plant") drawPlant(ctx, x, y, sN);
+      else if (k === "rabbit") drawRabbit(ctx, x, y, sN, 0);
+      else if (k === "fox") drawFox(ctx, x, y, sN, 1);
+      else { snake3DYellow = true; try { drawSnake(ctx, x, y, sN, 1); } finally { snake3DYellow = false; } }
+    }
+    if (labels) {
+      ctx.fillStyle = "#333"; ctx.font = `${Math.round(m * 0.055)}px sans-serif`; ctx.textAlign = "center"; // v59: names 30% larger
+      for (const k in nodes) {
+        const nd = nodes[k];
+        const ly = k === "rabbit" ? nd.y - sN * 0.50 : nd.y + sN * 0.64; // rabbit label above (kept inside the frame), clear of the plant arrow
+        ctx.fillText(nd.name, nd.x, ly);
+      }
+    }
+    if (legend) {
+      ctx.textAlign = "left";
+      const fs = Math.round(m * 0.033); ctx.font = `${fs}px sans-serif`;
+      const lx = X + W * 0.02, ly = Y + H * 0.99, seg = fs * 2.2;
+      ctx.lineWidth = Math.max(1.5, fs * 0.16);
+      ctx.strokeStyle = "#2f9e54"; ctx.fillStyle = "#1f6b3a";
+      ctx.beginPath(); ctx.moveTo(lx, ly - fs * 0.35); ctx.lineTo(lx + seg - fs * 0.5, ly - fs * 0.35); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lx + seg, ly - fs * 0.35); ctx.lineTo(lx + seg - fs * 0.6, ly - fs * 0.75); ctx.lineTo(lx + seg - fs * 0.6, ly + fs * 0.05); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#333"; ctx.fillText("activates (prey feeds predator; plants expose hidden rabbits to snakes)", lx + seg + fs * 0.5, ly);
+      const ly2 = ly - fs * 1.5;
+      ctx.strokeStyle = "#c63a23";
+      ctx.beginPath(); ctx.moveTo(lx, ly2 - fs * 0.35); ctx.lineTo(lx + seg - fs * 0.15, ly2 - fs * 0.35); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lx + seg, ly2 - fs * 0.8); ctx.lineTo(lx + seg, ly2 + fs * 0.1); ctx.stroke();
+      ctx.fillStyle = "#333"; ctx.fillText("represses (predator eats prey; plants hide rabbits from foxes; plant erosion)", lx + seg + fs * 0.5, ly2);
+    }
+    ctx.restore();
+  }
+
+  // mini version (population plot corner): cached per rule set
+  let interactionMiniCache = null;
+  function drawInteractionMini(ctx, x, y, w, h) {
+    const key = interactionKey() + "|" + Math.round(w) + "x" + Math.round(h);
+    if (!interactionMiniCache || interactionMiniCache.key !== key) {
+      const c = document.createElement("canvas");
+      c.width = Math.round(w); c.height = Math.round(h);
+      const cc = c.getContext("2d");
+      cc.fillStyle = "rgba(255,255,255,0.82)";
+      cc.beginPath();
+      const r = 12;
+      cc.moveTo(r, 0); cc.lineTo(c.width - r, 0); cc.quadraticCurveTo(c.width, 0, c.width, r);
+      cc.lineTo(c.width, c.height - r); cc.quadraticCurveTo(c.width, c.height, c.width - r, c.height);
+      cc.lineTo(r, c.height); cc.quadraticCurveTo(0, c.height, 0, c.height - r);
+      cc.lineTo(0, r); cc.quadraticCurveTo(0, 0, r, 0); cc.closePath(); cc.fill();
+      cc.strokeStyle = "rgba(0,0,0,0.12)"; cc.lineWidth = 1; cc.stroke();
+      drawInteractionDiagram(cc, 4, 4, c.width - 8, c.height - 8, false);
+      interactionMiniCache = { key, canvas: c };
+    }
+    ctx.drawImage(interactionMiniCache.canvas, x, y);
+  }
+
+  // the large card at the bottom of the main column
+  const interactionCanvas = document.getElementById("interaction");
+  let interactionDrawnKey = null;
+  function drawInteraction(force, target, legend) {
+    const cv = target || interactionCanvas;
+    if (!cv) return;
+    if (!target) {
+      const key = interactionKey() + "|" + cv.width;
+      if (!force && key === interactionDrawnKey) return;
+      interactionDrawnKey = key;
+    }
+    if (legend === undefined) legend = true;
+    const ctx = cv.getContext("2d");
+    const W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    const bg = ctx.createRadialGradient(W * 0.5, H * 0.45, H * 0.1, W * 0.5, H * 0.5, H * 0.9);
+    bg.addColorStop(0, "#fbfdf9"); bg.addColorStop(1, "#eef2ea");
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    // without the legend the diagram fills the whole height
+    const Hd = legend ? H * 0.94 : H * 0.94 / 0.9; // export canvas is 0.9 × the card height
+    drawInteractionDiagram(ctx, W * 0.04, H * 0.03, W * 0.92, Hd, true, legend);
+  }
+
   // ---- v49: sprite cache — every static plant / rabbit / fox / snake is painted
   // once per (kind, variant, integer size) into an offscreen bitmap and then
   // blitted, instead of rebuilding dozens of gradient paths per creature per frame.
@@ -2435,9 +2880,12 @@
     const cq = crouch === true ? 8 : Math.round(Math.max(0, Math.min(1, Number(crouch) || 0)) * 8);
     drawCachedSprite("rabbit" + cq, s, (c, xx, yy, ss) => drawRabbit(c, xx, yy, ss, cq / 8), ctx, x, y);
   }
-  function drawFoxC(ctx, x, y, s, count) {
+  function drawFoxC(ctx, x, y, s, count, age) {
     if (s < 5) { drawFox(ctx, x, y, s, count); return; }
-    drawCachedSprite("fox", s, (c, xx, yy, ss) => drawFox(c, xx, yy, ss, 1), ctx, x, y);
+    // v55: hunger quantised to ¼ time unit so the sprite cache stays small
+    const q = (age === undefined || age === null) ? -1 : Math.min(40, Math.round(age * 4));
+    const qa = q < 0 ? undefined : q / 4;
+    drawCachedSprite("fox" + q, s, (c, xx, yy, ss) => drawFox(c, xx, yy, ss, 1, qa), ctx, x, y);
     drawCountBadge(ctx, x, y, s, count);
   }
   function drawSnakeC(ctx, x, y, s, count) {
@@ -2447,19 +2895,22 @@
   }
 
   // ---- v32: 3D visualization (active when L ≤ 20) ----
-  const view3D = { enabled: true, tilt: 35, rot: 90, dist: 5, groundAlpha: 0.6, wallAlpha: 0.25, floorDark: 0.7, rootAlpha: 0.38 };
+  const view3D = { enabled: true, tilt: 35, rot: 90, dist: 5, groundAlpha: 0.57, wallAlpha: 0.25, floorDark: 0.7, rootAlpha: 0.38 };
   // v49: viewing distance is a discrete perspective setting; the scene is always auto-zoomed to fill the display
   const distValues = [1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 10];
   const viewPresets = [
     { key: "A",   label: "3D view A", tilt: 35, rot: 35,  dist: 2.5 },
     { key: "B",   label: "3D view B", tilt: 35, rot: 125, dist: 2.5 },
     { key: "side", label: "3D side",  tilt: 35, rot: 90,  dist: 5 },
-    { key: "top", label: "Top view",  tilt: 90, rot: 0,   dist: 10 }
+    { key: "top", label: "Top view",  tilt: 90, rot: 0,   dist: 10 },
+    { key: "forest", label: "3D forest", tilt: 35, rot: 180, dist: 5 } // v55: forest centre at the left, distance grows to the right
   ];
   let viewPresetIndex = 2; // v52: default "3D side"
   let snake3DYellow = false; // v38: snakes render yellow in the 3-D scene only
   let exportNoSky = false;   // v47: render without the sky so the export can be cropped
-  function is3DActive() { return view3D.enabled && dispL() <= 20; }
+  function is3DActive() { return view3D.enabled && dispL() <= 25; } // v56: up to 25 (L50★)
+  // v55: a fat, just-fed fox sits 10% smaller than the old fat look; the others keep their size
+  function foxSpriteScale(age) { return foxHungerLevel(age) === 0 ? 1.10 * 0.94 : 1.10; }
   function nearestDistIndex(d) {
     let bi = 0, bd = Infinity;
     distValues.forEach((v, i) => { const e = Math.abs(Math.log(v / d)); if (e < bd) { bd = e; bi = i; } });
@@ -2597,6 +3048,7 @@
     const nowMs = performance.now();
     const glowDecay = params.speed > 1 ? 0.84 : 0.975; // v37: kill flashes linger ~2.5 s at watching speeds
     if (params.speed > 1 && (motionTraces.length || killTraces.length)) { motionTraces.length = 0; killTraces.length = 0; }
+    if (!deathAnimOK() && deathTraces.length) deathTraces.length = 0;
     pruneTraces(nowMs);
     const moving = buildMovingMaps();
     const movers = [];
@@ -2619,7 +3071,7 @@
       } else if (tr.kind === "rabbit") {
         movers.push({ gx: ex, gz: ez, y: Math.sin(Math.PI * u) * 0.45, kind: "moveRabbit", flip, cr: tr.cf + (tr.ct - tr.cf) * u });
       } else {
-        movers.push({ gx: ex, gz: ez, y: Math.abs(Math.sin(2 * Math.PI * u)) * 0.12, kind: "moveFox", flip });
+        movers.push({ gx: ex, gz: ez, y: Math.abs(Math.sin(2 * Math.PI * u)) * 0.12, kind: "moveFox", flip, age: foxHungerAge(tr.to) });
       }
     }
 
@@ -2720,8 +3172,17 @@
       const kgx = kt.fx + 0.5 - h, kgz = kfy + 0.5 - h;
       under.push({ gx: kgx, gz: kgz, depth: dotp(sub([kgx, -UD, kgz], cam), fwd) - 0.008, kind: "killSnake", u: ku, flip: kt.flip });
     }
+    for (const dt of deathTraces) {
+      if (!dt.under) continue;
+      const dfy = dt.fy - offY;
+      if (dt.fx >= Ld || dfy < 0) continue;
+      const du = Math.max(0, Math.min(1, (nowMs - dt.start) / dt.dur));
+      const dgx = dt.fx + 0.5 - h, dgz = dfy + 0.5 - h;
+      under.push({ gx: dgx, gz: dgz, depth: dotp(sub([dgx, -UD, dgz], cam), fwd) - 0.009, kind: "death", u: du, flip: dt.flip, dk: "snake" });
+    }
     under.sort((a, b) => b.depth - a.depth);
     for (const u of under) {
+      if (u.kind === "death") { sprite((c, xx, yy, ss) => drawDeath(c, xx, yy, ss, "snake", u.u), u.gx, -UD, u.gz, 1.10, 1, u.flip); continue; }
       if (u.kind === "pit") { drawPit(u); continue; }
       if (u.kind === "pitFront") { drawPitFront(u); continue; }
       if (u.kind === "root") { drawRoot(u); continue; }
@@ -2774,7 +3235,7 @@
         ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y); ctx.lineTo(d.x, d.y);
         ctx.closePath();
         const ti = (gy + offY) * L + gx;
-        const ta = plants[ti] ? ga : (darkBg ? 0.8 : 0.67); // v52: grass 10% more transparent
+        const ta = plants[ti] ? ga : (darkBg ? 0.76 : 0.64); // v55: grass another 5% more transparent
         ctx.fillStyle = ((gx + gy) & 1) ? `rgba(128,169,99,${ta})` : `rgba(116,157,90,${ta})`;
         ctx.fill();
         ctx.strokeStyle = "rgba(42,62,36,0.12)";
@@ -2796,7 +3257,7 @@
       if (plants[i]) surf.push({ gx, gz, depth: dpt + 0.02, kind: "plant" });
       if (rabbits[i] && !plants[i] && !(moving.r && moving.r.has(i))) surf.push({ gx, gz, depth: dpt, kind: "rabbit" });
       const fShow = foxes[i] - (moving.f ? (moving.f.get(i) || 0) : 0) - (moving.k ? (moving.k.get(i) || 0) : 0);
-      if (fShow > 0) surf.push({ gx, gz, depth: dpt - 0.01, kind: "fox", count: fShow });
+      if (fShow > 0) surf.push({ gx, gz, depth: dpt - 0.01, kind: "fox", count: fShow, age: foxHungerAge(i) });
       if (glow[i] > 0.02 && glowType[i] === 0) surf.push({ gx, gz, depth: dpt - 0.02, kind: "glow", g: glow[i] });
     }
     for (const e of surfExtra) {
@@ -2818,6 +3279,14 @@
       const kgx = kt.fx + 0.5 - h, kgz = kfy + 0.5 - h;
       surf.push({ gx: kgx, gz: kgz, depth: dotp(sub([kgx, 0, kgz], cam), fwd) - 0.015, kind: "kill", u: ku, flip: kt.flip });
     }
+    for (const dt of deathTraces) {
+      if (dt.under) continue;
+      const dfy = dt.fy - offY;
+      if (dt.fx >= Ld || dfy < 0) continue;
+      const du = Math.max(0, Math.min(1, (nowMs - dt.start) / dt.dur));
+      const dgx = dt.fx + 0.5 - h, dgz = dfy + 0.5 - h;
+      surf.push({ gx: dgx, gz: dgz, depth: dotp(sub([dgx, 0, dgz], cam), fwd) - 0.016, kind: "death", u: du, flip: dt.flip, dk: dt.kind, age: dt.age });
+    }
     surf.sort((a, b) => b.depth - a.depth);
     for (const u of surf) {
       if (u.kind === "glow") glowBillboard(u.gx, 0, u.gz, u.g, !!u.blue);
@@ -2826,9 +3295,10 @@
       else if (u.kind === "snake") sprite(drawSnakeC, u.gx, 0, u.gz, 1.10, u.count);
       else if (u.kind === "moveSnake") sprite(drawSnakeC, u.gx, u.y, u.gz, 1.10, 1, u.flip);
       else if (u.kind === "moveRabbit") sprite(drawRabbitC, u.gx, u.y, u.gz, 1.03, u.cr, u.flip);
-      else if (u.kind === "moveFox") sprite(drawFoxC, u.gx, u.y, u.gz, 1.10, 1, u.flip);
-      else if (u.kind === "kill") sprite(drawFoxPounce, u.gx, 0, u.gz, 1.15, u.u, u.flip);
-      else sprite(drawFoxC, u.gx, 0, u.gz, 1.10, u.count);
+      else if (u.kind === "moveFox") sprite((c, xx, yy, ss, cnt) => drawFoxC(c, xx, yy, ss, cnt, u.age), u.gx, u.y, u.gz, foxSpriteScale(u.age), 1, u.flip);
+      else if (u.kind === "kill") sprite(drawFoxPounce, u.gx, 0, u.gz, 1.15 * (1 - 0.10 * Math.max(0, Math.min(1, (u.u - 0.55) / 0.25))), u.u, u.flip); // v55: the fat sitting fox is 10% smaller
+      else if (u.kind === "death") sprite((c, xx, yy, ss) => drawDeath(c, xx, yy, ss, u.dk, u.u, u.age), u.gx, 0, u.gz, u.dk === "fox" ? 1.10 : 1.10, 1, u.flip);
+      else sprite((c, xx, yy, ss, cnt) => drawFoxC(c, xx, yy, ss, cnt, u.age), u.gx, 0, u.gz, foxSpriteScale(u.age), u.count);
     }
 
     // fade the kill afterglow exactly as the flat view does (slow fade since v37)
@@ -2842,9 +3312,9 @@
   function update3DPanel() {
     const b = document.getElementById("view3DBtn");
     if (!b) return;
-    const ok = dispL() <= 20;
+    const ok = dispL() <= 25;
     b.textContent = view3D.enabled
-      ? (ok ? "3D view: on" : "3D view: on — needs a displayed size ≤ 20 (flat view shown)")
+      ? (ok ? "3D view: on" : "3D view: on — needs a displayed size ≤ 25 (flat view shown)")
       : "3D view: off";
     b.classList.toggle("primary", view3D.enabled && ok);
     worldCanvas.style.cursor = is3DActive() ? "grab" : "default";
@@ -2881,7 +3351,7 @@
     const p = viewPresets[viewPresetIndex];
     const matches = Math.abs(view3D.tilt - p.tilt) < 0.5 && Math.abs((((view3D.rot - p.rot) % 360) + 540) % 360 - 180) < 0.5 && Math.abs(view3D.dist - p.dist) < 1e-9;
     b.textContent = p.label + (matches ? "" : " ·");
-    b.title = "Camera presets — click to cycle: 3D view A (tilt 35°, rotation 35°, distance 2.5), 3D view B (rotation +90°), 3D side (tilt 35°, rotation 90°, distance 5), top view. A dot means the view was changed by hand.";
+    b.title = "Camera presets — click to cycle: 3D view A (tilt 35°, rotation 35°, distance 2.5), 3D view B (rotation +90°), 3D side (tilt 35°, rotation 90°, distance 5), top view, 3D forest (rotation 180°, forest centre at the left). A dot means the view was changed by hand.";
   }
   function applyViewPreset(i) {
     viewPresetIndex = ((i % viewPresets.length) + viewPresets.length) % viewPresets.length;
@@ -2889,6 +3359,7 @@
     view3D.tilt = p.tilt; view3D.rot = p.rot; view3D.dist = p.dist;
     syncViewSliders();
     drawWorld();
+    drawRadial();
   }
   function updateBgButton() {
     const b = document.getElementById("bgBtn");
@@ -2904,7 +3375,7 @@
     const bind = (id, apply) => {
       const el = document.getElementById(id);
       if (!el) return;
-      el.addEventListener("input", () => { apply(Number(el.value)); syncViewSliders(); drawWorld(); });
+      el.addEventListener("input", () => { apply(Number(el.value)); syncViewSliders(); drawWorld(); drawRadial(); });
     };
     bind("v3Tilt", v => { view3D.tilt = v; });
     bind("v3Rot", v => { view3D.rot = v; });
@@ -2928,15 +3399,29 @@
     const ppBtn = document.getElementById("plotPngBtn");
     if (ppBtn) ppBtn.addEventListener("click", () => { drawPlot(); downloadCanvasPNG(plotCanvas, `abm_population_t${time.toFixed(2)}`); });
     const rpBtn = document.getElementById("radialPngBtn");
-    if (rpBtn) rpBtn.addEventListener("click", () => { drawRadial(); downloadCanvasPNG(radialCanvas, `abm_radial_t${time.toFixed(2)}`); });
-    const rp3Btn = document.getElementById("radialPng3Btn");
-    if (rp3Btn) rp3Btn.addEventListener("click", () => {
-      // v52: same plot, one third of the height (fonts and line widths unchanged)
+    // v55: exported profiles get a left margin so the y labels sit outside the plot;
+    // the plot area itself keeps the lattice's length
+    const radialExport = (heightFrac, name) => {
+      const W = worldCanvas.width, k = W / 792, ML = 72 * k;
+      const span = latticeEdgeSpan(W, worldCanvas.height);
       const c = document.createElement("canvas");
-      c.width = radialCanvas.width; c.height = Math.round(radialCanvas.width / 3);
-      drawRadial(c);
-      downloadCanvasPNG(c, `abm_radial_wide_t${time.toFixed(2)}`);
+      c.width = Math.round(W + ML + 26 * k); c.height = Math.round(W * heightFrac);
+      drawRadial(c, { x0: ML + span.xa, w: span.xb - span.xa, reverse: span.reverse, symmetric: span.symmetric, k });
+      downloadCanvasPNG(c, name);
+    };
+    if (rpBtn) rpBtn.addEventListener("click", () => radialExport(1, `abm_radial_t${time.toFixed(2)}`));
+    const rp3Btn = document.getElementById("radialPng3Btn");
+    if (rp3Btn) rp3Btn.addEventListener("click", () => radialExport(1 / 3, `abm_radial_wide_t${time.toFixed(2)}`)); // v52: one third of the height
+    const ipBtn = document.getElementById("interactionPngBtn");
+    if (ipBtn) ipBtn.addEventListener("click", () => {
+      // v57: the exported picture carries the animals and arrows only (no legend)
+      const c = document.createElement("canvas");
+      c.width = interactionCanvas.width; c.height = Math.round(interactionCanvas.height * 0.9);
+      drawInteraction(true, c, false);
+      downloadCanvasPNG(c, "abm_interactions");
     });
+    const rpCBtn = document.getElementById("radialPngCBtn");
+    if (rpCBtn) rpCBtn.addEventListener("click", () => exportCompositePNG());
     bind("v3Alpha", v => { view3D.groundAlpha = v / 100; });
     bind("v3Wall", v => { view3D.wallAlpha = v / 100; });
     bind("v3Root", v => { view3D.rootAlpha = v / 100; });
@@ -2991,6 +3476,7 @@
       } else if (activePointers.size === 0) {
         dragging = false;
         worldCanvas.style.cursor = is3DActive() ? "grab" : "default";
+        drawRadial(); // v55: the profile's x axis follows the lattice edge
       }
     };
     worldCanvas.addEventListener("pointerup", endDrag);
@@ -3039,7 +3525,7 @@
       const y = v[1] * s;
       if (rabbits[i] && !(moving.r && moving.r.has(i))) drawRabbitC(ctx, x + o2, y + o2, s2, plants[i] === 1);
       const fShow = foxes[i] - (moving.f ? (moving.f.get(i) || 0) : 0) - (moving.k ? (moving.k.get(i) || 0) : 0);
-      if (fShow > 0) drawFoxC(ctx, x + o2, y + o2, s2, fShow);
+      if (fShow > 0) drawFoxC(ctx, x + o2, y + o2, s2, fShow, foxHungerAge(i));
       const sShow = snakes[i] - (moving.s ? (moving.s.get(i) || 0) : 0) - (moving.ks ? (moving.ks.get(i) || 0) : 0);
       if (sShow > 0) drawSnakeC(ctx, x + o2, y + o2, s2, sShow);
     }
@@ -3165,7 +3651,7 @@
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, W, H);
 
-    const x0 = 78, y0 = 26, w = W - 102, h = H - 84;
+    const x0 = 86, y0 = 26, w = W - 110, h = H - 90;
     const data = getPlotData();
     const firstT = history.length ? history[0].t : 0;
     const lastT = history.length ? history[history.length - 1].t : 0;
@@ -3193,13 +3679,23 @@
     const yMax = visibleMax * 1.24;
     const niceMax = Math.max(0.1, yMax);
 
-    for (let k = 0; k <= 4; k++) {
-      const y = y0 + h * k / 4;
-      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
-      if (k === 0) continue; // omit the largest value for a cleaner top edge
-      const val = niceMax * (1 - k / 4);
-      ctx.fillText(val.toFixed(val < 1 ? 2 : 1), 8, y + 8);
+    // v57: simple y labels — one significant figure (0.2, 0.4, 0.6 …), at most four numbers
+    let major = 0.1;
+    {
+      const cands = [1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005, 0.002, 0.001];
+      major = cands.find(m => { const nn = Math.floor(niceMax / m + 1e-9); return nn >= 2 && nn <= 3; })
+           || cands.find(m => Math.floor(niceMax / m + 1e-9) >= 2) || 0.001;
     }
+    const decimals = major >= 1 ? 1 : (String(major).split(".")[1] || "").length;
+    ctx.textAlign = "right";
+    let nLab = 0;
+    for (let v = 0; v <= niceMax + 1e-9; v += major) {
+      const y = plotY(v, y0, h, niceMax);
+      ctx.strokeStyle = "#d8d8d8";
+      ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
+      if (nLab < 4 && y > y0 + 12) { ctx.fillStyle = "#666"; ctx.fillText(v.toFixed(decimals), x0 - 8, y + 8); nLab++; }
+    }
+    ctx.textAlign = "left";
 
     const tickStep = niceTickStep(Math.max(spanT, 1e-9), 6);
     const ticks = [];
@@ -3216,7 +3712,7 @@
       const label = timeLabel(t, spanT);
       const tw = ctx.measureText(label).width;
       ctx.fillStyle = "#555";
-      ctx.fillText(label, Math.max(2, Math.min(W - tw - 2, x - tw / 2)), y0 + h + 28);
+      ctx.fillText(label, Math.max(2, Math.min(W - tw - 2, x - tw / 2)), y0 + h + 26);
       ctx.fillStyle = "#666";
     }
 
@@ -3246,9 +3742,13 @@
       drawLine(ctx, data, "plants", "#44aa55", x0, y0, w, h, niceMax, firstT, lastT);
     }
 
+    // v57: "density" runs vertically along the y axis, "time" sits centred below the x axis
     ctx.fillStyle = "#333";
-    ctx.fillText("density", 7, 22);
-    ctx.fillText("time", x0 + w - 52, H - 10);
+    ctx.save();
+    ctx.translate(20, y0 + h / 2); ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = "center"; ctx.fillText("density", 0, 0);
+    ctx.restore();
+    ctx.textAlign = "center"; ctx.fillText("time", x0 + w / 2, H - 4); ctx.textAlign = "left";
 
     // Label the four single-species curves with their creature icon, sitting on the curve.
     if (data.length >= 2) {
@@ -3261,11 +3761,26 @@
         return [px - iconS / 2, py - iconS / 2];
       };
       let p;
-      p = onCurve("plants", 0.20);     drawPlant(ctx, p[0], p[1], iconS);
-      p = onCurve("foxes", 0.40);      drawFox(ctx, p[0], p[1], iconS, 1);
-      p = onCurve("snakes", 0.60);     drawSnake(ctx, p[0], p[1], iconS, 1);
-      p = onCurve("allRabbits", 0.82); drawRabbit(ctx, p[0], p[1], iconS);
+      const last = data[data.length - 1];
+      // v56: a red cross over the icon of a species that has died out
+      const cross = (q) => {
+        ctx.save();
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "rgba(255,255,255,0.9)"; ctx.lineWidth = 11;
+        ctx.beginPath(); ctx.moveTo(q[0] + 10, q[1] + 10); ctx.lineTo(q[0] + iconS - 10, q[1] + iconS - 10);
+        ctx.moveTo(q[0] + iconS - 10, q[1] + 10); ctx.lineTo(q[0] + 10, q[1] + iconS - 10); ctx.stroke();
+        ctx.strokeStyle = "#d21f1f"; ctx.lineWidth = 6; ctx.stroke();
+        ctx.restore();
+      };
+      p = onCurve("plants", 0.20);     drawPlant(ctx, p[0], p[1], iconS);            if (last.plants <= 0) cross(p);
+      p = onCurve("foxes", 0.40);      drawFox(ctx, p[0], p[1], iconS, 1);           if (last.foxes <= 0) cross(p);
+      p = onCurve("snakes", 0.60);     snake3DYellow = true; try { drawSnake(ctx, p[0], p[1], iconS, 1); } finally { snake3DYellow = false; } if (last.snakes <= 0) cross(p);
+      p = onCurve("allRabbits", 0.82); p[1] = Math.max(y0 + 2, p[1] - iconS * 0.30); // v58: lifted so the tail sits on the curve
+      drawRabbit(ctx, p[0], p[1], iconS);                                              if (last.allRabbits <= 0) cross(p);
+      p = onCurve("rabbitsBelowPlants", 0.50); drawRabbit(ctx, p[0], p[1], iconS, 1); // v57: the crouching rabbit of the burrow layer
     }
+    // v56: mini interaction diagram in the lower-left corner of the plot
+    drawInteractionMini(ctx, x0 + 6, y0 + h - 6 - 180, 180, 180); // v57: 20% larger
 
     // Only the two rabbit bands need words; centre them along the top.
     ctx.font = "24px sans-serif";
@@ -3422,10 +3937,11 @@
   }
 
   // v47: export just the lattice as shown, cropped so no free space remains.
-  function exportLatticePNG() {
-    if (!history.length || history[history.length - 1].t < time) recordHistory();
-    drawAll();
-    let out = document.createElement("canvas");
+  // v55: the tightly cropped system picture (3-D scene without its sky), plus the
+  // offset of the crop inside the world canvas — shared by PNG and PNG-C
+  function renderCroppedLattice() {
+    const out = document.createElement("canvas");
+    let minX = 0, minY = 0;
     if (is3DActive()) {
       // re-render without the sky, then crop to the drawn content
       exportNoSky = true;
@@ -3435,7 +3951,7 @@
       } finally { exportNoSky = false; }
       const W = worldCanvas.width, H = worldCanvas.height;
       const data = worldCtx.getImageData(0, 0, W, H).data;
-      let minX = W, minY = H, maxX = -1, maxY = -1;
+      minX = W; minY = H; let maxX = -1, maxY = -1;
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           if (data[(y * W + x) * 4 + 3] > 8) {
@@ -3462,7 +3978,42 @@
       out.height = worldCanvas.height;
       out.getContext("2d").drawImage(worldCanvas, 0, 0);
     }
-    downloadCanvasPNG(out, `abm_lattice_t${time.toFixed(2)}`);
+    return { canvas: out, minX, minY };
+  }
+
+  function exportLatticePNG() {
+    if (!history.length || history[history.length - 1].t < time) recordHistory();
+    drawAll();
+    const { canvas } = renderCroppedLattice();
+    downloadCanvasPNG(canvas, `abm_lattice_t${time.toFixed(2)}`);
+  }
+
+  // v55: PNG-C — the system as shown in the main panel, with the density profile
+  // directly beneath it at 40% of its full height; the profile's x axis spans
+  // exactly the front edge of the lattice above it.
+  function exportCompositePNG() {
+    if (plantSeedMode !== "circle" || !radial.site) return;
+    if (!history.length || history[history.length - 1].t < time) recordHistory();
+    drawAll();
+    const W = worldCanvas.width, H = worldCanvas.height;
+    const span = latticeEdgeSpan(W, H);
+    const { canvas: sys, minX } = renderCroppedLattice();
+    const k = W / 792;
+    const ML = 72 * k;                                   // left margin for the y-axis labels
+    const gap = Math.round(6 * k);
+    const prof = document.createElement("canvas");
+    prof.width = Math.round(ML + sys.width + 26 * k);
+    prof.height = Math.round(0.4 * W);
+    drawRadial(prof, { x0: ML + span.xa - minX, w: span.xb - span.xa, reverse: span.reverse, symmetric: span.symmetric, k });
+    const out = document.createElement("canvas");
+    out.width = prof.width;
+    out.height = sys.height + gap + prof.height;
+    const ctx = out.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, out.width, out.height);
+    ctx.drawImage(sys, Math.round(ML), 0);
+    ctx.drawImage(prof, 0, sys.height + gap);
+    downloadCanvasPNG(out, `abm_system_profile_t${time.toFixed(2)}`);
   }
 
   // v49: shared PNG download for any canvas
@@ -3661,6 +4212,7 @@
     drawMiniPlot();
     // the radial profile changes slowly — redraw it every 10th frame while running
     if (plantSeedMode === "circle" && (!running || (radialFrame++ % 10) === 0)) drawRadial();
+    drawInteraction();
     drawStatus();
   }
 
@@ -3675,7 +4227,7 @@
         for (let i = 0; i < n; i++) stepSimulation();
         if (!history.length || history[history.length - 1].t < time) recordHistory();
         drawAll();
-      } else if (motionTraces.length || killTraces.length) {
+      } else if (motionTraces.length || killTraces.length || deathTraces.length) {
         drawWorld(); // finish playing motion animations after a pause or single step
       }
     } catch (err) {
@@ -3843,7 +4395,7 @@
       const btn = document.getElementById("Lpreset" + n);
       if (btn) btn.classList.toggle("primary", cur === n && !cornerView);
     }
-    for (const n of [20, 30]) {
+    for (const n of [20, 30, 50]) {
       const btn = document.getElementById("Lpreset" + n + "c");
       if (btn) btn.classList.toggle("primary", cur === n && cornerView);
     }
@@ -3853,6 +4405,7 @@
     cornerView = !!corner;
     setControlValue("L", n);
     if (activeScenario) applyScenario(activeScenario); else { reset(); drawAll(); }
+    if (corner && n >= 30) applyViewPreset(4); // v56: L30★ and L50★ open in 3D at rotation 180°
     updateLToggle();
   }
   [10, 20, 30, 50].forEach((n) => {
