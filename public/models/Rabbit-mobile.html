@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rabbit-Fox-Snake-Plant ABM — v59</title>
+<title>Rabbit-Fox-Snake-Plant ABM — v63</title>
 <style>
   :root {
     --lattice-w: 792px;
@@ -657,6 +657,7 @@
     .hud .hud-label { display: none; }
     #modeSelect { max-width: 215px; font-size: 11px; }
     #speedSelect { width: 76px; font-size: 12px; }
+    #plotWindowSelect { max-width: 96px; }
     .hud button, .hud select { font-size: 12px; }
   }
 </style>
@@ -664,7 +665,7 @@
 <body>
 <div class="app">
   <aside>
-    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v59</span></div>
+    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v63</span></div>
     <div class="button-row run-row">
       <button id="runBtn" class="primary">Start</button>
       <button id="stepBtn">One step</button>
@@ -832,7 +833,7 @@
             <p><b>1 · Rabbits clear plants</b> — the default: rabbits trample plants (probability σ) when they successfully move onto one. <b>2 · Fixed plant cover</b> — plants are scattered at a chosen density and then frozen. <b>3 · Foxes clear plants</b> — only a fox arriving above a hidden rabbit can remove the plant (this one is bistable: runs end up either with foxes or with plants, rarely both). <b>4 · Rabbits kill plants</b> — a rabbit erodes the plant it ends up below on every move attempt; the plant growth γ is raised to compensate. <b>5 · Frozen circular forest</b> — one solid disc of plants at the centre; use the density slider to change its size. <b>6 · Snakes kill plants</b> — snakes, not rabbits, erode the plants they crawl into. All presets use L = 20, γ = 1, σ = 0.064, μ<sub>R</sub> = μ<sub>F</sub> = 10, μ<sub>S</sub> = 5, f = f<sub>S</sub> = 0.1, δ<sub>F</sub> = δ<sub>S</sub> = 0.1 and ½ simulation step per animation frame.</p>
 
             <h4>6. Reading the plots</h4>
-            <p>The population plot below the scene shows the fraction of sites occupied by each species against time: green for plants, orange for foxes, black for snakes, dark green for rabbits hiding under plants, and a grey band for all rabbits. When any curve hits zero that species is extinct (its icon gets a red cross), and the fun is over — so the interesting question is how long all four can be kept alive. For the circular forest a density panel directly below the scene shows the time-averaged density of rabbits, foxes and snakes as a function of distance from the forest centre: you can see where the rabbits crowd, where the snakes ambush them, and how the foxes patrol the open edge. Its x axis has exactly the length of the front edge of the lattice above it (from the forest centre at the left to the lattice edge at the right in the L20★ view, or across the whole lattice for L10 and L20), and the green shading marks the forest: the band from x−1 to x is green whenever some site at that distance carries a plant. The <b>PNG-C</b> button saves the scene and this profile as one figure with matching x axes.</p>
+            <p>The population plot below the scene shows the fraction of sites occupied by each species against time: green for plants, orange for foxes, black for snakes, dark green for rabbits hiding under plants, and a grey band for all rabbits. The pull-down in its upper-right corner limits the plot to the last 1 … 200 time units (the same units as on the time axis), so that fast dynamics stay visible in a long run. When any curve hits zero that species is extinct (its icon gets a red cross), and the fun is over — so the interesting question is how long all four can be kept alive. For the circular forest a density panel directly below the scene shows the time-averaged density of rabbits, foxes and snakes as a function of distance from the forest centre: you can see where the rabbits crowd, where the snakes ambush them, and how the foxes patrol the open edge. Its x axis has exactly the length of the front edge of the lattice above it (from the forest centre at the left to the lattice edge at the right in the L20★ view, or across the whole lattice for L10 and L20), and the green shading marks the forest: the band from x−1 to x is green whenever some site at that distance carries a plant. The <b>PNG-C</b> button saves the scene and this profile as one figure with matching x axes.</p>
 
             <p>The <b>interaction diagram</b> at the bottom (and its miniature in the lower-left corner of the population plot) summarises what the current rules assume: green arrows are activating links — a prey feeds its predator, and plants expose hidden rabbits to snakes — while red bars are repressing links — a predator eats its prey, plants hide rabbits from foxes, and whichever species erodes plants in the active preset (rabbits, foxes or snakes) gets a bar pointing at the plant. The diagram updates when you change the rules.</p>
 
@@ -899,7 +900,20 @@
     <section class="card col-track">
       <div class="card-body plot-wrap">
         <canvas id="plot" width="1100" height="460"></canvas>
-        <div class="hud tr"><button type="button" id="plotPngBtn" title="Save the population-vs-time plot as a PNG">PNG</button></div>
+        <div class="hud tr">
+          <select id="plotWindowSelect" title="Show only the last part of the run (time units, as on the x axis)">
+            <option value="1">last 1</option>
+            <option value="2">last 2</option>
+            <option value="5">last 5</option>
+            <option value="10">last 10</option>
+            <option value="20">last 20</option>
+            <option value="50">last 50</option>
+            <option value="100">last 100</option>
+            <option value="200">last 200</option>
+            <option value="0" selected>all</option>
+          </select>
+          <button type="button" id="plotPngBtn" title="Save the population-vs-time plot as a PNG">PNG</button>
+        </div>
       </div>
     </section>
 
@@ -1424,7 +1438,7 @@
     // grid + axes — v53: "usual" y steps: labelled majors (e.g. 0, 0.3, 0.6) with a
     // thin unlabelled line at each midpoint
     ctx.strokeStyle = "#d8d8d8"; ctx.lineWidth = 1;
-    ctx.font = `${24 * k}px sans-serif`; ctx.fillStyle = "#666"; ctx.textBaseline = "alphabetic";
+    ctx.font = `${26.4 * k}px sans-serif`; ctx.fillStyle = "#666"; ctx.textBaseline = "alphabetic"; // v62: labels 10% larger
     let major = 0.1;
     {
       const pow = Math.pow(10, Math.floor(Math.log10(yMax)));
@@ -1434,17 +1448,17 @@
       major = cands.find(m => yMax / m >= 2) || cands[cands.length - 1];
     }
     const decimals = major >= 1 ? 0 : (String(major).split(".")[1] || "").length;
-    const labelsOutside = x0 >= 70 * k; // v55: no room to the left when the axis sits at the lattice edge
+    const labelsOutside = x0 >= 50 * k; // v55: no room to the left when the axis sits at the lattice edge
     for (let v = 0; v <= yMax + 1e-12; v += major / 2) {
       const y = py(v);
       const isMajor = Math.abs(v / major - Math.round(v / major)) < 1e-9;
       ctx.strokeStyle = isMajor ? "#d8d8d8" : "#ececec";
       ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + w, y); ctx.stroke();
       if (isMajor && (v > 0 || labelsOutside)) {
-        const lab = v.toFixed(decimals);
+        const lab = v.toFixed(decimals).replace(/^0\./, "."); // v61: ".2" instead of "0.2"
         ctx.fillStyle = "#666";
         if (labelsOutside) ctx.fillText(lab, x0 - ctx.measureText(lab).width - 8 * k, y + 8 * k);
-        else ctx.fillText(lab, x0 + 44 * k, y - 4 * k);
+        else ctx.fillText(lab, x0 + 6 * k, y - 4 * k);
       }
     }
     const tick = niceTickStep(dMax - dMin, 5);
@@ -1454,7 +1468,8 @@
       ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y0 + h); ctx.stroke();
       const lab = String(Math.round(d * 100) / 100);
       ctx.fillStyle = "#555";
-      ctx.fillText(lab, x - ctx.measureText(lab).width / 2, y0 + h + 30 * k);
+      const tw = ctx.measureText(lab).width;
+      ctx.fillText(lab, Math.max(2 * k, Math.min(W - tw - 2 * k, x - tw / 2)), y0 + h + 30 * k); // kept inside the canvas
     }
     ctx.strokeStyle = "#888"; ctx.strokeRect(x0, y0, w, h);
 
@@ -1494,17 +1509,16 @@
     snake3DYellow = true; try { put(Sn, 0.50, drawSnake, 1); } finally { snake3DYellow = false; } // v56: yellow as in the scene
     put(R, 0.70, drawRabbit, 0);
 
-    // titles — v55: "Density" runs vertically along the y axis
-    ctx.fillStyle = "#333"; ctx.font = `${24 * k}px sans-serif`;
-    ctx.save();
-    const tx = labelsOutside ? x0 - 60 * k : x0 + 26 * k;
-    ctx.translate(tx, y0 + h / 2);
-    ctx.rotate(-Math.PI / 2);
-    const yl = "Density";
-    ctx.fillText(yl, -ctx.measureText(yl).width / 2, 0);
-    ctx.restore();
+    // titles — v60: "Density" in the upper-left corner
+    ctx.fillStyle = "#333"; ctx.font = `${26.4 * k}px sans-serif`;
+    {
+      // v61: left edge aligned with the y-axis numbers
+      const sample = (major / 2 * 2).toFixed(decimals).replace(/^0\./, ".");
+      const numLeft = x0 - 8 * k - ctx.measureText(sample).width;
+      ctx.fillText("Density", labelsOutside ? numLeft : x0 + 6 * k, y0 - 12 * k);
+    }
     const xl = "distance from forest centre (lattice units)";
-    ctx.fillText(xl, x0 + w - ctx.measureText(xl).width, H - 14 * k);
+    ctx.fillText(xl, Math.min(x0 + w, W - 4 * k) - ctx.measureText(xl).width, H - 14 * k);
   }
 
   function collectBinaryPositions(arr) {
@@ -1906,12 +1920,22 @@
     sampleRadial();
   }
 
+  // v60: the population plot can be limited to the last N simulation steps
+  let plotWindowTime = 0; // v63: window length in time units (as on the x axis); 0 = whole run
+  function windowedHistory() {
+    if (!plotWindowTime || history.length < 2) return history;
+    const tMin = history[history.length - 1].t - plotWindowTime - 1e-9;
+    let lo = 0, hi = history.length - 1;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (history[mid].t < tMin) lo = mid + 1; else hi = mid; }
+    return lo > 0 ? history.slice(lo) : history;
+  }
   function getPlotData() {
-    if (history.length <= maxPlotPoints) return history;
-    const stride = Math.ceil(history.length / maxPlotPoints);
+    const src = windowedHistory();
+    if (src.length <= maxPlotPoints) return src;
+    const stride = Math.ceil(src.length / maxPlotPoints);
     const out = [];
-    for (let i = 0; i < history.length; i += stride) out.push(history[i]);
-    const last = history[history.length - 1];
+    for (let i = 0; i < src.length; i += stride) out.push(src[i]);
+    const last = src[src.length - 1];
     if (out[out.length - 1] !== last) out.push(last);
     return out;
   }
@@ -2704,8 +2728,9 @@
   function interactionKey() { return interactionEdges().map(e => e.from[0] + e.to[0] + e.type[0]).join(",") + "|" + (darkBg ? "d" : "l"); }
 
   // Draws the diagram into the box (X, Y, W, H). labels = species names + legend.
-  function drawInteractionDiagram(ctx, X, Y, W, H, labels, legend) {
+  function drawInteractionDiagram(ctx, X, Y, W, H, labels, legend, plantScale) {
     if (legend === undefined) legend = labels;
+    plantScale = (plantScale || 1) * 0.9; // v60: plants 10% smaller in every network picture
     const m = Math.min(W, H);
     const sN = (labels ? 0.30 : 0.36) * m;       // icon size
     const nodes = {
@@ -2773,7 +2798,7 @@
     // the animals on top
     for (const k in nodes) {
       const nd = nodes[k], x = nd.x - sN / 2, y = nd.y - sN / 2;
-      if (k === "plant") drawPlant(ctx, x, y, sN);
+      if (k === "plant") { const sp = sN * plantScale; drawPlant(ctx, nd.x - sp / 2, nd.y - sN / 2 + (sN - sp), sp); }
       else if (k === "rabbit") drawRabbit(ctx, x, y, sN, 0);
       else if (k === "fox") drawFox(ctx, x, y, sN, 1);
       else { snake3DYellow = true; try { drawSnake(ctx, x, y, sN, 1); } finally { snake3DYellow = false; } }
@@ -3396,13 +3421,15 @@
     if (bgBtn) bgBtn.addEventListener("click", () => { darkBg = !darkBg; spriteCache.clear(); updateBgButton(); drawWorld(); });
     const lpBtn = document.getElementById("latticePngBtn");
     if (lpBtn) lpBtn.addEventListener("click", () => exportLatticePNG());
+    const pwSel = document.getElementById("plotWindowSelect");
+    if (pwSel) pwSel.addEventListener("change", () => { plotWindowTime = Number(pwSel.value) || 0; drawPlot(); drawMiniPlot(); });
     const ppBtn = document.getElementById("plotPngBtn");
     if (ppBtn) ppBtn.addEventListener("click", () => { drawPlot(); downloadCanvasPNG(plotCanvas, `abm_population_t${time.toFixed(2)}`); });
     const rpBtn = document.getElementById("radialPngBtn");
     // v55: exported profiles get a left margin so the y labels sit outside the plot;
     // the plot area itself keeps the lattice's length
     const radialExport = (heightFrac, name) => {
-      const W = worldCanvas.width, k = W / 792, ML = 72 * k;
+      const W = worldCanvas.width, k = W / 792, ML = 54 * k; // v60: narrower margin, "Density" sits in the corner
       const span = latticeEdgeSpan(W, worldCanvas.height);
       const c = document.createElement("canvas");
       c.width = Math.round(W + ML + 26 * k); c.height = Math.round(W * heightFrac);
@@ -3653,8 +3680,8 @@
 
     const x0 = 86, y0 = 26, w = W - 110, h = H - 90;
     const data = getPlotData();
-    const firstT = history.length ? history[0].t : 0;
-    const lastT = history.length ? history[history.length - 1].t : 0;
+    const firstT = data.length ? data[0].t : 0;
+    const lastT = data.length ? data[data.length - 1].t : 0;
     const spanT = Math.max(0, lastT - firstT);
 
     ctx.strokeStyle = "#d8d8d8";
@@ -3702,9 +3729,9 @@
     if (spanT <= 1e-9) ticks.push(firstT);
     else {
       let t = Math.ceil(firstT / tickStep) * tickStep;
-      if (t > firstT + 1e-9) ticks.push(firstT);
+      if (t > firstT + tickStep * 0.2) ticks.push(firstT);
       for (let guard = 0; t <= lastT + 1e-9 && guard < 50; guard++, t += tickStep) ticks.push(t);
-      if (ticks[ticks.length - 1] < lastT - 1e-9) ticks.push(lastT);
+      if (ticks[ticks.length - 1] < lastT - tickStep * 0.2) ticks.push(lastT);
     }
     for (const t of ticks) {
       const x = x0 + (spanT > 1e-12 ? ((t - firstT) / spanT) * w : 0);
@@ -3815,8 +3842,8 @@
 
     const x0 = 6, y0 = 6, w = W - 12, h = H - 12;
     const data = getPlotData();
-    const firstT = history.length ? history[0].t : 0;
-    const lastT = history.length ? history[history.length - 1].t : 0;
+    const firstT = data.length ? data[0].t : 0;
+    const lastT = data.length ? data[data.length - 1].t : 0;
     const spanT = Math.max(0, lastT - firstT);
 
     // Same autoscale rule as the main plot: ignore the first 30% of the run.
@@ -3999,20 +4026,30 @@
     const span = latticeEdgeSpan(W, H);
     const { canvas: sys, minX } = renderCroppedLattice();
     const k = W / 792;
-    const ML = 72 * k;                                   // left margin for the y-axis labels
-    const gap = Math.round(6 * k);
+    const ML = 54 * k;                                   // left margin for the y-axis labels (v60: narrower)
+    const gap = Math.round(57 * k); // v63: another ~3 mm (at 300 dpi) between the two figures
+    // v62: the scene is enlarged to the full figure width (label margin included),
+    // and the profile's x axis follows the enlarged front edge, so the two align exactly
+    const figW = Math.round(ML + sys.width + 26 * k);
+    const sc = figW / sys.width;
+    const sysH = Math.round(sys.height * sc);
     const prof = document.createElement("canvas");
-    prof.width = Math.round(ML + sys.width + 26 * k);
+    prof.width = figW;
     prof.height = Math.round(0.4 * W);
-    drawRadial(prof, { x0: ML + span.xa - minX, w: span.xb - span.xa, reverse: span.reverse, symmetric: span.symmetric, k });
+    drawRadial(prof, { x0: (span.xa - minX) * sc, w: (span.xb - span.xa) * sc, reverse: span.reverse, symmetric: span.symmetric, k });
     const out = document.createElement("canvas");
-    out.width = prof.width;
-    out.height = sys.height + gap + prof.height;
+    out.width = figW;
+    out.height = sysH + gap + prof.height;
     const ctx = out.getContext("2d");
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, out.width, out.height);
-    ctx.drawImage(sys, Math.round(ML), 0);
-    ctx.drawImage(prof, 0, sys.height + gap);
+    ctx.drawImage(sys, 0, 0, figW, sysH);
+    ctx.drawImage(prof, 0, sysH + gap);
+    // v60: a very small interaction network, no text, in the empty lower-right
+    // corner of the scene (below the surface, where no burrows are)
+    const nw = Math.round(0.18 * W), nh = Math.round(0.20 * W * 0.8 * 1.3); // v62: squeezed 10% horizontally
+    // bottom edge just above the profile's plot frame (y0 = 58·k inside the profile canvas)
+    drawInteractionDiagram(ctx, out.width - nw - 6 * k, sysH + gap + 50 * k - nh, nw, nh, false, false, 0.8);
     downloadCanvasPNG(out, `abm_system_profile_t${time.toFixed(2)}`);
   }
 
