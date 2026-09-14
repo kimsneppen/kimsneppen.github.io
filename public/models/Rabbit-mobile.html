@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rabbit-Fox-Snake-Plant ABM — v66</title>
+<title>Rabbit-Fox-Snake-Plant ABM — v70</title>
 <style>
   :root {
     --lattice-w: 792px;
@@ -406,10 +406,10 @@
   .L-toggle button:hover { background: #f1f0ea; }
   .L-toggle button.primary { background: var(--accent); color: #fff; }
   .L-toggle button.primary:hover { background: var(--accent-d); }
-  #scenario3Btn { border-color: #e3b6ab; color: #9c3019; }
-  #scenario3Btn:hover { border-color: #d68a78; background: #fdf3f0; }
-  #scenario3Btn.primary { background: var(--danger); border-color: var(--danger-d); color: #fff; }
-  #scenario3Btn.primary:hover { background: var(--danger-d); border-color: var(--danger-d); }
+  #scenario6Btn { border-color: #e3b6ab; color: #9c3019; }
+  #scenario6Btn:hover { border-color: #d68a78; background: #fdf3f0; }
+  #scenario6Btn.primary { background: var(--danger); border-color: var(--danger-d); color: #fff; }
+  #scenario6Btn.primary:hover { background: var(--danger-d); border-color: var(--danger-d); }
 
   @media (max-width: 1040px) {
     .app { grid-template-columns: 1fr; }
@@ -485,14 +485,14 @@
     box-shadow: 0 3px 12px -5px rgba(120,60,10,.55);
   }
   .scenario-row button.primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
-  #scenario5Btn { border-color: #b7d9bf; color: #1f6b3a; }
-  #scenario5Btn:hover { border-color: #8fc59c; background: #eff8f1; }
-  #scenario5Btn.primary { background: var(--plant); border-color: #1f7d40; color: #fff; }
-  #scenario5Btn.primary:hover { background: #1f8f3c; border-color: #1f7d40; }
-  #scenario6Btn { border-color: #b9c2b2; color: #344230; }
-  #scenario6Btn:hover { border-color: #97a68e; background: #f0f3ec; }
-  #scenario6Btn.primary { background: var(--snake); border-color: #20281f; color: #fff; }
-  #scenario6Btn.primary:hover { background: #2b362c; border-color: #20281f; }
+  #scenario1Btn { border-color: #b7d9bf; color: #1f6b3a; }
+  #scenario1Btn:hover { border-color: #8fc59c; background: #eff8f1; }
+  #scenario1Btn.primary { background: var(--plant); border-color: #1f7d40; color: #fff; }
+  #scenario1Btn.primary:hover { background: #1f8f3c; border-color: #1f7d40; }
+  #scenario5Btn { border-color: #b9c2b2; color: #344230; }
+  #scenario5Btn:hover { border-color: #97a68e; background: #f0f3ec; }
+  #scenario5Btn.primary { background: var(--snake); border-color: #20281f; color: #fff; }
+  #scenario5Btn.primary:hover { background: #2b362c; border-color: #20281f; }
 
   .card { border-radius: 18px; box-shadow: 0 1px 2px rgba(20,30,20,.05), 0 20px 44px -30px rgba(20,40,25,.5); }
   .card-head { background: linear-gradient(#ffffff, #f6f9f4); }
@@ -622,7 +622,31 @@
   .canvas-wrap.dark .hud .hud-label { color: #d5dbd5; background: rgba(20,26,28,.7); }
   #modeSelect { max-width: 230px; }
   #speedSelect { width: 84px; }
-  .plot-wrap { position: relative; }
+  .plot-wrap { position: relative; display: flex; flex-direction: column; }
+  .plot-wrap .hud.tr { order: -1; }
+  /* ---- v67: "÷ ε" toggle switches on the plot HUDs ---- */
+  .hud .sw {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--sans); font-size: 11px; font-weight: 700; line-height: 1.1;
+    padding: 4px 8px 4px 6px; min-height: 26px; border-radius: 8px;
+    border: 1px solid rgba(30,40,30,.22); background: rgba(255,255,255,.82); color: #2b332d;
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 1px 4px rgba(20,30,20,.18); cursor: pointer; user-select: none; white-space: nowrap;
+  }
+  .hud .sw:hover { background-color: #fff; border-color: rgba(30,40,30,.4); }
+  .hud .sw input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .hud .sw .knob {
+    position: relative; width: 28px; height: 15px; border-radius: 8px; flex: none;
+    background: #b9c1ba; transition: background .18s;
+  }
+  .hud .sw .knob::after {
+    content: ""; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.35); transition: left .18s;
+  }
+  .hud .sw input:checked + .knob { background: #f08a24; }
+  .hud .sw input:checked + .knob::after { left: 15px; }
+  .hud .sw input:focus-visible + .knob { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .hud .sw.on { border-color: rgba(240,138,36,.7); color: #9a4e08; }
   .plot-wrap .hud.tr { top: 10px; right: 10px; }
   #radialCard { display: none; }
   #radialCard.show { display: block; }
@@ -658,6 +682,10 @@
     #modeSelect { max-width: 215px; font-size: 11px; }
     #speedSelect { width: 76px; font-size: 12px; }
     #plotWindowSelect { max-width: 96px; }
+    .hud .sw { font-size: 12px; padding: 4px 7px 4px 5px; min-height: 30px; }
+    /* v67: on phones the plot controls sit in a row above the plot instead of covering it */
+    .plot-wrap .hud.tr { position: static; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 6px; }
+    .plot-wrap .hud.tr .sw .long { display: none; }
     .hud button, .hud select { font-size: 12px; }
   }
 </style>
@@ -665,7 +693,7 @@
 <body>
 <div class="app">
   <aside>
-    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v66</span></div>
+    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v70</span></div>
     <div class="button-row run-row">
       <button id="runBtn" class="primary">Start</button>
       <button id="stepBtn">One step</button>
@@ -675,16 +703,16 @@
 
     <div class="group-label">Scenario presets</div>
     <div class="scenario-row">
-      <button id="scenario1Btn" class="primary">1 · Moving Rabbits clear plants</button>
-      <button id="scenario2Btn">2 · Fixed plant cover</button>
-      <button id="scenario3Btn" title="Cautionary: this regime is bistable. Foxes and plants (and snakes) rarely coexist — each run collapses to either a fox state or a plant state.">3 · Foxes clear plants</button>
-      <button id="scenario4Btn" title="Rabbits erode the plant they end below on every move (rate σ). γ=10.75 maximises the (transient) four-species coexistence at L=30 — mean ~275 time units before one species is lost.">4 · Rabbits kill plants</button>
-      <button id="scenario5Btn" title="All plants are frozen into one dense circular forest at the centre of the lattice — nothing grows or clears them. The forest size follows the tree density. Rabbits, foxes and snakes roam a fixed island of cover.">5 · Frozen circular forest</button>
-      <button id="scenario6Btn" title="Snakes erode the plants they crawl into (rate σ); rabbits and foxes leave plants untouched, so plant cover is shaped entirely by the snakes.">6 · Snakes kill plants</button>
+      <button id="scenario1Btn" class="primary" title="All plants are frozen into one dense circular forest at the centre of the lattice — nothing grows or clears them. The forest size follows the tree density. Rabbits, foxes and snakes roam a fixed island of cover.">1 · Frozen circular forest</button>
+      <button id="scenario2Btn" title="Plants are scattered at random at the chosen density and then frozen — nothing grows or clears them (same as the earlier ‘Fixed plant cover’).">2 · Frozen random trees</button>
+      <button id="scenario3Btn" title="Rabbits trample the plant with probability σ when they successfully move onto it.">3 · Moving rabbits clear plants</button>
+      <button id="scenario4Btn" title="Rabbits erode the plant they end below on every move attempt (rate σ). γ=10.75 maximises the (transient) four-species coexistence at L=30 — mean ~275 time units before one species is lost.">4 · Rabbits clear plants</button>
+      <button id="scenario5Btn" title="A snake that moves onto a plant with a rabbit hiding below always eats the rabbit, and then removes the plant with probability σ; rabbits and foxes leave plants untouched.">5 · Snakes clear plants</button>
+      <button id="scenario6Btn" title="A fox that moves onto a plant with a rabbit hiding below cannot reach it, but removes the plant with probability σ. Cautionary: this regime is bistable — runs collapse to either a fox state or a plant state.">6 · Foxes clear plants</button>
     </div>
     <div class="frozen-control">
       <div class="frozen-head">
-        <label for="frozenDensity">Frozen plant density (coexist. at 0.2&ndash;0.28)</label>
+        <label for="frozenDensity">Frozen plant density (presets 1 &amp; 2; coexist. at 0.2&ndash;0.28)</label>
         <span class="frozen-val" id="frozenDensityVal">0.24</span>
       </div>
       <div class="frozen-row">
@@ -693,9 +721,9 @@
           <button type="button" id="Lpreset10">L10</button>
           <button type="button" id="Lpreset20c" class="primary" title="Runs a full 20×20 system but displays only the lower-left 10×10 quarter">L20★</button>
           <button type="button" id="Lpreset20">L20</button>
-          <button type="button" id="Lpreset30c" title="Runs a full 30×30 system but displays only the lower-left 15×15 quarter, in the same perspective as L20★">L30★</button>
-          <button type="button" id="Lpreset30">L30</button>
-          <button type="button" id="Lpreset50c" title="Runs a full 50×50 system but displays only the lower-left 25×25 quarter in 3D, rotation 180°">L50★</button>
+          <button type="button" id="Lpreset30c" title="Runs a full 30×30 system but displays only the quarter around the forest centre (15×15) in 3D, rotation 180°">L30★</button>
+          <button type="button" id="Lpreset50c" title="Runs a full 50×50 system but displays only the quarter around the forest centre (25×25) in 3D, rotation 180°">L50★</button>
+          <button type="button" id="Lpreset100c" title="Runs a full 100×100 system and displays the quarter around the forest centre (50×50) as a flat map seen from above, forest centre in the lower-left corner">L100★</button>
         </div>
       </div>
     </div>
@@ -790,7 +818,7 @@
           <div class="frozen-head"><label for="v3Kill">Catch &amp; digestion time (fox &amp; snake)</label><span class="frozen-val" id="v3KillVal">2.00 s</span></div>
           <input id="v3Kill" type="range" min="300" max="4000" step="20" value="2000" />
         </div>
-        <p class="hint">Active when the displayed lattice is ≤ 25 sites wide (L ≤ 20, L20★, L30★, L50★) — larger lattices fall back to the flat map. Snakes (yellow in 3D) travel on the surface and dive into the burrow layer, which exists only beneath bushes; rabbits sheltering below a bush hide down there too. You can also drag the scene to orbit and scroll on it to zoom.</p>
+        <p class="hint">Active when the displayed lattice is ≤ 25 sites wide (L ≤ 20, L20★, L30★, L50★) — larger lattices (L100★ and up) fall back to the flat map seen from above. Snakes (yellow in 3D) travel on the surface and dive into the burrow layer, which exists only beneath bushes; rabbits sheltering below a bush hide down there too. You can also drag the scene to orbit and scroll on it to zoom.</p>
       </div>
     </details>
 
@@ -830,18 +858,18 @@
             <p>The pull-down in the upper-left corner of the display (and the <b>Rabbit shelter</b> button in the control panel) chooses how clever the rabbits are. <b>Rabbits damage and hide</b>: a rabbit never leaves a plant for open ground, so once it finds cover it stays there — and it damages plants when it moves onto them. <b>Rabbits damage and optimize</b>: each rabbit looks at its 5×5 surroundings, multiplies the number of foxes by the fox mobility and the number of snakes by the snake mobility (that product is how often each predator would run into it), and then keeps to whichever kind of site is safer — under a plant if foxes are the bigger local danger, in the open if snakes are. <b>Stupid rabbits</b> hop wherever chance takes them, cover or no cover. <b>Frozen forest, stupid rabbits</b> starts from one round forest covering half the lattice, with plants that neither grow nor get trampled, and stupid rabbits. The control panel also has an <i>adaptive</i> option, which uses the fox and snake numbers of the whole system instead of the local neighbourhood.</p>
 
             <h4>5. The six scenario presets</h4>
-            <p><b>1 · Rabbits clear plants</b> — the default: rabbits trample plants (probability σ) when they successfully move onto one. <b>2 · Fixed plant cover</b> — plants are scattered at a chosen density and then frozen. <b>3 · Foxes clear plants</b> — only a fox arriving above a hidden rabbit can remove the plant (this one is bistable: runs end up either with foxes or with plants, rarely both). <b>4 · Rabbits kill plants</b> — a rabbit erodes the plant it ends up below on every move attempt; the plant growth γ is raised to compensate. <b>5 · Frozen circular forest</b> — one solid disc of plants at the centre; use the density slider to change its size. <b>6 · Snakes kill plants</b> — snakes, not rabbits, erode the plants they crawl into. All presets use L = 20, γ = 1, σ = 0.064, μ<sub>R</sub> = μ<sub>F</sub> = 10, μ<sub>S</sub> = 5, f = f<sub>S</sub> = 0.1, δ<sub>F</sub> = δ<sub>S</sub> = 0.1 and ½ simulation step per animation frame.</p>
+            <p><b>1 · Frozen circular forest</b> — the default: one solid disc of plants at the centre of the lattice, frozen; use the density slider to change its size. <b>2 · Frozen random trees</b> — plants are scattered at random at the chosen density and then frozen. <b>3 · Moving rabbits clear plants</b> — rabbits trample plants (probability σ) when they successfully move onto one. <b>4 · Rabbits clear plants</b> — a rabbit erodes the plant it ends up below on every move attempt, successful or not; the plant growth γ is raised to compensate. <b>5 · Snakes clear plants</b> — a snake that moves onto a plant with a rabbit hiding below always eats the rabbit, and then removes the plant with probability σ. <b>6 · Foxes clear plants</b> — a fox that moves onto a plant with a rabbit hiding below cannot reach it, but removes the plant with probability σ (this one is bistable: runs end up either with foxes or with plants, rarely both). In presets 3–6 the same σ is the plant-removal probability. All presets use L = 20, γ = 1, σ = 0.064, μ<sub>R</sub> = μ<sub>F</sub> = 10, μ<sub>S</sub> = 5, f = f<sub>S</sub> = 0.1, δ<sub>F</sub> = δ<sub>S</sub> = 0.1 and ½ simulation step per animation frame.</p>
 
             <h4>6. Reading the plots</h4>
-            <p>The population plot below the scene shows the fraction of sites occupied by each species against time: green for plants, orange for foxes, black for snakes, dark green for rabbits hiding under plants, and a grey band for all rabbits. The pull-down in its upper-right corner limits the plot to the last 50 … 1000 time units (the same units as on the time axis), so that fast dynamics stay visible in a long run. When any curve hits zero that species is extinct (its icon gets a red cross), and the fun is over — so the interesting question is how long all four can be kept alive. For the circular forest a density panel directly below the scene shows the time-averaged density of rabbits, foxes and snakes as a function of distance from the forest centre: you can see where the rabbits crowd, where the snakes ambush them, and how the foxes patrol the open edge. Its x axis has exactly the length of the front edge of the lattice above it (from the forest centre at the left to the lattice edge at the right in the L20★ view, or across the whole lattice for L10 and L20), and the green shading marks the forest: the band from x−1 to x is green whenever some site at that distance carries a plant. The <b>PNG-C</b> button saves the scene and this profile as one figure with matching x axes.</p>
+            <p>The population plot below the scene shows the fraction of sites occupied by each species against time: green for plants, orange for foxes, black for snakes, dark green for rabbits hiding under plants, and a grey band for all rabbits. The pull-down in its upper-right corner limits the plot to the last 50 … 1000 time units (the same units as on the time axis), so that fast dynamics stay visible in a long run. When any curve hits zero that species is extinct (its icon gets a red cross), and the fun is over — so the interesting question is how long all four can be kept alive. For the circular forest a density panel directly below the scene shows the time-averaged density of rabbits, foxes and snakes as a function of distance from the forest centre: you can see where the rabbits crowd, where the snakes ambush them, and how the foxes patrol the open edge. Its x axis has exactly the length of the front edge of the lattice above it (from the forest centre at the left to the lattice edge at the right in the L20★ view, or across the whole lattice for L10 and L20), and the green shading marks the forest: the band from x−1 to x is green whenever some site at that distance carries a plant. The <b>PNG-C</b> button saves the scene and this profile as one figure with matching x axes. Both plots carry a <b>fox, snake ÷ ε</b> switch: when the rabbit reproduction rate ε is set realistically small, the predators live on a thin trickle of prey and their densities become tiny compared with the rabbits. Because each caught rabbit yields at most one cub, the fox and snake densities scale roughly in proportion to ε, so dividing them by ε rescales the curves to the order of the rabbit density. The switch changes only what is drawn — the y axis then reads density for plants and rabbits but density/ε for foxes and snakes, and a note on the plot says so.</p>
 
             <p>The <b>interaction diagram</b> at the bottom (and its miniature in the lower-left corner of the population plot) summarises what the current rules assume: green arrows are activating links — a prey feeds its predator, and plants expose hidden rabbits to snakes — while red bars are repressing links — a predator eats its prey, plants hide rabbits from foxes, and whichever species erodes plants in the active preset (rabbits, foxes or snakes) gets a bar pointing at the plant. The diagram updates when you change the rules.</p>
 
             <h4>7. The 3-D scene and the buttons on it</h4>
             <p>When the displayed lattice is at most 25 sites wide it is drawn as a 3-D landscape: trees and animals on a meadow, and a see-through underground beneath each tree where hidden rabbits crouch and snakes go hunting. The scene always zooms to fill the display; the <i>viewing distance</i> (1.2 … 10 × L) only sets how strong the perspective is. Drag the scene to orbit it, scroll or pinch to change the perspective. The lower-left button cycles four camera presets (3D view A, 3D view B, 3D side, top view); next to it you can switch the background between white and black and save the picture as a PNG cropped tightly around the system. The lower-right corner has small copies of the Start/Pause and Reset buttons and the "steps per frame" setting. At ½ or 1 step per frame you see the animals move: rabbits hop, foxes run, snakes wiggle, a rabbit slipping under a tree lowers its ears as it crouches, a fox that catches a rabbit leaps and holds it in its jaws, and a snake that strikes swells while it swallows. At higher speeds the animation is skipped so the simulation can run fast. Foxes also show how long ago they last ate: right after a catch a fox sits fat and content, then it slims down and looks ever hungrier — ears back and a worried brow after about 3 time units without a rabbit, ribs showing and tongue out after 6 — until the next catch makes it fat again. In the close-up scenes (L10 and L20★ at ½ or ¼ step per frame) a fox or snake that dies keels over and slowly turns into a small skeleton, which then fades away; the time scale is the catch &amp; digestion time.</p>
 
-            <h4>8. Sizes: L10, L20★, L30★ …</h4>
-            <p>L is the number of sites along one side. The starred presets <b>L20★</b> and <b>L30★</b> simulate the full 20×20 or 30×30 system but display only its lower-left quarter, so that each animal is big enough to see while the dynamics still happen on a large lattice. <b>L30★</b> and <b>L50★</b> likewise show the lower-left quarter (15×15 and 25×25 sites) in 3-D, always with the camera at rotation 180° so that the forest centre sits at the front-left corner; plain L30 is shown as a flat map.</p>
+            <h4>8. Sizes: L10, L20★, L50★, L100★ …</h4>
+            <p>L is the number of sites along one side. The starred presets simulate the full system but display only the quarter next to the forest centre, so that each animal is big enough to see while the dynamics still happen on a large lattice: <b>L20★</b>, <b>L30★</b> and <b>L50★</b> show 10×10, 15×15 and 25×25 sites in 3-D, always with the camera at rotation 180° so that the forest centre sits in the lower-left (front-left) corner. <b>L100★</b> shows the 50×50 quarter of a 100×100 system as a flat map seen from above, turned the same way, so the forest centre is again in the lower-left corner. Other sizes (10 … 250) can be chosen with the lattice-size control in the Core simulation group.</p>
 
             <h4>9. Things to try</h4>
             <p>Start with the default and watch whether all four species survive. Then switch the rabbits to <i>optimize</i> — do smarter rabbits help or hurt the predators? Try <i>stupid rabbits</i>: without the hiding rule, do foxes and snakes still both make a living? Lower the frozen plant density in preset 2 until one predator disappears, and raise it until the other does. In the circular forest, look at the radial plot and ask where you would sit if you were a snake.</p>
@@ -888,7 +916,7 @@
       </div>
       <div class="card-body plot-wrap">
         <canvas id="radial" width="792" height="792"></canvas>
-        <div class="hud tr"><button type="button" id="radialPngBtn" title="Save the radial-profile plot as a PNG">PNG</button><button type="button" id="radialPng3Btn" title="Save the same radial plot compressed to one third of the height">PNG/3</button><button type="button" id="radialPngCBtn" title="Save the system as shown above with the density profile directly beneath it (profile at 40% height, x axis matching the lattice)">PNG-C</button></div>
+        <div class="hud tr"><label class="sw" title="Divide the fox and snake densities by the rabbit reproduction rate ε — useful when ε is realistically small and the predator populations become tiny"><input type="checkbox" id="radialEpsToggle"><span class="knob"></span><span><span class="long">fox, snake </span>÷ ε</span></label><button type="button" id="radialPngBtn" title="Save the radial-profile plot as a PNG">PNG</button><button type="button" id="radialPng3Btn" title="Save the same radial plot compressed to one third of the height">PNG/3</button><button type="button" id="radialPngCBtn" title="Save the system as shown above with the density profile directly beneath it (profile at 40% height, x axis matching the lattice)">PNG-C</button></div>
       </div>
     </section>
 
@@ -901,6 +929,7 @@
       <div class="card-body plot-wrap">
         <canvas id="plot" width="1100" height="460"></canvas>
         <div class="hud tr">
+          <label class="sw" title="Divide the fox and snake densities by the rabbit reproduction rate ε — useful when ε is realistically small and the predator populations become tiny"><input type="checkbox" id="plotEpsToggle"><span class="knob"></span><span><span class="long">fox, snake </span>÷ ε</span></label>
           <select id="plotWindowSelect" title="Show only the last part of the run (time units, as on the x axis)">
             <option value="50">last 50</option>
             <option value="100">last 100</option>
@@ -935,7 +964,7 @@
 
   const controls = {
     core: [
-      { id: "L", label: "Lattice size L", value: 20, min: 10, max: 150, step: 1 },
+      { id: "L", label: "Lattice size L", value: 20, min: 10, max: 250, step: 0, values: [10, 20, 30, 40, 50, 100, 150, 200, 250] },
       { id: "dt", label: "Time step Δt", value: 0.01, min: 0.001, max: 0.05, step: 0.001 },
       { id: "speed", label: "Steps per animation frame", value: 0.5, min: 0.25, max: 80, step: 0.25 },
       { id: "sampleEvery", label: "Record plot every N steps", value: 2, min: 1, max: 100, step: 1 }
@@ -943,7 +972,7 @@
     rates: [
       { id: "gamma", label: "Plant growth γ", value: 1, min: 0, max: 12, step: 0.05 },
       { id: "sigma", label: "Plant slowness / plant removal σ", value: 0.064, min: 0.001, max: 1, step: 0, values: [0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.256, 0.512, 1] },
-      { id: "epsilon", label: "Rabbit reproduction ε", value: 1.0, min: 0, max: 5, step: 0.05 },
+      { id: "epsilon", label: "Rabbit reproduction ε", value: 1.0, min: 0, max: 5, step: 0.01 },
       { id: "muR", label: "Rabbit mobility μR", value: 10, min: 1, max: 100, step: 1 },
       { id: "muF", label: "Fox mobility μF", value: 10, min: 1, max: 100, step: 1 },
       { id: "f", label: "Fox conversion f", value: 0.10, min: 0, max: 1, step: 0.005 },
@@ -971,7 +1000,7 @@
   let rabbitRemovalOnAttempt = false; // true: degrade on any move attempt onto a plant; false: only on a successful move
   let rabbitRemovalEndedBelow = false; // preset 4: each move attempt erodes the plant the rabbit ends BELOW
   let foxPlantRemoval = false;
-  let snakePlantRemoval = false;      // scenario 6: snakes erode the plants they enter
+  let snakePlantRemoval = false;      // preset 5: snakes remove the plant above a rabbit they catch
   // v49: four rabbit behaviours
   //   "always"   = shelter under plants whenever possible (default);
   //   "optimize" = each rabbit compares foxes and snakes in its 5×5 surroundings and
@@ -984,12 +1013,14 @@
   let activeScenario = 1;
   let frozenDensity = 0.24;   // preset 2 fixed plant cover (default in coexistence window)
   const scenarios = {
-    1: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: true,  rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "random", frozen: false },
+    // v69 order: 1 frozen circular forest, 2 frozen random trees, 3 moving rabbits clear plants,
+    // 4 rabbits clear plants (on every attempt), 5 snakes clear plants, 6 foxes clear plants
+    1: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "circle", frozen: true },
     2: { gamma: 1, sigma: 0.064, initPlant: 0.24, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "random", frozen: true  },
-    3: { gamma: 0.45, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: true,  snakePlantRemoval: false, plantSeedMode: "random", frozen: false },
+    3: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: true,  rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "random", frozen: false },
     4: { gamma: 10.75, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: true, rabbitRemovalOnAttempt: true, rabbitRemovalEndedBelow: true, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "random", frozen: false },
-    5: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: false, plantSeedMode: "circle", frozen: true },
-    6: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: true,  plantSeedMode: "random", frozen: false }
+    5: { gamma: 1, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: false, snakePlantRemoval: true,  plantSeedMode: "random", frozen: false },
+    6: { gamma: 0.45, sigma: 0.064, initPlant: 0.45, rabbitPlantRemoval: false, rabbitRemovalOnAttempt: false, foxPlantRemoval: true,  snakePlantRemoval: false, plantSeedMode: "random", frozen: false }
   };
   const maxLocalPredators = 1000; // browser-safety cap per site; still allows many predators per site.
   const maxStoredHistoryPoints = 50000; // adaptive thinning keeps long runs from exhausting memory.
@@ -1076,6 +1107,7 @@
     if (id === "worldSize") resizeWorldCanvas();
     if (id === "L" && typeof updateLToggle === "function") updateLToggle();
     if (id === "speed" && typeof updateFastButton === "function") updateFastButton();
+    if (id === "epsilon" && typeof predScaleOn !== "undefined" && predScaleOn) { drawPlot(); drawMiniPlot(); drawRadial(); } // v67: rescaled curves follow ε
   }
 
   function updateBirthRuleButton() {
@@ -1148,8 +1180,8 @@
 
   // v49: the upper-left switch on the display bundles behaviour + starting conditions
   function currentModeKey() {
-    if (activeScenario === 5 && rabbitShelterMode === "none" && Math.abs(frozenDensity - 0.5) < 1e-9) return "forest";
-    if (activeScenario === 1) {
+    if (activeScenario === 1 && rabbitShelterMode === "none" && Math.abs(frozenDensity - 0.5) < 1e-9) return "forest";
+    if (activeScenario === 3) {
       if (rabbitShelterMode === "always") return "hide";
       if (rabbitShelterMode === "optimize") return "optimize";
       if (rabbitShelterMode === "none") return "stupid";
@@ -1167,11 +1199,11 @@
       const fs = document.getElementById("frozenDensity"), fv = document.getElementById("frozenDensityVal");
       if (fs) fs.value = "0.5";
       if (fv) fv.textContent = "0.50";
-      applyScenario(5);
+      applyScenario(1);
       applyViewPreset(4); // v55: dense forest is shown with rotation 180° (forest centre at the left)
     } else if (key === "optimize" || key === "stupid" || key === "hide") {
       rabbitShelterMode = key === "hide" ? "always" : (key === "optimize" ? "optimize" : "none");
-      applyScenario(1);
+      applyScenario(3);
     }
     updateRabbitShelterButton();
     drawStatus();
@@ -1269,6 +1301,14 @@
     if (typeof drawRadial === "function") drawRadial();
   }
 
+  // v68: one place that keeps the freeze button in step with plantsFrozen
+  function updateFreezeButton() {
+    const fb = document.getElementById("freezeBtn");
+    if (!fb) return;
+    fb.textContent = plantsFrozen ? "Plants frozen — click to unfreeze" : "Freeze plants now";
+    fb.classList.toggle("primary", plantsFrozen);
+    fb.title = plantsFrozen ? "Plants neither grow nor get removed while frozen (γ and the removal rules are ignored)" : "Stop all plant growth and plant removal from now on";
+  }
   function reset() {
     L = Math.max(2, Math.round(params.L));
     N = L * L;
@@ -1284,11 +1324,12 @@
     history = [];
     historyYMax = 0.02;
     historyStride = 1;
-    plantsFrozen = false;
+    // v68: a reset keeps the plants frozen if they were — before, every Reset
+    // silently unfroze the "frozen forest", so plants grew back and were removed again
     motionTraces.length = 0;
     killTraces.length = 0;
     deathTraces.length = 0;
-    document.getElementById("freezeBtn").textContent = "Freeze plants now";
+    updateFreezeButton();
 
     const forestCx = (L - 1) / 2, forestCy = (L - 1) / 2;
     // Circular forest: a fully-filled disc whose AREA equals the tree density,
@@ -1383,12 +1424,28 @@
         return { xa, xb, reverse, symmetric: false };
       }
     }
-    return cornerView ? { xa: 0, xb: W, reverse: true, symmetric: false } : { xa: W / 2, xb: W, reverse: false, symmetric: false };
+    return cornerView ? { xa: 0, xb: W, reverse: false, symmetric: false } : { xa: W / 2, xb: W, reverse: false, symmetric: false }; // v69: flat corner view is turned 180°, centre at the left
   }
 
   // opts (all optional): x0 / w = plot-area x range in canvas pixels, reverse,
   // symmetric, k = font scale. Without opts the plot area follows the lattice
   // edge of the world canvas (same width as the radial canvas).
+  // ---- v67: optional rescaling of the predator curves by 1/ε ----
+  // With a realistically small rabbit reproduction ε the foxes and snakes become
+  // very rare; their densities scale roughly like ε, so dividing by ε brings them
+  // back to the order of the rabbit density. Only the drawing is affected.
+  let predScaleOn = false;
+  function predScale() { return predScaleOn && params.epsilon > 0 ? 1 / params.epsilon : 1; }
+  function predScaleLabel() { return predScaleOn && params.epsilon > 0 ? `fox & snake densities ÷ ε   (ε = ${params.epsilon})` : ""; }
+  function setPredScale(on) {
+    predScaleOn = !!on;
+    ["plotEpsToggle", "radialEpsToggle"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.checked = predScaleOn; el.parentElement.classList.toggle("on", predScaleOn); }
+    });
+    drawPlot(); drawMiniPlot(); drawRadial();
+  }
+
   function drawRadial(target, opts) {
     const cv = target || radialCanvas;
     if (!cv || plantSeedMode !== "circle" || !radial.site) return;
@@ -1408,14 +1465,15 @@
     const y0 = 58 * k, h = H - 140 * k;
     const n = radial.bins, S = Math.max(1, radial.samples);
     const dens = (arr) => Array.from({ length: n }, (_, b) => radial.count[b] ? arr[b] / (S * radial.count[b]) : 0);
-    const R = dens(radial.r), F = dens(radial.f), Sn = dens(radial.s), P = dens(radial.p);
+    const ps = predScale();
+    const R = dens(radial.r), F = dens(radial.f).map(v => v * ps), Sn = dens(radial.s).map(v => v * ps), P = dens(radial.p);
     // empty annuli (e.g. r = 0 for even L) borrow the plant fraction of the next one
     for (let b = n - 2; b >= 0; b--) if (!radial.count[b]) P[b] = P[b + 1];
     // distance range: 0 … L/2 from the forest centre to the lattice edge
     const dMax = L / 2, dMin = 0;
     let yMax = 0.02;
     for (let b = 0; b < n; b++) { if (b <= dMax + 0.5) yMax = Math.max(yMax, R[b], F[b], Sn[b]); }
-    yMax = Math.min(1, yMax * 1.18); // v56: the y axis never extends beyond 1
+    yMax = ps > 1 ? yMax * 1.18 : Math.min(1, yMax * 1.18); // v56: the y axis never extends beyond 1 (v67: unless the predators are rescaled)
     const px = (d) => { const f = (d - dMin) / (dMax - dMin); return x0 + (reverse ? 1 - f : f) * w; };
     const py = (v) => y0 + h - (v / yMax) * h;
     const pxc = (d) => Math.max(x0, Math.min(x0 + w, px(d)));
@@ -1514,7 +1572,13 @@
       // v61: left edge aligned with the y-axis numbers
       const sample = (major / 2 * 2).toFixed(decimals).replace(/^0\./, ".");
       const numLeft = x0 - 8 * k - ctx.measureText(sample).width;
-      ctx.fillText("Density", labelsOutside ? numLeft : x0 + 6 * k, y0 - 12 * k);
+      const dx = labelsOutside ? numLeft : x0 + 6 * k;
+      ctx.fillText("Density", dx, y0 - 12 * k);
+      const note = predScaleLabel();
+      if (note) { // v67: rescaled predators
+        ctx.save(); ctx.font = `${22 * k}px sans-serif`; ctx.fillStyle = "#c46a0e";
+        ctx.fillText(note, dx + ctx.measureText("Density  ").width * 1.2, y0 - 12 * k); ctx.restore();
+      }
     }
     const xl = "distance from forest centre (lattice units)";
     ctx.fillText(xl, Math.min(x0 + w, W - 4 * k) - ctx.measureText(xl).width, H - 14 * k);
@@ -1849,6 +1913,7 @@
       const m = arrivals[j];
       if (!m) continue;
       addCapped(nextSnakes, j, m);
+      const rabbitBelow = plants[j] === 1 && rabbits[j] === 1; // v69: remembered before the meal
       if (plants[j] && rabbits[j]) {
         rabbits[j] = 0;
         glow[j] = 1;
@@ -1856,11 +1921,11 @@
         traceKill("snake", j, arriveFrom[j]);
         if (Math.random() < pBirth) addSnakeOffspring(j, nextSnakes);
       }
-      // Scenario 6: snakes erode the plants they crawl into. With m arrivals the
-      // removal probability is 1-(1-sigma)^m, matching the fox plant-removal rule.
-      if (snakePlantRemoval && !plantsFrozen && plants[j]) {
-        const pRemove = 1 - Math.pow(1 - clampProb(params.sigma), m);
-        if (Math.random() < pRemove) plants[j] = 0;
+      // Preset 5 (v70): a snake that moves onto a plant with a rabbit hiding below
+      // always eats the rabbit (above); the plant is then removed with probability
+      // exactly σ — one roll per meal, however many snakes arrived together.
+      if (snakePlantRemoval && !plantsFrozen && rabbitBelow) {
+        if (Math.random() < clampProb(params.sigma)) plants[j] = 0;
       }
     }
 
@@ -3420,6 +3485,10 @@
     if (bgBtn) bgBtn.addEventListener("click", () => { darkBg = !darkBg; spriteCache.clear(); updateBgButton(); drawWorld(); });
     const lpBtn = document.getElementById("latticePngBtn");
     if (lpBtn) lpBtn.addEventListener("click", () => exportLatticePNG());
+    ["plotEpsToggle", "radialEpsToggle"].forEach(id => { // v67
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("change", () => setPredScale(el.checked));
+    });
     const pwSel = document.getElementById("plotWindowSelect");
     if (pwSel) pwSel.addEventListener("change", () => { plotWindowTime = Number(pwSel.value) || 0; drawPlot(); drawMiniPlot(); });
     const ppCBtn = document.getElementById("plotPngCBtn");
@@ -3531,6 +3600,11 @@
     ctx.clearRect(0, 0, W, W);
     ctx.fillStyle = darkBg ? "#0b1013" : "#ffffff";
     ctx.fillRect(0, 0, W, W);
+    // v69: the flat map of a starred preset is turned by 180° like the 3D scene, so the
+    // forest centre (the lattice centre) sits in the lower-left corner of the display
+    const turn = cornerView;
+    const cvT = (i) => { const v = cellView(i); return v && turn ? [Ld - 1 - v[0], Ld - 1 - v[1]] : v; };
+    const tx = (x) => turn ? Ld - 1 - x : x;
 
     const nowMs = performance.now();
     const glowDecay = params.speed > 1 ? 0.84 : 0.975; // v37: kill flashes linger ~2.5 s at watching speeds
@@ -3541,13 +3615,13 @@
 
     for (let i = 0; i < N; i++) {
       if (!plants[i]) continue;
-      const v = cellView(i);
+      const v = cvT(i);
       if (!v) continue;
       drawPlantC(ctx, v[0] * s + s * 0.05, v[1] * s + s * 0.05, s * 0.9); // v51: 10% smaller
     }
     for (let i = 0; i < N; i++) {
       if (!rabbits[i] && !foxes[i] && !snakes[i]) continue;
-      const v = cellView(i);
+      const v = cvT(i);
       if (!v) continue;
       const x = v[0] * s;
       const y = v[1] * s;
@@ -3561,12 +3635,13 @@
     // animals in motion between lattice sites: rabbits hop, foxes run, snakes wiggle
     const offY2 = L - Ld;
     for (const tr of motionTraces) {
-      const fy = tr.fy - offY2, ty = tr.ty - offY2;
-      if (tr.fx >= Ld || tr.tx >= Ld || fy < 0 || ty < 0) continue;
+      const fy0 = tr.fy - offY2, ty0 = tr.ty - offY2;
+      if (tr.fx >= Ld || tr.tx >= Ld || fy0 < 0 || ty0 < 0) continue;
+      const fx = tx(tr.fx), txx = tx(tr.tx), fy = tx(fy0), ty = tx(ty0);
       const u = Math.max(0, Math.min(1, (nowMs - tr.start) / tr.dur));
-      let px = (tr.fx + (tr.tx - tr.fx) * u) * s;
+      let px = (fx + (txx - fx) * u) * s;
       let py = (fy + (ty - fy) * u) * s;
-      const flip = tr.tx < tr.fx;
+      const flip = txx < fx;
       if (tr.kind === "rabbit") {
         py -= Math.sin(Math.PI * u) * s * 0.35;
         drawFlipped(drawRabbitC, ctx, px + o2, py + o2, s2, tr.cf + (tr.ct - tr.cf) * u, flip);
@@ -3575,20 +3650,21 @@
         drawFlipped(drawFoxC, ctx, px + o2, py + o2, s2, 1, flip);
       } else {
         const wig = Math.sin(u * Math.PI * 4) * s * 0.10;
-        px += -(tr.ty - tr.fy) * wig;
-        py += (tr.tx - tr.fx) * wig;
+        px += -(ty - fy) * wig;
+        py += (txx - fx) * wig;
         drawFlipped(drawSnakeC, ctx, px + o2, py + o2, s2, 1, flip);
       }
     }
     for (const kt of killTraces) {
-      const kfy = kt.fy - offY2;
-      if (kt.fx >= Ld || kfy < 0) continue;
+      const kfy0 = kt.fy - offY2;
+      if (kt.fx >= Ld || kfy0 < 0) continue;
+      const kfx = tx(kt.fx), kfy = tx(kfy0), kflip = turn ? !kt.flip : kt.flip;
       const ku = Math.max(0, Math.min(1, (nowMs - kt.start) / kt.dur));
       if (kt.kind === "snake") {
         const fnS = (c, xx, yy, ss) => drawSnake(c, xx, yy, ss, 1, ku);
-        drawFlipped(fnS, ctx, kt.fx * s + o2, kfy * s + o2, s2, 1, kt.flip);
+        drawFlipped(fnS, ctx, kfx * s + o2, kfy * s + o2, s2, 1, kflip);
       } else {
-        drawFlipped(drawFoxPounce, ctx, kt.fx * s + o2, kfy * s + o2, s2, ku, kt.flip);
+        drawFlipped(drawFoxPounce, ctx, kfx * s + o2, kfy * s + o2, s2, ku, kflip);
       }
     }
 
@@ -3598,7 +3674,7 @@
       for (let i = 0; i < N; i++) {
         const g = glow[i];
         if (g <= 0.02) { if (g) glow[i] = 0; continue; }
-        const v = cellView(i);
+        const v = cvT(i);
         if (!v) { glow[i] = g * glowDecay; continue; }
         const gcx = v[0] * s + s * 0.5;
         const gcy = v[1] * s + s * 0.5;
@@ -3659,14 +3735,14 @@
     return mult * pow;
   }
 
-  function drawLine(ctx, data, field, color, x0, y0, w, h, yMax, firstT, lastT) {
+  function drawLine(ctx, data, field, color, x0, y0, w, h, yMax, firstT, lastT, scale = 1) {
     if (data.length < 2) return;
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.beginPath();
     for (let i = 0; i < data.length; i++) {
       const x = plotX(data[i], firstT, lastT, x0, w, i, data.length);
-      const y = plotY(data[i][field], y0, h, yMax);
+      const y = plotY(data[i][field] * scale, y0, h, yMax);
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.stroke();
@@ -3695,14 +3771,15 @@
     // Autoscale to the largest density seen in the last 70% of the simulated time,
     // so an early transient spike stops dictating the scale once it scrolls away.
     const scaleCutoff = firstT + 0.30 * spanT;
+    const ps = predScale(); // v67
     let visibleMax = 0.02;
     for (const d of data) {
       if (d.t < scaleCutoff) continue;
       if (d.plants > visibleMax) visibleMax = d.plants;
       if (d.allRabbits > visibleMax) visibleMax = d.allRabbits;
       if (d.rabbitsBelowPlants > visibleMax) visibleMax = d.rabbitsBelowPlants;
-      if (d.foxes > visibleMax) visibleMax = d.foxes;
-      if (d.snakes > visibleMax) visibleMax = d.snakes;
+      if (d.foxes * ps > visibleMax) visibleMax = d.foxes * ps;
+      if (d.snakes * ps > visibleMax) visibleMax = d.snakes * ps;
     }
     const yMax = visibleMax * 1.24;
     const niceMax = Math.max(0.1, yMax);
@@ -3762,9 +3839,9 @@
       }
       ctx.closePath(); ctx.fill();
 
-      drawLine(ctx, data, "foxes", "#f08a24", x0, y0, w, h, niceMax, firstT, lastT);
-      drawLine(ctx, data, "snakes", "#050505", x0, y0, w, h, niceMax, firstT, lastT);
-      ctx.setLineDash([10, 10]); drawLine(ctx, data, "snakes", "#d92b1f", x0, y0, w, h, niceMax, firstT, lastT); ctx.setLineDash([]);
+      drawLine(ctx, data, "foxes", "#f08a24", x0, y0, w, h, niceMax, firstT, lastT, ps);
+      drawLine(ctx, data, "snakes", "#050505", x0, y0, w, h, niceMax, firstT, lastT, ps);
+      ctx.setLineDash([10, 10]); drawLine(ctx, data, "snakes", "#d92b1f", x0, y0, w, h, niceMax, firstT, lastT, ps); ctx.setLineDash([]);
       drawLine(ctx, data, "rabbitsBelowPlants", "#2d8a43", x0, y0, w, h, niceMax, firstT, lastT);
       drawLine(ctx, data, "allRabbits", "#9a9a9a", x0, y0, w, h, niceMax, firstT, lastT);
       drawLine(ctx, data, "plants", "#44aa55", x0, y0, w, h, niceMax, firstT, lastT);
@@ -3784,7 +3861,8 @@
       const onCurve = (field, frac) => {
         const i = Math.max(0, Math.min(data.length - 1, Math.round(frac * (data.length - 1))));
         const px = plotX(data[i], firstT, lastT, x0, w, i, data.length);
-        let py = plotY(data[i][field], y0, h, niceMax);
+        const sc = (field === "foxes" || field === "snakes") ? ps : 1; // v67
+        let py = plotY(data[i][field] * sc, y0, h, niceMax);
         py = Math.max(y0 + iconS / 2, Math.min(y0 + h - iconS / 2, py));
         return [px - iconS / 2, py - iconS / 2];
       };
@@ -3809,6 +3887,16 @@
     }
     // v56: mini interaction diagram in the lower-left corner of the plot
     drawInteractionMini(ctx, x0 + 6, y0 + h - 6 - 180, 180, 180); // v57: 20% larger
+
+    // v67: say so when the predator curves are rescaled
+    {
+      const note = predScaleLabel();
+      if (note) {
+        ctx.save(); ctx.font = "bold 22px sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+        ctx.lineWidth = 6; ctx.strokeStyle = "rgba(255,255,255,0.9)"; ctx.strokeText(note, x0 + 12, y0 + 30);
+        ctx.fillStyle = "#c46a0e"; ctx.fillText(note, x0 + 12, y0 + 30); ctx.restore();
+      }
+    }
 
     // v64: no legend text — the icons on the curves identify the species
   }
@@ -3865,14 +3953,15 @@
 
     // Same autoscale rule as the main plot: ignore the first 30% of the run.
     const scaleCutoff = firstT + 0.30 * spanT;
+    const ps = predScale(); // v67
     let visibleMax = 0.02;
     for (const d of data) {
       if (d.t < scaleCutoff) continue;
       if (d.plants > visibleMax) visibleMax = d.plants;
       if (d.allRabbits > visibleMax) visibleMax = d.allRabbits;
       if (d.rabbitsBelowPlants > visibleMax) visibleMax = d.rabbitsBelowPlants;
-      if (d.foxes > visibleMax) visibleMax = d.foxes;
-      if (d.snakes > visibleMax) visibleMax = d.snakes;
+      if (d.foxes * ps > visibleMax) visibleMax = d.foxes * ps;
+      if (d.snakes * ps > visibleMax) visibleMax = d.snakes * ps;
     }
     const niceMax = Math.max(0.1, visibleMax * 1.24);
 
@@ -3900,8 +3989,8 @@
       }
       ctx.closePath(); ctx.fill();
 
-      drawLine(ctx, data, "foxes", "#f08a24", x0, y0, w, h, niceMax, firstT, lastT);
-      drawLine(ctx, data, "snakes", "#050505", x0, y0, w, h, niceMax, firstT, lastT);
+      drawLine(ctx, data, "foxes", "#f08a24", x0, y0, w, h, niceMax, firstT, lastT, ps);
+      drawLine(ctx, data, "snakes", "#050505", x0, y0, w, h, niceMax, firstT, lastT, ps);
       drawLine(ctx, data, "rabbitsBelowPlants", "#2d8a43", x0, y0, w, h, niceMax, firstT, lastT);
       drawLine(ctx, data, "allRabbits", "#666666", x0, y0, w, h, niceMax, firstT, lastT);
       drawLine(ctx, data, "plants", "#44aa55", x0, y0, w, h, niceMax, firstT, lastT);
@@ -3958,11 +4047,11 @@
   function drawStatus() {
     const c = countPopulations();
     const model = randomNeighborModel ? "Random-neighbor / well mixed targets" : "Local nearest-neighbor targets";
-    const freeze = plantsFrozen ? `plants frozen at t=${time.toFixed(2)}` : "plants dynamic";
+    const freeze = plantsFrozen ? "plants frozen (no growth, no removal)" : "plants dynamic";
     statusEl.innerHTML = `
       <span><b>t</b> ${time.toFixed(2)}</span>
       <span><b>step</b> ${stepNumber}</span>
-      <span><b>L</b> ${L}×${L}${cornerView && dispL() < L ? ` (showing lower-left ${dispL()}×${dispL()})` : ""}</span>
+      <span><b>L</b> ${L}×${L}${cornerView && dispL() < L ? ` (showing the ${dispL()}×${dispL()} quarter around the centre)` : ""}</span>
       <span><b>plants</b> ${(c.plantCount / N).toFixed(3)}</span>
       <span><b>all rabbits</b> ${(c.rabbitCount / N).toFixed(3)}</span>
       <span><b>rabbits below plants</b> ${(c.rabbitBelowPlant / N).toFixed(3)}</span>
@@ -4363,7 +4452,7 @@
 
   document.getElementById("freezeBtn").addEventListener("click", () => {
     plantsFrozen = !plantsFrozen;
-    document.getElementById("freezeBtn").textContent = plantsFrozen ? "Unfreeze plants" : "Freeze plants now";
+    updateFreezeButton();
     clearScenarioHighlight();
     drawStatus();
   });
@@ -4405,7 +4494,7 @@
     setControlValue("gamma", sc.gamma);
     setControlValue("sigma", sc.sigma);
     setControlValue("muS", 5); // v50: all presets use snake mobility 5
-    setControlValue("initPlant", (n === 2 || n === 5) ? frozenDensity : sc.initPlant);
+    setControlValue("initPlant", (n === 1 || n === 2) ? frozenDensity : sc.initPlant);
     rabbitPlantRemoval = sc.rabbitPlantRemoval;
     rabbitRemovalOnAttempt = sc.rabbitRemovalOnAttempt;
     foxPlantRemoval = sc.foxPlantRemoval;
@@ -4416,12 +4505,8 @@
     updateRabbitPlantModeButton();
     updateFoxPlantButton();
     updateSnakePlantButton();
+    plantsFrozen = !!sc.frozen; // v68: the scenario decides; reset() keeps it
     reset();
-    if (sc.frozen) {
-      plantsFrozen = true;
-      const fb = document.getElementById("freezeBtn");
-      if (fb) fb.textContent = "Unfreeze plants";
-    }
     activeScenario = n;
     updateScenarioButtons();
     updateLToggle();
@@ -4437,19 +4522,17 @@
   document.getElementById("scenario6Btn").addEventListener("click", () => applyScenario(6));
   function reseedFrozen() {
     setControlValue("initPlant", frozenDensity);
-    reset();
     plantsFrozen = true;
-    const fb = document.getElementById("freezeBtn");
-    if (fb) fb.textContent = "Unfreeze plants";
+    reset();
     drawAll();
   }
   function updateLToggle() {
     const cur = Math.round(params.L);
-    for (const n of [10, 20, 30, 50]) {
+    for (const n of [10, 20, 50]) {
       const btn = document.getElementById("Lpreset" + n);
       if (btn) btn.classList.toggle("primary", cur === n && !cornerView);
     }
-    for (const n of [20, 30, 50]) {
+    for (const n of [20, 30, 50, 100]) {
       const btn = document.getElementById("Lpreset" + n + "c");
       if (btn) btn.classList.toggle("primary", cur === n && cornerView);
     }
@@ -4459,10 +4542,10 @@
     cornerView = !!corner;
     setControlValue("L", n);
     if (activeScenario) applyScenario(activeScenario); else { reset(); drawAll(); }
-    if (corner && n >= 30) applyViewPreset(4); // v56: L30★ and L50★ open in 3D at rotation 180°
+    if (corner) applyViewPreset(4); // v69: every starred preset opens at rotation 180° — forest centre in the lower-left corner
     updateLToggle();
   }
-  [10, 20, 30, 50].forEach((n) => {
+  [10, 20, 30, 50, 100].forEach((n) => {
     const btn = document.getElementById("Lpreset" + n);
     if (btn) btn.addEventListener("click", () => setPresetL(n, false));
     const cbtn = document.getElementById("Lpreset" + n + "c");
@@ -4474,7 +4557,7 @@
     frozenSlider.addEventListener("input", () => {
       frozenDensity = Number(frozenSlider.value);
       if (frozenVal) frozenVal.textContent = frozenDensity.toFixed(2);
-      if (activeScenario === 2 || activeScenario === 5) reseedFrozen();
+      if (activeScenario === 1 || activeScenario === 2) reseedFrozen();
     });
   }
 
