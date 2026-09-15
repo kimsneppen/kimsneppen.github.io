@@ -520,9 +520,9 @@ export default function App() {
                   Co-authored with G. Zocchi, Cambridge University Press, 2005
                 </p>
                 <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
-                  A graduate-level synthesis of basic concepts in Biophysics, including polymer physics, random walks, 
+                  A synthesis of basic concepts in Biophysics, including polymer physics, 
                   helix-coil transition, protein folding, 
-                  and Genetic regulation motivated by model organisms from the world of bacteriophages.
+                  and Genetic regulation motivated by the world of bacteriophages.
                 </p>
               </div>
               <div>
@@ -531,10 +531,9 @@ export default function App() {
                   Cambridge University Press, 2014
                 </p>
                 <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
-                  A graduate-level approach to model building in living systems. Focusses on within cell noise, gene regulation and epigenetics
+                  Model building in living systems. Focusses on within cell noise, gene regulation and epigenetics
                   but also includes introduction to networks,
-                  organisms, and ecosystems. The book gathers two decades of teaching and
-                  research at the interface of physics and biology.
+                  organisms, and ecosystems. 
                 </p>
               </div>
               <div>
@@ -543,9 +542,9 @@ export default function App() {
                   Lecture notes
                 </p>
                 <p className="mt-5 text-[15.5px] leading-[1.75] text-foreground/85">
-                  Lecture notes from my course on complex physics, covering topics of
-                  statistical mechanics, percolation, self-organization,
-                  networks, agent based models and econophysics.{" "}
+                  Lecture notes in Complex Physics, covering
+                  equilibrium statistical mechanics, percolation, self-organization,
+                  agent based models, networks, econophysics and dynamics of fronts.{" "}
                   <a
                     href="/Complex-Physics.pdf"
                     target="_blank"
