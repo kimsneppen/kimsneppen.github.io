@@ -433,7 +433,7 @@ export default function App() {
         <section id="about" className={sectionClass}>
           <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
             <p>
-            Researched ways to understand life mechanism in terms of algorithms and models.
+            Research life mechanism in terms of algorithms and models.
             </p>
           </div>
         </section>
