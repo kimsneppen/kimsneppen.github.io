@@ -430,13 +430,7 @@ export default function App() {
           </div>
         </section>
         
-        <section id="about" className={sectionClass}>
-          <div className="reveal mt-10 measure space-y-6 text-[17px] leading-[1.75] text-foreground/85">
-            <p>
-            Research life mechanism in terms of algorithms and models.
-            </p>
-          </div>
-        </section>
+        
 
         {/* INTERACTIVE MODELS */}
         <section id="models" className={sectionClass}>
