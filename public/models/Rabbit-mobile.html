@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Rabbit-Fox-Snake-Plant ABM — v70</title>
+<title>Rabbit-Fox-Snake-Plant ABM — v74</title>
 <style>
   :root {
     --lattice-w: 792px;
@@ -247,6 +247,45 @@
   }
   .lock-btn.locked { background: #20281f; border-color: #20281f; color: #fff; }
 
+  /* ---- v71: option buttons always show their current state ----
+     Two-way choices are segmented controls (the active half is orange); every
+     other rule button carries a chip with its present value: orange = switched
+     on, dark = the chosen variant, grey = off. */
+  .seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--line-2);
+    border-radius: 9px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .seg button { border: 0; border-radius: 0; border-left: 1px solid var(--line-2); color: var(--muted); background: #fff; box-shadow: none; }
+  .seg button:first-child { border-left: 0; }
+  .seg button:hover { background: #f1f0ea; }
+  .seg button.primary { background: var(--accent); color: #fff; box-shadow: none; }
+  .seg button.primary:hover { background: var(--accent-d); }
+  button.opt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    text-align: left;
+  }
+  button.opt .st {
+    flex: none;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #e9ece8;
+    border: 1px solid var(--line-2);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  button.opt .st.on { background: var(--accent); border-color: var(--accent-d); color: #fff; }
+  button.opt .st.set { background: var(--accent); border-color: var(--accent-d); color: #fff; } /* v72: chosen variant is orange too */
+
   /* ---- Main column cards ---- */
   .card {
     background: var(--card);
@@ -281,7 +320,7 @@
   .swatch.plant  { background: radial-gradient(circle at 35% 32%, #b8f79d, #2f9e54 70%, #0c5a26); }
   .swatch.rabbit { background: radial-gradient(circle at 35% 32%, #fdfdfe, var(--rabbit) 78%); }
   .swatch.fox    { background: radial-gradient(circle at 35% 32%, #f7ad57, var(--fox) 72%, #b85c12); }
-  .swatch.snake  { background: radial-gradient(circle at 35% 32%, #6d7d62, var(--snake) 75%, #1f2820); border-radius: 4px; }
+  .swatch.snake  { background: radial-gradient(circle at 35% 32%, #ffff9e, #ffe70a 70%, #c49b00); border-radius: 4px; } /* v71: yellow in 2D and 3D */
   /* afterglow legend chips: render as soft glowing rings, not solid species dots */
   .swatch.glow-fox {
     border: none;
@@ -673,9 +712,12 @@
   .v3dist-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
   .v3dist-row button { padding: 5px 0; font-size: 11px; font-weight: 700; flex: 1 1 34px; min-width: 34px; border-radius: 7px; }
   .v3dist-row button.primary { background: var(--accent); color: #fff; border-color: var(--accent-d); }
+  .hud.tl, .hud.bl { flex-wrap: wrap; }
+  .hud.tl { max-width: calc(100% - 24px); }
+  .hud.bl { max-width: calc(100% - 150px); } /* v71: leaves room for the Start/Reset stack on the right */
   @media (max-width: 640px) {
     .hud.tl { top: 8px; left: 8px; }
-    .hud.bl { bottom: 8px; left: 8px; }
+    .hud.bl { bottom: 8px; left: 8px; max-width: calc(100% - 128px); }
     .hud.br { bottom: 8px; right: 8px; }
     .hud button, .hud select { font-size: 11px; padding: 5px 7px; min-height: 30px; }
     .hud .hud-label { display: none; }
@@ -693,7 +735,7 @@
 <body>
 <div class="app">
   <aside>
-    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v70</span></div>
+    <div class="group-label" style="margin-top:0;display:flex;justify-content:space-between;align-items:baseline;">Run <span class="brand-tag">ABM · v74</span></div>
     <div class="button-row run-row">
       <button id="runBtn" class="primary">Start</button>
       <button id="stepBtn">One step</button>
@@ -739,14 +781,12 @@
 
     <div class="group-label">Model &amp; rules</div>
     <div class="button-row">
-      <button id="modeBtn">Local neighbors</button>
-      <button id="birthRuleBtn">Rabbit births: anywhere</button>
-      <button id="rabbitShelterBtn" class="span-2">Rabbit shelter: always under plants</button>
-      <button id="rabbitPlantBtn">Rabbit plant removal: on</button>
-      <button id="rabbitPlantModeBtn">Removal trigger: on successful move</button>
-      <button id="foxPlantBtn">Fox plant removal: off</button>
-      <button id="snakePlantBtn">Snake plant removal: off</button>
-      <button id="freezeBtn" class="span-2">Freeze plants now</button>
+      <div class="seg span-2" role="group" aria-label="Neighbor model">
+        <button type="button" id="modeLocalBtn" class="primary" title="Movement, reproduction and plant growth target one of the four nearest neighbors">Local neighbors</button>
+        <button type="button" id="modeRandomBtn" title="Movement, reproduction and plant growth target a random site anywhere on the lattice (well-mixed / global)">Random neighbor (global)</button>
+      </div>
+      <button id="rabbitShelterBtn" class="span-2 opt">Rabbit shelter strategy</button>
+      <button id="birthRuleBtn" class="span-2 opt">Rabbit births</button>
     </div>
 
     <div class="group-label">Plot &amp; export</div>
@@ -818,14 +858,14 @@
           <div class="frozen-head"><label for="v3Kill">Catch &amp; digestion time (fox &amp; snake)</label><span class="frozen-val" id="v3KillVal">2.00 s</span></div>
           <input id="v3Kill" type="range" min="300" max="4000" step="20" value="2000" />
         </div>
-        <p class="hint">Active when the displayed lattice is ≤ 25 sites wide (L ≤ 20, L20★, L30★, L50★) — larger lattices (L100★ and up) fall back to the flat map seen from above. Snakes (yellow in 3D) travel on the surface and dive into the burrow layer, which exists only beneath bushes; rabbits sheltering below a bush hide down there too. You can also drag the scene to orbit and scroll on it to zoom.</p>
+        <p class="hint">Active when the displayed lattice is ≤ 25 sites wide (L ≤ 20, L20★, L30★, L50★) — larger lattices (L100★ and up) fall back to the flat map seen from above. Snakes (yellow) travel on the surface and dive into the burrow layer, which exists only beneath bushes; rabbits sheltering below a bush hide down there too. You can also drag the scene to orbit and scroll on it to zoom.</p>
       </div>
     </details>
 
 
 
-    <p class="hint"><b>Freeze plants now</b> locks the current plant cover: no plant growth, no rabbit plant-removal, and no optional fox plant-removal. Press again to unfreeze.</p>
-    <p class="hint"><b>Random-neighbor model</b> sends movement, reproduction, and plant growth targets to a random lattice site instead of a nearest neighbor.</p>
+    <p class="hint">Plant rules (frozen cover, and which species removes plants) are set by the scenario presets at the top of the panel.</p>
+    <p class="hint"><b>Random neighbor (global)</b> sends movement, reproduction, and plant growth targets to a random lattice site instead of a nearest neighbor. The orange half of the switch — and the Local/Global button on the display — show which model is active.</p>
   </aside>
 
     <main>
@@ -846,7 +886,7 @@
             <p class="intro">Classical predator-prey models limit the coexistence of different predators due to competitive exclusion [1, 2]. However, real ecosystems contain interactions that go beyond mere predation. Here, we propose to extend these systems by allowing for plants that allow for shelters. We explore the interaction rules that make plants facilitate biodiversity.</p>
 
             <h4>1. The cast: four species on a chessboard</h4>
-            <p>The world is a square grid of sites (a lattice) that wraps around at the edges, like the map in an old video game. Four kinds of things live on it. <b>Plants</b> (green trees) cover some sites and spread slowly to neighbouring sites. <b>Rabbits</b> (grey) hop between neighbouring sites, breed, and eat nothing in the model — they are simply food. <b>Foxes</b> (orange) run around and eat rabbits, but only rabbits standing in the open. <b>Snakes</b> (yellow in the 3-D scene) also roam, but they only eat rabbits that are hiding under a plant. So the plant is both a shelter <i>and</i> a trap: it protects a rabbit from foxes but exposes it to snakes.</p>
+            <p>The world is a square grid of sites (a lattice) that wraps around at the edges, like the map in an old video game. Four kinds of things live on it. <b>Plants</b> (green trees) cover some sites and spread slowly to neighbouring sites. <b>Rabbits</b> (grey) hop between neighbouring sites, breed, and eat nothing in the model — they are simply food. <b>Foxes</b> (orange) run around and eat rabbits, but only rabbits standing in the open. <b>Snakes</b> (yellow) also roam, but they only eat rabbits that are hiding under a plant. So the plant is both a shelter <i>and</i> a trap: it protects a rabbit from foxes but exposes it to snakes.</p>
 
             <h4>2. Why two predators normally cannot share one prey</h4>
             <p>In textbook ecology, two predators competing for exactly the same food usually cannot coexist: whichever one is slightly better at catching rabbits will eventually crowd the other out. This is called <i>competitive exclusion</i>. Our twist is that foxes and snakes do not hunt the same rabbits — foxes hunt the exposed ones, snakes hunt the hidden ones. The plants split one prey into two "kinds", and that can be enough to let both predators survive. The question the model asks is: which rules about plants, rabbits and predators make this coexistence work?</p>
@@ -858,15 +898,15 @@
             <p>The pull-down in the upper-left corner of the display (and the <b>Rabbit shelter</b> button in the control panel) chooses how clever the rabbits are. <b>Rabbits damage and hide</b>: a rabbit never leaves a plant for open ground, so once it finds cover it stays there — and it damages plants when it moves onto them. <b>Rabbits damage and optimize</b>: each rabbit looks at its 5×5 surroundings, multiplies the number of foxes by the fox mobility and the number of snakes by the snake mobility (that product is how often each predator would run into it), and then keeps to whichever kind of site is safer — under a plant if foxes are the bigger local danger, in the open if snakes are. <b>Stupid rabbits</b> hop wherever chance takes them, cover or no cover. <b>Frozen forest, stupid rabbits</b> starts from one round forest covering half the lattice, with plants that neither grow nor get trampled, and stupid rabbits. The control panel also has an <i>adaptive</i> option, which uses the fox and snake numbers of the whole system instead of the local neighbourhood.</p>
 
             <h4>5. The six scenario presets</h4>
-            <p><b>1 · Frozen circular forest</b> — the default: one solid disc of plants at the centre of the lattice, frozen; use the density slider to change its size. <b>2 · Frozen random trees</b> — plants are scattered at random at the chosen density and then frozen. <b>3 · Moving rabbits clear plants</b> — rabbits trample plants (probability σ) when they successfully move onto one. <b>4 · Rabbits clear plants</b> — a rabbit erodes the plant it ends up below on every move attempt, successful or not; the plant growth γ is raised to compensate. <b>5 · Snakes clear plants</b> — a snake that moves onto a plant with a rabbit hiding below always eats the rabbit, and then removes the plant with probability σ. <b>6 · Foxes clear plants</b> — a fox that moves onto a plant with a rabbit hiding below cannot reach it, but removes the plant with probability σ (this one is bistable: runs end up either with foxes or with plants, rarely both). In presets 3–6 the same σ is the plant-removal probability. All presets use L = 20, γ = 1, σ = 0.064, μ<sub>R</sub> = μ<sub>F</sub> = 10, μ<sub>S</sub> = 5, f = f<sub>S</sub> = 0.1, δ<sub>F</sub> = δ<sub>S</sub> = 0.1 and ½ simulation step per animation frame.</p>
+            <p><b>1 · Frozen circular forest</b> — the default: one solid disc of plants at the centre of the lattice, frozen; use the density slider to change its size. <b>2 · Frozen random trees</b> — plants are scattered at random at the chosen density and then frozen. <b>3 · Moving rabbits clear plants</b> — rabbits trample plants (probability σ) when they successfully move onto one. <b>4 · Rabbits clear plants</b> — a rabbit erodes the plant it ends up below on every move attempt, successful or not; the plant growth γ is raised to compensate. <b>5 · Snakes clear plants</b> — a snake that moves onto a plant with a rabbit hiding below always eats the rabbit, and then removes the plant with probability σ. <b>6 · Foxes clear plants</b> — a fox that moves onto a plant with a rabbit hiding below cannot reach it, but removes the plant with probability σ (this one is bistable: runs end up either with foxes or with plants, rarely both). In presets 3–6 the same σ is the plant-removal probability. All presets use L = 20, γ = 1, σ = 0.064, μ<sub>R</sub> = μ<sub>F</sub> = 10, μ<sub>S</sub> = 5, f = f<sub>S</sub> = 0.1, ε = 1, δ<sub>F</sub> = δ<sub>S</sub> = 0.1 (each adjustable in steps 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5) and ½ simulation step per animation frame.</p>
 
             <h4>6. Reading the plots</h4>
             <p>The population plot below the scene shows the fraction of sites occupied by each species against time: green for plants, orange for foxes, black for snakes, dark green for rabbits hiding under plants, and a grey band for all rabbits. The pull-down in its upper-right corner limits the plot to the last 50 … 1000 time units (the same units as on the time axis), so that fast dynamics stay visible in a long run. When any curve hits zero that species is extinct (its icon gets a red cross), and the fun is over — so the interesting question is how long all four can be kept alive. For the circular forest a density panel directly below the scene shows the time-averaged density of rabbits, foxes and snakes as a function of distance from the forest centre: you can see where the rabbits crowd, where the snakes ambush them, and how the foxes patrol the open edge. Its x axis has exactly the length of the front edge of the lattice above it (from the forest centre at the left to the lattice edge at the right in the L20★ view, or across the whole lattice for L10 and L20), and the green shading marks the forest: the band from x−1 to x is green whenever some site at that distance carries a plant. The <b>PNG-C</b> button saves the scene and this profile as one figure with matching x axes. Both plots carry a <b>fox, snake ÷ ε</b> switch: when the rabbit reproduction rate ε is set realistically small, the predators live on a thin trickle of prey and their densities become tiny compared with the rabbits. Because each caught rabbit yields at most one cub, the fox and snake densities scale roughly in proportion to ε, so dividing them by ε rescales the curves to the order of the rabbit density. The switch changes only what is drawn — the y axis then reads density for plants and rabbits but density/ε for foxes and snakes, and a note on the plot says so.</p>
 
-            <p>The <b>interaction diagram</b> at the bottom (and its miniature in the lower-left corner of the population plot) summarises what the current rules assume: green arrows are activating links — a prey feeds its predator, and plants expose hidden rabbits to snakes — while red bars are repressing links — a predator eats its prey, plants hide rabbits from foxes, and whichever species erodes plants in the active preset (rabbits, foxes or snakes) gets a bar pointing at the plant. The diagram updates when you change the rules.</p>
+            <p>The <b>interaction diagram</b> at the bottom (and its miniature in the lower-left corner of the population plot) summarises what the current rules assume: green arrows are activating links — a prey feeds its predator, and plants expose hidden rabbits to snakes — while red bars are repressing links — a predator eats its prey, plants hide rabbits from foxes, and whichever species erodes plants in the active preset (rabbits, foxes or snakes) gets a bar pointing at the plant. Small green loops mark self-reproduction: rabbits breed by themselves (rate ε), and plants spread by themselves whenever they are not frozen and γσ &gt; 0. The loops are shown in the large diagram and in its miniature in the population plot. The diagram updates when you change the rules.</p>
 
             <h4>7. The 3-D scene and the buttons on it</h4>
-            <p>When the displayed lattice is at most 25 sites wide it is drawn as a 3-D landscape: trees and animals on a meadow, and a see-through underground beneath each tree where hidden rabbits crouch and snakes go hunting. The scene always zooms to fill the display; the <i>viewing distance</i> (1.2 … 10 × L) only sets how strong the perspective is. Drag the scene to orbit it, scroll or pinch to change the perspective. The lower-left button cycles four camera presets (3D view A, 3D view B, 3D side, top view); next to it you can switch the background between white and black and save the picture as a PNG cropped tightly around the system. The lower-right corner has small copies of the Start/Pause and Reset buttons and the "steps per frame" setting. At ½ or 1 step per frame you see the animals move: rabbits hop, foxes run, snakes wiggle, a rabbit slipping under a tree lowers its ears as it crouches, a fox that catches a rabbit leaps and holds it in its jaws, and a snake that strikes swells while it swallows. At higher speeds the animation is skipped so the simulation can run fast. Foxes also show how long ago they last ate: right after a catch a fox sits fat and content, then it slims down and looks ever hungrier — ears back and a worried brow after about 3 time units without a rabbit, ribs showing and tongue out after 6 — until the next catch makes it fat again. In the close-up scenes (L10 and L20★ at ½ or ¼ step per frame) a fox or snake that dies keels over and slowly turns into a small skeleton, which then fades away; the time scale is the catch &amp; digestion time.</p>
+            <p>When the displayed lattice is at most 25 sites wide it is drawn as a 3-D landscape: trees and animals on a meadow, and a see-through underground beneath each tree where hidden rabbits crouch and snakes go hunting. The scene always zooms to fill the display; the <i>viewing distance</i> (1.2 … 10 × L) only sets how strong the perspective is. Drag the scene to orbit it, scroll or pinch to change the perspective. The lower-left button cycles four camera presets (3D view A, 3D view B, 3D side, top view); next to it you can switch the background between white and black, save the picture as a PNG cropped tightly around the system, and shrink the animals and plants to 90% or 80% of their normal size (<b>Size</b> button) when the scene gets crowded. The <b>Local / Global</b> button next to the pull-down in the upper-left corner is a copy of the neighbor-model switch of the control panel: local means that moves, births and plant growth target a nearest neighbor, global that they target a random site anywhere. The lower-right corner has small copies of the Start/Pause and Reset buttons and the "steps per frame" setting. At ½ or 1 step per frame you see the animals move: rabbits hop, foxes run, snakes wiggle, a rabbit slipping under a tree lowers its ears as it crouches, a fox that catches a rabbit leaps and holds it in its jaws, and a snake that strikes swells while it swallows. At higher speeds the animation is skipped so the simulation can run fast. Foxes also show how long ago they last ate: right after a catch a fox sits fat and content, then it slims down and looks ever hungrier — ears back and a worried brow after about 3 time units without a rabbit, ribs showing and tongue out after 6 — until the next catch makes it fat again. In the close-up scenes (L10 and L20★ at ½ or ¼ step per frame) a fox or snake that dies keels over and slowly turns into a small skeleton, which then fades away; the time scale is the catch &amp; digestion time.</p>
 
             <h4>8. Sizes: L10, L20★, L50★, L100★ …</h4>
             <p>L is the number of sites along one side. The starred presets simulate the full system but display only the quarter next to the forest centre, so that each animal is big enough to see while the dynamics still happen on a large lattice: <b>L20★</b>, <b>L30★</b> and <b>L50★</b> show 10×10, 15×15 and 25×25 sites in 3-D, always with the camera at rotation 180° so that the forest centre sits in the lower-left (front-left) corner. <b>L100★</b> shows the 50×50 quarter of a 100×100 system as a flat map seen from above, turned the same way, so the forest centre is again in the lower-left corner. Other sizes (10 … 250) can be chosen with the lattice-size control in the Core simulation group.</p>
@@ -890,11 +930,13 @@
               <option value="forest">Frozen forest, stupid rabbits</option>
               <option value="custom" disabled hidden>Custom settings</option>
             </select>
+            <button type="button" id="hudModeBtn" title="Neighbor model — Local: targets are nearest neighbors; Global: targets are random sites anywhere (same switch as in the control panel)">Local</button>
           </div>
           <div class="hud bl">
             <button type="button" id="viewPresetBtn" title="Cycle the camera: 3D view A, 3D view B, 3D side, top view, 3D forest">3D view A</button>
             <button type="button" id="bgBtn" title="Switch the display background between white and black">Black bg</button>
             <button type="button" id="latticePngBtn" title="Save the display as a PNG, cropped tightly around the system">PNG</button>
+            <button type="button" id="sizeBtn" title="Size of the animals and plants: 100%, 90% or 80% of the normal size">Size 100%</button>
           </div>
           <div class="hud br">
             <div class="hud-row">
@@ -947,7 +989,7 @@
 
     <section class="card col-track" id="interactionCard">
       <div class="card-head">
-        <span class="card-title">Assumed interactions — arrows activate, bars repress (follows the current rules)</span>
+        <span class="card-title">Assumed interactions — arrows activate, bars repress, loops mark self-reproduction (follows the current rules)</span>
       </div>
       <div class="card-body plot-wrap">
         <canvas id="interaction" width="792" height="660"></canvas>
@@ -966,20 +1008,21 @@
     core: [
       { id: "L", label: "Lattice size L", value: 20, min: 10, max: 250, step: 0, values: [10, 20, 30, 40, 50, 100, 150, 200, 250] },
       { id: "dt", label: "Time step Δt", value: 0.01, min: 0.001, max: 0.05, step: 0.001 },
-      { id: "speed", label: "Steps per animation frame", value: 0.5, min: 0.25, max: 80, step: 0.25 },
+      { id: "speed", label: "Steps per animation frame", value: 0.5, min: 0.25, max: 200, step: 0.25 },
       { id: "sampleEvery", label: "Record plot every N steps", value: 2, min: 1, max: 100, step: 1 }
     ],
     rates: [
       { id: "gamma", label: "Plant growth γ", value: 1, min: 0, max: 12, step: 0.05 },
       { id: "sigma", label: "Plant slowness / plant removal σ", value: 0.064, min: 0.001, max: 1, step: 0, values: [0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.256, 0.512, 1] },
-      { id: "epsilon", label: "Rabbit reproduction ε", value: 1.0, min: 0, max: 5, step: 0.01 },
+      // v71: ε, δF and δS step through the same logarithmic ladder 0.01 … 5 (default 0.1)
+      { id: "epsilon", label: "Rabbit reproduction ε", value: 1, min: 0.01, max: 5, step: 0, values: [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5] },
       { id: "muR", label: "Rabbit mobility μR", value: 10, min: 1, max: 100, step: 1 },
       { id: "muF", label: "Fox mobility μF", value: 10, min: 1, max: 100, step: 1 },
       { id: "f", label: "Fox conversion f", value: 0.10, min: 0, max: 1, step: 0.005 },
-      { id: "deltaF", label: "Fox mortality δF", value: 0.10, min: 0, max: 2, step: 0.01 },
+      { id: "deltaF", label: "Fox mortality δF", value: 0.1, min: 0.01, max: 5, step: 0, values: [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5] },
       { id: "muS", label: "Snake mobility μS", value: 5, min: 1, max: 100, step: 1 },
       { id: "fS", label: "Snake conversion fS", value: 0.10, min: 0, max: 1, step: 0.005 },
-      { id: "deltaS", label: "Snake mortality δS", value: 0.10, min: 0, max: 2, step: 0.01 }
+      { id: "deltaS", label: "Snake mortality δS", value: 0.1, min: 0.01, max: 5, step: 0, values: [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5] }
     ],
     init: [
       { id: "initPlant", label: "Initial plant density", value: 0.45, min: 0, max: 1, step: 0.01 },
@@ -1029,6 +1072,9 @@
   // v34/v49: L20★ and L30★ — run the full lattice but display only its lower-left quarter
   let cornerView = true;
   let darkBg = false;          // v49: black display background
+  // v71: lower-left "Size" button — animals and plants at 100%, 90% or 80% of their normal size
+  const sizeSteps = [1, 0.9, 0.8];
+  let sizeScale = 1;
   function dispL() { return cornerView ? Math.max(2, Math.round(L / 2)) : L; }
   function cellView(i) {
     const Ld = dispL();
@@ -1108,55 +1154,55 @@
     if (id === "L" && typeof updateLToggle === "function") updateLToggle();
     if (id === "speed" && typeof updateFastButton === "function") updateFastButton();
     if (id === "epsilon" && typeof predScaleOn !== "undefined" && predScaleOn) { drawPlot(); drawMiniPlot(); drawRadial(); } // v67: rescaled curves follow ε
+    // v71: the plant / rabbit self-loops of the interaction diagram follow γσ and ε
+    if ((id === "gamma" || id === "sigma" || id === "epsilon") && plants && typeof drawInteraction === "function") drawInteraction();
+  }
+
+  // v71: every rule button shows "label + state chip"; the chip is orange when a
+  // switch is on, dark for the chosen variant of a multi-way rule, grey when off.
+  function setOptButton(id, label, value, cls, title) {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.innerHTML = label + ` <span class="st ${cls || ""}">${value}</span>`;
+    if (title) b.title = title;
   }
 
   function updateBirthRuleButton() {
     const label = rabbitBirthRule === "anywhere" ? "anywhere" : (rabbitBirthRule === "under" ? "only under plants" : "only outside plants");
-    const b = document.getElementById("birthRuleBtn");
-    if (b) b.textContent = "Rabbit births: " + label;
+    setOptButton("birthRuleBtn", "Rabbit births", label, "set", "Where a newborn rabbit may appear — click to cycle: anywhere, only under plants, only outside plants");
   }
 
 
   function updateRabbitPlantButton() {
-    const b = document.getElementById("rabbitPlantBtn");
-    if (b) {
-      b.textContent = rabbitPlantRemoval ? "Rabbit plant removal: on" : "Rabbit plant removal: off";
-      b.title = rabbitPlantRemoval
+    setOptButton("rabbitPlantBtn", "Rabbit plant removal", rabbitPlantRemoval ? "on" : "off", rabbitPlantRemoval ? "on" : "",
+      rabbitPlantRemoval
         ? "Rabbits remove plants with probability σ when they successfully move onto a plant-covered site"
-        : "Rabbits do not remove plants";
-    }
+        : "Rabbits do not remove plants");
   }
 
   function updateRabbitPlantModeButton() {
     const b = document.getElementById("rabbitPlantModeBtn");
     if (!b) return;
-    b.textContent = rabbitRemovalOnAttempt ? "Removal trigger: on move attempt" : "Removal trigger: on successful move";
-    b.classList.toggle("primary", rabbitRemovalOnAttempt);
+    setOptButton("rabbitPlantModeBtn", "Removal trigger", rabbitRemovalOnAttempt ? "on attempt" : "on success", "set",
+      rabbitRemovalOnAttempt
+        ? "Rabbits roll to remove a plant whenever they TRY to move onto a plant-covered site, even if another rabbit blocks the move"
+        : "Rabbits roll to remove a plant only when they successfully move onto a plant-covered site");
     b.disabled = !rabbitPlantRemoval;
     b.style.opacity = rabbitPlantRemoval ? "1" : "0.5";
-    b.title = rabbitRemovalOnAttempt
-      ? "Rabbits roll to remove a plant whenever they TRY to move onto a plant-covered site, even if another rabbit blocks the move"
-      : "Rabbits roll to remove a plant only when they successfully move onto a plant-covered site";
   }
 
   function updateFoxPlantButton() {
-    const b = document.getElementById("foxPlantBtn");
-    if (!b) return;
-    b.textContent = foxPlantRemoval ? "Fox plant removal: on" : "Fox plant removal: off";
-    b.classList.toggle("primary", foxPlantRemoval);
-    b.title = foxPlantRemoval
-      ? "Foxes remove plants above rabbits with probability σ when they move onto such a site"
-      : "Default variant: rabbits, not foxes, remove plants";
+    setOptButton("foxPlantBtn", "Fox plant removal", foxPlantRemoval ? "on" : "off", foxPlantRemoval ? "on" : "",
+      foxPlantRemoval
+        ? "Foxes remove plants above rabbits with probability σ when they move onto such a site"
+        : "Default variant: rabbits, not foxes, remove plants");
   }
 
   function updateSnakePlantButton() {
-    const b = document.getElementById("snakePlantBtn");
-    if (!b) return;
-    b.textContent = snakePlantRemoval ? "Snake plant removal: on" : "Snake plant removal: off";
-    b.classList.toggle("primary", snakePlantRemoval);
-    b.title = snakePlantRemoval
-      ? "Snakes remove the plants they crawl into with probability σ"
-      : "Snakes leave plants untouched";
+    setOptButton("snakePlantBtn", "Snake plant removal", snakePlantRemoval ? "on" : "off", snakePlantRemoval ? "on" : "",
+      snakePlantRemoval
+        ? "Snakes remove the plants they crawl into with probability σ"
+        : "Snakes leave plants untouched");
   }
 
   function updateRabbitShelterButton() {
@@ -1164,15 +1210,33 @@
     if (!b) return;
     const m = rabbitShelterMode;
     const labels = {
-      always:   ["Rabbit shelter: always under plants", "Rabbits always stay under a plant whenever they can (default)"],
-      optimize: ["Rabbit shelter: optimize (local threat)", "Each rabbit compares fox density × fox mobility with snake density × snake mobility within its 5×5 surroundings and keeps to the site type (covered or open) where it is least likely to be eaten"],
-      adaptive: ["Rabbit shelter: adaptive (global foxes ↔ snakes)", "Rabbits stay under plants while foxes outnumber snakes in the whole system, but stay in open ground when snakes outnumber foxes"],
-      none:     ["Rabbit shelter: stupid rabbits (random moves)", "Rabbit moves are independent of cover — they wander in and out of plants at random"]
+      always:   ["always under plants", "Rabbits always stay under a plant whenever they can (default)"],
+      optimize: ["optimize (local threat)", "Each rabbit compares fox density × fox mobility with snake density × snake mobility within its 5×5 surroundings and keeps to the site type (covered or open) where it is least likely to be eaten"],
+      adaptive: ["adaptive (global foxes ↔ snakes)", "Rabbits stay under plants while foxes outnumber snakes in the whole system, but stay in open ground when snakes outnumber foxes"],
+      none:     ["stupid rabbits (random moves)", "Rabbit moves are independent of cover — they wander in and out of plants at random"]
     };
-    b.textContent = labels[m][0];
-    b.title = labels[m][1];
-    b.classList.toggle("primary", m !== "always");
+    setOptButton("rabbitShelterBtn", "Rabbit shelter strategy", labels[m][0], "set", labels[m][1] + " — click to cycle");
     updateModeSelect();
+  }
+
+  // v71: the Local / Random-neighbor switch lives in the control panel (segmented
+  // control) and, as a replica, in the upper-left corner of the display
+  function setNeighborModel(random) {
+    randomNeighborModel = !!random;
+    updateNeighborButtons();
+    drawStatus();
+  }
+  function updateNeighborButtons() {
+    const lb = document.getElementById("modeLocalBtn"), rb = document.getElementById("modeRandomBtn"), hb = document.getElementById("hudModeBtn");
+    if (lb) lb.classList.toggle("primary", !randomNeighborModel);
+    if (rb) rb.classList.toggle("primary", randomNeighborModel);
+    if (hb) { hb.textContent = randomNeighborModel ? "Global" : "Local"; hb.classList.toggle("primary", randomNeighborModel); }
+  }
+  function updateSizeButton() {
+    const b = document.getElementById("sizeBtn");
+    if (!b) return;
+    b.textContent = "Size " + Math.round(sizeScale * 100) + "%";
+    b.classList.toggle("primary", sizeScale < 0.999);
   }
   function shelterModeLabel() {
     return { always: "always under plants", optimize: "optimize (local threat)", adaptive: "adaptive (global foxes↔snakes)", none: "stupid (random moves)" }[rabbitShelterMode];
@@ -1305,9 +1369,8 @@
   function updateFreezeButton() {
     const fb = document.getElementById("freezeBtn");
     if (!fb) return;
-    fb.textContent = plantsFrozen ? "Plants frozen — click to unfreeze" : "Freeze plants now";
-    fb.classList.toggle("primary", plantsFrozen);
-    fb.title = plantsFrozen ? "Plants neither grow nor get removed while frozen (γ and the removal rules are ignored)" : "Stop all plant growth and plant removal from now on";
+    setOptButton("freezeBtn", "Plants", plantsFrozen ? "frozen — click to unfreeze" : "dynamic — click to freeze", plantsFrozen ? "on" : "",
+      plantsFrozen ? "Plants neither grow nor get removed while frozen (γ and the removal rules are ignored)" : "Stop all plant growth and plant removal from now on");
   }
   function reset() {
     L = Math.max(2, Math.round(params.L));
@@ -2772,10 +2835,16 @@
 
   // ---- v56: interaction diagram — the four species with the interactions the
   // current rules assume. An arrow (→) from A to B means A boosts B; a bar (⊣)
+  // v73: the miniature in the population plot shows the self-loops as well; only the
+  // tiny network in the PNG-C density-profile export stays without them.
   // means A suppresses B. Prey feed predators, predators reduce prey, plants
   // shelter rabbits from foxes (⊣ fox) and expose them to snakes (→ snake),
   // and whichever species erodes plants in the active preset gets a bar to Plant.
-  function interactionEdges() {
+  // v71: withSelf adds the self-reinforcing loops — rabbits breed (ε > 0) and
+  // plants spread by themselves (γσ > 0, not frozen). Only the large interaction
+  // card and its PNG carry them; the miniatures in the population plot and in the
+  // density-profile export stay without.
+  function interactionEdges(withSelf) {
     const eat = !plantsFrozen;
     return [
       { from: "rabbit", to: "fox",   type: "act" },
@@ -2786,14 +2855,18 @@
       { from: "plant",  to: "snake", type: "act" },
       ...(eat && rabbitPlantRemoval ? [{ from: "rabbit", to: "plant", type: "rep" }] : []),
       ...(eat && foxPlantRemoval    ? [{ from: "fox",    to: "plant", type: "rep" }] : []),
-      ...(eat && snakePlantRemoval  ? [{ from: "snake",  to: "plant", type: "rep" }] : [])
+      ...(eat && snakePlantRemoval  ? [{ from: "snake",  to: "plant", type: "rep" }] : []),
+      ...(withSelf && params.epsilon > 0 ? [{ from: "rabbit", to: "rabbit", type: "act" }] : []),
+      ...(withSelf && eat && params.gamma * params.sigma > 0 ? [{ from: "plant", to: "plant", type: "act" }] : [])
     ];
   }
-  function interactionKey() { return interactionEdges().map(e => e.from[0] + e.to[0] + e.type[0]).join(",") + "|" + (darkBg ? "d" : "l"); }
+  function interactionKey(withSelf) { return interactionEdges(withSelf).map(e => e.from[0] + e.to[0] + e.type[0]).join(",") + "|" + (darkBg ? "d" : "l"); }
 
   // Draws the diagram into the box (X, Y, W, H). labels = species names + legend.
-  function drawInteractionDiagram(ctx, X, Y, W, H, labels, legend, plantScale) {
+  // selfLoops (default: same as labels) adds the rabbit / plant self-loops.
+  function drawInteractionDiagram(ctx, X, Y, W, H, labels, legend, plantScale, selfLoops) {
     if (legend === undefined) legend = labels;
+    if (selfLoops === undefined) selfLoops = !!labels;
     plantScale = (plantScale || 1) * 0.9; // v60: plants 10% smaller in every network picture
     const m = Math.min(W, H);
     const sN = (labels ? 0.30 : 0.36) * m;       // icon size
@@ -2803,19 +2876,70 @@
       snake:  { x: X + W * 0.84, y: Y + H * (labels ? 0.47 : 0.52), name: "Snake" },
       plant:  { x: X + W * 0.50, y: Y + H * (labels ? 0.72 : 0.84), name: "Plant" }
     };
-    const edges = interactionEdges();
+    const edges = interactionEdges(selfLoops);
     const R = sN * 0.50;                          // clearance around a node
     const lw = Math.max(1.5, m * (labels ? 0.011 : 0.016));
     ctx.save();
     ctx.lineCap = "round"; ctx.lineJoin = "round";
 
-    // soft "floor" plates under each animal give the drawing depth
-    for (const k in nodes) {
-      const nd = nodes[k];
-      const g = ctx.createRadialGradient(nd.x, nd.y + sN * 0.30, sN * 0.05, nd.x, nd.y + sN * 0.30, sN * 0.62);
-      g.addColorStop(0, "rgba(90,110,80,0.28)"); g.addColorStop(0.7, "rgba(90,110,80,0.10)"); g.addColorStop(1, "rgba(90,110,80,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.ellipse(nd.x, nd.y + sN * 0.30, sN * 0.62, sN * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+    // v71/v72: self-loops — an elongated (vertically squeezed) ellipse that leaves the
+    // node and returns to it with an arrowhead. The rabbit's loop sits to the upper
+    // right and its arrow comes back in from above; the plant's sits to the lower right.
+    const selfDir = { rabbit: [0.94, -0.34], plant: labels ? [0.94, 0.34] : [0.97, 0.24], fox: [-0.7, -0.7], snake: [0.7, -0.7] };
+    for (const e of edges) {
+      if (e.from !== e.to) continue;
+      const A = nodes[e.from], dir = selfDir[e.from] || [1, 0];
+      const rx = sN * 0.36, ry = sN * 0.24;                    // ellipse radii (wide, low)
+      const d = R + rx * 0.62;
+      const cx = A.x + dir[0] * d, cy = A.y + dir[1] * d;
+      // find the parameter range of the ellipse that lies outside the node's clearance circle
+      const inside = (a) => Math.hypot(cx + rx * Math.cos(a) - A.x, cy + ry * Math.sin(a) - A.y) < R;
+      const back = Math.atan2(A.y - cy, A.x - cx);
+      let a0 = back, a1 = back;
+      for (let k = 0; k < 400; k++) { a0 += 0.01; if (!inside(a0)) break; }
+      for (let k = 0; k < 400; k++) { a1 -= 0.01; if (!inside(a1)) break; }
+      a1 += 2 * Math.PI;
+      // the rabbit's arrow comes in from above: run the loop the other way round
+      const ccw = e.from === "rabbit";
+      const start = ccw ? a1 : a0, end = ccw ? a0 : a1;
+      const act = e.type === "act";
+      const col = act ? "#2f9e54" : "#c63a23", colD = act ? "#1f6b3a" : "#8f2716";
+      const headL = lw * 4.2, headW = lw * 2.4;
+      const pt = (a) => [cx + rx * Math.cos(a), cy + ry * Math.sin(a)];
+      const arcPath = (aA, aB, shrink) => {
+        const n = 40; ctx.beginPath();
+        for (let k = 0; k <= n; k++) {
+          const a = aA + (aB - aA) * k / n, q = shrink ? [cx + (rx - shrink) * Math.cos(a), cy + (ry - shrink) * Math.sin(a)] : pt(a);
+          if (k === 0) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]);
+        }
+      };
+      // shorten the arc by about one arrowhead so the head tip lands on the node's rim
+      const dA = (act ? headL * 0.85 : 0) / ((rx + ry) / 2) * (ccw ? 1 : -1);
+      const aEnd = end + dA;
+      ctx.save();
+      ctx.shadowColor = "rgba(20,30,20,0.35)"; ctx.shadowBlur = lw * 2.2; ctx.shadowOffsetX = lw * 0.6; ctx.shadowOffsetY = lw * 1.1;
+      const grad = ctx.createLinearGradient(cx - rx, cy - ry, cx + rx, cy + ry);
+      grad.addColorStop(0, col); grad.addColorStop(1, colD);
+      ctx.strokeStyle = grad; ctx.fillStyle = colD; ctx.lineWidth = lw;
+      arcPath(start, aEnd); ctx.stroke();
+      const [bx, by] = pt(end);
+      const tx = -rx * Math.sin(end), ty = ry * Math.cos(end), tl = Math.hypot(tx, ty) || 1;
+      const ux = (ccw ? -tx : tx) / tl, uy = (ccw ? -ty : ty) / tl;  // travel direction at the end
+      const nx = -uy, ny = ux;
+      if (act) {
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx - ux * headL + nx * headW, by - uy * headL + ny * headW);
+        ctx.lineTo(bx - ux * headL * 0.72, by - uy * headL * 0.72);
+        ctx.lineTo(bx - ux * headL - nx * headW, by - uy * headL - ny * headW);
+        ctx.closePath(); ctx.fill();
+      } else {
+        ctx.lineWidth = lw * 1.25;
+        ctx.beginPath(); ctx.moveTo(bx + nx * headW * 1.1, by + ny * headW * 1.1); ctx.lineTo(bx - nx * headW * 1.1, by - ny * headW * 1.1); ctx.stroke();
+      }
+      ctx.restore();
+      ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.lineWidth = Math.max(0.6, lw * 0.28);
+      arcPath(start, aEnd, lw * 0.22); ctx.stroke();
     }
 
     // arrows: paired directions are offset to either side of the connecting line
@@ -2823,6 +2947,7 @@
     const paired = new Set();
     for (const e of edges) for (const f of edges) if (e !== f && e.from === f.to && e.to === f.from) paired.add(pairKey(e.from, e.to));
     for (const e of edges) {
+      if (e.from === e.to) continue; // self-loops drawn above
       const A = nodes[e.from], B = nodes[e.to];
       const dx = B.x - A.x, dy = B.y - A.y, len = Math.hypot(dx, dy) || 1;
       const ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
@@ -2896,7 +3021,7 @@
   // mini version (population plot corner): cached per rule set
   let interactionMiniCache = null;
   function drawInteractionMini(ctx, x, y, w, h) {
-    const key = interactionKey() + "|" + Math.round(w) + "x" + Math.round(h);
+    const key = interactionKey(true) + "|" + Math.round(w) + "x" + Math.round(h); // v73: the miniature carries the self-loops too
     if (!interactionMiniCache || interactionMiniCache.key !== key) {
       const c = document.createElement("canvas");
       c.width = Math.round(w); c.height = Math.round(h);
@@ -2909,7 +3034,7 @@
       cc.lineTo(r, c.height); cc.quadraticCurveTo(0, c.height, 0, c.height - r);
       cc.lineTo(0, r); cc.quadraticCurveTo(0, 0, r, 0); cc.closePath(); cc.fill();
       cc.strokeStyle = "rgba(0,0,0,0.12)"; cc.lineWidth = 1; cc.stroke();
-      drawInteractionDiagram(cc, 4, 4, c.width - 8, c.height - 8, false);
+      drawInteractionDiagram(cc, 4, 4, c.width - 8, c.height - 8, false, false, 1, true);
       interactionMiniCache = { key, canvas: c };
     }
     ctx.drawImage(interactionMiniCache.canvas, x, y);
@@ -2922,7 +3047,7 @@
     const cv = target || interactionCanvas;
     if (!cv) return;
     if (!target) {
-      const key = interactionKey() + "|" + cv.width;
+      const key = interactionKey(true) + "|" + cv.width;
       if (!force && key === interactionDrawnKey) return;
       interactionDrawnKey = key;
     }
@@ -2995,7 +3120,7 @@
     { key: "forest", label: "3D forest", tilt: 35, rot: 180, dist: 5 } // v55: forest centre at the left, distance grows to the right
   ];
   let viewPresetIndex = 2; // v52: default "3D side"
-  let snake3DYellow = false; // v38: snakes render yellow in the 3-D scene only
+  let snake3DYellow = false; // v38: yellow snakes (v71: in the flat map as well as the 3-D scene)
   let exportNoSky = false;   // v47: render without the sky so the export can be cropped
   function is3DActive() { return view3D.enabled && dispL() <= 25; } // v56: up to 25 (L50★)
   // v55: a fat, just-fed fox sits 10% smaller than the old fat look; the others keep their size
@@ -3108,7 +3233,7 @@
     const sprite = (fn, gx, yy, gz, scale, count, flip) => {
       const p = proj([gx, yy, gz]);
       if (!p) return;
-      const s = p.s * scale;
+      const s = p.s * scale * sizeScale; // v71: global size setting from the lower-left button
       drawFlipped(fn, ctx, p.x - s / 2, p.y - s * C.anchor, s, count, flip);
     };
     const glowBillboard = (gx, yy, gz, g, blue) => {
@@ -3588,11 +3713,12 @@
 
   function drawWorld() {
     if (!plants) return;
-    if (is3DActive()) {
-      snake3DYellow = true;
-      try { drawWorld3D(); } finally { snake3DYellow = false; }
-      return;
-    }
+    // v71: snakes are yellow in the flat map too, exactly as in the 3-D scene
+    snake3DYellow = true;
+    try { if (is3DActive()) drawWorld3D(); else drawWorld2D(); } finally { snake3DYellow = false; }
+  }
+
+  function drawWorld2D() {
     const ctx = worldCtx;
     const W = worldCanvas.width;
     const Ld = dispL();
@@ -3611,13 +3737,14 @@
     if (params.speed > 1 && (motionTraces.length || killTraces.length)) { motionTraces.length = 0; killTraces.length = 0; }
     pruneTraces(nowMs);
     const moving = buildMovingMaps();
-    const s2 = s * 1.1, o2 = (s - s2) / 2; // v33: animals 10% larger relative to the lattice
+    const s2 = s * 1.1 * sizeScale, o2 = (s - s2) / 2; // v33: animals 10% larger relative to the lattice; v71: × size setting
+    const sp = s * 0.9 * sizeScale, op = (s - sp) / 2;  // plants (v51: 10% smaller), centred in the cell
 
     for (let i = 0; i < N; i++) {
       if (!plants[i]) continue;
       const v = cvT(i);
       if (!v) continue;
-      drawPlantC(ctx, v[0] * s + s * 0.05, v[1] * s + s * 0.05, s * 0.9); // v51: 10% smaller
+      drawPlantC(ctx, v[0] * s + op, v[1] * s + op, sp);
     }
     for (let i = 0; i < N; i++) {
       if (!rabbits[i] && !foxes[i] && !snakes[i]) continue;
@@ -3802,14 +3929,17 @@
     }
     ctx.textAlign = "left";
 
-    const tickStep = niceTickStep(Math.max(spanT, 1e-9), 6);
+    // v73: in a "last X" window only round multiples of about a quarter of the window
+    // are labelled — no fractional numbers at the two ends of the axis
+    const windowed = plotWindowTime > 0;
+    const tickStep = niceTickStep(Math.max(spanT, 1e-9), windowed ? 4 : 6);
     const ticks = [];
     if (spanT <= 1e-9) ticks.push(firstT);
     else {
       let t = Math.ceil(firstT / tickStep) * tickStep;
-      if (t > firstT + tickStep * 0.2) ticks.push(firstT);
+      if (!windowed && t > firstT + tickStep * 0.2) ticks.push(firstT);
       for (let guard = 0; t <= lastT + 1e-9 && guard < 50; guard++, t += tickStep) ticks.push(t);
-      if (ticks[ticks.length - 1] < lastT - tickStep * 0.2) ticks.push(lastT);
+      if (!windowed && ticks[ticks.length - 1] < lastT - tickStep * 0.2) ticks.push(lastT);
     }
     for (const t of ticks) {
       const x = x0 + (spanT > 1e-12 ? ((t - firstT) / spanT) * w : 0);
@@ -4009,7 +4139,7 @@
   }
 
   // v49: copy of "steps per animation frame" in the lower-right corner of the display
-  const speedChoices = [0.25, 0.5, 1, 2, 5, 10, 20, 40, 80];
+  const speedChoices = [0.25, 0.5, 1, 2, 5, 10, 20, 40, 80, 200]; // v71: 200 steps per frame
   const speedSelectEl = document.getElementById("speedSelect");
   function updateSpeedSelect() {
     if (!speedSelectEl) return;
@@ -4271,7 +4401,7 @@
       ["plant", "#3aa14b", "circle"],
       ["rabbit", "#cfd2d3", "circle"],
       ["fox", "#f08a24", "triangle"],
-      ["snake", "#050505", "line"]
+      ["snake", "#ffe70a", "line"]
     ];
     let lx = pad;
     ctx.font = "13px system-ui, -apple-system, Segoe UI, sans-serif";
@@ -4405,13 +4535,19 @@
 
   document.getElementById("resetBtn").addEventListener("click", () => reset());
 
-  document.getElementById("modeBtn").addEventListener("click", () => {
-    randomNeighborModel = !randomNeighborModel;
-    document.getElementById("modeBtn").textContent = randomNeighborModel ? "Random-neighbor model" : "Local neighbors";
-    drawStatus();
+  // v71: local / random-neighbor switch — segmented control in the panel, replica on the display
+  document.getElementById("modeLocalBtn").addEventListener("click", () => setNeighborModel(false));
+  document.getElementById("modeRandomBtn").addEventListener("click", () => setNeighborModel(true));
+  document.getElementById("hudModeBtn").addEventListener("click", () => setNeighborModel(!randomNeighborModel));
+  // v71: size of animals and plants — 100% → 90% → 80% → 100%
+  document.getElementById("sizeBtn").addEventListener("click", () => {
+    const i = sizeSteps.findIndex(v => Math.abs(v - sizeScale) < 1e-9);
+    sizeScale = sizeSteps[(i + 1) % sizeSteps.length];
+    updateSizeButton();
+    drawWorld();
   });
 
-  document.getElementById("rabbitPlantBtn").addEventListener("click", () => {
+  document.getElementById("rabbitPlantBtn") && document.getElementById("rabbitPlantBtn").addEventListener("click", () => {
     rabbitPlantRemoval = !rabbitPlantRemoval;
     updateRabbitPlantButton();
     updateRabbitPlantModeButton();
@@ -4419,7 +4555,7 @@
     drawStatus();
   });
 
-  document.getElementById("rabbitPlantModeBtn").addEventListener("click", () => {
+  document.getElementById("rabbitPlantModeBtn") && document.getElementById("rabbitPlantModeBtn").addEventListener("click", () => {
     rabbitRemovalOnAttempt = !rabbitRemovalOnAttempt;
     updateRabbitPlantModeButton();
     clearScenarioHighlight();
@@ -4429,14 +4565,14 @@
   document.getElementById("exportPngBtn").addEventListener("click", () => exportLatticePNG());
   document.getElementById("exportFigBtn").addEventListener("click", () => exportFigure());
 
-  document.getElementById("foxPlantBtn").addEventListener("click", () => {
+  document.getElementById("foxPlantBtn") && document.getElementById("foxPlantBtn").addEventListener("click", () => {
     foxPlantRemoval = !foxPlantRemoval;
     updateFoxPlantButton();
     clearScenarioHighlight();
     drawStatus();
   });
 
-  document.getElementById("snakePlantBtn").addEventListener("click", () => {
+  document.getElementById("snakePlantBtn") && document.getElementById("snakePlantBtn").addEventListener("click", () => {
     snakePlantRemoval = !snakePlantRemoval;
     updateSnakePlantButton();
     clearScenarioHighlight();
@@ -4450,7 +4586,7 @@
   });
   document.getElementById("modeSelect").addEventListener("change", (e) => applyModeKey(e.target.value));
 
-  document.getElementById("freezeBtn").addEventListener("click", () => {
+  document.getElementById("freezeBtn") && document.getElementById("freezeBtn").addEventListener("click", () => {
     plantsFrozen = !plantsFrozen;
     updateFreezeButton();
     clearScenarioHighlight();
@@ -4567,6 +4703,8 @@
   updateFoxPlantButton();
   updateSnakePlantButton();
   updateRabbitShelterButton();
+  updateNeighborButtons();
+  updateSizeButton();
   updateLToggle();
   updateFastButton();
   update3DPanel();
