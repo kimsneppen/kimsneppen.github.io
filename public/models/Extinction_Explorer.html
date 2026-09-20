@@ -54,11 +54,42 @@
   .viewbar{display:flex;align-items:center;gap:12px;margin:12px 12px -2px;flex-wrap:wrap;}
   /* the view switch when it rides on a section's own title line */
   details.sec>summary .sectitle{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  details.sec>summary .insum{display:none;margin-left:auto;flex:none;white-space:nowrap;
+  details.sec>summary .insum{display:none;flex:none;white-space:nowrap;
     padding:5px 11px;min-height:32px;font-size:12px;}
+  /* the view switch sits right after the title; the record switch, the count and the
+     background switch are pushed to the far right */
+  details.sec>summary .insum.pushr{margin-left:auto;}
+  /* the switch that steps through a section's plots is drawn in the same ochre as the
+     chosen record, so "what is on show" reads in one colour everywhere */
+  .viewsw.plotsw{background:var(--ochre);color:#1a140c;border-color:var(--ochre);font-weight:700;}
+  .viewsw.plotsw .arrow{color:#1a140c;opacity:.75;}
+  /* a segmented row of a section's own views, the chosen one in ochre */
+  .viewseg{display:inline-flex;flex:none;align-items:center;}
+  .viewseg button{font-family:ui-monospace,monospace;font-size:11.5px;letter-spacing:.02em;
+    padding:7px 10px;min-height:32px;border:1px solid var(--panel-edge);background:rgba(128,128,128,.12);
+    color:var(--muted);cursor:pointer;border-right-width:0;touch-action:manipulation;white-space:nowrap;}
+  .viewseg button:first-child{border-radius:7px 0 0 7px;}
+  .viewseg button:last-child{border-radius:0 7px 7px 0;border-right-width:1px;}
+  .viewseg button.active{background:var(--ochre);color:#1a140c;border-color:var(--ochre);font-weight:700;}
+  @media (hover:hover){ .viewseg button:not(.active):hover{filter:brightness(1.3);} }
+  .viewseg button:active{filter:brightness(1.35);}
+  @media (max-width:560px){ .viewseg button{font-size:10.5px;padding:7px 7px;min-height:36px;} }
+  /* a bar of controls sitting directly on top of a plot */
+  .plotbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 12px 0;}
+  .plotbar .ptitle{font-family:"Iowan Old Style",Georgia,serif;font-size:15px;font-weight:600;color:var(--ink);
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .plotbar .pushr{margin-left:auto;}
+  .plotbar+.canvas-shell{margin-top:8px;}
+  /* an on/off switch, ochre while on */
+  .togsw{font-family:ui-monospace,monospace;font-size:11.5px;letter-spacing:.02em;padding:7px 11px;min-height:32px;
+    border:1px solid var(--panel-edge);border-radius:7px;background:rgba(128,128,128,.12);color:var(--muted);
+    cursor:pointer;touch-action:manipulation;white-space:nowrap;}
+  .togsw.on{background:var(--ochre);color:#1a140c;border-color:var(--ochre);font-weight:700;}
+  @media (hover:hover){ .togsw:not(.on):hover{filter:brightness(1.3);} }
+  @media (max-width:560px){ .plotbar{gap:6px;margin-left:8px;margin-right:8px;} .plotbar .ptitle{font-size:13.5px;} .togsw{font-size:10.5px;padding:7px 8px;min-height:36px;} }
   @media (max-width:560px){ details.sec>summary .insum{font-size:11px;padding:5px 9px;min-height:36px;} }
   /* the background switch rides beside the view switch on the Basic data bar */
-  .viewsw.themesw{margin-right:6px;font-size:15px;line-height:1;padding-left:11px;padding-right:11px;}
+  .viewsw.themesw{margin-right:0;font-size:15px;line-height:1;padding-left:11px;padding-right:11px;}
   /* the four-way record switch sits between the background switch and the view switch */
   .viewsw.presetsw{margin-right:6px;padding-left:11px;padding-right:11px;}
   .viewsw.presetsw .arrow{margin-left:8px;}
@@ -91,6 +122,9 @@
   @media (max-width:560px){ .viewnote{font-size:11.5px;margin-left:8px;margin-right:8px;} }
   @media (max-width:560px){ .dsnote{font-size:11px;margin-left:8px;margin-right:8px;} }
   .viewbar.techbar{margin-top:2px;}
+  .viewbar.oeluckbar{margin-top:10px;margin-bottom:0;}
+  .viewbar.oeluckbar[hidden]{display:none;}
+  .viewbar.oeluckbar .luckmini{flex:0 1 auto;}
   /* the technical copy sits one level deeper than the bar above it, so it has less room;
      on a phone the pieces shrink rather than run past the panel edge */
   @media (max-width:470px){
@@ -631,7 +665,7 @@
         and the single plot that makes the argument, so that a first visit does not begin with a dozen
         panels and no idea where to look. Fold it away once you know the route.</p>
         <p class="cthint">The display column has four numbered sections &mdash; <b>Basic data</b>, <b>Luck
-        versus toughness</b>, <b>Extinction&ndash;Origination</b> and <b>Taxonomic Orders</b> &mdash; and the
+        versus toughness</b>, <b>Extinction&ndash;Origination</b> and <b>Orders and Classes of Animals</b> &mdash; and the
         control column on the right (on a phone, behind the <b>Controls</b> button) has a matching
         pull-down for each. Opening one opens its partner, and only one section is ever open at a time,
         so the page never becomes a wall of graphs. Under each plot a one-line caption says what it shows
@@ -791,7 +825,7 @@
         </details>
       </details>
       <details class="sec" id="sec1" open>
-        <summary><span class="secnum">1</span><span class="sectitle">Basic data</span><button class="viewsw insum themesw" id="swTheme" aria-label="Background black or white">◐</button><span class="presetseg insum" id="presetSeg1"></span><button class="viewsw insum presetsw" id="swPreset" aria-label="Which record">Marine</button><span class="insum gcount" id="gcount">&mdash;</span><button class="viewsw insum" id="sw1" aria-label="Choose view"></button></summary>
+        <summary><span class="secnum">1</span><span class="sectitle">Basic data</span><button class="viewsw insum plotsw" id="sw1" aria-label="Choose view" title="Step to the next view"></button><span class="presetseg insum pushr" id="presetSeg1"></span><button class="viewsw insum presetsw pushr" id="swPreset" aria-label="Which record">Marine</button><span class="insum gcount" id="gcount">&mdash;</span><button class="viewsw insum themesw" id="swTheme" aria-label="Background black or white" title="Black or white background">◐</button></summary>
         <div id="sec1Slot"></div>
         <p class="viewnote" id="viewnote1">&nbsp;</p>
       </details>
@@ -802,7 +836,7 @@
           <input type="range" class="yzoom" id="modelYRange" min="0.08" max="1" step="0.01" value="1" aria-label="Toughness axis range">
         </div>
         <div class="viewbar">
-          <button class="viewsw" id="sw2" aria-label="Choose view"></button>
+          <button class="viewsw plotsw" id="sw2" aria-label="Choose view" title="Step to the next comparison"></button>
           <span class="presetseg" id="presetSeg2"></span>
           <button class="viewsw presetsw" id="swPreset2" aria-label="Which record">Marine</button>
           <span class="gcount" id="gcount2">&mdash;</span>
@@ -843,16 +877,42 @@
       </details>
 
       <details class="sec" id="sec3">
-        <summary><span class="secnum">3</span><span class="sectitle">Extinction&ndash;Origination</span></summary>
+        <summary><span class="secnum">3</span><span class="sectitle">Extinction&ndash;Origination</span><span class="viewseg insum" id="oeModeSeg" role="group" aria-label="Data, model or both"></span><span class="presetseg insum pushr" id="presetSeg3"></span><button class="viewsw insum presetsw pushr" id="swPreset3" aria-label="Which record">Marine</button><span class="insum gcount" id="gcount3">&mdash;</span></summary>
+        <!-- the model's own two controls, shown only while a model panel is on screen -->
+        <div class="viewbar oeluckbar" id="oeLuckBar" hidden>
+          <span class="luckmini">
+            <span class="modeseg" id="modeSeg4">
+              <button data-mode="genera" title="Luck genera">genera</button
+              ><button data-mode="order" title="Luck order">order</button
+              ><button data-mode="real" title="Luck Real">real</button>
+            </span>
+            <input type="range" id="luck4" class="shortluck" min="0" max="5" step="0.05" value="0" aria-label="Luck">
+            <span class="val" id="luckval4">0.00</span>
+          </span>
+        </div>
         <div id="oeHome"></div>
+        <p class="viewnote" id="viewnote3">&nbsp;</p>
       </details>
 
       <details class="sec" id="sec4">
-        <summary><span class="secnum">4</span><span class="sectitle">Taxonomic Orders</span></summary>
-        
+        <summary><span class="secnum">4</span><span class="sectitle">Orders and Classes of Animals</span><span class="presetseg insum pushr" id="presetSeg4"></span><button class="viewsw insum presetsw pushr" id="swPreset4" aria-label="Which record">Marine</button><span class="insum gcount" id="gcount4">&mdash;</span></summary>
+        <!-- the 2-D plot: one spindle per order, with its own controls on the line above it -->
+        <div class="plotbar" id="spindleBar">
+          <span class="ptitle">Order diversity through time</span>
+          <span class="viewseg" id="spindleSeg" role="group" aria-label="Which orders are emphasised"></span>
+          <button type="button" class="togsw pushr" id="classTog" title="Colour orders by class and draw where each order may have branched off a class-mate">Taxonomic class: Off</button>
+        </div>
         <div class="canvas-shell" id="spindleShell"><canvas id="spindle" width="960" height="960"></canvas></div>
+        <p class="viewnote" id="viewnote4a">&nbsp;</p>
+        <!-- the 3-D map: orders or classes, one at a time, the switch right after the title -->
+        <div class="plotbar" id="mapBar">
+          <span class="ptitle" id="mapTitle">Order 3D map</span>
+          <span class="viewseg" id="mapSeg" role="group" aria-label="Orders or classes"></span>
+          <button type="button" class="togsw pushr" id="classTog3d" title="Colour orders by class and draw where each order may have branched off a class-mate">Taxonomic class: Off</button>
+        </div>
         <div id="o3dHome"></div>
         <div id="c3dHome"></div>
+        <p class="viewnote" id="viewnote4b">&nbsp;</p>
       </details>
 
       <div id="parkingLot">
@@ -989,8 +1049,8 @@
       </details>
 
       <details class="ctl" id="ctl4">
-        <summary><span class="secnum">4</span>Taxonomic Orders</summary>
-        <p class="cthint">Order diversity through time and the two 3D maps. Tap a cylinder in either map for its order or class. (The lifetime distributions have moved to <i>Technical analysis</i> in section 2.)</p>
+        <summary><span class="secnum">4</span>Orders and Classes of Animals</summary>
+        <p class="cthint">Order diversity through time, and one 3D map that shows either the orders or the classes &mdash; the <b>Orders / Classes</b> switch sits right after the map's title. Tap a cylinder for its order or class. The <b>All orders / Selected / Extremes</b> buttons and the <b>Taxonomic class</b> switch above the 2D plot are copies of the ones below.</p>
         <p class="cthint">The <b>Data</b>/<b>Model</b> switch in the corner of each 3D map matters here. The model kills the right <i>number</i> of genera at every event but not the right <i>ones</i>, so it knows nothing of taxonomy: under <b>Model</b>, groups no longer die out as units and most classes run to the present. Trilobites end at the Permian in the data and survive it in the model &mdash; that gap is the point, not a fault.</p>
         <p class="ctl-label">Order diversity</p>
         <div class="oddrow">
@@ -1002,9 +1062,9 @@
           </div>
         </div>
         <div class="btnrow3" id="spindleModeRow">
-          <button class="plot-btn secondary mode active" data-mode="all">All orders</button>
+          <button class="plot-btn secondary mode" data-mode="all">All orders</button>
           <button class="plot-btn secondary mode" data-mode="selected">Selected</button>
-          <button class="plot-btn secondary mode" data-mode="extreme">Extreme</button>
+          <button class="plot-btn secondary mode active" data-mode="extreme">Extremes</button>
         </div>
         <div class="btnrow">
           <button class="plot-btn secondary normbtn" id="spindleNormBtn">Curves: Absolute</button>
@@ -1062,8 +1122,8 @@
         the cube. A phone or a tablet has no room for that block beside the cube, so there the
         stack is simply the two sets of figures and the one picture, and the switch is not
         offered.</p>
-        <p class="cthint">The small <b>◂ Class 3D</b> / <b>◂ Order 3D</b> button in the corner of
-        each map, just left of the Data/Model switch, hops straight between the two maps and keeps
+        <p class="cthint">The small <b>Class 3D ▸</b> / <b>Order 3D ▸</b> button right after the title of
+        the map hops straight between the two maps and keeps
         whatever is in the spotlight. Whatever is left fully solid is what a saved <b>PNG</b> is
         titled with — the order, class or phylum name in place of the panel's usual heading.</p>
       </details>
@@ -3086,7 +3146,7 @@ let spindleData=null;
 let spindleWidth=1;
 let spindleScaleMode='absolute';   /* 'absolute' | 'peak' | 'area' */
 let spindleShowBg=true;            /* show non-selected orders faintly in selected/extreme modes */
-let spindleMode='all';                 /* 'all' | 'selected' | 'extreme' */
+let spindleMode='extreme';             /* 'all' | 'selected' | 'extreme' — the three extremes open the plot */
 let highlightedOrders=new Set();        /* order ids the reader has clicked */
 let extremeSet=new Set();               /* emphasised orders while in 'extreme' mode (togglable) */
 let extremeSeeded=false;                /* whether extremeSet has been seeded for current data */
@@ -3212,6 +3272,23 @@ function drawSpindle(){
   /* pass 2: emphasised bodies on top — fully opaque in selected/extreme, slightly soft in 'all' */
   const eL=(spindleMode==='all')?0.95:1.0, eF=(spindleMode==='all')?0.82:1.0;
   for(const o of draw){ if(emph.has(o.k)) drawSpindleBody(o,Xs,Yc,scaleFor(o),D,eL,eF); }
+  /* possible origins: at an order's first appearance, a vertical tie to a class-mate alive
+     just then.  Ties touching an emphasised order are drawn strong, the rest faintly. */
+  if(classMode){
+    const byK=new Map(); for(const o of D.orders) byK.set(o.k,o);
+    const cm=classColorMap();
+    for(const ed of classConnections()){
+      const Pp=byK.get(ed.p), Cc=byK.get(ed.c); if(!Pp||!Cc) continue;
+      const hot=emph.has(ed.c)||emph.has(ed.p);
+      if(!hot && ghostMode && !spindleShowBg) continue;
+      const al=hot?0.85:(ghostMode?0.16:(someEmph?0.22:0.42));
+      const col=cm.get(ed.c)||[200,200,200];
+      const x=Xs(ed.t), y1=Yc(Pp.avgLife), y2=Yc(Cc.avgLife);
+      sp.strokeStyle='rgba('+col[0]+','+col[1]+','+col[2]+','+al+')'; sp.lineWidth=hot?1.6:1;
+      sp.beginPath(); sp.moveTo(x,y1); sp.lineTo(x,y2); sp.stroke();
+      sp.fillStyle=sp.strokeStyle; sp.beginPath(); sp.arc(x,y1,hot?3:2,0,2*Math.PI); sp.fill();
+    }
+  }
   sp.restore();
 
   /* start spheres (always clickable) + labels for emphasised orders */
@@ -3364,11 +3441,27 @@ function mapSwitchBtn(ctx,rightX,topY,label,S,minX){
   ctx.fillText(label, x+w/2, topY+h/2+1); ctx.restore();
   return {x,y:topY,w,h};
 }
+/* the same button, but laid from its left edge: it follows the map's title */
+function mapSwitchW(ctx,label,S){ S=S||TS; ctx.save(); ctx.font=Math.round(14*S)+'px ui-monospace,monospace';
+  const w=ctx.measureText(label).width+Math.round(22*S); ctx.restore(); return w; }
+function mapSwitchBtnAt(ctx,leftX,topY,label,S){
+  S=S||TS; if(bareMode) return null; ctx.save(); ctx.font=Math.round(14*S)+'px ui-monospace,monospace';
+  const w=ctx.measureText(label).width+Math.round(22*S), h=Math.round(24*S), x=leftX;
+  roundRect(ctx,x,topY,w,h,6); ctx.fillStyle='rgba(128,128,128,0.14)'; ctx.fill();
+  roundRect(ctx,x,topY,w,h,6); ctx.strokeStyle=css('--ochre'); ctx.lineWidth=1.2; ctx.stroke();
+  ctx.fillStyle=css('--ochre'); ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(label, x+w/2, topY+h/2+1); ctx.restore();
+  return {x,y:topY,w,h};
+}
 let td_swapRect=null, c3_swapRect=null;
-/* the two maps are two views of section 1, so the hop goes through the view switch */
+/* The two maps are two views of section 1 and two faces of section 4.  The hop goes
+   through whichever section is open: the view switch in section 1, the Orders/Classes
+   switch in section 4.  (It used to call section 1's switch regardless, which in section
+   4 quietly carried the map off into a closed section — the button "did nothing".) */
 function goToMap(which){
   td_pick=null; c3_pick=null;
-  if(typeof setBasicView==='function') setBasicView(which);
+  if(typeof secOpen==='function' && secOpen('sec4') && typeof setMapView==='function') setMapView(which);
+  else if(typeof setBasicView==='function') setBasicView(which);
 }
 function miniToggle(ctx,rightX,topY,opts,activeKey,S,dim){
   S=S||TS;
@@ -3648,7 +3741,10 @@ function drawOEPanel(x0,S,y0,data,cmax,opts){
   const cbW=Math.min(340,Math.round(S*0.42)), cbH=14, btnW=110, btnGap=16;
   const cbx=x0+S-18-btnW-btnGap-cbW, cby=y0+S-52;
   oe.textAlign='left'; oe.textBaseline='alphabetic'; oe.font=F;
-  if(opts.tough!=null&&!pngMode){
+  /* in section 3 the toughness unit and the luck slider ride on the bar above the plot, so
+     the panel only states them; on loan to section 1 it carries the switch itself */
+  const ownChrome=!pngMode && typeof borrowed!=='undefined' && borrowed==='oe';
+  if(opts.tough!=null&&ownChrome){
     /* the model variant, as a switch on the line it used to merely state */
     const mr=miniToggle(oe, cbx+cbW, cby-92, LUCK_MODES.map(o=>[o[0],o[1]]), curMode, 1.15);
     oeButtons.push({x:mr.x,y:mr.y,w:mr.w,h:mr.h,segs:mr.segs,kind:'mode'});
@@ -3659,7 +3755,7 @@ function drawOEPanel(x0,S,y0,data,cmax,opts){
   if(opts.luck!=null){ oe.fillStyle=css('--ink'); oe.fillText('Luck = '+opts.luck.toFixed(2), cbx, cby-34);
     /* the slider is a DOM overlay, so the drawing has to tell it where the free band is:
        above the "Luck =" line and the mode switch, clear of the colour bar below */
-    oeLuckBand={x:cbx, y:cby-92-Math.round(30*1.15)-14, w:cbW+btnGap+btnW, h:26}; }
+    if(ownChrome) oeLuckBand={x:cbx, y:cby-92-Math.round(30*1.15)-14, w:cbW+btnGap+btnW, h:26}; }
   oe.fillStyle=css('--muted'); oe.fillText('genera per (orig, ext) cell', cbx, cby-8);
   for(let i=0;i<cbW;i++){ const rgb=autumnRamp(i/(cbW-1)); oe.fillStyle=`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`; oe.fillRect(cbx+i,cby,1,cbH); }
   oe.strokeStyle=css('--panel-edge'); oe.lineWidth=1; oe.strokeRect(cbx,cby,cbW,cbH);
@@ -3680,36 +3776,39 @@ function drawOEPanel(x0,S,y0,data,cmax,opts){
     oeButtons.push({x:sx,y:by,w:segW,h:bh,mode});
   });
 }
-/* The record first, and the model only when it is asked for.  Opening this view used to
-   put a synthetic map on the screen beside the real one before the reader had looked at
-   either, which invites reading the two as one picture.  The model is one tap away. */
-var oeShowModel=false;
+/* The record first, and the model only when it is asked for.  Three ways to look at the
+   map: the record alone, the model alone, or the two side by side at the same colour
+   scale.  The choice lives on the section's own heading, beside the record switch, so the
+   plot carries no furniture of its own that a downloaded PNG would have to lose. */
+var oeMode='data';                        /* 'data' | 'model' | 'both' */
+var oeShowModel=false;                    /* = (oeMode!=='data'); kept for the older call sites */
 var oeLuckBand=null;                      /* where the luck slider may sit, in canvas pixels */
 const OE_GAPX=118;                        /* between the two maps when they are side by side */
+const OE_MODES=[['data','Data'],['model','Model'],['both','Data + Model']];
 /* Two maps of the same thing are compared by eye, and the eye compares left-to-right far
    better than top-to-bottom: side by side, the same cell is at the same height in both.
    A phone has no width to spare, so there the two stack as before. */
-const oeSideBySide=()=>oeShowModel && !smallScreen();
+const oeSideBySide=()=>oeMode==='both' && !smallScreen();
 function oeLayout(){
-  if(!oeShowModel) return {W:980,S:980-OE_Lp-OE_Rp,cols:1};
+  if(oeMode!=='both') return {W:980,S:980-OE_Lp-OE_Rp,cols:1,panels:1};
   if(oeSideBySide()){ const S=700;
-    return {W:OE_Lp+S+OE_GAPX+OE_Lp+S+OE_Rp, S, cols:2}; }
-  return {W:980,S:980-OE_Lp-OE_Rp,cols:1};
+    return {W:OE_Lp+S+OE_GAPX+OE_Lp+S+OE_Rp, S, cols:2, panels:2}; }
+  return {W:980,S:980-OE_Lp-OE_Rp,cols:1,panels:2};
 }
 function oeSyncHeight(){
   const L=oeLayout();
-  const foot=Math.round(150*Math.max(1,TS));
+  const foot=Math.round(78*Math.max(1,TS));           /* room for the x-axis title only */
   const h=(L.cols===2) ? (OE_Tp+L.S+foot)
-        : oeShowModel  ? (OE_Tp+L.S+OE_GAP+L.S+foot)
-                       : (OE_Tp+L.S+foot);
+        : (L.panels===2) ? (OE_Tp+L.S+OE_GAP+L.S+foot)
+                         : (OE_Tp+L.S+foot);
   const d=CANV_DIM.get(oeC); if(d){ d[0]=L.W; d[1]=h; }
   if(oeC.width>1&&(oeC.width!==L.W||oeC.height!==h)){ oeC.width=L.W; oeC.height=h; }
-  const ov=document.querySelector('.oeluck'); if(ov) ov.classList.toggle('on',oeShowModel);
+  const ov=document.querySelector('.oeluck'); if(ov) ov.classList.toggle('on',oeMode!=='data');
 }
 /* the luck slider is an HTML range over the canvas; put it in the band the drawing left */
 function oePlaceLuck(){
   const ov=document.querySelector('.oeluck'); if(!ov) return;
-  if(!oeShowModel||!oeLuckBand){ ov.classList.remove('on'); return; }
+  if(oeMode==='data'||!oeLuckBand){ ov.classList.remove('on'); return; }
   ov.classList.add('on');
   const W=oeC.width||1, H=oeC.height||1;
   ov.style.left=(100*oeLuckBand.x/W)+'%';
@@ -3717,7 +3816,8 @@ function oePlaceLuck(){
   ov.style.top=(100*(oeLuckBand.y+oeLuckBand.h/2)/H)+'%';
 }
 /* the record the map is drawn from, named on the map itself */
-function oeDataTitle(){ return REALM==='marine'?'Marine data':REALM==='land'?'Land data':'All data'; }
+function oeDataTitle(){ const r=REALM==='marine'?'Marine':REALM==='land'?'Land':(SINGLETONS?'All':'All−');
+  return r+' data  ·  '+N.toLocaleString()+' genera'; }
 function drawOrigExt(){
   oeSyncHeight();
   oe.clearRect(0,0,oeC.width,oeC.height); oeButtons.length=0; oeLuckBand=null;
@@ -3725,43 +3825,44 @@ function drawOrigExt(){
   const twoCol=(LY.cols===2);
   const x0B=twoCol ? (OE_Lp+S+OE_GAPX+OE_Lp) : x0;
   const y0B=twoCol ? y0A : (OE_Tp+S+OE_GAP);
-  const dataD=ensureOEData();
-  const modelD=oeShowModel?oeModel():null;
-  const cmax=oeShowModel?Math.max(dataD.cmax, modelD.cmax):dataD.cmax;   /* shared scale -> panels directly comparable */
-  drawOEPanel(x0,S,y0A, dataD, cmax, {title:oeDataTitle(), span:'550 million years'});
-  if(oeShowModel)
-    drawOEPanel(x0B,S,y0B, modelD, cmax, {title:'Model', tough:(curMode==='order'?'Order':curMode==='real'?'real':'genera'), luck:curLuck});
-  /* the switch that brings the model in: the one control on this panel a first-time reader
-     has to find, so it is drawn at full button size rather than as a corner chip — and it
-     is page furniture, so a downloaded PNG never carries it */
-  if(!pngMode){
+  const dataD=(oeMode!=='model')?ensureOEData():null;
+  const modelD=(oeMode!=='data')?oeModel():null;
+  const cmax=Math.max(dataD?dataD.cmax:0, modelD?modelD.cmax:0);   /* shared scale -> panels directly comparable */
+  const modelOpts={title:'Model', tough:(curMode==='order'?'Order':curMode==='real'?'real':'genera'), luck:curLuck};
+  if(oeMode==='data')       drawOEPanel(x0,S,y0A, dataD, cmax, {title:oeDataTitle(), span:'550 million years'});
+  else if(oeMode==='model') drawOEPanel(x0,S,y0A, modelD, cmax, modelOpts);
+  else { drawOEPanel(x0,S,y0A, dataD, cmax, {title:oeDataTitle(), span:'550 million years'});
+         drawOEPanel(x0B,S,y0B, modelD, cmax, modelOpts); }
+  /* When this map is on loan to section 1 there is no heading of its own to carry the
+     Data / Model / Data+Model choice, so the switch is drawn onto the canvas instead;
+     in section 3 the heading has it, and the plot stays clean. */
+  if(!pngMode && typeof borrowed!=='undefined' && borrowed==='oe'){
     const ty=Math.max(4, y0A-Math.round(38*Math.max(1,TS)));
-    const r=miniToggle(oe, (twoCol?x0B+S:x0+S)-4, ty,
-                       [['data','Data only'],['both','Data + model']],
-                       oeShowModel?'both':'data', 1.55);
-    oeButtons.push({kind:'oemodel',x:r.x,y:r.y,w:r.w,h:r.h,segs:r.segs});
-  }
-  /* ---- which record this is, on the plot itself ------------------------------------
-     A line along the bottom right: the switch that picks the record, the name of what is
-     picked, and how many genera went into the two maps above.  A figure that does not say
-     what it is drawn from cannot be read once it leaves the screen. */
-  {
-    const yLine=(twoCol?y0A:(oeShowModel?y0B:y0A))+S+68+Math.round(20*TS);   /* clear of the x-axis title at +54 */
-    const rightX=(twoCol?x0B+S:x0+S);
-    const opts=PRESETS.filter(o=>o[3].realm==='marine'||HAS_LAND).map(o=>[o[0],(window.innerWidth<=700&&o[2])?o[2]:o[1]]);
-    const r=miniToggle(oe,rightX,yLine,opts,currentPreset());
-    oeButtons.push({kind:'preset',x:r.x,y:r.y,w:r.w,h:r.h,segs:r.segs});
-    const n=(TWOPOOL&&!vsAll())?vsSorted().n:N;
-    const label=(PRESETS.find(o=>o[0]===currentPreset())||PRESETS[0])[1]
-              + (stressLabel()?('  \u00b7  '+stressLabel()):'');
-    oe.font=FT(19,SERIF); oe.textAlign='right'; oe.textBaseline='middle';
-    oe.fillStyle=css('--ink');
-    const txt=label+'  \u00b7  '+n.toLocaleString()+' genera';
-    fitText(oe,txt,(twoCol?2*S:S)-r.w-24,19*TS,SERIF);
-    oe.fillText(txt, r.x-16, yLine+r.h/2+1);
+    const r=miniToggle(oe, (twoCol?x0B+S:x0+S)-4, ty, OE_MODES, oeMode, 1.55);
+    oeButtons.push({kind:'oemode',x:r.x,y:r.y,w:r.w,h:r.h,segs:r.segs});
   }
   oePlaceLuck();
 }
+function setOEMode(m){
+  if(!OE_MODES.some(o=>o[0]===m)) m='data';
+  oeMode=m; oeShowModel=(m!=='data');
+  const seg=document.getElementById('oeModeSeg');
+  if(seg) for(const b of seg.children) b.classList.toggle('active',b.dataset.oemode===m);
+  const bar=document.getElementById('oeLuckBar'); if(bar) bar.hidden=(m==='data');
+  const note=document.getElementById('viewnote3');
+  if(note) note.innerHTML=(typeof OE_NOTE!=='undefined')?(OE_NOTE[m]||''):'';
+  if(shown(document.getElementById('origExtShell'))){ oeSyncHeight(); drawOrigExt();
+    if(typeof syncTimeRail==='function') setTimeout(syncTimeRail,0); }
+}
+(function buildOEModeSeg(){
+  const seg=document.getElementById('oeModeSeg'); if(!seg) return;
+  for(const o of OE_MODES){ const b=document.createElement('button'); b.type='button';
+    b.dataset.oemode=o[0]; b.textContent=o[1]; b.title=o[0]==='data'?'The fossil record alone'
+      :o[0]==='model'?'The luck-versus-toughness model alone, at the current luck':'Record and model side by side, on one colour scale';
+    b.addEventListener('click',ev=>{ ev.preventDefault(); ev.stopPropagation(); setOEMode(o[0]); });
+    seg.appendChild(b); }
+  for(const b of seg.children) b.classList.toggle('active',b.dataset.oemode===oeMode);
+})();
 function showOrigExt(){ document.getElementById('empty').style.display='none'; document.getElementById('origExtShell').style.display='block'; drawOrigExt(); }
 oeC.addEventListener('click',e=>{
   if(!shown(document.getElementById('origExtShell'))) return;
@@ -3773,14 +3874,8 @@ oeC.addEventListener('click',e=>{
     if(b.kind==='mode'){ for(const sg of b.segs)
       if(mx>=sg.x-pad&&mx<=sg.x+sg.w+pad){ if(curMode!==sg.key) chooseModel(sg.key); return; }
       return; }
-    if(b.kind==='preset'){ for(const sg of b.segs)
-      if(mx>=sg.x-pad&&mx<=sg.x+sg.w+pad){ applyPreset(sg.key); return; }
-      return; }
-    if(b.kind==='oemodel'){ for(const sg of b.segs)
-      if(mx>=sg.x-pad&&mx<=sg.x+sg.w+pad){ const want=(sg.key==='both');
-        if(oeShowModel!==want){ oeShowModel=want; oeSyncHeight(); drawOrigExt();
-          if(typeof syncTimeRail==='function') setTimeout(syncTimeRail,0); }
-        return; }
+    if(b.kind==='oemode'){ for(const sg of b.segs)
+      if(mx>=sg.x-pad&&mx<=sg.x+sg.w+pad){ setOEMode(sg.key); return; }
       return; }
     oeScale=b.mode; drawOrigExt(); return; }
 });
@@ -3795,17 +3890,61 @@ function showSpindle(){
 document.getElementById('spindleBtn').addEventListener('click',()=>{
   showSpindle();
 });
-/* ---- display-mode buttons: All / Selected / Extreme ---- */
+/* ---- display-mode buttons: All / Selected / Extremes ----
+   Two copies of the same three buttons: one row in the control column, one on the bar
+   right above the plot.  Whichever is pressed, both rows follow. */
+const SPINDLE_MODES=[['all','All orders'],['selected','Selected'],['extreme','Extremes']];
+var SPINDLE_NOTE={
+  all:'<b>Order diversity</b> \u2014 one spindle per order, drawn at the average lifetime of its genera '
+     +'and as wide as the number of genera alive at each moment; the dot marks its first appearance. '
+     +'Click a dot to lift that order out of the crowd.',
+  selected:'<b>Selected orders</b> \u2014 a curated handful, the rest faded to context. Click a start '
+     +'dot to add an order or drop it again.',
+  extreme:'<b>Extremes</b> \u2014 the most diverse order, the longest-living one and the one with the '
+     +'highest standing diversity, named on the plot; everything else is faded to context. Click a '
+     +'start dot to add or drop an order.'};
+function syncSpindleModeButtons(){
+  document.querySelectorAll('#spindleModeRow .mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===spindleMode));
+  const seg=document.getElementById('spindleSeg');
+  if(seg) for(const b of seg.children) b.classList.toggle('active',b.dataset.smode===spindleMode);
+  const note=document.getElementById('viewnote4a');
+  if(note&&typeof SPINDLE_NOTE!=='undefined') note.innerHTML=SPINDLE_NOTE[spindleMode]||'';
+}
 function setSpindleMode(mode){
+  if(!SPINDLE_MODES.some(o=>o[0]===mode)) mode='extreme';
   spindleMode=mode;
   if(mode==='extreme'){ const D=ensureSpindleData(); const x=D.extreme||{}; extremeSet=new Set([x.mostDiverse,x.longestLiving,x.highestPeak].filter(v=>v!=null)); extremeSeeded=true; }
   if(mode==='selected' && !selectedSeeded){ seedSelected(); selectedSeeded=true; }
-  document.querySelectorAll('#spindleModeRow .mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
-  showSpindle();
+  syncSpindleModeButtons();
+  if(shown(document.getElementById('spindleShell'))) drawSpindle();
 }
 document.querySelectorAll('#spindleModeRow .mode').forEach(b=>{
   b.addEventListener('click',()=>setSpindleMode(b.dataset.mode));
 });
+(function buildSpindleSeg(){
+  const seg=document.getElementById('spindleSeg'); if(!seg) return;
+  for(const o of SPINDLE_MODES){ const b=document.createElement('button'); b.type='button';
+    b.dataset.smode=o[0]; b.textContent=o[1];
+    b.title=o[0]==='all'?'Every order at full strength; click a start dot to lift one out'
+      :o[0]==='selected'?'A curated handful of notable orders; click start dots to add or drop'
+      :'The most diverse, the longest-living and the highest-peaking order';
+    b.addEventListener('click',()=>setSpindleMode(o[0])); seg.appendChild(b); }
+  syncSpindleModeButtons();
+})();
+/* ---- the Taxonomic-class switch: one setting, three buttons -------------------------
+   On, the orders take their class colour, and a thin vertical tie is drawn at each order's
+   first appearance to a class-mate that was alive just then — a possible parent.  The 3-D
+   order map draws the same ties as horizontal connectors at that moment in time. */
+function setClassMode(on){
+  classMode=!!on;
+  const lab='Taxonomic class: '+(classMode?'On':'Off');
+  const b=document.getElementById('classBtn'); if(b){ b.textContent=lab; b.classList.toggle('active',classMode); }
+  for(const id of ['classTog','classTog3d']){ const t=document.getElementById(id); if(t){ t.textContent=lab; t.classList.toggle('on',classMode); } }
+  if(shown(document.getElementById('spindleShell'))) drawSpindle();
+  if(typeof redraw3D==='function') redraw3D();
+}
+for(const id of ['classBtn','classTog','classTog3d']){ const el=document.getElementById(id);
+  if(el) el.addEventListener('click',()=>setClassMode(!classMode)); }
 /* ---- click a start-dot to highlight / un-highlight that order ---- */
 spinC.addEventListener('click',e=>{
   if(!shown(document.getElementById('spindleShell'))) return;
@@ -3846,13 +3985,6 @@ document.getElementById('spindleBgBtn').addEventListener('click',function(){
   this.textContent='Background: '+(spindleShowBg?'on':'off');
   this.classList.toggle('active', !spindleShowBg);
   if(shown(document.getElementById('spindleShell'))) drawSpindle();
-});
-document.getElementById('classBtn').addEventListener('click',function(){
-  classMode=!classMode;
-  this.textContent='Taxonomic class: '+(classMode?'On':'Off');
-  this.classList.toggle('active', classMode);
-  if(shown(document.getElementById('spindleShell'))) drawSpindle();
-  if(td_visible()) draw3D();
 });
 /* normalised-lifetimes panel: dual min/max genera-per-order slider (drag on the dist canvas) */
 let distDragThumb=null;   /* 'lo' | 'hi' while dragging */
@@ -4017,7 +4149,7 @@ function bareRectsFor(key){
     case 'dist':      { const W=c.width, pad=6, gap=18, top=8, cellW=(W-2*pad-2*gap)/3, pw=cellW-52-14;
                         return [0,1,2].map(i=>({x:pad+i*(cellW+gap)+52, y:top+30, w:pw, h:pw})); }
     case 'origExt':   { const L=oeLayout(), S=L.S, r=[{x:OE_Lp,y:OE_Tp,w:S,h:S}];
-                        if(oeShowModel){ if(L.cols===2) r.push({x:OE_Lp+S+OE_GAPX+OE_Lp,y:OE_Tp,w:S,h:S});
+                        if(oeMode==='both'){ if(L.cols===2) r.push({x:OE_Lp+S+OE_GAPX+OE_Lp,y:OE_Tp,w:S,h:S});
                                          else r.push({x:OE_Lp,y:OE_Tp+S+OE_GAP,w:S,h:S}); }
                         return r; }
     default:          return [];            /* threed / class3d: set while drawing */
@@ -4715,10 +4847,7 @@ function draw3D(){
    td_toggleRect=miniToggle(td, W-16, 14+off, sourceLabels(td,B3,W*0.72), on?curMode:'data', B3);
    td_modeRect=td_toggleRect;
    td_swapRect=null;
-   if(!pngMode){
-     td_swapRect=mapSwitchBtn(td, td_toggleRect.x-Math.round(10*B3), 14+off, '\u25c2 Class 3D', B3, railInset(tdC)+8);
-     if(!td_swapRect) td_swapRect=mapSwitchBtn(td, W-16, td_toggleRect.y+td_toggleRect.h+Math.round(7*B3), '\u25c2 Class 3D', B3);
-   }                                   /* one line now carries both choices */
+   const swLab='Class 3D \u25b8', swW=pngMode?0:(mapSwitchW(td,swLab,B3)+Math.round(12*B3));
    const sl=td_toggleRect.y+td_toggleRect.h+Math.round(30*B3);
    if(on){ td.fillStyle=css('--ink'); td.font=Math.round(15*B3)+'px ui-monospace,monospace';
      td.textAlign='right'; td.textBaseline='middle';
@@ -4733,20 +4862,23 @@ function draw3D(){
    td.fillStyle=css('--ink'); td.textAlign='left'; td.textBaseline='top';
    const fFull=Math.round(19*B3);
    let f=fFull; td.font='bold '+f+'px '+SERIF;
-   const sameRow=td_swapRect&&td_swapRect.y<=td_toggleRect.y+2;
-   const budget=Math.max(120, (sameRow?td_swapRect.x:td_modeRect.x)-18-16);
+   /* the hop to the other map follows the title, so the title's room is what the Data /
+      Model switch leaves minus the button */
+   const budget=Math.max(120, td_modeRect.x-18-16-swW);
    while(f>9&&td.measureText(t).width>budget){ f=Math.round(f*0.92)||9; td.font='bold '+f+'px '+SERIF; }
    /* on a narrow panel the switches leave the title almost nothing, and shrinking it to
       fit beside them makes it unreadable.  Below a legible size it drops to a line of its
       own underneath the switches and keeps a proper size there. */
+   let tx=18, ty=14+off;
    if(f<Math.round(13*B3)){
-     const tx=Math.max(18, railInset(tdC));   /* clear of the time rail */
-     f=fFull; td.font='bold '+f+'px '+SERIF; const wide=W-tx-18;
+     tx=Math.max(18, railInset(tdC));   /* clear of the time rail */
+     f=fFull; td.font='bold '+f+'px '+SERIF; const wide=W-tx-18-swW;
      while(f>10&&td.measureText(t).width>wide){ f=Math.round(f*0.94)||10; td.font='bold '+f+'px '+SERIF; }
-     const below=(td_swapRect&&td_swapRect.y>td_toggleRect.y)?td_swapRect.y+td_swapRect.h:td_toggleRect.y+td_toggleRect.h;
-     const ty=below+Math.round(9*B3);
+     ty=td_toggleRect.y+td_toggleRect.h+Math.round(9*B3);
      td.fillText(t, tx, ty); titleBot=ty+f+Math.round(8*B3);
-   } else td.fillText(t, 18, 14+off);}
+   } else td.fillText(t, tx, ty);
+   if(!pngMode){ const tw=td.measureText(t).width;
+     td_swapRect=mapSwitchBtnAt(td, tx+tw+Math.round(12*B3), ty+Math.round(f*0.56)-Math.round(12*B3), swLab, B3); }}
   /* everything on the left starts below the two switch rows */
   const topBand=Math.max(14+Math.round(28*B3)+14, titleBot);
   const LX=railInset(tdC);
@@ -5007,10 +5139,7 @@ function drawClass3D(){
    c3_toggleRect=miniToggle(c3, W-16, 14+off, sourceLabels(c3,B3,W*0.72), on?curMode:'data', B3);
    c3_modeRect=c3_toggleRect;
    c3_swapRect=null;
-   if(!pngMode){
-     c3_swapRect=mapSwitchBtn(c3, c3_toggleRect.x-Math.round(10*B3), 14+off, '\u25c2 Order 3D', B3, railInset(c3C)+8);
-     if(!c3_swapRect) c3_swapRect=mapSwitchBtn(c3, W-16, c3_toggleRect.y+c3_toggleRect.h+Math.round(7*B3), '\u25c2 Order 3D', B3);
-   }                                   /* one line now carries both choices */
+   const swLab='Order 3D \u25b8', swW=pngMode?0:(mapSwitchW(c3,swLab,B3)+Math.round(12*B3));
    const sl=c3_toggleRect.y+c3_toggleRect.h+Math.round(30*B3);
    if(on){ c3.fillStyle=css('--ink'); c3.font=Math.round(15*B3)+'px ui-monospace,monospace';
      c3.textAlign='right'; c3.textBaseline='middle';
@@ -5023,17 +5152,18 @@ function drawClass3D(){
    c3.fillStyle=css('--ink'); c3.textAlign='left'; c3.textBaseline='top';
    const fFull=Math.round(19*B3);
    let f=fFull; c3.font='bold '+f+'px '+SERIF;
-   const sameRow=c3_swapRect&&c3_swapRect.y<=c3_toggleRect.y+2;
-   const budget=Math.max(120, (sameRow?c3_swapRect.x:c3_modeRect.x)-18-16);
+   const budget=Math.max(120, c3_modeRect.x-18-16-swW);
    while(f>9&&c3.measureText(t).width>budget){ f=Math.round(f*0.92)||9; c3.font='bold '+f+'px '+SERIF; }
+   let tx=18, ty=14+off;
    if(f<Math.round(13*B3)){          /* too cramped beside the switches: take a line below */
-     const tx=Math.max(18, railInset(c3C));   /* clear of the time rail */
-     f=fFull; c3.font='bold '+f+'px '+SERIF; const wide=W-tx-18;
+     tx=Math.max(18, railInset(c3C));   /* clear of the time rail */
+     f=fFull; c3.font='bold '+f+'px '+SERIF; const wide=W-tx-18-swW;
      while(f>10&&c3.measureText(t).width>wide){ f=Math.round(f*0.94)||10; c3.font='bold '+f+'px '+SERIF; }
-     const below=(c3_swapRect&&c3_swapRect.y>c3_toggleRect.y)?c3_swapRect.y+c3_swapRect.h:c3_toggleRect.y+c3_toggleRect.h;
-     const ty=below+Math.round(9*B3);
+     ty=c3_toggleRect.y+c3_toggleRect.h+Math.round(9*B3);
      c3.fillText(t, tx, ty); titleBot=ty+f+Math.round(8*B3);
-   } else c3.fillText(t, 18, 14+off);}
+   } else c3.fillText(t, tx, ty);
+   if(!pngMode){ const tw=c3.measureText(t).width;
+     c3_swapRect=mapSwitchBtnAt(c3, tx+tw+Math.round(12*B3), ty+Math.round(f*0.56)-Math.round(12*B3), swLab, B3); }}
   /* everything on the left starts below the two switch rows */
   const topBand=Math.max(14+Math.round(28*B3)+14, titleBot);
   const LX=railInset(c3C);
@@ -14548,7 +14678,7 @@ function setBasicView(v){
   $('diversityShell').style.display = v==='div'?'block':'none';
   /* the paired-count panel lives in slot 1 like these two, so it hides with them */
   {const c=$('countsShell'); if(c) c.style.display = v==='cnt'?'block':'none';}
-  if(BHOME[v]!=='sec1Slot'){ $('sec1Slot').appendChild($(BSHELL[v])); borrowed=v; }
+  if(BHOME[v]!=='sec1Slot'){ const el=$(BSHELL[v]); $('sec1Slot').appendChild(el); el.style.display='block'; borrowed=v; }
   document.querySelectorAll('#basicViewBtns [data-bview]').forEach(b=>b.classList.toggle('active',b.dataset.bview===v));
   swLabel($('sw1'),basicViews(),v);
   if(typeof setBasicNote==='function') setBasicNote();
@@ -14578,6 +14708,16 @@ const BVIEW_NOTE={
      +'order’s statistics and a drawing of an example animal.',
   c3d:'<b>Class 3D map</b> — the same, one cylinder per class, on the identical lifetime axis so a '
      +'position means the same thing in both maps.'};
+/* the three ways of looking at the Origination–Extinction map, in section 3 */
+const OE_NOTE={
+  data: BVIEW_NOTE.oe,
+  model:'<b>Model</b> — the same map drawn from the luck-versus-toughness model at the current '
+       +'luck: every genus keeps its real first appearance, and the model decides when it dies. '
+       +'The toughness unit and the luck value are set on the line above; the switch in the corner '
+       +'of the map chooses a log or linear colour scale.',
+  both:'<b>Data + Model</b> — the record on the left and the model on the right, on one shared '
+       +'colour scale, so the same (origination, extinction) cell can be compared directly. Where '
+       +'the model is too bright or too dark against the record is where its one idea falls short.'};
 function setBasicNote(){
   const el=document.getElementById('viewnote1'); if(!el) return;
   el.innerHTML=BVIEW_NOTE[basicView]||'&nbsp;';
@@ -14622,12 +14762,40 @@ function paintSection(id){
   if(id==='sec1'){ $('empty').style.display='none'; BDRAW[basicView](); }
   else if(id==='sec2'){ drawModel(curLuck,curMode); drawSurvSet();
     if(secOpen('secTech')){ drawMSD(); armMSDLuck(); drawDist(); } }
-  else if(id==='sec3'){ if(borrowed==='oe') setBasicView('ext'); $('oeHome').appendChild($('origExtShell')); drawOrigExt(); }
+  else if(id==='sec3'){ if(borrowed==='oe') setBasicView('ext'); $('oeHome').appendChild($('origExtShell')); setOEMode(oeMode); }
   else if(id==='sec4'){ if(borrowed==='o3d'||borrowed==='c3d') setBasicView('ext'); solidStart();
     $('o3dHome').appendChild($('threeDShell')); $('c3dHome').appendChild($('class3dShell'));
     if(!selectedSeeded){seedSelected();selectedSeeded=true;}
-    drawSpindle(); draw3D(); drawClass3D(); syncRotCursor(); td_startRot(); }
+    if(spindleMode==='extreme'&&!extremeSeeded) setSpindleMode('extreme');
+    drawSpindle(); setMapView(mapView); syncRotCursor(); }
 }
+/* --- section 4: one 3-D map at a time, orders or classes ------------------------------- */
+const MAP_VIEWS=[['o3d','Orders','Order 3D map'],['c3d','Classes','Class 3D map']];
+var mapView='o3d';
+const MAP_NOTE={o3d:BVIEW_NOTE.o3d,
+  c3d:'<b>Class 3D map</b> \u2014 one cylinder per class, cut into wedges for its orders, on the same '
+     +'lifetime axis as the order map so a position means the same thing in both. Tap a cylinder for '
+     +'the class and its orders.'};
+function setMapView(v){
+  if(!MAP_VIEWS.some(o=>o[0]===v)) v='o3d';
+  mapView=v;
+  const seg=$('mapSeg'); if(seg) for(const b of seg.children) b.classList.toggle('active',b.dataset.mview===v);
+  const tt=$('mapTitle'); if(tt) tt.textContent=(MAP_VIEWS.find(o=>o[0]===v)||MAP_VIEWS[0])[2];
+  const nb=$('viewnote4b'); if(nb) nb.innerHTML=MAP_NOTE[v]||'';
+  if(!secOpen('sec4')) return;
+  $('threeDShell').style.display=(v==='o3d')?'block':'none';
+  $('class3dShell').style.display=(v==='c3d')?'block':'none';
+  syncCanvasMemory();
+  if(v==='o3d') draw3D(); else drawClass3D();
+  td_startRot();
+  setTimeout(syncTimeRail,0); if(typeof layoutPhyla==='function') setTimeout(layoutPhyla,0);
+}
+(function buildMapSeg(){
+  const seg=$('mapSeg'); if(!seg) return;
+  for(const o of MAP_VIEWS){ const b=document.createElement('button'); b.type='button';
+    b.dataset.mview=o[0]; b.textContent=o[1]; b.title='Show the '+o[2];
+    b.addEventListener('click',()=>setMapView(o[0])); seg.appendChild(b); }
+})();
 let secSyncing=false;
 function paintOpenSection(){ for(const [sec] of SECS) if($(sec).open){ paintSection(sec); return; } }
 function openSection(id,fromCtl){
@@ -14711,8 +14879,8 @@ function applyPreset(k){
    and on the Technical analysis heading.  They are the same switch — whichever you turn,
    all three follow — so the reader never has to work out which of two record selectors is
    the one in force.  That ambiguity was the applet's worst piece of furniture. */
-const PRESET_SW=['swPreset','swPreset2','swPresetT'];
-const PRESET_SEG=['presetSeg1','presetSeg2','presetSegT'];
+const PRESET_SW=['swPreset','swPreset2','swPresetT','swPreset3','swPreset4'];
+const PRESET_SEG=['presetSeg1','presetSeg2','presetSegT','presetSeg3','presetSeg4'];
 /* Where there is room, the four records are shown as four segments rather than hidden
    behind a cycle button.  A cycle button asks the reader to click blind to discover what
    the choices even are; four segments simply say so. */
@@ -14842,7 +15010,7 @@ function setDsNote(){
    record switch narrows section 2.  A label without its sample size is half a label. */
 function setGenusCount(){
   const t='#genera = '+N.toLocaleString();
-  for(const id of ['gcount','gcount2','gcountT']){
+  for(const id of ['gcount','gcount2','gcountT','gcount3','gcount4']){
     const el=document.getElementById(id); if(!el) continue;
     el.textContent=t;
     el.title=N.toLocaleString()+' genera in the record now selected';
@@ -14961,6 +15129,7 @@ slider.addEventListener('input',()=>{
     if(m.v) m.v.textContent=(+slider.value).toFixed(2); } });
 bindLuck($('luck2'),$('luckval2'));
 bindLuck($('luck3'),$('luckval3'));
+bindLuck($('luck4'),$('luckval4'));
 document.querySelectorAll('.luckover input.lk').forEach(i=>bindLuck(i,null));
 /* the two 3-D copies are half length and appear only while that map shows the model */
 function syncLuckOverlays(){
@@ -15138,6 +15307,7 @@ function buildOrderGallery(){
   $('empty').style.display='none';
   setSurvView('dmod');
   setBasicView('ext');
+  setOEMode(oeMode); setMapView(mapView); syncSpindleModeButtons(); setClassMode(classMode);
   openSection('sec1');
   timeCutApply(0,false);
   syncTimeRail(); syncLuckOverlays(); buildD3Bars(); setRotMode(td_rotI);
