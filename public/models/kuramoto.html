@@ -40,6 +40,29 @@
   .dropbox a{color:var(--accent);text-decoration:none}
   .dropbox a:hover{text-decoration:underline}
   .dropbox .refs{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px}
+  .dropbox h2{font-size:14px;color:var(--ink);margin:16px 0 4px;padding-top:10px;border-top:1px solid var(--line);letter-spacing:0}
+  .dropbox h3{font-size:13px;color:var(--accent);margin:12px 0 2px;font-weight:650}
+  .lamtabwrap{display:flex;gap:12px;align-items:flex-start;margin:8px 0}
+  .lamtab{flex:1 1 auto;min-width:0;border-collapse:collapse;font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-variant-numeric:tabular-nums;color:var(--ink)}
+  .lamtab th,.lamtab td{padding:2px 3px 2px 0;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  .lamtab th{font-weight:650;color:var(--ink2);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:11.5px}
+  .lamtab th.grp{text-align:center;border-bottom:2px solid var(--line);color:var(--ink)}
+  .lamtab td.b{font-weight:600;border-right:1px solid var(--line);padding-right:2px}
+  .lamtab td.b + td, .lamtab td.sep + td{padding-left:2px;padding-right:0}
+  .lamtab td.bn{padding-left:0}
+  .lamtab td.dv{background:#fde68a;color:#7c2d12}
+  .lamtab td.note{text-align:left;color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:11px;border-bottom:0;white-space:normal;padding-right:0}
+  .lamtab td.note div{width:0;min-width:100%;line-height:1.35}
+  .lamtab th.grp{font-size:11px;white-space:normal;padding:2px 8px}
+  .lamtab th{padding-left:6px}
+  .lamtab td.sep{border-right:1px solid var(--line)}
+  .lamtab td.ch{color:#b91c1c;font-weight:600}
+  .lamtab td.fz{color:#1d4ed8}
+  .lamtabside{flex:0 0 auto;display:flex;flex-direction:column;gap:4px;align-items:center;font-size:11px;color:var(--muted);padding-top:4px}
+  .lamtabside .tbtn{font-size:12px;font-weight:700;color:var(--accent);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .lamtabside .lamside2{margin-top:10px;font-size:11px;color:var(--ink2);white-space:nowrap}
+  @media (max-width:560px){ .lamtabwrap{flex-direction:column} .lamtab{font-size:11px} .lamtab th,.lamtab td{padding:2px 5px} }
   .eqrow{display:flex;flex-wrap:wrap;gap:4px 20px;align-items:center}
   .eq{
     font-size:13.5px;color:var(--ink2);
@@ -75,6 +98,9 @@
     font-family:Georgia,serif;font-style:italic;
   }
   .tctl input{width:130px;accent-color:var(--accent);touch-action:pan-y}
+  .tctl select{font-style:normal;font-size:12.5px;padding:3px 4px;border:1px solid var(--line);border-radius:8px;
+    background:#fff;color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:600}
+  .tctl select.on{color:var(--accent);border-color:var(--accent)}
   .tctl b{
     min-width:40px;font-style:normal;font-weight:600;font-size:11.5px;color:var(--muted);
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
@@ -191,7 +217,36 @@
   .lyrow{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;min-height:26px}
   .lyrow + .lyrow{margin-top:2px}
   /* fixed-width value fields: the digits change, the line does not move */
-  #lLam,#lLoc{min-width:50px} #lK{min-width:32px} #lD{min-width:60px}
+  #lLam,#lLoc,#lSum{min-width:50px} #lK{min-width:32px} #lD{min-width:60px} #lWin{min-width:72px}
+  .lyap.free #bLyTerms,.lyap.free .lsum{display:none}
+  /* ---------- systematic scan ---------- */
+  .scan .triple{display:flex;gap:4px}
+  .scan .triple input,.scan .triple select,.scan input.num{width:58px;padding:5px 4px;border:1px solid var(--line);border-radius:8px;font-size:12.5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink);background:#fff}
+  .scan input.num{width:80px}
+  .scan select.scsel{min-width:70px}
+  .scan .row select{min-width:70px}
+  .scbtns{display:flex;gap:7px;margin:10px 0 6px}
+  .scbtns .btn{padding:8px 0}
+  .scanpanel .scanbody{padding:4px 2px 6px}
+  .scanpanel.closed .scanbody{display:none}
+  .scaneq{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:14px;color:var(--ink);margin:2px 2px 8px}
+  .scantab{width:auto;max-width:100%;margin-bottom:10px}
+  .scantab th,.scantab td{padding:2px 16px 2px 0}
+  .scantab td.b{padding-right:8px}
+  .scantab td.dv{background:#fde68a;color:#7c2d12;text-align:center}
+  .scan-wrap{position:relative;width:100%;height:780px}
+  canvas#scanView{position:absolute;inset:0;width:100%;height:100%;border-radius:8px}
+  .scanpanel.dark{background:#0b0d13;border-color:#2a3140}
+  .scanpanel.dark .lyaphead,.scanpanel.dark .scaneq,.scanpanel.dark .lamtab,.scanpanel.dark .lamtab td{color:#e8ecf5}
+  .scanpanel.dark .lamtab th{color:#aab3c7}
+  .scanpanel.dark .lamtab th,.scanpanel.dark .lamtab td{border-color:#2a3140}
+  .scanpanel.dark .ttl{color:#e8ecf5}
+  .scanpanel.dark .lstat{color:#aab3c7}
+  .scanpanel.dark .tbtn{background:#16233b;border-color:#2a3140;color:#c7d2fe}
+  .scanpanel.dark .lamtab td.ch{color:#fca5a5} .scanpanel.dark .lamtab td.fz{color:#93c5fd}
+  .scanpanel.dark .lamtab td.note{color:#8391ab}
+  @media (max-width:560px){ .scan-wrap{height:640px} .scan .triple input,.scan .triple select{width:48px} }
   #lNode{min-width:58px} .lyap.two #lNode{min-width:124px}
   /* colour bars: the scale of the main display, in the head of the Lyapunov
      panel (long) and beside the y-axis switch above the display (short) */
@@ -438,43 +493,349 @@
         2&pi;/k<sub>max</sub>, where k<sub>max</sub> = 1/&radic;2 is the wavenumber selected by the
         linearly unstable term, and the emergent large-scale dynamics carries an effective diffusion
         constant of about 15 (see Refs.&nbsp;[3–5]).</p>
-        <p><b>How chaotic? The largest Lyapunov exponent.</b> Open the section below the display
-        and the applet integrates, in parallel, a <i>twin</i> copy of the surface that starts a
-        tiny distance &epsilon; = 10<sup>&minus;6</sup> (rms) away. After every frame it measures
-        how far the two surfaces have drifted apart, |&delta;h|, adds
-        log(|&delta;h|/&epsilon;) to a running total, and pulls the twin back to distance
-        &epsilon; along the very same direction (Benettin's method). The total divided by the
-        elapsed time is the largest Lyapunov exponent &lambda;: a positive value means two
-        nearly identical surfaces separate as e<sup>&lambda;t</sup>, so the pattern cannot be
-        predicted beyond a time of order 1/&lambda;; zero or negative means the state is
-        periodic or steady. For the KS equation on a large box &lambda; &asymp; 0.09 in these
-        units. Right after a reset the twin's separation grows at the fastest linear rate,
-        &omega;<sub>max</sub> = 1/4, and &lambda; drops from there as the chaos saturates;
-        the &#8635; button restarts the average. The direction &delta;h(x) that the twin keeps
-        being pulled back along is the <b>Lyapunov vector</b> — the eigenvector of the most
-        unstable direction in state space — and the panel draws it: it is localized on the
-        cells that are just about to split or merge, the red marker sits on the most unstable
-        node (the point where |&delta;h| peaks), &lambda;<sub>loc</sub> is its present growth
-        rate (the eigenvalue belonging to that vector), and k&#772; is its rms wavenumber,
-        close to the cell wavenumber 1/&radic;2. The <b>free run</b> switch in the section is
-        the long-time check: the twin is then never pulled back, and the panel plots the
-        distance |&delta;h| between the two interfaces on a logarithmic scale against time.
-        A straight line means the separation grows as e<sup>&lambda;t</sup> — the exponent
-        stays positive — all the way up to the dashed level &radic;2&middot;W, the distance of
-        two completely diverged, uncorrelated interfaces, where the curve must bend over and
-        saturate; &lambda; is then read off as the fitted slope of the straight stretch, and
-        the readout |&delta;h|/&radic;2W tells how far the divergence has come (1 = complete).
-        Starting from &epsilon; = 10<sup>&minus;6</sup> with &lambda; &asymp; 0.09 this takes
-        about ln(10<sup>6</sup>)/&lambda; &asymp; 150 time units; press &#8635; for another
-        run; the |&delta;h|(t) record then appears as a second plot underneath the vector.
-        While the section is open the colour menu of the display also offers the <b>local
-        Lyapunov exponent</b> &lambda;(x) = ln(|&delta;h(x)|/&epsilon;)/&Delta;t of the twin —
-        positive where the two surfaces run apart, zero where they are still &epsilon; apart,
-        in the units of &lambda; — and its negative &minus;&lambda;(x) with the colour scale
-        reversed, so the instability can be painted directly on the profiles, the space–time
-        map or the 2D surface; the &delta;h(x) curve in the panel then takes the same colours
-        point for point, with the colour scale in its corner. The twin doubles the work per
-        step — close the section to run at full speed.</p>
+
+        <h2>Variant models: extra terms in the equation</h2>
+        <p>The KS equation is the <i>lowest-order</i> description of a growing front: it keeps only
+        the first terms of two expansions — in derivatives (long wavelengths) and in the slope
+        &nabla;h (gentle tilts). The header lets you go one step further in either expansion and
+        see what survives.</p>
+        <h3>Higher derivatives</h3>
+        <p>The toggle at the left replaces the two linear terms by
+        +&nabla;&#8308;h + &nabla;&#8310;h. The instability is then carried by the fourth derivative
+        and the cut-off by the sixth; a wave with wavenumber k grows at the rate
+        &omega; = k&#8308; &minus; k&#8310; instead of k&sup2; &minus; k&#8308;. The unstable band
+        0 &lt; k &lt; 1 is the same, but the fastest mode moves from k = 1/&radic;2 to
+        k = &radic;(2/3) and the growth near k = 0 is much weaker. The chaotic cell pattern
+        persists with slightly smaller cells — a first hint that the qualitative picture does
+        not depend on the exact form of the linear terms.</p>
+        <h3>The slope expansion: &alpha; and &beta;</h3>
+        <p>A front that advances at a speed depending only on its local tilt, v(&nabla;h), adds
+        a term v(&nabla;h) to &part;h/&part;t. Expanding v in the slope gives, by the symmetry
+        x &rarr; &minus;x, only even powers and even functions: |&nabla;h|, (&nabla;h)&sup2;,
+        (&nabla;h)&#8308;, … The KS equation keeps (&nabla;h)&sup2;, the term that lets a tilted
+        piece of front grow faster (a tilted flame front sees more fuel per unit length). The
+        two pull-down menus switch on its neighbours:</p>
+        <p><b>&alpha;|&nabla;h|</b> is the term <i>below</i> (&nabla;h)&sup2; in the expansion — it
+        is not analytic at zero slope and describes a front whose speed changes at first order
+        in the tilt, like a facetted crystal. With &alpha; &gt; 0 tilted parts grow faster
+        still: the cells become flatter and sharper, ridges form facets, the surface width W
+        shrinks (W &asymp; 0.8 at &alpha; = 1 against 2.7 for KS on the default lattice) while
+        the exponent stays chaotic, &lambda; &asymp; 0.09. With &alpha; &lt; 0 tilted parts are
+        <i>slowed</i>: the cells grow taller and rounder (W &asymp; 4.7 at &alpha; = &minus;1),
+        and the dynamics remains chaotic, &lambda; &asymp; 0.08.</p>
+        <p><b>&beta;(&nabla;h)&#8308;</b> is the term <i>above</i> (&nabla;h)&sup2;. It is small where
+        slopes are gentle and takes over where they are steep — precisely the place where the
+        long-wavelength, small-slope expansion behind KS is least trustworthy.</p>
+        <h3>The sign of the correction decides</h3>
+        <p>Since (&nabla;h)&sup2; &ge; 0 always adds growth, the <i>sign</i> of the next term
+        decides whether steep slopes are rewarded further or held back, and the two signs give
+        genuinely different worlds (measured on the default lattice, L = 128, periodic, after a
+        long run):</p>
+        <p><b>&beta; &gt; 0</b> rewards steep regions with extra growth. The steep flanks race ahead,
+        the surface flattens (W drops from 2.7 to 1.3 at &beta; = 2) and the mean height climbs
+        faster. At &beta; = 0.5 the front is still clearly chaotic (&lambda; &asymp; 0.07; the shape
+        changes by more than its own width every 20 time units). By &beta; = 2 the chaos is
+        essentially gone: the front settles into a steady cellular pattern that changes by only a
+        tenth of its width in 20 time units, and the measured exponent drops to &lambda; &asymp; 0.02
+        — a growth time of 50 time units, an order of magnitude slower than the cell dynamics
+        of KS. What remains is <i>metastability</i>, not chaos: long steady episodes that are
+        very weakly unstable, ending now and then in a rearrangement of a few cells, after which a
+        new steady front forms. With (&nabla;h)&sup2; switched off and &beta;(&nabla;h)&#8308; as the only
+        nonlinearity the front is steady outright, and the long-time divergence of two nearly
+        identical fronts is nil (free run slope &asymp; 0.00), even though the Benettin average
+        taken over a whole episode may show a small positive number (see <i>Benettin versus free
+        run</i> below).</p>
+        <p><b>&beta; &lt; 0</b> penalizes steep slopes. The cells grow tall and the front
+        <i>freezes</i>: already at &beta; = &minus;0.5 the largest Lyapunov exponent drops to
+        zero (measured &lambda; = &minus;0.001), and at &beta; = &minus;1.5 it is 0.01 — a steady or
+        slowly drifting cellular pattern instead of spatiotemporal chaos. The Lyapunov vector
+        then has a very long wavelength (k&#772; &asymp; 0.16 rather than the cell wavenumber
+        0.7): what remains "unstable" is a slow, large-scale reshuffling of cells, not the
+        splitting and merging that defines KS chaos.</p>
+        <p>The full &lambda;(&beta;) dependence for both equations, measured after the transient, is
+        tabulated at the end of this text. This is the sobering lesson of the variant models. The chaos of the KS equation is
+        robust against the |&nabla;h| correction, but a (&nabla;h)&#8308; term of moderate size — of
+        either sign, once |&beta;| is of order one — eliminates it: negative &beta; freezes the
+        cells, positive &beta; flattens them into a steady pattern with only rare rearrangements.
+        And it is not even robust against the form of the linear terms in this respect: with
+        +&nabla;&#8308;h + &nabla;&#8310;h in place of &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h the chaos survives
+        every positive &beta; (table). Whether a real front is chaotic therefore
+        depends on physics that the lowest-order expansion has thrown away — which casts doubt on
+        the range of validity of the long-wavelength, small-slope approximation as a description
+        of real chaotic fronts, and suggests that the universal large-scale (KPZ) behaviour should
+        be looked for only where the slopes stay gentle. The term budget of the Lyapunov section
+        (below) shows the mechanism directly: switch &beta; on and watch the &beta;(&nabla;h)&#8308;
+        strip take away the divergence that (&nabla;h)&sup2; and &minus;&nabla;&sup2;h produce on the
+        steep flanks.</p>
+        <h3>Two more terms with second derivatives: &gamma; and &delta;</h3>
+        <p>The last two menus add terms of the next order in the <i>derivative</i> expansion that
+        are still second order in the slope. <b>&gamma;&nabla;&sup2;(&nabla;h)&sup2;</b> is the
+        conserved counterpart of the KS nonlinearity: being a Laplacian of something, it moves
+        height around without changing the mean — the nonlinearity of conserved growth
+        (Villain–Lai–Das Sarma). <b>&delta;&nabla;&sup2;h&middot;(&nabla;h)&sup2;</b> is a diffusion whose
+        coefficient is the squared slope: for &delta; &gt; 0 steep parts of the front are smoothed
+        harder than flat parts, for &delta; &lt; 0 they are sharpened. Both terms carry two more
+        derivatives than (&nabla;h)&sup2;, and that decides their fate: for the "wrong" sign they
+        are not regularized by &minus;&nabla;&#8308;h at all. <b>&gamma; &gt; 0 and &delta; &lt; 0 blow up in
+        finite time</b> — at every time step tried, from 0.02 down to 0.002, so this is the equation
+        and not the integrator — and the run then stops with the "diverged" warning; the &delta; menu therefore offers only
+        &delta; &ge; 0. For
+        &gamma; &lt; 0 and &delta; &gt; 0 the runs are bounded and the integration is converged
+        already at the automatic time step (&gamma;: 0.02, &delta;: 0.01; W agrees with a
+        dt = 0.002 reference to 0.1 % for |&gamma;| &le; 5 and at dt = 0.01 for &delta;). A negative
+        &gamma; flattens the KS pattern strongly (W &asymp; 0.9 at &gamma; = &minus;0.5, 0.6 at
+        &minus;2) while the mean height still climbs; a positive &delta; keeps W near the KS value
+        (1.1–2.2). Both appear in the Lyapunov term budget and in the colour menu like the other
+        terms, so their share of the divergence can be read off directly — at &gamma; = &minus;0.5
+        in 2D, for instance, the &gamma; term <i>adds</i> +0.18 to &Lambda; while at &delta; = 0.5 the
+        &delta; term <i>removes</i> &minus;0.14, in both cases with the total still near the KS value.</p>
+        <p>Practical notes: the (&nabla;h)&sup2; term itself can be crossed out in the header. The
+        equation is then linear and would grow without bound, so &beta; jumps to 1 automatically
+        (and back to 0 when the term returns) — a way to see that &beta;(&nabla;h)&#8308; alone can
+        saturate the instability, giving cells of the same size but a different shape. The time
+        step follows the menus automatically, because the fourth power of the slope needs a
+        finer step than KS.</p>
+
+        <h2>How chaotic? The largest Lyapunov exponent</h2>
+        <h3>The idea</h3>
+        <p>Chaos means that two states that start almost identical end up completely different.
+        How fast? Take the running surface h and a <i>twin</i> that differs from it by a tiny
+        random displacement &delta;h of root-mean-square size &epsilon; = 10<sup>&minus;6</sup>,
+        and integrate both with the very same equation. If the state is chaotic the separation
+        grows exponentially, |&delta;h| &prop; e<sup>&lambda;t</sup>, and the growth rate &lambda; is
+        the <b>largest Lyapunov exponent</b>: positive means the pattern cannot be predicted
+        beyond a time of order 1/&lambda;; zero or negative means the pattern is periodic or
+        steady. For the KS equation on a large box &lambda; &asymp; 0.09 in the units of the
+        equation — a memory of about ten time units, roughly the time a cell takes to split.
+        Open the section below the display to start the measurement.</p>
+        <h3>Benettin's method</h3>
+        <p>An exponentially growing separation soon stops being small, so the applet measures
+        it in short pieces. After every frame it records how far the twin has drifted,
+        |&delta;h|, adds ln(|&delta;h|/&epsilon;) to a running total, and pulls the twin back to
+        distance &epsilon; <i>along the same direction</i>. The total divided by the elapsed time is
+        the growth rate, and &lambda; is its time average. The applet averages only over the
+        <b>last two thirds</b> of the time since the last reset or change of the equation (the
+        window is shown in the panel head): the first third, in which the twin still turns
+        into the Lyapunov vector and a freshly changed equation still settles, is dropped. The
+        same window is used for the term shares below. Right after a reset of the whole surface
+        the separation grows at the fastest linear rate, &omega;<sub>max</sub> = 1/4, and &lambda;
+        drops from there as the chaos saturates; the &#8635; button restarts the twin and the
+        average. (The random seed is smoothed to the unstable band and the first frame is not
+        counted, so that the short waves the &minus;&nabla;&#8308; term wipes out in a single step
+        do not bias the average.)</p>
+        <h3>The Lyapunov vector: where the unpredictability sits</h3>
+        <p>Because the twin is always pulled back along its present direction, that direction
+        &delta;h(x) converges to the <b>Lyapunov vector</b>: the perturbation that grows fastest
+        in the present state. The panel draws it. It is not spread evenly over the surface but
+        <i>localized</i> on the one or two cells that are just about to split or merge — this is
+        where the future of the pattern is decided. The red marker sits on the most unstable
+        node (where |&delta;h| peaks), &lambda;<sub>loc</sub> is the growth rate of this particular
+        vector right now (averaged over the last two time units), and k&#772; is its rms
+        wavenumber, close to the cell wavenumber 1/&radic;2 in KS chaos.</p>
+        <h3>Free run: the long-time check</h3>
+        <p>The <b>free run</b> switch never pulls the twin back. The panel then plots the distance
+        |&delta;h| between the two interfaces on a logarithmic scale against time: a straight
+        line means the separation grows as e<sup>&lambda;t</sup> all the way up to the dashed
+        level &radic;2&middot;W, the distance of two completely diverged, uncorrelated
+        interfaces, where the curve must bend over and saturate. &lambda; is read off as the
+        fitted slope of the straight stretch, and |&delta;h|/&radic;2W tells how far the
+        divergence has come (1 = complete). From &epsilon; = 10<sup>&minus;6</sup> with
+        &lambda; &asymp; 0.09 this takes about ln(10<sup>6</sup>)/&lambda; &asymp; 150 time units.</p>
+        <h3>Benettin versus free run — and can the separation shrink?</h3>
+        <p>In principle the two measure the same thing: the sum of the frame-by-frame logarithms
+        in Benettin's method <i>is</i> the logarithm of the free separation, as long as the
+        separation stays small, and the applet checks this for you — the exact term budget
+        (next section) reproduces the Benettin growth of every single frame to four digits.
+        When the two numbers nevertheless differ, look at the window and at the state. For a
+        chaotic KS front they agree within a few per cent after a hundred time units. For a
+        front that is steady or nearly so — large |&beta;|, or (&nabla;h)&#8308; as the only
+        nonlinearity — the picture changes: the state is <i>metastable</i>. A steady cellular
+        front can be very weakly unstable (growth rate a few hundredths) for hundreds of time
+        units and then rearrange a few cells, after which a new steady front with a different
+        stability forms. A Benettin average therefore depends on which episodes it covers, and a
+        random seed first loses its damped components and can be transiently amplified before
+        it settles into the slowest direction. The free run shows all of this as the shape of
+        the |&delta;h|(t) curve: a dip, a hump, straight stretches with different slopes. For
+        such states trust the free-run slope over the most recent straight stretch, and read a
+        small Benettin value as "not chaotic in any practical sense" — a growth time of 50 or
+        100 time units on a front that looks frozen is a slow instability of one particular
+        configuration, not spatiotemporal chaos.</p>
+        <p>And yes, the separation can shrink. If the front is linearly stable the largest
+        exponent is negative and |&delta;h| decays exponentially — the free-run curve is a
+        straight line going <i>down</i>, until it reaches the round-off floor at about
+        10<sup>&minus;16</sup> of the surface height, where it flattens. The fit then reports the
+        negative slope over the last two thirds of the record. A state with &lambda; = 0 exactly
+        — a steady front perturbed along its neutral translation mode, for periodic boundaries
+        — shows a flat line. In Benettin mode a negative &lambda; shows directly as a negative running
+        average.</p>
+
+        <h2>Which term produces the chaos? The term budget</h2>
+        <h3>An exact bookkeeping</h3>
+        <p>&lambda; tells how fast two nearly identical fronts separate; the budget tells
+        <i>which term of the equation</i> is responsible, and <i>where</i>. Write the equation
+        as &part;h/&part;t = &Sigma;<sub>i</sub> T<sub>i</sub>(h), one T<sub>i</sub> per term. The twin
+        obeys the same equation, so the difference &delta;h = twin &minus; field obeys exactly</p>
+        <p class="eqc">&part;<sub>t</sub>&delta;h = &Sigma;<sub>i</sub> [T<sub>i</sub>(twin) &minus; T<sub>i</sub>(field)].</p>
+        <p>For a linear term the bracket is simply T<sub>i</sub>(&delta;h); for a nonlinear term it
+        is the exact difference (no linearization is made, so the identity holds at any
+        separation). Multiply by &delta;h and average over the box: since
+        d/dt&thinsp;&frac12;&lang;&delta;h&sup2;&rang; = &lang;&delta;h&middot;&part;<sub>t</sub>&delta;h&rang;, the
+        growth rate of the separation splits into one share per term,</p>
+        <p class="eqc">&Lambda; = d&thinsp;ln|&delta;h|/dt = &Sigma;<sub>i</sub> &Lambda;<sub>i</sub>,
+        &nbsp; &Lambda;<sub>i</sub> = &lang;c<sub>i</sub>&rang;, &nbsp;
+        c<sub>i</sub>(x) = &delta;h(x)&middot;[T<sub>i</sub>(twin) &minus; T<sub>i</sub>(field)](x) / &lang;&delta;h&sup2;&rang;.</p>
+        <p>c<sub>i</sub>(x) is the <b>local contribution of term i</b> to the divergence rate, in
+        the units of &lambda;: positive where that term drives the two fronts apart, negative
+        where it pulls them together. Its spatial mean &Lambda;<sub>i</sub> is the term's share of
+        the instantaneous exponent, and the time average of &Sigma;<sub>i</sub>&Lambda;<sub>i</sub>
+        must be &lambda; itself. The panel shows this sum as <b>&Sigma;&thinsp;terms</b> next to the
+        Benettin value; the two agree to three digits once the average has run for a while,
+        which checks both measurements at once.</p>
+        <h3>Reading the plots</h3>
+        <p>The <b>terms</b> button (Benettin mode) opens, under the vector, one strip per term
+        of the equation: c<sub>i</sub>(x) with the lobes that add to the divergence in red and
+        those that remove from it in blue. The strips have their own scales, because the terms
+        differ by orders of magnitude; each caption gives the term's time-averaged and present
+        share. The last strip is the total &lambda;(x) = &Sigma;<sub>i</sub>c<sub>i</sub>(x). Below it
+        a <b>stacked plot</b> on the same scale as that strip builds the total up from the most
+        dissipative term: each shaded band, in the term's colour, is what the next term adds
+        above or removes below the running sum, and the full line on top is &lambda;(x) — the
+        very curve of the strip above, so the two can be compared directly. Under that, a
+        <b>waterfall</b> of the time averages lays the shares end to end from 0, most
+        dissipative first, ending at &Sigma; = &lambda;, with the Benettin &lambda; as a dashed marker.</p>
+        <h3>What it shows for KS</h3>
+        <p>For plain KS the budget reads &minus;&nabla;&sup2;h &asymp; +0.4, &minus;&nabla;&#8308;h &asymp; &minus;0.35,
+        (&nabla;h)&sup2; &asymp; +0.05. The negative diffusion produces the divergence, the fourth
+        derivative removes almost all of it, and the small remainder is the chaos. The
+        nonlinearity's net share is small, but locally it is as large as the other two,
+        positive on some cells and negative on others — it is the term that decides
+        <i>which</i> cell splits, and thereby moves the divergence around. Note that only the
+        <i>average</i> sign of a term is fixed: for a localized &delta;h the point-wise product
+        &delta;h&middot;(&minus;&nabla;&#8308;&delta;h) is negative under the peak but positive on the
+        flanks, so about half of the lattice points show a small positive value of the
+        &minus;&nabla;&#8308;h contribution although the term removes seven times more than it adds.</p>
+        <h3>Painting the budget on the display</h3>
+        <p>The colour menu of the display offers the same fields: the total <b>&lambda;(x)</b>,
+        its negative &minus;&lambda;(x), and &lambda;(&minus;&nabla;&sup2;h), &lambda;(&minus;&nabla;&#8308;h),
+        &lambda;((&nabla;h)&sup2;), &lambda;(&alpha;|&nabla;h|), &lambda;(&beta;(&nabla;h)&#8308;) for the terms
+        present in the equation, so the budget can be painted on the profiles, the space–time
+        map or the 2D surface. Clicking the colour bar above the display (or the button beside
+        it in 2D) switches to <i>grey &lambda;&lt;0</i>: the colour map only where the term adds,
+        grey to black where it removes, both signs on the same scale so their strengths can be
+        compared. The &delta;h(x) curve in the panel takes the same colours point for point.
+        Since c<sub>i</sub> carries the weight &delta;h&sup2;, all these fields are concentrated
+        where the Lyapunov vector lives and are very heavy-tailed — the few points under its
+        peak reach a hundred times the typical value — so the colour scale is set at the 98th
+        percentile of |c| and the rare peaks saturate. The twin doubles the work per step;
+        close the section to run at full speed.</p>
+        <h2>Table: Lyapunov exponent against &beta; for the two equations</h2>
+        <p>Measured with this applet's solver in 1D, periodic, L = 128, dx = 1, &alpha; = 0, with
+        (&nabla;h)&sup2; on. <b>Protocol:</b> each run first went through its transient — it was
+        continued in stretches of 100 time units until the interface width W averaged over two
+        successive stretches agreed to 8 % (at least 300 time units; 3000 for &beta; between
+        &minus;0.2 and &minus;0.07, and the rows marked &dagger; are those where W keeps growing for
+        about 2000 time units before it settles). Then the twin was integrated for 6000 time
+        units and the <b>Benettin</b> column is its growth rate averaged over the last third only,
+        t = 4000–6000. The <b>free run</b> column is the long-time divergence: during a further
+        2000 time units the twin was seeded again and again from the running state and released,
+        each run stopped 20 time units after the two fronts had completely diverged (or after
+        600 time units if they never did); the column gives the mean of the fitted slopes, and
+        hovering a value shows its scatter and the number of runs (4 for frozen fronts, 8–12 for
+        chaotic ones). W is the mean width during the Benettin window. The &beta; values are
+        those of the menu, without &minus;2, &minus;1, 3 and 4, plus &minus;0.3 and &minus;0.25; the rows from &minus;0.3 to &minus;0.15 come from the longer runs described below (4000 transient, 6000 Benettin, 3000 of free runs). The two buttons marked <i>L = 256, open</i> download the same table and plot for a box twice as large with open (flat-wall) boundaries, measured with the same protocol but shorter runs (3000 time units of Benettin averaging, last third; 1500 time units of free runs); <i>combined</i> puts the long-run (free-run) &lambda; of both boxes and both equations into one figure; the <i>KS + &beta; / &gamma; / &delta;</i> button downloads one table in which the KS equation is scanned over the same parameter values with each of the three slope corrections in turn (L = 128, periodic) — yellow cells are runs that diverge even at a third of the time step, or values beyond one that diverged.</p>
+        <div class="lamtabwrap">
+          <table class="lamtab" id="lamTable"></table>
+          <div class="lamtabside">
+            <span class="lamside2" style="margin-top:0">L = 128, periodic:</span>
+            <button class="tbtn" id="bLamTabPng" title="save the table above (L = 128, periodic boundaries) as a PNG image">table .png</button>
+            <button class="tbtn" id="bLamPlotPng" title="save a plot of the long-run &lambda; against &beta; for both equations as a PNG image">plot .png</button>
+            <span class="lamside2">KS + &beta; / &gamma; / &delta;:</span>
+            <button class="tbtn" id="bLamGDPng" title="one table for the KS equation with the three slope corrections &beta;(&nabla;h)&#8308;, &gamma;&nabla;&sup2;(&nabla;h)&sup2; and &delta;&nabla;&sup2;h(&nabla;h)&sup2; scanned over the same parameter values (L = 128, periodic); yellow: the run diverges (also at dt/3) or was not attempted because a smaller value already diverged — download only">table .png</button>
+            <span class="lamside2">both boxes:</span>
+            <button class="tbtn" id="bLamBothPng" title="one plot with the long-run (free-run) &lambda; of both equations for L = 128 periodic and L = 256 open — download only">combined .png</button>
+            <span class="lamside2">L = 256, open:</span>
+            <button class="tbtn" id="bLam256TabPng" title="the same table for a box of 256 with open (flat-wall) boundaries — download only">table .png</button>
+            <button class="tbtn" id="bLam256PlotPng" title="the same plot for a box of 256 with open boundaries — download only">plot .png</button>
+          </div>
+        </div>
+        <p>Two things stand out. For the <b>KS equation</b> the chaos lives only in a band around
+        &beta; = 0, roughly &minus;0.07 &le; &beta; &le; 0.7 (&lambda; &asymp; 0.07–0.10, with Benettin
+        and free run agreeing to a few per cent). At &beta; = 1 the front is already steady: the
+        Benettin rate over 2000 time units is 0.000, and the free runs give 0.01 &plusmn; 0.02 — an
+        occasional slow rearrangement, no chaos. &beta; &le; &minus;0.5 freezes the cells (one of
+        the four free runs at &beta; = &minus;0.5 caught such a rearrangement, slope 0.06, the other
+        three gave 0.003). A small negative &beta; (&minus;0.2 … &minus;0.1) lets the few cells that
+        survive grow enormously tall — W of 33 to 55 in a box of 128 — over thousands of time
+        units before the pattern settles; these giant-cell states are at most weakly unstable.
+        For the <b>&nabla;&#8308;h + &nabla;&#8310;h equation</b> the picture is very different: the
+        chaos survives every positive &beta; in the list, with &lambda; &asymp; 0.08–0.10 all the way
+        to &beta; = 5, and only negative &beta; of order &minus;0.1 or beyond freezes it (at
+        &beta; = &minus;0.1 three free runs gave 0 and one caught an event with slope 0.16). The
+        chaos of the higher-order equation is thus far more robust against the slope correction
+        than that of KS — a warning that conclusions drawn from the lowest-order KS form need not
+        carry over to fronts whose linear instability has a different shape.</p>
+        <h3>The peak at &beta; &asymp; &minus;0.2: giant cells, a re-entrant window, and several attractors</h3>
+        <p>Both curves rise again around &beta; = &minus;0.2 before they drop to zero at &beta; = &minus;0.3,
+        which looks odd. To test whether this is a statistical accident, &beta; = &minus;0.3, &minus;0.25,
+        &minus;0.2 and &minus;0.15 were rerun for both equations from four different initial conditions
+        (the default flat start with the two &epsilon; bumps; A = 0.01 with n = 7 waves; A = 1
+        with n = 2 waves and &epsilon; = 1; and a pure A = 1, n = 4 sine wave without bumps),
+        each with a 4000-time-unit transient, 6000 time units of Benettin averaging (last third)
+        and 3000 time units of repeated free runs. The peak is real and reproducible: the three
+        generic starts agree with each other and with the table to within their scatter.</p>
+        <p>For <b>KS</b> the state in this band is the <i>giant-cell</i> front: the pattern coarsens over
+        2000–4000 time units into only 3–6 very tall cells (W = 20–45) that recede on average
+        (&lang;h&rang; falls at 0.1–0.2 per time unit). That front is weakly but steadily unstable,
+        &lambda; &asymp; 0.03 from every generic start (0.025–0.041; Benettin and free run agree) — a
+        slow, continuing rearrangement of the giant cells rather than KS-type chaos, with a
+        growth time of some 30 time units. At &beta; = &minus;0.3 the default start instead stays with
+        14 small cells (W &asymp; 4, &lambda; &asymp; 0) while two of the other starts still reach the
+        giant-cell state with &lambda; &asymp; 0.02–0.04: at that &beta; the two states coexist.</p>
+        <p>For the <b>&nabla;&#8308;h + &nabla;&#8310;h equation</b> the window is different in kind: at
+        &beta; = &minus;0.2 and &minus;0.25 the three generic starts all give an <i>intermittent, chaotic</i>
+        front of 7–12 rather tall cells whose width swings between 6 and 20, with
+        &lambda; = 0.08–0.10 and the two fronts diverging completely in every free run — as chaotic
+        as at &beta; = 0. On both sides of it the front freezes: at &beta; = &minus;0.15 into 4 giant cells
+        (W &asymp; 10–15, &lambda; &asymp; 0.00) and at &beta; = &minus;0.3 into 14 small cells (W = 2.25,
+        &lambda; &asymp; 0.00). So the higher-order equation has a <b>re-entrant</b> chaotic window
+        between two frozen regimes, and the "peak" is that window sampled at one point.</p>
+        <p>The fourth start reveals a third attractor for both equations: the pure sine wave keeps its
+        exact four-fold symmetry, and from it the front settles into a <b>perfectly periodic</b>
+        steady pattern of 16 identical cells (wavelength 8, k = 0.79) with W &asymp; 2–3, which is
+        linearly <i>stable</i>: &lambda; = &minus;0.004 for KS and about &minus;0.1 to &minus;0.17 for the
+        higher-order equation (in the latter case the free-run separation decays to the round-off
+        floor within a few hundred time units, so the fitted slope reads 0 while the Benettin rate
+        gives the true negative value). In this band of negative &beta; the front therefore has at
+        least three coexisting long-time states — small periodic cells, giant cells, and (for the
+        higher-order equation) an intermittent chaotic state — and which one a run ends in depends
+        on the initial condition. The tabulated values are those reached from the default start;
+        the row marked &Dagger; is the one where a generic start can end up elsewhere.</p>
+        <h2>Table: the same scan in two dimensions</h2>
+        <p>The two equations in 2+1 dimensions on a periodic 64 &times; 64 box (dx = 1, the size of
+        the 2D preset), &alpha; = 0, (&nabla;h)&sup2; on, &beta; from &minus;5 to 5. Same protocol, shorter
+        runs (a 2D step costs the box side more): transient until the width W has settled, 900 time
+        units of Benettin averaging with &lambda; taken over the last third, then repeated free runs
+        over 400 time units. Hover a free-run value for its scatter and the number of runs.</p>
+        <div class="lamtabwrap">
+          <table class="lamtab" id="lamTable2D"></table>
+          <div class="lamtabside">
+            <span class="lamside2" style="margin-top:0">2D, L = 64, periodic:</span>
+            <button class="tbtn" id="bLam2DTabPng" title="save the 2D table as a PNG image">table .png</button>
+            <button class="tbtn" id="bLam2DPlotPng" title="save a plot of the long-run &lambda; against &beta; for both equations in 2D as a PNG image">plot .png</button>
+          </div>
+        </div>
+        <p>In two dimensions the slope correction acts quite differently. For <b>KS</b> the chaos is
+        stronger than in 1D (&lambda; &asymp; 0.2 at &beta; = 0 against 0.09) and it survives every
+        positive &beta; in the list — the surface flattens (W from 2.0 to 0.8 at &beta; = 5) but
+        &lambda; only sinks from 0.23 to 0.12 — whereas in 1D &beta; = 1 already freezes the front.
+        Negative &beta; lowers the exponent to 0.06–0.08 without freezing: the cells grow tall
+        (W = 12 at &beta; = &minus;0.2) and keep rearranging slowly, with the two fronts never reaching
+        complete divergence within a free run of 250 time units. For the <b>&nabla;&#8308;h + &nabla;&#8310;h
+        equation</b> the exponent is &lambda; &asymp; 0.5 for <i>every</i> &beta; from &minus;5 to 5 — a
+        chaos five times faster than 2D KS and essentially insensitive to the slope correction, with
+        only the width responding (W from 4.7 at &beta; = 0 to 1.0 at &beta; = 5). The freezing that
+        organizes the 1D picture — the band of &beta; in which the front settles into a steady cellular
+        pattern — has no counterpart in this 2D box.</p>
         <div class="refs">
           <p>[1] Y. Kuramoto &amp; T. Tsuzuki, <i>Persistent propagation of concentration waves in
           dissipative media far from thermal equilibrium</i>,
@@ -507,7 +868,7 @@
         <button data-v="6">+&nabla;&#8308;h +&nabla;&#8310;h</button>
       </span>
       <span class="eq eqterms"><span class="term on nl2" id="termNL2" role="button" tabindex="0"
-              title="the KS nonlinearity (&nabla;h)&sup2; — click to switch it off (crossed out) or on. Without it the equation is linear and blows up unless &alpha; or &beta; supplies the saturation">+ (&nabla;h)&sup2;</span>
+              title="the KS nonlinearity (&nabla;h)&sup2; — click to switch it off (crossed out) or on. Without it the equation is linear and blows up, so &beta; is set to 1 automatically when no other nonlinear term is on (and back to 0 when (&nabla;h)&sup2; returns)">+ (&nabla;h)&sup2;</span>
         <span class="term" id="termA">+ &alpha;|&nabla;h|</span>
         <span class="seg ordseg absseg" id="segAbs" hidden
               title="meaning of |&nabla;h| in 2D: the Euclidean norm &radic;((&part;h/&part;x)&sup2;+(&part;h/&part;y)&sup2;) (standard), or the sum |&part;h/&part;x| + |&part;h/&part;y|">
@@ -515,14 +876,17 @@
           <button data-v="sum">+ &alpha;(|h<sub>x</sub>|+|h<sub>y</sub>|)</button>
         </span>
         <span class="term" id="termB">+ &beta;(&nabla;h)&#8308;</span>
+        <span class="term" id="termG" title="&gamma;&nabla;&sup2;[(&nabla;h)&sup2;]: the conserved counterpart of the KS nonlinearity — it redistributes height without changing the mean">+ &gamma;&nabla;&sup2;(&nabla;h)&sup2;</span>
+        <span class="term" id="termD" title="&delta;&nabla;&sup2;h&middot;(&nabla;h)&sup2;: a slope-dependent (nonlinear) diffusion — &delta; &gt; 0 smooths steep regions, &delta; &lt; 0 sharpens them">+ &delta;&nabla;&sup2;h(&nabla;h)&sup2;</span>
         <span class="linwarn" id="linWarn" hidden title="no nonlinear term is active: the equation is linear and its unstable modes grow without bound">linear — add &alpha; or &beta;</span></span>
       <span class="tctl">&alpha;
-        <input type="range" id="rngAlpha" min="-3" max="3" step="0.1" value="0" title="&alpha;: &minus;3 … 3 in steps of 0.1">
-        <b id="alphaVal">0</b></span>
+        <select id="selAlpha" title="&alpha;: coefficient of the |&nabla;h| term"></select></span>
       <span class="tctl">&beta;
-        <input type="range" id="rngBeta" min="0" max="52" step="1" value="26"
-               title="&beta;: 0.1 steps inside |&beta;|&le;2, 0.5 steps out to &plusmn;5">
-        <b id="betaVal">0</b></span>
+        <select id="selBeta" title="&beta;: coefficient of the (&nabla;h)&#8308; term"></select></span>
+      <span class="tctl">&gamma;
+        <select id="selGamma" title="&gamma;: coefficient of the &nabla;&sup2;(&nabla;h)&sup2; term"></select></span>
+      <span class="tctl">&delta;
+        <select id="selDelta" title="&delta;: coefficient of the &nabla;&sup2;h&middot;(&nabla;h)&sup2; term (only &delta; &ge; 0: negative &delta; blows up in finite time)"></select></span>
     </div>
   </header>
 
@@ -556,8 +920,15 @@
           <option value="absdx">|dh/dx|</option>
           <option value="lap">d²h/dx²</option>
           <option value="nlap">−d²h/dx²</option>
-          <option value="lydiv" class="lyopt" hidden title="local Lyapunov exponent of the twin: λ(x) = ln(|δh(x)|/ε)/Δt, ε = 10⁻⁶, Δt the time the separation has grown">λ(x)</option>
+          <option value="lydiv" class="lyopt" hidden title="local Lyapunov density of the twin: λ(x) = δh·∂tδh/⟨δh²⟩ — where the separation of the two interfaces is produced (>0) or removed (<0); its spatial mean is the instantaneous exponent">λ(x)</option>
           <option value="nlydiv" class="lyopt" hidden title="the same with the colour scale reversed: −λ(x)">−λ(x)</option>
+          <option value="lyLin1" class="lyopt lyterm" hidden title="contribution of the first linear term to λ(x)">λ(−∇²h)</option>
+          <option value="lyLin2" class="lyopt lyterm" hidden title="contribution of the second linear term to λ(x)">λ(−∇⁴h)</option>
+          <option value="lyNL2" class="lyopt lyterm" hidden title="contribution of the KS nonlinearity (∇h)² to λ(x)">λ((∇h)²)</option>
+          <option value="lyA" class="lyopt lyterm" hidden title="contribution of the α|∇h| term to λ(x)">λ(α|∇h|)</option>
+          <option value="lyB" class="lyopt lyterm" hidden title="contribution of the β(∇h)⁴ term to λ(x)">λ(β(∇h)⁴)</option>
+          <option value="lyG" class="lyopt lyterm" hidden title="contribution of the γ∇²(∇h)² term to λ(x)">λ(γ∇²(∇h)²)</option>
+          <option value="lyD" class="lyopt lyterm" hidden title="contribution of the δ∇²h(∇h)² term to λ(x)">λ(δ∇²h(∇h)²)</option>
         </select>
         <select id="cmap" title="colour map">
           <optgroup label="diverging">
@@ -588,7 +959,7 @@
           <span>t = <b id="rt">0.0</b></span>
           <span>&lang;h&rang; = <b id="rmean">0.00</b></span>
           <span>W = <b id="rw">0.000</b></span>
-          <span class="lam" id="rlamWrap" style="display:none" title="largest Lyapunov exponent, running average since the last reset (section below)">&lambda; = <b id="rlam">—</b></span>
+          <span class="lam" id="rlamWrap" style="display:none" title="largest Lyapunov exponent, averaged over the last two thirds of the time since the last reset or change of the equation (section below)">&lambda; = <b id="rlam">—</b></span>
         </div>
         <div class="cornerpng">
           <button id="bPngClean" title="save only the surface — no axes, labels, frame or colour bar — as a PNG (key c)">.png</button>
@@ -615,7 +986,7 @@
           </div>
           <div class="prow">
             <button id="bPre1a" title="KS 1D with &alpha; = 1 (extra &alpha;|&nabla;h| growth)">KS 1D abs1</button>
-            <button id="bPre2a" title="KS 2D with &alpha; = 1.4, dt = 0.1">KS 2D abs1</button>
+            <button id="bPre2a" title="KS 2D with &alpha; = 1.5, dt = 0.1">KS 2D abs1</button>
           </div>
           <div class="prow">
             <button id="bPre1n" title="KS 1D with strong nonlinearity &beta; = 1.5, dt = 0.02">KS 1D nnl</button>
@@ -632,10 +1003,12 @@
              line never re-wraps as the digits change) -->
         <div class="lyrow">
           <span class="ttl" id="lyapToggle" title="open to compute the largest Lyapunov exponent and show its vector — close to run at full speed"><span class="chev"></span>Largest Lyapunov exponent &lambda; and its vector &delta;h</span>
-          <span class="lstat lam" title="largest Lyapunov exponent: time average of the growth rate of the twin separation">&lambda; = <b id="lLam">—</b></span>
+          <span class="lstat lam" title="largest Lyapunov exponent: time average of the growth rate of the twin separation (Benettin) over the last two thirds of the time since the last reset or change of the equation">&lambda; = <b id="lLam">—</b></span>
+          <span class="lstat lsum" title="check: the sum of the time-averaged contributions of the single terms of the equation, Σ⟨Λᵢ⟩ — must agree with λ">&Sigma;&thinsp;terms = <b id="lSum">—</b></span>
           <span class="lstat" title="growth rate of the vector shown right now (2 time-unit average) — the eigenvalue belonging to it">&lambda;<sub>loc</sub> = <b id="lLoc">—</b></span>
           <span class="lstat" title="most unstable node: where |&delta;h| is largest">max at <b id="lNode">—</b></span>
           <span class="lstat" title="rms wavenumber of &delta;h (KS cells: 1/&radic;2 &asymp; 0.71)">k&#772; = <b id="lK">—</b></span>
+          <span class="lstat" title="averaging window of &lambda; and of the term shares: the last two thirds of the time since the last reset or change of the equation (the first third, where the twin still converges to the Lyapunov vector, is dropped)">averaged over t = <b id="lWin">—</b></span>
           <span class="lhint" id="lyapHint">closed — open to measure (doubles the work per step)</span>
         </div>
         <!-- line 2: the colour scale of the main display, and the mode controls -->
@@ -649,10 +1022,30 @@
           <div class="seg mini" id="segLyMode" title="Benettin: twin pulled back to &epsilon; every frame, &lambda; = running average. Free: twin runs off until the interfaces have completely diverged, &lambda; = slope of log|&delta;h|">
             <button data-v="renorm" class="on">Benettin</button><button data-v="free">free run</button>
           </div>
+          <button class="tbtn splitbtn" id="bLyTerms" title="term budget: one spatial plot per term of the equation showing how much that term adds to (>0) or removes from (<0) the divergence of the two interfaces, c&#7522;(x) = &delta;h&middot;[T&#7522;(twin) &minus; T&#7522;(field)]/&lang;&delta;h&sup2;&rang;; the sum of all plots is &lambda;(x), and the time-averaged means add up to &lambda;">terms</button>
           <button class="tbtn" id="bLyapReset" title="restart the twin trajectory and the average">&#8635;</button>
         </div>
       </div>
       <div class="lyap-wrap"><canvas id="lyapView"></canvas></div>
+    </section>
+
+    <!-- =============== Systematic scan results =============== -->
+    <section class="display lyap closed scanpanel" id="scanPanel">
+      <div class="lyaphead">
+        <div class="lyrow">
+          <span class="ttl" id="scanToggle" title="results of the systematic scan (control panel → Systematic scan)"><span class="chev"></span>Systematic scan: &lambda; and W against the scanned coefficient</span>
+          <span class="lstat" id="scanInfo">no scan yet</span>
+          <span class="spacer"></span>
+          <button class="tbtn splitbtn" id="scanTabPng" title="save the table as a PNG image">table .png</button>
+          <button class="tbtn splitbtn" id="scanPlotPng" title="save the figure as a PNG image">plot .png</button>
+          <button class="tbtn" id="scanBW" title="black / white background of table and figure"><span class="bwcirc"></span></button>
+        </div>
+      </div>
+      <div class="scanbody">
+        <div class="scaneq" id="scanEq"></div>
+        <table class="lamtab scantab" id="scanTable"></table>
+        <div class="scan-wrap"><canvas id="scanView"></canvas></div>
+      </div>
     </section>
    </div>
 
@@ -778,6 +1171,43 @@
       </details>
 
       <details>
+        <summary>Systematic scan</summary>
+        <div class="sect scan">
+          <div class="hint" style="margin-bottom:6px">Scan one coefficient of the equation and tabulate the largest Lyapunov exponent (Benettin and free run) and the mean width W. Runs in the background without drawing; the results appear in the section under the Lyapunov panel.</div>
+          <div class="row"><label>linear terms</label>
+            <div class="seg ordseg" id="scOrd"><button data-v="4" class="on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button><button data-v="6">+&nabla;&#8308;h +&nabla;&#8310;h</button></div></div>
+          <div class="row"><label>(&nabla;h)&sup2;</label>
+            <div class="seg mini" id="scNL2"><button data-v="1" class="on">on</button><button data-v="0">off</button></div></div>
+          <div class="row"><label>&alpha;|&nabla;h|</label><select id="scA" class="scsel"></select></div>
+          <div class="row"><label>&beta;(&nabla;h)&#8308;</label><select id="scB" class="scsel"></select></div>
+          <div class="row"><label>&gamma;&nabla;&sup2;(&nabla;h)&sup2;</label><select id="scG" class="scsel"></select></div>
+          <div class="row"><label>&delta;&nabla;&sup2;h(&nabla;h)&sup2;</label><select id="scD" class="scsel"></select></div>
+          <div class="row"><label>scanned coefficient</label>
+            <select id="scPar"><option value="beta">&beta;</option><option value="alpha">&alpha;</option><option value="gamma">&gamma;</option><option value="delta">&delta;</option><option value="L">system size L</option></select></div>
+          <div class="row" id="scLRow" style="display:none"><label>sizes 16, 32, … , 2<sup>n</sup>, n =</label>
+            <select id="scNmax" title="the sizes L = 16, 32, 64, … up to 2^n are sampled (2D: at most 2^8)"></select></div>
+          <div class="row" id="scRangeRow"><label>from &middot; to &middot; step</label>
+            <span class="triple"><input type="number" id="scMin" value="-1" step="any" title="first value"><input type="number" id="scMax" value="1" step="any" title="last value"><select id="scStep" title="step of the scanned coefficient; the points −0.1, 0 and +0.1 are always included"><option>0.1</option><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option><option>5</option></select></span></div>
+          <div class="row"><label>dimension</label>
+            <div class="seg mini" id="scDim"><button data-v="1" class="on">1D</button><button data-v="2">2D</button></div></div>
+          <div class="row"><label>size L</label>
+            <select id="scL"><option>32</option><option>64</option><option selected>128</option><option>256</option></select></div>
+          <div class="row"><label>boundary</label>
+            <div class="seg mini" id="scBC"><button data-v="periodic" class="on">periodic</button><button data-v="open">open</button></div></div>
+          <div class="row"><label>transient (total = 2&times;)</label>
+            <select id="scTrans" title="length of the transient before the twin is switched on; the measurement then lasts as long again"><option>100</option><option selected>200</option><option>500</option><option>1000</option><option>2000</option><option>5000</option></select></div>
+          <div class="row"><label>NMC (initial conditions)</label>
+            <select id="scNMC"><option selected>1</option><option>2</option><option>3</option><option>5</option><option>10</option></select></div>
+          <div class="scbtns">
+            <button class="btn primary" id="scStart">start sampling</button>
+            <button class="btn" id="scStop" disabled>stop</button>
+          </div>
+          <div class="hint" id="scStatus">idle</div>
+          <div class="hint">The scanned points are the range in the chosen step plus always &minus;0.1, 0 and +0.1; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient, then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A value whose run diverges is marked yellow.</div>
+        </div>
+      </details>
+
+      <details>
         <summary>About this model</summary>
         <div class="sect about">
           <p><b>The equation.</b> <i>&part;h/&part;t = &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h + (&nabla;h)&sup2;</i>
@@ -796,25 +1226,33 @@
           equation's pattern relax into the other's.</p>
           <p><b>Switching the KS nonlinearity off.</b> The term <i>(&nabla;h)&sup2;</i> in the
           header is a switch: click it and it is crossed out and dropped from the equation. What
-          remains is then linear, and the unstable band 0 &lt; k &lt; 1 grows without bound — the run
-          stops with a warning — unless one of the two extra terms below is switched on to take
-          over the saturation. This lets you see how far the KS picture depends on the particular
+          remains is then linear, and the unstable band 0 &lt; k &lt; 1 grows without bound
+          unless one of the two extra terms below takes over the saturation — so when neither
+          is on, &beta; is set to 1 automatically (and back to 0 when (&nabla;h)&sup2; returns,
+          unless &beta; was moved by hand in between); with the term crossed out and both
+          sliders at zero the run would stop with a warning. This lets you see how far the KS picture depends on the particular
           form of its nonlinearity: with &alpha;|&nabla;h| or &beta;(&nabla;h)&#8308; alone the
           pattern still forms cells of the same size, since the cell size is fixed by the linear
           terms, but their shape and dynamics change.</p>
-          <p><b>Extra growth terms.</b> The sliders in the header switch on two optional
+          <p><b>Extra growth terms.</b> The two pull-down menus in the header switch on two optional
           slope-dependent growth terms. <i>&alpha;|&nabla;h|</i> makes the front advance in
           proportion to the local slope magnitude — a non-analytic term that favours facets and
-          sharp ridges (&alpha; &lt; 0 slows sloped regions instead); the slider runs over
-          &plusmn;3 in steps of 0.1, and beyond |&alpha;| = 2 the time step drops to 0.05 to
+          sharp ridges (&alpha; &lt; 0 slows sloped regions instead); the menu offers values from
+          &minus;5 to +5, and beyond |&alpha;| = 2 the time step drops to 0.05 to
           follow the steeper facets. <i>&beta;(&nabla;h)&#8308;</i>
           is the next order in the slope expansion of a growing front: &beta; &lt; 0 tames steep
           slopes and lets the cells grow taller, while &beta; &gt; 0 rewards steep regions with
-          extra growth, which flattens the surface and speeds up the mean climb. The &beta; slider
-          runs over &plusmn;5 — in steps of 0.1 inside |&beta;| &le; 2 and 0.5 outside — and the
+          extra growth, which flattens the surface and speeds up the mean climb. The &beta; menu
+          runs from &minus;5 to +5, finely spaced near zero on the negative side, and the
           time step follows it automatically (0.02 up to |&beta;| = 2, then 0.01 and 0.005), which
           keeps the fourth-order integration accurate; runs stay bounded over the whole range,
-          but if a combination ever does blow up the run stops with a warning. Both terms act
+          but if a combination ever does blow up the run stops with a warning. Two further menus
+          add <i>&gamma;&nabla;&sup2;(&nabla;h)&sup2;</i>, the conserved (mean-preserving) counterpart of
+          the KS nonlinearity, and <i>&delta;&nabla;&sup2;h&middot;(&nabla;h)&sup2;</i>, a diffusion with the
+          squared slope as coefficient; &gamma; &gt; 0 and &delta; &lt; 0 blow up in finite time (a
+          property of the equation, not of the time step), &gamma; &lt; 0 and &delta; &gt; 0 run
+          bounded, with the time step limited to 0.02 and 0.01 respectively; the &delta; menu therefore
+          offers only &delta; &ge; 0. All four terms act
           instantly, without a reset. In 2D the slope magnitude |&nabla;h| has two natural
           readings, and the header shows them on a toggle switch: the Euclidean norm
           <i>&radic;(h<sub>x</sub>&sup2; + h<sub>y</sub>&sup2;)</i>, the isotropic standard, or the
@@ -862,23 +1300,25 @@
           honest choice for signed quantities; <b>rainbow</b> (jet, turbo) maximize contrast;
           <b>sequential</b> (viridis, plasma, magma, cividis, ice, yellow, flames, grayscale) run
           monotonically in lightness and are the right pick for |&nabla;h| and for print.
-          While the Lyapunov section below the display is open, two further colourings appear
-          at the end of the list: the <b>local Lyapunov exponent</b>
-          &lambda;(x) = ln(|&delta;h(x)|/&epsilon;)/&Delta;t of the twin trajectory — the
-          point-wise version of the growth rate log(|&delta;h|/&epsilon;)/&Delta;t whose
-          spatial and temporal average is &lambda; itself, so the colours are in the same units
-          as the exponent — and its negative &minus;&lambda;(x), the same picture with the colour
-          scale reversed. Here &Delta;t is the time the separation has had to grow: in Benettin
-          mode one frame since the last pull-back, so the colours show <i>where</i> and how
-          fast the instability acts right now; in a free run the whole time since the seed, so
-          &lambda;(x) settles towards the global exponent as the run proceeds. Zero (white in
-          the diverging maps) marks points whose separation still equals the initial displacement
-          &epsilon; = 10<sup>&minus;6</sup>; positive values are the places where the two
-          surfaces have run apart, i.e. where the Lyapunov vector lives, the cells about to
-          split or merge. Nodal points, where &delta;h crosses zero, are floored at 1% of the
-          rms separation so the logarithm stays finite. The display amplitude does not act on
-          this quantity, and the colour bar shows its actual range. While one of these two
-          colourings is selected the Lyapunov panel is <b>linked</b> to the display: the curve
+          While the Lyapunov section below the display is open, further colourings appear
+          at the end of the list: the <b>local Lyapunov density</b>
+          &lambda;(x) = &delta;h&middot;&part;<sub>t</sub>&delta;h/&lang;&delta;h&sup2;&rang; of
+          the twin trajectory — the point-wise production of the divergence rate, whose
+          spatial mean is the instantaneous exponent &Lambda; and whose space–time average is
+          &lambda; itself, so the colours are in the units of the exponent — its negative
+          &minus;&lambda;(x) with the colour scale reversed, and the <b>contribution of each
+          term</b> of the equation, &lambda;(&minus;&nabla;&sup2;h), &lambda;(&minus;&nabla;&#8308;h),
+          &lambda;((&nabla;h)&sup2;), &lambda;(&alpha;|&nabla;h|), &lambda;(&beta;(&nabla;h)&#8308;)
+          (only the terms present in the equation are listed; with the higher-order operator
+          the first two read &lambda;(+&nabla;&#8308;h), &lambda;(+&nabla;&#8310;h)), which add
+          up point by point to &lambda;(x) — see the term budget under <i>Lyapunov exponent
+          and vector</i>. Positive values (warm in the diverging maps) are the places where a
+          term drives the two surfaces apart, negative values where it pulls them together;
+          all of these fields carry the weight &delta;h&sup2;, so they are concentrated where
+          the Lyapunov vector lives, on the cells about to split or merge. The display
+          amplitude does not act on these quantities, and the colour bar shows their actual
+          range. While one of these colourings is selected the Lyapunov panel is <b>linked</b>
+          to the display: the curve
           &delta;h(x)/max|&delta;h| (in 2D the map) is painted point by point in the very colour
           the display gives the same x, and a small copy of the colour scale with its extreme
           values sits in the lower right corner of the panel, so a feature can be identified
@@ -888,11 +1328,12 @@
           the growing spots, and a grey-to-black scale for &lambda; &lt; 0, grey at zero and
           black at the most negative value — so the unstable islands stand out against the
           contracting background; on a phone the two maps stack vertically. The main display
-          can be switched to the same convention: with &lambda;(x) selected, the <b>standard /
-          grey &lambda;&lt;0</b> button beside the short colour bar above the display (2D), or a
-          click on that colour bar itself (1D and 2D), paints &lambda; &gt; 0 with the chosen
-          colour map and &lambda; &lt; 0 from grey to black, each side scaled to its own
-          extreme; all colour bars follow.</p>
+          can be switched to the same convention: with &lambda;(x) or one of the term
+          contributions selected, the <b>standard / grey &lambda;&lt;0</b> button beside the
+          short colour bar above the display (2D), or a click on that colour bar itself (1D
+          and 2D), paints &lambda; &gt; 0 with the chosen colour map and &lambda; &lt; 0 from
+          grey to black, both sides on one common scale (the 98th percentile of |&lambda;|,
+          since the densities are heavy-tailed); all colour bars follow.</p>
           <p><b>Saving a picture.</b> The <b>.png</b> button in the control panel writes the
           current display — and only the display, without any of the control overlays — to a
           PNG at twice the screen resolution, with the equation actually being integrated and
@@ -907,9 +1348,10 @@
           started a distance &epsilon; = 10<sup>&minus;6</sup> (rms) away. After every frame
           the separation &delta;h is measured, its growth log(|&delta;h|/&epsilon;) is added
           up, and the twin is pulled back to distance &epsilon; along the same direction
-          (Benettin's method). The running average of the growth rate is the largest Lyapunov
+          (Benettin's method). The time average of the growth rate over the last two thirds of
+          the time since the last reset or change of the equation is the largest Lyapunov
           exponent &lambda;, shown after W in the corner readout and in the section below the
-          display (open it to start the measurement); positive means neighbouring states separate exponentially, at a rate
+          display (open it to start the measurement; the window is shown in its head); positive means neighbouring states separate exponentially, at a rate
           &lambda;, so the pattern is unpredictable beyond a horizon of order 1/&lambda;. For
           the plain KS equation on a large box &lambda; &asymp; 0.09 in these units; on a small
           box or in a periodic (non-chaotic) state it settles at zero or below. Right after a
@@ -921,17 +1363,71 @@
           <b>most unstable node</b> — the lattice point where |&delta;h| peaks — together with
           &lambda;<sub>loc</sub>, the current growth rate (the eigenvalue belonging to that
           vector, averaged over the last two time units), and the rms wavenumber
-          k&#772; of &delta;h. The same separation can be painted onto the main display:
-          while the section is open the colour menu gains the local exponent
-          &lambda;(x) = ln(|&delta;h|/&epsilon;)/&Delta;t and &minus;&lambda;(x), and the panel's
-          &delta;h(x) curve then borrows the display's colours (see <i>Displays</i>). The &#8635; button restarts the twin and the average; changing
-          &alpha;, &beta; or the linear terms restarts the average automatically. The twin
+          k&#772; of &delta;h. The twin is seeded in a random direction smoothed to the
+          unstable band (a white-noise seed would lose most of its weight to the
+          &minus;&nabla;&#8308; damping within one step, a spurious drop that would bias the
+          average), and the first frame after any seed is left out of the averages.</p>
+          <p><b>Term budget of the divergence.</b> The Benettin measurement says <i>how fast</i>
+          the two interfaces separate; the budget says <i>which term of the equation does
+          it, and where</i>. Since the twin obeys the same equation, the difference
+          &delta;h = twin &minus; field satisfies exactly
+          &part;<sub>t</sub>&delta;h = &Sigma;<sub>i</sub>[T<sub>i</sub>(twin) &minus; T<sub>i</sub>(field)],
+          one bracket per term T<sub>i</sub> of the right-hand side (for the linear terms the
+          bracket is T<sub>i</sub>(&delta;h); for the nonlinear ones the exact difference,
+          not a linearization, so the identity holds at any separation). Multiplying by
+          &delta;h and averaging over the box,
+          &Lambda; = d&thinsp;ln|&delta;h|/dt = &Sigma;<sub>i</sub>&Lambda;<sub>i</sub> with
+          &Lambda;<sub>i</sub> = &lang;c<sub>i</sub>&rang; and
+          c<sub>i</sub>(x) = &delta;h(x)&middot;[T<sub>i</sub>(twin) &minus; T<sub>i</sub>(field)](x)/&lang;&delta;h&sup2;&rang;.
+          The applet evaluates the brackets exactly as the integrator does (spectral
+          derivatives, 2/3-rule dealiasing of the nonlinear terms, the k = 0 mode removed since
+          the mean growth is absorbed into &lang;h&rang; for both trajectories), once per frame
+          before the pull-back. c<sub>i</sub>(x) is the <b>local contribution of term i</b> to
+          the divergence rate, in the units of &lambda;; &Lambda;<sub>i</sub> is the term's share
+          of the instantaneous exponent; and the time average of
+          &Sigma;<sub>i</sub>&Lambda;<sub>i</sub>, shown as <b>&Sigma;&thinsp;terms</b> in the
+          panel head, must equal the Benettin &lambda; — it does to three digits after a
+          few hundred time units, a check that both measurements are right. The <b>terms</b>
+          button (Benettin mode) opens one plot per term under the vector: in 1D a strip of
+          c<sub>i</sub>(x) on its own scale (the terms differ by orders of magnitude) with the
+          lobes that add to the divergence in red and those that remove from it in blue, in 2D
+          a small blue–red map on a shared scale with the total &lambda;(x,y) first; the
+          caption of each gives the time average &lang;&Lambda;<sub>i</sub>&rang;<sub>t</sub> and
+          the present value, and the red marker is the most unstable node as above. Under
+          the strips (1D) a <b>stacked summary</b> on one common scale builds the total up
+          from the most dissipative term: each shaded band, in the term's colour, is what
+          that term adds above or removes below the running sum, and the top curve is
+          &lambda;(x) = &Sigma;<sub>i</sub>c<sub>i</sub>(x). The last row, in 1D and 2D, is a
+          <b>waterfall</b> of the time averages: bars laid end to end from 0, most
+          dissipative first, ending at &Sigma;&lang;&Lambda;<sub>i</sub>&rang;<sub>t</sub> = &lambda;,
+          with the Benettin &lambda; as a dashed marker. For plain
+          KS the budget reads roughly &minus;&nabla;&sup2;h: +0.4, &minus;&nabla;&#8308;h: &minus;0.35,
+          (&nabla;h)&sup2;: a few hundredths — the linear instability produces the divergence,
+          the fourth derivative removes almost all of it, and the nonlinearity's net share is
+          small although locally it is as large as the other two, positive on some cells and
+          negative on others. All of these fields are also offered in the colour menu of the
+          display (&lambda;(x), &minus;&lambda;(x), &lambda;(&minus;&nabla;&sup2;h), …), and the
+          panel's &delta;h(x) curve then borrows the display's colours (see <i>Displays</i>).
+          The &#8635; button restarts the twin and the averages; changing
+          &alpha;, &beta; or the linear terms restarts the averages automatically. The twin
           doubles the work per step and runs only while the section is open — close it to run
           at full speed. The <b>free run</b> mode never pulls the twin back: it records
           |&delta;h|(t) on a log scale, in a second plot below the vector, until the two interfaces have completely diverged
           (|&delta;h| &rarr; &radic;2&middot;W, the dashed line), fits &lambda; as the slope of the
           exponential stretch, and reports |&delta;h|/&radic;2W and the time of saturation
           — a check that the exponent stays positive right up to full divergence.</p>
+          <p><b>Systematic scan.</b> The <i>Systematic scan</i> menu runs the measurements of the
+          tables in the pull-down text for your own choice of equation: set the linear terms,
+          (&nabla;h)&sup2; and the fixed coefficients, choose which coefficient to scan and its range
+          and step, the dimension, box size and boundary, the transient and the total time per
+          sample, and how many random initial conditions (NMC) to average over. Pressing <i>start
+          sampling</i> pauses the display and integrates the samples in the background; the
+          section under the Lyapunov panel fills with a table of the free-run and Benettin
+          exponents and the mean width against the scanned coefficient (mean &plusmn; spread over
+          the random starts when NMC &gt; 1), and a figure in the style of the pictures of the
+          pull-down text. Both have <i>.png</i> buttons and a black/white background toggle.
+          A run that diverges is marked yellow; <i>stop</i> ends the scan early and keeps what
+          has been measured.</p>
           <p><b>Disturbance.</b> The &epsilon; toggle adds &epsilon; to the initial condition at two
           places: in 1D the strips 8–9&thinsp;L/32 and 19–20&thinsp;L/32, in 2D the patches
           x,y = 8–9&thinsp;L/32 and x = 11–12, y = 23–24&thinsp;L/32. These positions are chosen
@@ -1114,15 +1610,30 @@ function buildSim(P){
      must supply the saturation).  In 2D |grad h| is either the Euclidean norm
      sqrt(hx²+hy²) (absMode 'euclid', the standard) or the taxicab sum
      |hx|+|hy| (absMode 'sum'); in 1D both are |dh/dx|. */
-  let ALPHA = P.alpha || 0, BETA = P.beta || 0;
+  let ALPHA = P.alpha || 0, BETA = P.beta || 0, GAMMA = P.gamma || 0, DELTA = P.delta || 0;
   let NL2 = (P.nl2 === undefined) ? 1 : (P.nl2 ? 1 : 0);
   let ABS_SUM = P.absMode === 'sum';
 
-  /* Both gradient components come out of ONE inverse transform: the spectra of
+  /* partner index q(p) = (-kx,-ky): Hermitian projection and the unpacking of two
+     real fields transformed together; built once so the hot loops have no modulo */
+  const PART = new Uint32Array(M);
+  for(let j=0;j<ny;j++){
+    const jc = (ny-j)%ny;
+    for(let i=0;i<nx;i++) PART[j*nx+i] = jc*nx + ((nx-i)%nx);
+  }
+  const lpr=A(), lpi=A(), zr=A(), zi=A();          // Laplacian; packed transform for the γ term
+
+  /* Nonlinearity N = NL2·(∇h)² + α|∇h| + β(∇h)⁴ + δ∇²h·(∇h)² + γ∇²[(∇h)²].
+     Both gradient components come out of ONE inverse transform: the spectra of
      dh/dx and dh/dy are Hermitian, so transforming (i·kx·v) + i(i·ky·v) returns
-     dh/dx in the real part and dh/dy in the imaginary part. In 2D that cuts the
-     transforms per nonlinear evaluation from three to two. */
+     dh/dx in the real part and dh/dy in the imaginary part.  In 1D the free
+     imaginary part carries ∇²h instead (2D: one more transform when δ ≠ 0).
+     The γ term needs the spectrum of g = (∇h)² on its own: g rides in the
+     imaginary part of the forward transform of the local terms and is unpacked
+     with the Hermitian symmetry, N̂ = Â − γk²·ĝ — no extra transform. */
   function nonlin(inr, ini, outr, outi){                 // dealiased pseudospectral N(v)
+    const dOn = DELTA !== 0, gOn = GAMMA !== 0;
+    let lap = null;
     if(ny > 1){
       for(let p=0;p<M;p++){
         const kx = KX[p], ky = KY[p], r = inr[p], i = ini[p];
@@ -1130,50 +1641,46 @@ function buildSim(P){
         g1i[p] =  kx*r - ky*i;
       }
       FT(g1r, g1i, true);                                // g1r = dh/dx, g1i = dh/dy
-      if(ALPHA === 0 && BETA === 0 && NL2 === 1){
-        for(let p=0;p<M;p++){
-          const a = g1r[p], b = g1i[p];
-          outr[p] = a*a + b*b; outi[p] = 0;
-        }
-      } else if(ABS_SUM){
-        for(let p=0;p<M;p++){
-          const a = g1r[p], b = g1i[p], g = a*a + b*b;
-          outr[p] = NL2*g + ALPHA*((a<0?-a:a) + (b<0?-b:b)) + BETA*g*g; outi[p] = 0;
-        }
-      } else {
-        for(let p=0;p<M;p++){
-          const a = g1r[p], b = g1i[p], g = a*a + b*b;
-          outr[p] = NL2*g + ALPHA*Math.sqrt(g) + BETA*g*g; outi[p] = 0;
-        }
-      }
+      if(dOn){ for(let p=0;p<M;p++){ const k2=K2[p]; lpr[p] = -k2*inr[p]; lpi[p] = -k2*ini[p]; } FT(lpr, lpi, true); lap = lpr; }
     } else {
-      for(let p=0;p<M;p++){ g1r[p] = -KX[p]*ini[p]; g1i[p] = KX[p]*inr[p]; }
-      FT(g1r, g1i, true);
-      if(ALPHA === 0 && BETA === 0 && NL2 === 1){
-        for(let p=0;p<M;p++){ outr[p] = g1r[p]*g1r[p]; outi[p] = 0; }
+      if(dOn){                                           // dh/dx in the real, ∇²h in the imaginary part
+        for(let p=0;p<M;p++){ const kx=KX[p], k2=K2[p]; g1r[p] = -kx*ini[p] + k2*ini[p]; g1i[p] = kx*inr[p] - k2*inr[p]; }
+        FT(g1r, g1i, true); lap = g1i;
       } else {
-        for(let p=0;p<M;p++){
-          const g = g1r[p]*g1r[p];
-          outr[p] = NL2*g + ALPHA*Math.abs(g1r[p]) + BETA*g*g; outi[p] = 0;
-        }
+        for(let p=0;p<M;p++){ g1r[p] = -KX[p]*ini[p]; g1i[p] = KX[p]*inr[p]; }
+        FT(g1r, g1i, true);
       }
     }
-    FT(outr, outi, false);
-    for(let p=0;p<M;p++){ outr[p]*=mask[p]; outi[p]*=mask[p]; }
+    const two = ny > 1, tr = gOn ? zr : outr, ti = gOn ? zi : outi;
+    if(ALPHA === 0 && BETA === 0 && NL2 === 1 && !dOn && !gOn){
+      if(two) for(let p=0;p<M;p++){ const a = g1r[p], b = g1i[p]; outr[p] = a*a + b*b; outi[p] = 0; }
+      else    for(let p=0;p<M;p++){ outr[p] = g1r[p]*g1r[p]; outi[p] = 0; }
+    } else {
+      for(let p=0;p<M;p++){
+        const a = g1r[p], b = two ? g1i[p] : 0, g = a*a + b*b;
+        let n = NL2*g + BETA*g*g;
+        if(ALPHA !== 0) n += ALPHA*((two && ABS_SUM) ? ((a<0?-a:a) + (b<0?-b:b)) : Math.sqrt(g));
+        if(dOn) n += DELTA*lap[p]*g;
+        tr[p] = n; ti[p] = gOn ? g : 0;                  // g packed into the imaginary part
+      }
+    }
+    FT(tr, ti, false);
+    if(gOn){                                             // unpack: Â = (Z + Z̄(−k))/2, ĝ = (Z − Z̄(−k))/(2i)
+      for(let p=0;p<M;p++){
+        const q = PART[p], zrp = zr[p], zip = zi[p], zrq = zr[q], ziq = zi[q];
+        const ar = 0.5*(zrp + zrq), ai = 0.5*(zip - ziq);
+        const br = 0.5*(zip + ziq), bi = 0.5*(zrq - zrp);
+        const f = -GAMMA*K2[p];
+        outr[p] = (ar + f*br)*mask[p]; outi[p] = (ai + f*bi)*mask[p];
+      }
+    } else {
+      for(let p=0;p<M;p++){ outr[p]*=mask[p]; outi[p]*=mask[p]; }
+    }
   }
 
   const s = { P, nx, ny, M, physNx, physNy, mirror, t:0, meanH:0, h, W:0, hmax:0 };
 
-  /* partner index q(p) = (-kx,-ky) for the Hermitian projection, built once so
-     the per-step loop has no modulo arithmetic */
-  let HP = null;
-  if(ny > 1){
-    HP = new Uint32Array(M);
-    for(let j=0;j<ny;j++){
-      const jc = (ny-j)%ny;
-      for(let i=0;i<nx;i++) HP[j*nx+i] = jc*nx + ((nx-i)%nx);
-    }
-  }
+  const HP = ny > 1 ? PART : null;
   function hermitize(xr, xi){
     /* h is real, so v must stay Hermitian: v(-k) = conj v(k).  FFT roundoff
        seeds a tiny anti-Hermitian ghost that would grow at the maximal KS
@@ -1225,9 +1732,152 @@ function buildSim(P){
      the fitted slope of log|δh| over its exponential stretch. */
   const lyap = { on:true, mode:'renorm', eps:1e-6, sumLog:0, T:0, lam:NaN, loc:NaN, tLast:0,
                  vec:new Float64Array(M), node:0, kbar:NaN, ready:false, norm:NaN, span:NaN, tStart:0,
-                 histT:[], histD:[], every:1, cnt:0, dPrev:NaN, tSat:NaN,
+                 histT:[], histD:[], every:1, cnt:0, dPrev:NaN, tSat:NaN, warm:true,
                  fit:{ t0:NaN, t1:NaN, lam:NaN } };
   s.lyap = lyap;
+
+  /* ---- budget of the divergence, term by term --------------------------
+     With δh = w − h (twin minus field) the identity
+          ∂t δh = Σ_i [ T_i(w) − T_i(h) ]
+     holds exactly for the terms T_i of the right-hand side (for the linear
+     terms the bracket is simply T_i(δh)), and therefore
+          Λ ≡ d ln‖δh‖/dt = ⟨δh·∂t δh⟩/⟨δh²⟩ = Σ_i Λ_i ,   Λ_i = ⟨c_i⟩ ,
+          c_i(x) = δh(x)·[T_i(w) − T_i(h)](x) / ⟨δh²⟩ .
+     c_i(x) is the local contribution of term i to the growth rate of the
+     separation (in the units of λ): positive where the term drives the two
+     interfaces apart, negative where it pulls them together.  Its spatial mean
+     Λ_i is the term's share of the instantaneous exponent, Σ_i Λ_i = Λ, and the
+     time average of Λ is λ itself — so Σ_i ⟨Λ_i⟩_t must agree with the Benettin
+     value, a built-in check.  The differences are evaluated exactly as the
+     integrator sees them: spectral derivatives, the 2/3-rule mask on the
+     nonlinear terms, and the k = 0 mode (mean growth, absorbed into ⟨h⟩ for
+     both trajectories) removed.  Nothing here is linearized, so the budget is
+     exact at any separation — also in a free run near saturation. */
+  const TERMKEYS = ['lyLin1','lyLin2','lyNL2','lyA','lyB','lyG','lyD'];
+  const tfld = { tot:A() }; for(const k of TERMKEYS) tfld[k] = A();
+  const budget = { keys:TERMKEYS, fld:tfld, val:{tot:NaN}, avg:{tot:NaN}, sum:{tot:0}, T:0, ready:false };
+  for(const k of TERMKEYS){ budget.val[k]=NaN; budget.avg[k]=NaN; budget.sum[k]=0; }
+  lyap.budget = budget;
+  /* ---- windowed time averages -------------------------------------------
+     λ and the term shares are averaged over the LAST TWO THIRDS of the time
+     since the last reset or change of the equation: the first third, where the
+     twin still converges to the Lyapunov vector and a fresh state settles, is
+     dropped. The record holds cumulative integrals ∫Λ dt at every frame; the
+     average is (F(t) − F(t/3))/(t − t/3) with F interpolated at t/3.  The
+     record is thinned by two whenever it grows long. */
+  const WKEYS = ['lam', 'tot', ...TERMKEYS];
+  const WA = { t:[], cum:{} }; for(const k of WKEYS) WA.cum[k] = [];
+  function waReset(t0){ WA.t = [t0]; for(const k of WKEYS) WA.cum[k] = [0]; }
+  function waPush(t, inc){                          // inc[k]: this frame's increment of ∫Λ_k dt
+    const n = WA.t.length;
+    WA.t.push(t);
+    for(const k of WKEYS){ const c = WA.cum[k]; c.push((n ? c[n-1] : 0) + (inc[k] || 0)); }
+    if(WA.t.length > 40000){                        // thin: keep the first, then every second, and the last
+      const keep = (_, i) => i === 0 || (i & 1) || i === WA.t.length-1;
+      WA.t = WA.t.filter(keep); for(const k of WKEYS) WA.cum[k] = WA.cum[k].filter(keep);
+    }
+  }
+  function waAvg(k){
+    const T = WA.t, n = T.length; if(n < 3) return NaN;
+    const tA = T[0], tB = T[n-1], tC = tA + (tB - tA)/3;
+    if(!(tB - tC > 1e-9)) return NaN;
+    let lo = 0, hi = n-1;                           // largest j with T[j] <= tC
+    while(hi - lo > 1){ const m = (lo+hi) >> 1; if(T[m] <= tC) lo = m; else hi = m; }
+    const c = WA.cum[k], f = (tC - T[lo])/Math.max(T[lo+1] - T[lo], 1e-12);
+    const cC = c[lo] + f*(c[lo+1] - c[lo]);
+    return (c[n-1] - cC)/(tB - tC);
+  }
+  s.lyapWindow = () => WA.t.length ? { from: WA.t[0] + (WA.t[WA.t.length-1] - WA.t[0])/3, to: WA.t[WA.t.length-1] } : null;
+  function budgetResetAvg(){ budget.T = 0; for(const k in budget.sum){ budget.sum[k]=0; budget.avg[k]=NaN; } waReset(s.t); }
+  const t1r=A(), t1i=A(), t2r=A(), t2i=A(), t3r=A(), t3i=A(), t4r=A(), t4i=A(), t5r=A(), t5i=A(), t6r=A(), t6i=A();
+  function gradOf(inr, ini, outr, outi){         // ∇ of a spectral field: outr = ∂x, outi = ∂y
+    if(ny > 1){
+      for(let p=0;p<M;p++){ const kx=KX[p], ky=KY[p], r=inr[p], i=ini[p]; outr[p] = -kx*i - ky*r; outi[p] = kx*r - ky*i; }
+    } else {
+      for(let p=0;p<M;p++){ outr[p] = -KX[p]*ini[p]; outi[p] = KX[p]*inr[p]; }
+    }
+    FT(outr, outi, true);
+  }
+  /* pair of real fields packed as A + iB: one complex transform serves both */
+  function dealiasPair(ar, ai){
+    FT(ar, ai, false);
+    for(let p=0;p<M;p++){ ar[p]*=mask[p]; ai[p]*=mask[p]; }
+    ar[0]=0; ai[0]=0;                            // the mean drift is discarded by the integrator
+    FT(ar, ai, true);
+  }
+  /* step 1, with (dr, di) = δv̂ = ŵ − v̂ still spectral: the term fields in x-space
+     t1r = T_lin1 δh, t1i = T_lin2 δh, t4r = Δ(∇h)², t4i = Δ α|∇h|, t2r = Δ β(∇h)⁴,
+     t2i = Δ δ∇²h(∇h)², t5r = Δ γ∇²(∇h)² */
+  function budgetFields(){
+    const o6 = s.P.order === 6;
+    for(let p=0;p<M;p++){
+      const k2=K2[p], k4=k2*k2, m1 = o6 ? k4 : k2, m2 = o6 ? -k4*k2 : -k4;
+      const ar=m1*dr[p], ai=m1*di[p], br=m2*dr[p], bi=m2*di[p];
+      t1r[p] = ar - bi; t1i[p] = ai + br;        // Â + iB̂ → A in the real, B in the imaginary part
+    }
+    FT(t1r, t1i, true);
+    gradOf(vr, vi, t2r, t2i);                    // ∇h
+    gradOf(wr, wi, t3r, t3i);                    // ∇w
+    const aOn = ALPHA !== 0, bOn = BETA !== 0, gOn = GAMMA !== 0, dOn = DELTA !== 0, nOn = NL2 === 1, two = ny > 1;
+    if(dOn){                                     // ∇²h in the real, ∇²w in the imaginary part
+      for(let p=0;p<M;p++){ const k2=K2[p]; t6r[p] = -k2*(vr[p] - wi[p]); t6i[p] = -k2*(vi[p] + wr[p]); }
+      FT(t6r, t6i, true);
+    }
+    for(let p=0;p<M;p++){
+      const hx=t2r[p], hy = two ? t2i[p] : 0, wx=t3r[p], wy = two ? t3i[p] : 0;
+      const gh = hx*hx+hy*hy, gw = wx*wx+wy*wy;
+      t4r[p] = nOn ? gw - gh : 0;
+      let da = 0;
+      if(aOn){
+        da = (two && ABS_SUM) ? (Math.abs(wx)+Math.abs(wy)) - (Math.abs(hx)+Math.abs(hy))
+                              : Math.sqrt(gw) - Math.sqrt(gh);
+        da *= ALPHA;
+      }
+      t4i[p] = da;
+      t2r[p] = bOn ? BETA*(gw*gw - gh*gh) : 0;
+      t2i[p] = dOn ? DELTA*(t6i[p]*gw - t6r[p]*gh) : 0;
+      t5r[p] = gOn ? gw - gh : 0; t5i[p] = 0;
+    }
+    if(nOn || aOn) dealiasPair(t4r, t4i);
+    if(bOn || dOn) dealiasPair(t2r, t2i);
+    if(gOn){                                     // γ∇²[(∇w)² − (∇h)²]: spectral Laplacian, dealiased
+      FT(t5r, t5i, false);
+      for(let p=0;p<M;p++){ const f = -GAMMA*K2[p]*mask[p]; t5r[p]*=f; t5i[p]*=f; }
+      t5r[0]=0; t5i[0]=0;
+      FT(t5r, t5i, true);
+    }
+  }
+  /* step 2, with dr = δh(x) real and norm2 = ⟨δh²⟩ over the physical domain */
+  function budgetDensities(norm2, dtSeg){
+    const inv = 1/norm2, F = budget.fld;
+    let sL1=0, sL2=0, sN=0, sA=0, sB=0, sG=0, sD=0;
+    for(let j=0;j<physNy;j++){
+      const row=j*nx;
+      for(let i=0;i<physNx;i++){
+        const p=row+i, d=dr[p]*inv;
+        const c1=d*t1r[p], c2=d*t1i[p], cn=d*t4r[p], ca=d*t4i[p], cb=d*t2r[p], cg=d*t5r[p], cd=d*t2i[p];
+        F.lyLin1[p]=c1; F.lyLin2[p]=c2; F.lyNL2[p]=cn; F.lyA[p]=ca; F.lyB[p]=cb; F.lyG[p]=cg; F.lyD[p]=cd;
+        F.tot[p]=c1+c2+cn+ca+cb+cg+cd;
+        sL1+=c1; sL2+=c2; sN+=cn; sA+=ca; sB+=cb; sG+=cg; sD+=cd;
+      }
+    }
+    const v = budget.val;
+    v.lyLin1=sL1/NP; v.lyLin2=sL2/NP; v.lyNL2=sN/NP; v.lyA=sA/NP; v.lyB=sB/NP; v.lyG=sG/NP; v.lyD=sD/NP;
+    v.tot = v.lyLin1+v.lyLin2+v.lyNL2+v.lyA+v.lyB+v.lyG+v.lyD;
+    if(dtSeg > 1e-12){
+      budget.T += dtSeg;
+      for(const k in budget.sum) budget.sum[k] += v[k]*dtSeg;   // full-record sums (kept for reference)
+    }
+    budget.ready = true;
+  }
+  /* one frame's worth of record: Benettin log-growth g and the term integrals */
+  function waFrame(t, g, dtSeg){
+    const inc = { lam: g };
+    for(const k in budget.val) inc[k] = budget.val[k]*dtSeg;
+    waPush(t, inc);
+    for(const k in budget.avg) budget.avg[k] = waAvg(k);
+  }
+
   /* twin := h + ε·d/rms(d), where d is the real field held in dr on the
      physical domain (mirrored into the extension for open boundaries) */
   function seedTwin(){
@@ -1244,18 +1894,28 @@ function buildSim(P){
     FT(wr, wi, false); wr[0]=0; wi[0]=0;
   }
   s.lyapReset = function(keepAvg){          // fresh twin from a random direction
-    if(!keepAvg){ lyap.sumLog=0; lyap.T=0; lyap.lam=NaN; lyap.loc=NaN; }
+    if(!keepAvg){ lyap.sumLog=0; lyap.T=0; lyap.lam=NaN; lyap.loc=NaN; budgetResetAvg(); }
+    budget.ready = false; for(const k in budget.fld) budget.fld[k].fill(0);
     lyap.tLast = s.t; lyap.tStart = s.t; lyap.ready = false; lyap.kbar = NaN; lyap.norm = NaN; lyap.span = NaN; lyap.vec.fill(0);
     lyap.histT = []; lyap.histD = []; lyap.every = 1; lyap.cnt = 0; lyap.dPrev = NaN;
     lyap.tSat = NaN; lyap.fit = { t0:NaN, t1:NaN, lam:NaN };
+    lyap.warm = true;                        // the first frame after a seed is not averaged
+    /* random direction, smoothed to the unstable band: white noise would put
+       most of its weight into short waves that the −∇⁴ term wipes out within
+       one step — a large spurious drop of |δh| that would bias the average,
+       and a slow start for the convergence to the Lyapunov vector */
     let sd = 1234567;
-    for(let j=0;j<physNy;j++){ const row=j*nx; for(let i=0;i<physNx;i++){
+    for(let p=0;p<M;p++){
       sd = (sd*1664525 + 1013904223) >>> 0;
-      dr[row+i] = sd/4294967296 - 0.5;
-    }}
+      dr[p] = sd/4294967296 - 0.5; di[p] = 0;
+    }
+    FT(dr, di, false);
+    for(let p=0;p<M;p++){ const f = Math.exp(-2*K2[p]); dr[p]*=f; di[p]*=f; }
+    dr[0]=0; di[0]=0;
+    FT(dr, di, true);
     seedTwin();
   };
-  s.lyapResetAvg = function(){ lyap.sumLog=0; lyap.T=0; lyap.lam=NaN; };
+  s.lyapResetAvg = function(){ lyap.sumLog=0; lyap.T=0; lyap.lam=NaN; budgetResetAvg(); };
   s.lyapRenorm = function(){                // call after sync(): h must be current
     if(!lyap.on) return;
     let n2=0, kk=0;
@@ -1265,6 +1925,7 @@ function buildSim(P){
     }
     if(!(n2 > 0) || !isFinite(n2)){ s.lyapReset(true); return; }
     lyap.kbar = Math.sqrt(kk/n2);
+    budgetFields();                                   // term fields from the spectral δv̂
     FT(dr, di, true);                                 // dr = δh(x)
     let sum2=0, mx=0, node=0;
     for(let j=0;j<physNy;j++){
@@ -1277,6 +1938,7 @@ function buildSim(P){
     const norm = Math.sqrt(sum2/NP);
     if(!(norm > 0) || !isFinite(norm)){ s.lyapReset(true); return; }
     const dtSeg = s.t - lyap.tLast;
+    budgetDensities(sum2/NP, lyap.warm ? 0 : dtSeg);  // c_i(x), Λ_i and their time averages
     const a = 1 - Math.exp(-dtSeg/2);                 // local rate: ~2 time-unit memory
     if(lyap.mode === 'free'){
       if(dtSeg > 1e-12 && lyap.dPrev > 0){
@@ -1298,11 +1960,19 @@ function buildSim(P){
       if(!(lyap.tSat >= 0) && norm > 0.8*dsat) lyap.tSat = s.t;
       fitSlope(dsat);
       lyap.lam = lyap.fit.lam;
+      /* the term shares are averaged over the same window as in Benettin mode */
+      if(dtSeg > 1e-12){ if(lyap.warm) waReset(s.t); else waFrame(s.t, 0, dtSeg); }
     } else if(dtSeg > 1e-12){
       const g = Math.log(norm/lyap.eps), r = g/dtSeg;
-      lyap.sumLog += g; lyap.T += dtSeg; lyap.lam = lyap.sumLog/lyap.T;
+      if(lyap.warm) waReset(s.t);
+      else {
+        lyap.sumLog += g; lyap.T += dtSeg;             // full-record sum (kept for reference)
+        waFrame(s.t, g, dtSeg);
+        const w = waAvg('lam'); lyap.lam = isFinite(w) ? w : lyap.sumLog/lyap.T;
+      }
       lyap.loc = isFinite(lyap.loc) ? lyap.loc + a*(r - lyap.loc) : r;
     }
+    lyap.warm = false;
     lyap.tLast = s.t;
     lyap.norm = norm;                                 // rms |δh| of the field held in dr
     /* time over which that separation has grown: one frame since the pull-back
@@ -1312,14 +1982,31 @@ function buildSim(P){
     for(let j=0;j<physNy;j++){ const row=j*nx; for(let i=0;i<physNx;i++) lyap.vec[row+i] = dr[row+i]*inv; }
     lyap.node = node; lyap.ready = true;
     if(lyap.mode !== 'free') seedTwin();              // back to distance ε, same direction
+    else if(mirror){
+      /* open boundaries: the mirror symmetry of the twin is re-imposed once per
+         frame (the Benettin re-seed does this implicitly). Otherwise roundoff
+         seeds an antisymmetric ghost — a perturbation the open-boundary problem
+         does not possess — that would grow over a long free run. */
+      symmetrize(dr);
+      for(let p=0;p<M;p++){ wr[p] = h[p] + dr[p]; wi[p] = 0; }
+      FT(wr, wi, false); wr[0]=0; wi[0]=0;
+    }
   };
   /* least-squares slope of ln|δh| against t over the exponential stretch: from
      the minimum of the record (the white-noise seed first loses its damped
      short waves) up to a tenth of the saturation distance */
   function fitSlope(dsat){
     const T = lyap.histT, D = lyap.histD, n = T.length;
+    if(n < 2){ lyap.fit = { t0:NaN, t1:NaN, lam:NaN }; return; }
     let i0 = 0;
     for(let i=1;i<n;i++) if(D[i] < D[i0]) i0 = i;
+    /* a separation that is still decreasing (λ < 0, or a long transient) has its
+       minimum at the end: then fit the last two thirds of the record instead,
+       so that a negative slope is reported rather than nothing */
+    if(n - i0 < 5 || T[n-1] - T[i0] < 2){
+      const tC = T[0] + (T[n-1] - T[0])/3;
+      i0 = 0; while(i0 < n-1 && T[i0] < tC) i0++;
+    }
     let sx=0, sy=0, sxx=0, sxy=0, m=0, t1=NaN;
     for(let i=i0;i<n;i++){
       if(D[i] >= 0.1*dsat) break;
@@ -1333,18 +2020,39 @@ function buildSim(P){
     } else lyap.fit = { t0:NaN, t1:NaN, lam:NaN };
   }
 
-  /* local Lyapunov exponent λ(x) = ln(max(|δh(x)|, 0.01·rms δh)/ε) / Δt on the
-     physical domain, Δt being the time the separation has had to grow — so the
-     colours are in the same units as λ itself; sg = −1 gives −λ(x).
-     Zero everywhere while the twin is off or has not been measured yet */
-  s.lyapDiv = function(out, sg){
-    if(!lyap.on || !lyap.ready || !(lyap.norm > 0) || !(lyap.span > 0)){ out.fill(0); return; }
-    const floor = 0.01*lyap.norm, ieps = 1/lyap.eps, f = sg/lyap.span;
+  /* local Lyapunov density on the physical domain: kind 'lydiv' is the total
+     λ(x) = c(x) = δh·∂tδh/⟨δh²⟩ (its spatial mean is the instantaneous exponent Λ),
+     'nlydiv' is −λ(x), and 'lyLin1', 'lyLin2', 'lyNL2', 'lyA', 'lyB' are the
+     contributions c_i(x) of the single terms of the equation.  Zero everywhere
+     while the twin is off or has not been measured yet */
+  s.lyapField = function(out, kind){
+    const key = (kind === 'lydiv' || kind === 'nlydiv') ? 'tot' : kind, F = budget.fld[key];
+    if(!lyap.on || !lyap.ready || !budget.ready || !F){ out.fill(0); return; }
+    const sg = kind === 'nlydiv' ? -1 : 1;
     for(let j=0;j<physNy;j++){
       const row = j*nx;
-      for(let i=0;i<physNx;i++){
-        const d = dr[row+i], ad = d<0?-d:d;
-        out[row+i] = f*Math.log((ad > floor ? ad : floor)*ieps);
+      for(let i=0;i<physNx;i++) out[row+i] = sg*F[row+i];
+    }
+  };
+  s.isLyKind = kind => kind === 'lydiv' || kind === 'nlydiv' || TERMKEYS.includes(kind);
+
+  /* power spectrum of the interface: P(k) = |ĥ_k|²/M² per mode, folded to k ≥ 0 (1D) or
+     binned radially by |k| (2D), so that Σ P = ⟨(h − ⟨h⟩)²⟩ = W². Accumulated into acc
+     for time averaging; s.spectrumK holds the wavenumber of each bin. */
+  const nkBins = (nx >> 1) + 1;
+  const kBin = new Float64Array(nkBins); for(let m=0;m<nkBins;m++) kBin[m] = 2*Math.PI*m/(nx*dxp);
+  s.spectrumK = kBin;
+  s.spectrumAccumulate = function(acc){
+    const inv = 1/(M*M);
+    if(ny === 1){
+      for(let i=0;i<nkBins;i++){ const pw = (vr[i]*vr[i] + vi[i]*vi[i])*inv; acc[i] += (i === 0 || i === nx>>1) ? pw : 2*pw; }
+    } else {
+      for(let j=0;j<ny;j++){
+        const mj = (j <= ny/2) ? j : j-ny;
+        for(let i=0;i<nx;i++){
+          const mi = (i <= nx/2) ? i : i-nx, m = Math.round(Math.sqrt(mi*mi + mj*mj));
+          if(m < nkBins){ const p = j*nx+i; acc[m] += (vr[p]*vr[p] + vi[p]*vi[p])*inv; }
+        }
       }
     }
   };
@@ -1357,15 +2065,15 @@ function buildSim(P){
     s.t += s.P.dt;
   };
 
-  function symmetrize(){                     // re-impose mirror symmetry (kills roundoff drift)
+  function symmetrize(f){                    // re-impose mirror symmetry on a real field (kills roundoff drift)
     if(ny === 1){
-      for(let i=0;i<physNx;i++){ const j=nx-1-i, m=(hr[i]+hr[j])/2; hr[i]=m; hr[j]=m; }
+      for(let i=0;i<physNx;i++){ const j=nx-1-i, m=(f[i]+f[j])/2; f[i]=m; f[j]=m; }
     } else {
       for(let j=0;j<physNy;j++) for(let i=0;i<physNx;i++){
         const jm=ny-1-j, im2=nx-1-i;
         const p00=j*nx+i, p10=j*nx+im2, p01=jm*nx+i, p11=jm*nx+im2;
-        const m=(hr[p00]+hr[p10]+hr[p01]+hr[p11])/4;
-        hr[p00]=m; hr[p10]=m; hr[p01]=m; hr[p11]=m;
+        const m=(f[p00]+f[p10]+f[p01]+f[p11])/4;
+        f[p00]=m; f[p10]=m; f[p01]=m; f[p11]=m;
       }
     }
   }
@@ -1373,7 +2081,7 @@ function buildSim(P){
   s.sync = function(){                       // spectral -> real field + stats
     hr.set(vr); hi.set(vi); FT(hr, hi, true);
     if(mirror){
-      symmetrize();
+      symmetrize(hr);
       h.set(hr);
       for(let p=0;p<M;p++) hi[p]=0;
       FT(hr, hi, false);
@@ -1392,8 +2100,10 @@ function buildSim(P){
 
   s.frame = function(n){ for(let i=0;i<n;i++) s.step(); s.sync(); };
   s.setDt = function(dt){ s.P.dt = dt; computeCoeffs(dt); };
-  s.setTerms = function(a, b, nl2, absMode){
+  s.setTerms = function(a, b, nl2, absMode, g, d){
     ALPHA = a; BETA = b;
+    if(g !== undefined) GAMMA = g;
+    if(d !== undefined) DELTA = d;
     if(nl2 !== undefined) NL2 = nl2 ? 1 : 0;
     if(absMode !== undefined) ABS_SUM = absMode === 'sum';
   };
@@ -1403,16 +2113,7 @@ function buildSim(P){
      'h' = h - <h>,  'dx' = dh/dx,  'absdx' = |dh/dx| (2D: |grad h|),  'lap' = Laplacian h */
   s.derived = function(kind, out){
     if(kind === 'h'){ out.set(h); return; }
-    if(kind === 'lydiv' || kind === 'nlydiv'){
-      /* local Lyapunov exponent λ(x) = ln(|δh(x)|/ε)/Δt: the point-wise version
-         of the growth rate log(|δh|/ε)/Δt whose average is λ. dr holds the last
-         measured separation δh(x) (Benettin: grown over one frame since the
-         previous pull-back; free run: since the seed). Nodal points, where δh
-         crosses zero, are floored at 1% of the rms separation so the logarithm
-         stays finite. 'nlydiv' is −λ(x): the reversed colour scale. */
-      s.lyapDiv(out, kind === 'nlydiv' ? -1 : 1);
-      return;
-    }
+    if(s.isLyKind(kind)){ s.lyapField(out, kind); return; }   // λ(x) and its term budget
     if(kind === 'lap' || kind === 'nlap'){
       const sg = (kind === 'nlap') ? 1 : -1;         // lap: -k2 v, nlap: +k2 v
       for(let p=0;p<M;p++){ g1r[p] = sg*K2[p]*vr[p]; g1i[p] = sg*K2[p]*vi[p]; }
@@ -1483,6 +2184,12 @@ function buildSim(P){
       }
       hr[j*nx+i] = a*f; hi[j*nx+i] = 0;
     }
+    /* optional random component (systematic scans over several initial
+       conditions): uniform noise of amplitude P.noise, seeded by P.seed */
+    if(P.seed !== undefined){
+      let sd = ((P.seed + 1)*2654435761 + 97531) >>> 0; const amp = P.noise || 0.1;
+      for(let p=0;p<M;p++){ sd = (sd*1664525 + 1013904223) >>> 0; hr[p] += amp*(sd/4294967296 - 0.5); }
+    }
     FT(hr, hi, false);
     vr.set(hr); vi.set(hi);
     s.meanH = vr[0]/M; vr[0]=0; vi[0]=0;
@@ -1509,7 +2216,7 @@ function buildSim(P){
   let clean = false, onScreen = true;
   const capInset = () => onScreen ? 96 : 0;
 
-  const params = { dim:1, L:128, bc:'periodic', n:4, amp:0, eps:0.1, dt:0.1, dx:1, alpha:0, beta:0, order:4,
+  const params = { dim:1, L:128, bc:'periodic', n:4, amp:0, eps:0.1, dt:0.1, dx:1, alpha:0, beta:0, gamma:0, delta:0, order:4,
                    nl2:true, absMode:'euclid' };
   let stepsPerFrame = 5;
   let dtplot = 0.2, keepN = 2000, dispGain = 25;   // dtplot: internal capture cadence
@@ -1528,9 +2235,26 @@ function buildSim(P){
   let snapshots = [], nextSnap = 0;
   let wfSepAuto = true, wfSep = 2;
   let qbuf = null;
-  const qscales = { h:1e-6, dx:1e-6, absdx:1e-6, lap:1e-6, nlap:1e-6, lydiv:1e-6, nlydiv:1e-6 };
-  const scaleStamp = { h:-1, dx:-1, absdx:-1, lap:-1, nlap:-1, lydiv:-1, nlydiv:-1 };
-  const isLyKind = k => k === 'lydiv' || k === 'nlydiv';
+  /* the Lyapunov colourings: the total density λ(x), its negative, and the
+     contribution of each term of the equation (see the budget in the core) */
+  const TERMKEYS = ['lyLin1','lyLin2','lyNL2','lyA','lyB','lyG','lyD'];
+  const LYKINDS = ['lydiv','nlydiv', ...TERMKEYS];
+  const qscales = { h:1e-6, dx:1e-6, absdx:1e-6, lap:1e-6, nlap:1e-6 };
+  const scaleStamp = { h:-1, dx:-1, absdx:-1, lap:-1, nlap:-1 };
+  for(const k of LYKINDS){ qscales[k] = 1e-6; scaleStamp[k] = -1; }
+  const isLyKind = k => LYKINDS.includes(k);
+  const isTermKind = k => TERMKEYS.includes(k);
+  /* which terms are present in the equation being integrated */
+  const termActive = k => k === 'lyLin1' || k === 'lyLin2' ? true
+                        : k === 'lyNL2' ? params.nl2 : k === 'lyA' ? params.alpha !== 0
+                        : k === 'lyB' ? params.beta !== 0 : k === 'lyG' ? params.gamma !== 0
+                        : k === 'lyD' ? params.delta !== 0 : false;
+  const activeTermKeys = () => TERMKEYS.filter(termActive);
+  function termLabel(k){
+    const o6 = params.order === 6;
+    return { lyLin1: o6 ? '+∇⁴h' : '−∇²h', lyLin2: o6 ? '+∇⁶h' : '−∇⁴h',
+             lyNL2: '(∇h)²', lyA: 'α|∇h|', lyB: 'β(∇h)⁴', lyG: 'γ∇²(∇h)²', lyD: 'δ∇²h(∇h)²' }[k] || k;
+  }
   const qscalesP = {}, qscalesN = {};          // extremes of λ>0 and λ<0 (split mode)
   /* 'grey λ<0' mode: colours only where λ > 0, grey→black where λ < 0 */
   let lySplit = false;
@@ -1641,21 +2365,37 @@ function buildSim(P){
      of the quantity over two buckets of ~180 displayed frames — the history of
      the current display page and the previous one. */
   const qwin = {};
+  function absMax(q){
+    let mx = 0;
+    for(let j=0;j<sim.physNy;j++) for(let i=0;i<sim.physNx;i++){ const a = Math.abs(q[j*sim.nx+i]); if(a>mx) mx = a; }
+    return mx;
+  }
+  /* 98th percentile of |q| over the physical domain (a sort of the |values|) */
+  let pctBuf = null;
+  function robustMax(q){
+    const N = sim.physNx*sim.physNy;
+    if(!pctBuf || pctBuf.length !== N) pctBuf = new Float64Array(N);
+    let m = 0;
+    for(let j=0;j<sim.physNy;j++) for(let i=0;i<sim.physNx;i++) pctBuf[m++] = Math.abs(q[j*sim.nx+i]);
+    pctBuf.sort();
+    return pctBuf[Math.min(N-1, Math.floor(0.98*(N-1)))];
+  }
   function ensureScale(kind){
     const q = getQ(kind);
     if(scaleStamp[kind] !== stamp){
-      let mx = 0;
-      for(let j=0;j<sim.physNy;j++) for(let i=0;i<sim.physNx;i++){
-        const a = Math.abs(q[j*sim.nx+i]); if(a>mx) mx = a;
-      }
+      /* the Lyapunov densities are heavy-tailed — a few lattice points under
+         the peak of the vector carry values 100× the typical ones — so their
+         colour scale is set at the 98th percentile of |λ(x)| and the rare peaks
+         saturate; every other quantity is scaled to its maximum */
+      const mx = isLyKind(kind) ? robustMax(q) : absMax(q);
       const wnd = qwin[kind] || (qwin[kind] = { cur:0, prev:0, count:0, curP:0, prevP:0, curN:0, prevN:0 });
       if(mx > wnd.cur) wnd.cur = mx;
       let mp = 0, mn = 0;
-      if(isLyKind(kind)){                 // separate extremes of λ > 0 and λ < 0
-        const sg = kind === 'nlydiv' ? -1 : 1;
-        for(let j=0;j<sim.physNy;j++) for(let i=0;i<sim.physNx;i++){
-          const v = sg*q[j*sim.nx+i]; if(v>mp) mp = v; else if(-v>mn) mn = -v;
-        }
+      if(isLyKind(kind)){
+        /* 'grey λ<0' uses ONE scale for both signs, so the eye can compare how
+           strongly a term adds and removes (separate extremes made the weak
+           side look as strong as the dominant one) */
+        mp = mn = mx;
         if(mp > wnd.curP) wnd.curP = mp; if(mn > wnd.curN) wnd.curN = mn;
       }
       if(++wnd.count >= (isLyKind(kind) ? 40 : 180)){
@@ -1670,7 +2410,7 @@ function buildSim(P){
     return { q, s: qscales[kind] };
   }
   /* a new twin (reset, mode switch) starts a fresh λ(x) colour scale */
-  function resetLyScale(){ for(const k of ['lydiv','nlydiv']){ delete qwin[k]; qscales[k] = 1e-6; scaleStamp[k] = -1; } }
+  function resetLyScale(){ for(const k of LYKINDS){ delete qwin[k]; qscales[k] = 1e-6; scaleStamp[k] = -1; } for(const k in termScales) delete termScales[k]; }
   let gbuf = null; const gCache = { stamp:-1, kind:'' };
   function geoField(){
     const gk = geoKindOf();
@@ -1699,6 +2439,7 @@ function buildSim(P){
   const scaleFor = kind => isLyKind(kind) ? niceCeil(ensureScale(kind).s) : niceCeil(ensureScale(kind).s)/dispGain;
   function kindLabel(kind){
     const two = params.dim === 2;
+    if(isTermKind(kind)) return 'λ(' + termLabel(kind) + ')';
     return { h:'h−⟨h⟩', dx: two?'∂h/∂x':'dh/dx', absdx: two?'|∇h|':'|dh/dx|',
              lap: two?'∇²h':'d²h/dx²', nlap: two?'−∇²h':'−d²h/dx²',
              lydiv:'λ(x)', nlydiv:'−λ(x)' }[kind];
@@ -1728,16 +2469,20 @@ function buildSim(P){
   const capDt = () => (params.dim===1 && is3dMode(modeSel[1])) ? Math.min(dtplot, wfDt) : dtplot;
   /* the oldest profile's buffer is recycled into the newest one, so a long run
      does not churn thousands of Float32Arrays through the collector */
-  /* ln(|δh|/ε) of the current twin separation, stored with each 1D profile so
-     the stacked views can be coloured by it; null while the twin is off */
-  let lyTmp = null;
+  /* the Lyapunov densities of the current twin separation — the total λ(x) and
+     the five term contributions, packed one after the other — stored with each
+     1D profile so the stacked views can be coloured by any of them; null while
+     the twin is off */
+  const LYSLOT = { lydiv:0, nlydiv:0, lyLin1:1, lyLin2:2, lyNL2:3, lyA:4, lyB:5, lyG:6, lyD:7 }, NSLOT = 8;
   function lyField(){
-    if(!lyapOpen || !sim.lyap.ready) return null;
-    const n = sim.physNx;
-    if(!lyTmp || lyTmp.length !== sim.M) lyTmp = new Float64Array(sim.M);
-    sim.lyapDiv(lyTmp, 1);
-    return Float32Array.from(lyTmp.subarray(0, n));
+    if(!lyapOpen || !sim.lyap.ready || !sim.lyap.budget.ready) return null;
+    const n = sim.physNx, F = sim.lyap.budget.fld, out = new Float32Array(NSLOT*n);
+    out.set(F.tot.subarray(0, n), 0);
+    TERMKEYS.forEach((k, s) => out.set(F[k].subarray(0, n), (s+1)*n));
+    return out;
   }
+  /* offset into that pack and sign for the colouring in use */
+  const lyPackOff = n => (LYSLOT[qkind]|0)*n, lyPackSg = () => (qkind === 'nlydiv' ? -1 : 1);
   function capture(){
     if(params.dim !== 1) return;
     const n = sim.physNx;
@@ -1778,7 +2523,7 @@ function buildSim(P){
     diverged = false; $('divergedMsg').style.display = 'none';
     sim = buildSim({ dim:params.dim, L:params.L, bc:params.bc, dt:params.dt, dx:params.dx,
                      nwx:params.n, nwy:params.n, amp:params.amp, eps:params.eps,
-                     alpha:params.alpha, beta:params.beta, order:params.order,
+                     alpha:params.alpha, beta:params.beta, gamma:params.gamma, delta:params.delta, order:params.order,
                      nl2:params.nl2, absMode:params.absMode });
     sim.lyap.on = lyapOpen; sim.lyap.mode = lyMode;
     stamp++;
@@ -1800,7 +2545,7 @@ function buildSim(P){
   }
 
   const fmtLam = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(3);
-  const lyapTxt = { lam:'', loc:'', node:'', k:'', d:'' };
+  const lyapTxt = { lam:'', loc:'', node:'', k:'', d:'', sum:'', win:'' };
   function setTxt(id, key, s){ if(lyapTxt[key] !== s){ lyapTxt[key] = s; $(id).textContent = s; } }
   function updateReadouts(){
     $('rt').textContent = sim.t.toFixed(1);
@@ -1810,6 +2555,8 @@ function buildSim(P){
     const lam = ok && isFinite(ly.lam) ? fmtLam(ly.lam) : '—';
     $('rlam').textContent = lam;
     setTxt('lLam', 'lam', lam);
+    const bs = ly.budget.avg.tot;
+    setTxt('lSum', 'sum', ok && ly.budget.ready && isFinite(bs) ? fmtLam(bs) : '—');
     setTxt('lLoc', 'loc', ok && isFinite(ly.loc) ? fmtLam(ly.loc) : '—');
     setTxt('lK', 'k', ok && isFinite(ly.kbar) ? ly.kbar.toFixed(2) : '—');
     let nd = '—';
@@ -1819,6 +2566,8 @@ function buildSim(P){
                             : '(x, y) = (' + fmt(i*dxp) + ', ' + fmt(j*dxp) + ')';
     }
     setTxt('lNode', 'node', nd);
+    const wn = ok ? sim.lyapWindow() : null;
+    setTxt('lWin', 'win', wn && wn.to - wn.from > 0.5 ? fmt(wn.from) + '–' + fmt(wn.to) : '—');
     if(ly.mode === 'free'){
       const dsat = Math.SQRT2*sim.W, dl = ly.histD.length ? ly.histD[ly.histD.length-1] : NaN;
       setTxt('lD', 'd', ok && dsat > 0 && isFinite(dl) ? (dl/dsat < 0.001 ? dl.toExponential(1) + ' abs' : (dl/dsat).toFixed(2)) : '—');
@@ -1991,7 +2740,8 @@ function buildSim(P){
   }
   /* finite-difference stand-ins used on stored profiles, with the field kind
      resolved to an integer once per frame instead of a string test per point */
-  const KCODE = { plain:0, h:0, dx:1, absdx:2, lap:3, nlap:4, lydiv:5, nlydiv:6 };
+  const KCODE = { plain:0, h:0, dx:1, absdx:2, lap:3, nlap:4, lydiv:5, nlydiv:6,
+                  lyLin1:7, lyLin2:8, lyNL2:9, lyA:10, lyB:11, lyG:12, lyD:13 };   // ≥ 5: stored with the profile
   function wfDerivC(f, i, n, code, per, dxp){
     if(code === 0) return f[i];
     const ip = i+1 < n ? i+1 : (per ? 0 : n-1);
@@ -2052,7 +2802,7 @@ function buildSim(P){
     const sil = silBuf(ncols);
     const Sq = colored ? (ensureScale(qkind), scaleFor(qkind)) : 1;
     const per = params.bc === 'periodic', dxp = params.dx;
-    const qc = KCODE[qkind]|0;
+    const qc = KCODE[qkind]|0, lyo = lyPackOff(n), lys = lyPackSg();
     const X = c => x0 + pw*c/(ncols-1);
     const Y = v => y0 + ph*(1 - (v-lo)/(hi-lo));
     ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
@@ -2073,7 +2823,7 @@ function buildSim(P){
         if(y < sil[c] - 0.05){
           if(colored){
             if(pen){
-              const qv = qc >= 5 ? (sp.ly ? (qc === 5 ? sp.ly[i0] : -sp.ly[i0]) : 0)
+              const qv = qc >= 5 ? (sp.ly ? lys*sp.ly[lyo+i0] : 0)
                                  : wfDerivC(sp.f,i0,n,qc,per,dxp);
               const cc2 = QIDX[cidx(qkind, qv, Sq)];
               if(cc2 !== ci || !cont){
@@ -2163,7 +2913,7 @@ function buildSim(P){
     const istep = Math.max(1, Math.ceil(nl*n/(colored?70000:300000)));
     const Sq = colored ? (ensureScale(qkind), scaleFor(qkind)) : 1;
     const per = params.bc === 'periodic', dxp = params.dx;
-    const qc = KCODE[qkind]|0;
+    const qc = KCODE[qkind]|0, lyo = lyPackOff(n), lys = lyPackSg();
     ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
     ctx.lineJoin='round'; ctx.lineCap='round';
     for(let j=0;j<nl;j++){
@@ -2186,7 +2936,7 @@ function buildSim(P){
         if(sy < sil[c] - 0.05){
           if(colored){
             if(pen){
-              const qv = qc >= 5 ? (row.ly ? (qc === 5 ? row.ly[i] : -row.ly[i]) : 0)
+              const qv = qc >= 5 ? (row.ly ? lys*row.ly[lyo+i] : 0)
                                  : wfDerivC(row.f,i,n,qc,per,dxp);
               const cc2 = QIDX[cidx(qkind, qv, Sq)];
               if(cc2 !== ci || !cont){
@@ -2492,6 +3242,7 @@ function buildSim(P){
   const lyapPanel = $('lyapPanel');
   let lyapOpen = false;                             // closed = twin off
   let lyMode = 'renorm';                            // 'renorm' (Benettin) or 'free'
+  let lyTerms = false;                              // term budget plots under the vector (Benettin)
   const lyFld = document.createElement('canvas'), lyFldCtx = lyFld.getContext('2d');
   let lyImg = null;
   const LUTD = makeLUT('div');                       // fixed diverging map for δh
@@ -2507,10 +3258,33 @@ function buildSim(P){
     if(lyStacked(w)){ const side = Math.min(200, w - 34 - 58 - 14); return 2*(side + 26) + 16; }
     return Math.round(Math.min(260, Math.max(170, w*0.42)));
   }
+  /* ---- term budget plots: one row per term of the equation plus the total ---- */
+  const STRIP = 80;                                   // 1D: height of one term strip
+  const CUMH = 132, TOPPAD = 18;                      // summary plot height; header line above the strips
+  const termRows = () => ['tot', ...activeTermKeys()];   // 2D maps: total first
+  /* one colour per term, used in the strips, the summary plot and the waterfall */
+  const TCOL = { lyLin1:'#dc2626', lyLin2:'#2563eb', lyNL2:'#d97706', lyA:'#0f766e', lyB:'#7c3aed', lyG:'#be185d', lyD:'#65a30d' };
+  const rgba = (hex, a) => { const c = hex2rgb(hex); return `rgba(${c[0]},${c[1]},${c[2]},${a})`; };
+  /* the terms from the most dissipative to the most chaotic, by their time
+     averages (the present values before the first average is in) */
+  function cumOrder(b){
+    const v = k => isFinite(b.avg[k]) ? b.avg[k] : (isFinite(b.val[k]) ? b.val[k] : 0);
+    return activeTermKeys().sort((a, c) => v(a) - v(c));
+  }
+  /* 2D: a grid of small maps, as many per row as fit at a readable size */
+  function termGrid(w){
+    const keys = termRows(), nk = keys.length, x0 = 34, gap = 12, cap = 36;
+    let cols = Math.max(1, Math.min(nk, Math.floor((w - x0 - 8 + gap)/(110 + gap))));
+    const rows = Math.ceil(nk/cols); cols = Math.ceil(nk/rows);   // balance the rows
+    const side = Math.max(60, Math.min(190, (w - x0 - 8 - (cols-1)*gap)/cols));
+    return { keys, cols, rows, side, gap, x0, cap, height: rows*(side + cap) + 10 };
+  }
+  const termsHeight = w => lyTerms && lyMode !== 'free'
+    ? (params.dim === 1 ? TOPPAD + (activeTermKeys().length + 1)*STRIP + CUMH + wfHeight() + 10 : termGrid(w).height + wfHeight()) : 0;
   function lyapHeight(){
     const wrap = lc.parentElement;
     const w = wrap.getBoundingClientRect().width || 600;
-    const target = vecPlotHeight(w) + (lyMode === 'free' ? DIVH : 0);
+    const target = vecPlotHeight(w) + (lyMode === 'free' ? DIVH : termsHeight(w));
     if(Math.abs((parseFloat(wrap.style.height) || 0) - target) > 0.5) wrap.style.height = target + 'px';
   }
   function drawLyap(){
@@ -2544,8 +3318,250 @@ function buildSim(P){
           drawDivergence(w, h-ht, ly);
           ctx.restore();
         }
+      } else if(lyTerms){
+        /* Benettin with the term budget: vector plot on top, one plot per term underneath */
+        const ht = Math.min(h, vecPlotHeight(w));
+        ctx.save(); ctx.beginPath(); ctx.rect(0,0,w,ht); ctx.clip();
+        if(params.dim === 1) drawLyap1D(w, ht, ly); else drawLyap2D(w, ht, ly);
+        ctx.restore();
+        if(h - ht > 40){
+          ctx.strokeStyle = TH.grid; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(8, ht+0.5); ctx.lineTo(w-8, ht+0.5); ctx.stroke();
+          ctx.save(); ctx.translate(0, ht); ctx.beginPath(); ctx.rect(0,0,w,h-ht); ctx.clip();
+          if(params.dim === 1) drawTerms1D(w, h-ht, ly); else drawTerms2D(w, h-ht, ly);
+          ctx.restore();
+        }
       } else if(params.dim === 1) drawLyap1D(w, h, ly); else drawLyap2D(w, h, ly);
     } finally { ctx = keep; }
+  }
+  /* scales of the term plots: each follows its largest |value| quickly upward,
+     relaxes slowly downward, and is quantized so the axes do not breathe.
+     Every strip has its own (the densities of different terms differ by
+     orders of magnitude and the total is what the summary plot compares) */
+  const termScales = {};
+  function smoothScale(key, mx){
+    const s = termScales[key] || 0;
+    termScales[key] = mx > s ? mx : s*0.97 + mx*0.03;
+    return niceCeil(termScales[key]);
+  }
+  function fieldMax(f){
+    const n = sim.physNx, nx = sim.nx, ny2 = sim.physNy;
+    let mx = 0;
+    for(let j=0;j<ny2;j++){ const row=j*nx; for(let i=0;i<n;i++){ const a = Math.abs(f[row+i]); if(a>mx) mx=a; } }
+    return mx;
+  }
+  function termScaleNow(keys, F){       // 2D maps: one shared, robust (98th percentile) scale
+    let mx = 0; for(const k of keys) mx = Math.max(mx, robustMax(F[k]));
+    return smoothScale('grid', mx);
+  }
+  const POS = 'rgba(220,38,38,.38)', NEG = 'rgba(37,99,235,.38)';   // adds / removes divergence
+  const termCaption = (k, b) => (k === 'tot' ? 'λ(x) = Σ terms' : kindLabel(k)) +
+        '   ⟨ ⟩ₜ = ' + (isFinite(b.avg[k]) ? fmtLam(b.avg[k]) : '—') +
+        '   now ' + (isFinite(b.val[k]) ? fmtLam(b.val[k]) : '—');
+  function drawTerms1D(w, h, ly){
+    const b = ly.budget;
+    if(!b.ready){
+      axisFont(); ctx.fillStyle = TH.label; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('term budget — run or step the model', w/2, h/2); return;
+    }
+    const same = Math.abs(mainXr.w - w) < 2 && mainXr.x1 - mainXr.x0 > 40;
+    const x0 = same ? Math.round(mainXr.x0) : 46, x1 = same ? Math.round(mainXr.x1) : w-14, pw = x1-x0;
+    const n = sim.physNx, keys = activeTermKeys();
+    const X = i => x0 + pw*i/(n-1);
+    const nodeX = X(ly.node % sim.nx);
+    /* header line: what the strips show */
+    ctx.font = '10.5px system-ui,sans-serif'; ctx.fillStyle = TH.label; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText(w >= 640 ? 'term budget  cᵢ(x) = δh·[Tᵢ(twin) − Tᵢ(field)] / ⟨δh²⟩ — red adds, blue removes divergence; own scale per term, λ(x) on the stacked plot\'s'
+                          : 'term budget cᵢ(x): red adds, blue removes', x0+5, 3);
+    /* the stacked summary is prepared first: its scale is shared with the λ(x) strip */
+    const stack = cumStack(b, n);
+    axisFont();
+    [...keys, 'tot'].forEach((k, r) => {
+      const yt = TOPPAD + r*STRIP, ph = STRIP - 16, ym = yt + ph/2, F = b.fld[k];
+      const S = k === 'tot' ? stack.S : smoothScale(k, fieldMax(F));   // own scale per term; the total on the summary's
+      const Y = v => ym - 0.5*ph*(v/S);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = TH.grid; ctx.beginPath(); ctx.moveTo(x0, yt); ctx.lineTo(x1, yt); ctx.moveTo(x0, yt+ph); ctx.lineTo(x1, yt+ph); ctx.stroke();
+      ctx.strokeStyle = TH.zero; ctx.beginPath(); ctx.moveTo(x0, ym); ctx.lineTo(x1, ym); ctx.stroke();
+      /* the shared scale, inside the strip at its right edge (the x axis of the
+         display may start close to the left edge of the panel) */
+      ctx.fillStyle = TH.label; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
+      ctx.fillText('+'+fmt(S), x1-4, yt+6); ctx.fillText('−'+fmt(S), x1-4, yt+ph-6);
+      ctx.save(); ctx.beginPath(); ctx.rect(x0, yt, pw, ph); ctx.clip();
+      /* the curve to its baseline, the positive lobes warm and the negative cool */
+      const lobe = () => { ctx.beginPath(); ctx.moveTo(X(0), ym); for(let i=0;i<n;i++) ctx.lineTo(X(i), Y(F[i])); ctx.lineTo(X(n-1), ym); ctx.closePath(); };
+      ctx.save(); ctx.beginPath(); ctx.rect(x0, yt, pw, ym-yt); ctx.clip(); lobe(); ctx.fillStyle = POS; ctx.fill(); ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.rect(x0, ym, pw, yt+ph-ym); ctx.clip(); lobe(); ctx.fillStyle = NEG; ctx.fill(); ctx.restore();
+      ctx.beginPath(); ctx.moveTo(X(0), Y(F[0])); for(let i=1;i<n;i++) ctx.lineTo(X(i), Y(F[i]));
+      const tot = k === 'tot';
+      ctx.strokeStyle = tot ? TH.curve : TCOL[k]; ctx.lineWidth = tot ? 1.8 : 1.2; ctx.lineJoin='round'; ctx.stroke();
+      /* most unstable node, as in the vector plot */
+      ctx.setLineDash([3,3]); ctx.strokeStyle = MARK; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(nodeX, yt); ctx.lineTo(nodeX, yt+ph); ctx.stroke(); ctx.setLineDash([]);
+      ctx.restore();
+      ctx.fillStyle = tot ? TH.curve : TCOL[k]; ctx.fillRect(x0+5, yt+4, 8, 8);
+      ctx.fillStyle = tot ? TH.curve : TH.label; ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.font = tot ? '600 11px system-ui,sans-serif' : '11px system-ui,sans-serif';
+      ctx.fillText(termCaption(k, b) + (tot ? '   — same scale as the stacked plot below' : ''), x0+17, yt+2);
+    });
+    /* the summary: the terms stacked from the most dissipative up to λ(x), then
+       the waterfall of their time averages */
+    const yc = TOPPAD + (keys.length + 1)*STRIP;
+    drawCumulative1D(x0, x1, yc, CUMH, ly, stack);
+    drawWaterfall(x0, x1, yc + CUMH, wfHeight(), ly, w);
+  }
+  /* the running sums of the stacked summary, from the most dissipative term up
+     to the total, and their common (smoothed, quantized) scale */
+  function cumStack(b, n){
+    const order = cumOrder(b), cum = new Float64Array(n), layers = []; let mx = 0;
+    for(const k of order){
+      const F = b.fld[k], lo = Float64Array.from(cum);
+      for(let i=0;i<n;i++){ cum[i] += F[i]; const a = Math.abs(cum[i]); if(a>mx) mx=a; }
+      layers.push({ k, lo, hi: Float64Array.from(cum) });
+    }
+    return { order, cum, layers, S: smoothScale('cum', mx) };
+  }
+  /* stacked summary: starting from the most dissipative term, the contributions
+     are added one by one — each band, in the term's colour, is what that term
+     adds (band above the running sum) or removes (below) — until the full line
+     on top is the total λ(x): the very curve of the λ(x) strip above, on the
+     same scale, so the two can be compared directly. */
+  function drawCumulative1D(x0, x1, yt, hgt, ly, stack){
+    const b = ly.budget, n = sim.physNx, pw = x1-x0;
+    const { order, cum, layers, S } = stack;
+    const ph = hgt - 22, ytop = yt + 16, ym = ytop + ph/2;
+    const X = i => x0 + pw*i/(n-1), Y = v => ym - 0.5*ph*(v/S);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = TH.grid; ctx.beginPath(); ctx.moveTo(x0, ytop); ctx.lineTo(x1, ytop); ctx.moveTo(x0, ytop+ph); ctx.lineTo(x1, ytop+ph); ctx.stroke();
+    ctx.strokeStyle = TH.zero; ctx.beginPath(); ctx.moveTo(x0, ym); ctx.lineTo(x1, ym); ctx.stroke();
+    ctx.fillStyle = TH.label; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText('+'+fmt(S), x1-4, ytop+6); ctx.fillText('−'+fmt(S), x1-4, ytop+ph-6);
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, ytop, pw, ph); ctx.clip();
+    for(const L of layers){
+      ctx.beginPath(); ctx.moveTo(X(0), Y(L.hi[0]));
+      for(let i=1;i<n;i++) ctx.lineTo(X(i), Y(L.hi[i]));
+      for(let i=n-1;i>=0;i--) ctx.lineTo(X(i), Y(L.lo[i]));
+      ctx.closePath(); ctx.fillStyle = rgba(TCOL[L.k], 0.45); ctx.fill();
+    }
+    ctx.beginPath(); ctx.moveTo(X(0), Y(cum[0])); for(let i=1;i<n;i++) ctx.lineTo(X(i), Y(cum[i]));
+    ctx.strokeStyle = TH.curve; ctx.lineWidth = 1.8; ctx.lineJoin='round'; ctx.stroke();
+    const nodeX = X(ly.node % sim.nx);
+    ctx.setLineDash([3,3]); ctx.strokeStyle = MARK; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(nodeX, ytop); ctx.lineTo(nodeX, ytop+ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+    /* caption: the stacking order with colour swatches, then the total's numbers */
+    ctx.textBaseline='top'; ctx.textAlign='left';
+    let cx = x0+5;
+    ctx.font = '600 11px system-ui,sans-serif'; ctx.fillStyle = TH.curve;
+    ctx.fillText('λ(x) =', cx, yt+2); cx += ctx.measureText('λ(x) =').width + 8;
+    ctx.font = '11px system-ui,sans-serif';
+    order.forEach((k, i) => {
+      ctx.fillStyle = TCOL[k]; ctx.fillRect(cx, yt+4, 8, 8); cx += 11;
+      const t = termLabel(k) + (i < order.length-1 ? '  +' : '');
+      ctx.fillStyle = TH.label; ctx.fillText(t, cx, yt+2); cx += ctx.measureText(t).width + 7;
+    });
+    const tail = '   ⟨ ⟩ₜ = ' + (isFinite(b.avg.tot) ? fmtLam(b.avg.tot) : '—') + '   now ' + (isFinite(b.val.tot) ? fmtLam(b.val.tot) : '—');
+    ctx.fillStyle = TH.curve; ctx.font = '600 11px system-ui,sans-serif';
+    const tw = ctx.measureText(tail).width;
+    if(cx + tw < x1 - 4){ ctx.fillText(tail, cx, yt+2); cx += tw; }
+    const hint = 'stacked from the most dissipative term — the full line is the total λ(x), the strip above';
+    ctx.font = '10.5px system-ui,sans-serif';
+    if(cx + 30 + ctx.measureText(hint).width < x1 - 4){
+      ctx.fillStyle = TH.label; ctx.textAlign='right'; ctx.fillText(hint, x1-4, yt+2);
+    }
+  }
+  /* the time averages ⟨Λᵢ⟩ₜ as a waterfall: bars laid end to end from 0, most
+     dissipative first, ending at Σ⟨Λᵢ⟩ = λ; the Benettin λ marked for comparison */
+  function drawWaterfall(x0, x1, yt, hgt, ly, w){
+    const b = ly.budget, order = cumOrder(b);
+    const v = k => isFinite(b.avg[k]) ? b.avg[k] : 0;
+    const segs = []; let c = 0, lo = 0, hi = 0;
+    for(const k of order){ const a = v(k); segs.push({ k, from:c, to:c+a }); c += a; lo = Math.min(lo, c); hi = Math.max(hi, c); }
+    const lam = ly.lam; if(isFinite(lam)){ lo = Math.min(lo, lam); hi = Math.max(hi, lam); }
+    const span = Math.max(hi - lo, 1e-3), pad = 0.08*span;
+    const labW = 78;                                   // room for the term names on the left
+    const left = x0 + labW, right = x1 - 66, pw = right - left;
+    const XV = val => left + pw*(val - (lo - pad))/(span + 2*pad);
+    const ROW = 13, bh = 10, ytop = yt + 20, ybot = ytop + segs.length*ROW;
+    ctx.font = '11px system-ui,sans-serif'; ctx.fillStyle = TH.label; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillText(w < 560 ? '⟨Λᵢ⟩ₜ waterfall' : 'time averages ⟨Λᵢ⟩ₜ, one bar per term from the most dissipative, each starting where the previous ended, to Σ = λ', x0+5, yt+3);
+    /* zero line and axis */
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = TH.zero; ctx.beginPath(); ctx.moveTo(XV(0)+0.5, ytop-3); ctx.lineTo(XV(0)+0.5, ybot+3); ctx.stroke();
+    ctx.strokeStyle = TH.grid; ctx.beginPath(); ctx.moveTo(left, ybot+3.5); ctx.lineTo(right, ybot+3.5); ctx.stroke();
+    ctx.fillStyle = TH.label; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('0', XV(0), ybot+5);
+    segs.forEach((sgm, r) => {
+      const y = ytop + r*ROW, a = XV(sgm.from), bx = XV(sgm.to), xl = Math.min(a, bx), wd = Math.max(1, Math.abs(bx - a));
+      ctx.fillStyle = TCOL[sgm.k]; ctx.fillRect(x0+5, y+1, 8, 8);
+      ctx.fillStyle = TH.label; ctx.font = '10.5px system-ui,sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText(termLabel(sgm.k), x0+16, y+bh/2);
+      ctx.fillStyle = rgba(TCOL[sgm.k], 0.8); ctx.fillRect(xl, y, wd, bh);
+      /* the connector down to the next bar */
+      if(r < segs.length-1){ ctx.strokeStyle = TH.wall; ctx.beginPath(); ctx.moveTo(bx+0.5, y+bh); ctx.lineTo(bx+0.5, y+ROW); ctx.stroke(); }
+      const txt = fmtLam(sgm.to - sgm.from);
+      ctx.fillStyle = TH.label; ctx.textAlign = bx >= a ? 'left' : 'right';
+      ctx.fillText(txt, bx >= a ? bx + 4 : bx - 4, y+bh/2);
+    });
+    /* the end: Σ⟨Λᵢ⟩ as a full-height line, and the Benettin λ dashed */
+    const xs = XV(c);
+    ctx.strokeStyle = TH.curve; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(xs+0.5, ytop-4); ctx.lineTo(xs+0.5, ybot+3); ctx.stroke();
+    ctx.fillStyle = TH.curve; ctx.font = '600 10.5px system-ui,sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText('Σ = ' + fmtLam(c), right + 8, ytop + 4);
+    if(isFinite(lam)){
+      const xl = XV(lam);
+      ctx.setLineDash([2,3]); ctx.strokeStyle = MARK; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(xl+0.5, ytop-4); ctx.lineTo(xl+0.5, ybot+3); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = MARK; ctx.font = '10.5px system-ui,sans-serif';
+      ctx.fillText('λ = ' + fmtLam(lam), right + 8, ytop + 18);
+    }
+  }
+  const wfHeight = () => 20 + activeTermKeys().length*13 + 18;
+  const tFld = document.createElement('canvas'), tFldCtx = tFld.getContext('2d');
+  let tImg = null;
+  function drawTerms2D(w, h, ly){
+    const b = ly.budget;
+    if(!b.ready){
+      axisFont(); ctx.fillStyle = TH.label; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('term budget — run or step the model', w/2, h/2); return;
+    }
+    const n = sim.physNx, nx = sim.nx, g = termGrid(w), S = termScaleNow(g.keys, b.fld), iS = 1/S;
+    if(tFld.width !== n){ tFld.width = n; tFld.height = n; tImg = tFldCtx.createImageData(n, n); }
+    const d = tImg.data;
+    const nodeI = ly.node % nx, nodeJ = (ly.node - nodeI)/nx;
+    ctx.imageSmoothingEnabled = true;
+    g.keys.forEach((k, idx) => {
+      const F = b.fld[k], c = idx % g.cols, r = (idx - c)/g.cols;
+      const px = g.x0 + c*(g.side + g.gap), py = 6 + r*(g.side + g.cap);
+      for(let j=0;j<n;j++){
+        const row = j*nx, orow = j*n*4;
+        for(let i=0;i<n;i++){
+          const ci = 3*lutIdx((F[row+i]*iS + 1)*0.5), o = orow + i*4;   // fixed blue–red map
+          d[o]=LUTD[ci]; d[o+1]=LUTD[ci+1]; d[o+2]=LUTD[ci+2]; d[o+3]=255;
+        }
+      }
+      tFldCtx.putImageData(tImg, 0, 0);
+      ctx.save(); ctx.translate(px, py+g.side); ctx.scale(1,-1); ctx.drawImage(tFld, 0, 0, g.side, g.side); ctx.restore();
+      ctx.strokeStyle = TH.frame; ctx.lineWidth = 1; ctx.strokeRect(px+0.5, py+0.5, g.side, g.side);
+      const mx = px + (nodeI+0.5)/n*g.side, my = py + g.side - (nodeJ+0.5)/n*g.side;
+      ctx.beginPath(); ctx.arc(mx, my, 6, 0, 2*Math.PI);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke(); ctx.strokeStyle = MARK; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = k === 'tot' ? TH.curve : TH.label; ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.font = k === 'tot' ? '600 11px system-ui,sans-serif' : '11px system-ui,sans-serif';
+      const cap = termCaption(k, b);
+      if(ctx.measureText(cap).width <= g.side + g.gap - 4) ctx.fillText(cap, px, py + g.side + 4);
+      else {
+        ctx.fillText(k === 'tot' ? 'λ(x,y)' : kindLabel(k), px, py + g.side + 4);
+        ctx.fillText('⟨ ⟩ₜ ' + (isFinite(b.avg[k]) ? fmtLam(b.avg[k]) : '—'), px, py + g.side + 17);
+      }
+    });   // same box and axes as the maps above; only the key sits in the margin
+    /* the common key */
+    const kx = 10, kyy = 18, kh = Math.min(70, g.side - 26);
+    for(let k=0;k<kh;k++){ const ci = 3*lutIdx(1 - k/(kh-1)); ctx.fillStyle = 'rgb('+LUTD[ci]+','+LUTD[ci+1]+','+LUTD[ci+2]+')'; ctx.fillRect(kx, kyy+k, 7, 1.5); }
+    ctx.strokeStyle = TH.frame; ctx.lineWidth = 1; ctx.strokeRect(kx+0.5, kyy+0.5, 7, kh);
+    ctx.font = '9.5px system-ui,sans-serif'; ctx.fillStyle = TH.label; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText('+'+fmt(S), kx+4, kyy-4); ctx.fillText('−'+fmt(S), kx+4, kyy+kh+11);
+    /* the waterfall of the time averages under the maps */
+    drawWaterfall(g.x0 - 22, w - 8, 6 + g.rows*(g.side + g.cap), wfHeight(), ly, w);
   }
   /* free run: log10|δh| against t, the saturation level √2·W of two completely
      diverged interfaces, and the fitted exponential stretch */
@@ -2706,10 +3722,9 @@ function buildSim(P){
     /* ---- right map: λ(x,y) split by sign — the display's colours (upper half
        of the map) for λ > 0, grey (zero) to black (most negative) for λ < 0 ---- */
     if(!lamBuf || lamBuf.length !== sim.M) lamBuf = new Float64Array(sim.M);
-    sim.lyapDiv(lamBuf, 1); const lam = lamBuf;
-    let lmax = 0, lmin = 0;
-    for(let j=0;j<n;j++){ const row=j*nx; for(let i=0;i<n;i++){ const v=lam[row+i]; if(v>lmax) lmax=v; else if(v<lmin) lmin=v; } }
-    lmax = niceCeil(lmax); lmin = -niceCeil(-lmin);   // quantized: no breathing
+    sim.lyapField(lamBuf, 'lydiv'); const lam = lamBuf;
+    ensureScale('lydiv');                             // the display's (robust, windowed) λ scale
+    const lmax = qscalesP.lydiv, lmin = -lmax;        // one scale for both signs
     const d2 = lyImg2.data, ipos = lmax > 0 ? 1/lmax : 0, ineg = lmin < 0 ? 1/lmin : 0;
     for(let j=0;j<n;j++){
       const row = j*nx, orow = j*n*4;
@@ -2812,6 +3827,8 @@ function buildSim(P){
     const absTxt = params.dim === 2 ? (params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·√(hₓ²+hᵧ²)') : '·|∇h|';
     if(params.alpha !== 0) eq += (params.alpha > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.alpha)) + absTxt;
     if(params.beta  !== 0) eq += (params.beta  > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.beta))  + '·(∇h)⁴';
+    if(params.gamma !== 0) eq += (params.gamma > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.gamma)) + '·∇²(∇h)²';
+    if(params.delta !== 0) eq += (params.delta > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.delta)) + '·∇²h(∇h)²';
     const geom = (params.dim === 1 ? '1+1 D' : '2+1 D') + ',  ' + params.bc +
                  ',  L = ' + params.L + ' × dx ' + params.dx +
                  ' = ' + fmt(params.L*params.dx);
@@ -3006,6 +4023,7 @@ function buildSim(P){
     sim.lyapResetAvg();                  // λ refers to the equation now being integrated
     autoDt();
     updateHint();
+    syncLyOptions();                     // the term labels follow the linear operator
     if(!running) draw();
   });
 
@@ -3089,23 +4107,24 @@ function buildSim(P){
     draw();
   });
 
-  // extra growth terms alpha, beta (header sliders)
+  // extra growth terms alpha, beta (header menus)
   const fmtTerm = v => (Math.abs(v) < 1e-9 ? '0' : (+v.toFixed(2)).toString());
   function applyTerms(){
-    sim.setTerms(params.alpha, params.beta, params.nl2, params.absMode);
+    sim.setTerms(params.alpha, params.beta, params.nl2, params.absMode, params.gamma, params.delta);
     sim.lyapResetAvg();
     syncEqHeader();
+    syncLyOptions();
   }
   /* the equation line: which terms are active, (∇h)² on or crossed out, and in
      2D the two readings of |∇h| on their toggle switch */
   function syncEqHeader(){
     const is2 = params.dim === 2, aOn = params.alpha !== 0;
-    $('alphaVal').textContent = fmtTerm(params.alpha);
-    $('betaVal').textContent = fmtTerm(params.beta);
-    $('alphaVal').classList.toggle('on', aOn);
-    $('betaVal').classList.toggle('on', params.beta !== 0);
+    setTermSel('selAlpha', ALPHAV, params.alpha); setTermSel('selBeta', BETAV, params.beta);
     $('termA').classList.toggle('on', aOn);
     $('termB').classList.toggle('on', params.beta !== 0);
+    $('termG').classList.toggle('on', params.gamma !== 0);
+    $('termD').classList.toggle('on', params.delta !== 0);
+    setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta);
     $('termNL2').classList.toggle('on', params.nl2);
     $('termNL2').classList.toggle('off', !params.nl2);
     $('termNL2').setAttribute('aria-pressed', params.nl2 ? 'true' : 'false');
@@ -3113,29 +4132,36 @@ function buildSim(P){
     $('segAbs').hidden = !is2;                   // 2D: the switch between the two norms
     $('segAbs').classList.toggle('zero', !aOn);
     setSeg('segAbs', params.absMode);
-    $('linWarn').hidden = params.nl2 || aOn || params.beta !== 0;
+    $('linWarn').hidden = params.nl2 || aOn || params.beta !== 0 || params.gamma !== 0 || params.delta !== 0;
   }
   $('termNL2').addEventListener('click', toggleNL2);
   $('termNL2').addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleNL2(); } });
-  function toggleNL2(){ params.nl2 = !params.nl2; applyTerms(); autoDt(); if(!running) draw(); }
+  /* switching (∇h)² off leaves a linear, unbounded equation unless another
+     nonlinearity saturates it — so β jumps to 1 when nothing else is on, and
+     back to 0 when (∇h)² returns (unless β was moved by hand in between) */
+  let betaAuto = false;
+  function toggleNL2(){
+    params.nl2 = !params.nl2;
+    if(!params.nl2 && params.alpha === 0 && params.beta === 0 && params.gamma === 0 && params.delta === 0){
+      params.beta = 1; betaAuto = true;
+    } else if(params.nl2 && betaAuto && params.beta === 1){
+      params.beta = 0; betaAuto = false;
+    }
+    applyTerms(); autoDt(); if(!running) draw();
+  }
   seg($('segAbs'), ()=>params.absMode, v=>{ params.absMode = v; applyTerms(); if(!running) draw(); });
-  /* β ladder: 0.1 steps where the term is a perturbation (|β| ≤ 2), 0.5 steps
-     out to ±5 where it dominates.  The slider carries the index. */
-  const BETAV = (function(){
-    const v = [];
-    for(let x=-5; x<-2.01; x+=0.5) v.push(+x.toFixed(1));      // -5 … -2.5
-    for(let i=-20; i<=20; i++)     v.push(+(i/10).toFixed(1)); // -2 … +2
-    for(let x=2.5; x<5.01; x+=0.5) v.push(+x.toFixed(1));      // 2.5 … 5
-    return v;
-  })();
-  const BETA0 = BETAV.indexOf(0);
-  const betaIdx = b => {
-    let best = BETA0, bd = 1e9;
-    for(let i=0;i<BETAV.length;i++){ const d = Math.abs(BETAV[i]-b); if(d < bd){ bd = d; best = i; } }
-    return best;
-  };
-  $('rngBeta').max = BETAV.length - 1;
-  $('rngBeta').value = BETA0;
+  /* α and β are chosen from fixed lists (pull-down menus in the header) */
+  const ALPHAV = [-5,-4,-3,-2,-1.5,-1,-0.5,-0.2,-0.1,0,0.1,0.2,0.5,1,1.5,2,3,4,5];
+  const BETAV  = [-5,-2,-1,-0.5,-0.25,-0.2,-0.15,-0.12,-0.1,-0.05,-0.02,0,0.2,0.5,1,1.5,2,3,4,5];   // also γ and δ
+  const nearest = (list, v) => list.reduce((b, x) => Math.abs(x - v) < Math.abs(b - v) ? x : b, list[0]);
+  function fillSel(id, list){
+    const el = $(id); el.innerHTML = '';
+    for(const v of list){ const o = document.createElement('option'); o.value = ''+v; o.textContent = (v > 0 ? '+' : '') + v; el.appendChild(o); }
+  }
+  const DELTAV = BETAV.filter(v => v >= 0);      // δ < 0 blows up in finite time, so only δ ≥ 0 is offered
+  fillSel('selAlpha', ALPHAV); fillSel('selBeta', BETAV); fillSel('selGamma', BETAV); fillSel('selDelta', DELTAV);
+  /* show a value in its menu (the nearest listed one) and mark non-zero terms */
+  function setTermSel(id, list, v){ const el = $(id); el.value = ''+nearest(list, v); el.classList.toggle('on', v !== 0); }
 
   /* Integration step, chosen from the strength of the nonlinearity.  ETDRK4 does
      the stiff linear part exactly, so this is an accuracy limit, not a stability
@@ -3145,11 +4171,18 @@ function buildSim(P){
      at dt = 0.25, so these values leave a wide margin. */
   function dtForTerms(){
     const b = Math.abs(params.beta);
-    if(b > 3.5) return params.dim === 2 ? 0.01 : 0.005;   // a 2D step costs L× more
-    if(b > 2)   return 0.01;
-    if(b > 0)   return 0.02;
-    if(Math.abs(params.alpha) > 2) return 0.05;            // steep facets at large |α|
-    return params.order === 6 ? 0.02 : 0.1;
+    let dt;
+    if(b > 3.5) dt = params.dim === 2 ? 0.01 : 0.005;      // a 2D step costs L× more
+    else if(b > 2) dt = 0.01;
+    else if(b > 0) dt = 0.02;
+    else if(Math.abs(params.alpha) > 2) dt = 0.05;         // steep facets at large |α|
+    else dt = params.order === 6 ? 0.02 : 0.1;
+    /* the two second-derivative nonlinearities: measured against dt = 0.002 over
+       300 time units, γ∇²(∇h)² is converged (W to 0.1 %) already at 0.02 for
+       |γ| ≤ 5, δ∇²h(∇h)² needs 0.01 (2 % at 0.02 for δ = 0.5, exact at 0.01) */
+    if(params.gamma !== 0) dt = Math.min(dt, 0.02);
+    if(params.delta !== 0) dt = Math.min(dt, 0.01);
+    return dt;
   }
   /* A smaller dt would otherwise make the picture crawl, so the steps per frame
      follow it: whenever the time step is chosen automatically, the number of
@@ -3175,11 +4208,10 @@ function buildSim(P){
     if(params.dt !== pick){ params.dt = pick; $('selDt').value = ''+pick; sim.setDt(pick); }
     autoSpf();
   }
-  $('rngAlpha').addEventListener('input', e=>{ params.alpha = +e.target.value; applyTerms(); autoDt(); });
-  $('rngBeta').addEventListener('input', e=>{
-    const i = Math.max(0, Math.min(BETAV.length-1, +e.target.value|0));
-    params.beta = BETAV[i]; applyTerms(); autoDt();
-  });
+  $('selAlpha').addEventListener('change', e=>{ params.alpha = +e.target.value; applyTerms(); autoDt(); if(!running) draw(); });
+  $('selBeta').addEventListener('change', e=>{ params.beta = +e.target.value; betaAuto = false; applyTerms(); autoDt(); if(!running) draw(); });
+  $('selGamma').addEventListener('change', e=>{ params.gamma = +e.target.value; applyTerms(); autoDt(); if(!running) draw(); });
+  $('selDelta').addEventListener('change', e=>{ params.delta = +e.target.value; applyTerms(); autoDt(); if(!running) draw(); });
 
   // top-bar vertical displacement per curve (discrete steps)
   const DYVALS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 10];
@@ -3296,15 +4328,33 @@ function buildSim(P){
     sim.lyap.on = o;
     if(o){ sim.lyapReset(false); lyapHeight(); } else sim.lyap.ready = false;
     resetLyScale();
-    /* the two divergence colourings exist only while the twin is integrated */
-    document.querySelectorAll('#qty .lyopt').forEach(op => { op.hidden = !o; });
-    if(!o && isLyKind(qkind)){ qkind = params.dim === 2 ? 'h' : 'plain'; $('qty').value = qkind; }
+    syncLyOptions();                 // the divergence colourings exist only while the twin is integrated
     updateReadouts(); fitDue = true; draw();
+  }
+  /* the Lyapunov entries of the colour menu: shown while the twin runs, the
+     term entries only for terms present in the equation, labels following the
+     linear operator in use; a colouring that has disappeared falls back */
+  function syncLyOptions(){
+    const qsel = $('qty');
+    qsel.querySelectorAll('.lyopt').forEach(op => {
+      const k = op.value, term = isTermKind(k);
+      op.hidden = !lyapOpen || (term && !termActive(k));
+      if(term) op.textContent = kindLabel(k);
+    });
+    if(isLyKind(qkind) && (!lyapOpen || (isTermKind(qkind) && !termActive(qkind)))){
+      qkind = lyapOpen ? 'lydiv' : (params.dim === 2 ? 'h' : 'plain'); qsel.value = qkind;
+    }
+    lyapHeight();
   }
   $('lyapToggle').addEventListener('click', ()=>setLyapOpen(!lyapOpen));
   seg($('segLyMode'), ()=>lyMode, v=>{
     lyMode = v; sim.lyap.mode = v; lyapPanel.classList.toggle('free', v === 'free');
     sim.lyapReset(false); resetLyScale(); lyapHeight(); updateReadouts(); draw();
+  });
+  /* the term budget view under the vector plot (Benettin mode) */
+  $('bLyTerms').addEventListener('click', ()=>{
+    lyTerms = !lyTerms; $('bLyTerms').classList.toggle('on', lyTerms);
+    lyapHeight(); draw();
   });
   $('bLyapReset').addEventListener('click', ()=>{ sim.lyapReset(false); resetLyScale(); updateReadouts(); draw(); });
   new ResizeObserver(()=>{ if(lyapOpen){ lyapHeight(); drawLyap(); } }).observe(lc.parentElement);
@@ -3355,7 +4405,8 @@ function buildSim(P){
     $('selL').value = ''+params.L; $('selDx').value = ''+params.dx;
     $('selGain').value = ''+dispGain;
     $('rngN').value = params.n; $('nVal').textContent = params.n;
-    $('rngAlpha').value = params.alpha; $('rngBeta').value = betaIdx(params.beta);
+    setTermSel('selAlpha', ALPHAV, params.alpha); setTermSel('selBeta', BETAV, params.beta);
+    setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta);
   }
   function runPreset(setup){
     running = false;
@@ -3372,7 +4423,7 @@ function buildSim(P){
   }
   function base1D(){
     params.dim=1; params.L=128; params.bc='open'; params.dx=0.5; params.order=4;
-    params.alpha=0; params.beta=0; params.amp=0; params.eps=0.1; params.n=4; params.nl2=true; params.absMode='euclid';
+    params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.amp=0; params.eps=0.1; params.n=4; params.nl2=true; params.absMode='euclid';
     params.dt=0.1; $('selDt').value='0.1';
     stepsPerFrame=2; $('selSpf').value='2';
     dispGain=2; keepN=5000;
@@ -3388,7 +4439,7 @@ function buildSim(P){
   }
   function base2D(){
     params.dim=2; params.L=128; params.bc='periodic'; params.dx=0.5; params.order=4;
-    params.alpha=0; params.beta=0; params.amp=0; params.eps=0.1; params.n=4; params.nl2=true; params.absMode='euclid';
+    params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.amp=0; params.eps=0.1; params.n=4; params.nl2=true; params.absMode='euclid';
     params.dt=0.2; $('selDt').value='0.2';
     stepsPerFrame=2; $('selSpf').value='2';
     dispGain=2; yvar='h'; qkind='lap'; modeSel[2]='surface';
@@ -3403,7 +4454,7 @@ function buildSim(P){
   $('bPre2').addEventListener('click', ()=>runPreset(base2D));
   $('bPre1a').addEventListener('click', ()=>runPreset(()=>{ base1D(); params.alpha=1; }));
   $('bPre2a').addEventListener('click', ()=>runPreset(()=>{
-    base2D(); params.alpha=1.4;
+    base2D(); params.alpha=1.5;
     params.dt=0.1; $('selDt').value='0.1';
   }));
   $('bPre1n').addEventListener('click', ()=>runPreset(()=>{
@@ -3422,6 +4473,613 @@ function buildSim(P){
   window.addEventListener('orientationchange', ()=>setTimeout(reflow, 120));
   window.addEventListener('scroll', ()=>{ fitDue = true; }, {passive:true});
   if(window.visualViewport) window.visualViewport.addEventListener('resize', reflow);
+
+
+  /* ---- λ(β) table in the pull-down text ----
+     rows: [β, KS: λ free-run mean, sd, n runs, λ Benettin, W, flag,  ∇⁴+∇⁶: the same six]
+     1D periodic L=128 dx=1, α=0, (∇h)² on. Transient until W settled (3000 t.u. where flagged), then
+     6000 t.u. with the twin, λ (Benettin) averaged over the last 2000; then repeated free runs during
+     a further 2000 t.u., each seeded from the current state and stopped 20 t.u. after full divergence
+     (or after 600 t.u.), slopes averaged. flag 1 = W grows for ~2000 t.u. before it settles. */
+  const LAMTAB = [
+    [   -5, -0.0022,0.0006, 4, -0.0004,   1.27,0,   0.0026,0.0005, 4,  0.0037,   0.69,0],
+    [ -0.5,  0.0183,0.0300, 4,  0.0027,   2.76,0,   0.0003,0.0003, 4,  0.0000,   1.80,0],
+    [ -0.3,  0.0144,0.0140, 5, -0.0003,   3.89,2,   0.0065,0.0100, 5,  0.0000,   2.25,2],
+    [-0.25,  0.0277,0.0040, 5,  0.0482,  26.53,1,   0.0831,0.0130,11,  0.0821,   9.72,1],
+    [ -0.2,  0.0407,0.0230, 5,  0.0326,  32.88,1,   0.0986,0.0180,11,  0.0945,  10.97,1],
+    [-0.15,  0.0254,0.0060, 5,  0.0352,  43.67,1,   0.0033,0.0004, 5,  0.0000,  14.52,1],
+    [ -0.1,  0.0016,0.0016, 4,  0.0008,  55.48,1,   0.0387,0.0794, 4,  0.0001,  15.04,1],
+    [-0.07,  0.0984,0.0135,11,  0.1023,   1.87,0,   0.1122,0.0212,12,  0.1088,   2.78,0],
+    [-0.05,  0.0998,0.0186,10,  0.0952,   1.87,0,   0.1053,0.0100,10,  0.1065,   2.25,0],
+    [-0.02,  0.0879,0.0061, 9,  0.0917,   1.83,0,   0.1062,0.0183,11,  0.1030,   2.23,0],
+    [    0,  0.0921,0.0134,10,  0.0964,   1.68,0,   0.1032,0.0126,11,  0.1056,   1.93,0],
+    [  0.2,  0.0803,0.0146, 9,  0.0729,   1.40,0,   0.0981,0.0170,10,  0.1008,   1.72,0],
+    [  0.5,  0.0679,0.0091, 8,  0.0711,   1.30,0,   0.0890,0.0143,10,  0.0909,   1.40,0],
+    [  0.7,  0.0728,0.0167, 8,  0.0625,   1.25,0,   0.0921,0.0171, 9,  0.0959,   1.31,0],
+    [    1,  0.0126,0.0181, 4, -0.0002,   1.40,0,   0.0831,0.0160,10,  0.0955,   1.22,0],
+    [  1.5,  0.0030,0.0064, 4,  0.0000,   1.90,0,   0.0962,0.0116,10,  0.0874,   1.10,0],
+    [    2,  0.0065,0.0063, 4, -0.0001,   1.24,0,   0.0911,0.0204,10,  0.0817,   0.97,0],
+    [    5,  0.0053,0.0052, 4,  0.0005,   1.62,0,   0.0894,0.0218, 9,  0.0876,   0.78,0]
+  ];
+  const KS_EQ = 'KS: −∇²h − ∇⁴h + (∇h)² + β(∇h)⁴', O6_EQ = '+∇⁴h + ∇⁶h + (∇h)² + β(∇h)⁴';
+  const f3 = v => (v < -0.0005 ? '−' : '') + Math.abs(v).toFixed(3);
+  const fW = (w, fl) => w.toFixed(1) + (fl === 1 ? '†' : fl === 2 ? '‡' : '');
+  const lamClass = v => v >= 0.05 ? 'ch' : (v < 0.02 ? 'fz' : '');
+  function buildLamTable(T, DATA, benTitle, note){
+    let h = '<tr><th></th><th class="grp" colspan="3">' + KS_EQ + '</th><th class="grp" colspan="3">' + O6_EQ + '</th></tr>';
+    h += '<tr><th>β</th><th title="mean of the fitted slopes of ln|δh|(t) over repeated free runs (hover a value for its scatter and the number of runs)">λ free</th><th title="' + benTitle + '">Benettin</th><th>W</th><th>λ free</th><th>Benettin</th><th>W</th></tr>';
+    for(const r of DATA){
+      const cell = (m, sd, n, fl) => fl >= 3 ? '<td class="dv" title="the run diverges">div.</td>' : '<td class="' + lamClass(m) + '" title="' + f3(m) + ' ± ' + sd.toFixed(3) + ' over ' + n + ' free runs">' + f3(m) + '</td>';
+      const rest = (b, w, fl) => fl >= 3 ? '<td class="dv"></td><td class="dv sep"></td>' : '<td class="bn">' + f3(b) + '</td><td class="sep">' + fW(w, fl) + '</td>';
+      h += '<tr><td class="b">' + (r[0] > 0 ? '+' : '') + r[0] + '</td>' +
+           cell(r[1], r[2], r[3], r[6]) + rest(r[4], r[5], r[6]) +
+           cell(r[7], r[8], r[9], r[12]) + rest(r[10], r[11], r[12]).replace(' sep', '') + '</tr>';
+    }
+    /* the footnote must not widen the table: a zero-width block that stretches to the table's own width */
+    h += '<tr><td colspan="7" class="note"><div>' + note + '</div></td></tr>';
+    T.innerHTML = h;
+  }
+  buildLamTable($('lamTable'), LAMTAB, 'Benettin average over the last 2000 of 6000 time units',
+    'red: chaotic (λ ≥ 0.05) · blue: steady or frozen (λ &lt; 0.02) · †: W grows for ~2000 time units before it settles · ‡: other initial conditions reach the giant-cell state instead (see below)');
+  function savePng(oc, name){
+    const save = url => { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+    if(oc.toBlob) oc.toBlob(b => { if(!b){ save(oc.toDataURL('image/png')); return; } const u = URL.createObjectURL(b); save(u); setTimeout(()=>URL.revokeObjectURL(u), 8000); }, 'image/png');
+    else save(oc.toDataURL('image/png'));
+  }
+  /* the table alone, with the two equations as column-group headers */
+  function exportLamTablePng(DATA = LAMTAB, name = 'lambda_vs_beta_table_L128_periodic.png', sub = '1D, periodic boundaries, L = 128, dx = 1, α = 0 — λ Benettin: last third of 6000 t.u.; λ free: repeated free runs over 2000 t.u.'){
+    const k = 2, W = 470, rowH = 18, n = DATA.length, H = rowH*(n + 3) + 16 + (sub ? 15*sub.split(' — ').length + 2 : 0);
+    const oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
+    const c = oc.getContext('2d'); c.scale(k, k);
+    c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
+    const cols = [46, 105, 155, 212, 283, 333, 390];
+    let y = 8 + rowH/2;
+    const subLines = sub ? sub.split(' — ') : [];
+    if(sub){ c.font = '11px system-ui,sans-serif'; c.fillStyle = '#4a5872'; c.textAlign = 'left'; c.textBaseline = 'middle'; subLines.forEach(t => { c.fillText(t, 20, y); y += 15; }); y += 2; }
+    c.font = '600 10px system-ui,sans-serif'; c.fillStyle = '#16233b'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(KS_EQ, 138, y); c.fillText(O6_EQ, 316, y);
+    c.strokeStyle = '#c3ccdb'; c.lineWidth = 1; c.beginPath(); c.moveTo(58, y+10.5); c.lineTo(216, y+10.5); c.moveTo(236, y+10.5); c.lineTo(396, y+10.5); c.stroke();
+    y += rowH;
+    c.font = '10.5px system-ui,sans-serif'; c.fillStyle = '#4a5872'; c.textAlign = 'right';
+    ['β','λ free','Benettin','W','λ free','Benettin','W'].forEach((t, j) => c.fillText(t, cols[j], y));
+    c.strokeStyle = '#dde3ec'; c.beginPath(); c.moveTo(20, y+rowH/2); c.lineTo(W-20, y+rowH/2); c.stroke();
+    c.font = '12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';
+    DATA.forEach(r => {
+      y += rowH;
+      const put = (t, x, col) => { c.fillStyle = col || '#16233b'; c.fillText(t, x, y); };
+      const lc = v => v >= 0.05 ? '#b91c1c' : (v < 0.02 ? '#1d4ed8' : '#16233b');
+      put((r[0] > 0 ? '+' : '') + r[0], cols[0]);
+      put(f3(r[1]), cols[1], lc(r[1])); put(f3(r[4]), cols[2]); put(fW(r[5], r[6]), cols[3]);
+      put(f3(r[7]), cols[4], lc(r[7])); put(f3(r[10]), cols[5]); put(fW(r[11], r[12]), cols[6]);
+      c.strokeStyle = '#eef1f6'; c.beginPath(); c.moveTo(20, y+rowH/2); c.lineTo(W-20, y+rowH/2); c.stroke();
+    });
+    c.strokeStyle = '#dde3ec'; c.beginPath(); c.moveTo(226, 8+rowH*1.5+(sub?15*subLines.length+2:0)); c.lineTo(226, y+rowH/2); c.stroke();
+    savePng(oc, name);
+  }
+  /* the figure alone: long-run λ (free-run mean, with its scatter) against β for both equations,
+     Benettin dashed; twice the size of the table picture, text 20 % larger */
+  function exportLamPlotPng(DATA = LAMTAB, name = 'lambda_vs_beta_plot_L128_periodic.png', geo = '1D, periodic boundaries, L = 128, dx = 1, α = 0'){
+    const k = 2, F = 1.2*1.7, W = 1800, H = 900;
+    const oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
+    const c = oc.getContext('2d'); c.scale(k, k);
+    c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
+    const x0 = 170, x1 = W - 50, y0 = 70, y1 = H - 150, n = DATA.length;
+    const X = i => x0 + (x1-x0)*(i + 0.5)/n;
+    /* λ axis: 0.2 for the 1D scans, higher when the data ask for it (2D) */
+    let top = 0; for(const r of DATA){ if(r[6] < 3) top = Math.max(top, r[1] + r[2], r[4]); if(r[12] < 3) top = Math.max(top, r[7] + r[8], r[10]); }
+    const lmax = Math.max(0.2, Math.ceil(top/0.05 + 0.2)*0.05), lmin = -0.1*lmax, step = lmax > 0.3 ? 0.1 : 0.05;
+    const Y = v => y1 - (y1-y0)*(Math.max(lmin, Math.min(lmax, v)) - lmin)/(lmax - lmin);
+    const px = s => (s*F).toFixed(1) + 'px';
+    c.font = '600 ' + px(15) + ' system-ui,sans-serif'; c.fillStyle = '#16233b'; c.textAlign = 'left'; c.textBaseline = 'top';
+    c.fillText('Largest Lyapunov exponent λ against β  (' + geo + ')', x0, 14);
+    c.lineWidth = 1.5;
+    for(let v = 0; v <= lmax + 1e-9; v += step){ c.strokeStyle = v === 0 ? '#c3ccdb' : '#e8ecf3'; c.beginPath(); c.moveTo(x0, Y(v)); c.lineTo(x1, Y(v)); c.stroke(); }
+    const ax = s2 => (s2*1.2).toFixed(1) + 'px';   // axis text keeps its (doubled) size
+    c.font = ax(24) + ' system-ui,sans-serif'; c.fillStyle = '#000'; c.textAlign = 'right'; c.textBaseline = 'middle';
+    for(let v = 0; v <= lmax + 1e-9; v += step) c.fillText(v.toFixed(2), x0-12, Y(v));
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    DATA.forEach((r, i) => c.fillText((r[0] > 0 ? '+' : '') + r[0], X(i), y1+12));
+    c.font = ax(28) + ' system-ui,sans-serif';
+    c.fillText('β   (menu values in order, not to scale)', (x0+x1)/2, y1+52);
+    c.save(); c.translate(48, (y0+y1)/2); c.rotate(-Math.PI/2); c.textBaseline = 'alphabetic'; c.fillText('λ', 0, 0); c.restore();
+    c.strokeStyle = '#000'; c.lineWidth = 2; c.strokeRect(x0+1, y0+1, x1-x0-2, y1-y0-2);
+    /* scatter bars of the free-run means, then the curves */
+    const ser = [[1, 2, '#4338ca'], [7, 8, '#d97706']];
+    for(const [cm, cs, col] of ser){
+      c.strokeStyle = col; c.lineWidth = 1.5; c.globalAlpha = 0.45;
+      DATA.forEach((r, i) => { c.beginPath(); c.moveTo(X(i), Y(r[cm]-r[cs])); c.lineTo(X(i), Y(r[cm]+r[cs])); c.stroke(); });
+      c.globalAlpha = 1;
+    }
+    for(const [cm, cs, col, cb] of [[1, 2, '#4338ca', 4], [7, 8, '#d97706', 10]]){
+      c.strokeStyle = col; c.lineWidth = 2.2; c.setLineDash([6, 6]);
+      c.beginPath(); DATA.forEach((r, i) => { i ? c.lineTo(X(i), Y(r[cb])) : c.moveTo(X(i), Y(r[cb])); }); c.stroke(); c.setLineDash([]);
+      c.lineWidth = 3.2; c.beginPath(); DATA.forEach((r, i) => { i ? c.lineTo(X(i), Y(r[cm])) : c.moveTo(X(i), Y(r[cm])); }); c.stroke();
+      c.fillStyle = col; DATA.forEach((r, i) => { c.beginPath(); c.arc(X(i), Y(r[cm]), 5.5, 0, 2*Math.PI); c.fill(); });
+    }
+    c.font = px(12.5) + ' system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
+    const leg = [['#4338ca', [], KS_EQ + ' — free run, mean ± scatter'], ['#4338ca', [6,6], 'KS — Benettin (last third of the run)'],
+                 ['#d97706', [], O6_EQ + ' — free run'], ['#d97706', [6,6], '∇⁴+∇⁶ — Benettin']];
+    leg.forEach((L, i) => { const lx = x1 - 960, ly = y0 + 30 + 42*i; c.strokeStyle = L[0]; c.lineWidth = 3; c.setLineDash(L[1]); c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx+44, ly); c.stroke(); c.setLineDash([]); c.fillStyle = '#4a5872'; c.fillText(L[2], lx+54, ly); });
+    savePng(oc, name);
+  }
+  $('bLamTabPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamTablePng(); });
+  $('bLamPlotPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamPlotPng(); });
+  /* the same measurements for a box of 256 with open (flat-wall) boundaries: download only.
+     Protocol as for the table, with a 3000-t.u. Benettin run (last third) and 1500 t.u. of free runs. */
+  const LAMTAB256 = [
+    [   -5, -0.0002,0.0001, 3, -0.0001,   2.73,0,   0.0018,0.0017, 3, -0.0001,   0.74,0],
+    [ -0.5,  0.0242,0.0003, 3,  0.0336,  20.41,1,   0.0005,0.0001, 3, -0.0001,   1.77,0],
+    [ -0.3,  0.0217,0.0041, 3,  0.0305,  52.49,1,   0.0651,0.0396, 4,  0.0730,  21.41,1],
+    [-0.25,  0.0255,0.0018, 3,  0.0306,  62.06,1,   0.0025,0.0024, 3,  0.0003,  54.98,1],
+    [ -0.2,  0.0282,0.0035, 3,  0.0347,  48.97,1,   0.0007,0.0001, 3, -0.0002,  55.21,1],
+    [-0.15,  0.0266,0.0034, 3,  0.0497,  65.73,1,  -0.0002,0.0000, 3, -0.0001,  86.49,1],
+    [ -0.1,  0.0252,0.0043, 3,  0.0593, 189.05,1,   0.0024,0.0050, 3, -0.0002,  18.73,1],
+    [-0.07,  0.0004,0.0008, 3,  0.0001,  84.27,1,   0.1045,0.0093, 6,  0.1134,   5.36,0],
+    [-0.05,  0.1069,0.0211, 8,  0.1032,   3.41,0,   0.1116,0.0113, 6,  0.1017,   5.37,0],
+    [-0.02,  0.1029,0.0188, 7,  0.1013,   2.77,0,   0.1032,0.0071, 7,  0.1012,   4.87,0],
+    [    0,  0.0923,0.0098, 5,  0.0966,   2.98,0,   0.1093,0.0089, 5,  0.1064,   4.54,0],
+    [  0.2,  0.0757,0.0118, 4,  0.0850,   2.16,0,   0.0936,0.0075, 6,  0.0951,   3.79,0],
+    [  0.5,  0.0674,0.0081, 4,  0.0690,   2.08,0,   0.0976,0.0088, 4,  0.0872,   3.57,0],
+    [  0.7,  0.0746,0.0078, 6,  0.0639,   2.48,0,   0.1013,0.0145, 6,  0.0913,   2.42,0],
+    [    1,  0.0554,0.0107, 4,  0.0567,   1.64,0,   0.0969,0.0081, 7,  0.0949,   1.78,0],
+    [  1.5,  0.0512,0.0072, 3,  0.0673,   1.61,0,   0.1021,0.0220, 5,  0.0821,   1.78,0],
+    [    2,  0.0072,0.0053, 3,  0.0578,   1.80,0,   0.0929,0.0220, 6,  0.0915,   1.87,0],
+    [    5,  0.0115,0.0192, 3, -0.0001,   2.31,0,   0.0765,0.0109, 6,  0.0810,   1.47,0]
+  ];
+  $('bLam256TabPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamTablePng(LAMTAB256, 'lambda_vs_beta_table_L256_open.png', '1D, open (flat-wall) boundaries, L = 256, dx = 1, α = 0 — λ Benettin: last third of 3000 t.u.; λ free: repeated free runs over 1500 t.u.'); });
+  /* one figure with the long-run (free-run) λ only, for both equations and both boxes */
+  function exportLamCombinedPng(){
+    const k = 2, F = 1.2*1.7, W = 1800, H = 900;
+    const oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
+    const c = oc.getContext('2d'); c.scale(k, k);
+    c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
+    const x0 = 170, x1 = W - 50, y0 = 70, y1 = H - 150, n = LAMTAB.length;
+    const X = i => x0 + (x1-x0)*(i + 0.5)/n;
+    const lmin = -0.02, lmax = 0.2;
+    const Y = v => y1 - (y1-y0)*(Math.max(lmin, Math.min(lmax, v)) - lmin)/(lmax - lmin);
+    const px = s2 => (s2*F).toFixed(1) + 'px', ax = s2 => (s2*1.2).toFixed(1) + 'px';
+    const by256 = {}; for(const r of LAMTAB256) by256[r[0]] = r;
+    c.font = '600 ' + px(15) + ' system-ui,sans-serif'; c.fillStyle = '#16233b'; c.textAlign = 'left'; c.textBaseline = 'top';
+    c.fillText('Long-run Lyapunov exponent λ against β  (1D, dx = 1, α = 0; free-run slope, mean ± scatter)', x0, 14);
+    c.lineWidth = 1.5;
+    for(let v = 0; v <= 0.2; v += 0.05){ c.strokeStyle = v === 0 ? '#c3ccdb' : '#e8ecf3'; c.beginPath(); c.moveTo(x0, Y(v)); c.lineTo(x1, Y(v)); c.stroke(); }
+    c.font = ax(24) + ' system-ui,sans-serif'; c.fillStyle = '#000'; c.textAlign = 'right'; c.textBaseline = 'middle';
+    for(let v = 0; v <= 0.2; v += 0.05) c.fillText(v.toFixed(2), x0-12, Y(v));
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    LAMTAB.forEach((r, i) => c.fillText((r[0] > 0 ? '+' : '') + r[0], X(i), y1+12));
+    c.font = ax(28) + ' system-ui,sans-serif';
+    c.fillText('β   (menu values in order, not to scale)', (x0+x1)/2, y1+52);
+    c.save(); c.translate(48, (y0+y1)/2); c.rotate(-Math.PI/2); c.textBaseline = 'alphabetic'; c.fillText('λ', 0, 0); c.restore();
+    c.strokeStyle = '#000'; c.lineWidth = 2; c.strokeRect(x0+1, y0+1, x1-x0-2, y1-y0-2);
+    /* series: [colour, dash, value column, data source] — free-run means with their scatter */
+    const ser = [['#4338ca', [], 1, 2, r => r], ['#4338ca', [10,8], 1, 2, r => by256[r[0]]],
+                 ['#d97706', [], 7, 8, r => r], ['#d97706', [10,8], 7, 8, r => by256[r[0]]]];
+    for(const [col, dash, cm, cs, src] of ser){
+      c.strokeStyle = col; c.lineWidth = 1.5; c.globalAlpha = 0.4; c.setLineDash([]);
+      LAMTAB.forEach((r, i) => { const d = src(r); if(!d) return; c.beginPath(); c.moveTo(X(i), Y(d[cm]-d[cs])); c.lineTo(X(i), Y(d[cm]+d[cs])); c.stroke(); });
+      c.globalAlpha = 1;
+      c.lineWidth = 3.2; c.setLineDash(dash); c.beginPath(); let first = true;
+      LAMTAB.forEach((r, i) => { const d = src(r); if(!d) return; first ? c.moveTo(X(i), Y(d[cm])) : c.lineTo(X(i), Y(d[cm])); first = false; });
+      c.stroke(); c.setLineDash([]);
+      c.fillStyle = col; c.strokeStyle = col; c.lineWidth = 2.5;
+      LAMTAB.forEach((r, i) => { const d = src(r); if(!d) return; c.beginPath(); c.arc(X(i), Y(d[cm]), 5.5, 0, 2*Math.PI); if(dash.length){ c.fillStyle = '#fff'; c.fill(); c.stroke(); c.fillStyle = col; } else c.fill(); });
+    }
+    c.font = px(12.5) + ' system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
+    const leg = [['#4338ca', [], KS_EQ + ' — L = 128, periodic'], ['#4338ca', [10,8], 'KS — L = 256, open boundaries'],
+                 ['#d97706', [], O6_EQ + ' — L = 128, periodic'], ['#d97706', [10,8], '∇⁴+∇⁶ — L = 256, open boundaries']];
+    leg.forEach((L, i) => { const lx = x1 - 960, ly = y0 + 30 + 42*i; c.strokeStyle = L[0]; c.lineWidth = 3; c.setLineDash(L[1]); c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx+44, ly); c.stroke(); c.setLineDash([]); c.fillStyle = '#4a5872'; c.fillText(L[2], lx+54, ly); });
+    savePng(oc, 'lambda_vs_beta_plot_L128_L256.png');
+  }
+  /* KS + β / γ / δ on one parameter axis: rows [p, then per term: λ free, sd, n, Benettin, W, flag]
+     with flag 0 ok, 1 W growing before it settles (†), 3 diverged (also at dt/3), 4 not attempted
+     (a smaller |p| already diverged). γ and δ measured with the protocol of the β table (transient
+     until W settled, 6000 t.u. Benettin — last third —, 2000 t.u. of repeated free runs). */
+  const LAMTAB_GD = [
+    [   -5, -0.0022,0.0006, 4,-0.0004,  1.27,0,   0.0596,0.0046, 6, 0.0479,  0.86,0,   0.0000,0.0000, 0, 0.0000,  0.00,4],
+    [ -0.5,  0.0183,0.0300, 4, 0.0027,  2.76,0,   0.0238,0.0153, 5, 0.0376,  1.15,0,   0.0000,0.0000, 0, 0.0000,  0.00,4],
+    [ -0.3,  0.0144,0.0140, 5,-0.0003,  3.89,2,   0.0303,0.0120, 4, 0.0480,  1.12,0,   0.0000,0.0000, 0, 0.0000,  0.00,3],
+    [-0.25,  0.0277,0.0040, 5, 0.0482, 26.53,1,   0.0620,0.0251, 7, 0.0533,  1.21,0,   0.1187,0.0245,12, 0.1263,  1.90,0],
+    [ -0.2,  0.0407,0.0230, 5, 0.0326, 32.88,1,   0.0522,0.0101, 7, 0.0457,  1.19,0,   0.1090,0.0091,12, 0.1117,  1.89,0],
+    [-0.15,  0.0254,0.0060, 5, 0.0352, 43.67,1,   0.0601,0.0064, 7, 0.0614,  1.41,0,   0.1011,0.0109,11, 0.1082,  1.83,0],
+    [ -0.1,  0.0016,0.0016, 4, 0.0008, 55.48,1,   0.0664,0.0117, 8, 0.0688,  1.53,0,   0.1067,0.0160,11, 0.1050,  1.81,0],
+    [-0.07,  0.0984,0.0135,11, 0.1023,  1.87,0,   0.0690,0.0096, 9, 0.0758,  1.62,0,   0.1054,0.0094,11, 0.0945,  1.78,0],
+    [-0.05,  0.0998,0.0186,10, 0.0952,  1.87,0,   0.0826,0.0164, 9, 0.0803,  1.59,0,   0.1030,0.0204,11, 0.0886,  1.85,0],
+    [-0.02,  0.0879,0.0061, 9, 0.0917,  1.83,0,   0.0899,0.0165,10, 0.0895,  1.74,0,   0.0972,0.0139,10, 0.0885,  1.70,0],
+    [    0,  0.0921,0.0134,10, 0.0964,  1.68,0,   0.0969,0.0171,10, 0.0862,  1.66,0,   0.0890,0.0165,10, 0.0952,  1.83,0],
+    [  0.2,  0.0803,0.0146, 9, 0.0729,  1.40,0,   0.1396,0.0211,14, 0.1518,  2.59,0,   0.0865,0.0225, 9, 0.0777,  1.60,0],
+    [  0.5,  0.0679,0.0091, 8, 0.0711,  1.30,0,   0.0000,0.0000, 0, 0.0000,  0.00,3,   0.0691,0.0171, 8, 0.0619,  1.54,0],
+    [  0.7,  0.0728,0.0167, 8, 0.0625,  1.25,0,   0.0000,0.0000, 0, 0.0000,  0.00,4,   0.0532,0.0159, 6, 0.0469,  1.73,0],
+    [    1,  0.0126,0.0181, 4,-0.0002,  1.40,0,   0.0000,0.0000, 0, 0.0000,  0.00,4,   0.0457,0.0079, 6, 0.0448,  1.67,0],
+    [  1.5,  0.0030,0.0064, 4, 0.0000,  1.90,0,   0.0000,0.0000, 0, 0.0000,  0.00,4,  -0.0011,0.0020, 4, 0.0083,  2.63,0],
+    [    2,  0.0065,0.0063, 4,-0.0001,  1.24,0,   0.0000,0.0000, 0, 0.0000,  0.00,4,   0.0000,0.0014, 4, 0.0002,  2.15,0],
+    [    5,  0.0053,0.0052, 4, 0.0005,  1.62,0,   0.0000,0.0000, 0, 0.0000,  0.00,4,   0.0046,0.0045, 4, 0.0022,  2.10,0]
+  ];
+  function exportScanTablePng(){
+    const k = 2, rowH = 18, n = LAMTAB_GD.length, W = 524, H = rowH*(n + 3) + 98;
+    const oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
+    const c = oc.getContext('2d'); c.scale(k, k);
+    c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
+    const g0 = 62, gw = 150, sub = [0, 46, 94, 140];           // group origin, width, column offsets (right edges)
+    const cols = [46]; for(let g=0; g<3; g++) for(let j=1; j<4; j++) cols.push(g0 + g*gw + sub[j]);
+    const heads = ['KS + β(∇h)⁴', 'KS + γ∇²(∇h)²', 'KS + δ∇²h(∇h)²'], sym = ['β','γ','δ'];
+    let y = 8 + rowH/2;
+    c.font = '600 11px system-ui,sans-serif'; c.fillStyle = '#16233b'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    heads.forEach((t, g) => { const cx = g0 + g*gw + 74; c.fillText(t, cx, y); c.strokeStyle = '#c3ccdb'; c.lineWidth = 1; c.beginPath(); c.moveTo(g0 + g*gw + 6, y+10.5); c.lineTo(g0 + g*gw + 144, y+10.5); c.stroke(); });
+    y += rowH;
+    c.font = '10px system-ui,sans-serif'; c.fillStyle = '#4a5872'; c.textAlign = 'right';
+    ['β, γ, δ','λ free','Benettin','W','λ free','Benettin','W','λ free','Benettin','W'].forEach((t, j) => c.fillText(t, cols[j], y));
+    /* the value that diverged on each side of each group, to name it in the yellow cells */
+    const divAt = [[],[],[]];
+    LAMTAB_GD.forEach(r => { for(let g=0; g<3; g++) if(r[1+6*g+5] === 3) divAt[g].push(r[0]); });
+    c.strokeStyle = '#dde3ec'; c.beginPath(); c.moveTo(20, y+rowH/2); c.lineTo(W-20, y+rowH/2); c.stroke();
+    const lc = v => v >= 0.05 ? '#b91c1c' : (v < 0.02 ? '#1d4ed8' : '#16233b');
+    LAMTAB_GD.forEach(r => {
+      y += rowH;
+      c.font = '11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'; c.textAlign = 'right'; c.textBaseline = 'middle';
+      c.fillStyle = '#16233b'; c.fillText((r[0] > 0 ? '+' : '') + r[0], cols[0], y);
+      for(let g=0; g<3; g++){
+        const o = 1 + 6*g, fl = r[o+5], x0g = g0 + g*gw + 6, x1g = g0 + g*gw + 144;
+        if(fl >= 3){                                          // yellow: diverged, or not attempted
+          c.fillStyle = '#fde68a'; c.fillRect(x0g, y - rowH/2 + 1, x1g - x0g, rowH - 2);
+          c.fillStyle = '#7c2d12'; c.font = '10px system-ui,sans-serif'; c.textAlign = 'center';
+          const dv = divAt[g].find(v => Math.sign(v) === Math.sign(r[0]));
+          c.fillText(fl === 3 ? 'diverges (also at dt/3)' : 'not run: ' + sym[g] + ' = ' + (dv > 0 ? '+' : '') + dv + ' diverges', (x0g + x1g)/2, y);
+          c.font = '11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'; c.textAlign = 'right';
+          continue;
+        }
+        c.fillStyle = lc(r[o]); c.fillText(f3(r[o]), cols[1+3*g], y);
+        c.fillStyle = '#16233b'; c.fillText(f3(r[o+3]), cols[2+3*g], y); c.fillText(fW(r[o+4], fl), cols[3+3*g], y);
+      }
+      c.strokeStyle = '#eef1f6'; c.beginPath(); c.moveTo(20, y+rowH/2); c.lineTo(W-20, y+rowH/2); c.stroke();
+    });
+    c.strokeStyle = '#dde3ec'; for(let g=1; g<3; g++){ const x = g0 + g*gw; c.beginPath(); c.moveTo(x, 8+rowH*1.5); c.lineTo(x, y+rowH/2); c.stroke(); }
+    c.font = '10px system-ui,sans-serif'; c.fillStyle = '#8391ab'; c.textAlign = 'left'; c.textBaseline = 'top';
+    [ 'Each group is the KS equation ∂h/∂t = −∇²h − ∇⁴h + (∇h)² with ONE correction term added;',
+      'the first column is its coefficient. β(∇h)⁴: next order in the slope expansion.',
+      'γ∇²(∇h)²: conserved (mean-preserving) form of the KS nonlinearity. δ∇²h·(∇h)²: diffusion',
+      'with the squared slope as coefficient. 1D, periodic, L = 128, dx = 1. λ free: mean slope of',
+      'repeated free runs; Benettin: last third of 6000 time units; W: mean interface width.',
+      'Rows: the menu values in numerical order (not to scale). †: W grows for ~2000 time units',
+      'before it settles. ‡: other initial conditions reach a giant-cell state instead.'
+    ].forEach((t, i) => c.fillText(t, 20, y + rowH/2 + 6 + 13*i));
+    savePng(oc, 'lambda_KS_beta_gamma_delta_table_L128_periodic.png');
+  }
+  $('bLamGDPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportScanTablePng(); });
+  /* the 2D scan: rows as LAMTAB; 64 × 64 periodic, dx = 1; Benettin 900 t.u. (last third), free runs 400 t.u. */
+  const LAMTAB2D = [
+    [   -5,  0.0761,0.0102, 2, 0.0883,  1.38,0,   0.5375,0.1637, 8, 0.4810,  1.22,0],
+    [   -3,  0.0860,0.0050, 2, 0.0880,  1.73,0,   0.4899,0.0592, 8, 0.4854,  1.46,0],
+    [   -2,  0.0795,0.0239, 2, 0.1252,  2.19,0,   0.4890,0.0391, 8, 0.5044,  1.71,0],
+    [   -1,  0.0806,0.0131, 2, 0.0626,  3.30,0,   0.5326,0.0824, 8, 0.5131,  2.23,0],
+    [ -0.5,  0.0662,0.0013, 2, 0.0861,  4.55,0,   0.4941,0.0715, 8, 0.4818,  2.94,0],
+    [ -0.2,  0.0597,0.0219, 2, 0.0625, 12.46,1,   0.5118,0.0829, 8, 0.4494,  4.11,0],
+    [    0,  0.2331,0.0471, 4, 0.1940,  2.04,0,   0.4777,0.0142, 8, 0.5214,  4.65,0],
+    [  0.2,  0.1925,0.0402, 5, 0.1839,  1.54,0,   0.5077,0.0637, 8, 0.5177,  2.43,0],
+    [  0.5,  0.1967,0.0264, 4, 0.1709,  1.30,0,   0.5123,0.0543, 8, 0.4975,  1.92,0],
+    [    1,  0.1668,0.0033, 4, 0.1853,  1.09,0,   0.5456,0.0895, 8, 0.5056,  1.62,0],
+    [    2,  0.2089,0.0495, 4, 0.1700,  0.98,0,   0.4960,0.0576, 8, 0.5227,  1.29,0],
+    [    3,  0.1622,0.0326, 4, 0.1643,  0.87,0,   0.4921,0.0537, 9, 0.5032,  1.17,0],
+    [    5,  0.1227,0.0343, 3, 0.1424,  0.76,0,   0.5499,0.0644, 9, 0.5059,  1.01,0]
+  ];
+  buildLamTable($('lamTable2D'), LAMTAB2D, 'Benettin average over the last 300 of 900 time units',
+    'red: chaotic (λ ≥ 0.05) · blue: steady or frozen (λ &lt; 0.02) · †: W still growing when the measurement started · yellow: the run diverges');
+  $('bLam2DTabPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamTablePng(LAMTAB2D, 'lambda_vs_beta_table_2D_L64_periodic.png', '2D, periodic boundaries, 64 × 64, dx = 1, α = 0 — λ Benettin: last third of 900 t.u.; λ free: repeated free runs over 400 t.u.'); });
+  $('bLam2DPlotPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamPlotPng(LAMTAB2D, 'lambda_vs_beta_plot_2D_L64_periodic.png', '2D, periodic boundaries, 64 × 64, dx = 1, α = 0'); });
+  $('bLamBothPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamCombinedPng(); });
+  $('bLam256PlotPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamPlotPng(LAMTAB256, 'lambda_vs_beta_plot_L256_open.png', '1D, open boundaries, L = 256, dx = 1, α = 0'); });
+
+
+  /* ======================= Systematic scan =======================
+     One coefficient of the equation is stepped through a range; for every
+     value (and every random start when NMC > 1) a separate model is integrated
+     in the background, without drawing, and the largest Lyapunov exponent is
+     measured in the two ways used throughout — Benettin (running average) and
+     the fitted slope of repeated free runs — together with the mean width W.
+     Protocol per sample: transient T_tr from a small random start, twin on;
+     first half of (T_tot − T_tr): Benettin; second half: free runs.        */
+  const SC = { rows: [], running: false, stop: false, dark: false, eq: '', par: 'beta', cfg: null };
+  const GSYM = { alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', L: 'L' };
+  const GLAB = { alpha: 'α|∇h|', beta: 'β(∇h)⁴', gamma: 'γ∇²(∇h)²', delta: 'δ∇²h(∇h)²' };
+  fillSel('scA', ALPHAV); fillSel('scB', BETAV); fillSel('scG', BETAV); fillSel('scD', DELTAV);
+  ['scA','scB','scG','scD'].forEach(id => { $(id).value = '0'; });
+  let scOrd = 4, scNL2 = true, scDim = 1, scBC = 'periodic';
+  (function(){ const el = $('scNmax'); for(let n=5;n<=20;n++){ const o = document.createElement('option'); o.value = ''+n; o.textContent = n + '  (L = ' + (1<<n) + ')'; el.appendChild(o); } el.value = '8'; })();
+  function scRows(){ const isL = $('scPar').value === 'L'; $('scLRow').style.display = isL ? '' : 'none'; $('scRangeRow').style.display = isL ? 'none' : ''; }
+  $('scPar').addEventListener('change', scRows); scRows();
+  seg($('scOrd'), ()=>''+scOrd, v=>{ scOrd = +v; });
+  seg($('scNL2'), ()=>(scNL2?'1':'0'), v=>{ scNL2 = v === '1'; });
+  seg($('scDim'), ()=>''+scDim, v=>{ scDim = +v; if(scDim === 2 && +$('scL').value > 128) $('scL').value = '64'; });
+  seg($('scBC'), ()=>scBC, v=>{ scBC = v; });
+  /* the same time-step rule as the main display */
+  function scDt(c){
+    const b = Math.abs(c.beta); let dt;
+    if(b > 3.5) dt = c.dim === 2 ? 0.01 : 0.005; else if(b > 2) dt = 0.01; else if(b > 0) dt = 0.02;
+    else if(Math.abs(c.alpha) > 2) dt = 0.05; else dt = c.order === 6 ? 0.02 : 0.1;
+    if(c.gamma !== 0) dt = Math.min(dt, 0.02);
+    if(c.delta !== 0) dt = Math.min(dt, 0.01);
+    return dt;
+  }
+  function scEquation(c, par){
+    const lin = c.order === 6 ? '+∇⁴h + ∇⁶h' : '−∇²h − ∇⁴h';
+    let eq = '∂h/∂t = ' + lin + (c.nl2 ? ' + (∇h)²' : '');
+    for(const k of ['alpha','beta','gamma','delta']){
+      if(k === par) eq += ' + ' + GLAB[k];
+      else if(par === 'L' && c[k] !== 0) eq += (c[k] > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(c[k])) + '·' + GLAB[k].slice(1);
+      else if(par === 'L') continue;
+      else if(c[k] !== 0) eq += (c[k] > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(c[k])) + '·' + GLAB[k].slice(1);
+    }
+    return eq;
+  }
+  const yieldUI = () => new Promise(r => setTimeout(r, 0));
+  /* one sample: returns {free, sd, n, ben, W} or null when the run diverged */
+  async function scSample(c, value, seed, report){
+    const P = { dim: c.dim, L: c.L, bc: c.bc, dt: c.dt, dx: 1, nwx: 4, nwy: 4, amp: 0, eps: 0.1,
+                alpha: c.alpha, beta: c.beta, gamma: c.gamma, delta: c.delta, order: c.order, nl2: c.nl2, absMode: 'euclid', seed, noise: 0.1 };
+    if(c.par === 'L') P.L = value; else P[c.par] = value;
+    const m = buildSim(P); m.lyap.on = false;
+    const spf = 5, fdt = c.dt*spf, bad = () => !isFinite(m.W) || m.W > 1e4;
+    let last = performance.now();
+    /* time-averaged power spectrum over the whole measurement (both halves) */
+    const spec = new Float64Array(m.spectrumK.length); let nspec = 0, specOn = false;
+    const run = async T => {                         // integrate T time units in UI-friendly chunks
+      const n = Math.max(1, Math.round(T/fdt)); let wsum = 0;
+      for(let k=0;k<n;k++){
+        m.frame(spf); if(m.lyap.on) m.lyapRenorm(); wsum += m.W;
+        if(specOn){ m.spectrumAccumulate(spec); nspec++; }
+        if(bad() || SC.stop) return NaN;
+        if(performance.now() - last > 30){ last = performance.now(); report(m.t); await yieldUI(); }
+      }
+      return wsum/n;
+    };
+    await run(c.tTrans); if(bad() || SC.stop) return null;
+    const half = Math.max(fdt*4, (c.tTotal - c.tTrans)/2);
+    m.lyap.on = true; m.lyap.mode = 'renorm'; m.lyapReset(false);
+    let G = 0, T = 0, wsum = 0, nf = 0; const nB = Math.max(2, Math.round(half/fdt));
+    for(let k=0;k<nB;k++){
+      m.frame(spf); m.lyapRenorm(); wsum += m.W; nf++; m.spectrumAccumulate(spec); nspec++;
+      if(!m.lyap.warm && k > 0){ G += Math.log(m.lyap.norm/m.lyap.eps); T += fdt; }
+      if(bad()) return null; if(SC.stop) return null;
+      if(performance.now() - last > 30){ last = performance.now(); report(m.t); await yieldUI(); }
+    }
+    const ben = T > 0 ? G/T : NaN, Wm = wsum/nf;
+    m.lyap.mode = 'free'; const slopes = []; let tWin = 0; const cap = Math.min(600, half*0.6);
+    specOn = true;
+    while(tWin < half){
+      m.lyapReset(false); let tr = 0;
+      while(tr < cap && tWin < half){ const r = await run(Math.min(10, half - tWin)); tr += 10; tWin += 10; if(!isFinite(r)) return null; if(m.lyap.tSat >= 0 && m.t > m.lyap.tSat + 10) break; }
+      if(isFinite(m.lyap.fit.lam) && tr >= 30) slopes.push(m.lyap.fit.lam);
+    }
+    const mean = slopes.reduce((a,b)=>a+b,0)/Math.max(1, slopes.length);
+    const sd = Math.sqrt(slopes.reduce((a,b)=>a+(b-mean)**2,0)/Math.max(1, slopes.length-1));
+    for(let i=0;i<spec.length;i++) spec[i] /= Math.max(1, nspec);
+    return { free: slopes.length ? mean : NaN, sd: slopes.length > 1 ? sd : 0, n: slopes.length, ben, W: Wm, spec, k: m.spectrumK };
+  }
+  async function scRun(){
+    if(SC.running) return;
+    const c = { order: scOrd, nl2: scNL2, alpha: +$('scA').value, beta: +$('scB').value, gamma: +$('scG').value, delta: +$('scD').value,
+                par: $('scPar').value, dim: scDim, L: +$('scL').value, bc: scBC, tTrans: +$('scTrans').value, nmc: +$('scNMC').value };
+    c.tTotal = 2*c.tTrans;
+    const v0 = +$('scMin').value, v1 = +$('scMax').value, st = +$('scStep').value;
+    let vals = [];
+    if(c.par === 'L'){                            // L = 16, 32, … , 2^n (2D: at most 2^8)
+      const nmax = Math.min(+$('scNmax').value, c.dim === 2 ? 8 : 20);
+      for(let L = 16; L <= (1<<nmax); L *= 2) vals.push(L);
+      if(c.dim === 2 && +$('scNmax').value > 8) $('scStatus').textContent = '2D: sizes capped at 256';
+    } else {
+      if(!(v1 >= v0)){ $('scStatus').textContent = 'the range needs from ≤ to'; return; }
+      for(let v = v0; v <= v1 + 1e-9; v += st) vals.push(+v.toFixed(6));
+      for(const v of [-0.1, 0, 0.1]) if(!vals.some(x => Math.abs(x - v) < 1e-9)) vals.push(v);   // always sampled
+      vals.sort((a, b) => a - b);
+      if(vals.length > 200){ $('scStatus').textContent = 'too many values (' + vals.length + ') — coarsen the step'; return; }
+    }
+    SC.running = true; SC.stop = false; SC.rows = []; SC.par = c.par; SC.cfg = c; SC.eq = scEquation(c, c.par);
+    $('scStart').disabled = true; $('scStop').disabled = false;
+    /* the main display pauses: all the time goes into the scan */
+    const wasRunning = running; running = false; $('bRun').textContent = 'Run';
+    if(scanPanel.classList.contains('closed')) setScanOpen(true);
+    $('scanEq').textContent = SC.eq + '   —   ' + (c.dim === 2 ? '2D, ' : '1D, ') + c.bc + ', transient ' + c.tTrans + ', total ' + c.tTotal + ' per sample' + (c.nmc > 1 ? ', ' + c.nmc + ' initial conditions' : '') + (c.par === 'L' ? '' : ', L = ' + c.L);
+    const t0 = performance.now(), total = vals.length*c.nmc; let done = 0;
+    for(let i=0;i<vals.length && !SC.stop;i++){
+      const v = vals[i]; const cc = Object.assign({}, c); if(c.par === 'L') cc.L = v; else cc[c.par] = v; cc.dt = scDt(cc);
+      const samples = []; let diverged = false;
+      for(let j=0;j<c.nmc && !SC.stop;j++){
+        const rep = t => { const el = (performance.now()-t0)/1000; $('scStatus').textContent = GSYM[c.par] + ' = ' + v + ' (' + (i+1) + '/' + vals.length + ')' + (c.nmc > 1 ? ', start ' + (j+1) + '/' + c.nmc : '') + ', t = ' + t.toFixed(0) + ' / ' + c.tTotal + ', dt = ' + cc.dt + '  ·  ' + Math.round(100*(done + Math.min(1, t/c.tTotal))/total) + ' %  ·  ' + fmt(el) + ' s'; };
+        const r = await scSample(cc, v, c.nmc > 1 ? j : undefined, rep);
+        if(SC.stop) break;
+        if(!r){ diverged = true; break; }
+        samples.push(r); done++;
+      }
+      if(SC.stop) break;
+      if(diverged){ SC.rows.push({ v, dv: true }); done += c.nmc - samples.length; }
+      else {
+        const mean = k => samples.reduce((a,b)=>a+b[k],0)/samples.length;
+        const sdev = k => { const m = mean(k); return samples.length > 1 ? Math.sqrt(samples.reduce((a,b)=>a+(b[k]-m)**2,0)/(samples.length-1)) : 0; };
+        /* spread of the free-run value: over the starts when NMC > 1, else the scatter of the repeated free runs */
+        const sdFree = samples.length > 1 ? sdev('free') : samples[0].sd;
+        const spec = new Float64Array(samples[0].spec.length); for(const sm of samples) for(let i=0;i<spec.length;i++) spec[i] += sm.spec[i]/samples.length;
+        SC.rows.push({ v, free: mean('free'), sdFree, n: samples.reduce((a,b)=>a+b.n,0), ben: mean('ben'), sdBen: sdev('ben'), W: mean('W'), sdW: sdev('W'), nmc: samples.length, dt: cc.dt, samples, spec, k: samples[0].k });
+      }
+      renderScan();
+    }
+    $('scStatus').textContent = (SC.stop ? 'stopped after ' : 'done: ') + SC.rows.length + ' of ' + vals.length + ' values in ' + fmt((performance.now()-t0)/1000) + ' s';
+    $('scanInfo').textContent = SC.rows.length + ' values' + (c.nmc > 1 ? ' × ' + c.nmc + ' starts' : '');
+    SC.running = false; $('scStart').disabled = false; $('scStop').disabled = true;
+    running = wasRunning; if(running) $('bRun').textContent = 'Pause';
+  }
+  $('scStart').addEventListener('click', scRun);
+  $('scStop').addEventListener('click', ()=>{ SC.stop = true; });
+
+  /* ---- results section ---- */
+  const scanPanel = $('scanPanel'), scv = $('scanView'), scctx = scv.getContext('2d');
+  let scanOpen = false;
+  function setScanOpen(o){ scanOpen = o; scanPanel.classList.toggle('closed', !o); if(o) renderScan(); }
+  $('scanToggle').addEventListener('click', ()=>setScanOpen(!scanOpen));
+  $('scanBW').addEventListener('click', ()=>{ SC.dark = !SC.dark; scanPanel.classList.toggle('dark', SC.dark); renderScan(); });
+  const pm = (m, sd) => f3(m) + (sd > 0 ? ' ± ' + sd.toFixed(3) : '');
+  function renderScan(){
+    if(!scanOpen) return;
+    const T = $('scanTable'), sym = GSYM[SC.par] || SC.par;
+    if(!SC.rows.length){ T.innerHTML = '<tr><td class="note"><div>' + (SC.running ? 'sampling…' : 'no scan yet — set up a scan in the control panel (Systematic scan) and press start') + '</div></td></tr>'; drawScanFigure(scctx, null, null, SC, SC.dark, 1); return; }
+    const nmc = SC.cfg.nmc;
+    let h = '<tr><th>' + sym + '</th><th title="mean slope of ln|δh|(t) over repeated free runs' + (nmc > 1 ? '; ± spread over the random starts' : '; ± scatter of the runs') + '">λ free run</th><th title="Benettin running average over the first half of the measurement' + (nmc > 1 ? '; ± spread over the random starts' : '') + '">λ Benettin</th><th title="mean interface width' + (nmc > 1 ? '; ± spread over the random starts' : '') + '">W</th><th title="number of free runs (all starts)">runs</th><th>dt</th></tr>';
+    for(const r of SC.rows){
+      if(r.dv){ h += '<tr><td class="b">' + (r.v > 0 ? '+' : '') + r.v + '</td><td class="dv" colspan="5">diverges</td></tr>'; continue; }
+      h += '<tr><td class="b">' + (r.v > 0 ? '+' : '') + r.v + '</td><td class="' + lamClass(r.free) + '">' + pm(r.free, r.sdFree) + '</td><td>' + pm(r.ben, r.sdBen) + '</td><td>' + r.W.toFixed(2) + (r.sdW > 0 ? ' ± ' + r.sdW.toFixed(2) : '') + '</td><td>' + r.n + '</td><td>' + r.dt + '</td></tr>';
+    }
+    h += '<tr><td colspan="6" class="note"><div>red: chaotic (λ ≥ 0.05) · blue: steady or frozen (λ &lt; 0.02) · yellow: the run diverges. ' + SC.eq + '</div></td></tr>';
+    T.innerHTML = h;
+    const dpr = window.devicePixelRatio || 1, r = scv.parentElement.getBoundingClientRect();
+    const w = Math.max(100, Math.round(r.width)), hh = Math.max(100, Math.round(r.height));
+    if(scv.width !== Math.round(w*dpr) || scv.height !== Math.round(hh*dpr)){ scv.width = Math.round(w*dpr); scv.height = Math.round(hh*dpr); }
+    scctx.setTransform(dpr,0,0,dpr,0,0);
+    drawScanFigure(scctx, w, hh, SC, SC.dark, 1);
+  }
+  new ResizeObserver(()=>{ if(scanOpen) renderScan(); }).observe(scv.parentElement);
+  /* the figure, in the style of the λ(β) pictures: two panels — λ (free run solid with a dot per
+     random start, Benettin dashed with hollow dots per start) and W (dot per start, line through
+     the means) — against the scanned quantity on a numeric axis (equally spaced for L) */
+  function drawScanFigure(c, w, h, S, dark, F){
+    if(w === null){ const r = scv.parentElement.getBoundingClientRect(); w = r.width; h = r.height; }
+    const bg = dark ? '#0b0d13' : '#fff', ink = dark ? '#e8ecf5' : '#000', grid = dark ? '#20242f' : '#e8ecf3', zero = dark ? '#3a4152' : '#c3ccdb', lab = dark ? '#aab3c7' : '#4a5872';
+    const col1 = dark ? '#94a6ff' : '#4338ca', col2 = dark ? '#f6b26b' : '#d97706', colW = dark ? '#6ee7b7' : '#0f766e';
+    c.fillStyle = bg; c.fillRect(0, 0, w, h);
+    const rows = S.rows.filter(r => !r.dv), sym = GSYM[S.par] || S.par;
+    const px = v => (v*F).toFixed(1) + 'px';
+    c.font = '600 ' + px(13) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'left'; c.textBaseline = 'top';
+    const geo = S.cfg ? '  (' + (S.cfg.dim === 2 ? '2D' : '1D') + ', ' + S.cfg.bc + (S.par === 'L' ? '' : ', L = ' + S.cfg.L) + ')' : '';
+    c.fillText(rows.length ? 'λ and W against ' + sym + geo : 'λ and W against the scanned quantity', 12*F, 6*F);
+    if(!rows.length){ c.fillStyle = lab; c.font = px(12) + ' system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(S.running ? 'sampling…' : 'no data yet', w/2, h/2); return; }
+    const x0 = 66*F, x1 = w - 16*F;
+    const isL = S.par === 'L', vs = rows.map(r => r.v);
+    const vmin = Math.min(...vs), vmax = Math.max(...vs), span = Math.max(vmax - vmin, 1e-9), pad = 0.04*span;
+    const X = v => isL ? x0 + (x1-x0)*(vs.indexOf(v) + 0.5)/vs.length : x0 + (x1-x0)*(v - vmin + pad)/(span + 2*pad);
+    /* the two panels */
+    const gapT = 62*F, gapB = 44*F, mid = 26*F, midS = 66*F, hh = (h - gapT - gapB - mid - midS)/3;
+    const panels = [{ y0: gapT, y1: gapT + hh }, { y0: gapT + hh + mid, y1: gapT + 2*hh + mid }, { y0: gapT + 2*hh + mid + midS, y1: h - gapB }];
+    const dotsL = r => (r.samples || [{ free: r.free, ben: r.ben, W: r.W }]);
+    function axis(p, lo, hi, label, tick){
+      const Y = v => p.y1 - (p.y1-p.y0)*(v - lo)/(hi - lo);
+      c.lineWidth = 1*F;
+      for(let v = Math.ceil(lo/tick - 1e-9)*tick; v <= hi + 1e-9; v += tick){ c.strokeStyle = Math.abs(v) < 1e-9 ? zero : grid; c.beginPath(); c.moveTo(x0, Y(v)); c.lineTo(x1, Y(v)); c.stroke(); }
+      c.font = px(11) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'right'; c.textBaseline = 'middle';
+      for(let v = Math.ceil(lo/tick - 1e-9)*tick; v <= hi + 1e-9; v += tick) c.fillText((+v.toFixed(4)).toString(), x0 - 6*F, Y(v));
+      c.save(); c.translate(16*F, (p.y0+p.y1)/2); c.rotate(-Math.PI/2); c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.font = px(13) + ' system-ui,sans-serif'; c.fillText(label, 0, 0); c.restore();
+      c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1);
+      return Y;
+    }
+    /* x ticks, on the lower panel */
+    c.font = px(11) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'center'; c.textBaseline = 'top';
+    const xt = isL ? vs : (() => { const nt = Math.min(rows.length, Math.max(2, Math.floor((x1-x0)/(50*F)))); const a = []; for(let k=0;k<nt;k++) a.push(vmin + span*k/(nt-1)); return a; })();
+    for(const v of xt){ c.fillText((+v.toFixed(3)).toString(), X(v), panels[1].y1 + 6*F); for(const p of panels){ c.strokeStyle = grid; c.lineWidth = 1*F; c.beginPath(); c.moveTo(X(v), p.y0); c.lineTo(X(v), p.y1); c.stroke(); } }
+    c.font = px(13) + ' system-ui,sans-serif'; c.fillText(sym, (x0+x1)/2, panels[1].y1 + 22*F);
+    /* ---- λ panel ---- */
+    let top = 0.05, bot = 0;
+    for(const r of rows) for(const d of dotsL(r)){ top = Math.max(top, d.free, d.ben); bot = Math.min(bot, d.free, d.ben); }
+    const st = niceCeil(Math.max(top - Math.min(bot, 0), 1e-6)/4), lmax = Math.ceil(top/st + 0.3)*st, lmin = Math.min(-0.1*lmax, Math.floor(bot/st)*st);
+    const Y1 = axis(panels[0], lmin, lmax, 'λ', st);
+    c.strokeStyle = col2; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.ben)) : c.moveTo(X(r.v), Y1(r.ben))); c.stroke(); c.setLineDash([]);
+    c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.free)) : c.moveTo(X(r.v), Y1(r.free))); c.stroke();
+    for(const r of rows) for(const d of dotsL(r)){
+      c.fillStyle = col1; c.beginPath(); c.arc(X(r.v), Y1(d.free), 3.2*F, 0, 2*Math.PI); c.fill();
+      c.strokeStyle = col2; c.lineWidth = 1.4*F; c.fillStyle = bg; c.beginPath(); c.arc(X(r.v), Y1(d.ben), 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
+    }
+    /* ---- W panel ---- */
+    let wtop = 0; for(const r of rows) for(const d of dotsL(r)) wtop = Math.max(wtop, d.W);
+    const stW = niceCeil(Math.max(wtop, 1e-6)/4), wmax = Math.ceil(wtop/stW + 0.3)*stW;
+    const Y2 = axis(panels[1], 0, wmax, 'W', stW);
+    c.strokeStyle = colW; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y2(r.W)) : c.moveTo(X(r.v), Y2(r.W))); c.stroke();
+    c.fillStyle = colW; for(const r of rows) for(const d of dotsL(r)){ c.beginPath(); c.arc(X(r.v), Y2(d.W), 3.2*F, 0, 2*Math.PI); c.fill(); }
+    /* ---- power spectra: the largest and the fourth-largest size (L scan), or the two extreme
+       values of a coefficient scan, against the wavenumber k, log–log ---- */
+    drawSpectraPanel(c, panels[2], rows, S, { ink, grid, lab, bg, F, x0, x1, col1, col2: colW });
+    /* legend, in the λ panel */
+    c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
+    const nmc = S.cfg && S.cfg.nmc > 1, lx = x0 + 4*F, ly = 30*F;
+    c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + 26*F, ly); c.stroke(); c.fillStyle = col1; c.beginPath(); c.arc(lx + 13*F, ly, 3.2*F, 0, 2*Math.PI); c.fill();
+    c.fillStyle = lab; c.fillText('λ free run' + (nmc ? ' — dot per start, line through the means' : ''), lx + 32*F, ly);
+    const lx2 = lx, ly2 = ly + 16*F;
+    c.strokeStyle = col2; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); c.moveTo(lx2, ly2); c.lineTo(lx2 + 26*F, ly2); c.stroke(); c.setLineDash([]);
+    c.fillStyle = bg; c.beginPath(); c.arc(lx2 + 13*F, ly2, 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
+    c.fillStyle = lab; c.fillText('λ Benettin' + (nmc ? ' — hollow dot per start' : ''), lx2 + 32*F, ly2);
+  }
+  function drawSpectraPanel(c, p, rows, S, o){
+    const { ink, grid, lab, bg, F, x0, x1, col1, col2 } = o;
+    const isL = S.par === 'L', sym = GSYM[S.par] || S.par;
+    let pick;
+    if(isL){ const srt = rows.slice().sort((a, b) => b.v - a.v); pick = [srt[0], srt[Math.min(3, srt.length-1)]]; }
+    else pick = [rows[rows.length-1], rows[0]];
+    pick = pick.filter((r, i, a) => r && r.spec && a.indexOf(r) === i);
+    const pts = pick.map(r => { const xs = [], ys = []; for(let m=1;m<r.k.length-1;m++){ if(r.spec[m] > 0){ xs.push(Math.log10(r.k[m])); ys.push(Math.log10(r.spec[m])); } } return { r, xs, ys }; }).filter(q => q.xs.length > 1);
+    c.font = '600 ' + (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'left'; c.textBaseline = 'bottom';
+    c.fillText('Power spectrum ⟨|ĥ(k)|²⟩ against k  (time average, Σ = W²)', x0, p.y0 - 8*F);
+    c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1);
+    if(!pts.length){ c.fillStyle = lab; c.font = (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('spectra appear when a scan has run', (x0+x1)/2, (p.y0+p.y1)/2); return; }
+    let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+    for(const q of pts){ for(const x of q.xs){ xmin = Math.min(xmin, x); xmax = Math.max(xmax, x); } for(const y of q.ys){ ymin = Math.min(ymin, y); ymax = Math.max(ymax, y); } }
+    ymin = Math.max(ymin, ymax - 10);                 // ten decades at most
+    xmin = Math.floor(xmin*2)/2 - 0.05; xmax = Math.ceil(xmax*2)/2 + 0.05; ymin = Math.floor(ymin); ymax = Math.ceil(ymax);
+    const X = x => x0 + (x1-x0)*(x - xmin)/(xmax - xmin), Y = y => p.y1 - (p.y1-p.y0)*(y - ymin)/(ymax - ymin);
+    const sup = n => String(n).replace('-', '−').replace(/[−0-9]/g, ch => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['−0123456789'.indexOf(ch)]);
+    c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
+    c.lineWidth = 1*F; c.strokeStyle = grid;
+    for(let d = Math.ceil(xmin); d <= xmax; d++){ c.beginPath(); c.moveTo(X(d), p.y0); c.lineTo(X(d), p.y1); c.stroke(); }
+    const ystep = Math.max(1, Math.ceil((ymax - ymin)/6));
+    for(let d = ymin; d <= ymax; d += ystep){ c.beginPath(); c.moveTo(x0, Y(d)); c.lineTo(x1, Y(d)); c.stroke(); }
+    c.restore();
+    c.font = (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'right'; c.textBaseline = 'middle';
+    for(let d = ymin; d <= ymax; d += ystep) c.fillText('10' + sup(d), x0 - 6*F, Y(d));
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    for(let d = Math.ceil(xmin); d <= xmax; d++) c.fillText('10' + sup(d), X(d), p.y1 + 6*F);
+    c.font = (13*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillText('wavenumber k', (x0+x1)/2, p.y1 + 22*F);
+    c.save(); c.translate(16*F, (p.y0+p.y1)/2); c.rotate(-Math.PI/2); c.textBaseline = 'alphabetic'; c.fillText('⟨|ĥ|²⟩', 0, 0); c.restore();
+    c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
+    const cols = [col1, col2];
+    pts.forEach((q, i) => { c.strokeStyle = cols[i]; c.lineWidth = 2.2*F; c.lineJoin = 'round'; c.beginPath(); q.xs.forEach((x, j) => j ? c.lineTo(X(x), Y(q.ys[j])) : c.moveTo(X(x), Y(q.ys[j]))); c.stroke(); });
+    c.restore();
+    c.font = (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
+    pts.forEach((q, i) => { const lx = x0 + 12*F, ly = p.y1 - (34 - 16*i)*F; c.strokeStyle = cols[i]; c.lineWidth = 2.2*F; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + 26*F, ly); c.stroke(); c.fillStyle = lab; c.fillText(sym + ' = ' + q.r.v + (isL ? '' : '') + (i === 0 ? (isL ? '  (largest)' : '  (largest value)') : (isL ? '  (fourth largest)' : '  (smallest value)')), lx + 32*F, ly); });
+  }
+  /* PNG exports of the scan: the three-panel figure at 1800 × 2200 with the text doubled, and the table */
+  $('scanPlotPng').addEventListener('click', ()=>{
+    const k = 2, W = 1800, H = 2200, oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
+    const c = oc.getContext('2d'); c.scale(k, k);
+    drawScanFigure(c, W, H, SC, SC.dark, 4.0);
+    savePng(oc, 'scan_lambda_vs_' + SC.par + '.png');
+  });
+  $('scanTabPng').addEventListener('click', ()=>{
+    const rows = SC.rows; if(!rows.length) return;
+    const k = 2, rowH = 18, W = 620, H = rowH*(rows.length + 3) + 44, dark = SC.dark;
+    const oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
+    const c = oc.getContext('2d'); c.scale(k, k);
+    c.fillStyle = dark ? '#0b0d13' : '#fff'; c.fillRect(0, 0, W, H);
+    const ink = dark ? '#e8ecf5' : '#16233b', lab = dark ? '#aab3c7' : '#4a5872', line = dark ? '#2a3140' : '#eef1f6';
+    let y = 8 + rowH/2;
+    c.font = '600 11.5px system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'left'; c.textBaseline = 'middle';
+    c.fillText(SC.eq, 20, y); y += rowH;
+    c.font = '10.5px system-ui,sans-serif'; c.fillStyle = lab;
+    c.fillText((SC.cfg.dim === 2 ? '2D' : '1D') + ', ' + SC.cfg.bc + ', L = ' + SC.cfg.L + ', dx = 1; transient ' + SC.cfg.tTrans + ', total ' + SC.cfg.tTotal + ' time units per sample' + (SC.cfg.nmc > 1 ? '; ' + SC.cfg.nmc + ' random starts (± = spread over starts)' : ' (± = scatter of the free runs)'), 20, y); y += rowH;
+    const cols = [60, 220, 380, 490, 545, 600];
+    c.textAlign = 'right'; c.fillStyle = lab;
+    [GSYM[SC.par] || SC.par, 'λ free run', 'λ Benettin', 'W', 'runs', 'dt'].forEach((t, j) => c.fillText(t, cols[j], y));
+    c.strokeStyle = dark ? '#3a4152' : '#dde3ec'; c.beginPath(); c.moveTo(20, y + rowH/2); c.lineTo(W - 20, y + rowH/2); c.stroke();
+    c.font = '11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';
+    for(const r of rows){
+      y += rowH; c.textAlign = 'right';
+      c.fillStyle = ink; c.fillText((r.v > 0 ? '+' : '') + r.v, cols[0], y);
+      if(r.dv){ c.fillStyle = '#fde68a'; c.fillRect(80, y - rowH/2 + 1, 530, rowH - 2); c.fillStyle = '#7c2d12'; c.textAlign = 'center'; c.font = '10.5px system-ui,sans-serif'; c.fillText('diverges', 345, y); c.font = '11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'; }
+      else {
+        c.fillStyle = r.free >= 0.05 ? (dark ? '#fca5a5' : '#b91c1c') : (r.free < 0.02 ? (dark ? '#93c5fd' : '#1d4ed8') : ink); c.fillText(pm(r.free, r.sdFree), cols[1], y);
+        c.fillStyle = ink; c.fillText(pm(r.ben, r.sdBen), cols[2], y); c.fillText(r.W.toFixed(2) + (r.sdW > 0 ? ' ± ' + r.sdW.toFixed(2) : ''), cols[3], y); c.fillText('' + r.n, cols[4], y); c.fillText('' + r.dt, cols[5], y);
+      }
+      c.strokeStyle = line; c.beginPath(); c.moveTo(20, y + rowH/2); c.lineTo(W - 20, y + rowH/2); c.stroke();
+    }
+    c.font = '10px system-ui,sans-serif'; c.fillStyle = lab; c.textAlign = 'left'; c.textBaseline = 'top';
+    c.fillText('λ free run: mean slope of ln|δh|(t) over repeated free runs; λ Benettin: running average; W: mean interface width. Yellow: the run diverges.', 20, y + rowH/2 + 6);
+    savePng(oc, 'scan_table_' + SC.par + '.png');
+  });
+
+  /* read-only access to the running model from the console (e.g. for checks) */
+  window.ksSim = () => sim;
 
   // ----- go -----
   setLUT('div');
