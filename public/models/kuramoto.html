@@ -162,7 +162,7 @@
     border:1.5px solid #6b7690;
   }
   .wfctl{
-    position:absolute;left:52px;bottom:44px;display:none;align-items:center;gap:8px;
+    position:absolute;left:14px;bottom:25px;display:none;align-items:center;gap:8px;
     background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:8px;
     padding:4px 10px;font-size:11.5px;color:var(--ink2);backdrop-filter:blur(2px);
   }
@@ -984,7 +984,7 @@
         </div>
         <div class="cornerpng">
           <button id="bPngClean" title="save only the surface — no axes, labels, frame or colour bar — as a PNG (key c)">.png</button>
-          <button id="bPngSq" title="the same clean picture compressed into a square (key s)">sq</button>
+          <button id="bPngSq" title="the clean picture cut to the drawing itself and compressed into a square (key s)">sq</button>
           <button id="bFlip" class="sqbtn" title="plot −h instead of h (slope and curvature flip with it; |∇h| and the λ densities do not). The equation itself is unchanged.">±</button>
         </div>
         <div class="diverged" id="divergedMsg">Diverged — reduce dt, then Reset</div>
@@ -1004,7 +1004,7 @@
         <button id="bViewTog" title="switch between two viewpoints">&#8645;</button>
         <div class="presets">
           <div class="prow">
-            <button id="bPre1" title="1D KS: open boundary, dx=0.5, dt=0.01, jet &minus;&nabla;&sup2;h">KS 1D</button>
+            <button id="bPre1" title="1D KS: periodic, L=256, dx=0.25, dt=0.05, jet &minus;&nabla;&sup2;h">KS 1D</button>
             <button id="bPre2" title="2D KS: surface 3D, dx=0.5, flames &nabla;&sup2;h, tilt 45&deg;">KS 2D</button>
           </div>
           <div class="prow">
@@ -1012,7 +1012,7 @@
             <button id="bPre2a" title="KS 2D with &alpha; = 1.5, dt = 0.1">KS 2D abs1</button>
           </div>
           <div class="prow">
-            <button id="bPre1n" title="KS 1D with strong nonlinearity &beta; = 1.5, dt = 0.02">KS 1D nnl</button>
+            <button id="bPre1n" title="KS 1D with strong nonlinearity &beta; = 1.5, dt = 0.01">KS 1D nnl</button>
             <button id="bPre2n" title="KS 2D with strong nonlinearity &beta; = 1.5, dt = 0.02">KS 2D nnl</button>
           </div>
           <div class="prow">
@@ -1100,8 +1100,8 @@
           </div>
           <div class="row"><label>lattice size L</label>
             <select id="selL">
-              <option>32</option><option>64</option><option selected>128</option>
-              <option>256</option><option>512</option>
+              <option>32</option><option>64</option><option>128</option>
+              <option selected>256</option><option>512</option>
             </select>
           </div>
           <div class="row"><label>wavenumber n = <span class="vv" id="nVal">4</span></label>
@@ -1375,8 +1375,8 @@
           overlays — at twice the screen resolution, with the equation and its parameters stamped
           in the upper right corner (key p). The two small buttons in the lower right corner
           save <i>clean</i> pictures: <b>.png</b> keeps only the surface, without axes, frame,
-          colour bar or caption (key c), and <b>sq</b> compresses the same picture into a square
-          (key s). In the Lyapunov section and in the scan results each figure and table has its
+          colour bar or caption (key c), and <b>sq</b> first cuts away the empty margin around the drawing and then compresses what is
+          left into a square (key s). In the Lyapunov section and in the scan results each figure and table has its
           own .png button, and the tables of the main text have theirs beside them.</p>
 
           <h3>Lyapunov section</h3>
@@ -2206,7 +2206,7 @@ function buildSim(P){
   let clean = false, onScreen = true;
   const capInset = () => onScreen ? 96 : 0;
 
-  const params = { dim:1, L:128, bc:'periodic', n:4, amp:0, eps:0.1, dt:0.1, dx:1, alpha:0, beta:0, gamma:0, delta:0, order:4,
+  const params = { dim:1, L:256, bc:'periodic', n:4, amp:0, eps:0.1, dt:0.1, dx:1, alpha:0, beta:0, gamma:0, delta:0, order:4,
                    nl2:true, absMode:'euclid' };
   let stepsPerFrame = 5;
   let dtplot = 0.2, keepN = 2000, dispGain = 25;   // dtplot: internal capture cadence
@@ -3161,13 +3161,9 @@ function buildSim(P){
     }}
     if(!clean){
       axisFont(); ctx.fillStyle = TH.label; ctx.textBaseline='alphabetic';
-      if(onScreen && w >= 480){
-        ctx.textAlign='right';
-        ctx.fillText('drag to rotate', w-14-capInset(), h-8);
-      }
-      /* which field is the height (on screen the toolbar button says so too; on
-         phones the preset buttons occupy this corner, so only wide displays) */
-      if(!onScreen || window.innerWidth > 860){
+      /* which field is the height — only in the saved picture (on screen the
+         toolbar button says so, and the caption would sit under the controls) */
+      if(!onScreen){
         ctx.textAlign='left';
         ctx.fillText('height: ' + kindLabel(geoKind) + (kind === geoKind ? '  (= colour)' : ''), 12, h-8);
       }
@@ -3425,7 +3421,7 @@ function buildSim(P){
        the waterfall of their time averages */
     const yc = TOPPAD + (keys.length + 1)*STRIP;
     drawCumulative1D(x0, x1, yc, CUMH, ly, stack);
-    drawWaterfall(x0, x1, yc + CUMH, wfHeight(), ly, w);
+    drawBudgetWaterfall(x0, x1, yc + CUMH, wfHeight(), ly, w);
   }
   /* the running sums of the stacked summary, from the most dissipative term up
      to the total, and their common (smoothed, quantized) scale */
@@ -3489,7 +3485,7 @@ function buildSim(P){
   }
   /* the time averages ⟨Λᵢ⟩ₜ as a waterfall: bars laid end to end from 0, most
      dissipative first, ending at Σ⟨Λᵢ⟩ = λ; the Benettin λ marked for comparison */
-  function drawWaterfall(x0, x1, yt, hgt, ly, w){
+  function drawBudgetWaterfall(x0, x1, yt, hgt, ly, w){
     const b = ly.budget, order = cumOrder(b);
     const v = k => isFinite(b.avg[k]) ? b.avg[k] : 0;
     const segs = []; let c = 0, lo = 0, hi = 0;
@@ -3578,7 +3574,7 @@ function buildSim(P){
     ctx.font = '9.5px system-ui,sans-serif'; ctx.fillStyle = TH.label; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
     ctx.fillText('+'+fmt(S), kx+4, kyy-4); ctx.fillText('−'+fmt(S), kx+4, kyy+kh+11);
     /* the waterfall of the time averages under the maps */
-    drawWaterfall(g.x0 - 22, w - 8, 6 + g.rows*(g.side + g.cap), wfHeight(), ly, w);
+    drawBudgetWaterfall(g.x0 - 22, w - 8, 6 + g.rows*(g.side + g.cap), wfHeight(), ly, w);
   }
   /* free run: log10|δh| against t, the saturation level √2·W of two completely
      diverged interfaces, and the fitted exponential stretch */
@@ -3905,6 +3901,21 @@ function buildSim(P){
   /* kind: 'stamp' — the display with the equation stamped (control-panel button)
            'clean' — only the surface, no text at all (corner button .png)
            'sq'    — the clean picture compressed into a square (corner button sq) */
+  /* the bounding box of everything that differs from the background (the corner pixel),
+     plus a small margin — so the square picture holds only the surface itself */
+  function cropToContent(oc, pad){
+    const w = oc.width, h = oc.height, c = oc.getContext('2d');
+    let d; try{ d = c.getImageData(0, 0, w, h).data; } catch(e){ return oc; }
+    const br = d[0], bg = d[1], bb = d[2], tol = 18;
+    const diff = i => Math.abs(d[i]-br) + Math.abs(d[i+1]-bg) + Math.abs(d[i+2]-bb) > tol;
+    let x0 = w, y0 = h, x1 = -1, y1 = -1;
+    for(let y=0;y<h;y++){ const row = 4*y*w; for(let x=0;x<w;x++){ if(diff(row + 4*x)){ if(x<x0) x0=x; if(x>x1) x1=x; if(y<y0) y0=y; if(y>y1) y1=y; } } }
+    if(x1 < 0 || (x1-x0) < 8 || (y1-y0) < 8) return oc;
+    x0 = Math.max(0, x0-pad); y0 = Math.max(0, y0-pad); x1 = Math.min(w-1, x1+pad); y1 = Math.min(h-1, y1+pad);
+    const out = document.createElement('canvas'); out.width = x1-x0+1; out.height = y1-y0+1;
+    out.getContext('2d').drawImage(oc, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+    return out;
+  }
   function exportPNG(kind){
     kind = kind || 'stamp';
     const btn = $(kind === 'stamp' ? 'bPng' : (kind === 'sq' ? 'bPngSq' : 'bPngClean'));
@@ -3914,6 +3925,7 @@ function buildSim(P){
     const isMap = params.dim === 2 && modeSel[2] === 'map';
     if(kind !== 'stamp' && isMap){ w = h = Math.min(w, h); }   // the bare square field
     let oc = renderTo(w, h, scale, kind !== 'stamp', kind === 'stamp');
+    if(kind === 'sq') oc = cropToContent(oc, 6*scale);   // cut away the empty margin around the drawing
     if(kind === 'sq' && oc.width !== oc.height){
       const side = Math.min(oc.width, oc.height);      // compress the long side
       const sq = document.createElement('canvas');
@@ -4004,6 +4016,8 @@ function buildSim(P){
   }
   seg($('segDim'), ()=>''+params.dim, v=>{
     params.dim = +v;
+    if(!userL){ params.L = params.dim === 2 ? 128 : 256; $('selL').value = ''+params.L; }   // default box: 256 in 1D, 128 in 2D
+    if(!userSpf){ stepsPerFrame = params.dim === 2 ? 2 : 5; $('selSpf').value = ''+stepsPerFrame; noteSpfRef(); }   // default pace: 2 steps/frame in 2D, 5 in 1D
     if(params.dim === 1 && yvar !== 'h' && yvar !== 'dx'){   // 1D plots only h or dh/dx
       yvar = 'h'; setSeg('segYvar', yvar); setSeg('segYvar2', yvar); setSeg('segYvar4', yvar);
     }
@@ -4141,7 +4155,8 @@ function buildSim(P){
       ', ω = ' + om.toFixed(3) + (om > 0 ? ' — grows' : ' — decays');
   }
 
-  $('selL').addEventListener('change', e=>{ params.L = +e.target.value; updateHint(); rebuild(); });
+  let userL = false, userSpf = false;
+  $('selL').addEventListener('change', e=>{ params.L = +e.target.value; userL = true; updateHint(); rebuild(); });
   $('rngN').addEventListener('input', e=>{ $('nVal').textContent = e.target.value; });
   $('rngN').addEventListener('change', e=>{
     params.n = +e.target.value; $('nVal').textContent = params.n;
@@ -4149,7 +4164,7 @@ function buildSim(P){
   });
   $('selDt').addEventListener('change', e=>{ params.dt = +e.target.value; sim.setDt(params.dt); noteSpfRef(); });
   $('selDx').addEventListener('change', e=>{ params.dx = +e.target.value; updateHint(); rebuild(); });
-  $('selSpf').addEventListener('change', e=>{ stepsPerFrame = +e.target.value; noteSpfRef(); });
+  $('selSpf').addEventListener('change', e=>{ userSpf = true; stepsPerFrame = +e.target.value; noteSpfRef(); });
   $('selGain').addEventListener('change', e=>{ dispGain = +e.target.value; wfScale = 0; draw(); });
   $('selKeep').addEventListener('change', e=>{
     keepN = +e.target.value;
@@ -4485,9 +4500,9 @@ function buildSim(P){
     running = true; $('bRun').textContent = 'Pause';
   }
   function base1D(){
-    params.dim=1; params.L=128; params.bc='open'; params.dx=0.5; params.order=4;
+    params.dim=1; params.L=256; params.bc='periodic'; params.dx=0.25; params.order=4;
     params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.amp=0; params.eps=0.1; params.n=4; params.nl2=true; params.absMode='euclid';
-    params.dt=0.1; $('selDt').value='0.1';
+    params.dt=0.05; $('selDt').value='0.05';
     stepsPerFrame=2; $('selSpf').value='2';
     dispGain=2; keepN=5000;
     yvar='h'; qkind='nlap'; modeSel[1]='wf3dsw';
@@ -4522,7 +4537,7 @@ function buildSim(P){
   }));
   $('bPre1n').addEventListener('click', ()=>runPreset(()=>{
     base1D(); params.beta=1.5;
-    params.dt=0.02; $('selDt').value='0.02';
+    params.dt=0.01; $('selDt').value='0.01';
     stepsPerFrame=5; $('selSpf').value='5';
   }));
   $('bPre2n').addEventListener('click', ()=>runPreset(()=>{
