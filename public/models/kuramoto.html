@@ -162,7 +162,7 @@
     border:1.5px solid #6b7690;
   }
   .wfctl{
-    position:absolute;left:14px;bottom:25px;display:none;align-items:center;gap:8px;
+    position:absolute;left:12px;top:10px;display:none;align-items:center;gap:8px;z-index:3;
     background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:8px;
     padding:4px 10px;font-size:11.5px;color:var(--ink2);backdrop-filter:blur(2px);
   }
@@ -170,7 +170,20 @@
   .wfctl span{cursor:pointer;white-space:nowrap}
   .wfctl.v3{flex-direction:column;gap:4px;align-items:stretch}
   .wfctl.v3 div{display:flex;align-items:center;gap:7px}
-  .wfctl.v3 span{width:26px;font-size:11px;cursor:default}
+  .wfctl.v3 span{width:30px;font-size:11px;cursor:default}
+  #viewBox .ycycle span{width:auto}
+  .wfctl.folded{display:none !important}
+  .wfctl .sub{flex-direction:column;align-items:stretch;gap:4px}
+  .wfctl.v3 .sub{display:none}
+  #viewBox{display:flex}
+  #viewBox select{font-size:11px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);max-width:132px}
+  #viewBox .yseg{min-width:0;flex:0 0 auto}
+  #viewBox .yseg button{padding:3px 9px;font-size:11px}
+  #viewBox .ycycle{padding:2px 8px 2px 9px}
+  #viewBox .ysep{font-size:11px}
+  #viewBox .ysep input{width:96px}
+  #viewBox .ysep .svv{width:auto;min-width:28px}
+  .display.darkbg #viewBox select{background:#16233b;border-color:#2a3140;color:#c7d2fe}
   #wfSepVal{width:auto;min-width:54px;cursor:pointer}
   .wfctl .sv{
     font-size:10.5px;color:var(--muted);min-width:36px;font-weight:600;width:auto;
@@ -194,12 +207,10 @@
   .cornerpng button.sqbtn{width:28px;height:28px;padding:0;font-size:15px;line-height:26px;text-align:center;color:var(--ink2)}
   .cornerpng button.sqbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
   /* view-preset toggle, to the right of the tilt/rot/dist box */
-  #bViewTog{
-    position:absolute;display:none;z-index:3;width:30px;height:30px;padding:0;border-radius:8px;
-    border:1px solid var(--line);background:rgba(255,255,255,.88);color:var(--accent);
-    font-weight:700;font-size:13px;cursor:pointer;backdrop-filter:blur(2px);
-  }
-  .display.darkbg #bViewTog{background:rgba(16,19,28,.85);border-color:#2a3140}
+  #bViewTog{display:none;padding:4px 9px;font-size:13px;font-weight:700}
+  .dispbar .viewhead{font-weight:700;color:var(--accent)}
+  .dispbar .viewhead b{font-size:10px;margin-left:3px;display:inline-block}
+  .dispbar .viewhead.open b{transform:rotate(180deg)}
   .display.darkbg .cornerpng button{background:rgba(16,19,28,.85);border-color:#2a3140}
   .maincol{min-width:0;display:flex;flex-direction:column;gap:14px}
 
@@ -307,7 +318,17 @@
   }
   .display.darkbg .rdout{background:rgba(16,19,28,.78);border-color:#2a3140;color:#aab3c7}
   .display.darkbg .rdout b{color:#e8ecf5}
-  .presets{position:absolute;left:12px;top:10px;display:flex;flex-direction:column;gap:5px}
+  .presets{position:absolute;left:12px;bottom:10px;display:flex;flex-direction:column;gap:5px;z-index:3}
+  .presets.folded .prow{display:none}
+  .presets .phead{
+    text-align:left;padding:4px 10px;font-size:11.5px;border-radius:8px;border:1px solid var(--line);
+    background:rgba(255,255,255,.88);color:var(--ink2);font-weight:700;cursor:pointer;white-space:nowrap;
+  }
+  .presets .phead.run{color:var(--accent)}
+  .presets .phead b{font-size:10px;margin-left:4px}
+  .presets.folded .phead b{transform:rotate(180deg);display:inline-block}
+  .presets button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .display.darkbg .presets .phead{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
   .presets .prow{display:flex;gap:6px}
   .presets button{
     flex:1;padding:4px 10px;font-size:11.5px;border-radius:8px;border:1px solid var(--line);
@@ -404,9 +425,9 @@
     .display{padding:8px 8px 10px}
     .dispbar{gap:7px 10px}
     .maincol{gap:10px}
-    .wfctl{left:auto;right:8px;top:44px;bottom:auto}
+    .wfctl{left:8px;top:8px;bottom:auto}
     .rdout{top:8px;right:8px;font-size:11px;gap:2px 8px;padding:3px 8px;max-width:calc(100% - 16px)}
-    .presets{top:auto;bottom:8px}
+    .presets{left:8px;bottom:8px}
     .cornerpng{right:8px;bottom:8px}
     .cornerpng button{padding:7px 11px;font-size:12.5px}
     .lyap{padding:8px 8px 10px}
@@ -916,23 +937,12 @@
     <!-- =============== main display panel =============== -->
     <section class="display">
       <div class="dispbar">
-        <select id="dispmode" title="display mode"></select>
-        <div class="seg mini yseg" id="segYvar2" title="y-axis variable on all plots">
-          <button data-v="h" class="on">h</button><button data-v="dx">dh/dx</button>
-        </div>
-        <button class="tbtn ycycle" id="bYvar2" hidden
-                title="plotted field — click to cycle: h → ∂h/∂x → |∇h| = √((∂h/∂x)²+(∂h/∂y)²) → ∇²h. It is the height of the 3D surface, and the colour of the map">
-          <span class="ylab" id="yvarLab">h</span><span class="ychev">&#8635;</span>
-        </button>
+        <button class="tbtn viewhead" id="viewHead" title="show / hide the view menu: display mode, plotted variable, spacing, tilt and distance">view <b>&#9662;</b></button>
+        <button id="bViewTog" class="tbtn" title="switch between two viewpoints">&#8645;</button>
         <span class="cbar cbtop" id="cbTop" title="colour scale of the display: extreme values of the coloured quantity">
           <b class="cbmin" id="cbTopMin">−1</b><canvas class="cbcan" id="cbTopCan" width="90" height="10"></canvas><b class="cbmax" id="cbTopMax">+1</b>
         </span>
         <button id="bSplit" class="tbtn splitbtn" hidden title="standard: the chosen colour map over the whole λ range. grey λ&lt;0: the colour map only where λ &gt; 0, grey (λ = 0) to black (most negative λ) where λ &lt; 0">standard</button>
-        <span class="ysep" id="vsepWrap" title="vertical displacement per curve">
-          <span>&Delta;y</span>
-          <input type="range" id="rngVsep" min="0" max="11" step="1" value="5">
-          <b class="svv" id="vsepVal">3.0</b>
-        </span>
         <span class="spacer"></span>
         <select id="qty" title="colour by">
           <option value="plain">plain</option>
@@ -988,7 +998,23 @@
           <button id="bFlip" class="sqbtn" title="plot −h instead of h (slope and curvature flip with it; |∇h| and the λ densities do not). The equation itself is unchanged.">±</button>
         </div>
         <div class="diverged" id="divergedMsg">Diverged — reduce dt, then Reset</div>
-        <div class="wfctl v3" id="wfCtl">
+        <div class="wfctl v3 folded" id="viewBox">
+          <div><span>mode</span><select id="dispmode" title="display mode"></select></div>
+          <div class="yrow"><span>plot</span>
+            <div class="seg mini yseg" id="segYvar2" title="y-axis variable on all plots">
+              <button data-v="h" class="on">h</button><button data-v="dx">dh/dx</button>
+            </div>
+            <button class="tbtn ycycle" id="bYvar2" hidden
+                    title="plotted field — click to cycle: h → ∂h/∂x → |∇h| = √((∂h/∂x)²+(∂h/∂y)²) → ∇²h. It is the height of the 3D surface, and the colour of the map">
+              <span class="ylab" id="yvarLab">h</span><span class="ychev">&#8635;</span>
+            </button>
+          </div>
+          <div class="ysep" id="vsepWrap" title="vertical displacement per curve">
+            <span>&Delta;y</span>
+            <input type="range" id="rngVsep" min="0" max="11" step="1" value="5">
+            <b class="svv" id="vsepVal">3.0</b>
+          </div>
+        <div class="sub" id="wfCtl">
           <div><span id="wfSepVal" title="curve spacing — click to reset">&Delta;h auto</span>
             <input type="range" id="rngSep" min="-2.31" max="0.9" step="0.02" value="0.3"></div>
           <div class="wfrow3d"><span>tilt</span>
@@ -996,16 +1022,16 @@
           <div class="wfrow3d"><span>dist</span>
             <input type="range" id="rngWfDist" min="1.2" max="10" step="0.1" value="3"><b class="sv" id="wfDistVal">3.0&middot;L</b></div>
         </div>
-        <div class="wfctl v3" id="v3Ctl">
-          <div><span>tilt</span><input type="range" id="rngTilt" min="0" max="85" step="1" value="55"><b class="sv" id="v3TiltVal">55&deg;</b></div>
-          <div><span>rot</span><input type="range" id="rngRot" min="0" max="360" step="5" value="45"><b class="sv" id="v3RotVal">45&deg;</b></div>
-          <div><span>dist</span><input type="range" id="rngDist" min="1.1" max="10" step="0.1" value="2.5"><b class="sv" id="v3DistVal">2.5&middot;L</b></div>
+        <div class="sub" id="v3Ctl">
+          <div><span>tilt</span><input type="range" id="rngTilt" min="0" max="85" step="1" value="50"><b class="sv" id="v3TiltVal">50&deg;</b></div>
+          <div><span>rot</span><input type="range" id="rngRot" min="0" max="360" step="5" value="0"><b class="sv" id="v3RotVal">0&deg;</b></div>
+          <div><span>dist</span><input type="range" id="rngDist" min="1.1" max="10" step="0.1" value="5"><b class="sv" id="v3DistVal">5.0&middot;L</b></div>
         </div>
-        <button id="bViewTog" title="switch between two viewpoints">&#8645;</button>
-        <div class="presets">
+        </div>
+        <div class="presets" id="presetBox">
           <div class="prow">
             <button id="bPre1" title="1D KS: periodic, L=256, dx=0.25, dt=0.05, jet &minus;&nabla;&sup2;h">KS 1D</button>
-            <button id="bPre2" title="2D KS: surface 3D, dx=0.5, flames &nabla;&sup2;h, tilt 45&deg;">KS 2D</button>
+            <button id="bPre2" title="2D KS: surface 3D, dx=0.5, flames &nabla;&sup2;h, tilt 50&deg;">KS 2D</button>
           </div>
           <div class="prow">
             <button id="bPre1a" title="KS 1D with &alpha; = 1 (extra &alpha;|&nabla;h| growth)">KS 1D abs1</button>
@@ -1016,8 +1042,9 @@
             <button id="bPre2n" title="KS 2D with strong nonlinearity &beta; = 1.5, dt = 0.02">KS 2D nnl</button>
           </div>
           <div class="prow">
-            <button id="bPreBeauty" class="beautybtn" title="Beauty — Absolute 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, tilt 45&deg;, rot 360&deg;, dist 5&middot;L">Absolute 2D</button>
+            <button id="bPreBeauty" class="beautybtn" data-pre="beauty" title="Beauty — Absolute 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 50&deg;, rot 0&deg;, dist 5&middot;L)">Absolute 2D</button>
           </div>
+          <button class="phead" id="presetHead" title="the one-click runs — click to fold / unfold">presets <b>&#9652;</b></button>
         </div>
       </div>
     </section>
@@ -1104,13 +1131,13 @@
               <option selected>256</option><option>512</option>
             </select>
           </div>
-          <div class="row"><label>wavenumber n = <span class="vv" id="nVal">4</span></label>
-            <input type="range" id="rngN" min="1" max="16" step="1" value="4" title="n_x = n_y = n">
+          <div class="row"><label>wavenumber n = <span class="vv" id="nVal">5</span></label>
+            <input type="range" id="rngN" min="1" max="16" step="1" value="5" title="n_x = n_y = n">
           </div>
           <div class="row"><label>amplitude A</label>
             <div class="seg mini" id="segAmp">
-              <button data-v="0" class="on">0</button><button data-v="0.01">0.01</button>
-              <button data-v="1">1</button>
+              <button data-v="0">0</button><button data-v="0.01">0.01</button>
+              <button data-v="0.1" class="on">0.1</button>
             </div>
           </div>
           <div class="row"><label>disturbance &epsilon;</label>
@@ -1290,13 +1317,13 @@
           which sign matters, and the measured Lyapunov exponents — see <i>Variant models</i> and
           the tables in the main text above the display.</p>
           <h4>Beauty — special runs</h4>
-          <p>The <b>Absolute 2D</b> button under the presets in the display starts a run chosen for its
+          <p>The <b>Absolute 2D</b> button in the presets box of the display starts a run chosen for its
           looks; everything is set up and the simulation starts at once. It cycles through three
           states: <i>off</i> &rarr; <b>&alpha; = +3</b>, h drawn upward &rarr; <b>&alpha; = &minus;3</b>, drawn
           with &minus;h upward (the &plusmn; button is switched on) &rarr; <i>off</i>. Both runs are 2D,
           L = 256, periodic, with the Euclidean steepness &radic;(h<sub>x</sub>&sup2;+h<sub>y</sub>&sup2;), the
-          surface coloured by h &minus; &lang;h&rang; in jet and seen from tilt 45&deg;, rotation 360&deg;,
-          distance 5&thinsp;L. Changing any parameter by hand returns the button to <i>off</i>.</p>
+          surface coloured by h &minus; &lang;h&rang; in jet in the default view (tilt 50&deg;, rotation 0&deg;,
+          distance 5&thinsp;L). Changing any parameter by hand returns the button to <i>off</i>.</p>
 
           <h3>Model menu</h3>
           <p><b>Dimension and box.</b> 1D or 2D, box size L in lattice units (dx = 1 unless
@@ -1325,23 +1352,36 @@
           diverges stops with a warning; reduce dt and press Reset.</p>
 
           <h3>Display</h3>
+          <h4>The view menu</h4>
+          <p>The <b>view</b> button at the left of the toolbar above the display opens a menu over the
+          upper left corner of the display (closed by default): the display <i>mode</i>, the
+          plotted variable (1D: h or dh/dx; 2D: the field-cycling button), the vertical spacing
+          &Delta;y of the curves and, in the 3D modes, the &Delta;t / spacing, tilt, rotation and
+          distance sliders. The &#8645; button beside it switches between two viewpoints (below).</p>
           <h4>Display modes</h4>
           <p>1D: <b>profile</b> — the instantaneous h(x) &minus; &lang;h&rang;; <b>profiles</b> — the
           history h(x,t) as stacked curves, older ones higher up, seen from behind and above with
           hidden-line removal, the corner slider setting the spacing (or "auto": the true mean
-          height); <b>3D</b> and <b>3D sw</b> — the same surface in perspective, one curve per
-          &Delta;t (corner slider), either scrolling with time or sweeping up the page and
-          restarting at the bottom; <b>x–t</b> — a space–time map, x horizontal, time upward. 2D:
+          height); <b>3D</b>, <b>3D sw</b> and <b>3D sw*</b> — the same surface in perspective, one curve
+          per &Delta;t (corner slider): <i>3D</i> scrolls with the mean height, <i>3D sw</i> sweeps
+          up the page and restarts at the bottom, and <i>3D sw*</i> holds the newest curve 5&thinsp;%
+          below the top of the page while the older curves slide down towards the viewer and
+          drop off the near edge — a window that moves with the front; <b>x–t</b> — a space–time map, x horizontal, time upward. 2D:
           <b>map</b> — a colour map of the box; <b>surface</b> — a rotatable 3D view (drag to
-          rotate, or use the tilt / rot / dist sliders in the corner box; a short distance adds
+          rotate, or use the tilt / rot / dist sliders of the view menu; a short distance adds
           perspective).</p>
+          <h4>Presets</h4>
+          <p>The box in the lower left corner holds the one-click runs: KS 1D / 2D, the same with
+          &alpha; = 1 (1.5 in 2D), with &beta; = 1.5, and the Absolute 2D toggle. Its title line
+          names the preset that is running (<i>presets</i> when the run has been changed by hand),
+          and a click on it folds the box to that line and back.</p>
           <h4>Viewpoint button</h4>
-          <p>The small <b>&#8645;</b> button just right of the corner box jumps between two
-          viewpoints: on the 2D surface between tilt 45&deg;, rotation 45&deg;, distance 3&thinsp;L
-          and tilt 45&deg;, rotation 360&deg;, distance 5&thinsp;L; in the 1D 3D modes between distance
+          <p>The small <b>&#8645;</b> button next to the view button jumps between two
+          viewpoints: on the 2D surface between the default tilt 50&deg;, rotation 0&deg;, distance
+          5&thinsp;L and tilt 45&deg;, rotation 45&deg;, distance 3&thinsp;L; in the 1D 3D modes between distance
           5&thinsp;L and infinity (no perspective).</p>
           <h4>What is drawn and how it is coloured</h4>
-          <p>The <b>plotted field</b> row (2D: also the button next to the display-mode menu) chooses
+          <p>The <b>plotted field</b> row of the control panel (or the <i>plot</i> line of the view menu) chooses
           the quantity that gives the height: h, the slope &part;h/&part;x, the steepness |&nabla;h|
           or the curvature &nabla;&sup2;h. The <b>colour</b> menu paints any of these on top of the
           curves or the surface, all evaluated spectrally; the <b>display amplitude</b> magnifies both
@@ -2206,7 +2246,7 @@ function buildSim(P){
   let clean = false, onScreen = true;
   const capInset = () => onScreen ? 96 : 0;
 
-  const params = { dim:1, L:256, bc:'periodic', n:4, amp:0, eps:0.1, dt:0.1, dx:1, alpha:0, beta:0, gamma:0, delta:0, order:4,
+  const params = { dim:1, L:256, bc:'periodic', n:5, amp:0.1, eps:0.1, dt:0.1, dx:1, alpha:0, beta:0, gamma:0, delta:0, order:4,
                    nl2:true, absMode:'euclid' };
   let stepsPerFrame = 5;
   let dtplot = 0.2, keepN = 2000, dispGain = 25;   // dtplot: internal capture cadence
@@ -2221,7 +2261,7 @@ function buildSim(P){
   let stamp = 0;
   let qkind = 'plain';
   const modeSel = { 1:'wf3dsw', 2:'map' };
-  const view = { tilt:55, rot:45, dist:2.5 };
+  const view = { tilt:50, rot:0, dist:5 };
   let snapshots = [], nextSnap = 0;
   let wfSepAuto = true, wfSep = 2;
   let qbuf = null;
@@ -2480,7 +2520,8 @@ function buildSim(P){
   };
 
   // ----- profiles h(x,t) snapshots -----
-  const is3dMode = m => m === 'wf3d' || m === 'wf3dsw';
+  const is3dMode = m => m === 'wf3d' || m === 'wf3dsw' || m === 'wf3dsc';
+  const isSweep = m => m === 'wf3dsw' || m === 'wf3dsc';
   const capDt = () => (params.dim===1 && is3dMode(modeSel[1])) ? Math.min(dtplot, wfDt) : dtplot;
   /* the oldest profile's buffer is recycled into the newest one, so a long run
      does not churn thousands of Float32Arrays through the collector */
@@ -2535,7 +2576,7 @@ function buildSim(P){
 
   // ----- rebuild / reset -----
   function rebuild(){
-    if(beauty !== 'off' && !beautyBuilding) setBeauty('off');   // any change by hand leaves the special run
+    if(!beautyBuilding){ if(beauty !== 'off') setBeauty('off'); if(curPreset || $('presetHead').classList.contains('run')) setPresetLabel(null); }   // any change by hand leaves the preset
     diverged = false; $('divergedMsg').style.display = 'none';
     sim = buildSim({ dim:params.dim, L:params.L, bc:params.bc, dt:params.dt, dx:params.dx,
                      nwx:params.n, nwy:params.n, amp:params.amp, eps:params.eps,
@@ -2875,18 +2916,24 @@ function buildSim(P){
      restarting at the bottom when it touches the top */
   let swList = [], swPos = 0, swNextT = 0;
   let swStepPx = 3;                      // vertical displacement per recorded curve (px-ish)
-  function swRecord(){
+  const SW_TOP = 0.95;                      // 3D sw*: the front is held 5 % below the top of the page
+  const swRowsPerPage = () => Math.max(50, Math.min(500, Math.round(520/swStepPx)));
+  function swRecord(scroll){
     if(sim.t < swNextT - 1e-9) return;
-    if(swPos > 1.0001){ swList = []; swPos = 0; }   // touched the top: back to the bottom
+    if(!scroll && swPos > 1.0001){ swList = []; swPos = 0; }   // sweep: touched the top, back to the bottom
     const n = sim.physNx, f = new Float32Array(n);
     const H = hDisp(); for(let i=0;i<n;i++) f[i] = H[i];
-    swList.push({ f, pos: swPos, ly: lyField() });
-    swPos += 1/Math.max(50, Math.min(500, Math.round(520/swStepPx)));
+    swList.push({ f, pos: swPos, t: sim.t, ly: lyField() });
+    if(scroll){
+      /* moving window: rows older than one page have slid off the near edge */
+      const Twin = wfDt*swRowsPerPage()*SW_TOP;
+      while(swList.length && sim.t - swList[0].t > Twin + 1e-9) swList.shift();
+    } else swPos += 1/swRowsPerPage();
     swNextT = sim.t + wfDt;
   }
   function swReset(){ swList = []; swPos = 0; swNextT = 0; }
 
-  function drawWaterfall3D(w, h, sweep){
+  function drawWaterfall3D(w, h, sweep, scroll){
     const colored = qkind !== 'plain';
     const n = sim.physNx;
     const x0=clean?0:14, y0=clean?0:10, x1=clean?w:w-14, y1=clean?h:h-26, pw=x1-x0, ph=y1-y0;
@@ -2902,7 +2949,10 @@ function buildSim(P){
     let D, zs, meanNear = 0;
     if(sweep){
       if(!swList.length){ return; }
-      rows = swList;
+      /* 3D sw*: the newest curve sits at SW_TOP of the page and every older one has
+         slid down towards the viewer by its age — a window moving with the front */
+      rows = scroll ? swList.map(r => ({ f: r.f, ly: r.ly, pos: SW_TOP - (sim.t - r.t)/(wfDt*swRowsPerPage()) })).filter(r => r.pos >= -1e-9) : swList;
+      if(!rows.length) return;
       D = 0.86*ph;                                  // the page spans nearly the full display
       ensureScale(isU ? 'dx' : 'h');                // relief auto-normalized to the windowed
       const Hwin = qscales[isU ? 'dx' : 'h'];       // scale of what is currently on screen —
@@ -2986,12 +3036,8 @@ function buildSim(P){
     if(clean) return;
     axisFont(); ctx.fillStyle = TH.label;
     ctx.textAlign='right'; ctx.textBaseline='alphabetic';
-    /* on a narrow display the preset buttons own the bottom-left corner, so the
-       caption shrinks to what still fits beside them */
-    const stem = (isU?'dh/dx':'h') + '(x,t)';
-    ctx.fillText(w < 620 ? stem
-                : stem + ' from behind/above' + (sweep?' · front sweeps up, restarts at bottom':''),
-                w-14-capInset(), h-8);
+    /* the caption naming the surface goes into saved pictures only */
+    if(!onScreen) ctx.fillText((isU?'dh/dx':'h') + '(x,t) from behind/above', w-14-capInset(), h-8);
     ctx.textAlign='center'; ctx.textBaseline='top';
     ctx.fillText('x', cx, y1+6);
   }
@@ -3098,7 +3144,7 @@ function buildSim(P){
       const u=pf*xr, v2=pf*vv;
       if(u<umin)umin=u; if(u>umax)umax=u; if(v2<vmin)vmin=v2; if(v2>vmax)vmax=v2;
     }
-    const S0 = 1.07*Math.min((x1-x0)/Math.max(umax-umin,1e-6), (y1-y0)/Math.max(vmax-vmin,1e-6));
+    const S0 = 1.10*Math.min((x1-x0)/Math.max(umax-umin,1e-6), (y1-y0)/Math.max(vmax-vmin,1e-6));
     const cx = (x0+x1)/2 - S0*(umin+umax)/2;
     const cy = (y0+y1)/2 + S0*(vmin+vmax)/2;
     for(let gj=0;gj<m;gj++){
@@ -3184,7 +3230,7 @@ function buildSim(P){
     if(params.dim === 1){
       if(mode === 'spacetime') drawSpacetime(w, h);
       else if(mode === 'profiles') drawWaterfall(w, h);
-      else if(is3dMode(mode)) drawWaterfall3D(w, h, mode === 'wf3dsw');
+      else if(is3dMode(mode)) drawWaterfall3D(w, h, isSweep(mode), mode === 'wf3dsc');
       else drawProfile(w, h);
     } else {
       if(mode === 'surface') drawSurface(w, h);
@@ -3985,7 +4031,7 @@ function buildSim(P){
     if(yvar !== 'h') ensureScale(geoKindOf());
     if(params.dim === 1){
       pushRow();
-      if(modeSel[1] === 'wf3dsw') swRecord();
+      if(isSweep(modeSel[1])) swRecord(modeSel[1] === 'wf3dsc');
     }
     updateReadouts();
   }
@@ -4084,28 +4130,30 @@ function buildSim(P){
     placeViewTog();
   }
   /* the viewpoint toggle sits just right of whichever detail box is showing:
-     2D surface → tilt 45°, rot 45°, dist 3L  ⇄  tilt 45°, rot 360°, dist 5L;
+     2D surface → tilt 50°, rot 0°, dist 5L (default)  ⇄  tilt 45°, rot 45°, dist 3L;
      1D 3D modes → dist 5L ⇄ ∞ */
   function placeViewTog(){
     const b = $('bViewTog');
     const surf = params.dim===2 && modeSel[2]==='surface';
     const w3 = params.dim===1 && is3dMode(modeSel[1]);
-    if(!surf && !w3){ b.style.display = 'none'; return; }
-    const ctl = $(surf ? 'v3Ctl' : 'wfCtl'), wrap = cv.parentElement;
-    const r = ctl.getBoundingClientRect(), R = wrap.getBoundingClientRect();
-    b.style.display = 'block';
-    /* right of the box; on narrow screens the box hugs the right edge, so then left of it */
-    const fits = r.right + 38 <= R.right;
-    b.style.left = Math.round(fits ? r.right - R.left + 6 : r.left - R.left - 36) + 'px';
-    b.style.top  = Math.round(r.bottom - R.top - 30) + 'px';
-    b.title = surf ? 'switch viewpoint: tilt 45°, rot 45°, dist 3·L  ⇄  tilt 45°, rot 360°, dist 5·L'
+    b.style.display = (surf || w3) ? 'inline-block' : 'none';
+    b.title = surf ? 'switch viewpoint: tilt 50°, rot 0°, dist 5·L (default)  ⇄  tilt 45°, rot 45°, dist 3·L'
                    : 'switch viewpoint: dist 5·L  ⇄  ∞ (no perspective)';
   }
+  $('viewHead').addEventListener('click', ()=>{ const f = $('viewBox').classList.toggle('folded'); $('viewHead').classList.toggle('open', !f); });
+  /* phones start compact, and fold again whenever the window becomes narrow */
+  let wasNarrow = false;
+  function foldForWidth(){
+    const narrow = window.innerWidth <= 560;
+    if(narrow && !wasNarrow){ $('viewBox').classList.add('folded'); $('viewHead').classList.remove('open'); $('presetBox').classList.add('folded'); }
+    wasNarrow = narrow;
+  }
+  foldForWidth(); window.addEventListener('resize', ()=>setTimeout(foldForWidth, 0));
   $('bViewTog').addEventListener('click', ()=>{
     if(params.dim===2 && modeSel[2]==='surface'){
-      const first = !(Math.abs(view.tilt-45)<0.5 && (view.rot%360)<0.5 && view.dist>4.9);
-      view.tilt = 45; view.rot = first ? 360 : 45; view.dist = first ? 5 : 3;
-      $('rngTilt').value = 45; $('v3TiltVal').textContent = '45°';
+      const atDefault = Math.abs(view.tilt-50)<0.5 && (view.rot%360)<0.5 && view.dist>4.9;
+      view.tilt = atDefault ? 45 : 50; view.rot = atDefault ? 45 : 0; view.dist = atDefault ? 3 : 5;
+      $('rngTilt').value = view.tilt; $('v3TiltVal').textContent = view.tilt+'°';
       $('rngRot').value = view.rot; $('v3RotVal').textContent = view.rot+'°';
       $('rngDist').value = view.dist; $('v3DistVal').textContent = view.dist.toFixed(1)+'·L';
     } else {
@@ -4123,7 +4171,7 @@ function buildSim(P){
     dm.innerHTML = '';
     const opts = is2
       ? [['map','map'],['surface','surface']]
-      : [['profile','profile'],['profiles','profiles'],['wf3dsw','3D sw'],['wf3d','3D'],['spacetime','x–t']];
+      : [['profile','profile'],['profiles','profiles'],['wf3dsw','3D sw'],['wf3dsc','3D sw*'],['wf3d','3D'],['spacetime','x–t']];
     for(const [v,t] of opts){
       const o = document.createElement('option'); o.value=v; o.textContent=t; dm.appendChild(o);
     }
@@ -4175,7 +4223,7 @@ function buildSim(P){
   // extra growth terms alpha, beta (header menus)
   const fmtTerm = v => (Math.abs(v) < 1e-9 ? '0' : (+v.toFixed(2)).toString());
   function applyTerms(){
-    if(beauty !== 'off' && !beautyBuilding) setBeauty('off');
+    if(!beautyBuilding){ if(beauty !== 'off') setBeauty('off'); if(curPreset || $('presetHead').classList.contains('run')) setPresetLabel(null); }
     sim.setTerms(params.alpha, params.beta, params.nl2, params.absMode, params.gamma, params.delta);
     sim.lyapResetAvg();
     syncEqHeader();
@@ -4352,6 +4400,7 @@ function buildSim(P){
     draw();
   });
   $('dispmode').addEventListener('change', e=>{
+    if(params.dim === 1 && e.target.value !== modeSel[1]) swReset();   // a sweep starts afresh on every mode change
     modeSel[params.dim] = e.target.value;
     /* entering the 2D map: the plotted field becomes the coloured field */
     if(params.dim === 2 && modeSel[2] === 'map' && !isLyKind(qkind) && YCYCLE.includes(yvar) && qkind !== yvar){
@@ -4486,22 +4535,35 @@ function buildSim(P){
     setTermSel('selAlpha', ALPHAV, params.alpha); setTermSel('selBeta', BETAV, params.beta);
     setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta);
   }
-  function runPreset(setup){
+  /* the presets box: folds to its title line, which names the preset that is running */
+  const PRESET_NAME = { bPre1:'KS 1D', bPre2:'KS 2D', bPre1a:'KS 1D abs1', bPre2a:'KS 2D abs1', bPre1n:'KS 1D nnl', bPre2n:'KS 2D nnl' };
+  let curPreset = null;
+  function setPresetLabel(id, text){
+    curPreset = id;
+    const h = $('presetHead'); h.innerHTML = (text || 'presets') + ' <b>&#9652;</b>'; h.classList.toggle('run', !!text);
+    document.querySelectorAll('.presets .prow button').forEach(b => { if(b.id !== 'bPreBeauty') b.classList.toggle('on', b.id === id); });
+  }
+  $('presetHead').addEventListener('click', ()=>{ $('presetBox').classList.toggle('folded'); });
+  function runPreset(setup, id){
     running = false;
-    setup();
-    noteSpfRef();                       // the preset's dt / steps become the reference
-    syncCommonUI();
-    applyDimUI();
-    $('qty').value = qkind;
-    updateOverlays();
-    wfScale = 0; gCache.stamp = -1;
-    rebuild();
-    applyTerms();
+    beautyBuilding = true;              // the preset's own rebuild must not clear the labels
+    try{
+      setup();
+      noteSpfRef();                       // the preset's dt / steps become the reference
+      syncCommonUI();
+      applyDimUI();
+      $('qty').value = qkind;
+      updateOverlays();
+      wfScale = 0; gCache.stamp = -1;
+      rebuild();
+      applyTerms();
+    } finally{ beautyBuilding = false; }
+    if(id){ setBeauty('off'); setPresetLabel(id, PRESET_NAME[id]); }
     running = true; $('bRun').textContent = 'Pause';
   }
   function base1D(){
     params.dim=1; params.L=256; params.bc='periodic'; params.dx=0.25; params.order=4;
-    params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.amp=0; params.eps=0.1; params.n=4; params.nl2=true; params.absMode='euclid';
+    params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.amp=0.1; params.eps=0.1; params.n=5; params.nl2=true; params.absMode='euclid';
     params.dt=0.05; $('selDt').value='0.05';
     stepsPerFrame=2; $('selSpf').value='2';
     dispGain=2; keepN=5000;
@@ -4521,29 +4583,29 @@ function buildSim(P){
     params.dt=0.2; $('selDt').value='0.2';
     stepsPerFrame=2; $('selSpf').value='2';
     dispGain=2; yvar='h'; qkind='lap'; modeSel[2]='surface';
-    view.tilt=45; view.rot=45; view.dist=3;
-    $('rngTilt').value=45; $('v3TiltVal').textContent='45°';
-    $('rngRot').value=45;  $('v3RotVal').textContent='45°';
-    $('rngDist').value=3;  $('v3DistVal').textContent='3.0·L';
+    view.tilt=50; view.rot=0; view.dist=5;
+    $('rngTilt').value=50; $('v3TiltVal').textContent='50°';
+    $('rngRot').value=0;   $('v3RotVal').textContent='0°';
+    $('rngDist').value=5;  $('v3DistVal').textContent='5.0·L';
     if(!darkBG){ darkBG = true; applyTheme(); }   // black background by default
     setLUT('fire'); $('cmap').value='fire';
   }
-  $('bPre1').addEventListener('click', ()=>runPreset(base1D));
-  $('bPre2').addEventListener('click', ()=>runPreset(base2D));
-  $('bPre1a').addEventListener('click', ()=>runPreset(()=>{ base1D(); params.alpha=1; }));
+  $('bPre1').addEventListener('click', ()=>runPreset(base1D, 'bPre1'));
+  $('bPre2').addEventListener('click', ()=>runPreset(base2D, 'bPre2'));
+  $('bPre1a').addEventListener('click', ()=>runPreset(()=>{ base1D(); params.alpha=1; }, 'bPre1a'));
   $('bPre2a').addEventListener('click', ()=>runPreset(()=>{
     base2D(); params.alpha=1.5;
     params.dt=0.1; $('selDt').value='0.1';
-  }));
+  }, 'bPre2a'));
   $('bPre1n').addEventListener('click', ()=>runPreset(()=>{
     base1D(); params.beta=1.5;
     params.dt=0.01; $('selDt').value='0.01';
     stepsPerFrame=5; $('selSpf').value='5';
-  }));
+  }, 'bPre1n'));
   $('bPre2n').addEventListener('click', ()=>runPreset(()=>{
     base2D(); params.beta=1.5;
     params.dt=0.02; $('selDt').value='0.02';
-  }));
+  }, 'bPre2n'));
   /* ---- Beauty: special runs chosen for their looks. One button in the display cycles
      off → Absolute 2D with α = +3 (h upward) → Absolute 2D with α = −3 (−h upward) → off ---- */
   const BEAUTY_LABEL = { off: 'Absolute 2D', abs2dp: 'Absolute 2D  α = +3', abs2dm: 'Absolute 2D  α = −3, −h' };
@@ -4558,17 +4620,13 @@ function buildSim(P){
     stepsPerFrame=2; $('selSpf').value='2';
     qkind='h'; yvar='h';
     setLUT('jet'); $('cmap').value='jet';
-    view.tilt=45; view.rot=360; view.dist=5;   // the second viewpoint of the ⇅ button
-    $('rngTilt').value=45; $('v3TiltVal').textContent='45°';
-    $('rngRot').value=360; $('v3RotVal').textContent='360°';
-    $('rngDist').value=5;  $('v3DistVal').textContent='5.0·L';
+    /* base2D already set the default viewpoint: tilt 50°, rot 0°, dist 5·L */
     setFlip(sign < 0);                 // α = −3: −h drawn upward
   }
   function startBeauty(v){
-    if(v === 'off'){ setBeauty('off'); return; }
-    beautyBuilding = true;
-    try{ runPreset(()=>beautyAbs2D(v === 'abs2dp' ? 1 : -1)); } finally{ beautyBuilding = false; }
-    setBeauty(v);
+    if(v === 'off'){ setBeauty('off'); setPresetLabel(null); return; }
+    runPreset(()=>beautyAbs2D(v === 'abs2dp' ? 1 : -1));
+    setBeauty(v); setPresetLabel(null, BEAUTY_LABEL[v]);
   }
   $('bPreBeauty').addEventListener('click', ()=>startBeauty(beauty === 'off' ? 'abs2dp' : beauty === 'abs2dp' ? 'abs2dm' : 'off'));
 
