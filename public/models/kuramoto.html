@@ -101,6 +101,8 @@
   .tctl select{font-style:normal;font-size:12.5px;padding:3px 4px;border:1px solid var(--line);border-radius:8px;
     background:#fff;color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:600}
   .tctl select.on{color:var(--accent);border-color:var(--accent)}
+  .presets button.beautybtn{color:#be185d;border-color:#f9a8d4}
+  .presets button.beautybtn.on{background:#be185d;color:#fff}
   .tctl b{
     min-width:40px;font-style:normal;font-weight:600;font-size:11.5px;color:var(--muted);
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
@@ -189,6 +191,15 @@
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:1.3;
   }
   .cornerpng button.busy{opacity:.55}
+  .cornerpng button.sqbtn{width:28px;height:28px;padding:0;font-size:15px;line-height:26px;text-align:center;color:var(--ink2)}
+  .cornerpng button.sqbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  /* view-preset toggle, to the right of the tilt/rot/dist box */
+  #bViewTog{
+    position:absolute;display:none;z-index:3;width:30px;height:30px;padding:0;border-radius:8px;
+    border:1px solid var(--line);background:rgba(255,255,255,.88);color:var(--accent);
+    font-weight:700;font-size:13px;cursor:pointer;backdrop-filter:blur(2px);
+  }
+  .display.darkbg #bViewTog{background:rgba(16,19,28,.85);border-color:#2a3140}
   .display.darkbg .cornerpng button{background:rgba(16,19,28,.85);border-color:#2a3140}
   .maincol{min-width:0;display:flex;flex-direction:column;gap:14px}
 
@@ -234,8 +245,16 @@
   .scantab{width:auto;max-width:100%;margin-bottom:10px}
   .scantab th,.scantab td{padding:2px 16px 2px 0}
   .scantab td.b{padding-right:8px}
+  .scantab td.b + td{padding-left:0;padding-right:16px}
   .scantab td.dv{background:#fde68a;color:#7c2d12;text-align:center}
   .scan-wrap{position:relative;width:100%;height:780px}
+  /* one .png button in the upper-left corner of each panel of the scan figure */
+  .scan-pbtn{
+    position:absolute;z-index:2;padding:2px 7px;font-size:10.5px;line-height:1.3;border-radius:6px;
+    border:1px solid var(--line);background:rgba(255,255,255,.88);color:var(--accent);font-weight:700;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .scanpanel.dark .scan-pbtn{background:rgba(16,19,28,.85);border-color:#2a3140}
   canvas#scanView{position:absolute;inset:0;width:100%;height:100%;border-radius:8px}
   .scanpanel.dark{background:#0b0d13;border-color:#2a3140}
   .scanpanel.dark .lyaphead,.scanpanel.dark .scaneq,.scanpanel.dark .lamtab,.scanpanel.dark .lamtab td{color:#e8ecf5}
@@ -246,7 +265,7 @@
   .scanpanel.dark .tbtn{background:#16233b;border-color:#2a3140;color:#c7d2fe}
   .scanpanel.dark .lamtab td.ch{color:#fca5a5} .scanpanel.dark .lamtab td.fz{color:#93c5fd}
   .scanpanel.dark .lamtab td.note{color:#8391ab}
-  @media (max-width:560px){ .scan-wrap{height:640px} .scan .triple input,.scan .triple select{width:48px} }
+  @media (max-width:560px){ .scan-wrap{height:640px} .scan .triple input,.scan .triple select{width:48px} .scantab{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch} .scantab th,.scantab td{padding:2px 9px 2px 0} }
   #lNode{min-width:58px} .lyap.two #lNode{min-width:124px}
   /* colour bars: the scale of the main display, in the head of the Lyapunov
      panel (long) and beside the y-axis switch above the display (short) */
@@ -363,6 +382,8 @@
   .about p{margin:7px 0}
   .about i{font-family:Georgia,serif}
   .about b{color:var(--ink)}
+  .about h3{font-size:13px;color:var(--ink);margin:14px 0 2px;padding-top:8px;border-top:1px solid var(--line);font-weight:650}
+  .about h4{font-size:12.5px;color:var(--accent);margin:9px 0 1px;font-weight:650}
 
   /* ---------- responsive ---------- */
   @media (max-width:1080px){
@@ -964,6 +985,7 @@
         <div class="cornerpng">
           <button id="bPngClean" title="save only the surface — no axes, labels, frame or colour bar — as a PNG (key c)">.png</button>
           <button id="bPngSq" title="the same clean picture compressed into a square (key s)">sq</button>
+          <button id="bFlip" class="sqbtn" title="plot −h instead of h (slope and curvature flip with it; |∇h| and the λ densities do not). The equation itself is unchanged.">±</button>
         </div>
         <div class="diverged" id="divergedMsg">Diverged — reduce dt, then Reset</div>
         <div class="wfctl v3" id="wfCtl">
@@ -979,6 +1001,7 @@
           <div><span>rot</span><input type="range" id="rngRot" min="0" max="360" step="5" value="45"><b class="sv" id="v3RotVal">45&deg;</b></div>
           <div><span>dist</span><input type="range" id="rngDist" min="1.1" max="10" step="0.1" value="2.5"><b class="sv" id="v3DistVal">2.5&middot;L</b></div>
         </div>
+        <button id="bViewTog" title="switch between two viewpoints">&#8645;</button>
         <div class="presets">
           <div class="prow">
             <button id="bPre1" title="1D KS: open boundary, dx=0.5, dt=0.01, jet &minus;&nabla;&sup2;h">KS 1D</button>
@@ -991,6 +1014,9 @@
           <div class="prow">
             <button id="bPre1n" title="KS 1D with strong nonlinearity &beta; = 1.5, dt = 0.02">KS 1D nnl</button>
             <button id="bPre2n" title="KS 2D with strong nonlinearity &beta; = 1.5, dt = 0.02">KS 2D nnl</button>
+          </div>
+          <div class="prow">
+            <button id="bPreBeauty" class="beautybtn" title="Beauty — Absolute 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, tilt 45&deg;, rot 360&deg;, dist 5&middot;L">Absolute 2D</button>
           </div>
         </div>
       </div>
@@ -1018,6 +1044,7 @@
             <b class="cbmin" id="cbLyMin">−1</b><canvas class="cbcan" id="cbLyCan" width="160" height="10"></canvas><b class="cbmax" id="cbLyMax">+1</b>
           </span>
           <span class="lfree" title="distance of the two interfaces relative to &radic;2&middot;W, the distance of two completely diverged (uncorrelated) interfaces">|&delta;h|/&radic;2W = <b id="lD">—</b></span>
+          <span class="lfree" title="saturated separation D&#8203;sat: time average of |&delta;h| after the two interfaces have diverged — the window within which the interface can vary (&radic;2&middot;W for two uncorrelated interfaces, less if the runs stay correlated)">D<sub>sat</sub> = <b id="lDsat">—</b></span>
           <span class="spacer"></span>
           <div class="seg mini" id="segLyMode" title="Benettin: twin pulled back to &epsilon; every frame, &lambda; = running average. Free: twin runs off until the interfaces have completely diverged, &lambda; = slope of log|&delta;h|">
             <button data-v="renorm" class="on">Benettin</button><button data-v="free">free run</button>
@@ -1044,7 +1071,7 @@
       <div class="scanbody">
         <div class="scaneq" id="scanEq"></div>
         <table class="lamtab scantab" id="scanTable"></table>
-        <div class="scan-wrap"><canvas id="scanView"></canvas></div>
+        <div class="scan-wrap"><canvas id="scanView"></canvas><div id="scanPBtns"></div></div>
       </div>
     </section>
    </div>
@@ -1187,7 +1214,7 @@
           <div class="row" id="scLRow" style="display:none"><label>sizes 16, 32, … , 2<sup>n</sup>, n =</label>
             <select id="scNmax" title="the sizes L = 16, 32, 64, … up to 2^n are sampled (2D: at most 2^8)"></select></div>
           <div class="row" id="scRangeRow"><label>from &middot; to &middot; step</label>
-            <span class="triple"><input type="number" id="scMin" value="-1" step="any" title="first value"><input type="number" id="scMax" value="1" step="any" title="last value"><select id="scStep" title="step of the scanned coefficient; the points −0.1, 0 and +0.1 are always included"><option>0.1</option><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option><option>5</option></select></span></div>
+            <span class="triple"><input type="number" id="scMin" value="-1" step="any" title="first value"><input type="number" id="scMax" value="1" step="any" title="last value"><select id="scStep" title="step of the scanned coefficient; the points −0.1, 0 and +0.1 are always included"><option>0.05</option><option>0.1</option><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option><option>5</option></select></span></div>
           <div class="row"><label>dimension</label>
             <div class="seg mini" id="scDim"><button data-v="1" class="on">1D</button><button data-v="2">2D</button></div></div>
           <div class="row"><label>size L</label>
@@ -1208,238 +1235,190 @@
       </details>
 
       <details>
-        <summary>About this model</summary>
+        <summary>Model options</summary>
         <div class="sect about">
-          <p><b>The equation.</b> <i>&part;h/&part;t = &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h + (&nabla;h)&sup2;</i>
-          describes a growing interface h — a flame front, a solidification front, a falling liquid film.
-          The <b>negative diffusion</b> term pumps energy into long wavelengths: a mode with wavenumber k
-          grows at rate <i>&omega; = k&sup2; &minus; k&#8308;</i>, so the band 0 &lt; k &lt; 1 is unstable,
-          fastest at k = 1/&radic;2 (cell size &lambda; = 2&pi;&radic;2 &asymp; 8.9 lattice units). The
-          fourth derivative damps short wavelengths, and the nonlinearity (&nabla;h)&sup2; couples the modes
-          and saturates the growth. The result is <b>spatiotemporal chaos</b>: a churning pattern of cells
-          of size &asymp; 9 that perpetually split and merge.</p>
-          <p><b>Higher-order variant.</b> The toggle in the header replaces the two linear terms by
-          +&nabla;&#8308;h + &nabla;&#8310;h: the instability then comes from the Laplacian of the
-          Laplacian, with growth rate &omega; = k&#8308; &minus; k&#8310; — the same unstable band
-          0 &lt; k &lt; 1, but flatter near k = 0 and with the fastest-growing mode at
-          k = &radic;(2/3) &asymp; 0.82. The switch acts on the running field, so you can watch one
-          equation's pattern relax into the other's.</p>
-          <p><b>Switching the KS nonlinearity off.</b> The term <i>(&nabla;h)&sup2;</i> in the
-          header is a switch: click it and it is crossed out and dropped from the equation. What
-          remains is then linear, and the unstable band 0 &lt; k &lt; 1 grows without bound
-          unless one of the two extra terms below takes over the saturation — so when neither
-          is on, &beta; is set to 1 automatically (and back to 0 when (&nabla;h)&sup2; returns,
-          unless &beta; was moved by hand in between); with the term crossed out and both
-          sliders at zero the run would stop with a warning. This lets you see how far the KS picture depends on the particular
-          form of its nonlinearity: with &alpha;|&nabla;h| or &beta;(&nabla;h)&#8308; alone the
-          pattern still forms cells of the same size, since the cell size is fixed by the linear
-          terms, but their shape and dynamics change.</p>
-          <p><b>Extra growth terms.</b> The two pull-down menus in the header switch on two optional
-          slope-dependent growth terms. <i>&alpha;|&nabla;h|</i> makes the front advance in
-          proportion to the local slope magnitude — a non-analytic term that favours facets and
-          sharp ridges (&alpha; &lt; 0 slows sloped regions instead); the menu offers values from
-          &minus;5 to +5, and beyond |&alpha;| = 2 the time step drops to 0.05 to
-          follow the steeper facets. <i>&beta;(&nabla;h)&#8308;</i>
-          is the next order in the slope expansion of a growing front: &beta; &lt; 0 tames steep
-          slopes and lets the cells grow taller, while &beta; &gt; 0 rewards steep regions with
-          extra growth, which flattens the surface and speeds up the mean climb. The &beta; menu
-          runs from &minus;5 to +5, finely spaced near zero on the negative side, and the
-          time step follows it automatically (0.02 up to |&beta;| = 2, then 0.01 and 0.005), which
-          keeps the fourth-order integration accurate; runs stay bounded over the whole range,
-          but if a combination ever does blow up the run stops with a warning. Two further menus
-          add <i>&gamma;&nabla;&sup2;(&nabla;h)&sup2;</i>, the conserved (mean-preserving) counterpart of
-          the KS nonlinearity, and <i>&delta;&nabla;&sup2;h&middot;(&nabla;h)&sup2;</i>, a diffusion with the
-          squared slope as coefficient; &gamma; &gt; 0 and &delta; &lt; 0 blow up in finite time (a
-          property of the equation, not of the time step), &gamma; &lt; 0 and &delta; &gt; 0 run
-          bounded, with the time step limited to 0.02 and 0.01 respectively; the &delta; menu therefore
-          offers only &delta; &ge; 0. All four terms act
-          instantly, without a reset. In 2D the slope magnitude |&nabla;h| has two natural
-          readings, and the header shows them on a toggle switch: the Euclidean norm
-          <i>&radic;(h<sub>x</sub>&sup2; + h<sub>y</sub>&sup2;)</i>, the isotropic standard, or the
-          sum <i>|h<sub>x</sub>| + |h<sub>y</sub>|</i>, which is anisotropic — it prefers facets
-          aligned with the lattice axes, like a crystal growing with cubic anisotropy. The
-          reading in action is the highlighted one; in 1D both reduce to |dh/dx|.</p>
-          <p><b>Mean growth.</b> Since (&nabla;h)&sup2; &ge; 0 the mean height climbs at rate
-          &lang;(&nabla;h)&sup2;&rang; (KPZ-like). The display shows the fluctuation h &minus; &lang;h&rang;;
-          the readout &lang;h&rang; tracks the climb, and W is the interface width (rms roughness).</p>
-          <p><b>Initial condition.</b> A standing wave that fits the box. Periodic: h = A sin(2&pi;n x/L),
-          n full waves, k = 2&pi;n/L. Open: h = A cos(&pi;n x/L), n half waves, k = &pi;n/L, flat at both
-          walls. In 2D the product of the x and y waves is used. Waves with k &lt; 1 grow; with A = 0.01
-          you can watch the clean exponential growth before chaos sets in.</p>
-          <p><b>Boundaries.</b> Periodic uses the plain Fourier basis. Open boundaries are realised by
-          evenly mirroring the field (cosine basis), which forces <b>all odd derivatives to vanish at the
-          walls</b>; the even derivatives then vanish dynamically as the wall stays flat. Open runs cost
-          2&times; (1D) or 4&times; (2D) the work of periodic ones.</p>
-          <p><b>Numerics.</b> Pseudospectral: derivatives are exact in Fourier space (2/3-rule dealiasing
-          for the nonlinear term), and the time stepper is ETDRK4 (Kassam–Trefethen), a fourth-order
-          exponential integrator that treats the stiff linear operator exactly. Large 2D lattices
-          (256, or open boundaries) are heavy — lower steps/frame if the animation stutters.</p>
-          <p><b>Plotted field in 2D.</b> The button next to the display-mode menu (and the
-          <i>plotted field</i> row above) cycles through what is drawn: the height h, the slope
-          &part;h/&part;x, the slope magnitude |&nabla;h| = &radic;((&part;h/&part;x)&sup2; +
-          (&part;h/&part;y)&sup2;), or the Laplacian &nabla;&sup2;h — the curvature that drives the
-          instability, largest on the cell tops and in the valleys. In the map the chosen field
-          is the coloured one; on the 3D surface it is the <i>height</i>, while the colour menu
-          still paints any quantity on top of it, so you can e.g. show the surface h coloured by
-          its Laplacian, or the surface of |&nabla;h| coloured by h. The default is h.</p>
-          <p><b>Displays.</b> In 1D: the instantaneous profile h(x)&minus;&lang;h&rang;, the stacked
-          <b>profiles h(x,t)</b> (absolute height, captured continuously; the corner slider sets the curve
-          spacing), or the <b>space–time map</b>, which
-          runs bottom-up: x horizontal, time increasing upward, like the stacked profiles. The
-          stacked profiles use hidden-line removal — the h(x,t) surface seen from behind and above,
-          each curve visible only where it rises over the skyline of the older ones — and scroll
-          smoothly with the mean height. <b>Profiles 3D</b> renders the same surface in perspective
-          (~60° elevation), one line every &Delta;t set by the corner slider. In 2D: a
-          colour map of h(x,y) filling the display, or a rotatable <b>3D surface</b> steered by the
-          tilt / rotation / distance sliders (close distance adds perspective, the far end is
-          orthographic; drag to rotate). The <b>display amplitude</b> control magnifies both heights
-          and colour contrast. Curves and maps can be coloured by h&minus;&lang;h&rang;, by the slope
-          dh/dx, by |dh/dx| (in 2D: &part;h/&part;x and |&nabla;h|), or by the curvature d²h/dx²
-          (2D: &nabla;²h) — all evaluated spectrally. Colour schemes are grouped by type:
-          <b>diverging</b> (blue–red, spectral, ice–ember) put white or grey at zero and are the
-          honest choice for signed quantities; <b>rainbow</b> (jet, turbo) maximize contrast;
-          <b>sequential</b> (viridis, plasma, magma, cividis, ice, yellow, flames, grayscale) run
-          monotonically in lightness and are the right pick for |&nabla;h| and for print.
-          While the Lyapunov section below the display is open, further colourings appear
-          at the end of the list: the <b>local Lyapunov density</b>
-          &lambda;(x) = &delta;h&middot;&part;<sub>t</sub>&delta;h/&lang;&delta;h&sup2;&rang; of
-          the twin trajectory — the point-wise production of the divergence rate, whose
-          spatial mean is the instantaneous exponent &Lambda; and whose space–time average is
-          &lambda; itself, so the colours are in the units of the exponent — its negative
-          &minus;&lambda;(x) with the colour scale reversed, and the <b>contribution of each
-          term</b> of the equation, &lambda;(&minus;&nabla;&sup2;h), &lambda;(&minus;&nabla;&#8308;h),
-          &lambda;((&nabla;h)&sup2;), &lambda;(&alpha;|&nabla;h|), &lambda;(&beta;(&nabla;h)&#8308;)
-          (only the terms present in the equation are listed; with the higher-order operator
-          the first two read &lambda;(+&nabla;&#8308;h), &lambda;(+&nabla;&#8310;h)), which add
-          up point by point to &lambda;(x) — see the term budget under <i>Lyapunov exponent
-          and vector</i>. Positive values (warm in the diverging maps) are the places where a
-          term drives the two surfaces apart, negative values where it pulls them together;
-          all of these fields carry the weight &delta;h&sup2;, so they are concentrated where
-          the Lyapunov vector lives, on the cells about to split or merge. The display
-          amplitude does not act on these quantities, and the colour bar shows their actual
-          range. While one of these colourings is selected the Lyapunov panel is <b>linked</b>
-          to the display: the curve
-          &delta;h(x)/max|&delta;h| (in 2D the map) is painted point by point in the very colour
-          the display gives the same x, and a small copy of the colour scale with its extreme
-          values sits in the lower right corner of the panel, so a feature can be identified
-          between the two figures at a glance. In 2D the panel shows two maps: on the left the
-          vector &delta;h/max|&delta;h| (or &lambda;(x,y) in the display's colours when linked),
-          on the right &lambda;(x,y) split by sign — the display's colours for &lambda; &gt; 0,
-          the growing spots, and a grey-to-black scale for &lambda; &lt; 0, grey at zero and
-          black at the most negative value — so the unstable islands stand out against the
-          contracting background; on a phone the two maps stack vertically. The main display
-          can be switched to the same convention: with &lambda;(x) or one of the term
-          contributions selected, the <b>standard / grey &lambda;&lt;0</b> button beside the
-          short colour bar above the display (2D), or a click on that colour bar itself (1D
-          and 2D), paints &lambda; &gt; 0 with the chosen colour map and &lambda; &lt; 0 from
-          grey to black, both sides on one common scale (the 98th percentile of |&lambda;|,
-          since the densities are heavy-tailed); all colour bars follow.</p>
-          <p><b>Saving a picture.</b> The <b>.png</b> button in the control panel writes the
-          current display — and only the display, without any of the control overlays — to a
-          PNG at twice the screen resolution, with the equation actually being integrated and
-          its parameter values stamped in blue in the upper right corner. The two small buttons
-          in the lower right corner of the display save <i>clean</i> pictures: <b>.png</b> keeps
-          only the surface itself — no axes, tick labels, frame, colour bar or caption — at the
-          display's aspect ratio, and <b>sq</b> compresses the same clean picture into a square,
-          handy as a thumbnail or a figure panel (for the 2D colour map both are the bare
-          square field). Keys: p, c and s.</p>
-          <p><b>Lyapunov exponent and vector.</b> To measure how chaotic the running state is,
-          the applet integrates a <i>twin</i> trajectory h + &delta;h with the same scheme,
-          started a distance &epsilon; = 10<sup>&minus;6</sup> (rms) away. After every frame
-          the separation &delta;h is measured, its growth log(|&delta;h|/&epsilon;) is added
-          up, and the twin is pulled back to distance &epsilon; along the same direction
-          (Benettin's method). The time average of the growth rate over the last two thirds of
-          the time since the last reset or change of the equation is the largest Lyapunov
-          exponent &lambda;, shown after W in the corner readout and in the section below the
-          display (open it to start the measurement; the window is shown in its head); positive means neighbouring states separate exponentially, at a rate
-          &lambda;, so the pattern is unpredictable beyond a horizon of order 1/&lambda;. For
-          the plain KS equation on a large box &lambda; &asymp; 0.09 in these units; on a small
-          box or in a periodic (non-chaotic) state it settles at zero or below. Right after a
-          reset, while the state is still growing linearly from a flat start, &lambda;
-          approaches the maximal linear growth rate &omega;<sub>max</sub> = 1/4 of the mode
-          k = 1/&radic;2 — watch it drop as the chaos saturates. The direction &delta;h itself
-          converges to the <b>Lyapunov vector</b>, the most unstable direction in state space:
-          it is localized on the cells that are about to split or merge, and the panel marks the
-          <b>most unstable node</b> — the lattice point where |&delta;h| peaks — together with
-          &lambda;<sub>loc</sub>, the current growth rate (the eigenvalue belonging to that
-          vector, averaged over the last two time units), and the rms wavenumber
-          k&#772; of &delta;h. The twin is seeded in a random direction smoothed to the
-          unstable band (a white-noise seed would lose most of its weight to the
-          &minus;&nabla;&#8308; damping within one step, a spurious drop that would bias the
-          average), and the first frame after any seed is left out of the averages.</p>
-          <p><b>Term budget of the divergence.</b> The Benettin measurement says <i>how fast</i>
-          the two interfaces separate; the budget says <i>which term of the equation does
-          it, and where</i>. Since the twin obeys the same equation, the difference
-          &delta;h = twin &minus; field satisfies exactly
-          &part;<sub>t</sub>&delta;h = &Sigma;<sub>i</sub>[T<sub>i</sub>(twin) &minus; T<sub>i</sub>(field)],
-          one bracket per term T<sub>i</sub> of the right-hand side (for the linear terms the
-          bracket is T<sub>i</sub>(&delta;h); for the nonlinear ones the exact difference,
-          not a linearization, so the identity holds at any separation). Multiplying by
-          &delta;h and averaging over the box,
-          &Lambda; = d&thinsp;ln|&delta;h|/dt = &Sigma;<sub>i</sub>&Lambda;<sub>i</sub> with
-          &Lambda;<sub>i</sub> = &lang;c<sub>i</sub>&rang; and
-          c<sub>i</sub>(x) = &delta;h(x)&middot;[T<sub>i</sub>(twin) &minus; T<sub>i</sub>(field)](x)/&lang;&delta;h&sup2;&rang;.
-          The applet evaluates the brackets exactly as the integrator does (spectral
-          derivatives, 2/3-rule dealiasing of the nonlinear terms, the k = 0 mode removed since
-          the mean growth is absorbed into &lang;h&rang; for both trajectories), once per frame
-          before the pull-back. c<sub>i</sub>(x) is the <b>local contribution of term i</b> to
-          the divergence rate, in the units of &lambda;; &Lambda;<sub>i</sub> is the term's share
-          of the instantaneous exponent; and the time average of
-          &Sigma;<sub>i</sub>&Lambda;<sub>i</sub>, shown as <b>&Sigma;&thinsp;terms</b> in the
-          panel head, must equal the Benettin &lambda; — it does to three digits after a
-          few hundred time units, a check that both measurements are right. The <b>terms</b>
-          button (Benettin mode) opens one plot per term under the vector: in 1D a strip of
-          c<sub>i</sub>(x) on its own scale (the terms differ by orders of magnitude) with the
-          lobes that add to the divergence in red and those that remove from it in blue, in 2D
-          a small blue–red map on a shared scale with the total &lambda;(x,y) first; the
-          caption of each gives the time average &lang;&Lambda;<sub>i</sub>&rang;<sub>t</sub> and
-          the present value, and the red marker is the most unstable node as above. Under
-          the strips (1D) a <b>stacked summary</b> on one common scale builds the total up
-          from the most dissipative term: each shaded band, in the term's colour, is what
-          that term adds above or removes below the running sum, and the top curve is
-          &lambda;(x) = &Sigma;<sub>i</sub>c<sub>i</sub>(x). The last row, in 1D and 2D, is a
-          <b>waterfall</b> of the time averages: bars laid end to end from 0, most
-          dissipative first, ending at &Sigma;&lang;&Lambda;<sub>i</sub>&rang;<sub>t</sub> = &lambda;,
-          with the Benettin &lambda; as a dashed marker. For plain
-          KS the budget reads roughly &minus;&nabla;&sup2;h: +0.4, &minus;&nabla;&#8308;h: &minus;0.35,
-          (&nabla;h)&sup2;: a few hundredths — the linear instability produces the divergence,
-          the fourth derivative removes almost all of it, and the nonlinearity's net share is
-          small although locally it is as large as the other two, positive on some cells and
-          negative on others. All of these fields are also offered in the colour menu of the
-          display (&lambda;(x), &minus;&lambda;(x), &lambda;(&minus;&nabla;&sup2;h), …), and the
-          panel's &delta;h(x) curve then borrows the display's colours (see <i>Displays</i>).
-          The &#8635; button restarts the twin and the averages; changing
-          &alpha;, &beta; or the linear terms restarts the averages automatically. The twin
-          doubles the work per step and runs only while the section is open — close it to run
-          at full speed. The <b>free run</b> mode never pulls the twin back: it records
-          |&delta;h|(t) on a log scale, in a second plot below the vector, until the two interfaces have completely diverged
-          (|&delta;h| &rarr; &radic;2&middot;W, the dashed line), fits &lambda; as the slope of the
-          exponential stretch, and reports |&delta;h|/&radic;2W and the time of saturation
-          — a check that the exponent stays positive right up to full divergence.</p>
-          <p><b>Systematic scan.</b> The <i>Systematic scan</i> menu runs the measurements of the
-          tables in the pull-down text for your own choice of equation: set the linear terms,
-          (&nabla;h)&sup2; and the fixed coefficients, choose which coefficient to scan and its range
-          and step, the dimension, box size and boundary, the transient and the total time per
-          sample, and how many random initial conditions (NMC) to average over. Pressing <i>start
-          sampling</i> pauses the display and integrates the samples in the background; the
-          section under the Lyapunov panel fills with a table of the free-run and Benettin
-          exponents and the mean width against the scanned coefficient (mean &plusmn; spread over
-          the random starts when NMC &gt; 1), and a figure in the style of the pictures of the
-          pull-down text. Both have <i>.png</i> buttons and a black/white background toggle.
-          A run that diverges is marked yellow; <i>stop</i> ends the scan early and keeps what
-          has been measured.</p>
-          <p><b>Disturbance.</b> The &epsilon; toggle adds &epsilon; to the initial condition at two
-          places: in 1D the strips 8–9&thinsp;L/32 and 19–20&thinsp;L/32, in 2D the patches
-          x,y = 8–9&thinsp;L/32 and x = 11–12, y = 23–24&thinsp;L/32. These positions are chosen
-          deliberately to avoid symmetries — this matters especially for open boundaries, whose
-          mirror walls make reflection about the box centre an exact symmetry of the dynamics: a
-          centred (or symmetrically placed) seed would then lock the entire evolution into an
-          artificially mirror-symmetric pattern forever. The two bumps sit off-centre, at unequal
-          distances from the two walls and from each other, so no reflection maps the seed onto
-          itself; in 2D the second patch also breaks the x&harr;y diagonal symmetry that the first
-          (diagonal) patch alone would preserve. With A = 0 the whole evolution grows from these
-          bumps — watch their edges emit cells that invade the flat state and collide into fully
-          generic, symmetry-free chaos.</p>
+          <p>A guide to the controls. What the equation and its variants <i>do</i> — the physics, the
+          Lyapunov measurements and the tables of results — is explained in the main text that
+          pulls down from the title above the display; this menu only says what each switch,
+          menu and button changes.</p>
+
+          <h3>The equation in the header</h3>
+          <p>The header shows the equation that is being integrated right now. Three parts of it
+          are clickable. The <b>linear terms</b> toggle between &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h
+          (KS) and +&nabla;&#8308;h + &nabla;&#8310;h (one order higher in derivatives). The
+          <b>(&nabla;h)&sup2;</b> term is a switch: click it and it is crossed out and dropped. The
+          switch acts on the running surface, so you can watch one equation's pattern turn into
+          the other's without a reset. Without (&nabla;h)&sup2; nothing stops the growth of the
+          unstable waves, so when you switch it off &beta; is set to 1 automatically (and back to
+          0 when the term returns, unless you moved &beta; yourself in between).</p>
+
+          <h3>Extra growth terms</h3>
+          <p>Four pull-down menus in the header add optional terms to the right-hand side. Each
+          acts immediately on the running surface. A term is "on" when its coefficient is not
+          zero; the equation in the header always shows what is on.</p>
+          <h4>&alpha;|&nabla;h| — growth proportional to the steepness</h4>
+          <p>|&nabla;h| is the steepness of the surface (how much it tilts, whichever way). With
+          &alpha; &gt; 0 steep parts grow faster than flat parts; with &alpha; &lt; 0 they grow
+          slower. The menu offers &alpha; from &minus;5 to +5. Beyond |&alpha;| = 2 the time step
+          is lowered to 0.05 by itself, because the sharp ridges this term produces need finer
+          steps. In 2D the steepness can be measured in two ways, and the small toggle next to
+          the menu chooses: <i>&radic;(h<sub>x</sub>&sup2;+h<sub>y</sub>&sup2;)</i>, the usual length of the
+          slope vector, which treats all directions alike, or <i>|h<sub>x</sub>|+|h<sub>y</sub>|</i>,
+          which prefers the lattice directions — like a crystal that grows fastest along its
+          axes. In 1D both are simply |dh/dx|.</p>
+          <h4>&beta;(&nabla;h)&#8308; — the next power of the slope</h4>
+          <p>(&nabla;h)&sup2; is the first term of a series in the slope; (&nabla;h)&#8308; is the next
+          one. Because the fourth power is tiny where the surface is gentle and large where it is
+          steep, this term only matters on the steep flanks of the cells. &beta; &gt; 0 gives the
+          steep flanks extra growth; &beta; &lt; 0 holds them back. The menu runs from &minus;5 to
+          +5, with fine steps close to zero on the negative side where the behaviour changes
+          quickly. The time step follows the choice (0.02 up to |&beta;| = 2, then 0.01 and 0.005)
+          so that the integration stays accurate.</p>
+          <h4>&gamma;&nabla;&sup2;(&nabla;h)&sup2; — a conserved version of the KS nonlinearity</h4>
+          <p>Taking the Laplacian of (&nabla;h)&sup2; produces a term whose average over the box is
+          exactly zero: it moves material around on the surface but never adds any, so it does
+          not change the mean height. Only &gamma; &lt; 0 gives a bounded surface; with
+          &gamma; &gt; 0 the equation itself blows up in finite time (this is a property of the
+          equation, not of the numerics), and the run stops with a warning. The time step is
+          kept at 0.02 or below while &gamma; is on.</p>
+          <h4>&delta;&nabla;&sup2;h&middot;(&nabla;h)&sup2; — diffusion that switches on where it is steep</h4>
+          <p>&nabla;&sup2;h alone would be ordinary diffusion, smoothing the surface. Multiplying it by
+          (&nabla;h)&sup2; makes the smoothing act only on the steep parts. That is why only
+          &delta; &ge; 0 is offered: a negative &delta; would be <i>anti</i>-diffusion on the steep
+          parts and blows up. The time step is kept at 0.01 or below while &delta; is on.</p>
+          <p>For what these terms do to the pattern and to the chaos — which of them kill it,
+          which sign matters, and the measured Lyapunov exponents — see <i>Variant models</i> and
+          the tables in the main text above the display.</p>
+          <h4>Beauty — special runs</h4>
+          <p>The <b>Absolute 2D</b> button under the presets in the display starts a run chosen for its
+          looks; everything is set up and the simulation starts at once. It cycles through three
+          states: <i>off</i> &rarr; <b>&alpha; = +3</b>, h drawn upward &rarr; <b>&alpha; = &minus;3</b>, drawn
+          with &minus;h upward (the &plusmn; button is switched on) &rarr; <i>off</i>. Both runs are 2D,
+          L = 256, periodic, with the Euclidean steepness &radic;(h<sub>x</sub>&sup2;+h<sub>y</sub>&sup2;), the
+          surface coloured by h &minus; &lang;h&rang; in jet and seen from tilt 45&deg;, rotation 360&deg;,
+          distance 5&thinsp;L. Changing any parameter by hand returns the button to <i>off</i>.</p>
+
+          <h3>Model menu</h3>
+          <p><b>Dimension and box.</b> 1D or 2D, box size L in lattice units (dx = 1 unless
+          changed under Numerics), periodic or open boundaries. Periodic means the surface wraps
+          around; open means a flat wall at each end (realised by mirroring the surface, so the
+          slope is zero at the walls). Open runs cost 2&times; (1D) or 4&times; (2D) the work.</p>
+          <p><b>Initial condition.</b> A standing wave that fits the box: n full waves (periodic)
+          or n half waves (open) of amplitude A; in 2D the product of the x- and y-waves. Waves
+          with k &lt; 1 grow, so with A = 0.01 you can watch the clean exponential growth before
+          the chaos sets in. A = 0 starts flat, and then only the disturbance (below) seeds the
+          pattern.</p>
+          <p><b>Disturbance &epsilon;.</b> Adds a small bump of height &epsilon; at two places
+          chosen so that no mirror symmetry of the box maps the seed onto itself (1D: the strips
+          8–9&thinsp;L/32 and 19–20&thinsp;L/32; 2D: the patches x,y = 8–9&thinsp;L/32 and
+          x = 11–12, y = 23–24&thinsp;L/32). This matters most for open boundaries, where a centred
+          seed would lock the whole evolution into a mirror-symmetric pattern forever. With A = 0
+          the cells spread from these bumps and collide into fully generic chaos.</p>
+
+          <h3>Numerics &amp; speed</h3>
+          <p>The time step dt and the number of steps drawn per frame. The scheme is
+          pseudospectral (derivatives are exact in Fourier space, with 2/3-rule dealiasing of the
+          nonlinear terms) and the time stepper is ETDRK4, a fourth-order exponential integrator
+          that treats the stiff linear part exactly, so dt is limited only by the nonlinear terms
+          — the extra-term menus lower it automatically when needed. Large 2D lattices (256, or open
+          boundaries) are heavy: lower the steps per frame if the animation stutters. A run that
+          diverges stops with a warning; reduce dt and press Reset.</p>
+
+          <h3>Display</h3>
+          <h4>Display modes</h4>
+          <p>1D: <b>profile</b> — the instantaneous h(x) &minus; &lang;h&rang;; <b>profiles</b> — the
+          history h(x,t) as stacked curves, older ones higher up, seen from behind and above with
+          hidden-line removal, the corner slider setting the spacing (or "auto": the true mean
+          height); <b>3D</b> and <b>3D sw</b> — the same surface in perspective, one curve per
+          &Delta;t (corner slider), either scrolling with time or sweeping up the page and
+          restarting at the bottom; <b>x–t</b> — a space–time map, x horizontal, time upward. 2D:
+          <b>map</b> — a colour map of the box; <b>surface</b> — a rotatable 3D view (drag to
+          rotate, or use the tilt / rot / dist sliders in the corner box; a short distance adds
+          perspective).</p>
+          <h4>Viewpoint button</h4>
+          <p>The small <b>&#8645;</b> button just right of the corner box jumps between two
+          viewpoints: on the 2D surface between tilt 45&deg;, rotation 45&deg;, distance 3&thinsp;L
+          and tilt 45&deg;, rotation 360&deg;, distance 5&thinsp;L; in the 1D 3D modes between distance
+          5&thinsp;L and infinity (no perspective).</p>
+          <h4>What is drawn and how it is coloured</h4>
+          <p>The <b>plotted field</b> row (2D: also the button next to the display-mode menu) chooses
+          the quantity that gives the height: h, the slope &part;h/&part;x, the steepness |&nabla;h|
+          or the curvature &nabla;&sup2;h. The <b>colour</b> menu paints any of these on top of the
+          curves or the surface, all evaluated spectrally; the <b>display amplitude</b> magnifies both
+          the heights and the colour contrast. Colour schemes are grouped: <b>diverging</b> maps
+          (blue–red, spectral, ice–ember) put white or grey at zero and suit signed quantities;
+          <b>rainbow</b> (jet, turbo) maximise contrast; <b>sequential</b> maps (viridis, plasma,
+          magma, cividis, ice, yellow, flames, grayscale) run monotonically in lightness and are the
+          right pick for |&nabla;h| and for print.</p>
+          <h4>The &plusmn; button: plotting &minus;h</h4>
+          <p>The square <b>&plusmn;</b> button in the lower right corner of the display flips the
+          sign of what is drawn: &minus;h instead of h, so that the cells hang down instead of
+          standing up. The slope and the curvature flip with it; the steepness |&nabla;h| and the
+          Lyapunov colourings do not, and the equation itself is untouched (KS is <i>not</i>
+          symmetric under h &rarr; &minus;h, which is exactly why the option is useful for
+          comparing with pictures drawn in the other convention). The history that is already
+          on screen is flipped with it, and the x–t map starts afresh.</p>
+          <h4>Lyapunov colourings</h4>
+          <p>While the Lyapunov section below the display is open, its quantities join the end of the
+          colour menu: the local Lyapunov density &lambda;(x), its negative, and the contribution
+          of each term of the equation (see the main text, <i>Which term produces the chaos?</i>).
+          These fields are not magnified by the display amplitude, and the colour bar shows their
+          true range. With one of them selected the Lyapunov panel is <b>linked</b>: its
+          &delta;h(x) curve (2D: map) borrows the display's colours point by point, and a small
+          copy of the colour scale sits in the corner of the panel. The <b>standard / grey
+          &lambda;&lt;0</b> button beside the short colour bar (2D), or a click on the colour bar
+          itself (1D and 2D), paints &lambda; &gt; 0 with the chosen map and &lambda; &lt; 0 from
+          grey to black on one common scale (the 98th percentile of |&lambda;|, since these
+          densities have heavy tails).</p>
+          <h4>Saving pictures</h4>
+          <p>The <b>.png</b> button in the control panel writes the display — without any control
+          overlays — at twice the screen resolution, with the equation and its parameters stamped
+          in the upper right corner (key p). The two small buttons in the lower right corner
+          save <i>clean</i> pictures: <b>.png</b> keeps only the surface, without axes, frame,
+          colour bar or caption (key c), and <b>sq</b> compresses the same picture into a square
+          (key s). In the Lyapunov section and in the scan results each figure and table has its
+          own .png button, and the tables of the main text have theirs beside them.</p>
+
+          <h3>Lyapunov section</h3>
+          <p>Open the section under the display to start the measurement: a twin surface is
+          integrated alongside the main one and the exponent &lambda; appears after W in the
+          corner readout, averaged over the last two thirds of the time since the last reset or
+          change of the equation (the window is shown in the section head). The twin doubles the
+          work per step and runs only while the section is open. <b>Benettin</b> mode pulls the
+          twin back to distance &epsilon; after every frame and shows the Lyapunov vector, the
+          most unstable node, &lambda;<sub>loc</sub> and k&#772;; the <b>terms</b> button opens
+          the term budget below it — one strip per term, the stacked summary and the waterfall of
+          the averages — and <b>&Sigma;&thinsp;terms</b> in the head must agree with &lambda;.
+          <b>Free run</b> never pulls the twin back: it plots |&delta;h|(t) on a log scale until
+          the two surfaces have fully diverged and fits &lambda; as the slope; once they have
+          diverged it also reports <b>D<sub>sat</sub></b>, the time average of |&delta;h| on the
+          plateau — the window within which the interface can vary (&radic;2&middot;W for two
+          uncorrelated interfaces, less when the two runs stay correlated). The &#8635; button
+          restarts the twin and the averages; changing any coefficient or the linear terms
+          restarts them automatically. What all of this means is explained in the main text
+          (<i>How chaotic?</i> and <i>Which term produces the chaos?</i>).</p>
+
+          <h3>Systematic scan</h3>
+          <p>The <i>Systematic scan</i> menu repeats the measurements of the tables in the main
+          text for an equation of your choice: set the linear terms, (&nabla;h)&sup2; and the fixed
+          coefficients, pick the quantity to scan — &alpha;, &beta;, &gamma;, &delta; or the box size
+          L — with its range and step (the values &minus;0.1, 0 and +0.1 are always included; L runs
+          16, 32, … up to 2<sup>n</sup>), the dimension, box, boundary, the transient (the total time
+          per sample is twice the transient: the Benettin exponent is measured in the first half
+          of the measurement, the free runs in the second) and the number of random initial
+          conditions. <i>Start sampling</i> pauses the display and integrates in the background;
+          the section under the Lyapunov panel fills with a table and a figure: &lambda; (free run
+          and Benettin, a dot per start and a line through the means), D<sub>sat</sub> — the
+          saturated separation of the free runs, averaged over the runs and the starts, on a log
+          scale with &radic;2&middot;W dotted for comparison and a red band below the seed distance
+          &epsilon; of the twin, where a "plateau" means the interfaces never separated — W, for an L scan also W
+          against L on log–log axes with the fitted exponent, and the time-averaged power spectra
+          (for a coefficient scan the largest, the smallest and the zero value; for L the largest
+          and the fourth-largest box). Every panel has a <b>.png</b> button in its upper left
+          corner that saves that panel alone; <i>plot .png</i> and <i>table .png</i> in the head
+          save the whole figure and the table, and the circle toggles a black or white
+          background. A value whose run diverges is marked yellow; <i>stop</i> ends the scan and
+          keeps what has been measured.</p>
         </div>
       </details>
     </aside>
@@ -1732,7 +1711,7 @@ function buildSim(P){
      the fitted slope of log|δh| over its exponential stretch. */
   const lyap = { on:true, mode:'renorm', eps:1e-6, sumLog:0, T:0, lam:NaN, loc:NaN, tLast:0,
                  vec:new Float64Array(M), node:0, kbar:NaN, ready:false, norm:NaN, span:NaN, tStart:0,
-                 histT:[], histD:[], every:1, cnt:0, dPrev:NaN, tSat:NaN, warm:true,
+                 histT:[], histD:[], every:1, cnt:0, dPrev:NaN, tSat:NaN, satSum:0, satT:0, dSat:NaN, warm:true,
                  fit:{ t0:NaN, t1:NaN, lam:NaN } };
   s.lyap = lyap;
 
@@ -1898,7 +1877,7 @@ function buildSim(P){
     budget.ready = false; for(const k in budget.fld) budget.fld[k].fill(0);
     lyap.tLast = s.t; lyap.tStart = s.t; lyap.ready = false; lyap.kbar = NaN; lyap.norm = NaN; lyap.span = NaN; lyap.vec.fill(0);
     lyap.histT = []; lyap.histD = []; lyap.every = 1; lyap.cnt = 0; lyap.dPrev = NaN;
-    lyap.tSat = NaN; lyap.fit = { t0:NaN, t1:NaN, lam:NaN };
+    lyap.tSat = NaN; lyap.satSum = 0; lyap.satT = 0; lyap.dSat = NaN; lyap.fit = { t0:NaN, t1:NaN, lam:NaN };
     lyap.warm = true;                        // the first frame after a seed is not averaged
     /* random direction, smoothed to the unstable band: white noise would put
        most of its weight into short waves that the −∇⁴ term wipes out within
@@ -1958,6 +1937,10 @@ function buildSim(P){
       }
       const dsat = Math.SQRT2*s.W;
       if(!(lyap.tSat >= 0) && norm > 0.8*dsat) lyap.tSat = s.t;
+      /* the saturated separation D_sat: time average of |δh| after the saturation — the
+         window within which the interface can vary (√2·W for two uncorrelated interfaces,
+         less when the two runs stay correlated, e.g. a steady front shifted in phase) */
+      if(lyap.tSat >= 0 && s.t > lyap.tSat + 5 && dtSeg > 1e-12){ lyap.satSum += norm*dtSeg; lyap.satT += dtSeg; lyap.dSat = lyap.satSum/lyap.satT; }
       fitSlope(dsat);
       lyap.lam = lyap.fit.lam;
       /* the term shares are averaged over the same window as in Benettin mode */
@@ -1995,6 +1978,13 @@ function buildSim(P){
   /* least-squares slope of ln|δh| against t over the exponential stretch: from
      the minimum of the record (the white-noise seed first loses its damped
      short waves) up to a tenth of the saturation distance */
+  /* plateau value of the free run: D_sat when saturated, else the mean |δh| over the last third of the record */
+  s.satValue = function(){
+    if(isFinite(lyap.dSat)) return lyap.dSat;
+    const D = lyap.histD, n = D.length; if(n < 3) return NaN;
+    let sum = 0, k = 0; for(let i = Math.floor(2*n/3); i < n; i++){ sum += D[i]; k++; }
+    return k ? sum/k : NaN;
+  };
   function fitSlope(dsat){
     const T = lyap.histT, D = lyap.histD, n = T.length;
     if(n < 2){ lyap.fit = { t0:NaN, t1:NaN, lam:NaN }; return; }
@@ -2354,10 +2344,29 @@ function buildSim(P){
   }
 
   // ----- derived-field access with per-frame cache -----
+  /* ±h: the corner button shows −h instead of h. The physics is untouched (the
+     KS equation is not symmetric under h → −h), only what is drawn changes:
+     h, its slope and curvature flip sign; |∇h| and every λ density do not. */
+  let flipSign = false;
+  let beauty = 'off', beautyBuilding = false;   // the Beauty switch in the header: 'off' or a special run
+  const SG = () => flipSign ? -1 : 1;
+  const flips = kind => kind === 'h' || kind === 'dx' || kind === 'lap' || kind === 'nlap';
+  let hNeg = null; const hCache = { stamp:-1, t:-1 };
+  function hDisp(){
+    if(!flipSign) return sim.h;
+    if(hCache.stamp !== stamp || hCache.t !== sim.t || !hNeg || hNeg.length !== sim.h.length){
+      if(!hNeg || hNeg.length !== sim.h.length) hNeg = new Float64Array(sim.h.length);
+      const H = sim.h; for(let i=0;i<H.length;i++) hNeg[i] = -H[i];
+      hCache.stamp = stamp; hCache.t = sim.t;
+    }
+    return hNeg;
+  }
+  function negate(buf){ for(let i=0;i<buf.length;i++) buf[i] = -buf[i]; }
   function getQ(kind){
-    if(kind === 'h') return sim.h;
-    if(qCache.stamp !== stamp || qCache.kind !== kind){
-      sim.derived(kind, qbuf); qCache.stamp = stamp; qCache.kind = kind;
+    if(kind === 'h') return hDisp();
+    if(qCache.stamp !== stamp || qCache.kind !== kind || qCache.sg !== flipSign){
+      sim.derived(kind, qbuf); if(flipSign && flips(kind)) negate(qbuf);
+      qCache.stamp = stamp; qCache.kind = kind; qCache.sg = flipSign;
     }
     return qbuf;
   }
@@ -2414,10 +2423,11 @@ function buildSim(P){
   let gbuf = null; const gCache = { stamp:-1, kind:'' };
   function geoField(){
     const gk = geoKindOf();
-    if(gk === 'h') return sim.h;
-    if(gCache.stamp !== stamp || gCache.kind !== gk){
+    if(gk === 'h') return hDisp();
+    if(gCache.stamp !== stamp || gCache.kind !== gk || gCache.sg !== flipSign){
       if(!gbuf || gbuf.length !== sim.M) gbuf = new Float64Array(sim.M);
-      sim.derived(gk, gbuf); gCache.stamp = stamp; gCache.kind = gk;
+      sim.derived(gk, gbuf); if(flipSign && flips(gk)) negate(gbuf);
+      gCache.stamp = stamp; gCache.kind = gk; gCache.sg = flipSign;
     }
     return gbuf;
   }
@@ -2440,6 +2450,11 @@ function buildSim(P){
   function kindLabel(kind){
     const two = params.dim === 2;
     if(isTermKind(kind)) return 'λ(' + termLabel(kind) + ')';
+    if(flipSign && flips(kind)) return kind === 'h' ? '−(h−⟨h⟩)' : '−' + kindLabel0(kind);
+    return kindLabel0(kind);
+  }
+  function kindLabel0(kind){
+    const two = params.dim === 2;
     return { h:'h−⟨h⟩', dx: two?'∂h/∂x':'dh/dx', absdx: two?'|∇h|':'|dh/dx|',
              lap: two?'∇²h':'d²h/dx²', nlap: two?'−∇²h':'−d²h/dx²',
              lydiv:'λ(x)', nlydiv:'−λ(x)' }[kind];
@@ -2492,8 +2507,8 @@ function buildSim(P){
       if(old.f.length === n) f = old.f;
     }
     if(!f) f = new Float32Array(n);
-    f.set(sim.h.subarray(0, n));
-    snapshots.push({ t: sim.t, mean: sim.meanH, f, ly: lyField() });
+    f.set(hDisp().subarray(0, n));
+    snapshots.push({ t: sim.t, mean: SG()*sim.meanH, f, ly: lyField() });
     nextSnap = sim.t + capDt();
   }
 
@@ -2520,6 +2535,7 @@ function buildSim(P){
 
   // ----- rebuild / reset -----
   function rebuild(){
+    if(beauty !== 'off' && !beautyBuilding) setBeauty('off');   // any change by hand leaves the special run
     diverged = false; $('divergedMsg').style.display = 'none';
     sim = buildSim({ dim:params.dim, L:params.L, bc:params.bc, dt:params.dt, dx:params.dx,
                      nwx:params.n, nwy:params.n, amp:params.amp, eps:params.eps,
@@ -2545,11 +2561,11 @@ function buildSim(P){
   }
 
   const fmtLam = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(3);
-  const lyapTxt = { lam:'', loc:'', node:'', k:'', d:'', sum:'', win:'' };
+  const lyapTxt = { lam:'', loc:'', node:'', k:'', d:'', dsat:'', sum:'', win:'' };
   function setTxt(id, key, s){ if(lyapTxt[key] !== s){ lyapTxt[key] = s; $(id).textContent = s; } }
   function updateReadouts(){
     $('rt').textContent = sim.t.toFixed(1);
-    $('rmean').textContent = sim.meanH.toFixed(2);
+    $('rmean').textContent = (SG()*sim.meanH).toFixed(2);
     $('rw').textContent = sim.W.toFixed(3);
     const ly = sim.lyap, ok = ly.on && ly.ready;
     const lam = ok && isFinite(ly.lam) ? fmtLam(ly.lam) : '—';
@@ -2571,6 +2587,7 @@ function buildSim(P){
     if(ly.mode === 'free'){
       const dsat = Math.SQRT2*sim.W, dl = ly.histD.length ? ly.histD[ly.histD.length-1] : NaN;
       setTxt('lD', 'd', ok && dsat > 0 && isFinite(dl) ? (dl/dsat < 0.001 ? dl.toExponential(1) + ' abs' : (dl/dsat).toFixed(2)) : '—');
+      setTxt('lDsat', 'dsat', ok && isFinite(ly.dSat) ? ly.dSat.toFixed(3) : '—');
     }
   }
 
@@ -2862,7 +2879,7 @@ function buildSim(P){
     if(sim.t < swNextT - 1e-9) return;
     if(swPos > 1.0001){ swList = []; swPos = 0; }   // touched the top: back to the bottom
     const n = sim.physNx, f = new Float32Array(n);
-    for(let i=0;i<n;i++) f[i] = sim.h[i];
+    const H = hDisp(); for(let i=0;i<n;i++) f[i] = H[i];
     swList.push({ f, pos: swPos, ly: lyField() });
     swPos += 1/Math.max(50, Math.min(500, Math.round(520/swStepPx)));
     swNextT = sim.t + wfDt;
@@ -3630,7 +3647,7 @@ function buildSim(P){
     ctx.fillText('+1', x0-6, Y(1)); ctx.fillText('0', x0-6, ym); ctx.fillText('−1', x0-6, Y(-1));
     ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
     /* the surface itself, faint, for orientation */
-    const hs = Math.max(1e-9, sim.hmax), F = sim.h;
+    const hs = Math.max(1e-9, sim.hmax), F = hDisp();
     ctx.strokeStyle = TH.wall; ctx.globalAlpha = 0.5; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(X(0), ym - 0.42*ph*F[0]/hs);
     for(let i=1;i<n;i++) ctx.lineTo(X(i), ym - 0.42*ph*F[i]/hs);
@@ -3834,7 +3851,7 @@ function buildSim(P){
                  ' = ' + fmt(params.L*params.dx);
     const num  = 'dt = ' + params.dt + ',  ETDRK4 pseudospectral,  t = ' + sim.t.toFixed(1);
     const ly = sim.lyap, lamOK = ly.on && ly.ready && isFinite(ly.lam);
-    const stat = '⟨h⟩ = ' + sim.meanH.toFixed(2) + ',  W = ' + sim.W.toFixed(3) +
+    const stat = (flipSign ? 'plotted −h,  ' : '') + '⟨h⟩ = ' + (SG()*sim.meanH).toFixed(2) + ',  W = ' + sim.W.toFixed(3) +
                  (lamOK ? ',  λ = ' + fmtLam(ly.lam) : '') +
                  ',  colour: ' + (qkind === 'plain' ? '—' : kindLabel(effKind())) + ' (' + lutName + ')';
     return [eq, geom, num, stat];
@@ -4050,7 +4067,40 @@ function buildSim(P){
         $('wfSepVal').textContent = wfSepAuto ? 'Δh auto' : 'Δh ' + (+wfSep.toPrecision(2));
       }
     }
+    placeViewTog();
   }
+  /* the viewpoint toggle sits just right of whichever detail box is showing:
+     2D surface → tilt 45°, rot 45°, dist 3L  ⇄  tilt 45°, rot 360°, dist 5L;
+     1D 3D modes → dist 5L ⇄ ∞ */
+  function placeViewTog(){
+    const b = $('bViewTog');
+    const surf = params.dim===2 && modeSel[2]==='surface';
+    const w3 = params.dim===1 && is3dMode(modeSel[1]);
+    if(!surf && !w3){ b.style.display = 'none'; return; }
+    const ctl = $(surf ? 'v3Ctl' : 'wfCtl'), wrap = cv.parentElement;
+    const r = ctl.getBoundingClientRect(), R = wrap.getBoundingClientRect();
+    b.style.display = 'block';
+    /* right of the box; on narrow screens the box hugs the right edge, so then left of it */
+    const fits = r.right + 38 <= R.right;
+    b.style.left = Math.round(fits ? r.right - R.left + 6 : r.left - R.left - 36) + 'px';
+    b.style.top  = Math.round(r.bottom - R.top - 30) + 'px';
+    b.title = surf ? 'switch viewpoint: tilt 45°, rot 45°, dist 3·L  ⇄  tilt 45°, rot 360°, dist 5·L'
+                   : 'switch viewpoint: dist 5·L  ⇄  ∞ (no perspective)';
+  }
+  $('bViewTog').addEventListener('click', ()=>{
+    if(params.dim===2 && modeSel[2]==='surface'){
+      const first = !(Math.abs(view.tilt-45)<0.5 && (view.rot%360)<0.5 && view.dist>4.9);
+      view.tilt = 45; view.rot = first ? 360 : 45; view.dist = first ? 5 : 3;
+      $('rngTilt').value = 45; $('v3TiltVal').textContent = '45°';
+      $('rngRot').value = view.rot; $('v3RotVal').textContent = view.rot+'°';
+      $('rngDist').value = view.dist; $('v3DistVal').textContent = view.dist.toFixed(1)+'·L';
+    } else {
+      wf3dDist = wf3dDist >= 10 ? 5 : 10;
+      $('rngWfDist').value = wf3dDist; $('wfDistVal').textContent = distTxt(wf3dDist);
+    }
+    draw();
+  });
+  window.addEventListener('resize', ()=>setTimeout(placeViewTog, 0));
 
   function applyDimUI(){
     const is2 = params.dim === 2;
@@ -4110,6 +4160,7 @@ function buildSim(P){
   // extra growth terms alpha, beta (header menus)
   const fmtTerm = v => (Math.abs(v) < 1e-9 ? '0' : (+v.toFixed(2)).toString());
   function applyTerms(){
+    if(beauty !== 'off' && !beautyBuilding) setBeauty('off');
     sim.setTerms(params.alpha, params.beta, params.nl2, params.absMode, params.gamma, params.delta);
     sim.lyapResetAvg();
     syncEqHeader();
@@ -4318,6 +4369,18 @@ function buildSim(P){
   $('bPng').addEventListener('click', ()=>exportPNG('stamp'));
   $('bPngClean').addEventListener('click', ()=>exportPNG('clean'));
   $('bPngSq').addEventListener('click', ()=>exportPNG('sq'));
+  function setFlip(v){
+    if(v === flipSign) return;
+    flipSign = v;
+    $('bFlip').classList.toggle('on', flipSign);
+    /* the stored history is flipped with it so the profiles stay continuous */
+    for(const s of snapshots){ negate(s.f); s.mean = -s.mean; }
+    for(const s of swList) negate(s.f);
+    stRows = 0; stCtx.fillStyle = TH.stBlank; stCtx.fillRect(0,0,stC.width,stC.height);   // x–t image restarts
+    qCache.stamp = -1; gCache.stamp = -1; hCache.stamp = -1;
+    updateReadouts(); draw();
+  }
+  $('bFlip').addEventListener('click', ()=>setFlip(!flipSign));
 
   // Lyapunov panel: show/hide, twin on/off, restart
   /* opening the section switches the twin trajectory on (it restarts from the
@@ -4466,6 +4529,33 @@ function buildSim(P){
     base2D(); params.beta=1.5;
     params.dt=0.02; $('selDt').value='0.02';
   }));
+  /* ---- Beauty: special runs chosen for their looks. One button in the display cycles
+     off → Absolute 2D with α = +3 (h upward) → Absolute 2D with α = −3 (−h upward) → off ---- */
+  const BEAUTY_LABEL = { off: 'Absolute 2D', abs2dp: 'Absolute 2D  α = +3', abs2dm: 'Absolute 2D  α = −3, −h' };
+  function setBeauty(v){
+    beauty = v;
+    const b = $('bPreBeauty'); b.classList.toggle('on', v !== 'off'); b.textContent = BEAUTY_LABEL[v];
+  }
+  function beautyAbs2D(sign){
+    base2D();
+    params.L=256; params.dx=1; params.alpha=3*sign; params.absMode='euclid';
+    params.dt=0.05; $('selDt').value='0.05';
+    stepsPerFrame=2; $('selSpf').value='2';
+    qkind='h'; yvar='h';
+    setLUT('jet'); $('cmap').value='jet';
+    view.tilt=45; view.rot=360; view.dist=5;   // the second viewpoint of the ⇅ button
+    $('rngTilt').value=45; $('v3TiltVal').textContent='45°';
+    $('rngRot').value=360; $('v3RotVal').textContent='360°';
+    $('rngDist').value=5;  $('v3DistVal').textContent='5.0·L';
+    setFlip(sign < 0);                 // α = −3: −h drawn upward
+  }
+  function startBeauty(v){
+    if(v === 'off'){ setBeauty('off'); return; }
+    beautyBuilding = true;
+    try{ runPreset(()=>beautyAbs2D(v === 'abs2dp' ? 1 : -1)); } finally{ beautyBuilding = false; }
+    setBeauty(v);
+  }
+  $('bPreBeauty').addEventListener('click', ()=>startBeauty(beauty === 'off' ? 'abs2dp' : beauty === 'abs2dp' ? 'abs2dm' : 'off'));
 
   new ResizeObserver(()=>draw()).observe(cv.parentElement);
   const reflow = ()=>{ fitDue = true; lyapHeight(); fitHeight(); draw(); };
@@ -4842,17 +4932,18 @@ function buildSim(P){
       if(performance.now() - last > 30){ last = performance.now(); report(m.t); await yieldUI(); }
     }
     const ben = T > 0 ? G/T : NaN, Wm = wsum/nf;
-    m.lyap.mode = 'free'; const slopes = []; let tWin = 0; const cap = Math.min(600, half*0.6);
+    m.lyap.mode = 'free'; const slopes = [], sats = []; let tWin = 0, nsat = 0; const cap = Math.min(600, half*0.6);
     specOn = true;
     while(tWin < half){
       m.lyapReset(false); let tr = 0;
-      while(tr < cap && tWin < half){ const r = await run(Math.min(10, half - tWin)); tr += 10; tWin += 10; if(!isFinite(r)) return null; if(m.lyap.tSat >= 0 && m.t > m.lyap.tSat + 10) break; }
-      if(isFinite(m.lyap.fit.lam) && tr >= 30) slopes.push(m.lyap.fit.lam);
+      while(tr < cap && tWin < half){ const r = await run(Math.min(10, half - tWin)); tr += 10; tWin += 10; if(!isFinite(r)) return null; if(m.lyap.tSat >= 0 && m.t > m.lyap.tSat + 60) break; }
+      if(isFinite(m.lyap.fit.lam) && tr >= 30){ slopes.push(m.lyap.fit.lam); const sv = m.satValue(); if(isFinite(sv)){ sats.push(sv); if(isFinite(m.lyap.dSat)) nsat++; } }
     }
+    const satM = sats.length ? sats.reduce((a,b)=>a+b,0)/sats.length : NaN;
     const mean = slopes.reduce((a,b)=>a+b,0)/Math.max(1, slopes.length);
     const sd = Math.sqrt(slopes.reduce((a,b)=>a+(b-mean)**2,0)/Math.max(1, slopes.length-1));
     for(let i=0;i<spec.length;i++) spec[i] /= Math.max(1, nspec);
-    return { free: slopes.length ? mean : NaN, sd: slopes.length > 1 ? sd : 0, n: slopes.length, ben, W: Wm, spec, k: m.spectrumK };
+    return { free: slopes.length ? mean : NaN, sd: slopes.length > 1 ? sd : 0, n: slopes.length, ben, sat: satM, satOK: nsat > 0, eps: m.lyap.eps, W: Wm, spec, k: m.spectrumK };
   }
   async function scRun(){
     if(SC.running) return;
@@ -4897,7 +4988,7 @@ function buildSim(P){
         /* spread of the free-run value: over the starts when NMC > 1, else the scatter of the repeated free runs */
         const sdFree = samples.length > 1 ? sdev('free') : samples[0].sd;
         const spec = new Float64Array(samples[0].spec.length); for(const sm of samples) for(let i=0;i<spec.length;i++) spec[i] += sm.spec[i]/samples.length;
-        SC.rows.push({ v, free: mean('free'), sdFree, n: samples.reduce((a,b)=>a+b.n,0), ben: mean('ben'), sdBen: sdev('ben'), W: mean('W'), sdW: sdev('W'), nmc: samples.length, dt: cc.dt, samples, spec, k: samples[0].k });
+        SC.rows.push({ v, free: mean('free'), sdFree, n: samples.reduce((a,b)=>a+b.n,0), ben: mean('ben'), sdBen: sdev('ben'), sat: mean('sat'), sdSat: sdev('sat'), satOK: samples.some(s => s.satOK), eps: samples[0].eps, W: mean('W'), sdW: sdev('W'), nmc: samples.length, dt: cc.dt, samples, spec, k: samples[0].k });
       }
       renderScan();
     }
@@ -4916,47 +5007,64 @@ function buildSim(P){
   $('scanToggle').addEventListener('click', ()=>setScanOpen(!scanOpen));
   $('scanBW').addEventListener('click', ()=>{ SC.dark = !SC.dark; scanPanel.classList.toggle('dark', SC.dark); renderScan(); });
   const pm = (m, sd) => f3(m) + (sd > 0 ? ' ± ' + sd.toFixed(3) : '');
+  /* D_sat: two decimals, or exponent form when tiny; † when no free run reached the plateau (too short a window) */
+  const fmtSat = r => !isFinite(r.sat) ? '—' : (r.sat >= 0.01 ? r.sat.toFixed(2) + (r.sdSat > 0.005 ? ' ± ' + r.sdSat.toFixed(2) : '') : r.sat.toExponential(1)) + (r.satOK ? '' : '†');
   function renderScan(){
     if(!scanOpen) return;
     const T = $('scanTable'), sym = GSYM[SC.par] || SC.par;
-    if(!SC.rows.length){ T.innerHTML = '<tr><td class="note"><div>' + (SC.running ? 'sampling…' : 'no scan yet — set up a scan in the control panel (Systematic scan) and press start') + '</div></td></tr>'; drawScanFigure(scctx, null, null, SC, SC.dark, 1); return; }
+    if(!SC.rows.length){ T.innerHTML = '<tr><td class="note"><div>' + (SC.running ? 'sampling…' : 'no scan yet — set up a scan in the control panel (Systematic scan) and press start') + '</div></td></tr>'; drawScanFigure(scctx, null, null, SC, SC.dark, 1); placeScanButtons(); return; }
+    scv.parentElement.style.height = (SC.par === 'L' ? (window.innerWidth <= 560 ? 1060 : 1260) : (window.innerWidth <= 560 ? 840 : 1000)) + 'px';
     const nmc = SC.cfg.nmc;
-    let h = '<tr><th>' + sym + '</th><th title="mean slope of ln|δh|(t) over repeated free runs' + (nmc > 1 ? '; ± spread over the random starts' : '; ± scatter of the runs') + '">λ free run</th><th title="Benettin running average over the first half of the measurement' + (nmc > 1 ? '; ± spread over the random starts' : '') + '">λ Benettin</th><th title="mean interface width' + (nmc > 1 ? '; ± spread over the random starts' : '') + '">W</th><th title="number of free runs (all starts)">runs</th><th>dt</th></tr>';
+    let h = '<tr><th>' + sym + '</th><th title="mean slope of ln|δh|(t) over repeated free runs' + (nmc > 1 ? '; ± spread over the random starts' : '; ± scatter of the runs') + '">λ free run</th><th title="Benettin running average over the first half of the measurement' + (nmc > 1 ? '; ± spread over the random starts' : '') + '">λ Benettin</th><th title="saturated separation of the two interfaces in the free runs — the window within which the interface can vary (√2·W for uncorrelated interfaces)' + (nmc > 1 ? '; averaged over the random starts, ± spread' : '') + '">D<sub>sat</sub></th><th title="mean interface width' + (nmc > 1 ? '; ± spread over the random starts' : '') + '">W</th><th title="number of free runs (all starts)">runs</th><th>dt</th></tr>';
     for(const r of SC.rows){
-      if(r.dv){ h += '<tr><td class="b">' + (r.v > 0 ? '+' : '') + r.v + '</td><td class="dv" colspan="5">diverges</td></tr>'; continue; }
-      h += '<tr><td class="b">' + (r.v > 0 ? '+' : '') + r.v + '</td><td class="' + lamClass(r.free) + '">' + pm(r.free, r.sdFree) + '</td><td>' + pm(r.ben, r.sdBen) + '</td><td>' + r.W.toFixed(2) + (r.sdW > 0 ? ' ± ' + r.sdW.toFixed(2) : '') + '</td><td>' + r.n + '</td><td>' + r.dt + '</td></tr>';
+      if(r.dv){ h += '<tr><td class="b">' + (r.v > 0 ? '+' : '') + r.v + '</td><td class="dv" colspan="6">diverges</td></tr>'; continue; }
+      h += '<tr><td class="b">' + (r.v > 0 ? '+' : '') + r.v + '</td><td class="' + lamClass(r.free) + '">' + pm(r.free, r.sdFree) + '</td><td>' + pm(r.ben, r.sdBen) + '</td><td>' + fmtSat(r) + '</td><td>' + r.W.toFixed(2) + (r.sdW > 0 ? ' ± ' + r.sdW.toFixed(2) : '') + '</td><td>' + r.n + '</td><td>' + r.dt + '</td></tr>';
     }
-    h += '<tr><td colspan="6" class="note"><div>red: chaotic (λ ≥ 0.05) · blue: steady or frozen (λ &lt; 0.02) · yellow: the run diverges. ' + SC.eq + '</div></td></tr>';
+    h += '<tr><td colspan="7" class="note"><div>red: chaotic (λ ≥ 0.05) · blue: steady or frozen (λ &lt; 0.02) · yellow: the run diverges · D<sub>sat</sub>: saturated separation of the free runs (†: no run reached the plateau within the window — lengthen the transient). ' + SC.eq + '</div></td></tr>';
     T.innerHTML = h;
     const dpr = window.devicePixelRatio || 1, r = scv.parentElement.getBoundingClientRect();
     const w = Math.max(100, Math.round(r.width)), hh = Math.max(100, Math.round(r.height));
     if(scv.width !== Math.round(w*dpr) || scv.height !== Math.round(hh*dpr)){ scv.width = Math.round(w*dpr); scv.height = Math.round(hh*dpr); }
     scctx.setTransform(dpr,0,0,dpr,0,0);
     drawScanFigure(scctx, w, hh, SC, SC.dark, 1);
+    placeScanButtons();
   }
   new ResizeObserver(()=>{ if(scanOpen) renderScan(); }).observe(scv.parentElement);
-  /* the figure, in the style of the λ(β) pictures: two panels — λ (free run solid with a dot per
-     random start, Benettin dashed with hollow dots per start) and W (dot per start, line through
-     the means) — against the scanned quantity on a numeric axis (equally spaced for L) */
-  function drawScanFigure(c, w, h, S, dark, F){
+  /* the figure, in the style of the λ(β) pictures. Panels, top to bottom: λ (free run solid with a
+     dot per random start, Benettin dashed with hollow dots per start) and W (dot per start, line
+     through the means) against the scanned quantity on a shared axis; for an L scan a log–log plot
+     of W against L (with the fitted exponent); and the power spectra. Each panel can be drawn on its
+     own (`only`) for the per-panel .png buttons. */
+  const SCPANELS = { lam: 'λ', sat: 'D sat', W: 'W', WL: 'W against L (log–log)', spec: 'power spectrum' };
+  function scanPanelNames(S){ return S.par === 'L' ? ['lam', 'sat', 'W', 'WL', 'spec'] : ['lam', 'sat', 'W', 'spec']; }
+  function scanLayout(S, h, F){
+    const names = scanPanelNames(S);
+    const gapT = 62*F, gapB = 44*F, mid = 26*F, midS = 66*F;
+    const hh = (h - gapT - gapB - 2*mid - (names.length - 3)*midS)/names.length;
+    let y = gapT; const out = [];
+    names.forEach((n, i) => { if(i === 1 || i === 2) y += mid; else if(i > 2) y += midS; out.push({ name: n, y0: y, y1: y + hh, xlab: i === 2 }); y += hh; });
+    return out;
+  }
+  function drawScanFigure(c, w, h, S, dark, F, only){
     if(w === null){ const r = scv.parentElement.getBoundingClientRect(); w = r.width; h = r.height; }
     const bg = dark ? '#0b0d13' : '#fff', ink = dark ? '#e8ecf5' : '#000', grid = dark ? '#20242f' : '#e8ecf3', zero = dark ? '#3a4152' : '#c3ccdb', lab = dark ? '#aab3c7' : '#4a5872';
-    const col1 = dark ? '#94a6ff' : '#4338ca', col2 = dark ? '#f6b26b' : '#d97706', colW = dark ? '#6ee7b7' : '#0f766e';
+    const col1 = dark ? '#94a6ff' : '#4338ca', col2 = dark ? '#f6b26b' : '#d97706', colW = dark ? '#6ee7b7' : '#0f766e', col3 = dark ? '#f9a8d4' : '#be185d';
     c.fillStyle = bg; c.fillRect(0, 0, w, h);
     const rows = S.rows.filter(r => !r.dv), sym = GSYM[S.par] || S.par;
     const px = v => (v*F).toFixed(1) + 'px';
     c.font = '600 ' + px(13) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'left'; c.textBaseline = 'top';
     const geo = S.cfg ? '  (' + (S.cfg.dim === 2 ? '2D' : '1D') + ', ' + S.cfg.bc + (S.par === 'L' ? '' : ', L = ' + S.cfg.L) + ')' : '';
-    c.fillText(rows.length ? 'λ and W against ' + sym + geo : 'λ and W against the scanned quantity', 12*F, 6*F);
-    if(!rows.length){ c.fillStyle = lab; c.font = px(12) + ' system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(S.running ? 'sampling…' : 'no data yet', w/2, h/2); return; }
+    const ttl = only ? ({ lam: 'λ against ' + sym, sat: 'D sat against ' + sym, W: 'W against ' + sym, WL: 'W against L, log–log', spec: 'Power spectra' }[only]) : 'λ and W against ' + sym;
+    c.fillText(rows.length ? ttl + geo : 'λ and W against the scanned quantity', 12*F, 6*F);
+    if(!rows.length){ c.fillStyle = lab; c.font = px(12) + ' system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(S.running ? 'sampling…' : 'no data yet', w/2, h/2); if(!only) S.layout = []; return; }
     const x0 = 66*F, x1 = w - 16*F;
     const isL = S.par === 'L', vs = rows.map(r => r.v);
     const vmin = Math.min(...vs), vmax = Math.max(...vs), span = Math.max(vmax - vmin, 1e-9), pad = 0.04*span;
     const X = v => isL ? x0 + (x1-x0)*(vs.indexOf(v) + 0.5)/vs.length : x0 + (x1-x0)*(v - vmin + pad)/(span + 2*pad);
-    /* the two panels */
-    const gapT = 62*F, gapB = 44*F, mid = 26*F, midS = 66*F, hh = (h - gapT - gapB - mid - midS)/3;
-    const panels = [{ y0: gapT, y1: gapT + hh }, { y0: gapT + hh + mid, y1: gapT + 2*hh + mid }, { y0: gapT + 2*hh + mid + midS, y1: h - gapB }];
-    const dotsL = r => (r.samples || [{ free: r.free, ben: r.ben, W: r.W }]);
+    const panels = only ? [{ name: only, y0: 62*F, y1: h - 44*F, xlab: true }] : scanLayout(S, h, F);
+    if(!only) S.layout = panels.map(p => ({ name: p.name, x0, y0: p.y0 }));
+    const dotsL = r => (r.samples || [{ free: r.free, ben: r.ben, sat: r.sat, W: r.W }]);
+    const o = { ink, grid, zero, lab, bg, F, x0, x1, col1, col2, colW, col3, X, sym, isL, rows, dotsL, px };
     function axis(p, lo, hi, label, tick){
       const Y = v => p.y1 - (p.y1-p.y0)*(v - lo)/(hi - lo);
       c.lineWidth = 1*F;
@@ -4967,88 +5075,195 @@ function buildSim(P){
       c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1);
       return Y;
     }
-    /* x ticks, on the lower panel */
-    c.font = px(11) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'center'; c.textBaseline = 'top';
-    const xt = isL ? vs : (() => { const nt = Math.min(rows.length, Math.max(2, Math.floor((x1-x0)/(50*F)))); const a = []; for(let k=0;k<nt;k++) a.push(vmin + span*k/(nt-1)); return a; })();
-    for(const v of xt){ c.fillText((+v.toFixed(3)).toString(), X(v), panels[1].y1 + 6*F); for(const p of panels){ c.strokeStyle = grid; c.lineWidth = 1*F; c.beginPath(); c.moveTo(X(v), p.y0); c.lineTo(X(v), p.y1); c.stroke(); } }
-    c.font = px(13) + ' system-ui,sans-serif'; c.fillText(sym, (x0+x1)/2, panels[1].y1 + 22*F);
-    /* ---- λ panel ---- */
-    let top = 0.05, bot = 0;
-    for(const r of rows) for(const d of dotsL(r)){ top = Math.max(top, d.free, d.ben); bot = Math.min(bot, d.free, d.ben); }
-    const st = niceCeil(Math.max(top - Math.min(bot, 0), 1e-6)/4), lmax = Math.ceil(top/st + 0.3)*st, lmin = Math.min(-0.1*lmax, Math.floor(bot/st)*st);
-    const Y1 = axis(panels[0], lmin, lmax, 'λ', st);
-    c.strokeStyle = col2; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.ben)) : c.moveTo(X(r.v), Y1(r.ben))); c.stroke(); c.setLineDash([]);
-    c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.free)) : c.moveTo(X(r.v), Y1(r.free))); c.stroke();
-    for(const r of rows) for(const d of dotsL(r)){
-      c.fillStyle = col1; c.beginPath(); c.arc(X(r.v), Y1(d.free), 3.2*F, 0, 2*Math.PI); c.fill();
-      c.strokeStyle = col2; c.lineWidth = 1.4*F; c.fillStyle = bg; c.beginPath(); c.arc(X(r.v), Y1(d.ben), 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
+    /* x grid in a panel, with the tick labels and the axis name below it when asked */
+    function xTicks(p, label){
+      const xt = isL ? vs : (() => { const nt = Math.min(rows.length, Math.max(2, Math.floor((x1-x0)/(50*F)))); const a = []; for(let k=0;k<nt;k++) a.push(vmin + span*k/(nt-1)); return a; })();
+      c.strokeStyle = grid; c.lineWidth = 1*F;
+      for(const v of xt){ c.beginPath(); c.moveTo(X(v), p.y0); c.lineTo(X(v), p.y1); c.stroke(); }
+      if(!label) return;
+      c.font = px(11) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'center'; c.textBaseline = 'top';
+      for(const v of xt) c.fillText((+v.toFixed(3)).toString(), X(v), p.y1 + 6*F);
+      c.font = px(13) + ' system-ui,sans-serif'; c.fillText(sym, (x0+x1)/2, p.y1 + 22*F);
     }
-    /* ---- W panel ---- */
-    let wtop = 0; for(const r of rows) for(const d of dotsL(r)) wtop = Math.max(wtop, d.W);
-    const stW = niceCeil(Math.max(wtop, 1e-6)/4), wmax = Math.ceil(wtop/stW + 0.3)*stW;
-    const Y2 = axis(panels[1], 0, wmax, 'W', stW);
-    c.strokeStyle = colW; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y2(r.W)) : c.moveTo(X(r.v), Y2(r.W))); c.stroke();
-    c.fillStyle = colW; for(const r of rows) for(const d of dotsL(r)){ c.beginPath(); c.arc(X(r.v), Y2(d.W), 3.2*F, 0, 2*Math.PI); c.fill(); }
-    /* ---- power spectra: the largest and the fourth-largest size (L scan), or the two extreme
-       values of a coefficient scan, against the wavenumber k, log–log ---- */
-    drawSpectraPanel(c, panels[2], rows, S, { ink, grid, lab, bg, F, x0, x1, col1, col2: colW });
-    /* legend, in the λ panel */
-    c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
-    const nmc = S.cfg && S.cfg.nmc > 1, lx = x0 + 4*F, ly = 30*F;
-    c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + 26*F, ly); c.stroke(); c.fillStyle = col1; c.beginPath(); c.arc(lx + 13*F, ly, 3.2*F, 0, 2*Math.PI); c.fill();
-    c.fillStyle = lab; c.fillText('λ free run' + (nmc ? ' — dot per start, line through the means' : ''), lx + 32*F, ly);
-    const lx2 = lx, ly2 = ly + 16*F;
-    c.strokeStyle = col2; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); c.moveTo(lx2, ly2); c.lineTo(lx2 + 26*F, ly2); c.stroke(); c.setLineDash([]);
-    c.fillStyle = bg; c.beginPath(); c.arc(lx2 + 13*F, ly2, 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
-    c.fillStyle = lab; c.fillText('λ Benettin' + (nmc ? ' — hollow dot per start' : ''), lx2 + 32*F, ly2);
+    for(const p of panels){
+      if(p.name === 'lam'){
+        xTicks(p, p.xlab);
+        let top = 0.05, bot = 0;
+        for(const r of rows) for(const d of dotsL(r)){ top = Math.max(top, d.free, d.ben); bot = Math.min(bot, d.free, d.ben); }
+        const st = niceCeil(Math.max(top - Math.min(bot, 0), 1e-6)/4), lmax = Math.ceil(top/st + 0.3)*st, lmin = Math.min(-0.1*lmax, Math.floor(bot/st)*st);
+        const Y1 = axis(p, lmin, lmax, 'λ', st);
+        c.strokeStyle = col2; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.ben)) : c.moveTo(X(r.v), Y1(r.ben))); c.stroke(); c.setLineDash([]);
+        c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.free)) : c.moveTo(X(r.v), Y1(r.free))); c.stroke();
+        for(const r of rows) for(const d of dotsL(r)){
+          c.fillStyle = col1; c.beginPath(); c.arc(X(r.v), Y1(d.free), 3.2*F, 0, 2*Math.PI); c.fill();
+          c.strokeStyle = col2; c.lineWidth = 1.4*F; c.fillStyle = bg; c.beginPath(); c.arc(X(r.v), Y1(d.ben), 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
+        }
+        /* legend */
+        c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
+        const nmc = S.cfg && S.cfg.nmc > 1, lx = x0 + 4*F, ly = 30*F;
+        c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + 26*F, ly); c.stroke(); c.fillStyle = col1; c.beginPath(); c.arc(lx + 13*F, ly, 3.2*F, 0, 2*Math.PI); c.fill();
+        const narrow = (x1 - x0) < 420*F;
+        c.fillStyle = lab; c.fillText('λ free run' + (nmc ? (narrow ? ' — dots: starts, line: means' : ' — dot per start, line through the means') : ''), lx + 32*F, ly);
+        const ly2 = ly + 16*F;
+        c.strokeStyle = col2; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); c.moveTo(lx, ly2); c.lineTo(lx + 26*F, ly2); c.stroke(); c.setLineDash([]);
+        c.fillStyle = bg; c.beginPath(); c.arc(lx + 13*F, ly2, 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
+        c.fillStyle = lab; c.fillText('λ Benettin' + (nmc ? ' — hollow dot per start' : ''), lx + 32*F, ly2);
+      } else if(p.name === 'sat'){
+        xTicks(p, p.xlab);
+        /* log scale; the translucent red band marks D_sat below the seed distance ε of the twin —
+           a "plateau" there means the two interfaces never separated (steady or frozen state) */
+        const sr = rows.filter(r => isFinite(r.sat) && r.sat > 0), eps = (rows.find(r => r.eps > 0) || { eps: 1e-6 }).eps;
+        const L10 = Math.log10, le = L10(eps);
+        let ymax = le + 1, ymin = le - 0.5;
+        for(const r of sr){ for(const d of dotsL(r)) if(d.sat > 0) ymax = Math.max(ymax, L10(d.sat)); ymax = Math.max(ymax, L10(r.sat)); }
+        for(const r of rows) if(r.W > 0) ymax = Math.max(ymax, L10(Math.SQRT2*r.W));
+        ymax = Math.ceil(ymax + 0.7); ymin = Math.floor(ymin);
+        const Y3 = v => p.y1 - (p.y1-p.y0)*(v - ymin)/(ymax - ymin);
+        const sup = n => String(n).replace('-', '−').replace(/[−0-9]/g, ch => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['−0123456789'.indexOf(ch)]);
+        const ystep = Math.max(1, Math.ceil((ymax - ymin)/6));
+        c.lineWidth = 1*F; c.strokeStyle = grid;
+        for(let d = ymin; d <= ymax; d += ystep){ c.beginPath(); c.moveTo(x0, Y3(d)); c.lineTo(x1, Y3(d)); c.stroke(); }
+        c.fillStyle = 'rgba(220,38,38,0.16)'; c.fillRect(x0, Y3(le), x1 - x0, p.y1 - Y3(le));
+        c.strokeStyle = 'rgba(220,38,38,0.6)'; c.lineWidth = 1*F; c.setLineDash([2*F, 3*F]); c.beginPath(); c.moveTo(x0, Y3(le)); c.lineTo(x1, Y3(le)); c.stroke(); c.setLineDash([]);
+        c.font = px(11) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'right'; c.textBaseline = 'middle';
+        for(let d = ymin; d <= ymax; d += ystep) c.fillText('10' + sup(d), x0 - 6*F, Y3(d));
+        c.save(); c.translate(16*F, (p.y0+p.y1)/2); c.rotate(-Math.PI/2); c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.font = px(13) + ' system-ui,sans-serif'; c.fillText('D sat', 0, 0); c.restore();
+        c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1);
+        c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
+        /* √2·W for comparison: two uncorrelated interfaces */
+        c.strokeStyle = colW; c.lineWidth = 1.2*F; c.setLineDash([3*F, 4*F]); c.beginPath(); let k0 = 0; rows.forEach(r => { if(!(r.W > 0)) return; k0++ ? c.lineTo(X(r.v), Y3(L10(Math.SQRT2*r.W))) : c.moveTo(X(r.v), Y3(L10(Math.SQRT2*r.W))); }); c.stroke(); c.setLineDash([]);
+        c.strokeStyle = col3; c.lineWidth = 2.2*F; c.beginPath(); sr.forEach((r, i) => i ? c.lineTo(X(r.v), Y3(L10(r.sat))) : c.moveTo(X(r.v), Y3(L10(r.sat)))); c.stroke();
+        c.fillStyle = col3; for(const r of sr) for(const d of dotsL(r)) if(d.sat > 0){ c.beginPath(); c.arc(X(r.v), Y3(L10(d.sat)), 3.2*F, 0, 2*Math.PI); c.fill(); }
+        c.restore();
+        c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillStyle = lab;
+        c.fillText((x1 - x0) < 420*F ? 'D sat of the free runs;  dotted: √2·W' : 'saturated separation of the free runs' + (S.cfg && S.cfg.nmc > 1 ? ' — dot per start, line through the means' : '') + ';  dotted: √2·W', x1 - 8*F, p.y0 + 12*F);
+        c.textAlign = 'left'; c.fillStyle = dark ? '#fca5a5' : '#b91c1c';
+        c.fillText((x1 - x0) < 420*F ? 'red: below the seed distance ε' : 'red: below the seed distance ε = 10' + sup(Math.round(L10(eps))) + ' — the interfaces never separated', x0 + 8*F, Y3(le) + 12*F);
+      } else if(p.name === 'W'){
+        xTicks(p, p.xlab);
+        let wtop = 0; for(const r of rows) for(const d of dotsL(r)) wtop = Math.max(wtop, d.W);
+        const stW = niceCeil(Math.max(wtop, 1e-6)/4), wmax = Math.ceil(wtop/stW + 0.3)*stW;
+        const Y2 = axis(p, 0, wmax, 'W', stW);
+        c.strokeStyle = colW; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y2(r.W)) : c.moveTo(X(r.v), Y2(r.W))); c.stroke();
+        c.fillStyle = colW; for(const r of rows) for(const d of dotsL(r)){ c.beginPath(); c.arc(X(r.v), Y2(d.W), 3.2*F, 0, 2*Math.PI); c.fill(); }
+        if(S.cfg && S.cfg.nmc > 1){ c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.textAlign = 'right'; c.fillStyle = lab; c.fillText((x1 - x0) < 420*F ? 'W — dots: starts, line: means' : 'W — dot per start, line through the means', x1 - 8*F, p.y0 + 12*F); }
+      } else if(p.name === 'WL'){
+        drawWLPanel(c, p, o);
+      } else if(p.name === 'spec'){
+        drawSpectraPanel(c, p, rows, S, o);
+      }
+    }
   }
-  function drawSpectraPanel(c, p, rows, S, o){
-    const { ink, grid, lab, bg, F, x0, x1, col1, col2 } = o;
-    const isL = S.par === 'L', sym = GSYM[S.par] || S.par;
-    let pick;
-    if(isL){ const srt = rows.slice().sort((a, b) => b.v - a.v); pick = [srt[0], srt[Math.min(3, srt.length-1)]]; }
-    else pick = [rows[rows.length-1], rows[0]];
-    pick = pick.filter((r, i, a) => r && r.spec && a.indexOf(r) === i);
-    const pts = pick.map(r => { const xs = [], ys = []; for(let m=1;m<r.k.length-1;m++){ if(r.spec[m] > 0){ xs.push(Math.log10(r.k[m])); ys.push(Math.log10(r.spec[m])); } } return { r, xs, ys }; }).filter(q => q.xs.length > 1);
-    c.font = '600 ' + (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'left'; c.textBaseline = 'bottom';
-    c.fillText('Power spectrum ⟨|ĥ(k)|²⟩ against k  (time average, Σ = W²)', x0, p.y0 - 8*F);
+  /* log-log axes shared by the W(L) and the spectra panels; returns the mappings */
+  function logAxes(c, p, o, xmin, xmax, ymin, ymax, xlabel, ylabel, xticks){
+    const { ink, grid, F, x0, x1 } = o;
+    const X = x => x0 + (x1-x0)*(x - xmin)/(xmax - xmin), Y = y => p.y1 - (p.y1-p.y0)*(y - ymin)/(ymax - ymin);
+    const sup = n => String(n).replace('-', '−').replace(/[−0-9]/g, ch => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['−0123456789'.indexOf(ch)]);
+    /* ticks: decades, or 1–2–5 within each decade when the axis spans two decades or less */
+    const lt = (lo, hi) => {
+      const out = [], fine = hi - lo <= 2.2, step = fine ? 1 : Math.max(1, Math.ceil((hi - lo)/6));
+      for(let d = Math.floor(lo); d <= Math.ceil(hi); d += step){
+        for(const m of (fine ? [1, 2, 5] : [1])){ const v = d + Math.log10(m); if(v >= lo - 1e-9 && v <= hi + 1e-9) out.push({ v, label: !fine || Math.abs(d) > 2 ? (m === 1 ? '10' + sup(d) : m + '·10' + sup(d)) : (m*Math.pow(10, d) >= 1 ? String(m*Math.pow(10, d)) : (m*Math.pow(10, d)).toPrecision(1)) }); }
+      }
+      return out;
+    };
+    const xt = xticks || lt(xmin, xmax), yt = lt(ymin, ymax);
+    c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
+    c.lineWidth = 1*F; c.strokeStyle = grid;
+    for(const t of xt){ c.beginPath(); c.moveTo(X(t.v), p.y0); c.lineTo(X(t.v), p.y1); c.stroke(); }
+    for(const t of yt){ c.beginPath(); c.moveTo(x0, Y(t.v)); c.lineTo(x1, Y(t.v)); c.stroke(); }
+    c.restore();
+    c.font = (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'right'; c.textBaseline = 'middle';
+    for(const t of yt) c.fillText(t.label, x0 - 6*F, Y(t.v));
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    for(const t of xt) c.fillText(t.label, X(t.v), p.y1 + 6*F);
+    c.font = (13*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillText(xlabel, (x0+x1)/2, p.y1 + 22*F);
+    c.save(); c.translate(16*F, (p.y0+p.y1)/2); c.rotate(-Math.PI/2); c.textBaseline = 'alphabetic'; c.fillText(ylabel, 0, 0); c.restore();
     c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1);
-    if(!pts.length){ c.fillStyle = lab; c.font = (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('spectra appear when a scan has run', (x0+x1)/2, (p.y0+p.y1)/2); return; }
+    return { X, Y };
+  }
+  /* W against L, log–log, dot per start and a line through the means; the fitted slope of the
+     means (the roughness exponent, W ∝ L^α) is written in the corner */
+  function drawWLPanel(c, p, o){
+    const { ink, lab, bg, F, x0, x1, colW, rows, dotsL } = o;
+    c.font = '600 ' + (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'left'; c.textBaseline = 'bottom';
+    c.fillText((x1 - x0) < 420*F ? 'W against L, log–log' : 'Width against system size, log–log', x0, p.y0 - 8*F);
+    const pts = rows.filter(r => r.W > 0 && r.v > 0).map(r => ({ x: Math.log10(r.v), y: Math.log10(r.W), r }));
+    if(pts.length < 1){ c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1); return; }
+    let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+    for(const q of pts){ xmin = Math.min(xmin, q.x); xmax = Math.max(xmax, q.x); for(const d of dotsL(q.r)) if(d.W > 0){ ymin = Math.min(ymin, Math.log10(d.W)); ymax = Math.max(ymax, Math.log10(d.W)); } }
+    xmin -= 0.15; xmax += 0.15; const yp = Math.max(0.08, 0.1*(ymax - ymin)); ymin -= yp; ymax += yp; if(ymax - ymin < 0.5){ const m = (ymin + ymax)/2; ymin = m - 0.25; ymax = m + 0.25; }
+    const { X, Y } = logAxes(c, p, o, xmin, xmax, ymin, ymax, 'system size L', 'W', pts.map(q => ({ v: q.x, label: String(q.r.v) })));
+    c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
+    c.strokeStyle = colW; c.lineWidth = 2.2*F; c.beginPath(); pts.forEach((q, i) => i ? c.lineTo(X(q.x), Y(q.y)) : c.moveTo(X(q.x), Y(q.y))); c.stroke();
+    c.fillStyle = colW; for(const q of pts) for(const d of dotsL(q.r)) if(d.W > 0){ c.beginPath(); c.arc(X(q.x), Y(Math.log10(d.W)), 3.2*F, 0, 2*Math.PI); c.fill(); }
+    /* least-squares slope of the means */
+    if(pts.length >= 2){
+      const n = pts.length, mx = pts.reduce((a, q) => a + q.x, 0)/n, my = pts.reduce((a, q) => a + q.y, 0)/n;
+      let sxy = 0, sxx = 0; for(const q of pts){ sxy += (q.x - mx)*(q.y - my); sxx += (q.x - mx)**2; }
+      const a = sxx > 0 ? sxy/sxx : NaN, b = my - a*mx;
+      c.strokeStyle = lab; c.lineWidth = 1.2*F; c.setLineDash([4*F, 4*F]); c.beginPath(); c.moveTo(X(xmin), Y(a*xmin + b)); c.lineTo(X(xmax), Y(a*xmax + b)); c.stroke(); c.setLineDash([]);
+      c.restore();
+      c.font = (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillStyle = lab; c.textAlign = 'left'; c.textBaseline = 'middle';
+      c.fillText('W ∝ Lᵅ, fitted α = ' + (isFinite(a) ? a.toFixed(2) : '—') + ((x1 - x0) < 420*F ? '' : '  (dashed: fit through the means)'), x0 + 12*F, p.y1 - 16*F);
+    } else c.restore();
+  }
+  /* power spectra: for an L scan the largest and the fourth-largest size; for a coefficient scan
+     the largest, the smallest and the zero value of the coefficient. Against k, log–log. */
+  function drawSpectraPanel(c, p, rows, S, o){
+    const { ink, lab, F, x0, x1, col1, colW, col3 } = o;
+    const isL = S.par === 'L', sym = GSYM[S.par] || S.par;
+    let pick, tags;
+    if(isL){ const srt = rows.slice().sort((a, b) => b.v - a.v); pick = [srt[0], srt[Math.min(3, srt.length-1)]]; tags = ['largest', 'fourth largest']; }
+    else {
+      const z = rows.find(r => Math.abs(r.v) < 1e-9);
+      pick = [rows[rows.length-1], rows[0], z]; tags = ['largest value', 'smallest value', 'zero'];
+    }
+    const keep = pick.map((r, i) => ({ r, tag: tags[i] })).filter((q, i, a) => q.r && q.r.spec && a.findIndex(b => b.r === q.r) === i);
+    const pts = keep.map(q => { const xs = [], ys = []; for(let m=1;m<q.r.k.length-1;m++){ if(q.r.spec[m] > 0){ xs.push(Math.log10(q.r.k[m])); ys.push(Math.log10(q.r.spec[m])); } } return { r: q.r, tag: q.tag, xs, ys }; }).filter(q => q.xs.length > 1);
+    c.font = '600 ' + (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'left'; c.textBaseline = 'bottom';
+    c.fillText((x1 - x0) < 420*F ? 'Power spectrum ⟨|ĥ(k)|²⟩ against k' : 'Power spectrum ⟨|ĥ(k)|²⟩ against k  (time average, Σ = W²)', x0, p.y0 - 8*F);
+    if(!pts.length){ c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1); c.fillStyle = lab; c.font = (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('spectra appear when a scan has run', (x0+x1)/2, (p.y0+p.y1)/2); return; }
     let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
     for(const q of pts){ for(const x of q.xs){ xmin = Math.min(xmin, x); xmax = Math.max(xmax, x); } for(const y of q.ys){ ymin = Math.min(ymin, y); ymax = Math.max(ymax, y); } }
     ymin = Math.max(ymin, ymax - 10);                 // ten decades at most
     xmin = Math.floor(xmin*2)/2 - 0.05; xmax = Math.ceil(xmax*2)/2 + 0.05; ymin = Math.floor(ymin); ymax = Math.ceil(ymax);
-    const X = x => x0 + (x1-x0)*(x - xmin)/(xmax - xmin), Y = y => p.y1 - (p.y1-p.y0)*(y - ymin)/(ymax - ymin);
-    const sup = n => String(n).replace('-', '−').replace(/[−0-9]/g, ch => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['−0123456789'.indexOf(ch)]);
+    const { X, Y } = logAxes(c, p, o, xmin, xmax, ymin, ymax, 'wavenumber k', '⟨|ĥ|²⟩');
     c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
-    c.lineWidth = 1*F; c.strokeStyle = grid;
-    for(let d = Math.ceil(xmin); d <= xmax; d++){ c.beginPath(); c.moveTo(X(d), p.y0); c.lineTo(X(d), p.y1); c.stroke(); }
-    const ystep = Math.max(1, Math.ceil((ymax - ymin)/6));
-    for(let d = ymin; d <= ymax; d += ystep){ c.beginPath(); c.moveTo(x0, Y(d)); c.lineTo(x1, Y(d)); c.stroke(); }
-    c.restore();
-    c.font = (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'right'; c.textBaseline = 'middle';
-    for(let d = ymin; d <= ymax; d += ystep) c.fillText('10' + sup(d), x0 - 6*F, Y(d));
-    c.textAlign = 'center'; c.textBaseline = 'top';
-    for(let d = Math.ceil(xmin); d <= xmax; d++) c.fillText('10' + sup(d), X(d), p.y1 + 6*F);
-    c.font = (13*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillText('wavenumber k', (x0+x1)/2, p.y1 + 22*F);
-    c.save(); c.translate(16*F, (p.y0+p.y1)/2); c.rotate(-Math.PI/2); c.textBaseline = 'alphabetic'; c.fillText('⟨|ĥ|²⟩', 0, 0); c.restore();
-    c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
-    const cols = [col1, col2];
+    const cols = [col1, colW, col3];
     pts.forEach((q, i) => { c.strokeStyle = cols[i]; c.lineWidth = 2.2*F; c.lineJoin = 'round'; c.beginPath(); q.xs.forEach((x, j) => j ? c.lineTo(X(x), Y(q.ys[j])) : c.moveTo(X(x), Y(q.ys[j]))); c.stroke(); });
     c.restore();
     c.font = (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
-    pts.forEach((q, i) => { const lx = x0 + 12*F, ly = p.y1 - (34 - 16*i)*F; c.strokeStyle = cols[i]; c.lineWidth = 2.2*F; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + 26*F, ly); c.stroke(); c.fillStyle = lab; c.fillText(sym + ' = ' + q.r.v + (isL ? '' : '') + (i === 0 ? (isL ? '  (largest)' : '  (largest value)') : (isL ? '  (fourth largest)' : '  (smallest value)')), lx + 32*F, ly); });
+    pts.forEach((q, i) => { const lx = x0 + 12*F, ly = p.y1 - (18 + 16*(pts.length - 1 - i))*F; c.strokeStyle = cols[i]; c.lineWidth = 2.2*F; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + 26*F, ly); c.stroke(); c.fillStyle = lab; c.fillText(sym + ' = ' + q.r.v + '  (' + q.tag + ')', lx + 32*F, ly); });
+  }
+  /* the .png buttons in the upper-left corner of every panel (they are HTML, so never in the image) */
+  function placeScanButtons(){
+    const box = $('scanPBtns'); box.innerHTML = '';
+    if(!SC.layout || !SC.layout.length) return;
+    for(const p of SC.layout){
+      const b = document.createElement('button'); b.className = 'scan-pbtn'; b.textContent = '.png';
+      b.title = 'save this panel (' + SCPANELS[p.name] + ') as a PNG image';
+      b.style.left = Math.round(p.x0 + 4) + 'px'; b.style.top = Math.round(p.y0 + 4) + 'px';
+      b.addEventListener('click', ()=>exportScanPanel(p.name));
+      box.appendChild(b);
+    }
+  }
+  function exportScanPanel(name){
+    const k = 2, W = 1800, H = 1000, oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
+    const c = oc.getContext('2d'); c.scale(k, k);
+    drawScanFigure(c, W, H, SC, SC.dark, 4.0, name);
+    savePng(oc, 'scan_' + name + '_vs_' + SC.par + '.png');
   }
   /* PNG exports of the scan: the three-panel figure at 1800 × 2200 with the text doubled, and the table */
   $('scanPlotPng').addEventListener('click', ()=>{
-    const k = 2, W = 1800, H = 2200, oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
+    const k = 2, W = 1800, H = SC.par === 'L' ? 3500 : 2800, oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
     const c = oc.getContext('2d'); c.scale(k, k);
     drawScanFigure(c, W, H, SC, SC.dark, 4.0);
     savePng(oc, 'scan_lambda_vs_' + SC.par + '.png');
   });
   $('scanTabPng').addEventListener('click', ()=>{
     const rows = SC.rows; if(!rows.length) return;
-    const k = 2, rowH = 18, W = 620, H = rowH*(rows.length + 3) + 44, dark = SC.dark;
+    const k = 2, rowH = 18, W = 720, H = rowH*(rows.length + 3) + 44, dark = SC.dark;
     const oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
     const c = oc.getContext('2d'); c.scale(k, k);
     c.fillStyle = dark ? '#0b0d13' : '#fff'; c.fillRect(0, 0, W, H);
@@ -5058,23 +5273,23 @@ function buildSim(P){
     c.fillText(SC.eq, 20, y); y += rowH;
     c.font = '10.5px system-ui,sans-serif'; c.fillStyle = lab;
     c.fillText((SC.cfg.dim === 2 ? '2D' : '1D') + ', ' + SC.cfg.bc + ', L = ' + SC.cfg.L + ', dx = 1; transient ' + SC.cfg.tTrans + ', total ' + SC.cfg.tTotal + ' time units per sample' + (SC.cfg.nmc > 1 ? '; ' + SC.cfg.nmc + ' random starts (± = spread over starts)' : ' (± = scatter of the free runs)'), 20, y); y += rowH;
-    const cols = [60, 220, 380, 490, 545, 600];
+    const cols = [60, 220, 380, 490, 590, 645, 700];
     c.textAlign = 'right'; c.fillStyle = lab;
-    [GSYM[SC.par] || SC.par, 'λ free run', 'λ Benettin', 'W', 'runs', 'dt'].forEach((t, j) => c.fillText(t, cols[j], y));
+    [GSYM[SC.par] || SC.par, 'λ free run', 'λ Benettin', 'D sat', 'W', 'runs', 'dt'].forEach((t, j) => c.fillText(t, cols[j], y));
     c.strokeStyle = dark ? '#3a4152' : '#dde3ec'; c.beginPath(); c.moveTo(20, y + rowH/2); c.lineTo(W - 20, y + rowH/2); c.stroke();
     c.font = '11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';
     for(const r of rows){
       y += rowH; c.textAlign = 'right';
       c.fillStyle = ink; c.fillText((r.v > 0 ? '+' : '') + r.v, cols[0], y);
-      if(r.dv){ c.fillStyle = '#fde68a'; c.fillRect(80, y - rowH/2 + 1, 530, rowH - 2); c.fillStyle = '#7c2d12'; c.textAlign = 'center'; c.font = '10.5px system-ui,sans-serif'; c.fillText('diverges', 345, y); c.font = '11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'; }
+      if(r.dv){ c.fillStyle = '#fde68a'; c.fillRect(80, y - rowH/2 + 1, 630, rowH - 2); c.fillStyle = '#7c2d12'; c.textAlign = 'center'; c.font = '10.5px system-ui,sans-serif'; c.fillText('diverges', 395, y); c.font = '11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'; }
       else {
         c.fillStyle = r.free >= 0.05 ? (dark ? '#fca5a5' : '#b91c1c') : (r.free < 0.02 ? (dark ? '#93c5fd' : '#1d4ed8') : ink); c.fillText(pm(r.free, r.sdFree), cols[1], y);
-        c.fillStyle = ink; c.fillText(pm(r.ben, r.sdBen), cols[2], y); c.fillText(r.W.toFixed(2) + (r.sdW > 0 ? ' ± ' + r.sdW.toFixed(2) : ''), cols[3], y); c.fillText('' + r.n, cols[4], y); c.fillText('' + r.dt, cols[5], y);
+        c.fillStyle = ink; c.fillText(pm(r.ben, r.sdBen), cols[2], y); c.fillText(fmtSat(r), cols[3], y); c.fillText(r.W.toFixed(2) + (r.sdW > 0 ? ' ± ' + r.sdW.toFixed(2) : ''), cols[4], y); c.fillText('' + r.n, cols[5], y); c.fillText('' + r.dt, cols[6], y);
       }
       c.strokeStyle = line; c.beginPath(); c.moveTo(20, y + rowH/2); c.lineTo(W - 20, y + rowH/2); c.stroke();
     }
     c.font = '10px system-ui,sans-serif'; c.fillStyle = lab; c.textAlign = 'left'; c.textBaseline = 'top';
-    c.fillText('λ free run: mean slope of ln|δh|(t) over repeated free runs; λ Benettin: running average; W: mean interface width. Yellow: the run diverges.', 20, y + rowH/2 + 6);
+    c.fillText('λ free run: mean slope of ln|δh|(t) over repeated free runs; λ Benettin: running average; D sat: saturated separation of the free runs (†: plateau not reached); W: mean width. Yellow: diverges.', 20, y + rowH/2 + 6);
     savePng(oc, 'scan_table_' + SC.par + '.png');
   });
 
