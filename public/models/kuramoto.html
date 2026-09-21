@@ -17,8 +17,8 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
-  .app{max-width:1180px;margin:0 auto;padding:14px 16px 26px}
-  header{padding:4px 2px 12px}
+  .app{max-width:1180px;margin:0 auto;padding:2px 16px 26px}
+  header{padding:2px 2px 6px}
   header h1{font-size:20px;margin:0 0 3px;letter-spacing:-.01em}
   .titledrop{border-top:0;position:relative}
   .titledrop summary{padding:2px 0 4px;display:flex;align-items:center;gap:10px}
@@ -118,9 +118,14 @@
     padding:10px 12px 12px;box-shadow:0 1px 3px rgba(22,35,59,.06);
   }
   .dispbar{
-    display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;
-    padding:2px 2px 8px;font-size:12.5px;color:var(--ink2);
+    position:absolute;top:8px;left:8px;right:8px;z-index:4;
+    display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;
+    padding:0;font-size:12.5px;color:var(--ink2);
   }
+  .dispbar .cbar{background:rgba(255,255,255,.8);border-radius:8px;padding:2px 6px}
+  .display.darkbg .dispbar .cbar{background:rgba(16,19,28,.8);color:#e8ecf5}
+  .display.darkbg .dispbar .cbar b{color:#e8ecf5}
+  .display.darkbg .dispbar select,.display.darkbg .dispbar .tbtn{background:#16233b;border-color:#2a3140;color:#c7d2fe}
   .dispbar .stat b{
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     font-weight:600;color:var(--ink);font-size:12.5px;
@@ -148,7 +153,7 @@
   .canvas-wrap{position:relative;width:100%;min-height:300px;height:420px}
   canvas#view{position:absolute;inset:0;width:100%;height:100%;border-radius:8px}
   .diverged{
-    position:absolute;top:10px;left:50%;transform:translateX(-50%);
+    position:absolute;top:48px;left:50%;transform:translateX(-50%);
     background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:9px;
     padding:6px 12px;font-size:12.5px;display:none;
   }
@@ -162,7 +167,7 @@
     border:1.5px solid #6b7690;
   }
   .wfctl{
-    position:absolute;left:12px;top:10px;display:none;align-items:center;gap:8px;z-index:3;
+    position:absolute;left:12px;top:48px;display:none;align-items:center;gap:8px;z-index:3;
     background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:8px;
     padding:4px 10px;font-size:11.5px;color:var(--ink2);backdrop-filter:blur(2px);
   }
@@ -190,7 +195,7 @@
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;cursor:default;
   }
   .rdout{
-    position:absolute;top:10px;right:12px;display:flex;flex-wrap:wrap;justify-content:flex-end;
+    position:absolute;top:48px;right:12px;display:flex;flex-wrap:wrap;justify-content:flex-end;
     gap:3px 12px;align-items:center;max-width:calc(100% - 180px);
     font-size:12px;color:var(--ink2);background:rgba(255,255,255,.78);
     border:1px solid var(--line);border-radius:8px;padding:4px 11px;backdrop-filter:blur(2px);
@@ -425,8 +430,8 @@
     .display{padding:8px 8px 10px}
     .dispbar{gap:7px 10px}
     .maincol{gap:10px}
-    .wfctl{left:8px;top:8px;bottom:auto}
-    .rdout{top:8px;right:8px;font-size:11px;gap:2px 8px;padding:3px 8px;max-width:calc(100% - 16px)}
+    .wfctl{left:8px;top:46px;bottom:auto}
+    .rdout{top:46px;right:8px;font-size:11px;gap:2px 8px;padding:3px 8px;max-width:calc(100% - 16px)}
     .presets{left:8px;bottom:8px}
     .cornerpng{right:8px;bottom:8px}
     .cornerpng button{padding:7px 11px;font-size:12.5px}
@@ -471,7 +476,10 @@
     .canvas-wrap{height:min(112vw,420px)}
     /* everything stays visible — the bar wraps onto a second line instead of
        hiding controls behind a horizontal scroll */
-    .dispbar{flex-wrap:wrap;gap:7px 9px}
+    .dispbar{flex-wrap:wrap;gap:6px 8px}
+    .rdout{top:84px}
+    .wfctl{top:84px}
+    .diverged{top:84px}
     .dispbar .spacer{flex:0 0 0;width:0}
     .dispbar select{max-width:44vw}
     .ysep input{width:70px}
@@ -936,6 +944,8 @@
    <div class="maincol">
     <!-- =============== main display panel =============== -->
     <section class="display">
+      <div class="canvas-wrap">
+        <canvas id="view"></canvas>
       <div class="dispbar">
         <button class="tbtn viewhead" id="viewHead" title="show / hide the view menu: display mode, plotted variable, spacing, tilt and distance">view <b>&#9662;</b></button>
         <button id="bViewTog" class="tbtn" title="switch between two viewpoints">&#8645;</button>
@@ -984,8 +994,6 @@
         </select>
         <button id="bTheme" class="tbtn" title="black / white background (keys + and −)"><span class="bwcirc"></span></button>
       </div>
-      <div class="canvas-wrap">
-        <canvas id="view"></canvas>
         <div class="rdout" id="rdout">
           <span>t = <b id="rt">0.0</b></span>
           <span>&lang;h&rang; = <b id="rmean">0.00</b></span>
@@ -2260,7 +2268,7 @@ function buildSim(P){
   let profScale = 1e-6;
   let stamp = 0;
   let qkind = 'plain';
-  const modeSel = { 1:'wf3dsw', 2:'map' };
+  const modeSel = { 1:'wf3dsc', 2:'map' };
   const view = { tilt:50, rot:0, dist:5 };
   let snapshots = [], nextSnap = 0;
   let wfSepAuto = true, wfSep = 2;
@@ -4567,7 +4575,7 @@ function buildSim(P){
     params.dt=0.05; $('selDt').value='0.05';
     stepsPerFrame=2; $('selSpf').value='2';
     dispGain=2; keepN=5000;
-    yvar='h'; qkind='nlap'; modeSel[1]='wf3dsw';
+    yvar='h'; qkind='nlap'; modeSel[1]='wf3dsc';
     wfDt=0.1; wf3dTilt=25; wf3dDist=10;
     swStepPx=1.5; $('rngVsep').value=2; $('vsepVal').textContent='1.5';
     wfSepAuto=false; wfSep=0.02;
