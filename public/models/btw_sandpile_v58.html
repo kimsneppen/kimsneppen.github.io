@@ -111,7 +111,8 @@
   .seg button{border:none; border-radius:0; border-right:1px solid var(--edge); padding:4px 5px; font-size:11px;}
   .seg button:last-child{border-right:none;}
   .seg button.active{background:linear-gradient(90deg,var(--accent2),var(--hot)); color:#fff;}
-  #gbReset, #gbCPU, #gbModel, #gbExit, #gbSize{padding:4px 6px; font-size:11px; white-space:nowrap;}
+  #gbReset, #gbCPU, #gbModel, #gbExit, #gbSize, #gbOwn{padding:4px 6px; font-size:11px; white-space:nowrap;}
+  #gbOwn.active{background:linear-gradient(90deg,var(--accent2),var(--hot)); border-color:var(--accent); color:#fff;}
   /* sits dead centre between the score ovals */
   #gbView{
     padding:3px 10px; font-size:11px; border-radius:999px; white-space:nowrap;
@@ -583,9 +584,11 @@
             arrows deal every grain in a definite order, top of the pile first. (The <b>Folders</b>
             variant skips the arrow half &mdash; pure drops, good for a first game.)</p>
             <p><b>Scoring.</b> You get one point for every grain belonging to <i>another</i> player
-            that <b>your own</b> avalanche pushes off the board. Your own grains going over the
-            edge cost you nothing and earn you nothing; grey grains count for nobody; what an
-            opponent pushes out is their point. First to the winning number (the <b>win</b>
+            that <b>your own</b> avalanche pushes off the board. The <b>own &minus;1</b> / <b>own 0</b>
+            switch decides what your own grains cost: under own &minus;1 you lose a point for every
+            grain of your own that your avalanche throws out (and the game is played to 5 points), under
+            own 0, the default, they cost nothing. Grey grains count for nobody; what an opponent pushes out
+            is their point, and their loss is not your gain. First to the winning number (the <b>win</b>
             slider) takes the game. Slide <b>win</b> to <b>X</b> and the grey grains become the
             clock instead: play runs until the last grey grain has left the board, and whoever then
             has most points wins. If the scores are level at that moment the board flashes
@@ -665,6 +668,7 @@
             <button data-np="2" class="active">2P</button><button data-np="3">3P</button><button data-np="4">4P</button>
           </span>
           <button id="gbCPU" title="Toggle the computer opponent">no CPU</button>
+          <button id="gbOwn" title="Rule for YOUR OWN folders that your avalanche throws out of the window — click to toggle: own 0 — they cost nothing · own −1 — each costs you a point (win target set to 5)">own 0</button>
           <label class="winsel" title="Grains that decide the winner — at the end point X the game runs until every grey folder is off the board and whoever then has most points wins; a tie goes to SUDDEN DEATH, first outright lead wins">win <b id="gbTargetVal">10</b>
             <input type="range" id="gbTarget" min="0" max="5" step="1" value="2">
             <span id="gbGreyTag" style="display:none">Grey=0</span>
@@ -828,6 +832,7 @@ const State = {
          ai:[false,false,false,false,false], aiOn:false, aiMode:0,  // 0 humans · 1 CPU · 2 CPU*
          variant:"simple",           // "arrows" = full rules, "simple" = grains only
          lost:[0,0,0,0,0],           // lost[p] = grains of player p that have fallen off the grid
+         ownCost:false,              // rule switch: your own grains that YOUR avalanche pushes out cost a point each (own −1) or nothing (own 0)
          scored:[0,0,0,0,0],         // scored[p] = points p has earned, i.e. other players' grains
                                      //   pushed off the grid by avalanches p himself started
          mover:0,                    // whose move the avalanche now running belongs to
@@ -1070,7 +1075,8 @@ function toppleSite(k){
         if(ow){ G.lost[ow]++;
           /* the point goes to whoever started this avalanche, and only if the grain is
              somebody else's — nobody scores off a grain another player pushed out */
-          if(G.mover && ow!==G.mover) G.scored[G.mover]++; }
+          if(G.mover && ow!==G.mover) G.scored[G.mover]++;
+          else if(G.mover && ow===G.mover && G.ownCost) G.scored[G.mover]--; }   // own folder out: −1
         else G.greyLost++; }
       if(slow) spawnDepart(i,j,ddx[d],ddy[d],ow);
     }
@@ -1554,7 +1560,7 @@ function oppCanWinNow(S1, p, myPts, greysLeft, drops, budget){
         if(S1.z[gk]<State.crit) continue;            // a quiet drop can never win a game
         if(budget.n--<=0) return false;              // out of budget: accept the move as safe
         const lost=simMoveOn(cloneSim(S1), q, ak, ad, gk);
-        let gq=0; for(let r=1;r<=P;r++) if(r!==q) gq+=lost[r];
+        const gq=moveGain(q,lost);
         if(xMoveOutcome(G.scored[q]+gq, greysLeft-lost[0], om)===1) return true;
       }
     }
@@ -1564,8 +1570,9 @@ function oppCanWinNow(S1, p, myPts, greysLeft, drops, budget){
 /* the move's worth under the GAME scoring: one point per folder of any OTHER player
    pushed off; the mover's own folders and the grey ones count nothing at all */
 function moveGain(p,lost){
-  const P=State.game.players; let g=0;
+  const G=State.game, P=G.players; let g=0;
   for(let q2=1;q2<=P;q2++) if(q2!==p) g+=lost[q2];
+  if(G.ownCost) g-=lost[p];                        // the mover's own folders out cost a point each
   return g;
 }
 /* gain-only shortcut: a drop on a sub-critical site cannot start an avalanche, so its
@@ -1925,7 +1932,7 @@ function aiChooseMoveMulti(p){
       if(!bmv) break;
       const lost=simMoveOn(S, q, bmv[0], bmv[1], bmv[2]); simsLeft--;   // his move happens
       greyGone+=lost[0];
-      let gq=0; for(let r=1;r<=P;r++) if(r!==q) gq+=lost[r];
+      const gq=moveGain(q,lost);
       let om=0; for(let r=1;r<=P;r++) if(r!==q && sc[r]+gained[r]>om) om=sc[r]+gained[r];
       if(xMoveOutcome(sc[q]+gained[q]+gq, rootGrey-greyGone, om)===1){ deadNow=true; break; }
       gained[q]+=gq;                                   // that round did NOT hand q the game
@@ -2009,7 +2016,7 @@ function aiChooseMoveDeepMulti(p){
       if(!bmv) break;
       const lost=simMoveOn(S, q, bmv[0], bmv[1], bmv[2]); simsLeft--;
       greyGone+=lost[0];
-      let gq=0; for(let r=1;r<=P;r++) if(r!==q) gq+=lost[r];
+      const gq=moveGain(q,lost);
       let om=0; for(let r=1;r<=P;r++) if(r!==q && sc[r]+gained[r]>om) om=sc[r]+gained[r];
       if(xMoveOutcome(sc[q]+gained[q]+gq, rootGrey-greyGone, om)===1){ deadNow=true; break; }   // NEVER allow another player to win
       gained[q]+=gq;
@@ -2330,7 +2337,7 @@ function aiChooseMoveUltraMulti(p){
       if(!bmv) return false;
       const lost=simMoveOn(S, q, bmv[0], bmv[1], bmv[2]); simsLeft--;
       delta[0]+=lost[0];
-      let gq=0; for(let r=1;r<=P;r++) if(r!==q) gq+=lost[r];
+      const gq=moveGain(q,lost);
       let om=pPts; for(const r of order) if(r!==q && sc[r]+delta[r]>om) om=sc[r]+delta[r];
       if(xMoveOutcome(sc[q]+delta[q]+gq, rootGrey-pGrey-delta[0], om)===1)
         return true;                                   // NEVER allow another player to win
@@ -4716,9 +4723,12 @@ function syncWordUI(){
      +"transient of random "+many+" with full relaxation, so play begins deep in the critical state. "
      +"Pre-existing "+many+" are grey and belong to nobody.");
   html("ledgerHint","<b>lost</b> is how many of that player's own "+many+" have fallen off the open "
-     +"boundary, whoever pushed them. Your <b>score</b> counts only the "+many+" belonging to <i>other "
+     +"boundary, whoever pushed them. Your <b>score</b> counts the "+many+" belonging to <i>other "
      +"players</i> that <b>your own</b> avalanches have pushed off &mdash; a "+one+" that somebody else "
-     +"pushes out earns you nothing, so with 3 or 4 players each point has exactly one owner. Grey "
+     +"pushes out earns you nothing, so with 3 or 4 players each point has exactly one owner"
+     +(State.game.ownCost? " &mdash; and under <b>own &minus;1</b> every one of <b>your own</b> "+many+" that your avalanche throws out <b>costs you a point</b> (the win target is then 5)."
+                          : "; under <b>own 0</b> your own "+many+" going out cost nothing.")
+     +" Grey "
      +many+" that were on the lattice before the game count for nobody. Setting <b>win</b> to its "
      +"end point <b>X</b> plays instead until every grey "+one+" is off the board (Grey&nbsp;=&nbsp;0), "
      +"and whoever then holds the most points wins. If the top scores are level at that moment the "
@@ -4870,6 +4880,7 @@ function gameSyncUI(){
   document.getElementById("gLval").textContent=G.L;
   syncTargetUI();
   syncSizeSeg(); syncCPUBtn(); syncGameViewBtn(); syncWordUI();
+  if(typeof syncOwnSeg==="function") syncOwnSeg();
   let nAI=0; for(let p=1;p<=G.players;p++) if(G.ai[p]) nAI++;   // only seats actually in play
   document.getElementById("gameHeadTxt").textContent =
     "Territory sandpile — "+G.players+" players"+(nAI?" ("+nAI+" computer)":"");
@@ -5328,6 +5339,14 @@ function wire(){
     G.aiOn=G.aiMode>0;
     for(let p=1;p<=4;p++) G.ai[p]=(G.aiMode>0 && p===2);
     if(G.on && !G.animating && !G.over && G.ai[G.turn]) G.aiTimer=24; };
+  /* own −1 ⇄ own 0: a scoring rule change resets the win target (5 under own −1, the usual
+     10 under own 0) and starts a fresh game */
+  window.syncOwnSeg=function(){ const G=State.game, b=document.getElementById("gbOwn"); if(!b) return;
+    b.textContent = G.ownCost? "own \u22121" : "own 0";      // the button always names the rule in force
+    b.classList.toggle("active", G.ownCost); };
+  document.getElementById("gbOwn").onclick=()=>{ const G=State.game;
+    G.ownCost=!G.ownCost; G.target= G.ownCost? 5 : defaultTarget(); gameTargetRange(); syncOwnSeg();
+    syncWordUI(); if(G.on) newGame(); };
   const tg=document.getElementById("gbTarget");
   tg.oninput=()=>{ const G=State.game; G.target=WIN_STEPS[parseInt(tg.value)]||WIN_STEPS[0];
     syncTargetUI();
@@ -5507,9 +5526,11 @@ function wire(){
       +'the same game without the arrow half: pure drops, for a quick first game.)</p>',
     win:
       '<p><span class="exh">How to win.</span> You score <b>one point for every folder belonging to '
-      +'another player that <i>your own</i> avalanche pushes off the board</b>. Your own folders going '
-      +'over the edge cost you nothing but earn you nothing, grey folders count for nobody, and what an '
-      +'opponent pushes out is <i>their</i> point &mdash; every departing folder is credited exactly once.</p>'
+      +'another player that <i>your own</i> avalanche pushes off the board</b>. Under the <b>own &minus;1</b> rule '
+      +'(switch it on in the control strip; the win target then drops to 5) you also <b>lose a point for every '
+      +'folder of your own</b> that your avalanche throws out; under <b>own 0</b>, the default, they cost nothing. '
+      +'Grey folders count for nobody, and what an opponent pushes out is <i>their</i> point &mdash; every '
+      +'departing folder is booked exactly once.</p>'
       +'<p><b>The race:</b> with <b>win</b> set to a number (3&ndash;25), the first player to reach it '
       +'takes the game on the spot.</p>'
       +'<p><b>The X game:</b> slide <b>win</b> to its end point <b>X</b> and the grey folders become the '
