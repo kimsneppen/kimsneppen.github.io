@@ -142,11 +142,27 @@
   /* the display panel's own head line: name on the left, a compact replica of the key
      controls filling the space to the right */
   .mainhead{display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin:0 0 8px; row-gap:5px;}
-  .apptitle{
+  /* the title is a button: it pulls down the story of the applet */
+  button.apptitle{
     font-size:14px; font-weight:700; letter-spacing:.02em; white-space:nowrap;
+    background:none; border:1px solid transparent; padding:2px 6px 2px 0; border-radius:6px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:4px;
+  }
+  button.apptitle:hover{border-color:var(--accent);}
+  .apptitletxt{
     background:linear-gradient(90deg,#c084fc,#ff5d8f,#ffb347);
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
+  .titlecaret{color:var(--accent); font-size:12px;}
+  /* the learn fold sits under the head line, above the explainer */
+  #learnWrap{margin:0 0 8px;}
+  #learnWrap .foldhead{font-size:12px;}
+  #learnWrap .about{font-size:13px; line-height:1.65; color:#d6d1e6; max-width:900px;}
+  #learnWrap .about p{margin:0 0 10px;}
+  #learnWrap .sectiontitle{margin-top:14px; font-size:12px;}
+  #learnWrap .refs p{font-size:11.5px;}
+  #learnWrap .kbox{border-left:3px solid var(--accent); padding:6px 10px; margin:8px 0 10px; background:#181828; border-radius:0 6px 6px 0;}
+  @media (max-width: 560px){ #learnWrap .about{font-size:12.5px;} }
   /* kept snug against the title rather than pushed to the far right, so a narrow phone
      fills the line instead of showing a wide gap */
   .minibar{display:flex; gap:5px; align-items:center; flex-wrap:wrap; flex:0 1 auto; justify-content:flex-start;}
@@ -154,7 +170,7 @@
   .minibar .seg button{padding:3px 6px;}
   .minibar button.freeze{background:linear-gradient(90deg,#0ea5e9,#22d3ee); border-color:#22d3ee; color:#04121a; font-weight:600;}
   @media (max-width: 560px){
-    .apptitle{font-size:12.5px;}
+    button.apptitle{font-size:12.5px;}
     .mainhead{gap:4px; row-gap:4px;}
     /* the wrapper dissolves so the button groups become siblings of the title and pack
        alongside it instead of leaving the title alone on a half-empty row */
@@ -198,6 +214,28 @@
   @media (max-width: 900px){
     .ovbtns button{width:42px; height:42px; font-size:18px;}   /* easy finger targets */
   }
+  /* ---- the three-way view segment: the option in use is always lit ---- */
+  .viewseg{flex:1 1 auto; display:flex;}
+  .viewseg button{flex:1 1 auto; padding:6px 4px; font-size:11.5px; white-space:nowrap;}
+  .seg button[data-view].active{background:linear-gradient(90deg,var(--accent2),var(--hot)); border-color:var(--accent); color:#fff;}
+  /* ---- the lattice-size pull-down ---- */
+  select{
+    background:#0d0d17; color:var(--txt); border:1px solid var(--edge); border-radius:6px;
+    padding:6px 8px; font-size:13px; font-weight:700; width:100%; cursor:pointer;
+  }
+  select:hover{border-color:var(--accent);}
+  /* ---- the statistics panels: square plots, each with its own two corner buttons ---- */
+  .plotholder{position:relative;}
+  .plotholder canvas{width:100%; height:auto;}
+  .plotov{right:5px; bottom:5px; gap:4px;}
+  .plotov button{width:26px; height:26px; font-size:12px; border-radius:6px;}
+  .plotov button.active{background:linear-gradient(90deg,var(--accent2),var(--hot)); border-color:var(--accent); color:#fff;}
+  .plotbar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 10px;}
+  .plotbarlabel{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:600;}
+  .plotbarhint{flex:1 1 200px; text-align:right;}
+  #btnAvMem{font-size:11px; padding:4px 6px;}
+  #btnAvMem.active{background:linear-gradient(90deg,var(--accent2),var(--hot)); border-color:var(--accent); color:#fff;}
+  @media (max-width: 560px){ .plotbarhint{display:none;} }
   .about{font-size:11.5px; line-height:1.5; color:#c9c4dd;}
   .about p{margin:0 0 8px;}
   .about b{color:var(--txt);}
@@ -253,7 +291,9 @@
       <button id="btnGame" class="model">Game</button>
     </div>
     <div class="row" id="rowView">
-      <button id="btnViewTgl" style="flex:1 1 auto">View: top ▸ 3D</button>
+      <span class="seg viewseg" title="How the pile is seen: 3D (60°), 3D front — the game's office-front perspective (20°, seen low from the front) — or straight down (2D)">
+        <button data-view="3d">View 3D</button><button data-view="side">View 3D front</button><button data-view="2d">View 2D</button>
+      </span>
       <button id="btnGrass" style="flex:1 1 auto">○ Grassberger</button>
     </div>
 
@@ -332,7 +372,7 @@
     </label>
 
     <label class="field">Lattice size L = <span class="val" id="Lval">32</span>
-      <input type="range" id="Lslider" min="0" max="1" value="0" step="1">
+      <select id="Lsel" title="Side length of the L×L lattice"></select>
     </label>
 
     <div class="sectiontitle">Drive mode (grain drop site)</div>
@@ -388,8 +428,9 @@
       <div class="foldbody">
         <div class="sectiontitle" style="margin-top:0">Colour scheme (all panels)</div>
         <div class="row">
-          <button id="btnScheme" class="primary">Colour: Mountain</button>
+          <button id="btnScheme" class="primary">Colour: Stress</button>
         </div>
+        <div class="hint"><b>Stress</b> colours every grain by its level against the threshold: <span style="color:#e83430">red</span> at or over it (the site topples), <span style="color:#fcd62c">yellow</span> one grain short, <span style="color:#46c46e">green</span> and <span style="color:#5a90f0">blue</span> safely below. A grain that moves keeps its colour and fades to the new one on the update timescale. The other schemes colour a whole column by its height.</div>
         <div class="row">
           <button id="btnBg" title="Switch the display panels between a black and a white background — saved PNGs follow along">Background: Black ▸ White</button>
         </div>
@@ -414,133 +455,182 @@
       </div>
     </div><!-- /lookWrap -->
 
-    <!-- ================= ABOUT / REFERENCES ================= -->
-    <div class="fold closed" id="aboutWrap">
-      <div class="foldhead" id="aboutHead"><span id="aboutCaret">&#9656;</span> About the models &amp; the game</div>
-      <div class="foldbody">
-        <div class="about">
-          <p><b>The sandpile.</b> Grains are dropped on an L&times;L lattice with open edges. A site holding
-          more than its critical number topples, passing grains to its neighbours and possibly setting
-          them off in turn. Left to itself the pile drives towards a critical state in which avalanches
-          come in all sizes &mdash; self-organized criticality.</p>
-
-          <p><b>BTW</b> (z<sub>c</sub>=3) &mdash; a site above 3 grains sheds 4, one along each link;
-          deterministic and abelian.<br>
-          <b>Manna(4)</b> &mdash; same threshold, but each of the 4 grains hops to a randomly chosen
-          neighbour, so a neighbour may receive anything from 0 to 4.
-          <b>Manna(2)</b> &mdash; the same stochastic rule at threshold 1: a site holding 2 folders
-          already topples, sending both to randomly chosen neighbours.<br>
-          <b>Z<sub>c</sub>=1 rotor pile</b> &mdash; every site carries a dark grey arrow pointing at where
-          its next grain will go. A site holding more than one grain sheds its two lowest grains one at a
-          time; each leaves along the arrow, which then turns 90&deg; clockwise. Apart from where grains
-          are added, the dynamics are entirely deterministic &mdash; the Eulerian-walker model.<br>
-          <b>Nem1 rotor pile</b> &mdash; the <i>nematic</i> counterpart at threshold 1. Each site carries a
-          <b>bi-directional</b> arrow with a <b>broad end</b> and a <b>narrow end</b>. The grain on top of
-          the pile leaves by the broad end and the one below it by the narrow end; the arrow then flips
-          through <b>180&deg;</b>, so broad and narrow swap and the next toppling deals the pair out the
-          other way round. Nothing about where earlier grains came from is needed &mdash; the glyph
-          itself carries the whole state.</p>
-
-          <p><b>The Grassberger office</b> retells the same rule as a room of clerks. Each desk holds a
-          stack of folders; when a clerk&rsquo;s pile passes the critical number he stands up in
-          frustration and shoves one folder onto each neighbouring desk, then sits down pleased with
-          himself. Folders crossing the boundary sail out of the open windows.</p>
-
-          <p><b>A and S</b> probe a frozen configuration: <b>S</b>[p] is the size of the avalanche you
-          would get by seeding site p, and <b>A</b> is the total number of topplings at each site summed
-          over all those probe avalanches.</p>
-
-          <p><b>The game.</b> Two to four players share one pile. Every grain keeps the colour of whoever
-          added it and travels with that colour through every toppling; grains already on the lattice
-          when play begins are grey and belong to nobody. A site is <i>controlled</i> by whoever holds the
-          strict majority of the coloured grains on it. A move is: optionally set or turn one arrow on a
-          site you control, then drop one grain on any site at all. The grains that topple away are taken off the
-          <i>top</i> of the pile and then downwards, one per grain distributed. You score a point for
-          every grain belonging to <i>another</i> player that <b>your own</b> avalanche pushes off the
-          open boundary &mdash; what somebody else pushes out is their point, not yours, so in a three-
-          or four-handed game each grain that leaves is credited once and only once. First to the
-          winning number takes it. With <b>win</b> at its end point <b>X</b> the game instead runs
-          until the last grey grain is off the board, and the best score then wins; on a level score
-          the game enters <b>&#9889; sudden death</b> &mdash; play continues, and the first player to
-          take the outright lead wins immediately.</p>
-
-          <p><b>The computer opponents.</b> At most one seat &mdash; Player&nbsp;2 &mdash; is played
-          by the machine, at the level the CPU switch shows. In the Arrow game every level
-          considers, at <i>each step of its forecast</i>, every folder drop combined with every
-          allowed turn of the arrows &mdash; an arrow may only be turned on a site that no
-          opponent controls, judged on the board <i>as it stands at that step</i> of the
-          look-ahead. When the exact product of options would overrun the level&rsquo;s search
-          budget, the arrow lists are sampled down; the folder drops are always searched in full.
-          <b>CPU<sup>1</sup></b> tries every move of its own AND replays <i>every reply</i> of the
-          opponent, and plays the move with the best points-difference after the
-          opponent&rsquo;s best answer; with 3 or 4 players it instead lets every opponent in
-          turn play their own best answer on the evolving board, their points against each
-          other fully included.
-          <b>CPU<sup>2</sup></b> looks <i>two full rounds</i> ahead &mdash; its move, the reply, its
-          follow-up, the final answer (four plies; with 3&ndash;4 players: both opponent rounds).
-          With 3 or 4 players the ladder deliberately stops here: a deeper search would have to
-          predict how the rivals play against <i>each other</i>, and beyond two rounds that
-          forecast is mostly noise bought at a steep price &mdash; so CPU<sup>3</sup> and
-          CPU<sup>4</sup> are 2-player levels.
-          <b>CPU<sup>3</sup></b> looks <i>three full rounds</i> ahead &mdash; itself, opponent, itself,
-          opponent, itself, opponent, six plies in all combinations. It is deliberately slow on
-          the larger boards; it is offered in the 2-player game only.
-          <b>CPU<sup>4</sup></b> looks <i>four full rounds</i> ahead &mdash; eight plies in all
-          combinations, the deepest level of all. The tree grows so fast that it is offered only
-          on the small 2-player boards L&nbsp;=&nbsp;3 and 4, in the Folders and the Arrow game
-          alike (on L&nbsp;=&nbsp;5 and 7 the switch tops out at CPU<sup>3</sup>). The deep
-          levels share a hard budget of 10&nbsp;million simulated avalanches per move.
-          Typical thinking times in the Arrow game: CPU<sup>3</sup> takes about 0.3&nbsp;s on
-          L&nbsp;=&nbsp;3, 2&ndash;4&nbsp;s on L&nbsp;=&nbsp;4, ~8&nbsp;s on L&nbsp;=&nbsp;5 and
-          ~18&nbsp;s on L&nbsp;=&nbsp;7; CPU<sup>4</sup> about 2&ndash;3&nbsp;s on
-          L&nbsp;=&nbsp;3 and ~7&nbsp;s on L&nbsp;=&nbsp;4 &mdash; occasionally longer for
-          either in a tangled midgame.
-          Every level &mdash; from CPU<sup>1</sup> up to CPU<sup>4</sup> &mdash; obeys the same two absolutes: a move that
-          wins the game on the spot is played at once, and a move that would end the game with a
-          rival in front, or hand <i>any</i> other player an immediately winning reply, is excluded
-          outright &mdash; under a numeric target, on the X game&rsquo;s grey clock, and in sudden
-          death alike. On equal value the drop farthest from the boundary is preferred.</p>
-
-          <div class="sectiontitle">References</div>
-          <div class="refs">
-            <p>P. Bak, C. Tang, and K. Wiesenfeld. &ldquo;Self-organized criticality: An explanation of the
-            1/f noise.&rdquo; <i>Physical Review Letters</i> <b>59</b>.4 (1987): 381.</p>
-            <p>S. S. Manna. &ldquo;Two-state model of self-organized criticality.&rdquo; <i>Journal of
-            Physics A: Mathematical and General</i> <b>24</b>.7 (1991): L363&ndash;L369.</p>
-            <p>V. B. Priezzhev, et al. &ldquo;Eulerian walkers as a model of self-organized
-            criticality.&rdquo; <i>Physical Review Letters</i> <b>77</b>.25 (1996): 5079.</p>
-            <p>H. Nakanishi, and K. Sneppen. &ldquo;Universal versus drive-dependent exponents for
-            sandpile models.&rdquo; <i>Physical Review E</i> <b>55</b>.4 (1997): 4012.</p>
-            <p>D. Dhar. &ldquo;Theoretical studies of self-organized criticality.&rdquo; <i>Physica A:
-            Statistical Mechanics and its Applications</i> <b>369</b>.1 (2006): 29&ndash;70.</p>
-            <p>S. S. Manna, A. L. Stella, P. Grassberger, &amp; R. Dickman (Eds.). (2022).
-            <i>Self-Organized Criticality, Three Decades Later.</i> Frontiers Media SA.</p>
-            <p>M. Engsig, and K. Sneppen. &ldquo;Fractals in the Critical Attractor of the Classical
-            Sandpile Model.&rdquo; <i>Physical Review Letters</i> <b>134</b>.18 (2025): 187201.</p>
-          </div>
-          <p class="credit">This applet and the game is made by Kim Sneppen.</p>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- ============ MAIN COLUMN: main, 3 small plots, then A and S below ============ -->
   <div class="col">
     <div class="card">
       <div class="mainhead" id="mainTitle">
-        <span class="apptitle">Sandpile SOC</span>
+        <button class="apptitle" id="appTitleBtn" title="What is this? Click for the story of sandpiles, self-organized criticality, the office, the plots and the game"><span class="apptitletxt">Sandpile SOC</span> <span id="titleCaret" class="titlecaret">&#9662;</span></button>
         <span class="minibar">
           <span class="seg">
             <button data-mini="btw">BTW</button><button data-mini="manna">Manna<sup>4</sup></button><button data-mini="game">Game</button>
           </span>
           <span class="seg">
-            <button data-mini="view">View: top &#9656; 3D</button><button data-mini="grass">&#9675; Grassberger</button>
+            <button data-view="3d">3D</button><button data-view="side">3D front</button><button data-view="2d">2D</button><button data-mini="grass">&#9675; Grassberger</button>
           </span>
           <span class="seg">
             <button data-mini="start">&#9654; Start</button><button data-mini="step">Step</button><button data-mini="reset">Reset</button>
           </span>
           <button data-mini="resetcrit" title="Reset to a critical configuration: drop L&sup3; grains and relax">Reset Crit</button>
         </span>
+      </div>
+      <!-- ======= the story of the applet: opened from the title itself ======= -->
+      <div class="fold closed" id="learnWrap">
+        <div class="foldhead" id="learnHead"><span>&#9656;</span> <span>Sandpile SOC &mdash; what is going on here?</span></div>
+        <div class="foldbody">
+          <div class="about">
+            <p><b>Imagine a table, and someone dropping grains of sand onto it one at a time.</b>
+            At first nothing happens: the grains just pile up. But a heap of sand can only be so
+            steep. Sooner or later one more grain makes a little slope collapse, sand slides down,
+            and some of it may even fall off the edge of the table. Most of these slides are tiny.
+            Now and then one is enormous. The remarkable thing is that <i>nobody</i> is adjusting
+            anything &mdash; the pile finds this knife-edge state entirely by itself. Physicists
+            call that <b>self-organized criticality</b>, or <b>SOC</b> for short. Earthquakes,
+            forest fires, avalanches, traffic jams and even brain activity have been described with
+            the same idea.</p>
+
+            <div class="sectiontitle">The model on the screen</div>
+            <p>The applet plays the simplest version of this story, invented in 1987 by Per Bak, Chao
+            Tang and Kurt Wiesenfeld (their initials give it its name, the <b>BTW model</b>). The
+            table is a square grid of <b>L&thinsp;&times;&thinsp;L</b> sites, and each site holds a
+            whole number of grains. The rule is:</p>
+            <div class="kbox">Drop one grain on a random site. If a site now holds <b>more than 3</b>
+            grains, it <b>topples</b>: it gives one grain to each of its four neighbours. A grain
+            handed to a site on the edge of the grid simply falls off the table. Keep toppling until
+            every site is calm again &mdash; that whole chain of events is one <b>avalanche</b>. Then
+            drop the next grain.</div>
+            <p>Try it: press <b>Reset</b>, then <b>Start</b>, and set the update speed to
+            &ldquo;1 toppling / frame&rdquo; so you can follow every step. The <b>Stress</b> colour
+            scheme tells you how close each site is to toppling: blue and green grains are safe,
+            a <span style="color:#fcd62c">yellow</span> grain means one more and the site goes,
+            <span style="color:#e83430">red</span> means it is toppling right now.</p>
+            <p>You will see something odd. A single grain usually does nothing at all. Sometimes it
+            sets off a handful of topplings. Occasionally it triggers an avalanche that sweeps
+            across the entire grid. There is no &ldquo;typical&rdquo; size &mdash; that is the
+            signature of criticality.</p>
+
+            <div class="sectiontitle">Reading the plots</div>
+            <p><b>Avalanche size vs. time</b> shows how big each avalanche was (the number of
+            topplings, <i>s</i>). Notice the spikes of all heights. <b>Size distribution</b> counts
+            how often each size occurs and plots it on logarithmic axes. If the points fall on a
+            straight line, the distribution is a <b>power law</b>, <i>P(s)&thinsp;&prop;&thinsp;s<sup>&minus;&tau;</sup></i>,
+            and the slope of the dashed fit is <i>&minus;&tau;</i>. A power law has no typical scale:
+            doubling the size always reduces the probability by the same factor, however big you
+            already are. The grey region marks sizes larger than about a third of the grid, where
+            the finite table cuts the avalanches off. The <b>area distribution</b> does the same for
+            the number of distinct sites an avalanche touched.</p>
+            <p><b>Mass vs. linear size</b> asks how the number of topplings grows with the width of
+            the avalanche (the average of its extent in x and in y). If it grew like an ordinary
+            flat patch you would expect an exponent of 2; the applet fits the exponent for you, both
+            for all avalanches and for those that never reached the edge. <b>Circumference vs.
+            linear size</b> does the same for the boundary of the avalanche: a smooth shape would give
+            an exponent of 1, a ragged, fractal one gives more. These two plots are exactly the
+            kind of measurement researchers make to characterise the geometry of critical avalanches.</p>
+            <p>The <b>avalanche map</b> shows one avalanche in 3-D: taller means that site toppled
+            more often. Red balls just outside the grid mark where grains fell off the table &mdash;
+            one ball per grain, so you can count them. The <b>Memory</b> button lets you flip
+            between the latest avalanches, the largest of the whole run, and a
+            &ldquo;typical big one&rdquo; of 1&ndash;3% of the grid.</p>
+
+            <div class="sectiontitle">The other models</div>
+            <p><b>Manna(4)</b> keeps the rule &ldquo;more than 3 grains topples&rdquo; but each of
+            the four grains hops to a <i>randomly chosen</i> neighbour, so one neighbour might get
+            two and another none. <b>Manna(2)</b> topples already at two grains and sends both
+            to random neighbours. These <b>stochastic</b> piles are the workhorses of many research
+            papers, and a classic question is whether they show the same exponents as BTW.</p>
+            <p><b>Z<sub>c</sub>=1 rotor pile.</b> Every site carries a small dark arrow. A site
+            holding more than one grain sends its two lowest grains out one at a time: each leaves
+            along the arrow, and the arrow then turns 90&deg; clockwise. Nothing is random except
+            where the grains are dropped &mdash; the arrows remember everything. This is the
+            &ldquo;Eulerian walker&rdquo; model of Priezzhev and co-workers.</p>
+            <p><b>Nem1 nematic pile.</b> The same threshold of one grain, but the arrow is a
+            two-headed <b>axis</b> with a broad end and a narrow end. The top grain leaves by the
+            broad end, the next by the narrow end, and then the axis flips through 180&deg; so the
+            next toppling deals the pair out the other way round. An axis never changes its
+            direction (only a player may turn it), so the random start makes sure every row and
+            every column has at least one vertical and one horizontal axis &mdash; otherwise part
+            of the board could seal itself off as a one-dimensional world.</p>
+
+            <div class="sectiontitle">The Grassberger office</div>
+            <p>The physicist Peter Grassberger retold the BTW rule as a room full of clerks. Each
+            desk holds a stack of folders; when a clerk&rsquo;s pile passes the critical number he
+            stands up in frustration and shoves one folder onto each neighbouring desk, then sits
+            down pleased with himself. Folders shoved across the boundary sail out of the open
+            windows. It is exactly the same mathematics &mdash; but it is much easier to <i>see</i>
+            an avalanche spread through the office than through a grid of numbers. Press
+            <b>Grassberger</b> to switch scenery, and try the &#9995; button: it freezes the picture
+            at the moment a folder is flying out of a window.</p>
+
+            <div class="sectiontitle">A and S &mdash; probing a frozen pile</div>
+            <p>Freeze the pile with <b>Freeze &amp; pause</b>, then press <b>Compute A &amp; S</b>.
+            For every site <i>p</i> the applet asks: <i>if I dropped the next grain here, how big
+            would the avalanche be?</i> That number is <b>S</b>[p]. <b>A</b> adds up, for every
+            site, how many times it would topple summed over all those trial avalanches. The
+            resulting maps have beautiful, intricate structure &mdash; the fractal patterns hidden
+            in the critical state that Engsig and Sneppen described in 2025.</p>
+
+            <div class="sectiontitle">The game</div>
+            <p>Press <b>Game</b> and the pile becomes a board game for two to four players. Every
+            grain (or folder) you drop keeps your colour for as long as it stays on the board and
+            travels with every toppling; grains already on the board when play begins are grey and
+            belong to nobody. You <b>control</b> a site when your colour holds the strict majority
+            of the coloured grains on it.</p>
+            <p>A move has two halves. <b>&#9312;</b> <i>Optionally</i> turn the arrow on a site
+            that nobody controls or that you control yourself &mdash; this changes the order in
+            which that site will deal out its grains next time it topples. <b>&#9313;</b> Drop one
+            grain on <i>any</i> site. The avalanche that follows is completely deterministic: the
+            arrows deal every grain in a definite order, top of the pile first. (The <b>Folders</b>
+            variant skips the arrow half &mdash; pure drops, good for a first game.)</p>
+            <p><b>Scoring.</b> You get one point for every grain belonging to <i>another</i> player
+            that <b>your own</b> avalanche pushes off the board. Your own grains going over the
+            edge cost you nothing and earn you nothing; grey grains count for nobody; what an
+            opponent pushes out is their point. First to the winning number (the <b>win</b>
+            slider) takes the game. Slide <b>win</b> to <b>X</b> and the grey grains become the
+            clock instead: play runs until the last grey grain has left the board, and whoever then
+            has most points wins. If the scores are level at that moment the board flashes
+            <span class="exwin">&#9889; SUDDEN DEATH</span> and the first player to take the outright
+            lead wins.</p>
+            <p><b>Playing the computer.</b> Seat 2 can be a computer opponent. <b>CPU<sup>1</sup></b>
+            tries every one of its moves and every reply you could make, and picks the move that
+            comes out best after your best answer. <b>CPU<sup>2</sup></b> looks two full rounds
+            ahead, <b>CPU<sup>3</sup></b> three, <b>CPU<sup>4</sup></b> four and
+            <b>CPU<sup>5</sup></b> five &mdash; ten moves into the future. The deeper levels are
+            only offered on the small boards (L&nbsp;=&nbsp;3 and 4, two players) because the tree of
+            possibilities explodes: they think for anything from a few seconds to a minute, and the
+            applet is frozen while they do. Every level obeys two rules: a move that wins on the
+            spot is played at once, and a move that lets anybody else win on the next stroke is
+            never played. With three or four players the computer stops at CPU<sup>2</sup>, since
+            predicting how the other players fight <i>each other</i> is mostly guesswork beyond that.</p>
+
+            <div class="sectiontitle">Things to try</div>
+            <p>Compare the slope of the size distribution for BTW and Manna(4) on the same L. Watch
+            how the grey cutoff moves when you change L from 20 to 100. Run the <b>Crit</b> button
+            to jump straight to the critical state and see how much the mean height settles at.
+            Switch on <b>Trace grains</b> and follow how far a single grain wanders before it
+            leaves. In the game, try to make an arrow point your opponent&rsquo;s grains towards
+            the window.</p>
+
+            <div class="sectiontitle">References</div>
+            <div class="refs">
+              <p>P. Bak, C. Tang, and K. Wiesenfeld. &ldquo;Self-organized criticality: An explanation of the
+              1/f noise.&rdquo; <i>Physical Review Letters</i> <b>59</b>.4 (1987): 381.</p>
+              <p>S. S. Manna. &ldquo;Two-state model of self-organized criticality.&rdquo; <i>Journal of
+              Physics A: Mathematical and General</i> <b>24</b>.7 (1991): L363&ndash;L369.</p>
+              <p>V. B. Priezzhev, et al. &ldquo;Eulerian walkers as a model of self-organized
+              criticality.&rdquo; <i>Physical Review Letters</i> <b>77</b>.25 (1996): 5079.</p>
+              <p>H. Nakanishi, and K. Sneppen. &ldquo;Universal versus drive-dependent exponents for
+              sandpile models.&rdquo; <i>Physical Review E</i> <b>55</b>.4 (1997): 4012.</p>
+              <p>D. Dhar. &ldquo;Theoretical studies of self-organized criticality.&rdquo; <i>Physica A:
+              Statistical Mechanics and its Applications</i> <b>369</b>.1 (2006): 29&ndash;70.</p>
+              <p>S. S. Manna, A. L. Stella, P. Grassberger, &amp; R. Dickman (Eds.). (2022).
+              <i>Self-Organized Criticality, Three Decades Later.</i> Frontiers Media SA.</p>
+              <p>M. Engsig, and K. Sneppen. &ldquo;Fractals in the Critical Attractor of the Classical
+              Sandpile Model.&rdquo; <i>Physical Review Letters</i> <b>134</b>.18 (2025): 187201.</p>
+            </div>
+            <p class="credit">This applet and the game is made by Kim Sneppen.</p>
+          </div>
+        </div>
       </div>
       <!-- ======= the explainer: pull down the story of whichever game is on the board ======= -->
       <div class="fold closed" id="exWrap">
@@ -594,19 +684,85 @@
       <div class="legend" id="mainLegend"><span>low</span><span class="bar" id="legHeight"></span><span>high</span></div>
     </div>
 
+    <!-- the control bar the three statistics panels hang under: replicas of the run buttons -->
+    <div class="card plotbar" id="plotBar">
+      <span class="plotbarlabel">Statistics</span>
+      <span class="minibar">
+        <span class="seg">
+          <button data-mini="start">&#9654; Start</button><button data-mini="step">Step</button><button data-mini="reset">Reset</button>
+        </span>
+        <button data-mini="resetcrit" title="Reset to a critical configuration: drop L&sup3; grains and relax">Reset Crit</button>
+      </span>
+      <button id="btnAllPlotBg" title="Set the same background — dark or white — on all six plots at once">&#9680; all plots</button>
+      <span class="hint plotbarhint">On each plot: &#9680; background &middot; &#128247; download plot</span>
+    </div>
     <div class="smallrow" id="statRow">
       <div class="card">
         <h2>Avalanche size vs. time</h2>
-        <canvas id="timePlot" width="216" height="200"></canvas>
+        <div class="plotholder">
+          <canvas id="timePlot" width="216" height="216"></canvas>
+          <div class="ovbtns plotov">
+            <button data-pbg="time" title="Switch this plot between a dark and a white background">&#9680;</button>
+            <button data-pshot="time" title="Download plot">&#128247;</button>
+          </div>
+        </div>
       </div>
       <div class="card">
-        <h2>Size distribution (log-log, last ¾)</h2>
-        <canvas id="distPlot" width="216" height="200"></canvas>
+        <h2>Size distribution (log-log, last &frac34;)</h2>
+        <div class="plotholder">
+          <canvas id="distPlot" width="216" height="216"></canvas>
+          <div class="ovbtns plotov">
+            <button data-pbg="dist" title="Switch this plot between a dark and a white background">&#9680;</button>
+            <button data-pshot="dist" title="Download plot">&#128247;</button>
+          </div>
+        </div>
       </div>
       <div class="card">
-        <h2 style="white-space:nowrap">Last avalanche &gt; <span id="bigThrLabel" class="val">—</span></h2>
-        <canvas id="curPlot" class="tilt" width="216" height="200"></canvas>
+        <h2 style="white-space:nowrap"><span id="curTitle">Last avalanche</span> &gt; <span id="bigThrLabel" class="val">&mdash;</span></h2>
+        <div class="plotholder">
+          <canvas id="curPlot" class="tilt" width="216" height="216"></canvas>
+          <div class="ovbtns plotov">
+            <button data-pbg="cur" title="Switch this plot between a dark and a white background">&#9680;</button>
+            <button data-pshot="cur" title="Download plot">&#128247;</button>
+          </div>
+        </div>
+        <div class="row" style="margin-top:6px; align-items:center">
+          <button id="btnAvMem" style="flex:1 1 auto" title="Memory of five avalanches: the three most recent above the threshold, the largest of the run, and one of size between 1% and 3% of L&sup2;">Memory: latest</button>
+        </div>
         <input type="range" id="bigThr" min="10" max="100" value="10" style="margin-top:6px;">
+      </div>
+    </div>
+    <!-- the second line of statistics: avalanche geometry, all log–log over the last ¾ of the run -->
+    <div class="smallrow" id="statRow2">
+      <div class="card">
+        <h2>Area distribution (log-log, last &frac34;)</h2>
+        <div class="plotholder">
+          <canvas id="areaPlot" width="216" height="216"></canvas>
+          <div class="ovbtns plotov">
+            <button data-pbg="area" title="Switch this plot between a dark and a white background">&#9680;</button>
+            <button data-pshot="area" title="Download plot">&#128247;</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Mass vs. linear size (log-log)</h2>
+        <div class="plotholder">
+          <canvas id="massPlot" width="216" height="216"></canvas>
+          <div class="ovbtns plotov">
+            <button data-pbg="mass" title="Switch this plot between a dark and a white background">&#9680;</button>
+            <button data-pshot="mass" title="Download plot">&#128247;</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Circumference vs. linear size (log-log)</h2>
+        <div class="plotholder">
+          <canvas id="perimPlot" width="216" height="216"></canvas>
+          <div class="ovbtns plotov">
+            <button data-pbg="perim" title="Switch this plot between a dark and a white background">&#9680;</button>
+            <button data-pshot="perim" title="Download plot">&#128247;</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -639,8 +795,21 @@ const State = {
   aval:{ q:[], head:0, size:0, qVer:0, running:false },
   sizes:[], grains:0, lastSize:0, maxSize:0,
   lastBig:null, lastBigSize:0, bigThresh:10,
-  mode:"random", detIndex:0, running:false, scheme:"mountain", flat:false,
+  /* the avalanche memory: five remembered avalanches — the three most recent above the
+     threshold, the largest of the run, and one of size between 1% and 3% of L² */
+  avMem:null, avMemIdx:0,
+  /* per-avalanche geometry, one entry per avalanche in step with `sizes`:
+     areas — distinct sites that toppled; lins — linear size, (x-extent + y-extent)/2;
+     perims — circumference, sites of the avalanche with a neighbour outside it (the open
+     boundary counts as outside); lefts — 1 if any grain left the lattice */
+  areas:[], lins:[], perims:[], lefts:[],
+  avBox:{i0:0,i1:0,j0:0,j1:0,area:0},
+  mode:"random", detIndex:0, running:false, scheme:"stress", flat:false,
+  /* Stress scheme: every grain carries its own colour, which relaxes towards the colour
+     of the level it now sits on — stressCol[k] = one [r,g,b] per grain, bottom → top */
+  stressCol:null,
   lightBg:false,       // white-background display mode (saved PNGs follow along)
+  plotBg:{time:false, dist:false, cur:false, area:false, mass:false, perim:false},   // each statistics plot has its own background switch
   /* the freeze-at-the-throw button (lower-right corner of the display):
      snapArm  — armed: the next folder over the boundary raises snapWait
      snapWait — a throw has happened; hold the moment the folder is mid-window
@@ -699,6 +868,8 @@ function setModel3(name){
   State.manna2=(name==="manna2");                 // Manna at threshold 1: 2 folders already topple
   State.thr1=State.zc1||State.nem1||State.manna2; // the threshold-1 models shed two grains
   State.crit=State.thr1?1:3;
+  State.stressCol=null;                                              // the Stress levels move with the threshold
+  if(document.getElementById("legHeight")) setLegends();
   if(typeof window!=="undefined" && window.exAuto) window.exAuto();  // the explainer follows the model
 }
 function setZc1(on){ setModel3(on?"zc1":"btw"); }   // kept for the older call sites
@@ -764,13 +935,15 @@ function alloc(L){
      ends of the nematic axis are equally deep inside the lattice. */
   State.inDir=new Int8Array(N).fill(-1);
   State.game.sel=-1;
-  State.z=new Int16Array(N); State.Acur=new Int32Array(N);
+  State.z=new Int16Array(N); State.Acur=new Int32Array(N); State.exitCur=[];
   State.Aprobe=new Int32Array(N); State.Sprobe=new Int32Array(N);
   State.frozen=null; State.mark=new Int32Array(N); State.markVer=0;
   State.upd=new Int32Array(N); State.updVer=0; State.particles=[];
   State.aval={ q:[], head:0, size:0, qVer:0, running:false };
   State.sizes=[]; State.grains=0; State.lastSize=0; State.maxSize=0; State.detIndex=0;
+  State.areas=[]; State.lins=[]; State.perims=[]; State.lefts=[];
   State.lastBig=new Int32Array(N); State.lastBigSize=0;
+  avMemReset(); State.stressCol=null;
   State.gbPhase=new Int8Array(N); State.gbTimer=new Int16Array(N); State.gbFolders=[]; State.gbPending=[];
   State.gbStacks=new Array(N); for(let q=0;q<N;q++) State.gbStacks[q]=[];
   State.gbWin={n:new Int16Array(L), s:new Int16Array(L), e:new Int16Array(L), w:new Int16Array(L)};
@@ -799,11 +972,14 @@ function beginGrainAt(k0, sh, owner){
   const z=State.z, a=State.aval; State.avalId++;
   if(State.grassberger && !State.gbStacks) gbInitStacks();   // sync folder identities before the new grain lands
   z[k0]++; State.grains++; State.Acur.fill(0); State.updVer++;
+  State.exitCur.length=0;                                    // grains leaving the lattice in this avalanche
+  { const B=State.avBox; B.i0=B.j0=1e9; B.i1=B.j1=-1; B.area=0; }
   if(State.inDir) State.inDir[k0]=-1;                        // this grain arrived from outside the lattice
   if(State.game.on){ State.own[k0].push(owner||0);           // the new grain keeps its player's colour for life
     State.game.mover=owner||0; }                             // …and this whole avalanche is that player's move
   if(State.trace){ const L=State.L; State.stacks[k0].push({path:[[k0%L,(k0/L)|0]], off:[traceJit(),traceJit()]}); }
   if(State.grassberger){ State.gbStacks[k0].push(sh!==undefined?sh:Math.random()); }
+  if(State.stressCol){ const sc=State.stressCol[k0]; if(sc.length===z[k0]-1) sc.push(stressLevelRGB(z[k0]).slice()); }   // the new grain lands in its level's colour
   a.q=[]; a.head=0; a.size=0; a.qVer=++State.markVer;
   if(z[k0]>State.crit){ State.mark[k0]=a.qVer; a.q.push(k0); a.running=true; }
   else { a.running=false; finalizeAval(); }
@@ -842,7 +1018,10 @@ function toppleSite(k){
   const rotor=(!!own || zc1) && !nem1;         // deal from the arrow round the compass
   const crit=State.crit;
   let rot = useArrow ? (arw>=0?arw:0) : -1;    // rotor heading, or the nematic axis
-  z[k]-=nOut; a.size++; State.Acur[k]++;
+  z[k]-=nOut; a.size++;
+  if(State.Acur[k]===0){ const B=State.avBox; B.area++;                 // a site new to this avalanche
+    if(i<B.i0)B.i0=i; if(i>B.i1)B.i1=i; if(j<B.j0)B.j0=j; if(j>B.j1)B.j1=j; }
+  State.Acur[k]++;
   const nb0=(i>0)?k-1:-1, nb1=(i<L-1)?k+1:-1, nb2=(j>0)?k-L:-1, nb3=(j<L-1)?k+L:-1;
   const nb=[nb0,nb1,nb2,nb3], ddx=DDX, ddy=DDY;
   /* random directions belong ONLY to the plain Manna simulations — the games are
@@ -851,6 +1030,8 @@ function toppleSite(k){
   const tracing=State.trace, slow=granIdx<=2, gb=State.grassberger;
   const src=tracing?State.stacks[k]:null, st=tracing?State.stacks:null;
   const inD=State.inDir;
+  /* Stress scheme: the grain keeps its colour while it moves, then relaxes to its new level */
+  const scol=State.stressCol, ssrc=scol?scol[k]:null;
   /* Nem1: the broad end of the arrow takes the top grain, the narrow end the one below it */
   const nemBroad = nem1 ? (arw>=0?arw:0) : -1;
   /* ---- the next generation of excited sites, in the order they were born ----
@@ -876,12 +1057,15 @@ function toppleSite(k){
        sheds the upper 4 and keeps only the bottom one. */
     let ow=0;
     if(own){ const os=own[k]; ow=os.length? os.pop() : 0; }
+    if(scol){ const c=ssrc.length? ssrc.pop() : stressLevelRGB(z[k]+nOut-g).slice();
+      if(m>=0) scol[m].push(c); }                                      // the grain carries its colour along
     if(m>=0){ z[m]++; if(own) own[m].push(ow); if(inD) inD[m]=d^1;     // remember which way it came in
       /* born now: this very grain pushed the neighbour over the threshold */
       if(z[m]>crit && mark[m]!==qv){ mark[m]=qv; a.q.push(m); } }
     else{
       /* the grain leaves the open boundary — book it against whoever owned it */
       if(State.snapArm){ State.snapArm=false; State.snapWait=true; }   // the armed camera: this is the throw
+      State.exitCur.push(k*4+d);                                        // where and which way it left
       if(own){ const G=State.game;
         if(ow){ G.lost[ow]++;
           /* the point goes to whoever started this avalanche, and only if the grain is
@@ -951,7 +1135,46 @@ function resolveFull(){ let guard=0, cap=200000+2000*State.L*State.L;
 function finalizeAval(){ const a=State.aval; a.running=false;
   State.lastSize=a.size; if(a.size>State.maxSize) State.maxSize=a.size; State.sizes.push(a.size);
   if(a.size>=State.bigThresh){ State.lastBig.set(State.Acur); State.lastBigSize=a.size; }
+  avMemRecord(a.size); avGeomRecord(a.size);
   if(State.trace && State.traceLongestOnly) pruneToLongest(); }
+/* the avalanche's footprint: area, linear size and circumference, and whether it reached
+   the open boundary.  The circumference scan is confined to the bounding box. */
+function avGeomRecord(size){
+  const B=State.avBox;
+  if(size<=0){ State.areas.push(0); State.lins.push(0); State.perims.push(0); State.lefts.push(0); return; }
+  const L=State.L, A=State.Acur;
+  let per=0;
+  for(let j=B.j0;j<=B.j1;j++) for(let i=B.i0;i<=B.i1;i++){
+    const k=j*L+i; if(A[k]===0) continue;
+    if(i===0||i===L-1||j===0||j===L-1|| A[k-1]===0||A[k+1]===0||A[k-L]===0||A[k+L]===0) per++;
+  }
+  State.areas.push(B.area);
+  State.lins.push(((B.i1-B.i0+1)+(B.j1-B.j0+1))/2);
+  State.perims.push(per);
+  State.lefts.push(State.exitCur.length>0?1:0);
+}
+/* ---------- the avalanche memory ----------
+   Five remembered avalanche maps.  Slots 0–2: the three most recent avalanches at or above
+   the display threshold (0 = the latest).  Slot 3: the largest avalanche of the run so far.
+   Slot 4: the most recent avalanche of size between 1% and 3% of L² — a "typical big one"
+   well inside the scaling regime, whatever the threshold slider says. */
+const AVMEM_LABEL=["latest","2nd latest","3rd latest","largest","1–3% of L²"];
+function avMemReset(){ State.avMem=[null,null,null,null,null]; }
+function avMemSnap(size){
+  /* the exits, tallied per (boundary site, direction) */
+  const tally=new Map(); for(const e of State.exitCur) tally.set(e,(tally.get(e)||0)+1);
+  const exits=[]; const L=State.L;
+  for(const [e,n] of tally){ const k=e>>2, d=e&3; exits.push({i:k%L, j:(k/L)|0, d, n}); }
+  return {field:State.Acur.slice(), size, t:State.grains, exits};
+}
+function avMemRecord(size){
+  if(size<=0) return;
+  const M=State.avMem, N=State.L*State.L;
+  if(size>=State.bigThresh){ M[2]=M[1]; M[1]=M[0]; M[0]=avMemSnap(size); }
+  if(!M[3] || size>M[3].size) M[3]=avMemSnap(size);
+  if(size>=0.01*N && size<=0.03*N) M[4]=avMemSnap(size);
+}
+function avMemCurrent(){ return State.avMem ? State.avMem[State.avMemIdx] : null; }
 function ensureGrain(){ if(!State.aval.running) beginGrain(); }
 
 /* ============================================================
@@ -1059,6 +1282,7 @@ function resetCriticalStart(drops){
   alloc(State.L); probed=false;
   const r=seedCritical(undefined, drops);
   State.sizes=[]; State.grains=0; State.lastSize=0; State.maxSize=0;
+  State.areas=[]; State.lins=[]; State.perims=[]; State.lefts=[]; avMemReset();
   State.lastBig.fill(0); State.lastBigSize=0; State.particles=[];
   State.gbFolders=[]; State.gbPending=[]; State.gbHand=null;
   if(State.gbPhase) State.gbPhase.fill(0); if(State.gbTimer) State.gbTimer.fill(0);
@@ -1098,6 +1322,7 @@ function newGame(startMode){
   G.greyStart=greyOnBoard();                    // the X game ends when all of these are gone
   if(State.grassberger) gbInitStacks();
   State.sizes=[]; State.grains=0; State.lastSize=0; State.maxSize=0;
+  State.areas=[]; State.lins=[]; State.perims=[]; State.lefts=[]; avMemReset();
   State.lastBig.fill(0); State.lastBigSize=0; State.particles=[];
   State.gbFolders=[]; State.gbPending=[]; State.gbHand=null;
   if(State.gbPhase) State.gbPhase.fill(0); if(State.gbTimer) State.gbTimer.fill(0);
@@ -1957,6 +2182,7 @@ function aiChooseMoveUltra(p){
    simulation budget with arrow-list sampling only.
    ============================================================ */
 let AI4_SIM_CAP=10000000;               // simulated avalanches per top-level move — slow is accepted here
+let AI5_SIM_CAP=25000000;               // CPU⁵ (ten plies, L ≤ 4): a bigger budget, a longer think
 /* the best net points-differential `mover` can force looking `depth` plies ahead */
 function searchNet(S, mover, other, depth, capNeed, ptsMover, ptsOther, ctx){
   const acts=ctx.trim(allArrowActs(mover,S));
@@ -1993,6 +2219,7 @@ function aiChooseMoveHyper(p, deep){
   aiSeedReset();                                    // reproducible search: same position, same move
   const G=State.game;
   if(G.players!==2) return aiChooseMoveUltraMulti(p);
+  const CAP = deep>=9 ? AI5_SIM_CAP : AI4_SIM_CAP;  // CPU⁵ is granted a larger budget
   const o=(p===1)?2:1, N=State.L*State.L;
   const base=snapState();
   const drops=[]; for(let k=0;k<N;k++) if(legalGrain(k)) drops.push(k);
@@ -2003,9 +2230,9 @@ function aiChooseMoveHyper(p, deep){
     for(let k=0;k<N;k++){ if(legalArrowOn(base,k,o)) co++; if(legalArrowOn(base,k,p)) cp++; }
     const ap=(1+3*cp)*drops.length, ao=(1+3*co)*drops.length;
     let est=1; for(let d=0;d<=deep;d++) est*=(d%2===0)?ap:ao;
-    if(est>AI4_SIM_CAP) shrink=Math.pow(AI4_SIM_CAP/est,1/(deep+1));
+    if(est>CAP) shrink=Math.pow(CAP/est,1/(deep+1));
   }
-  let simsLeft=AI4_SIM_CAP, _lg=0;                     // _lg = greys the last simulated move pushed off
+  let simsLeft=CAP, _lg=0;                     // _lg = greys the last simulated move pushed off
   const ctx={
     drops,
     trim:list=>{ if(shrink>=1||list.length<=1) return list;
@@ -2167,7 +2394,7 @@ function aiChooseMoveUltraMulti(p){
 function aiPlayTurn(){
   const G=State.game; if(!G.on||G.over||G.animating) return;
   const p=G.turn;
-  const mv=(G.aiMode>=4)? aiChooseMoveHyper(p, G.aiMode>=5? 7 : 5)   // 5 → six plies · 7 → eight plies
+  const mv=(G.aiMode>=4)? aiChooseMoveHyper(p, G.aiMode>=6? 9 : G.aiMode>=5? 7 : 5)   // 5 → six plies · 7 → eight · 9 → ten
          : (G.aiMode===3)? ((G.players===2)? aiChooseMoveUltra(p) : aiChooseMoveUltraMulti(p))
          : (G.aiMode===2)? aiChooseMoveSmart(p) : aiChooseMove(p);
   if(!mv){ G.phase="grain"; gameEndTurn(); return; }
@@ -2395,14 +2622,66 @@ const HEAT_STOPS=[
   [1.00,[255,255,255]],
 ];
 function heat(t){ return ramp(HEAT_STOPS,t); }
-const SCHEMES={ mountain, heat, plasma, jet, autumn, blue:blueRamp, rainbow };
-const SCHEME_ORDER=["mountain","heat","plasma","jet","autumn","blue","rainbow"];
-const SCHEME_LABEL={mountain:"Mountain", heat:"Heat", plasma:"Plasma", jet:"Jet", autumn:"Autumn", blue:"Blue", rainbow:"Rainbow"};
+/* ---------- the Stress scheme ----------
+   Colour by the grain's LEVEL in its stack, measured against the toppling threshold:
+     level ≥ crit+1  — at or over the threshold, the site is toppling      → red
+     level = crit    — one more grain and it goes                          → yellow
+     level ≤ crit−1  — safely below: bottom grain blue, next green, deeper stacks grey
+   Every grain keeps its own colour as it moves, and relaxes towards the colour of the
+   level it now occupies on the timescale of the site updates.               */
+const STRESS_RED=[232,52,48], STRESS_YELLOW=[252,214,44], STRESS_BLUE=[52,110,235],
+      STRESS_GREEN=[70,196,110], STRESS_GREY=[160,164,176];
+function stressLevelRGB(level){
+  const c=State.crit;
+  if(level>=c+1) return STRESS_RED;
+  if(level===c)  return STRESS_YELLOW;
+  if(level<=1)   return STRESS_BLUE;
+  if(level===2)  return STRESS_GREEN;
+  return STRESS_GREY;
+}
+/* the Stress scheme as a 0..1 ramp (for the legend bar and the A/S-style field plots it
+   is not meant for): hard steps blue | green | yellow | red */
+function stressRamp(t){ t=clamp(t); const c=State.crit, lv=Math.max(1,Math.ceil(t*(c+1)));
+  return stressLevelRGB(Math.min(c+1,lv)).slice(); }
+function isStress(){ return State.scheme==="stress"; }
+/* colour of a whole SITE of height h in the main pile: the Stress scheme shows the colour
+   of its top grain, every other scheme its usual height ramp */
+function siteRGB(h, cden){ return isStress()? stressLevelRGB(h).slice() : cmap(h/cden); }
+/* colour ramp for the A / S / avalanche field maps: Stress means nothing there, so those
+   fall back to Mountain */
+function fieldCmap(t){ return isStress()? mountain(t) : cmap(t); }
+/* per-grain colour bookkeeping */
+function stressInit(){
+  const N=State.L*State.L, z=State.z, sc=new Array(N);
+  for(let k=0;k<N;k++){ const a=[]; for(let l=1;l<=z[k];l++) a.push(stressLevelRGB(l).slice()); sc[k]=a; }
+  State.stressCol=sc;
+}
+/* keep every stack exactly as tall as its pile (the transients and resets write z
+   directly), then let each grain's colour relax towards its level's colour */
+function stressRelax(rate){
+  const sc=State.stressCol; if(!sc) return;
+  const N=State.L*State.L, z=State.z;
+  for(let k=0;k<N;k++){ const a=sc[k], h=z[k];
+    while(a.length>h) a.pop();
+    while(a.length<h) a.push(stressLevelRGB(a.length+1).slice());
+    for(let l=0;l<h;l++){ const c=a[l], tg=stressLevelRGB(l+1);
+      c[0]+=(tg[0]-c[0])*rate; c[1]+=(tg[1]-c[1])*rate; c[2]+=(tg[2]-c[2])*rate; }
+  }
+}
+/* the relaxation rate follows the update granularity: slow, watchable updates let a moved
+   grain fade over a good many frames; fast modes snap straight to the new colour */
+function stressRate(){ return granIdx<=1 ? 0.10 : granIdx===2 ? 0.22 : 1; }
+const SCHEMES={ stress:stressRamp, mountain, heat, plasma, jet, autumn, blue:blueRamp, rainbow };
+const SCHEME_ORDER=["stress","mountain","heat","plasma","jet","autumn","blue","rainbow"];
+const SCHEME_LABEL={stress:"Stress", mountain:"Mountain", heat:"Heat", plasma:"Plasma", jet:"Jet", autumn:"Autumn", blue:"Blue", rainbow:"Rainbow"};
 function cmap(t){ return (SCHEMES[State.scheme]||mountain)(t); }
 
 /* ---------- shaded sphere sprites ---------- */
 const spriteCache={};
-function sphereSprite(rgb, dpx){
+function sphereSprite(rgb0, dpx){
+  /* colours are quantised to steps of 6 so the relaxing Stress colours reuse a few hundred
+     sprites instead of minting a new one for every intermediate shade */
+  const rgb=[Math.round(rgb0[0]/6)*6, Math.round(rgb0[1]/6)*6, Math.round(rgb0[2]/6)*6];
   const key=rgb.join(",")+"@"+(dpx|0);
   if(spriteCache[key]) return spriteCache[key];
   const pad=Math.ceil(dpx*0.35), size=(dpx|0)+pad*2;
@@ -2445,8 +2724,8 @@ function renderSquaresMain(ctx, canvas, maxH){
   const bg=canvasBgRGB();
   ctx.fillStyle=State.lightBg? "#ffffff" : "#05050b"; ctx.fillRect(0,0,canvas.width,canvas.height);
   const P=Math.max(1,Math.floor(S/L));      // whole pixels per lattice site
-  const grid=L*P, ox=Math.floor((canvas.width-grid)/2), oy=Math.floor((canvas.height-grid)/2);
-  const cmax=mainColourMax(), lut=new Array(maxH+1); for(let h=1;h<=maxH;h++) lut[h]=cmap(h/cmax);
+  const cmax=mainColourMax(), lut=new Array(maxH+1); for(let h=1;h<=maxH;h++) lut[h]=siteRGB(h,cmax);
+  const grid=L*P;
   const im=ctx.createImageData(grid,grid), d=im.data;
   for(let py=0;py<grid;py++){
     const j=(py/P)|0, row=j*L;              // +j down the screen — same orientation as the 3-D views
@@ -2457,7 +2736,17 @@ function renderSquaresMain(ctx, canvas, maxH){
       d[o+3]=255;
     }
   }
-  ctx.putImageData(im, ox, oy);
+  blitGrid(ctx, canvas, im, grid);
+}
+/* paint an L·P square image centred on the canvas; a lattice wider than the panel
+   (L = 800 on a small screen) is scaled down to fit instead of being clipped */
+function blitGrid(ctx, canvas, im, grid){
+  const S=Math.min(canvas.width,canvas.height);
+  if(grid<=S){ ctx.putImageData(im, Math.floor((canvas.width-grid)/2), Math.floor((canvas.height-grid)/2)); return; }
+  const off=document.createElement("canvas"); off.width=grid; off.height=grid;
+  off.getContext("2d").putImageData(im,0,0);
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(off, (canvas.width-S)/2, (canvas.height-S)/2, S, S);
 }
 /* ---- L>100 tilted: real 3-D columns, one cheap stroke each, narrowing with L ---- */
 function render3DColumns(ctx, canvas, maxH){
@@ -2465,7 +2754,7 @@ function render3DColumns(ctx, canvas, maxH){
   const proj=makeProjector(canvas,L,{camDist:L*2.4, barTop:maxH*VSPACE});
   drawGroundPlane(ctx,proj);
   const lw=Math.max(1, proj.scale*0.72);              // column width shrinks as L grows
-  const cmax=mainColourMax(), lut=new Array(maxH+1); for(let h=1;h<=maxH;h++) lut[h]=cmap(h/cmax);
+  const cmax=mainColourMax(), lut=new Array(maxH+1); for(let h=1;h<=maxH;h++) lut[h]=siteRGB(h,cmax);
   const order=[];
   for(let j=0;j<L;j++)for(let i=0;i<L;i++){ const h=z[j*L+i]; if(h>0) order.push([i,j,h,proj.project(i,j,0).depth]); }
   order.sort((a,b)=>a[3]-b[3]);                        // painter's order, back to front
@@ -3567,6 +3856,10 @@ function renderMain(){
   const L=State.L, z=State.z;
   let maxH=1; for(let k=0;k<L*L;k++) if(z[k]>maxH) maxH=z[k];
   const cden=mainColourMax();   // fixed colour scale for the main pile (BTW 8 / Manna 16; no flicker, any avalanche size)
+  /* the Stress scheme's per-grain colours live only where grains are drawn one by one */
+  const stress=isStress() && L<=100 && !State.flat;
+  if(stress){ if(!State.stressCol) stressInit(); stressRelax(stressRate()); }
+  else if(State.stressCol) State.stressCol=null;
   if(L>100){                                           // balls → columns above L=100
     if(State.flat || View.polar===0) renderSquaresMain(ctx,canvas,maxH);  // top-down → fast flat grid
     else render3DColumns(ctx,canvas,maxH);                                // tilted → real 3-D columns
@@ -3592,7 +3885,7 @@ function renderMain(){
       const p0=proj.project(i-0.5,j-0.5,0), p1=proj.project(i+0.5,j-0.5,0),
             p2=proj.project(i+0.5,j+0.5,0), p3=proj.project(i-0.5,j+0.5,0);
       /* in game mode a cell shows the colour of whoever owns its topmost grain */
-      let col=cmap(h/cden);
+      let col=siteRGB(h,cden);
       if(gm){ const os=State.own[k], ow=os.length?os[os.length-1]:0; col=ow?P_RGB[ow]:NEUTRAL_SPHERE; }
       cells.push({pts:[p0,p1,p2,p3], col, depth:(p0.depth+p2.depth)/2});
     }
@@ -3618,15 +3911,16 @@ function renderMain(){
   const prims=[], tops=[];
   for(let j=0;j<L;j++)for(let i=0;i<L;i++){
     const k=idx(i,j), h=z[k]; if(h<=0) continue;
-    const col=cmap(h/cden), os=gm?State.own[k]:null;
+    const col=siteRGB(h,cden), os=gm?State.own[k]:null, scs=stress?State.stressCol[k]:null;
     const step = topView ? stepFor(h) : 0;
     for(let kk=0;kk<h;kk++){ const p=proj.project(i,j,(kk+0.5)*VSPACE);
       /* in the game every grain is either a player's colour or a plain grey sphere —
-         height never enters the colour, so colour means ownership and nothing else */
+         height never enters the colour, so colour means ownership and nothing else.
+         Under Stress each grain wears its own (relaxing) colour. */
       const ow=os?(os[kk]||0):0;
       const sy=p.sy + (topView? proj.scale*TV.drop + ((h-1)/2-kk)*step : 0);
       prims.push({sx:p.sx, sy, depth:p.depth, d: topView? proj.scale*TV.d : baseD,
-                  col: gm? (ow?P_RGB[ow]:NEUTRAL_SPHERE) : col});
+                  col: gm? (ow?P_RGB[ow]:NEUTRAL_SPHERE) : (scs? (scs[kk]||col) : col)});
       if(topView && kk===h-1) tops.push({sx:p.sx, sy, h});     // label goes on the top bead
     }
   }
@@ -3659,13 +3953,17 @@ function renderMain(){
 /* ---------- A / S / last-avalanche 3D bar plots (shared perspective) ----------
    Columns are full-width (bw = 0.5, stroke = one full cell) so adjacent sites
    touch with no gaps between columns in the 3-D view. */
-function drawFieldBars(canvas, field){
+let _lastFieldProj=null;
+function drawFieldBars(canvas, field, light){
   const ctx=canvas.getContext("2d");
   ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(light!==undefined){ ctx.fillStyle=light? "#ffffff" : "#05050b"; ctx.fillRect(0,0,canvas.width,canvas.height); }
+  const bgOverride=(light!==undefined)? (light? [255,255,255] : [5,5,11]) : null;
   const L=State.L; let vmax=0; for(let k=0;k<L*L;k++) if(field[k]>vmax) vmax=field[k];
   const maxBarH=L*0.45;
   const camDist = (View.asDist===Infinity)? Infinity : View.asDist*maxBarH;
   const proj=makeProjector(canvas,L,{camDist, barTop:maxBarH});
+  _lastFieldProj=proj;
   drawGroundPlane(ctx,proj);
   if(vmax<=0) return 0;
   if(L>100){
@@ -3674,7 +3972,7 @@ function drawFieldBars(canvas, field){
       const lw=Math.max(1, proj.scale*1.04), order=[];   // full-cell width → columns touch
       for(let j=0;j<L;j++)for(let i=0;i<L;i++){ const v=field[idx(i,j)]; if(v>0) order.push([i,j,v,proj.project(i,j,0).depth]); }
       order.sort((a,b)=>a[3]-b[3]); ctx.lineCap="butt";
-      for(const o of order){ const i=o[0], j=o[1], t=o[2]/vmax, c=cmap(t);
+      for(const o of order){ const i=o[0], j=o[1], t=o[2]/vmax, c=fieldCmap(t);
         const b=proj.project(i,j,0), tp=proj.project(i,j,t*maxBarH);
         ctx.strokeStyle=`rgb(${c[0]},${c[1]},${c[2]})`; ctx.lineWidth=lw;
         ctx.beginPath(); ctx.moveTo(b.sx,b.sy); ctx.lineTo(tp.sx,tp.sy); ctx.stroke(); }
@@ -3682,18 +3980,19 @@ function drawFieldBars(canvas, field){
     }
     // top-down: fast flat colour grid
     const S=Math.min(canvas.width,canvas.height), P=Math.max(1,Math.floor(S/L));
-    const grid=L*P, ox=Math.floor((canvas.width-grid)/2), oy=Math.floor((canvas.height-grid)/2);
-    const im=ctx.createImageData(grid,grid), d=im.data, bg=canvasBgRGB();
+    const grid=L*P;
+    const im=ctx.createImageData(grid,grid), d=im.data, bg=bgOverride||canvasBgRGB();
+    const lutN=256, lut=new Array(lutN+1); for(let q=0;q<=lutN;q++) lut[q]=fieldCmap(q/lutN);
     for(let py=0;py<grid;py++){ const j=(py/P)|0, row=j*L;   // +j down — same as the 3-D views
       for(let px=0;px<grid;px++){ const v=field[row+((px/P)|0)], o=(py*grid+px)<<2;
-        if(v>0){ const c=cmap(v/vmax); d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; } else { d[o]=bg[0]; d[o+1]=bg[1]; d[o+2]=bg[2]; }
+        if(v>0){ const c=lut[Math.round(v/vmax*lutN)]; d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; } else { d[o]=bg[0]; d[o+1]=bg[1]; d[o+2]=bg[2]; }
         d[o+3]=255; } }
-    ctx.putImageData(im, ox, oy); return vmax;
+    blitGrid(ctx, canvas, im, grid); return vmax;
   }
   const bw=0.5, boxes=[];   // full half-width → boxes abut, no gaps
   for(let j=0;j<L;j++)for(let i=0;i<L;i++){
     const v=field[idx(i,j)]; if(v<=0) continue;
-    const t=v/vmax; boxes.push({i,j,hw:t*maxBarH+0.04,col:cmap(t),depth:proj.project(i,j,0).depth});
+    const t=v/vmax; boxes.push({i,j,hw:t*maxBarH+0.04,col:fieldCmap(t),depth:proj.project(i,j,0).depth});
   }
   boxes.sort((a,b)=>a.depth-b.depth);
   for(const bx of boxes) drawBox(ctx,proj,bx.i,bx.j,bw,bx.hw,bx.col);
@@ -3717,95 +4016,409 @@ function drawBox(ctx,proj,i,j,bw,h,col){
   face(top,1.0);
 }
 
-/* ---------- last-big-avalanche map (small, same 3-D perspective) ---------- */
-function renderCurrent(){
-  const canvas=document.getElementById("curPlot"), ctx=canvas.getContext("2d");
-  if(State.lastBigSize<=0){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+/* ---------- the avalanche map: one of the five remembered avalanches ---------- */
+function drawCurPlot(canvas, light){
+  const ctx=canvas.getContext("2d"), W=canvas.width, H=canvas.height;
+  const mem=avMemCurrent(), fs=Math.max(10, Math.round(W/22));
+  const txt=light? "#39404e" : "#cdd3df", dim=light? "#7a7f90" : "#6b6486";
+  ctx.font=fs+"px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+  if(!mem){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle=light? "#ffffff" : "#05050b"; ctx.fillRect(0,0,W,H);
     const maxBarH=State.L*0.45, camDist=(View.asDist===Infinity)?Infinity:View.asDist*maxBarH;
     drawGroundPlane(ctx, makeProjector(canvas,State.L,{camDist, barTop:maxBarH}));
-    ctx.fillStyle="#6b6486"; ctx.font="10px sans-serif";
-    ctx.fillText("none > "+State.bigThresh+" yet", 6, canvas.height-6);
+    ctx.fillStyle=dim; ctx.font=fs+"px sans-serif";
+    const what=State.avMemIdx<=2? "none ≥ "+State.bigThresh+" yet" : State.avMemIdx===3? "no avalanche yet" : "none of 1–3% of L² yet";
+    ctx.fillText(what, fs*0.6, H-fs*0.6);
     return;
   }
-  drawFieldBars(canvas, State.lastBig);
-  ctx.fillStyle=State.lightBg? "#39404e" : "#cdd3df"; ctx.font="10px sans-serif";
-  ctx.fillText("size "+State.lastBigSize, 6, canvas.height-6);
+  drawFieldBars(canvas, mem.field, light);
+  const proj=_lastFieldProj, L=State.L;
+  /* the size label lies ON the lattice, in perspective: on the flat top of the highest part
+     of the avalanche if that plateau is wide enough, else on a lower plateau, else on bare
+     ground; large lattices (blitted grids) fall back to a plain corner label */
+  let placed=false;
+  if(proj && L<=100) placed=drawLabelOnLattice(ctx, proj, mem.field, "s = "+mem.size, light);
+  if(!placed){
+    const lf=Math.round(fs*1.35);
+    ctx.font="600 "+lf+"px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+    ctx.fillStyle=txt; ctx.textAlign="left"; ctx.textBaseline="top"; ctx.fillText("s = "+mem.size, fs*0.7, fs*0.7);
+    ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+  }
+  /* the grains that left the lattice: red balls just outside the exit, laid out in a row
+     leading away from the boundary so they are easy to count; many balls fill a small
+     block of rows stacked on top of one another */
+  if(proj && mem.exits && L<=100){
+    const cell=proj.scale, r=Math.max(2, Math.min(cell*0.2, W*0.016)), dW=2*r/cell*1.08;
+    const ex=mem.exits.slice().sort((a,b)=>proj.project(a.i,a.j,0).depth-proj.project(b.i,b.j,0).depth);
+    const sp=sphereSprite(STRESS_RED, r*2);
+    for(const e of ex){
+      const n=e.n, K=n<=5? n : Math.ceil(Math.sqrt(n));       // balls per row; rows stack upward
+      const balls=[];
+      for(let q=0;q<n;q++){ const row=(q/K)|0, pos=q%K;
+        const wx=e.i+DDX[e.d]*(0.85+pos*dW), wy=e.j+DDY[e.d]*(0.85+pos*dW);
+        const pr=proj.project(wx,wy, r/cell + row*dW);
+        balls.push(pr); }
+      balls.sort((a,b)=>a.depth-b.depth);
+      for(const b of balls) ctx.drawImage(sp.cv, b.sx-sp.off, b.sy-sp.off);
+    }
+  }
 }
+/* write `text` flat on the lattice plane, in the plot's own perspective.  Looks for the
+   longest straight run of equal-height cells starting from the tallest bars, and sizes the
+   text to that run; the reading direction is whichever lattice axis points most to the
+   right on screen, so the label is never upside down. */
+function drawLabelOnLattice(ctx, proj, F, text, light){
+  const L=State.L; let vmax=0; for(let k=0;k<L*L;k++) if(F[k]>vmax) vmax=F[k];
+  if(vmax<=0) return false;
+  const maxBarH=L*0.45;
+  const heightOf=v=> v>0? (v/vmax)*maxBarH+0.04 : 0.02;
+  /* longest run of cells satisfying pred, along axis 'i' (a row) or 'j' (a column) */
+  function longestRun(pred, axis){
+    let best=null;
+    for(let a=0;a<L;a++){ let len=0;
+      for(let b=0;b<=L;b++){
+        const ok=(b<L) && pred(axis==="i"? (a*L+b) : (b*L+a));
+        if(ok) len++;
+        else{ if(len>0 && (!best||len>best.len)) best={len, a, b0:b-len}; len=0; }
+      } }
+    return best;
+  }
+  /* screen vectors of the two lattice axes at height h */
+  const axesAt=h=>{ const o=proj.project(0,0,h), pi=proj.project(1,0,h), pj=proj.project(0,1,h);
+    return {vi:[pi.sx-o.sx,pi.sy-o.sy], vj:[pj.sx-o.sx,pj.sy-o.sy]}; };
+  const A0=axesAt(heightOf(vmax));
+  const cands=[{u:A0.vi,axis:"i"},{u:[-A0.vi[0],-A0.vi[1]],axis:"i"},{u:A0.vj,axis:"j"},{u:[-A0.vj[0],-A0.vj[1]],axis:"j"}];
+  cands.sort((a,b)=>b.u[0]-a.u[0]); const axis=cands[0].axis, flip=(cands[0].u===A0.vi||cands[0].u===A0.vj)?1:-1;
+  /* the plateau: the HIGHEST level whose longest flat run is wide enough for the text to be
+     read (about 0.6 cells of letter height); failing that, the widest run at any level;
+     failing that, bare ground */
+  const fam="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.font="700 10px "+fam;
+  const w10=ctx.measureText(text).width/10; ctx.restore();          // text width per unit of letter height
+  const need=Math.max(2, Math.ceil(0.6*w10));
+  let run=null, level=vmax, widest=null, wlevel=0;
+  const levels=[]; for(let v=vmax; v>=1; v--) levels.push(v);
+  if(levels.length>40){ const step=Math.ceil(levels.length/40); for(let q=levels.length-1;q>=0;q--) if(q%step) levels.splice(q,1); }
+  for(const v of levels){ const r=longestRun(k=>F[k]===v, axis); if(!r) continue;
+    if(!widest || r.len>widest.len){ widest=r; wlevel=v; }
+    if(r.len>=need){ run=r; level=v; break; } }
+  if(!run && widest && widest.len>=2){ run=widest; level=wlevel; }
+  if(!run){ const r=longestRun(k=>F[k]===0, axis); if(r && r.len>=2){ run=r; level=0; } }
+  if(!run) return false;
+  const h=heightOf(level), A=axesAt(h);
+  let u=(axis==="i")? A.vi : A.vj, v=(axis==="i")? A.vj : A.vi;
+  u=[u[0]*flip,u[1]*flip];
+  if(u[0]*v[1]-u[1]*v[0] < 0) v=[-v[0],-v[1]];           // text reads left→right, top→bottom
+  /* how thick the plateau is across the run (rows fully at this level over the middle 60%
+     of the run), so a broad plateau can carry taller letters, centred in the band */
+  const at=(a,b)=> (axis==="i")? F[a*L+b] : F[b*L+a];
+  const mid0=run.b0+Math.floor(run.len*0.2), mid1=run.b0+Math.ceil(run.len*0.8)-1;
+  const rowOK=a=>{ if(a<0||a>=L) return false; for(let b=mid0;b<=mid1;b++) if(at(a,b)!==level) return false; return true; };
+  let up=0, down=0; while(up<6 && rowOK(run.a-up-1)) up++; while(down<6 && rowOK(run.a+down+1)) down++;
+  const thick=1+up+down, aC=run.a+(down-up)/2;
+  const ci=(axis==="i")? run.b0+(run.len-1)/2 : aC, cj=(axis==="i")? aC : run.b0+(run.len-1)/2;
+  const c=proj.project(ci,cj,h);
+  /* the transform maps the plateau's own (u,v) frame to the screen; it is normalised by the
+     cell size so the font is specified in screen pixels and rasterises cleanly */
+  const sc=Math.hypot(u[0],u[1]); if(sc<1e-6) return false;
+  ctx.save();
+  ctx.setTransform(u[0]/sc,u[1]/sc,v[0]/sc,v[1]/sc,c.sx,c.sy);
+  /* letters twice the size the plateau alone would suggest — the label may overhang the
+     flat run a little, which reads far better than a small caption */
+  const fh=2*Math.min(0.9*thick, 2.2, (run.len*0.96)/w10)*sc;                       // font height in px along the plateau
+  if(fh<5){ ctx.restore(); return false; }                              // too small to read: use the corner label
+  ctx.font="700 "+fh+"px "+fam; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.lineJoin="round"; ctx.lineWidth=fh*0.18;
+  /* dark letters on a pale plateau, white letters on a dark one */
+  const pc = level>0? fieldCmap(level/vmax) : (light? [255,255,255] : [5,5,11]);
+  const lum=(0.299*pc[0]+0.587*pc[1]+0.114*pc[2])/255, darkText=lum>0.5;
+  ctx.strokeStyle= darkText? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.7)";
+  ctx.strokeText(text,0,0);
+  ctx.fillStyle= darkText? "#141420" : "#ffffff";
+  ctx.fillText(text,0,0);
+  ctx.restore();
+  return true;
+}
+function renderCurrent(){ drawCurPlot(document.getElementById("curPlot"), State.plotBg.cur); }
 
-/* ---------- statistics plots ---------- */
-function axes(ctx,W,H,m,xl,yl){
-  ctx.strokeStyle="#2b2b3d"; ctx.lineWidth=1; ctx.beginPath();
-  ctx.moveTo(m.l,m.t); ctx.lineTo(m.l,H-m.b); ctx.lineTo(W-m.r,H-m.b); ctx.stroke();
-  ctx.fillStyle="#9a93b5"; ctx.font="9px sans-serif";
-  ctx.fillText(xl,(W-m.l)/2-8,H-3);
-  ctx.save(); ctx.translate(9,(H-m.b)/2+m.t+8); ctx.rotate(-Math.PI/2); ctx.fillText(yl,0,0); ctx.restore();
+/* ---------- statistics plots ----------
+   Both plots are drawn by size-independent routines, so the same code paints the small
+   panel on screen and the large square PNG that its camera button saves. */
+/* "nice" tick positions covering 0..vmax */
+function niceTicks(vmin, vmax, n){
+  const span=vmax-vmin; if(span<=0) return [vmin];
+  const raw=span/Math.max(1,n), mag=Math.pow(10,Math.floor(Math.log10(raw))), r=raw/mag;
+  const step=(r<=1?1: r<=2?2: r<=5?5:10)*mag, out=[];
+  for(let v=Math.ceil(vmin/step)*step; v<=vmax+1e-9; v+=step) out.push(+v.toPrecision(12));
+  return out;
 }
-function renderTimePlot(){
-  const canvas=document.getElementById("timePlot"), ctx=canvas.getContext("2d");
-  const W=canvas.width,H=canvas.height; ctx.clearRect(0,0,W,H);
-  const m={l:30,r:6,t:6,b:18}; axes(ctx,W,H,m,"t","size");
-  const data=State.sizes; if(data.length<2) return;
+const SUP="⁰¹²³⁴⁵⁶⁷⁸⁹";
+function supStr(n){ const s=String(Math.abs(n)); let o=n<0?"⁻":""; for(const ch of s) o+=SUP[+ch]; return o; }
+function pow10Label(k){ return k===0? "1" : k===1? "10" : k===2? "100" : "10"+supStr(k); }
+function fmtTick(v){ if(Math.abs(v)>=1e6) return v.toExponential(0).replace("e+","e"); return String(v); }
+/* frame + ticks + labels.  m = margins; xt / yt = [{v, label}] in data units mapped by sx / sy */
+function plotFrame(ctx,W,H,m,light,opts){
+  const fs=opts.fs, axis=light? "#3a3a4a" : "#8d87a8", txt=light? "#1f1f2a" : "#d9d5ea", grid=light? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)";
+  ctx.font=fs+"px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+  ctx.lineWidth=Math.max(1, fs/11);
+  const x0=m.l, x1=W-m.r, y0=m.t, y1=H-m.b, tl=fs*0.4;
+  /* grid lines */
+  ctx.strokeStyle=grid;
+  for(const t of opts.xt){ const x=opts.sx(t.v); if(x<x0-0.5||x>x1+0.5) continue; ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1); ctx.stroke(); }
+  for(const t of opts.yt){ const y=opts.sy(t.v); if(y<y0-0.5||y>y1+0.5) continue; ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke(); }
+  /* axes */
+  ctx.strokeStyle=axis; ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x0,y1); ctx.lineTo(x1,y1); ctx.stroke();
+  /* ticks + numbers */
+  ctx.fillStyle=txt; ctx.textAlign="center"; ctx.textBaseline="top";
+  for(const t of opts.xt){ const x=opts.sx(t.v); if(x<x0-0.5||x>x1+0.5) continue;
+    ctx.beginPath(); ctx.moveTo(x,y1); ctx.lineTo(x,y1+tl); ctx.stroke(); ctx.fillText(t.label, x, y1+tl+fs*0.25); }
+  ctx.textAlign="right"; ctx.textBaseline="middle";
+  for(const t of opts.yt){ const y=opts.sy(t.v); if(y<y0-0.5||y>y1+0.5) continue;
+    ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x0-tl,y); ctx.stroke(); ctx.fillText(t.label, x0-tl-fs*0.25, y); }
+  /* axis titles */
+  ctx.textAlign="center"; ctx.textBaseline="alphabetic"; ctx.font="600 "+fs+"px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+  ctx.fillText(opts.xl, (x0+x1)/2, H-fs*0.45);
+  ctx.save(); ctx.translate(fs*1.05, (y0+y1)/2); ctx.rotate(-Math.PI/2); ctx.fillText(opts.yl,0,0); ctx.restore();
+  /* title */
+  if(opts.title){ ctx.textAlign="left"; ctx.fillStyle=txt;
+    let tf=fs*0.85; ctx.font="600 "+tf+"px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+    while(tf>fs*0.5 && ctx.measureText(opts.title).width>(x1-x0)){ tf*=0.94; ctx.font="600 "+tf+"px -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"; }
+    ctx.fillText(opts.title, x0, y0-fs*0.9); }
+  return {x0,x1,y0,y1,txt,axis};
+}
+function plotMargins(W,H,fs,big){ return { l:Math.round(fs*4.6), r:Math.round(fs*1.2), t:Math.round(big? fs*2.6 : fs*1.1), b:Math.round(fs*3.4) }; }
+function plotFont(W){ return Math.max(9, Math.round(W/24)); }
+
+/* the model under study, as plain text for plot titles */
+function modelName(){
+  if(State.manna) return State.manna2? "Manna(2)" : "Manna(4)";
+  return (MODEL_LABEL[State.model]||"BTW").replace(/<[^>]+>/g,"");
+}
+function drawTimePlot(canvas, light, big){
+  const ctx=canvas.getContext("2d"), W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=light? "#ffffff" : "#05050b"; ctx.fillRect(0,0,W,H);
+  const fs=plotFont(W), m=plotMargins(W,H,fs,big), pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const data=State.sizes, N=data.length;
   let vmax=1; for(const v of data) if(v>vmax) vmax=v;
-  const pw=W-m.l-m.r, ph=H-m.t-m.b, N=data.length, cols=Math.min(pw,N);
-  ctx.beginPath(); ctx.strokeStyle="#c084fc"; ctx.lineWidth=1;
+  const xmax=Math.max(1,N), yTicks=niceTicks(0,vmax,4);
+  if(yTicks.length>1 && yTicks[yTicks.length-1]<vmax) yTicks.push(yTicks[yTicks.length-1]+(yTicks[1]-yTicks[0]));   // the top tick clears the tallest peak
+  const yTop=Math.max(vmax, yTicks[yTicks.length-1]);
+  const sx=t=>m.l+(t/xmax)*pw, sy=v=>m.t+ph-(v/yTop)*ph;
+  plotFrame(ctx,W,H,m,light,{fs, sx, sy,
+    xt:niceTicks(0,xmax,4).map(v=>({v,label:fmtTick(v)})),
+    yt:yTicks.map(v=>({v,label:fmtTick(v)})),
+    xl:"time  (added "+unitMany()+")", yl:"avalanche size s",
+    title: big? "Avalanche size vs. time — "+modelName()+" model, L = "+State.L : ""});
+  if(N<2) return;
+  const cols=Math.min(pw,N);
+  ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,pw+1,ph+1); ctx.clip();
+  ctx.beginPath(); ctx.strokeStyle=light? "#d42b2b" : "#ff4d4d"; ctx.lineWidth=Math.max(1, fs/10);   // the time series is red
   for(let c=0;c<cols;c++){ const a=Math.floor(c*N/cols), bnd=Math.floor((c+1)*N/cols);
     let peak=0; for(let k=a;k<Math.max(a+1,bnd);k++) if(data[k]>peak) peak=data[k];
-    const x=m.l+c*pw/cols, y=m.t+ph-(peak/vmax)*ph; if(c===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
-  ctx.stroke();
+    const x=m.l+c*pw/cols, y=sy(peak); if(c===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke(); ctx.restore();
 }
-function renderDistPlot(){
-  const canvas=document.getElementById("distPlot"), ctx=canvas.getContext("2d");
-  const W=canvas.width,H=canvas.height; ctx.clearRect(0,0,W,H);
-  const m={l:30,r:6,t:6,b:18}; axes(ctx,W,H,m,"log s","log N");
+function renderTimePlot(){ drawTimePlot(document.getElementById("timePlot"), State.plotBg.time, false); }
+
+function drawDistPlot(canvas, light, big){
+  const ctx=canvas.getContext("2d"), W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=light? "#ffffff" : "#05050b"; ctx.fillRect(0,0,W,H);
+  const fs=plotFont(W), m=plotMargins(W,H,fs,big), pw=W-m.l-m.r, ph=H-m.t-m.b;
   const all=State.sizes, start=Math.floor(all.length*0.25), data=[];
   for(let k=start;k<all.length;k++) if(all[k]>=1) data.push(all[k]);
-  if(data.length<5) return;
   const binW=0.2, bins={}; let maxLs=0;
   for(const s of data){ const ls=Math.log10(s); if(ls>maxLs) maxLs=ls; const b=Math.round(ls/binW); bins[b]=(bins[b]||0)+1; }
   const pts=[];
   for(const b in bins){ const bn=+b, lo=Math.pow(10,(bn-0.5)*binW), hi=Math.pow(10,(bn+0.5)*binW);
-    const nInt=Math.max(1, Math.floor(hi-1e-9)-Math.ceil(lo)+1);   // # of integer sizes in this log bin -> counts per unit s (bn must be numeric: "b"+0.5 would concatenate!)
+    const nInt=Math.max(1, Math.floor(hi-1e-9)-Math.ceil(lo)+1);   // # of integer sizes in this log bin -> counts per unit s
     pts.push([bn*binW, Math.log10(bins[b]/nInt)]); }
   pts.sort((a,b)=>a[0]-b[0]);
-  let xmin=0,xmax=Math.max(0.5,maxLs), ymin=Infinity,ymax=-Infinity;
+  let xmin=0, xmax=Math.max(1,Math.ceil(maxLs)), ymin=Infinity, ymax=-Infinity;
   for(const p of pts){ if(p[1]<ymin)ymin=p[1]; if(p[1]>ymax)ymax=p[1]; }
-  if(!isFinite(ymin)) return; if(ymax-ymin<0.5) ymax=ymin+0.5;
-  const pw=W-m.l-m.r, ph=H-m.t-m.b;
+  if(!isFinite(ymin)){ ymin=0; ymax=1; }
+  ymin=Math.floor(ymin); ymax=Math.ceil(Math.max(ymax, ymin+1));
   const sx=ls=>m.l+(ls-xmin)/(xmax-xmin)*pw, sy=ld=>m.t+ph-(ld-ymin)/(ymax-ymin)*ph;
-
+  const xt=[], yt=[];
+  for(let k=xmin;k<=xmax;k++) xt.push({v:k,label:pow10Label(k)});
+  const ystep=(ymax-ymin)>7? 2 : 1;
+  for(let k=ymin;k<=ymax;k+=ystep) yt.push({v:k,label:pow10Label(k)});
+  plotFrame(ctx,W,H,m,light,{fs, sx, sy, xt, yt, xl:"avalanche size s", yl:"P(s)  (counts / unit s)",
+    title: big? "Size distribution (last ¾ of the run) · L = "+State.L : ""});
+  if(data.length<5) return;
   ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,pw+1,ph+1); ctx.clip();
-
-  // faint decade gridlines
-  ctx.strokeStyle=State.lightBg? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.07)"; ctx.lineWidth=1;
-  for(let gx=Math.ceil(xmin); gx<=xmax+1e-9; gx++){ ctx.beginPath(); ctx.moveTo(sx(gx),sy(ymax)); ctx.lineTo(sx(gx),sy(ymin)); ctx.stroke(); }
-  for(let gy=Math.ceil(ymin); gy<=ymax+1e-9; gy++){ ctx.beginPath(); ctx.moveTo(sx(xmin),sy(gy)); ctx.lineTo(sx(xmax),sy(gy)); ctx.stroke(); }
-
   // grey shade for the finite-size cutoff region  s > 0.3*L^2
   const lsCut=Math.log10(0.3*State.L*State.L);
   if(lsCut<xmax){ const xc=Math.max(m.l, sx(lsCut));
-    ctx.fillStyle="rgba(140,142,155,0.22)"; ctx.fillRect(xc, m.t, (m.l+pw)-xc, ph); }
-
+    ctx.fillStyle=light? "rgba(120,122,140,0.18)" : "rgba(140,142,155,0.22)"; ctx.fillRect(xc, m.t, (m.l+pw)-xc, ph); }
   // least-squares fit of the avalanche-size exponent over s in [10, 0.3*L^2]
-  const xLo=1, xHi=Math.log10(0.3*State.L*State.L);          // log10(10)=1
+  const xLo=1, xHi=lsCut;
   const F=pts.filter(p=>p[0]>=xLo-1e-9 && p[0]<=xHi+1e-9);
   if(F.length>=2){
     let n=F.length,Sx=0,Sy=0,Sxx=0,Sxy=0;
     for(const p of F){ Sx+=p[0]; Sy+=p[1]; Sxx+=p[0]*p[0]; Sxy+=p[0]*p[1]; }
-    const b=(n*Sxy-Sx*Sy)/(n*Sxx-Sx*Sx), a=(Sy-b*Sx)/n;     // y = a + b*x, b = fitted slope
+    const b=(n*Sxy-Sx*Sy)/(n*Sxx-Sx*Sx), a=(Sy-b*Sx)/n;
     const xA=xLo, xB=Math.min(xHi, xmax);
-    ctx.strokeStyle="rgba(255,170,90,0.97)"; ctx.lineWidth=1.6; ctx.setLineDash([5,3]);
+    ctx.strokeStyle=light? "rgba(200,110,30,0.95)" : "rgba(255,170,90,0.97)"; ctx.lineWidth=Math.max(1.4, fs/7); ctx.setLineDash([fs*0.6,fs*0.35]);
     ctx.beginPath(); ctx.moveTo(sx(xA),sy(a+b*xA)); ctx.lineTo(sx(xB),sy(a+b*xB)); ctx.stroke(); ctx.setLineDash([]);
     const xm=xA+(xB-xA)*0.55;
-    ctx.fillStyle="rgba(255,210,160,0.99)"; ctx.font="9px sans-serif";
-    ctx.fillText("slope "+b.toFixed(2), sx(xm)+4, sy(a+b*xm)-4);
+    ctx.fillStyle=light? "#8a4b10" : "rgba(255,210,160,0.99)"; ctx.font="600 "+fs+"px sans-serif"; ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+    ctx.fillText("slope "+b.toFixed(2), sx(xm)+fs*0.4, sy(a+b*xm)-fs*0.4);
   }
-
   // empirical avalanche-size distribution
-  ctx.strokeStyle="#c084fc"; ctx.fillStyle="#c084fc"; ctx.lineWidth=1; ctx.beginPath();
+  const col=light? "#7c3aed" : "#c084fc";
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=Math.max(1, fs/10); ctx.beginPath();
   pts.forEach((p,i)=>{ const x=sx(p[0]),y=sy(p[1]); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke();
-  for(const p of pts){ ctx.beginPath(); ctx.arc(sx(p[0]),sy(p[1]),1.8,0,Math.PI*2); ctx.fill(); }
+  const r=Math.max(1.8, fs/5);
+  for(const p of pts){ ctx.beginPath(); ctx.arc(sx(p[0]),sy(p[1]),r,0,Math.PI*2); ctx.fill(); }
   ctx.restore();
+}
+function renderDistPlot(){ drawDistPlot(document.getElementById("distPlot"), State.plotBg.dist, false); }
+
+/* ---------- avalanche geometry plots (last ¾ of the run) ----------
+   Shared helpers: a log-binned histogram (counts per unit), a log-binned mean of y against
+   x, and a least-squares power-law fit on binned log–log points. */
+function lastQuarterStart(){ return Math.floor(State.sizes.length*0.25); }
+function logHistogram(vals, binW){
+  const bins={}; let maxL=0;
+  for(const v of vals){ if(v<1) continue; const lv=Math.log10(v); if(lv>maxL) maxL=lv; const b=Math.round(lv/binW); bins[b]=(bins[b]||0)+1; }
+  const pts=[];
+  for(const b in bins){ const bn=+b, lo=Math.pow(10,(bn-0.5)*binW), hi=Math.pow(10,(bn+0.5)*binW);
+    const nInt=Math.max(1, Math.floor(hi-1e-9)-Math.ceil(lo)+1); pts.push([bn*binW, Math.log10(bins[b]/nInt)]); }
+  pts.sort((a,b)=>a[0]-b[0]); return {pts, maxL};
+}
+function logBinnedMean(xs, ys, binW){
+  const acc={};
+  for(let n=0;n<xs.length;n++){ const x=xs[n], y=ys[n]; if(x<1||y<1) continue;
+    const b=Math.round(Math.log10(x)/binW); const a=acc[b]||(acc[b]={sx:0,sy:0,n:0}); a.sx+=Math.log10(x); a.sy+=y; a.n++; }
+  const pts=[]; for(const b in acc){ const a=acc[b]; pts.push([a.sx/a.n, Math.log10(a.sy/a.n), a.n]); }
+  pts.sort((a,b)=>a[0]-b[0]); return pts;
+}
+function fitLogLog(pts, xLo, xHi){
+  const F=pts.filter(p=>p[0]>=xLo-1e-9 && p[0]<=xHi+1e-9); if(F.length<2) return null;
+  let n=F.length,Sx=0,Sy=0,Sxx=0,Sxy=0;
+  for(const p of F){ Sx+=p[0]; Sy+=p[1]; Sxx+=p[0]*p[0]; Sxy+=p[0]*p[1]; }
+  const den=n*Sxx-Sx*Sx; if(Math.abs(den)<1e-12) return null;
+  const b=(n*Sxy-Sx*Sy)/den, a=(Sy-b*Sx)/n; return {a,b,xA:F[0][0],xB:F[F.length-1][0]};
+}
+function decadeTicks(lo,hi,maxN){ const t=[]; const step=(hi-lo)>(maxN||7)? 2 : 1; for(let k=lo;k<=hi;k+=step) t.push({v:k,label:pow10Label(k)}); return t; }
+const SERIES_ALL={dark:"#c084fc", light:"#7c3aed", fitDark:"rgba(255,170,90,0.97)", fitLight:"rgba(200,110,30,0.95)"};
+const SERIES_IN ={dark:"#34d3ee", light:"#0e7c9a", fitDark:"rgba(140,240,180,0.97)", fitLight:"rgba(20,140,80,0.95)"};
+function drawSeries(ctx,sx,sy,pts,col,fs){
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=Math.max(1, fs/10); ctx.beginPath();
+  pts.forEach((p,i)=>{ const x=sx(p[0]),y=sy(p[1]); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke();
+  const r=Math.max(1.8, fs/5); for(const p of pts){ ctx.beginPath(); ctx.arc(sx(p[0]),sy(p[1]),r,0,Math.PI*2); ctx.fill(); }
+}
+function drawFit(ctx,sx,sy,fit,col,fs){
+  if(!fit) return; ctx.strokeStyle=col; ctx.lineWidth=Math.max(1.4, fs/7); ctx.setLineDash([fs*0.6,fs*0.35]);
+  ctx.beginPath(); ctx.moveTo(sx(fit.xA),sy(fit.a+fit.b*fit.xA)); ctx.lineTo(sx(fit.xB),sy(fit.a+fit.b*fit.xB)); ctx.stroke(); ctx.setLineDash([]);
+}
+function legendLine(ctx,x,y,col,text,fs,light){
+  ctx.strokeStyle=col; ctx.lineWidth=Math.max(2,fs/6); ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+fs*1.6,y); ctx.stroke();
+  ctx.fillStyle=light? "#1f1f2a" : "#e6e2f2"; ctx.font="600 "+fs+"px sans-serif"; ctx.textAlign="left"; ctx.textBaseline="middle";
+  ctx.fillText(text, x+fs*2.0, y);
+}
+
+/* 1 · distribution of avalanche AREAS */
+function drawAreaPlot(canvas, light, big){
+  const ctx=canvas.getContext("2d"), W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=light? "#ffffff" : "#05050b"; ctx.fillRect(0,0,W,H);
+  const fs=plotFont(W), m=plotMargins(W,H,fs,big), pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const start=lastQuarterStart(), vals=[];
+  for(let k=start;k<State.areas.length;k++) if(State.areas[k]>=1) vals.push(State.areas[k]);
+  const {pts,maxL}=logHistogram(vals,0.2);
+  let xmin=0, xmax=Math.max(1,Math.ceil(maxL)), ymin=Infinity, ymax=-Infinity;
+  for(const p of pts){ if(p[1]<ymin)ymin=p[1]; if(p[1]>ymax)ymax=p[1]; }
+  if(!isFinite(ymin)){ ymin=0; ymax=1; }
+  ymin=Math.floor(ymin); ymax=Math.ceil(Math.max(ymax, ymin+1));
+  const sx=v=>m.l+(v-xmin)/(xmax-xmin)*pw, sy=v=>m.t+ph-(v-ymin)/(ymax-ymin)*ph;
+  plotFrame(ctx,W,H,m,light,{fs, sx, sy, xt:decadeTicks(xmin,xmax), yt:decadeTicks(ymin,ymax),
+    xl:"avalanche area a  (sites toppled)", yl:"P(a)  (counts / unit a)",
+    title: big? "Area distribution (last ¾ of the run) · L = "+State.L : ""});
+  if(vals.length<5) return;
+  ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,pw+1,ph+1); ctx.clip();
+  const lCut=Math.log10(0.3*State.L*State.L);
+  if(lCut<xmax){ const xc=Math.max(m.l, sx(lCut)); ctx.fillStyle=light? "rgba(120,122,140,0.18)" : "rgba(140,142,155,0.22)"; ctx.fillRect(xc, m.t, (m.l+pw)-xc, ph); }
+  const fit=fitLogLog(pts, 1, Math.min(lCut, xmax));
+  drawFit(ctx,sx,sy,fit, light? SERIES_ALL.fitLight : SERIES_ALL.fitDark, fs);
+  if(fit){ const xm=fit.xA+(fit.xB-fit.xA)*0.55; ctx.fillStyle=light? "#8a4b10" : "rgba(255,210,160,0.99)"; ctx.font="600 "+fs+"px sans-serif"; ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+    ctx.fillText("slope "+fit.b.toFixed(2), sx(xm)+fs*0.4, sy(fit.a+fit.b*xm)-fs*0.4); }
+  drawSeries(ctx,sx,sy,pts, light? SERIES_ALL.light : SERIES_ALL.dark, fs);
+  ctx.restore();
+}
+/* 2 & 3 · a quantity against the LINEAR size, for all avalanches and for those that kept
+   every grain on the lattice, each with its own power-law fit */
+function drawVsLinear(canvas, light, big, which){
+  const ctx=canvas.getContext("2d"), W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=light? "#ffffff" : "#05050b"; ctx.fillRect(0,0,W,H);
+  const fs=plotFont(W), m=plotMargins(W,H,fs,big), pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const src=(which==="mass")? State.sizes : State.perims;
+  const start=lastQuarterStart(), xa=[],ya=[],xi=[],yi=[];
+  for(let k=start;k<State.lins.length;k++){ const l=State.lins[k], y=src[k]; if(l<1||y<1) continue;
+    xa.push(l); ya.push(y); if(!State.lefts[k]){ xi.push(l); yi.push(y); } }
+  const pa=logBinnedMean(xa,ya,0.1), pi=logBinnedMean(xi,yi,0.1);
+  const L=State.L, lTop=Math.log10(L);
+  let xmax=Math.max(0.5, Math.ceil(lTop*2)/2), ymin=Infinity, ymax=-Infinity;
+  for(const p of pa.concat(pi)){ if(p[1]<ymin)ymin=p[1]; if(p[1]>ymax)ymax=p[1]; }
+  if(!isFinite(ymin)){ ymin=0; ymax=2; }
+  ymin=Math.floor(ymin); ymax=Math.ceil(Math.max(ymax, ymin+1));
+  const xmin=0;
+  const sx=v=>m.l+(v-xmin)/(xmax-xmin)*pw, sy=v=>m.t+ph-(v-ymin)/(ymax-ymin)*ph;
+  const xt=[]; for(let k=0;k<=Math.floor(xmax);k++) xt.push({v:k,label:pow10Label(k)});
+  if(lTop<xmax) xt.push({v:lTop,label:"L"});
+  const isMass=(which==="mass");
+  plotFrame(ctx,W,H,m,light,{fs, sx, sy, xt, yt:decadeTicks(ymin,ymax),
+    xl:"linear size  ℓ = (Δx + Δy)/2", yl: isMass? "mass s  (topplings)" : "circumference  (boundary sites)",
+    title: big? (isMass? "Avalanche mass vs. linear size" : "Avalanche circumference vs. linear size")+" · last ¾ · L = "+L : ""});
+  if(pa.length<2) return;
+  ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,pw+1,ph+1); ctx.clip();
+  /* fits over 2 ≤ ℓ ≤ L/2, where neither the lattice spacing nor the boundary dominates */
+  const xLo=Math.log10(2), xHi=Math.log10(L/2);
+  const fa=fitLogLog(pa,xLo,xHi), fi=fitLogLog(pi,xLo,xHi);
+  const cA=light? SERIES_ALL.light : SERIES_ALL.dark, cI=light? SERIES_IN.light : SERIES_IN.dark;
+  drawFit(ctx,sx,sy,fa, light? SERIES_ALL.fitLight : SERIES_ALL.fitDark, fs);
+  drawFit(ctx,sx,sy,fi, light? SERIES_IN.fitLight : SERIES_IN.fitDark, fs);
+  drawSeries(ctx,sx,sy,pa,cA,fs);
+  if(pi.length) drawSeries(ctx,sx,sy,pi,cI,fs);
+  /* legend with the two exponents, top-left inside the frame */
+  const lx=m.l+fs*0.8; let ly=m.t+fs*1.1;
+  legendLine(ctx,lx,ly,cA,"all"+(fa? "  ∼ ℓ^"+fa.b.toFixed(2) : ""),fs,light); ly+=fs*1.5;
+  legendLine(ctx,lx,ly,cI,"no grain left"+(fi? "  ∼ ℓ^"+fi.b.toFixed(2) : (pi.length? "" : "  (none yet)")),fs,light);
+  ctx.restore();
+}
+function drawMassPlot(canvas,light,big){ drawVsLinear(canvas,light,big,"mass"); }
+function drawPerimPlot(canvas,light,big){ drawVsLinear(canvas,light,big,"perim"); }
+function renderGeomPlots(){
+  drawAreaPlot(document.getElementById("areaPlot"), State.plotBg.area, false);
+  drawMassPlot(document.getElementById("massPlot"), State.plotBg.mass, false);
+  drawPerimPlot(document.getElementById("perimPlot"), State.plotBg.perim, false);
+}
+
+/* ---------- square PNGs of the statistics plots ---------- */
+const PLOT_DRAW={ time:drawTimePlot, dist:drawDistPlot, cur:(cv,light)=>drawCurPlot(cv,light),
+                  area:drawAreaPlot, mass:drawMassPlot, perim:drawPerimPlot };
+const PLOT_FILE={ time:"sandpile_size_vs_time.png", dist:"sandpile_size_distribution.png", cur:"sandpile_avalanche_map.png",
+                  area:"sandpile_area_distribution.png", mass:"sandpile_mass_vs_linear_size.png", perim:"sandpile_circumference_vs_linear_size.png" };
+function savePlotPNG(kind){
+  const S=900, cv=document.createElement("canvas"); cv.width=S; cv.height=S;
+  PLOT_DRAW[kind](cv, State.plotBg[kind], true);
+  const a=document.createElement("a"); a.download=PLOT_FILE[kind]; a.href=cv.toDataURL("image/png"); a.click();
+}
+function syncPlotBgBtns(){
+  document.querySelectorAll("[data-pbg]").forEach(b=>b.classList.toggle("active", !!State.plotBg[b.dataset.pbg]));
+  const m=document.getElementById("btnAllPlotBg");
+  if(m) m.classList.toggle("active", Object.values(State.plotBg).every(v=>v));
+}
+function syncAvMemBtn(){
+  const b=document.getElementById("btnAvMem"); if(!b) return;
+  b.textContent="Memory: "+AVMEM_LABEL[State.avMemIdx];
+  b.classList.toggle("active", State.avMemIdx>0);
+  const t=document.getElementById("curTitle");
+  if(t) t.textContent = State.avMemIdx<=2 ? (State.avMemIdx===0? "Last avalanche" : AVMEM_LABEL[State.avMemIdx]+" avalanche")
+                                          : State.avMemIdx===3 ? "Largest avalanche" : "Avalanche of 1–3% L²";
+  const lab=document.getElementById("bigThrLabel"), gt=lab? lab.previousSibling : null;
+  /* the "> threshold" tail only makes sense for the three recent slots */
+  if(lab){ lab.style.display=State.avMemIdx<=2? "" : "none"; if(gt && gt.nodeType===3) gt.textContent=State.avMemIdx<=2? " > " : ""; }
 }
 
 /* ---------- orchestration ---------- */
@@ -3815,21 +4428,23 @@ function renderAll(){
   /* in the game the analysis panels are hidden, so skip five canvases and a DOM write
      per frame — the board is the only thing on screen that needs painting */
   if(State.game.on) return;
-  renderTimePlot(); renderDistPlot(); renderCurrent();
+  renderTimePlot(); renderDistPlot(); renderCurrent(); renderGeomPlots();
   if(probed){ renderField("aPlot",State.Aprobe,"aMin","aMax"); renderField("sPlot",State.Sprobe,"sMin","sMax"); }
   updateStats();
 }
 function setAnalysisPanels(show){
-  for(const id of ["statRow","cardA","cardS"]){
+  for(const id of ["plotBar","statRow","statRow2","cardA","cardS"]){
     const el=document.getElementById(id); if(el) el.style.display = show ? "" : "none";
   }
 }
 function updateStats(){
   document.getElementById("stGrains").textContent=State.grains;
-  document.getElementById("stAval").textContent=State.sizes.length;
+  /* an avalanche only counts when at least one site toppled — a grain that lands quietly
+     is a grain added, not an avalanche */
+  let sum=0,cnt=0; for(const s of State.sizes){ if(s>0){sum+=s;cnt++;} }
+  document.getElementById("stAval").textContent=cnt;
   document.getElementById("stLast").textContent=State.lastSize;
   document.getElementById("stMax").textContent=State.maxSize;
-  let sum=0,cnt=0; for(const s of State.sizes){ if(s>0){sum+=s;cnt++;} }
   document.getElementById("stMean").textContent=cnt?(sum/cnt).toFixed(1):"0";
   let hs=0; for(let k=0;k<State.L*State.L;k++) hs+=State.z[k];
   document.getElementById("stHeight").textContent=(hs/(State.L*State.L)).toFixed(3);
@@ -3952,10 +4567,22 @@ function frame(){
 function gradCss(fn){ let s="linear-gradient(to right";
   for(let t=0;t<=1.001;t+=0.1){ const [r,g,b]=fn(t); s+=`,rgb(${r},${g},${b})`; } return s+")"; }
 function setLegends(){
-  const css=gradCss(cmap);
+  let css;
+  if(isStress()){                       // hard steps: blue | green | yellow | red, one per level
+    const c=State.crit, lv=[]; for(let l=1;l<=c+1;l++) lv.push(stressLevelRGB(l));
+    const n=lv.length; let s="linear-gradient(to right";
+    lv.forEach((rgb,i)=>{ const a=(i/n*100).toFixed(1)+"%", b=((i+1)/n*100).toFixed(1)+"%";
+      s+=`,rgb(${rgb[0]},${rgb[1]},${rgb[2]}) ${a} ${b}`; });
+    css=s+")";
+  } else css=gradCss(cmap);
   document.getElementById("legHeight").style.background=css;
-  document.getElementById("legJetA").style.background=css;
-  document.getElementById("legJetS").style.background=css;
+  const fcss=gradCss(fieldCmap);        // A, S and the avalanche map keep a continuous ramp
+  document.getElementById("legJetA").style.background=fcss;
+  document.getElementById("legJetS").style.background=fcss;
+  const lg=document.getElementById("mainLegend");
+  if(lg){ const lo=lg.firstElementChild, hi=lg.lastElementChild;
+    if(lo) lo.textContent=isStress()? "stable" : "low";
+    if(hi) hi.textContent=isStress()? "toppling" : "high"; }
 }
 
 /* ---------- shared drag-to-tilt, plus game input on the main panel ----------
@@ -4040,7 +4667,7 @@ function unitOne(cap){ const w=State.grassberger?"folder":"grain";
   return cap? w[0].toUpperCase()+w.slice(1) : w; }
 function unitMany(cap){ const w=State.grassberger?"folders":"grains";
   return cap? w[0].toUpperCase()+w.slice(1) : w; }
-const CPU_LABEL=["Humans","CPU","CPU¹","CPU²","CPU³","CPU⁴"];
+const CPU_LABEL=["Humans","CPU","CPU¹","CPU²","CPU³","CPU⁴","CPU⁵"];
 /* CPU⁴ (four full rounds — eight plies) is only offered where it stays affordable:
    2 players on the small boards L ≤ 4.  It plays the Arrow game too — its deep plies
    sample the arrow lists down against the budget, the folder drops always in full. */
@@ -4255,16 +4882,37 @@ function padDir(sx,sy){
   if(d<0 || !gamePlaceArrow(G.sel,d)) gameSay("Arrows may be turned on free sites or your own — not on a site an opponent controls.");
   else gameSay();
 }
-function viewTglLabel(){
-  const b=document.getElementById("btnViewTgl"); if(!b) return;
-  b.textContent=(View.polar===0)? "View: top ▸ 3D" : "View: 3D ▸ top";
+/* ---------- the three named views ----------
+   3D      — the standard tilted pile (60° from vertical, turned 144°)
+   3D side — the game's "Office front" perspective (20° / 180°): a low view from the front
+   2D      — straight down
+   The option matching the camera is lit; a hand-tilted camera lights none of them. */
+const NAMED_VIEWS={ "3d":{polar:60, azimuth:144}, "side":{polar:20, azimuth:180}, "2d":{polar:0, azimuth:0} };
+const VIEW_ORDER=["3d","side","2d"];
+function currentViewName(){
+  if(View.polar===0) return "2d";
+  for(const k of ["3d","side"]){ const v=NAMED_VIEWS[k];
+    if(Math.round(View.polar)===v.polar && Math.round(View.azimuth)===v.azimuth) return k; }
+  return null;
+}
+function setNamedView(name){
+  const v=NAMED_VIEWS[name]; if(!v) return;
+  View.polar=v.polar; View.azimuth=v.azimuth;
+  if(State.game.on){                          // keep the game's own view button in step
+    const G=State.game; G.viewIdx = (name==="side")? 1 : 0;      // 1 = the office-front camera
+    if(typeof syncGameViewBtn==="function") syncGameViewBtn(); }
+  syncViewUI(); renderAll();
+}
+function syncViewSeg(){
+  const cur=currentViewName();
+  document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view===cur));
 }
 function syncViewUI(){
   document.getElementById("polar").value=Math.round(View.polar);
   document.getElementById("azimuth").value=Math.round(View.azimuth);
   document.getElementById("polVal").textContent=Math.round(View.polar);
   document.getElementById("aziVal").textContent=Math.round(View.azimuth);
-  viewTglLabel(); syncMiniBar();
+  syncViewSeg(); syncMiniBar();
 }
 
 /* ---------- run-state UI ---------- */
@@ -4297,22 +4945,22 @@ function updateMainTitle(){
 /* keep the replica buttons showing exactly what the real ones show */
 let _miniKey="";
 function syncMiniBar(){
-  const q=sel=>document.querySelector('.minibar [data-mini="'+sel+'"]');
-  if(!q("btw")) return;
+  /* every replica of a control, wherever it sits (the head line, the statistics bar) */
+  const qa=(sel,fn)=>document.querySelectorAll('[data-mini="'+sel+'"]').forEach(fn);
+  if(!document.querySelector('[data-mini="btw"]')) return;
   const g=State.game.on, run=State.running;
-  const key=[g,State.manna,State.grassberger,run,Math.round(View.polar),State.model,State.lightBg].join("|");
+  const key=[g,State.manna,State.grassberger,run,Math.round(View.polar),Math.round(View.azimuth),State.model,State.lightBg].join("|");
   if(key===_miniKey) return;
   _miniKey=key;
-  q("btw").innerHTML = (!g && !State.manna)? (MODEL_LABEL[State.model]||"BTW") : "BTW";
-  q("btw").classList.toggle("active", !g && !State.manna);
-  q("manna").innerHTML = (State.manna2 && !g)? "Manna<sup>2</sup>" : "Manna<sup>4</sup>";
-  q("manna").classList.toggle("active", !g && State.manna);
-  q("game").classList.toggle("active", g);
-  q("view").textContent = (View.polar===0) ? "View: top \u25B8 3D" : "View: 3D \u25B8 top";
-  q("grass").textContent = State.grassberger ? "\u25CF Grassberger" : "\u25CB Grassberger";
-  q("grass").classList.toggle("active", State.grassberger);
-  q("start").textContent = run ? "Pause" : "\u25B6 Start";
-  q("start").classList.toggle("primary", !run);
+  qa("btw", b=>{ b.innerHTML = (!g && !State.manna)? (MODEL_LABEL[State.model]||"BTW") : "BTW";
+                 b.classList.toggle("active", !g && !State.manna); });
+  qa("manna", b=>{ b.innerHTML = (State.manna2 && !g)? "Manna<sup>2</sup>" : "Manna<sup>4</sup>";
+                   b.classList.toggle("active", !g && State.manna); });
+  qa("game", b=>b.classList.toggle("active", g));
+  qa("grass", b=>{ b.textContent = State.grassberger ? "\u25CF Grassberger" : "\u25CB Grassberger";
+                   b.classList.toggle("active", State.grassberger); });
+  qa("start", b=>{ b.textContent = run ? "Pause" : "\u25B6 Start"; b.classList.toggle("primary", !run); });
+  syncViewSeg();
 }
 
 function wire(){
@@ -4332,11 +4980,22 @@ function wire(){
       setTimeout(()=>{ resetCriticalStart(4*State.L*State.L);
         bc.textContent=old; bc.disabled=false; },20); }; }
 
-  const ls=document.getElementById("Lslider");
-  ls.oninput=()=>setLfromIndex(parseInt(ls.value));
+  const ls=document.getElementById("Lsel");
+  ls.onchange=()=>setLfromIndex(parseInt(ls.value));
 
   const bt=document.getElementById("bigThr");
   bt.oninput=()=>{ State.bigThresh=parseInt(bt.value); document.getElementById("bigThrLabel").textContent=State.bigThresh; };
+  /* the avalanche memory: latest → 2nd → 3rd → largest → 1–3% of L² → latest */
+  document.getElementById("btnAvMem").onclick=()=>{ State.avMemIdx=(State.avMemIdx+1)%5; syncAvMemBtn(); renderCurrent(); };
+  /* each statistics plot: its own background switch and its own square PNG */
+  document.querySelectorAll("[data-pbg]").forEach(b=>{ b.onclick=()=>{ const k=b.dataset.pbg;
+    State.plotBg[k]=!State.plotBg[k]; syncPlotBgBtns(); renderAll(); }; });
+  document.querySelectorAll("[data-pshot]").forEach(b=>{ b.onclick=()=>savePlotPNG(b.dataset.pshot); });
+  /* the master switch: every plot to the same background — white unless all are white already */
+  document.getElementById("btnAllPlotBg").onclick=()=>{
+    const allLight=Object.values(State.plotBg).every(v=>v);
+    for(const k in State.plotBg) State.plotBg[k]=!allLight;
+    syncPlotBgBtns(); renderAll(); };
 
   const gr=document.getElementById("gran");
   gr.oninput=()=>{ granIdx=parseInt(gr.value); document.getElementById("granLabel").textContent=GRAN[granIdx].label; };
@@ -4385,11 +5044,8 @@ function wire(){
     updateMainTitle();
     renderAll(); };
 
-  const btnViewTgl=document.getElementById("btnViewTgl");
-  btnViewTgl.onclick=()=>{
-    if(View.polar===0){ View.polar=60; View.azimuth=144; }   // 3-D preset
-    else { View.polar=0; View.azimuth=0; }                   // top-down 2-D
-    syncViewUI(); renderAll(); };
+  /* the three named views, in the control panel and in the head-line replica alike */
+  document.querySelectorAll("[data-view]").forEach(b=>{ b.onclick=()=>setNamedView(b.dataset.view); });
 
   const btnBTW=document.getElementById("btnBTW"), btnManna=document.getElementById("btnManna");
   function setModel(m){ State.manna=m;
@@ -4513,7 +5169,13 @@ function wire(){
     setFold("simWrap",opening);
     if(opening) updateStats();            // the numbers pause while the panel is folded
   };
-  document.getElementById("aboutHead").onclick=()=>setFold("aboutWrap",document.getElementById("aboutWrap").classList.contains("closed"));
+  document.getElementById("learnHead").onclick=()=>{ const w=document.getElementById("learnWrap");
+    setFold("learnWrap", w.classList.contains("closed")); syncTitleCaret(); };
+  /* the title itself opens the story of the applet */
+  document.getElementById("appTitleBtn").onclick=()=>{ const w=document.getElementById("learnWrap");
+    setFold("learnWrap", w.classList.contains("closed")); syncTitleCaret(); };
+  window.syncTitleCaret=function(){ const c=document.getElementById("titleCaret"), w=document.getElementById("learnWrap");
+    if(c&&w) c.textContent=w.classList.contains("closed")? "\u25BE" : "\u25B4"; };
   document.getElementById("lookHead").onclick=()=>setFold("lookWrap",document.getElementById("lookWrap").classList.contains("closed"));
 
   document.getElementById("gPhaseArrow").onclick=()=>{ const G=State.game;
@@ -4619,7 +5281,7 @@ function wire(){
      are 2-player only).  The old one-ply "CPU" is retired \u2014 CPU\u00b9 is the entry level.
      Whatever the level, only ONE seat (seat 2) is the computer. */
   cpu.onclick=()=>{ const G=State.game;
-    const seq=[0,2,3]; if(G.players===2){ seq.push(4); if(cpu4Allowed()) seq.push(5); }
+    const seq=[0,2,3]; if(G.players===2){ seq.push(4); if(cpu4Allowed()){ seq.push(5); seq.push(6); } }
     let i=seq.indexOf(G.aiMode); if(i<0) i=0;
     G.aiMode=seq[(i+1)%seq.length];
     applyRoster(); syncCPUBtn();
@@ -4627,9 +5289,10 @@ function wire(){
   window.syncCPUBtn=function(){ const G=State.game;
     if(G.aiMode===1) G.aiMode=2;                       // the one-ply level is retired: CPU\u00b9 is the floor
     if(G.players>2 && G.aiMode>3) G.aiMode=3;          // the deep levels are 2-player only
-    if(G.aiMode===5 && !cpu4Allowed()) G.aiMode=4;     // CPU\u2074: the small boards L \u2264 4 only
+    if(G.aiMode>=5 && !cpu4Allowed()) G.aiMode=4;      // CPU\u2074 and CPU\u2075: the small boards L \u2264 4 only
     cpu.textContent = CPU_LABEL[G.aiMode];
-    cpu.title = G.aiMode===5 ? "CPU\u2074 \u2014 four full rounds ahead (eight plies, every arrow option weighed at every step); L \u2264 4 only, and deliberately slow"
+    cpu.title = G.aiMode===6 ? "CPU\u2075 \u2014 five full rounds ahead (ten plies); L \u2264 4, 2 players only. Exhaustive in the Folders game on L = 3; elsewhere the search runs to its simulation budget, so expect a long think (up to a minute or more on L = 4 or with arrows)"
+              : G.aiMode===5 ? "CPU\u2074 \u2014 four full rounds ahead (eight plies, every arrow option weighed at every step); L \u2264 4 only, and deliberately slow"
               : G.aiMode===4 ? "CPU\u00b3 \u2014 three full rounds ahead (six plies, every arrow option weighed at every step); strongest everywhere, slow on big boards (2-player only)"
               : G.aiMode===3 ? (G.players===2
                   ? "CPU\u00b2 \u2014 two full rounds ahead: every move, every reply, every follow-up, every final answer (four plies)"
@@ -4683,6 +5346,8 @@ function wire(){
     bb.classList.toggle("active", State.lightBg);
     const ob=document.getElementById("ovBg");          // the ◐ in the display's lower-left corner
     if(ob) ob.classList.toggle("active", State.lightBg);
+    for(const k in State.plotBg) State.plotBg[k]=State.lightBg;   // the master switch carries the plots along
+    syncPlotBgBtns();
     renderAll(); };
   /* the ◐ button in the display's lower-left corner presses the same switch */
   document.getElementById("ovBg").onclick=()=>bb.click();
@@ -4693,8 +5358,8 @@ function wire(){
     fb.classList.toggle("active",State.flat); renderAll(); };
 
   const pol=document.getElementById("polar"), azi=document.getElementById("azimuth");
-  pol.oninput=()=>{ View.polar=parseInt(pol.value); document.getElementById("polVal").textContent=View.polar; viewTglLabel(); renderAll(); };
-  azi.oninput=()=>{ View.azimuth=parseInt(azi.value); document.getElementById("aziVal").textContent=View.azimuth; renderAll(); };
+  pol.oninput=()=>{ View.polar=parseInt(pol.value); document.getElementById("polVal").textContent=View.polar; syncViewSeg(); renderAll(); };
+  azi.oninput=()=>{ View.azimuth=parseInt(azi.value); document.getElementById("aziVal").textContent=View.azimuth; syncViewSeg(); renderAll(); };
 
   const ad=document.getElementById("asDist");
   ad.oninput=()=>{ const i=parseInt(ad.value); View.asDist=AS_DIST[i]; document.getElementById("asDistLabel").textContent=AS_LABEL[i]; if(!State.running) renderAll(); };
@@ -4744,15 +5409,15 @@ function wire(){
   };
   document.getElementById("savA").onclick=()=>save("aPlot","btw_A.png");
   document.getElementById("savS").onclick=()=>save("sPlot","btw_S.png");
-  document.getElementById("savTime").onclick=()=>save("timePlot","btw_size_time.png");
-  document.getElementById("savDist").onclick=()=>save("distPlot","btw_distribution.png");
-  document.getElementById("savCur").onclick=()=>save("curPlot","btw_last_big_avalanche.png");
+  document.getElementById("savTime").onclick=()=>savePlotPNG("time");
+  document.getElementById("savDist").onclick=()=>savePlotPNG("dist");
+  document.getElementById("savCur").onclick=()=>savePlotPNG("cur");
   document.getElementById("savAll").onclick=saveCombined;
 
-  /* the head-line replicas simply press the real buttons, so behaviour cannot drift */
-  const MINI={btw:"btnBTW", manna:"btnManna", game:"btnGame", view:"btnViewTgl",
+  /* the replicas (head line and statistics bar) simply press the real buttons, so behaviour cannot drift */
+  const MINI={btw:"btnBTW", manna:"btnManna", game:"btnGame",
               grass:"btnGrass", start:"btnStart", step:"btnStep", reset:"btnReset"};
-  document.querySelectorAll('.minibar [data-mini]').forEach(bt=>{
+  document.querySelectorAll('[data-mini]').forEach(bt=>{
     const key=bt.dataset.mini;
     if(key==="resetcrit"){ bt.classList.add("freeze");
       bt.onclick=()=>{ if(State.game.on) return;
@@ -4832,7 +5497,7 @@ function wire(){
       +'holds the most points wins. If the top scores are <b>level</b> at that moment, nobody packs up: '
       +'the board flashes <span class="exwin">&#9889; SUDDEN DEATH</span> and play simply continues '
       +'&mdash; the <b>first player to take the outright lead wins immediately</b>.</p>'
-      +'<p>The computer opponents (CPU&#185; to CPU&#8308;) all honour the same law: they seize a winning move '
+      +'<p>The computer opponents (CPU&#185; to CPU&#8309;) all honour the same law: they seize a winning move '
       +'the instant one exists, and they refuse any move that would let <i>anybody else</i> win on the '
       +'next stroke &mdash; in the race, on the grey clock, and in sudden death alike.</p>',
   };
@@ -4909,8 +5574,11 @@ function applyCanvasSizes(){
   const GAME_VPAD=132;      // score line + card chrome + page padding
   const availV = State.game.on ? (availH - GAME_VPAD) : availH*0.92;
   BIG = Math.round(Math.max(260, Math.min(1024, Math.min(availW, Math.max(300, availV)))));
-  SMALL_W = Math.max(120, Math.round((BIG-24)/3));
-  SMALL_H = Math.round(SMALL_W*0.9);
+  /* three abreast on a wide screen; on a phone they stack one per row, so each plot is
+     drawn at the full panel width rather than being stretched from a third of it */
+  const stacked=(typeof window!=="undefined" && window.innerWidth<=480);
+  SMALL_W = stacked ? Math.min(600, BIG) : Math.max(120, Math.round((BIG-24)/3));
+  SMALL_H = SMALL_W;                          // the statistics plots are square
   if(col){                                   // hug the canvas on wide screens, full width on phones
     col.style.flex  = narrow ? "" : "0 0 auto";
     col.style.width = narrow ? "" : (BIG+chrome)+"px";
@@ -4926,7 +5594,7 @@ function applyCanvasSizes(){
     c.width=mainPx; c.height=mainPx;
     c.style.width=BIG+"px"; c.style.height="auto"; }
   for(const id of ["aPlot","sPlot"]){ const c=document.getElementById(id); c.width=BIG; c.height=BIG; }
-  for(const id of ["timePlot","distPlot","curPlot"]){ const c=document.getElementById(id); c.width=SMALL_W; c.height=SMALL_H; }
+  for(const id of ["timePlot","distPlot","curPlot","areaPlot","massPlot","perimPlot"]){ const c=document.getElementById(id); c.width=SMALL_W; c.height=SMALL_H; }
 }
 /* ---------- responsive control placement ----------
    On narrow screens (phones) the run row, the model row, the view row and the whole
@@ -4964,21 +5632,22 @@ function onViewportResize(){
     const keepL=State.L;
     relocateControls();
     applyCanvasSizes(); buildAllowedL();
-    const sl=document.getElementById("Lslider");
-    sl.min=0; sl.max=Math.max(0,ALLOWED.length-1); sl.value=nearestAllowedIndex(keepL);
+    document.getElementById("Lsel").value=nearestAllowedIndex(keepL);
     spriteCacheClear(); renderAll();
   },140);
 }
 
-/* ---------- allowed lattice sizes: a whole number of pixels per site ----------
-   For pixel budget S (=BIG) the valid sizes are L = floor(S/P) for integer
-   pixels-per-site P; scrolling steps between these crisp values. Capped at 1024. */
+/* ---------- the lattice sizes on offer ----------
+   A fixed ladder in a pull-down list.  Very large lattices are drawn one pixel (or less)
+   per site in the flat views, and as thin columns when tilted. */
+const L_CHOICES=[3,4,5,7,10,20,30,40,50,100,200,400,800];
 let ALLOWED=[];
 function buildAllowedL(){
-  const S=BIG, maxL=Math.min(1024,S), set=new Set();
-  for(let P=1;P<=Math.floor(S/4);P++){ const L=Math.floor(S/P); if(L>=4 && L<=maxL) set.add(L); }
-  for(let L=3;L<=20;L++) if(L<=maxL) set.add(L);   // fine control at the small end (L=3 for the game)
-  ALLOWED=[...set].sort((a,b)=>a-b);
+  ALLOWED=L_CHOICES.slice();
+  const sel=document.getElementById("Lsel");
+  if(sel && sel.options.length!==ALLOWED.length){
+    sel.innerHTML=ALLOWED.map((L,i)=>'<option value="'+i+'">L = '+L+'  ('+L+'×'+L+' = '+(L*L).toLocaleString("en")+' sites)</option>').join("");
+  }
 }
 function nearestAllowedIndex(L){ let bi=0,bd=Infinity;
   for(let k=0;k<ALLOWED.length;k++){ const dd=Math.abs(ALLOWED[k]-L); if(dd<bd){bd=dd;bi=k;} } return bi; }
@@ -4989,7 +5658,8 @@ function setLfromIndex(i){
   updateBigThrRange();
   document.getElementById("Lval").textContent=L;
   { const lp=document.getElementById("LpxInfo"); if(lp) lp.textContent=P+" px/site"; }
-  document.getElementById("Lslider").value=i;
+  document.getElementById("Lsel").value=i;
+  State.avMemIdx=0; syncAvMemBtn();
   renderAll();
 }
 
@@ -5018,7 +5688,7 @@ function saveCombined(){
 /* ---------- boot ---------- */
 relocateControls(); applyCanvasSizes(); buildAllowedL(); setLegends(); wire();
 document.getElementById("btnScheme").textContent="Colour: "+SCHEME_LABEL[State.scheme];
-const _ls=document.getElementById("Lslider"); _ls.min=0; _ls.max=ALLOWED.length-1; _ls.step=1;
+syncAvMemBtn(); syncPlotBgBtns();
 document.getElementById("asDistLabel").textContent=AS_LABEL[AS_DIST.indexOf(View.asDist)>=0?AS_DIST.indexOf(View.asDist):5];
 
 /* default view: the Grassberger office, ON, in the 3-D preset, single
