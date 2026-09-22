@@ -1255,7 +1255,11 @@
           <div class="row"><label>dimension</label>
             <div class="seg mini" id="scDim"><button data-v="1" class="on">1D</button><button data-v="2">2D</button></div></div>
           <div class="row"><label>size L</label>
-            <select id="scL"><option>32</option><option>64</option><option selected>128</option><option>256</option></select></div>
+            <select id="scL"><option>32</option><option>64</option><option>128</option><option selected>256</option><option>512</option></select></div>
+          <div class="row"><label>lattice step dx</label>
+            <select id="scDx" title="lattice spacing; the physical length is L·dx"><option>0.1</option><option>0.2</option><option selected>0.25</option><option>0.5</option><option>1</option></select></div>
+          <div class="row"><label>time step dt (at most)</label>
+            <select id="scDtMax" title="upper bound of the time step; the automatic rule lowers it further for large coefficients"><option>0.005</option><option>0.01</option><option>0.02</option><option selected>0.05</option><option>0.1</option><option>0.2</option></select></div>
           <div class="row"><label>boundary</label>
             <div class="seg mini" id="scBC"><button data-v="periodic" class="on">periodic</button><button data-v="open">open</button></div></div>
           <div class="row"><label>transient (total = 2&times;)</label>
@@ -1452,7 +1456,9 @@
           <i>both</i>, which runs the two equations and tabulates them side by side like the first
           table of the main text), (&nabla;h)&sup2; and the fixed coefficients, pick the quantity to scan — &alpha;, &beta;, &gamma;, &delta; or the box size
           L — with its range and step (the values &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.1, &minus;0.05, 0, +0.1 and +0.2
-          are always included; L runs 16, 32, … up to 2<sup>n</sup>), the dimension, box, boundary, the transient (the total time
+          are always included; L runs 16, 32, … up to 2<sup>n</sup>), the dimension, box size L (default 256), lattice step dx (default 0.25) and an upper bound
+          on the time step dt (default 0.05; the automatic rule lowers it further for large
+          coefficients), the boundary, the transient (the total time
           per sample is twice the transient: the Benettin exponent is measured in the first half
           of the measurement, the free runs in the second) and the number of random initial
           conditions (each start draws its wavenumber n from 3…11 and its amplitude from
@@ -4974,6 +4980,7 @@ function buildSim(P){
     else if(Math.abs(c.alpha) > 2) dt = 0.05; else dt = c.order === 6 ? 0.02 : 0.1;
     if(c.gamma !== 0) dt = Math.min(dt, 0.02);
     if(c.delta !== 0) dt = Math.min(dt, 0.01);
+    if(c.dtMax > 0) dt = Math.min(dt, c.dtMax);
     return dt;
   }
   function scEquation(c, par){
@@ -4997,7 +5004,7 @@ function buildSim(P){
   }
   async function scSample(c, value, seed, report){
     const ic = seed === undefined ? { n: 4, amp: 0 } : scRandomIC(seed);
-    const P = { dim: c.dim, L: c.L, bc: c.bc, dt: c.dt, dx: 1, nwx: ic.n, nwy: ic.n, amp: ic.amp, eps: 0.1,
+    const P = { dim: c.dim, L: c.L, bc: c.bc, dt: c.dt, dx: c.dx || 1, nwx: ic.n, nwy: ic.n, amp: ic.amp, eps: 0.1,
                 alpha: c.alpha, beta: c.beta, gamma: c.gamma, delta: c.delta, order: c.order, nl2: c.nl2, absMode: 'euclid', seed, noise: 0.1 };
     if(c.par === 'L') P.L = value; else P[c.par] = value;
     const m = buildSim(P); m.lyap.on = false;
@@ -5043,7 +5050,7 @@ function buildSim(P){
     if(SC.running) return;
     const orders = scOrd === 'both' ? [4, 6] : [scOrd];
     const c = { order: orders[0], nl2: scNL2, alpha: +$('scA').value, beta: +$('scB').value, gamma: +$('scG').value, delta: +$('scD').value,
-                par: $('scPar').value, dim: scDim, L: +$('scL').value, bc: scBC, tTrans: +$('scTrans').value, nmc: +$('scNMC').value };
+                par: $('scPar').value, dim: scDim, L: +$('scL').value, dx: +$('scDx').value, dtMax: +$('scDtMax').value, bc: scBC, tTrans: +$('scTrans').value, nmc: +$('scNMC').value };
     c.tTotal = 2*c.tTrans;
     const v0 = +$('scMin').value, v1 = +$('scMax').value, st = +$('scStep').value;
     let vals = [];
@@ -5060,11 +5067,12 @@ function buildSim(P){
     }
     SC.running = true; SC.stop = false; SC.rows = []; SC.rows2 = orders.length > 1 ? [] : null; SC.par = c.par; SC.cfg = c; SC.eq = scEquation(c, c.par);
     SC.eq2 = orders.length > 1 ? scEquation(Object.assign({}, c, { order: 6 }), c.par) : null;
+    SC.geo = '  (dx = ' + c.dx + (c.par === 'L' ? '' : ', L = ' + c.L) + ')';
     $('scStart').disabled = true; $('scStop').disabled = false;
     /* the main display pauses: all the time goes into the scan */
     const wasRunning = running; running = false; $('bRun').textContent = 'Run';
     if(scanPanel.classList.contains('closed')) setScanOpen(true);
-    $('scanEq').textContent = (SC.eq2 ? SC.eq + '   and   ' + SC.eq2 : SC.eq) + '   —   ' + (c.dim === 2 ? '2D, ' : '1D, ') + c.bc + ', transient ' + c.tTrans + ', total ' + c.tTotal + ' per sample' + (c.nmc > 1 ? ', ' + c.nmc + ' initial conditions' : '') + (c.par === 'L' ? '' : ', L = ' + c.L);
+    $('scanEq').textContent = (SC.eq2 ? SC.eq + '   and   ' + SC.eq2 : SC.eq) + '   —   ' + (c.dim === 2 ? '2D, ' : '1D, ') + c.bc + ', dx = ' + c.dx + ', dt ≤ ' + c.dtMax + ', transient ' + c.tTrans + ', total ' + c.tTotal + ' per sample' + (c.nmc > 1 ? ', ' + c.nmc + ' initial conditions' : '') + (c.par === 'L' ? '' : ', L = ' + c.L);
     const t0 = performance.now(), total = vals.length*c.nmc*orders.length; let done = 0;
     for(let i=0;i<vals.length && !SC.stop;i++) for(const ord of orders){
       if(SC.stop) break;
@@ -5118,8 +5126,8 @@ function buildSim(P){
     const thSat = '<th title="saturated separation of the two interfaces in the free runs — the window within which the interface can vary (√2·W for uncorrelated interfaces)' + (nmc > 1 ? '; averaged over the random starts, ± spread' : '') + '">D<sub>sat</sub></th>';
     const thW = '<th title="mean interface width' + (nmc > 1 ? '; ± spread over the random starts' : '') + '">W</th>';
     let h = '';
-    if(two) h += '<tr><th></th><th colspan="4" class="grp eqh">' + SC.eq + '</th><th colspan="4" class="grp eqh eq2">' + SC.eq2 + '</th></tr>';
-    else h += '<tr><th></th><th colspan="6" class="grp eqh">' + SC.eq + '</th></tr>';
+    if(two) h += '<tr><th></th><th colspan="4" class="grp eqh">' + SC.eq + SC.geo + '</th><th colspan="4" class="grp eqh eq2">' + SC.eq2 + SC.geo + '</th></tr>';
+    else h += '<tr><th></th><th colspan="6" class="grp eqh">' + SC.eq + SC.geo + '</th></tr>';
     h += '<tr><th>' + sym + '</th>' + thFree + thBen + thSat + thW + (two ? thFree + thBen + thSat + thW : '<th title="number of free runs (all starts)">runs</th><th>dt</th>') + '</tr>';
     const cells = (r, g2) => { const c1 = g2 ? ' g2' : ''; return !r ? '<td colspan="4" class="' + c1 + '"></td>' : r.dv ? '<td class="dv' + c1 + '" colspan="4">diverges</td>'
       : '<td class="' + lamClass(r.free) + c1 + '">' + pm(r.free, r.sdFree) + '</td><td>' + pm(r.ben, r.sdBen) + '</td><td>' + fmtSat(r) + '</td><td>' + r.W.toFixed(2) + (r.sdW > 0 ? ' ± ' + r.sdW.toFixed(2) : '') + '</td>'; };
@@ -5162,7 +5170,7 @@ function buildSim(P){
     const rows = S.rows.filter(r => !r.dv), sym = GSYM[S.par] || S.par;
     const px = v => (v*F).toFixed(1) + 'px';
     c.font = '600 ' + px(13) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'left'; c.textBaseline = 'top';
-    const geo = S.cfg ? '  (' + (S.cfg.dim === 2 ? '2D' : '1D') + ', ' + S.cfg.bc + (S.par === 'L' ? '' : ', L = ' + S.cfg.L) + ')' : '';
+    const geo = S.cfg ? '  (' + (S.cfg.dim === 2 ? '2D' : '1D') + ', ' + S.cfg.bc + (S.cfg.dx ? ', dx = ' + S.cfg.dx : '') + (S.par === 'L' ? '' : ', L = ' + S.cfg.L) + ')' : '';
     const ttl = (only ? ({ lam: 'λ against ' + sym, sat: 'D sat against ' + sym, W: 'W against ' + sym, WL: 'W against L, log–log', spec: 'Power spectra' }[only]) : 'λ and W against ' + sym) + (S.rows2 ? ', both equations' : '');
     c.fillText(rows.length ? ttl + geo : 'λ and W against the scanned quantity', 12*F, 6*F);
     if(!rows.length){ c.fillStyle = lab; c.font = px(12) + ' system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(S.running ? 'sampling…' : 'no data yet', w/2, h/2); if(!only) S.layout = []; return; }
@@ -5413,10 +5421,12 @@ function buildSim(P){
     const wCell = r => r.W.toFixed(2) + (r.sdW > 0 ? ' ± ' + r.sdW.toFixed(2) : '');
     const cellTexts = r => r && !r.dv ? [pm(r.free, r.sdFree), pm(r.ben, r.sdBen), fmtSat(r), wCell(r)] : ['', '', '', ''];
     const heads = ['λ free', 'Benettin', 'D sat', 'W'];
-    const groups = two ? [{ eq: SC.eq, rows }, { eq: SC.eq2, rows: SC.rows2 }] : [{ eq: SC.eq, rows }];
+    const groups = two ? [{ eq: SC.eq + SC.geo, rows }, { eq: SC.eq2 + SC.geo, rows: SC.rows2 }] : [{ eq: SC.eq + SC.geo, rows }];
     /* column widths from the contents */
     const w0 = Math.max(wtxt(GSYM[SC.par] || SC.par, sans), ...rows.map(r => wtxt((r.v > 0 ? '+' : '') + r.v, mono)));
     const gw = groups.map(g => heads.map((h, j) => Math.max(wtxt(h, sans), ...g.rows.map(r => wtxt(cellTexts(r)[j], mono)))));
+    /* a group is at least as wide as its equation line */
+    groups.forEach((g, gi) => { const need = wtxt(g.eq, '600 10.5px system-ui,sans-serif') + 8 - (gw[gi].reduce((a, b) => a + b, 0) + 4*GAP); if(need > 0) gw[gi] = gw[gi].map(wc => wc + need/4); });
     const xs = []; let x = M + w0;                       // right edges of the columns
     xs.push(x);
     const gx = [];                                       // [left, right] of each group
