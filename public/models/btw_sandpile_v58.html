@@ -603,8 +603,9 @@
             possibilities explodes: they think for anything from a few seconds to a minute, and the
             applet is frozen while they do. Every level obeys two rules: a move that wins on the
             spot is played at once, and a move that lets anybody else win on the next stroke is
-            never played. With three or four players the computer stops at CPU<sup>2</sup>, since
-            predicting how the other players fight <i>each other</i> is mostly guesswork beyond that.</p>
+            never played. With three or four players the ladder stops at CPU<sup>3</sup> (three
+            full rounds of everybody), since predicting how the other players fight <i>each
+            other</i> becomes mostly guesswork beyond that.</p>
 
             <div class="sectiontitle">Things to try</div>
             <p>Compare the slope of the size distribution for BTW and Manna(4) on the same L. Watch
@@ -2395,13 +2396,130 @@ function aiChooseMoveUltraMulti(p){
   }
   return best;
 }
+/* ============================================================
+   CPU³ with 3 or 4 players — THREE full rounds ahead, written
+   as the general R-round search: my move → every opponent in
+   turn plays his greedy best on the evolving board (their points
+   against each other fully counted) → my best follow-up → their
+   round → my follow-up → their round.
+       value = Σ my gains − max over opponents (their total gain)
+   over the whole horizon.  A line in which anybody else wins is
+   shunned; a line in which I finish is taken.  Cheap machinery
+   throughout: quiet drops settled free, best-gain-first with a
+   folder-ceiling cut on every level, and the simulation budget
+   with arrow-list sampling only (every folder drop is kept).
+   ============================================================ */
+const AIM_SIM_CAP=600000;               // simulated avalanches per multi-player CPU³ move, worst case
+function aiChooseMoveHyperMulti(p, rounds){
+  if(rounds===undefined) rounds=3;
+  aiSeedReset();                                    // reproducible search: same position, same move
+  const G=State.game, N=State.L*State.L, P=G.players;
+  if(P===2) return aiChooseMoveHyper(p, 2*rounds-1);
+  const base=snapState();
+  const drops=[]; for(let k=0;k<N;k++) if(legalGrain(k)) drops.push(k);
+  if(!drops.length) return null;
+  let shrink=1;
+  if(G.variant==="arrows"){
+    let cMax=0;
+    for(let q=1;q<=P;q++){ let c=0;
+      for(let k=0;k<N;k++) if(legalArrowOn(base,k,q)) c++;
+      if(c>cMax) cMax=c; }
+    const a=(1+3*cMax)*drops.length;
+    let est=1; for(let r=0;r<rounds;r++) est*=a*((P-1)*a);
+    if(est>AIM_SIM_CAP) shrink=Math.pow(AIM_SIM_CAP/est, 1/(2*rounds));
+  }
+  const trim=list=>{ if(shrink>=1||list.length<=1) return list;
+    const n=Math.max(1,Math.round(list.length*shrink));
+    return n<list.length? [[-1,-1]].concat(sampleK(list.slice(1),n-1)) : list; };
+  let simsLeft=AIM_SIM_CAP, _lg=0;
+  const QG=(S,q2,ak,ad,gk)=>{ if(S.z[gk]<State.crit){ _lg=0; return 0; }
+    simsLeft--; const lost=simMoveOn(cloneSim(S), q2, ak, ad, gk); _lg=lost[0];
+    return moveGain(q2, lost); };
+  const sc=G.scored, BIG=1e6;
+  const rootGrey=xInPlay()? greysOn(base) : 0;
+  const othersMax=scOthersMax(p);
+  let Ftot=0; for(let q=1;q<=P;q++) if(q!==p) Ftot+=foldersOf(base,q);   // ceiling on any single gain of mine
+  const order=[]; for(let s2=1;s2<P;s2++) order.push(((p-1+s2)%P)+1);
+  /* one round of the other players, each greedy on the running board (mutates S, adds each
+     opponent's points to delta[q] and the greys pushed off to delta[0]).  Returns true if
+     anybody wins during the round. */
+  function roundPlay(S, delta, pPts, pGrey){
+    for(const q of order){
+      const acts=trim(allArrowActs(q,S));
+      let bg=-1, bmv=null, bd=Infinity, ba=Infinity;
+      for(const [ak2,ad2] of acts){ for(const gk2 of drops){
+        const g2=QG(S, q, ak2, ad2, gk2);
+        const gd=centreDist2(gk2), adist=ak2>=0? centreDist2(ak2) : -1;
+        if(g2>bg || (g2===bg && (gd<bd || (gd===bd && adist<ba)))){ bg=g2; bd=gd; ba=adist; bmv=[ak2,ad2,gk2]; }
+        if(simsLeft<=0) break;
+      } if(simsLeft<=0) break; }
+      if(!bmv) return false;
+      const lost=simMoveOn(S, q, bmv[0], bmv[1], bmv[2]); simsLeft--;
+      delta[0]+=lost[0];
+      const gq=moveGain(q,lost);
+      let om=pPts; for(const r of order) if(r!==q && sc[r]+delta[r]>om) om=sc[r]+delta[r];
+      if(xMoveOutcome(sc[q]+delta[q]+gq, rootGrey-pGrey-delta[0], om)===1) return true;
+      delta[q]+=gq;
+    }
+    return false;
+  }
+  const maxD=d=>{ let m=0; for(const q of order) if(d[q]>m) m=d[q]; return m; };
+  /* value of the position S after one of MY moves: the opponents' round, then (with rounds
+     left) my best follow-up judged recursively.  myG = my gains so far, myGrey = greys my own
+     moves pushed off.  capNeed: the parent stops caring once the value is this high. */
+  function value(S, delta, myG, myGrey, left, capNeed){
+    if(roundPlay(S, delta, sc[p]+myG, myGrey)) return -1e9;          // somebody else finishes
+    if(left<=1 || simsLeft<=0) return myG - maxD(delta);
+    const list=[];
+    pre:
+    for(const [ak,ad] of trim(allArrowActs(p,S))){ for(const gk of drops){
+      list.push({ak,ad,gk,g:QG(S,p,ak,ad,gk),go:_lg});
+      if(simsLeft<=0) break pre;
+    }}
+    list.sort((a,b)=>b.g-a.g);
+    const md=maxD(delta);
+    let best=-Infinity;
+    for(const r of list){
+      /* even perfect later rounds cannot lift this follow-up above best (or above capNeed) */
+      if(best>-Infinity && (myG+r.g+(left-2)*Ftot-md<=best || best>=capNeed)) break;
+      if(simsLeft<=0 && best>-Infinity) break;
+      { let om=0; for(const q of order) if(sc[q]+delta[q]>om) om=sc[q]+delta[q];
+        const o=xMoveOutcome(sc[p]+myG+r.g, rootGrey-myGrey-delta[0]-r.go, om);
+        if(o===1) return BIG;                                            // I finish here
+        if(o===-1) continue; }                                           // that follow-up loses
+      const S2=cloneSim(S); simMoveOn(S2, p, r.ak, r.ad, r.gk); simsLeft--;
+      const v=value(S2, delta.slice(), myG+r.g, myGrey+r.go, left-1, capNeed);
+      if(v>best) best=v;
+    }
+    return best===-Infinity? (myG-md) : best;
+  }
+  const cands=[];
+  for(const [ak,ad] of allArrowActs(p,null)) for(const gk of drops){   // the root list is never sampled
+    cands.push({ak,ad,gk,g:QG(base,p,ak,ad,gk),go:_lg});
+  }
+  cands.sort((a,b)=> b.g-a.g
+    || centreDist2(a.gk)-centreDist2(b.gk)
+    || (a.ak<0?-1:centreDist2(a.ak)) - (b.ak<0?-1:centreDist2(b.ak)));
+  let best=null, V=-Infinity;
+  for(const mv of cands){
+    if(best && (simsLeft<=0 || mv.g+(rounds-1)*Ftot<=V)) break;
+    const out=xMoveOutcome(sc[p]+mv.g, rootGrey-mv.go, othersMax);
+    if(out===1) return {arrowK:mv.ak, arrowDir:mv.ad, grainK:mv.gk};   // wins on the spot
+    if(out===-1) continue;
+    const S=cloneSim(base); simMoveOn(S, p, mv.ak, mv.ad, mv.gk); simsLeft--;
+    const val=value(S, [0,0,0,0,0], mv.g, mv.go, rounds, Infinity);
+    if(val>V || !best){ V=val; best={arrowK:mv.ak, arrowDir:mv.ad, grainK:mv.gk}; }
+  }
+  return best;
+}
 /* the ladder: CPU = one ply · CPU* = two plies (or the multiplayer round-robin) ·
    CPU** = two full rounds (four plies / two-round multi) · CPU*** = three full rounds
    (six plies, 2-player only) */
 function aiPlayTurn(){
   const G=State.game; if(!G.on||G.over||G.animating) return;
   const p=G.turn;
-  const mv=(G.aiMode>=4)? aiChooseMoveHyper(p, G.aiMode>=6? 9 : G.aiMode>=5? 7 : 5)   // 5 → six plies · 7 → eight · 9 → ten
+  const mv=(G.aiMode>=4)? ((G.players===2)? aiChooseMoveHyper(p, G.aiMode>=6? 9 : G.aiMode>=5? 7 : 5)   // 5 → six plies · 7 → eight · 9 → ten
+                                            : aiChooseMoveHyperMulti(p, 3))                                // 3–4 players: three full rounds
          : (G.aiMode===3)? ((G.players===2)? aiChooseMoveUltra(p) : aiChooseMoveUltraMulti(p))
          : (G.aiMode===2)? aiChooseMoveSmart(p) : aiChooseMove(p);
   if(!mv){ G.phase="grain"; gameEndTurn(); return; }
@@ -5269,7 +5387,7 @@ function wire(){
     syncCPUBtn();                                      // CPU⁴ is Folders-only: leaving Folders steps it down
     if(State.game.on) newGame(); });
   segSel("#segPlayers","np",v=>{ const G=State.game; G.players=parseInt(v);
-    if(G.players>2 && G.aiMode>3) G.aiMode=3;          // the deep levels are 2-player only
+    if(G.players>2 && G.aiMode>4) G.aiMode=4;          // CPU⁴ and CPU⁵ are 2-player only
     applyRoster(); syncCPUBtn(); if(G.on) newGame(); });
   segSel("#segSpeed","sp",v=>{ State.game.speed=parseInt(v); });
   /* BTW (z_c = 3, sheds 4) ⇄ Zc=1 (sheds the two lowest grains to random neighbours) */
@@ -5312,19 +5430,21 @@ function wire(){
      are 2-player only).  The old one-ply "CPU" is retired \u2014 CPU\u00b9 is the entry level.
      Whatever the level, only ONE seat (seat 2) is the computer. */
   cpu.onclick=()=>{ const G=State.game;
-    const seq=[0,2,3]; if(G.players===2){ seq.push(4); if(cpu4Allowed()){ seq.push(5); seq.push(6); } }
+    const seq=[0,2,3,4]; if(G.players===2 && cpu4Allowed()){ seq.push(5); seq.push(6); }
     let i=seq.indexOf(G.aiMode); if(i<0) i=0;
     G.aiMode=seq[(i+1)%seq.length];
     applyRoster(); syncCPUBtn();
     if(G.on) gameSyncUI(); };
   window.syncCPUBtn=function(){ const G=State.game;
     if(G.aiMode===1) G.aiMode=2;                       // the one-ply level is retired: CPU\u00b9 is the floor
-    if(G.players>2 && G.aiMode>3) G.aiMode=3;          // the deep levels are 2-player only
+    if(G.players>2 && G.aiMode>4) G.aiMode=4;          // CPU⁴ and CPU⁵ are 2-player only
     if(G.aiMode>=5 && !cpu4Allowed()) G.aiMode=4;      // CPU\u2074 and CPU\u2075: the small boards L \u2264 4 only
     cpu.textContent = CPU_LABEL[G.aiMode];
     cpu.title = G.aiMode===6 ? "CPU\u2075 \u2014 five full rounds ahead (ten plies); L \u2264 4, 2 players only. Exhaustive in the Folders game on L = 3; elsewhere the search runs to its simulation budget, so expect a long think (up to a minute or more on L = 4 or with arrows)"
               : G.aiMode===5 ? "CPU\u2074 \u2014 four full rounds ahead (eight plies, every arrow option weighed at every step); L \u2264 4 only, and deliberately slow"
-              : G.aiMode===4 ? "CPU\u00b3 \u2014 three full rounds ahead (six plies, every arrow option weighed at every step); strongest everywhere, slow on big boards (2-player only)"
+              : G.aiMode===4 ? (G.players===2
+                  ? "CPU\u00b3 \u2014 three full rounds ahead (six plies, every arrow option weighed at every step); strongest everywhere, slow on big boards"
+                  : "CPU\u00b3 \u2014 three full rounds ahead: my move, everybody's round, my follow-up, their round, my follow-up, their round; never allows another player to win")
               : G.aiMode===3 ? (G.players===2
                   ? "CPU\u00b2 \u2014 two full rounds ahead: every move, every reply, every follow-up, every final answer (four plies)"
                   : "CPU\u00b2 \u2014 two full rounds ahead: its move, the opponents' round, its follow-up, their round again; never allows another player to win")
