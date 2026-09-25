@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BTW Sandpile — 3D Self-Organized Criticality</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Self-Organized Criticality — sandpiles and the Game of Battling Bureaucrats</title>
 <style>
   :root{
     --bg:#0a0a12; --panel:#14141f; --edge:#2b2b3d; --txt:#ece9f5;
@@ -274,9 +274,116 @@
     .card{padding:8px;}
     .smallrow .card{flex:1 1 100%;}            /* stack the mini-plots one per row on tiny screens */
   }
+
+  /* ================= TOP BAR: two pull-downs and PLAY ================= */
+  .topbar{display:flex; align-items:stretch; gap:8px; width:100%;}
+  .topbar .sp{display:none;}
+  .topbar button.apptitle{flex:1 1 0; min-width:0; justify-content:center; text-align:center; font-size:clamp(10.5px,1.55vw,21px); padding:6px 8px; white-space:nowrap;}
+  .topbar button.apptitle .apptitletxt{overflow:hidden; text-overflow:ellipsis;}
+  #learnHead, #storyHead{display:none !important;}
+  #learnWrap.closed, #storyWrap.closed{display:none;}
+  @media (max-width: 560px){ .topbar{flex-wrap:wrap;} .topbar button.apptitle{flex:1 1 100%; font-size:14px;} .topbar #playBtn{flex:1 1 100%;} }
+  button.apptitle.gamebtn .apptitletxt{background-image:linear-gradient(90deg,#ff5d8f,#ffb347,#5eead4);}
+  #playBtn{flex:0 0 auto; padding:6px 16px; font-size:clamp(12px,1.3vw,18px); font-weight:800; letter-spacing:.04em; border-radius:999px;
+    background:linear-gradient(90deg,#7c3aed,#c026d3); border-color:transparent; color:#fff;}
+  #playBtn:hover{filter:brightness(1.12);}
+  .mainhead{flex-direction:column; align-items:stretch;}
+  .mainhead .minibar{margin-top:2px;}
+  @media (max-width: 560px){ .mainhead .minibar{display:flex;} }
+  /* the story pull-down (the game's title screen, as a panel) */
+  #storyWrap{margin:0 0 8px;}
+  #storyWrap .foldhead{font-size:12px;}
+  #storyWrap .about{font-size:14px; line-height:1.5; color:#e6e1f2; max-width:760px;}
+  #storyWrap .about h1{margin:0 0 2px; font-size:26px; font-weight:900; line-height:1.1;
+    background:linear-gradient(90deg,#c084fc,#ff5d8f,#ffb347); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  #storyWrap .tag{color:var(--muted); font-size:12px; margin-bottom:10px;}
+  .storybox{margin:8px 0 0; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);}
+  .storybox p{margin:6px 0;}
+  #storyWrap .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+  #storyWrap .btns button{flex:1 1 auto; padding:11px 14px; font-size:15px; font-weight:700; border-radius:10px; max-width:320px;}
+  #storyWrap .btns button.go{background:linear-gradient(90deg,#7c3aed,#c026d3); border-color:transparent; color:#fff;}
+  #storyWrap .fine{color:var(--muted); font-size:11.5px; margin-top:12px;}
+  /* the lab never shows the game's help fold or the app bar */
+  body:not(.gamemode) #exWrap, body:not(.gamemode) #appBar, body:not(.gamemode) #netPill{display:none !important;}
+  /* ================= GAME MODE: the page becomes the smartphone game ================= */
+  body.gamemode{-webkit-text-size-adjust:100%; -webkit-tap-highlight-color:transparent; touch-action:manipulation; user-select:none; -webkit-user-select:none;}
+  #appBar{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 14px 4px; flex-wrap:wrap;}
+  #appBar .name{font-size:clamp(15px,4.4vw,19px); white-space:nowrap; font-weight:800; letter-spacing:.03em; cursor:pointer;
+    background:linear-gradient(90deg,#c084fc,#ff5d8f,#ffb347); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  #appBar button{padding:5px 11px; font-size:12px; border-radius:999px; white-space:nowrap;}
+  #appReturn{border-color:#ffd24d; color:#ffe9a8;}
+  #appOnline{border-color:#5eead4; color:#ccfbf1;}
+  body.gamemode .controls > :not(#gameWrap), body.gamemode #rowRun, body.gamemode #modelRow, body.gamemode #rowView,
+  body.gamemode #simWrap, body.gamemode #lookWrap, body.gamemode #plotBar, body.gamemode #statRow, body.gamemode #statRow2,
+  body.gamemode #cardA, body.gamemode #cardS, body.gamemode #mainLegend, body.gamemode #mainTitle, body.gamemode #learnWrap,
+  body.gamemode #storyWrap, body.gamemode .ovbtns, body.gamemode #gbExit,
+  body.gamemode #gLrow, body.gamemode #gSizeSide, body.gamemode #sizeHint, body.gamemode #modelHint, body.gamemode #startHint,
+  body.gamemode #ledgerHint, body.gamemode #exHead{display:none !important;}
+  body.gamemode #exWrap{border:none; background:none; margin:0;}
+  body.gamemode #exWrap.closed{display:none;}
+  body.gamemode .controls{padding:0; border:none; background:none; box-shadow:none;}
+  body.gamemode #gameWrap{display:block !important; border:none; background:none;}
+  body.gamemode .foldhead#gameHead{display:none;}
+  body.gamemode #gameWrap.closed .foldbody{display:flex;}
+  body.gamemode #gameWrap .foldbody{padding:4px 0 0; gap:10px;}
+  body.gamemode .wrap{padding:6px 10px 14px;}
+  @media (max-width: 900px){ body.gamemode .col{gap:10px;} body.gamemode .col > .fold{border:none; box-shadow:none;} }
+  body.gamemode .dpad button{padding:12px 0; font-size:18px;}
+  body.gamemode #sdWarn{font-size:13px;}
+  #thinkOv{position:absolute; inset:0; display:none; align-items:center; justify-content:center; z-index:8; pointer-events:none;}
+  #thinkOv.on{display:flex;}
+  #thinkOv span{background:rgba(10,10,18,0.78); color:#ffe9a8; border:1px solid #ffd24d; border-radius:999px;
+    padding:8px 16px; font-weight:700; font-size:14px; letter-spacing:.02em; animation:thinkpulse 1.1s ease-in-out infinite;}
+  @keyframes thinkpulse{ 0%,100%{opacity:.75;} 50%{opacity:1;} }
+  body.gamemode .sbctl{gap:5px; row-gap:6px;}
+  body.gamemode #gbReset, body.gamemode #gbCPU, body.gamemode #gbModel, body.gamemode #gbSize, body.gamemode #gbOwn{padding:6px 9px; font-size:12px;}
+  body.gamemode .seg button{padding:6px 8px; font-size:12px;}
+  body.gamemode #gbView{padding:5px 12px; font-size:12px;}
+  body.gamemode .chip{padding:2px 10px;} body.gamemode .chip .big{font-size:17px;}
+  body.gamemode .gturn{font-size:14px; padding:9px 11px;}
+  /* ---- online play ---- */
+  #netPill{font-size:11.5px; color:#ccfbf1; border:1px solid #2dd4bf; border-radius:999px; padding:2px 10px; display:none; margin:2px auto 4px; width:max-content; max-width:calc(100% - 28px); text-align:center;}
+  #netPill.bad{color:#ffb4b4; border-color:#ff5d5d;}
+  body.neton .sbctl > :not(#gbView){pointer-events:none; opacity:.55;}
+  body.neton.nethost .sbctl > :not(#gbView){pointer-events:auto; opacity:1;}
+  body.neton #gbCPU{pointer-events:none !important; opacity:.4 !important;}
+  .sheetbg{position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center;
+    background:rgba(5,5,11,0.86); padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));}
+  .sheetbg.on{display:flex;}
+  .sheet{background:linear-gradient(180deg,#1a1030,#12121c 60%); border:1px solid #3a2f5c; border-radius:16px;
+    padding:20px 18px 16px; max-width:460px; width:100%; max-height:100%; overflow:auto; box-shadow:0 12px 40px rgba(0,0,0,.6);
+    font-size:14.5px; line-height:1.45; color:var(--txt);}
+  .sheet h1{margin:0 0 2px; font-size:22px; font-weight:900; letter-spacing:.02em; line-height:1.1;
+    background:linear-gradient(90deg,#c084fc,#ff5d8f,#ffb347); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .sheet .tag{color:var(--muted); font-size:12px; margin-bottom:12px;}
+  .sheet .fine{color:var(--muted); font-size:11.5px; margin-top:12px;}
+  .sheet .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+  .sheet .btns button{flex:1 1 auto; padding:11px 14px; font-size:15px; font-weight:700; border-radius:10px;}
+  .sheet .btns button.go{background:linear-gradient(90deg,#7c3aed,#c026d3); border-color:transparent; color:#fff;}
+  .netcode{font-size:34px; font-weight:900; letter-spacing:.18em; text-align:center; margin:8px 0 2px; color:#ffe9a8;}
+  .netlist{font-size:13px; color:var(--muted); min-height:1.3em;}
+  .sheet input.netin{width:100%; box-sizing:border-box; font-size:16px; padding:9px 10px; border-radius:8px; border:1px solid var(--edge); background:#0d0d18; color:var(--txt); margin-top:6px; text-transform:uppercase;}
+  .sheet input.netname{text-transform:none;}
+  .netsec{margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,.08);}
+  #netMsg{min-height:1.2em; font-size:12.5px; color:#ffe9a8; margin-top:6px;}
+
+  /* finite-size scaling controls */
+  .fsrow{gap:8px;} .fsrow .field{flex:1 1 40%;}
+  input.numin{width:100%; box-sizing:border-box; background:#0d0d18; color:var(--txt); border:1px solid var(--edge); border-radius:6px; padding:5px 7px; font-size:12px;}
+  #statRow3{flex-wrap:wrap;}
+  .fsclock{position:absolute; left:8px; top:8px; z-index:5; font-size:12px; font-weight:700; color:#ffe9a8; background:rgba(10,10,18,.8); border:1px solid #ffd24d; border-radius:999px; padding:3px 10px; display:none; pointer-events:none;}
+  .fsclock.on{display:block;}
+  #fsClock{display:none; margin-top:6px; font-weight:700; color:#ffe9a8;} #fsClock.on{display:block;} #statRow3 .card{flex:1 1 calc(50% - 6px); max-width:calc(50% - 6px); box-sizing:border-box;}
+  #statRow3 .plotholder{display:flex; justify-content:center;}
+  @media (max-width: 480px){ #statRow3 .card{flex:1 1 100%; max-width:100%;} }
+  #statRow3 .card .field{font-size:11px;}
 </style>
 </head>
 <body>
+<div id="appBar"><span class="name" id="appName" title="The story">Bureaucracy Battles</span><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button id="appOnline" title="Play with friends on their own phones">Online</button><button id="appHelp" title="How to play">?</button><button id="appReturn" title="Back to the sandpile models">&#8617; Return</button></span></div>
+<div id="netPill"></div>
+<!-- online sheet -->
+<div class="sheetbg" id="onlineBg"><div class="sheet"><h1>Play online</h1><div class="tag">Each manager on their own phone or computer &middot; needs internet</div><label style="font-size:12.5px;color:var(--muted)">Your name<input class="netin netname" id="netName" maxlength="12" placeholder="e.g. Kim"></label><div class="netsec" id="netHostSec"><b>Host an office</b><div class="hint" style="margin:4px 0 0">You choose the board and rules in the strip above; friends join with the code.</div><div class="btns" style="margin-top:8px"><button class="go" id="netHostBtn">Host a game</button></div><div id="netHostInfo" style="display:none"><div class="netcode" id="netCode"></div><div class="netlist" id="netRoster"></div><div class="btns"><button class="go" id="netStartBtn" disabled>Start the game</button></div></div></div><div class="netsec" id="netJoinSec"><b>Join an office</b><input class="netin" id="netJoinCode" maxlength="5" placeholder="CODE from the host" autocapitalize="characters" autocomplete="off"><div class="btns" style="margin-top:8px"><button class="go" id="netJoinBtn">Join</button></div></div><div id="netMsg"></div><div class="btns"><button id="netLeaveBtn" style="display:none">Leave the game</button><button id="netCloseBtn">Close</button></div><div class="fine">Moves travel directly between the devices; a public relay only helps them find each other. Nothing is stored anywhere.</div></div></div>
 <div class="wrap">
   <!-- ============ CONTROLS ============ -->
   <div class="controls card">
@@ -328,7 +435,7 @@
 
         <!-- the game is ENTIRELY deterministic: BTW / Zc=1 / Nem1 only — the stochastic
              Manna models are simulation-only and are never offered here -->
-        <div class="hint"><span id="zcHint"></span><br><br><span id="ruleHint"></span></div>
+        <div class="hint" id="modelHint"><span id="zcHint"></span><br><br><span id="ruleHint"></span></div>
 
         <div class="sectiontitle">New game</div>
         <div class="row">
@@ -342,7 +449,7 @@
         <div class="row">
           <button id="gSizeSide" style="flex:1 1 auto">Board size: L = 3</button>
         </div>
-        <div class="hint">One switch steps the board through <b>L = 3, 4, 5 and 7</b>.</div>
+        <div class="hint" id="sizeHint"></div>
         <div class="row">
           <button id="gLegal" class="active" style="flex:1 1 auto">● Show legal sites</button>
         </div>
@@ -397,6 +504,22 @@
     </div>
     <div class="hint"><b>S</b>[p] = size of the avalanche from p. <b>A</b> = total topplings at each site summed over all probe-avalanches.</div>
 
+
+    <div class="sectiontitle">Finite-size scaling</div>
+    <div class="hint">Three systems, <b>L/2<sup>2n</sup></b>, <b>L/2<sup>n</sup></b> and <b>L</b> (smallest first), with the model in play.
+      Each is fed <i>T</i>&middot;(L<sub>i</sub>/L)<sup>2.5</sup> grains; the first third is the transient, the rest is sampled.
+      Default T = L<sup>2.5</sup>. The plots appear under the statistics when the study starts. Running it replaces the pile on screen.</div>
+    <div class="row fsrow">
+      <label class="field">L<select id="fsL" class="numin"></select></label>
+      <label class="field">n<select id="fsN" class="numin"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+      <label class="field" style="flex:1 1 100%">T &mdash; grains added at the largest size<input type="number" id="fsT" class="numin" min="1000" step="1000" value="32768"></label>
+    </div>
+    <div class="row">
+      <button id="fsRun" class="primary" style="flex:1 1 auto">Run scaling study</button>
+      <button id="fsStop" style="display:none">Stop</button>
+    </div>
+    <div class="hint" id="fsStatus">Sizes: 16, 32, 64.</div>
+    <div id="fsClock"></div>
 
     <div class="sectiontitle">Save PNG</div>
     <div class="row">
@@ -462,7 +585,12 @@
   <div class="col">
     <div class="card">
       <div class="mainhead" id="mainTitle">
-        <button class="apptitle" id="appTitleBtn" title="What is this? Click for the story of sandpiles, self-organized criticality, the office, the plots and the game"><span class="apptitletxt">Sandpile SOC</span> <span id="titleCaret" class="titlecaret">&#9662;</span></button>
+        <div class="topbar">
+          <button class="apptitle" id="appTitleBtn" title="The sandpile models and the analysis"><span class="apptitletxt">Self Organized Criticality</span> <span id="titleCaret" class="titlecaret">&#9662;</span></button>
+          <button class="apptitle gamebtn" id="storyBtn" title="The story of the game"><span class="apptitletxt">Bureaucracy Battles</span> <span id="storyCaret" class="titlecaret">&#9662;</span></button>
+          <span class="sp"></span>
+          <button id="playBtn" title="Straight into the game">&#9654; PLAY</button>
+        </div>
         <span class="minibar">
           <span class="seg">
             <button data-mini="btw">BTW</button><button data-mini="manna">Manna<sup>4</sup></button><button data-mini="game">Game</button>
@@ -478,142 +606,112 @@
       </div>
       <!-- ======= the story of the applet: opened from the title itself ======= -->
       <div class="fold closed" id="learnWrap">
-        <div class="foldhead" id="learnHead"><span>&#9656;</span> <span>Sandpile SOC &mdash; what is going on here?</span></div>
+        <div class="foldhead" id="learnHead"><span>&#9656;</span> <span>Self-organized criticality &mdash; the models and the analysis</span></div>
         <div class="foldbody">
           <div class="about">
             <p><b>Imagine a table, and someone dropping grains of sand onto it one at a time.</b>
             At first nothing happens: the grains just pile up. But a heap of sand can only be so
-            steep. Sooner or later one more grain makes a little slope collapse, sand slides down,
-            and some of it may even fall off the edge of the table. Most of these slides are tiny.
-            Now and then one is enormous. The remarkable thing is that <i>nobody</i> is adjusting
-            anything &mdash; the pile finds this knife-edge state entirely by itself. Physicists
-            call that <b>self-organized criticality</b>, or <b>SOC</b> for short. Earthquakes,
-            forest fires, avalanches, traffic jams and even brain activity have been described with
-            the same idea.</p>
+            steep. Sooner or later one more grain makes a little slope give way, sand slides, and
+            some of it falls off the edge of the table. Most of these slides are tiny; now and then
+            one is enormous. The remarkable thing is that <i>nobody</i> is adjusting anything: the
+            pile finds this knife-edge state entirely by itself. Physicists call that
+            <b>self-organized criticality</b> (SOC). Earthquakes, forest fires, snow avalanches,
+            traffic jams and bursts of brain activity have all been described with the same idea.</p>
 
-            <div class="sectiontitle">The model on the screen</div>
+            <div class="sectiontitle">The model on the screen: BTW</div>
             <p>The applet plays the simplest version of this story, invented in 1987 by Per Bak, Chao
-            Tang and Kurt Wiesenfeld (their initials give it its name, the <b>BTW model</b>). The
-            table is a square grid of <b>L&thinsp;&times;&thinsp;L</b> sites, and each site holds a
-            whole number of grains. The rule is:</p>
+            Tang and Kurt Wiesenfeld (their initials name it the <b>BTW model</b>). The table is a
+            square grid of <b>L&thinsp;&times;&thinsp;L</b> sites, and each site holds a whole number
+            of grains. The rule is:</p>
             <div class="kbox">Drop one grain on a random site. If a site now holds <b>more than 3</b>
             grains, it <b>topples</b>: it gives one grain to each of its four neighbours. A grain
-            handed to a site on the edge of the grid simply falls off the table. Keep toppling until
-            every site is calm again &mdash; that whole chain of events is one <b>avalanche</b>. Then
-            drop the next grain.</div>
+            handed across the edge of the grid falls off the table. Keep toppling until every site
+            is calm again &mdash; that whole chain of events is one <b>avalanche</b>. Then drop the
+            next grain.</div>
             <p>Try it: press <b>Reset</b>, then <b>Start</b>, and set the update speed to
             &ldquo;1 toppling / frame&rdquo; so you can follow every step. The <b>Stress</b> colour
-            scheme tells you how close each site is to toppling: blue and green grains are safe,
-            a <span style="color:#fcd62c">yellow</span> grain means one more and the site goes,
+            scheme tells you how close each site is to toppling: blue and green are safe,
+            <span style="color:#fcd62c">yellow</span> means one more grain and the site goes,
             <span style="color:#e83430">red</span> means it is toppling right now.</p>
             <p>You will see something odd. A single grain usually does nothing at all. Sometimes it
-            sets off a handful of topplings. Occasionally it triggers an avalanche that sweeps
-            across the entire grid. There is no &ldquo;typical&rdquo; size &mdash; that is the
-            signature of criticality.</p>
-
+            sets off a handful of topplings. Occasionally it triggers an avalanche that sweeps across
+            the entire grid. There is no &ldquo;typical&rdquo; size &mdash; that absence of a scale is
+            the signature of criticality.</p>
             <div class="sectiontitle">Reading the plots</div>
             <p><b>Avalanche size vs. time</b> shows how big each avalanche was (the number of
-            topplings, <i>s</i>). Notice the spikes of all heights. <b>Size distribution</b> counts
-            how often each size occurs and plots it on logarithmic axes. If the points fall on a
-            straight line, the distribution is a <b>power law</b>, <i>P(s)&thinsp;&prop;&thinsp;s<sup>&minus;&tau;</sup></i>,
-            and the slope of the dashed fit is <i>&minus;&tau;</i>. A power law has no typical scale:
-            doubling the size always reduces the probability by the same factor, however big you
-            already are. The grey region marks sizes larger than about a third of the grid, where
-            the finite table cuts the avalanches off. The <b>area distribution</b> does the same for
-            the number of distinct sites an avalanche touched.</p>
-            <p><b>Mass vs. linear size</b> asks how the number of topplings grows with the width of
-            the avalanche (the average of its extent in x and in y). If it grew like an ordinary
-            flat patch you would expect an exponent of 2; the applet fits the exponent for you, both
-            for all avalanches and for those that never reached the edge. <b>Circumference vs.
-            linear size</b> does the same for the boundary of the avalanche: a smooth shape would give
-            an exponent of 1, a ragged, fractal one gives more. These two plots are exactly the
-            kind of measurement researchers make to characterise the geometry of critical avalanches.</p>
-            <p>The <b>avalanche map</b> shows one avalanche in 3-D: taller means that site toppled
-            more often. Red balls just outside the grid mark where grains fell off the table &mdash;
-            one ball per grain, so you can count them. The <b>Memory</b> button lets you flip
-            between the latest avalanches, the largest of the whole run, and a
-            &ldquo;typical big one&rdquo; of 1&ndash;3% of the grid.</p>
+            topplings, <i>s</i>). Notice spikes of every height. <b>Size distribution</b> counts how
+            often each size occurs, on logarithmic axes. If the points fall on a straight line the
+            distribution is a <b>power law</b>,
+            <i>P(s)&thinsp;&prop;&thinsp;s<sup>&minus;&tau;</sup></i>, and the slope of the dashed fit
+            is <i>&minus;&tau;</i>. A power law has no typical scale: doubling the size always
+            reduces the probability by the same factor, however big you already are. The grey region
+            marks sizes above about a third of the grid, where the finite table cuts the avalanches
+            off. The <b>area distribution</b> does the same for the number of distinct sites an
+            avalanche touched.</p>
+            <p><b>Mass vs. linear size</b> asks how the number of topplings grows with the width of the
+            avalanche (its mean extent in x and y). A flat patch would give an exponent of 2; the
+            applet fits the exponent for you, for all avalanches and for those that never reached the
+            edge. <b>Circumference vs. linear size</b> does the same for the boundary: a smooth shape
+            gives 1, a ragged, fractal one gives more. These are exactly the measurements researchers
+            make to characterise the geometry of critical avalanches.</p>
+            <p>The <b>avalanche map</b> shows one avalanche in 3-D: taller means that site toppled more
+            often. Red balls just outside the grid mark where grains fell off the table, one ball per
+            grain. The <b>Memory</b> button flips between the latest avalanches, the largest of the
+            run, and a &ldquo;typical big one&rdquo; of 1&ndash;3% of the grid.</p>
 
             <div class="sectiontitle">The other models</div>
-            <p><b>Manna(4)</b> keeps the rule &ldquo;more than 3 grains topples&rdquo; but each of
-            the four grains hops to a <i>randomly chosen</i> neighbour, so one neighbour might get
-            two and another none. <b>Manna(2)</b> topples already at two grains and sends both
-            to random neighbours. These <b>stochastic</b> piles are the workhorses of many research
-            papers, and a classic question is whether they show the same exponents as BTW.</p>
-            <p><b>Z<sub>c</sub>=1 rotor pile.</b> Every site carries a small dark arrow. A site
-            holding more than one grain sends its two lowest grains out one at a time: each leaves
-            along the arrow, and the arrow then turns 90&deg; clockwise. Nothing is random except
-            where the grains are dropped &mdash; the arrows remember everything. This is the
-            &ldquo;Eulerian walker&rdquo; model of Priezzhev and co-workers.</p>
+            <p><b>Manna(4)</b> keeps &ldquo;more than 3 grains topples&rdquo; but each of the four
+            grains hops to a <i>randomly chosen</i> neighbour, so one neighbour may get two and
+            another none. <b>Manna(2)</b> topples already at two grains and sends both to random
+            neighbours. These <b>stochastic</b> piles are the workhorses of many research papers. The
+            classic question is whether they share the exponents of BTW: they do not. The
+            deterministic BTW pile and the stochastic Manna pile belong to two different
+            <b>universality classes</b>, and BTW's exponents are notoriously hard to pin down because
+            its avalanches come in waves that hide the true scaling.</p>
+            <p><b>Z<sub>c</sub>=1 rotor pile.</b> Every site carries a small dark arrow. A site holding
+            more than one grain sends its two lowest grains out one at a time: each leaves along the
+            arrow, and the arrow then turns 90&deg; clockwise. Nothing is random except where the
+            grains are dropped; the arrows remember everything. This is the &ldquo;Eulerian
+            walker&rdquo; model of Priezzhev, Dhar, Dhar and Krishnamurthy.</p>
             <p><b>Nem1 nematic pile.</b> The same threshold of one grain, but the arrow is a
-            two-headed <b>axis</b> with a broad end and a narrow end. The top grain leaves by the
-            broad end, the next by the narrow end, and then the axis flips through 180&deg; so the
-            next toppling deals the pair out the other way round. An axis never changes its
-            direction (only a player may turn it), so the random start makes sure every row and
-            every column has at least one vertical and one horizontal axis &mdash; otherwise part
-            of the board could seal itself off as a one-dimensional world.</p>
+            two-headed <b>axis</b> with a broad end and a narrow end. The top grain leaves by the broad
+            end, the next by the narrow end, and then the axis flips through 180&deg; so the next
+            toppling deals the pair out the other way round. An axis never changes its direction, so
+            the random start makes sure every row and every column carries at least one vertical and
+            one horizontal axis; otherwise part of the grid could seal itself off as a
+            one-dimensional world. The axes are <b>quenched disorder</b>: a frozen, random pattern that
+            the dynamics never repairs. Karmakar, Manna and Stella argued (2005) that this is what decides the
+            universality class of a sandpile &mdash; a pile whose toppling balance is precise site by
+            site behaves like BTW, while one which breaks this toppling symmetry joins the
+            <b>Manna class</b>. So although Nem1 is fully deterministic, its exponents are expected to be
+            those of the stochastic Manna pile, not those of BTW. The applet lets you test that claim:
+            compare its size distribution with Manna(2) and with BTW at the same L.</p>
 
             <div class="sectiontitle">The Grassberger office</div>
-            <p>The physicist Peter Grassberger retold the BTW rule as a room full of clerks. Each
-            desk holds a stack of folders; when a clerk&rsquo;s pile passes the critical number he
-            stands up in frustration and shoves one folder onto each neighbouring desk, then sits
-            down pleased with himself. Folders shoved across the boundary sail out of the open
-            windows. It is exactly the same mathematics &mdash; but it is much easier to <i>see</i>
-            an avalanche spread through the office than through a grid of numbers. Press
-            <b>Grassberger</b> to switch scenery, and try the &#9995; button: it freezes the picture
-            at the moment a folder is flying out of a window.</p>
+            <p>The physicist Peter Grassberger retold the BTW rule as a room full of clerks. Each desk
+            holds a stack of folders; when a clerk&rsquo;s pile passes the critical number he stands up
+            in frustration, shoves one folder onto each neighbouring desk, and sits down pleased with
+            himself. Folders shoved across the boundary sail out of the open windows. It is exactly the
+            same mathematics, but it is much easier to <i>see</i> an avalanche spread through the
+            office than through a grid of numbers. Press <b>Grassberger</b> to switch scenery, and try
+            the &#9995; button: it freezes the picture at the moment a folder is flying out of a
+            window.</p>
 
             <div class="sectiontitle">A and S &mdash; probing a frozen pile</div>
-            <p>Freeze the pile with <b>Freeze &amp; pause</b>, then press <b>Compute A &amp; S</b>.
-            For every site <i>p</i> the applet asks: <i>if I dropped the next grain here, how big
-            would the avalanche be?</i> That number is <b>S</b>[p]. <b>A</b> adds up, for every
-            site, how many times it would topple summed over all those trial avalanches. The
-            resulting maps have beautiful, intricate structure &mdash; the fractal patterns hidden
-            in the critical state that Engsig and Sneppen described in 2025.</p>
-
-            <div class="sectiontitle">The game</div>
-            <p>Press <b>Game</b> and the pile becomes a board game for two to four players. Every
-            grain (or folder) you drop keeps your colour for as long as it stays on the board and
-            travels with every toppling; grains already on the board when play begins are grey and
-            belong to nobody. You <b>control</b> a site when your colour holds the strict majority
-            of the coloured grains on it.</p>
-            <p>A move has two halves. <b>&#9312;</b> <i>Optionally</i> turn the arrow on a site
-            that nobody controls or that you control yourself &mdash; this changes the order in
-            which that site will deal out its grains next time it topples. <b>&#9313;</b> Drop one
-            grain on <i>any</i> site. The avalanche that follows is completely deterministic: the
-            arrows deal every grain in a definite order, top of the pile first. (The <b>Folders</b>
-            variant skips the arrow half &mdash; pure drops, good for a first game.)</p>
-            <p><b>Scoring.</b> You get one point for every grain belonging to <i>another</i> player
-            that <b>your own</b> avalanche pushes off the board. The <b>own &minus;1</b> / <b>own 0</b>
-            switch decides what your own grains cost: under own &minus;1 you lose a point for every
-            grain of your own that your avalanche throws out (and the game is played to 5 points), under
-            own 0, the default, they cost nothing. Grey grains count for nobody; what an opponent pushes out
-            is their point, and their loss is not your gain. First to the winning number (the <b>win</b>
-            slider) takes the game. Slide <b>win</b> to <b>X</b> and the grey grains become the
-            clock instead: play runs until the last grey grain has left the board, and whoever then
-            has most points wins. If the scores are level at that moment the board flashes
-            <span class="exwin">&#9889; SUDDEN DEATH</span> and the first player to take the outright
-            lead wins.</p>
-            <p><b>Playing the computer.</b> Seat 2 can be a computer opponent. <b>CPU<sup>1</sup></b>
-            tries every one of its moves and every reply you could make, and picks the move that
-            comes out best after your best answer. <b>CPU<sup>2</sup></b> looks two full rounds
-            ahead, <b>CPU<sup>3</sup></b> three, <b>CPU<sup>4</sup></b> four and
-            <b>CPU<sup>5</sup></b> five &mdash; ten moves into the future. The deeper levels are
-            only offered on the small boards (L&nbsp;=&nbsp;3 and 4, two players) because the tree of
-            possibilities explodes: they think for anything from a few seconds to a minute, and the
-            applet is frozen while they do. Every level obeys two rules: a move that wins on the
-            spot is played at once, and a move that lets anybody else win on the next stroke is
-            never played. With three or four players the ladder stops at CPU<sup>3</sup> (three
-            full rounds of everybody), since predicting how the other players fight <i>each
-            other</i> becomes mostly guesswork beyond that.</p>
+            <p>Freeze the pile with <b>Freeze &amp; pause</b>, then press <b>Compute A &amp; S</b>. For
+            every site <i>p</i> the applet asks: <i>if I dropped the next grain here, how big would
+            the avalanche be?</i> That number is <b>S</b>[p]. <b>A</b> adds up, for every site, how
+            many times it would topple summed over all those trial avalanches. The maps have
+            beautiful, intricate structure: the fractal patterns hidden in the critical state that
+            Engsig and Sneppen described in 2025. A few sites are <b>fragile</b>: one grain there
+            disturbs the whole pile, while most sites absorb a grain without a trace.</p>
 
             <div class="sectiontitle">Things to try</div>
-            <p>Compare the slope of the size distribution for BTW and Manna(4) on the same L. Watch
-            how the grey cutoff moves when you change L from 20 to 100. Run the <b>Crit</b> button
-            to jump straight to the critical state and see how much the mean height settles at.
-            Switch on <b>Trace grains</b> and follow how far a single grain wanders before it
-            leaves. In the game, try to make an arrow point your opponent&rsquo;s grains towards
-            the window.</p>
+            <p>Compare the slope of the size distribution for BTW, Manna(4) and Nem1 on the same L.
+            Watch how the grey cutoff moves when you change L from 20 to 100. Press <b>Crit</b> to jump
+            straight to the critical state and see where the mean height settles. Switch on
+            <b>Trace grains</b> and follow how far a single grain wanders before it leaves. Freeze a
+            pile, compute A and S, and find the fragile sites.</p>
 
             <div class="sectiontitle">References</div>
             <div class="refs">
@@ -621,10 +719,12 @@
               1/f noise.&rdquo; <i>Physical Review Letters</i> <b>59</b>.4 (1987): 381.</p>
               <p>S. S. Manna. &ldquo;Two-state model of self-organized criticality.&rdquo; <i>Journal of
               Physics A: Mathematical and General</i> <b>24</b>.7 (1991): L363&ndash;L369.</p>
-              <p>V. B. Priezzhev, et al. &ldquo;Eulerian walkers as a model of self-organized
-              criticality.&rdquo; <i>Physical Review Letters</i> <b>77</b>.25 (1996): 5079.</p>
+              <p>V. B. Priezzhev, D. Dhar, A. Dhar, and S. Krishnamurthy. &ldquo;Eulerian walkers as a model of
+              self-organized criticality.&rdquo; <i>Physical Review Letters</i> <b>77</b>.25 (1996): 5079.</p>
               <p>H. Nakanishi, and K. Sneppen. &ldquo;Universal versus drive-dependent exponents for
               sandpile models.&rdquo; <i>Physical Review E</i> <b>55</b>.4 (1997): 4012.</p>
+              <p>R. Karmakar, S. S. Manna, and A. L. Stella. &ldquo;Precise toppling balance, quenched disorder,
+              and universality for sandpiles.&rdquo; <i>Physical Review Letters</i> <b>94</b>.8 (2005): 088002.</p>
               <p>D. Dhar. &ldquo;Theoretical studies of self-organized criticality.&rdquo; <i>Physica A:
               Statistical Mechanics and its Applications</i> <b>369</b>.1 (2006): 29&ndash;70.</p>
               <p>S. S. Manna, A. L. Stella, P. Grassberger, &amp; R. Dickman (Eds.). (2022).
@@ -632,13 +732,37 @@
               <p>M. Engsig, and K. Sneppen. &ldquo;Fractals in the Critical Attractor of the Classical
               Sandpile Model.&rdquo; <i>Physical Review Letters</i> <b>134</b>.18 (2025): 187201.</p>
             </div>
-            <p class="credit">This applet and the game is made by Kim Sneppen.</p>
+            <p class="credit">This applet is made by Kim Sneppen, Niels Bohr Institute.</p>
           </div>
         </div>
       </div>
+      <!-- ======= the game's title screen, as a pull-down ======= -->
+      <div class="fold closed" id="storyWrap">
+        <div class="foldhead" id="storyHead"><span>&#9656;</span> <span>Bureaucracy Battles &mdash; the story</span></div>
+        <div class="foldbody"><div class="about">
+          <h1>Bureaucracy Battles</h1><div class="tag">An avalanche strategy game for 2&ndash;4 players &middot; one screen, or online on each your own</div>
+          <div class="storybox">
+  <p>Welcome to a small office full of <b>lazy bureaucrats</b>. Nobody here ever does any real work.
+  When a desk gets too many folders, the clerk simply shoves them onto the neighbours&rsquo; desks &mdash;
+  and folders pushed off a desk by the window fly straight <b>out of the window</b>.</p>
+  <p>You and your rivals are the <b>middle managers</b>. Each turn you drop one folder on a desk.
+  Pile it high enough and you set off an <b>avalanche</b>: desks topple, folders slide from desk to
+  desk, and some sail out of the window. Every folder that belongs to a <b>rival</b> and flies out
+  during <i>your</i> avalanche is a <b>point for you</b> &mdash; the rival must now pay someone
+  outside to do that work (that is what &ldquo;outsourcing&rdquo; means). Your own folders going out
+  cost you nothing.</p>
+  <p>The best manager is not the one who does the work. It is the one who <b>looks in control</b>
+  while the mess lands on everybody else. Reach the target score first and you win.</p></div>
+          <div class="btns"><button class="go" id="storyPlay">&#9654; Play</button><button id="storyHow">How to win</button></div>
+          <div class="fine">The office is a <b>sandpile</b>: the desks follow the avalanche model of <b>Bak, Tang &amp; Wiesenfeld</b> (1987),
+          the founding paper of self-organized criticality. The everyday desk rule (Nem1) is partly inspired by the Eulerian-walker pile of
+          Priezzhev et al. (1996); the search for the fragile points of a critical office follows Engsig &amp; Sneppen (2025).
+          Game and program: Kim Sneppen, Niels Bohr Institute.</div>
+        </div></div>
+      </div>
       <!-- ======= the explainer: pull down the story of whichever game is on the board ======= -->
       <div class="fold closed" id="exWrap">
-        <div class="foldhead" id="exHead"><span id="exCaret">&#9656;</span> <span>What is this? &mdash; the models, the game &amp; how to win</span></div>
+        <div class="foldhead" id="exHead"><span id="exCaret">&#9656;</span> <span>How to play</span></div>
         <div class="foldbody">
           <div class="row" id="exTabs">
             <button data-ex="btw">BTW</button>
@@ -646,6 +770,7 @@
             <button data-ex="nem1">Nem1</button>
             <button data-ex="arrows">Arrow game</button>
             <button data-ex="win">How to win</button>
+            <button data-ex="science">The science</button>
           </div>
           <div class="about" id="exText"></div>
         </div>
@@ -669,7 +794,7 @@
             <button data-np="2" class="active">2P</button><button data-np="3">3P</button><button data-np="4">4P</button>
           </span>
           <button id="gbCPU" title="Toggle the computer opponent">no CPU</button>
-          <button id="gbOwn" title="Rule for YOUR OWN folders that your avalanche throws out of the window — click to toggle: own 0 — they cost nothing · own −1 — each costs you a point (win target set to 5)">own 0</button>
+          <button id="gbOwn" title="Rule for YOUR OWN folders that your avalanche throws out of the window — click to step through: own 0 — they cost nothing · own .2 / own .5 — each costs you a point with that probability · own 1 — each costs a point (win target 5 at .5 and 1)">own 0</button>
           <label class="winsel" title="Grains that decide the winner — at the end point X the game runs until every grey folder is off the board and whoever then has most points wins; a tie goes to SUDDEN DEATH, first outright lead wins">win <b id="gbTargetVal">10</b>
             <input type="range" id="gbTarget" min="0" max="5" step="1" value="2">
             <span id="gbGreyTag" style="display:none">Grey=0</span>
@@ -685,6 +810,7 @@
         <div class="ovbtns ovleft">
           <button id="ovBg" title="Switch the display between the dark and a white background">◐</button>
         </div>
+        <div id="thinkOv"><span id="thinkTxt">Computer is thinking…</span></div>
       </div>
       <div class="legend" id="mainLegend"><span>low</span><span class="bar" id="legHeight"></span><span>high</span></div>
     </div>
@@ -771,6 +897,55 @@
       </div>
     </div>
 
+    <!-- finite-size scaling: the three-size distributions and their collapse -->
+    <div class="smallrow" id="statRow3" style="display:none">
+      <div class="card">
+        <h2>Finite-size scaling &mdash; P(s), three sizes</h2>
+        <div class="plotholder">
+          <canvas id="fsSPlot" width="216" height="216"></canvas><span class="fsclock"></span>
+          <div class="ovbtns plotov">
+            <button data-pbg="fsS" title="Switch this plot between a dark and a white background">&#9680;</button>
+            <button data-pshot="fsS" title="Download plot">&#128247;</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>P(a), three sizes</h2>
+        <div class="plotholder">
+          <canvas id="fsAPlot" width="216" height="216"></canvas><span class="fsclock"></span>
+          <div class="ovbtns plotov">
+            <button data-pbg="fsA" title="Switch this plot between a dark and a white background">&#9680;</button>
+            <button data-pshot="fsA" title="Download plot">&#128247;</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Collapse: s<sup>&tau;</sup>P(s) vs s/L<sup>D</sup></h2>
+        <div class="plotholder">
+          <canvas id="fsCSPlot" width="216" height="216"></canvas><span class="fsclock"></span>
+          <div class="ovbtns plotov">
+            <button data-pbg="fsCS" title="Switch this plot between a dark and a white background">&#9680;</button>
+            <button data-pshot="fsCS" title="Download plot">&#128247;</button>
+          </div>
+        </div>
+        <label class="field" style="margin-top:6px"><span>&tau; = <span class="val" id="fsTauSV">&mdash;</span></span><input type="range" id="fsTauS" min="0.5" max="2.5" step="0.01" value="1.2"></label>
+        <label class="field"><span>D = <span class="val" id="fsDSV">&mdash;</span></span><input type="range" id="fsDS" min="1" max="4" step="0.01" value="2.7"></label>
+        <button id="fsAutoS" style="margin-top:4px">&#8635; automatic &tau;, D</button>
+      </div>
+      <div class="card">
+        <h2>Collapse: a<sup>&tau;<sub>a</sub></sup>P(a) vs a/L<sup>D<sub>a</sub></sup></h2>
+        <div class="plotholder">
+          <canvas id="fsCAPlot" width="216" height="216"></canvas><span class="fsclock"></span>
+          <div class="ovbtns plotov">
+            <button data-pbg="fsCA" title="Switch this plot between a dark and a white background">&#9680;</button>
+            <button data-pshot="fsCA" title="Download plot">&#128247;</button>
+          </div>
+        </div>
+        <label class="field" style="margin-top:6px"><span>&tau;<sub>a</sub> = <span class="val" id="fsTauAV">&mdash;</span></span><input type="range" id="fsTauA" min="0.5" max="2.5" step="0.01" value="1.3"></label>
+        <label class="field"><span>D<sub>a</sub> = <span class="val" id="fsDAV">&mdash;</span></span><input type="range" id="fsDA" min="1" max="4" step="0.01" value="2"></label>
+        <button id="fsAutoA" style="margin-top:4px">&#8635; automatic &tau;<sub>a</sub>, D<sub>a</sub></button>
+      </div>
+    </div>
     <div class="card" id="cardA">
       <h2 style="white-space:nowrap">A — Σ activity over avalanches from every site &nbsp;·&nbsp; M. Engsig &amp; K. Sneppen, Physical Review Letters, 134 (2025).</h2>
       <canvas id="aPlot" class="tilt" width="728" height="728"></canvas>
@@ -784,6 +959,17 @@
   </div>
 </div>
 
+<script>/* PeerJS 1.5.5 — MIT licence — https://peerjs.com */
+(()=>{function e(e,t,n,r){Object.defineProperty(e,t,{get:n,set:r,enumerable:!0,configurable:!0})}function t(e){return e&&e.__esModule?e.default:e}class n{constructor(){this.chunkedMTU=16300,this._dataCount=1,this.chunk=e=>{let t=[],n=e.byteLength,r=Math.ceil(n/this.chunkedMTU),i=0,s=0;for(;s<n;){let o=Math.min(n,s+this.chunkedMTU),a=e.slice(s,o),c={__peerData:this._dataCount,n:i,data:a,total:r};t.push(c),s=o,i++}return this._dataCount++,t}}}class r{append_buffer(e){this.flush(),this._parts.push(e)}append(e){this._pieces.push(e)}flush(){if(this._pieces.length>0){let e=new Uint8Array(this._pieces);this._parts.push(e),this._pieces=[]}}toArrayBuffer(){let e=[];for(let t of this._parts)e.push(t);return function(e){let t=0;for(let n of e)t+=n.byteLength;let n=new Uint8Array(t),r=0;for(let t of e){let e=new Uint8Array(t.buffer,t.byteOffset,t.byteLength);n.set(e,r),r+=t.byteLength}return n}(e).buffer}constructor(){this.encoder=new TextEncoder,this._pieces=[],this._parts=[]}}function i(e){return new o(e).unpack()}function s(e){let t=new a,n=t.pack(e);return n instanceof Promise?n.then(()=>t.getBuffer()):t.getBuffer()}class o{unpack(){let e,t=this.unpack_uint8();if(t<128)return t;if((224^t)<32)return(224^t)-32;if((e=160^t)<=15)return this.unpack_raw(e);if((e=176^t)<=15)return this.unpack_string(e);if((e=144^t)<=15)return this.unpack_array(e);if((e=128^t)<=15)return this.unpack_map(e);switch(t){case 192:return null;case 193:case 212:case 213:case 214:case 215:return;case 194:return!1;case 195:return!0;case 202:return this.unpack_float();case 203:return this.unpack_double();case 204:return this.unpack_uint8();case 205:return this.unpack_uint16();case 206:return this.unpack_uint32();case 207:return this.unpack_uint64();case 208:return this.unpack_int8();case 209:return this.unpack_int16();case 210:return this.unpack_int32();case 211:return this.unpack_int64();case 216:return e=this.unpack_uint16(),this.unpack_string(e);case 217:return e=this.unpack_uint32(),this.unpack_string(e);case 218:return e=this.unpack_uint16(),this.unpack_raw(e);case 219:return e=this.unpack_uint32(),this.unpack_raw(e);case 220:return e=this.unpack_uint16(),this.unpack_array(e);case 221:return e=this.unpack_uint32(),this.unpack_array(e);case 222:return e=this.unpack_uint16(),this.unpack_map(e);case 223:return e=this.unpack_uint32(),this.unpack_map(e)}}unpack_uint8(){let e=255&this.dataView[this.index];return this.index++,e}unpack_uint16(){let e=this.read(2),t=(255&e[0])*256+(255&e[1]);return this.index+=2,t}unpack_uint32(){let e=this.read(4),t=((256*e[0]+e[1])*256+e[2])*256+e[3];return this.index+=4,t}unpack_uint64(){let e=this.read(8),t=((((((256*e[0]+e[1])*256+e[2])*256+e[3])*256+e[4])*256+e[5])*256+e[6])*256+e[7];return this.index+=8,t}unpack_int8(){let e=this.unpack_uint8();return e<128?e:e-256}unpack_int16(){let e=this.unpack_uint16();return e<32768?e:e-65536}unpack_int32(){let e=this.unpack_uint32();return e<0x80000000?e:e-0x100000000}unpack_int64(){let e=this.unpack_uint64();return e<0x8000000000000000?e:e-0xffffffffffffffff}unpack_raw(e){if(this.length<this.index+e)throw Error(`BinaryPackFailure: index is out of range ${this.index} ${e} ${this.length}`);let t=this.dataBuffer.slice(this.index,this.index+e);return this.index+=e,t}unpack_string(e){let t,n,r=this.read(e),i=0,s="";for(;i<e;)(t=r[i])<160?(n=t,i++):(192^t)<32?(n=(31&t)<<6|63&r[i+1],i+=2):(224^t)<16?(n=(15&t)<<12|(63&r[i+1])<<6|63&r[i+2],i+=3):(n=(7&t)<<18|(63&r[i+1])<<12|(63&r[i+2])<<6|63&r[i+3],i+=4),s+=String.fromCodePoint(n);return this.index+=e,s}unpack_array(e){let t=Array(e);for(let n=0;n<e;n++)t[n]=this.unpack();return t}unpack_map(e){let t={};for(let n=0;n<e;n++)t[this.unpack()]=this.unpack();return t}unpack_float(){let e=this.unpack_uint32();return(0==e>>31?1:-1)*(8388607&e|8388608)*2**((e>>23&255)-127-23)}unpack_double(){let e=this.unpack_uint32(),t=this.unpack_uint32(),n=(e>>20&2047)-1023;return(0==e>>31?1:-1)*((1048575&e|1048576)*2**(n-20)+t*2**(n-52))}read(e){let t=this.index;if(t+e<=this.length)return this.dataView.subarray(t,t+e);throw Error("BinaryPackFailure: read index out of range")}constructor(e){this.index=0,this.dataBuffer=e,this.dataView=new Uint8Array(this.dataBuffer),this.length=this.dataBuffer.byteLength}}class a{getBuffer(){return this._bufferBuilder.toArrayBuffer()}pack(e){if("string"==typeof e)this.pack_string(e);else if("number"==typeof e)Math.floor(e)===e?this.pack_integer(e):this.pack_double(e);else if("boolean"==typeof e)!0===e?this._bufferBuilder.append(195):!1===e&&this._bufferBuilder.append(194);else if(void 0===e)this._bufferBuilder.append(192);else if("object"==typeof e)if(null===e)this._bufferBuilder.append(192);else{let t=e.constructor;if(e instanceof Array){let t=this.pack_array(e);if(t instanceof Promise)return t.then(()=>this._bufferBuilder.flush())}else if(e instanceof ArrayBuffer)this.pack_bin(new Uint8Array(e));else if("BYTES_PER_ELEMENT"in e)this.pack_bin(new Uint8Array(e.buffer,e.byteOffset,e.byteLength));else if(e instanceof Date)this.pack_string(e.toString());else if(e instanceof Blob)return e.arrayBuffer().then(e=>{this.pack_bin(new Uint8Array(e)),this._bufferBuilder.flush()});else if(t==Object||t.toString().startsWith("class")){let t=this.pack_object(e);if(t instanceof Promise)return t.then(()=>this._bufferBuilder.flush())}else throw Error(`Type "${t.toString()}" not yet supported`)}else throw Error(`Type "${typeof e}" not yet supported`);this._bufferBuilder.flush()}pack_bin(e){let t=e.length;if(t<=15)this.pack_uint8(160+t);else if(t<=65535)this._bufferBuilder.append(218),this.pack_uint16(t);else if(t<=0xffffffff)this._bufferBuilder.append(219),this.pack_uint32(t);else throw Error("Invalid length");this._bufferBuilder.append_buffer(e)}pack_string(e){let t=this._textEncoder.encode(e),n=t.length;if(n<=15)this.pack_uint8(176+n);else if(n<=65535)this._bufferBuilder.append(216),this.pack_uint16(n);else if(n<=0xffffffff)this._bufferBuilder.append(217),this.pack_uint32(n);else throw Error("Invalid length");this._bufferBuilder.append_buffer(t)}pack_array(e){let t=e.length;if(t<=15)this.pack_uint8(144+t);else if(t<=65535)this._bufferBuilder.append(220),this.pack_uint16(t);else if(t<=0xffffffff)this._bufferBuilder.append(221),this.pack_uint32(t);else throw Error("Invalid length");let n=r=>{if(r<t){let t=this.pack(e[r]);return t instanceof Promise?t.then(()=>n(r+1)):n(r+1)}};return n(0)}pack_integer(e){if(e>=-32&&e<=127)this._bufferBuilder.append(255&e);else if(e>=0&&e<=255)this._bufferBuilder.append(204),this.pack_uint8(e);else if(e>=-128&&e<=127)this._bufferBuilder.append(208),this.pack_int8(e);else if(e>=0&&e<=65535)this._bufferBuilder.append(205),this.pack_uint16(e);else if(e>=-32768&&e<=32767)this._bufferBuilder.append(209),this.pack_int16(e);else if(e>=0&&e<=0xffffffff)this._bufferBuilder.append(206),this.pack_uint32(e);else if(e>=-0x80000000&&e<=0x7fffffff)this._bufferBuilder.append(210),this.pack_int32(e);else if(e>=-0x8000000000000000&&e<=0x8000000000000000)this._bufferBuilder.append(211),this.pack_int64(e);else if(e>=0&&e<=0xffffffffffffffff)this._bufferBuilder.append(207),this.pack_uint64(e);else throw Error("Invalid integer")}pack_double(e){let t=0;e<0&&(t=1,e=-e);let n=Math.floor(Math.log(e)/Math.LN2),r=Math.floor((e/2**n-1)*0x10000000000000),i=t<<31|n+1023<<20|r/0x100000000&1048575;this._bufferBuilder.append(203),this.pack_int32(i),this.pack_int32(r%0x100000000)}pack_object(e){let t=Object.keys(e),n=t.length;if(n<=15)this.pack_uint8(128+n);else if(n<=65535)this._bufferBuilder.append(222),this.pack_uint16(n);else if(n<=0xffffffff)this._bufferBuilder.append(223),this.pack_uint32(n);else throw Error("Invalid length");let r=n=>{if(n<t.length){let i=t[n];if(e.hasOwnProperty(i)){this.pack(i);let t=this.pack(e[i]);if(t instanceof Promise)return t.then(()=>r(n+1))}return r(n+1)}};return r(0)}pack_uint8(e){this._bufferBuilder.append(e)}pack_uint16(e){this._bufferBuilder.append(e>>8),this._bufferBuilder.append(255&e)}pack_uint32(e){let t=0|e;this._bufferBuilder.append((0xff000000&t)>>>24),this._bufferBuilder.append((0xff0000&t)>>>16),this._bufferBuilder.append((65280&t)>>>8),this._bufferBuilder.append(255&t)}pack_uint64(e){let t=e/0x100000000,n=e%0x100000000;this._bufferBuilder.append((0xff000000&t)>>>24),this._bufferBuilder.append((0xff0000&t)>>>16),this._bufferBuilder.append((65280&t)>>>8),this._bufferBuilder.append(255&t),this._bufferBuilder.append((0xff000000&n)>>>24),this._bufferBuilder.append((0xff0000&n)>>>16),this._bufferBuilder.append((65280&n)>>>8),this._bufferBuilder.append(255&n)}pack_int8(e){this._bufferBuilder.append(255&e)}pack_int16(e){this._bufferBuilder.append((65280&e)>>8),this._bufferBuilder.append(255&e)}pack_int32(e){this._bufferBuilder.append(e>>>24&255),this._bufferBuilder.append((0xff0000&e)>>>16),this._bufferBuilder.append((65280&e)>>>8),this._bufferBuilder.append(255&e)}pack_int64(e){let t=Math.floor(e/0x100000000),n=e%0x100000000;this._bufferBuilder.append((0xff000000&t)>>>24),this._bufferBuilder.append((0xff0000&t)>>>16),this._bufferBuilder.append((65280&t)>>>8),this._bufferBuilder.append(255&t),this._bufferBuilder.append((0xff000000&n)>>>24),this._bufferBuilder.append((0xff0000&n)>>>16),this._bufferBuilder.append((65280&n)>>>8),this._bufferBuilder.append(255&n)}constructor(){this._bufferBuilder=new r,this._textEncoder=new TextEncoder}}"use strict";let c=!0,p=!0;function d(e,t,n){let r=e.match(t);return r&&r.length>=n&&parseInt(r[n],10)}function l(e,t,n){if(!e.RTCPeerConnection)return;let r=e.RTCPeerConnection.prototype,i=r.addEventListener;r.addEventListener=function(e,r){if(e!==t)return i.apply(this,arguments);let s=e=>{let t=n(e);t&&(r.handleEvent?r.handleEvent(t):r(t))};return this._eventMap=this._eventMap||{},this._eventMap[t]||(this._eventMap[t]=new Map),this._eventMap[t].set(r,s),i.apply(this,[e,s])};let s=r.removeEventListener;r.removeEventListener=function(e,n){if(e!==t||!this._eventMap||!this._eventMap[t]||!this._eventMap[t].has(n))return s.apply(this,arguments);let r=this._eventMap[t].get(n);return this._eventMap[t].delete(n),0===this._eventMap[t].size&&delete this._eventMap[t],0===Object.keys(this._eventMap).length&&delete this._eventMap,s.apply(this,[e,r])},Object.defineProperty(r,"on"+t,{get(){return this["_on"+t]},set(e){this["_on"+t]&&(this.removeEventListener(t,this["_on"+t]),delete this["_on"+t]),e&&this.addEventListener(t,this["_on"+t]=e)},enumerable:!0,configurable:!0})}function h(e){return"boolean"!=typeof e?Error("Argument type: "+typeof e+". Please use a boolean."):(c=e,e?"adapter.js logging disabled":"adapter.js logging enabled")}function u(e){return"boolean"!=typeof e?Error("Argument type: "+typeof e+". Please use a boolean."):(p=!e,"adapter.js deprecation warnings "+(e?"disabled":"enabled"))}function f(){"object"==typeof window&&(c||"undefined"!=typeof console&&"function"==typeof console.log&&console.log.apply(console,arguments))}function m(e,t){p&&console.warn(e+" is deprecated, please use "+t+" instead.")}function _(e){return"[object Object]"===Object.prototype.toString.call(e)}function g(e,t,n){let r=n?"outbound-rtp":"inbound-rtp",i=new Map;if(null===t)return i;let s=[];return e.forEach(e=>{"track"===e.type&&e.trackIdentifier===t.id&&s.push(e)}),s.forEach(t=>{e.forEach(n=>{n.type===r&&n.trackId===t.id&&function e(t,n,r){!n||r.has(n.id)||(r.set(n.id,n),Object.keys(n).forEach(i=>{i.endsWith("Id")?e(t,t.get(n[i]),r):i.endsWith("Ids")&&n[i].forEach(n=>{e(t,t.get(n),r)})}))}(e,n,i)})}),i}"use strict";var y={};function C(e,t){let n=e&&e.navigator;if(!n.mediaDevices)return;let r=function(e){if("object"!=typeof e||e.mandatory||e.optional)return e;let t={};return Object.keys(e).forEach(n=>{if("require"===n||"advanced"===n||"mediaSource"===n)return;let r="object"==typeof e[n]?e[n]:{ideal:e[n]};void 0!==r.exact&&"number"==typeof r.exact&&(r.min=r.max=r.exact);let i=function(e,t){return e?e+t.charAt(0).toUpperCase()+t.slice(1):"deviceId"===t?"sourceId":t};if(void 0!==r.ideal){t.optional=t.optional||[];let e={};"number"==typeof r.ideal?(e[i("min",n)]=r.ideal,t.optional.push(e),(e={})[i("max",n)]=r.ideal):e[i("",n)]=r.ideal,t.optional.push(e)}void 0!==r.exact&&"number"!=typeof r.exact?(t.mandatory=t.mandatory||{},t.mandatory[i("",n)]=r.exact):["min","max"].forEach(e=>{void 0!==r[e]&&(t.mandatory=t.mandatory||{},t.mandatory[i(e,n)]=r[e])})}),e.advanced&&(t.optional=(t.optional||[]).concat(e.advanced)),t},i=function(e,i){if(t.version>=61)return i(e);if((e=JSON.parse(JSON.stringify(e)))&&"object"==typeof e.audio){let t=function(e,t,n){t in e&&!(n in e)&&(e[n]=e[t],delete e[t])};t((e=JSON.parse(JSON.stringify(e))).audio,"autoGainControl","googAutoGainControl"),t(e.audio,"noiseSuppression","googNoiseSuppression"),e.audio=r(e.audio)}if(e&&"object"==typeof e.video){let s=e.video.facingMode;s=s&&("object"==typeof s?s:{ideal:s});let o=t.version<66;if(s&&("user"===s.exact||"environment"===s.exact||"user"===s.ideal||"environment"===s.ideal)&&!(n.mediaDevices.getSupportedConstraints&&n.mediaDevices.getSupportedConstraints().facingMode&&!o)){let t;if(delete e.video.facingMode,"environment"===s.exact||"environment"===s.ideal?t=["back","rear"]:("user"===s.exact||"user"===s.ideal)&&(t=["front"]),t)return n.mediaDevices.enumerateDevices().then(n=>{let o=(n=n.filter(e=>"videoinput"===e.kind)).find(e=>t.some(t=>e.label.toLowerCase().includes(t)));return!o&&n.length&&t.includes("back")&&(o=n[n.length-1]),o&&(e.video.deviceId=s.exact?{exact:o.deviceId}:{ideal:o.deviceId}),e.video=r(e.video),f("chrome: "+JSON.stringify(e)),i(e)})}e.video=r(e.video)}return f("chrome: "+JSON.stringify(e)),i(e)},s=function(e){return t.version>=64?e:{name:({PermissionDeniedError:"NotAllowedError",PermissionDismissedError:"NotAllowedError",InvalidStateError:"NotAllowedError",DevicesNotFoundError:"NotFoundError",ConstraintNotSatisfiedError:"OverconstrainedError",TrackStartError:"NotReadableError",MediaDeviceFailedDueToShutdown:"NotAllowedError",MediaDeviceKillSwitchOn:"NotAllowedError",TabCaptureError:"AbortError",ScreenCaptureError:"AbortError",DeviceCaptureError:"AbortError"})[e.name]||e.name,message:e.message,constraint:e.constraint||e.constraintName,toString(){return this.name+(this.message&&": ")+this.message}}};if(n.getUserMedia=(function(e,t,r){i(e,e=>{n.webkitGetUserMedia(e,t,e=>{r&&r(s(e))})})}).bind(n),n.mediaDevices.getUserMedia){let e=n.mediaDevices.getUserMedia.bind(n.mediaDevices);n.mediaDevices.getUserMedia=function(t){return i(t,t=>e(t).then(e=>{if(t.audio&&!e.getAudioTracks().length||t.video&&!e.getVideoTracks().length)throw e.getTracks().forEach(e=>{e.stop()}),new DOMException("","NotFoundError");return e},e=>Promise.reject(s(e))))}}}"use strict";function v(e){e.MediaStream=e.MediaStream||e.webkitMediaStream}function b(e){if("object"!=typeof e||!e.RTCPeerConnection||"ontrack"in e.RTCPeerConnection.prototype)l(e,"track",e=>(e.transceiver||Object.defineProperty(e,"transceiver",{value:{receiver:e.receiver}}),e));else{Object.defineProperty(e.RTCPeerConnection.prototype,"ontrack",{get(){return this._ontrack},set(e){this._ontrack&&this.removeEventListener("track",this._ontrack),this.addEventListener("track",this._ontrack=e)},enumerable:!0,configurable:!0});let t=e.RTCPeerConnection.prototype.setRemoteDescription;e.RTCPeerConnection.prototype.setRemoteDescription=function(){return this._ontrackpoly||(this._ontrackpoly=t=>{t.stream.addEventListener("addtrack",n=>{let r;r=e.RTCPeerConnection.prototype.getReceivers?this.getReceivers().find(e=>e.track&&e.track.id===n.track.id):{track:n.track};let i=new Event("track");i.track=n.track,i.receiver=r,i.transceiver={receiver:r},i.streams=[t.stream],this.dispatchEvent(i)}),t.stream.getTracks().forEach(n=>{let r;r=e.RTCPeerConnection.prototype.getReceivers?this.getReceivers().find(e=>e.track&&e.track.id===n.id):{track:n};let i=new Event("track");i.track=n,i.receiver=r,i.transceiver={receiver:r},i.streams=[t.stream],this.dispatchEvent(i)})},this.addEventListener("addstream",this._ontrackpoly)),t.apply(this,arguments)}}}function T(e){if("object"==typeof e&&e.RTCPeerConnection&&!("getSenders"in e.RTCPeerConnection.prototype)&&"createDTMFSender"in e.RTCPeerConnection.prototype){let t=function(e,t){return{track:t,get dtmf(){return void 0===this._dtmf&&("audio"===t.kind?this._dtmf=e.createDTMFSender(t):this._dtmf=null),this._dtmf},_pc:e}};if(!e.RTCPeerConnection.prototype.getSenders){e.RTCPeerConnection.prototype.getSenders=function(){return this._senders=this._senders||[],this._senders.slice()};let n=e.RTCPeerConnection.prototype.addTrack;e.RTCPeerConnection.prototype.addTrack=function(e,r){let i=n.apply(this,arguments);return i||(i=t(this,e),this._senders.push(i)),i};let r=e.RTCPeerConnection.prototype.removeTrack;e.RTCPeerConnection.prototype.removeTrack=function(e){r.apply(this,arguments);let t=this._senders.indexOf(e);-1!==t&&this._senders.splice(t,1)}}let n=e.RTCPeerConnection.prototype.addStream;e.RTCPeerConnection.prototype.addStream=function(e){this._senders=this._senders||[],n.apply(this,[e]),e.getTracks().forEach(e=>{this._senders.push(t(this,e))})};let r=e.RTCPeerConnection.prototype.removeStream;e.RTCPeerConnection.prototype.removeStream=function(e){this._senders=this._senders||[],r.apply(this,[e]),e.getTracks().forEach(e=>{let t=this._senders.find(t=>t.track===e);t&&this._senders.splice(this._senders.indexOf(t),1)})}}else if("object"==typeof e&&e.RTCPeerConnection&&"getSenders"in e.RTCPeerConnection.prototype&&"createDTMFSender"in e.RTCPeerConnection.prototype&&e.RTCRtpSender&&!("dtmf"in e.RTCRtpSender.prototype)){let t=e.RTCPeerConnection.prototype.getSenders;e.RTCPeerConnection.prototype.getSenders=function(){let e=t.apply(this,[]);return e.forEach(e=>e._pc=this),e},Object.defineProperty(e.RTCRtpSender.prototype,"dtmf",{get(){return void 0===this._dtmf&&("audio"===this.track.kind?this._dtmf=this._pc.createDTMFSender(this.track):this._dtmf=null),this._dtmf}})}}function S(e){if(!("object"==typeof e&&e.RTCPeerConnection&&e.RTCRtpSender&&e.RTCRtpReceiver))return;if(!("getStats"in e.RTCRtpSender.prototype)){let t=e.RTCPeerConnection.prototype.getSenders;t&&(e.RTCPeerConnection.prototype.getSenders=function(){let e=t.apply(this,[]);return e.forEach(e=>e._pc=this),e});let n=e.RTCPeerConnection.prototype.addTrack;n&&(e.RTCPeerConnection.prototype.addTrack=function(){let e=n.apply(this,arguments);return e._pc=this,e}),e.RTCRtpSender.prototype.getStats=function(){let e=this;return this._pc.getStats().then(t=>g(t,e.track,!0))}}if(!("getStats"in e.RTCRtpReceiver.prototype)){let t=e.RTCPeerConnection.prototype.getReceivers;t&&(e.RTCPeerConnection.prototype.getReceivers=function(){let e=t.apply(this,[]);return e.forEach(e=>e._pc=this),e}),l(e,"track",e=>(e.receiver._pc=e.srcElement,e)),e.RTCRtpReceiver.prototype.getStats=function(){let e=this;return this._pc.getStats().then(t=>g(t,e.track,!1))}}if(!("getStats"in e.RTCRtpSender.prototype&&"getStats"in e.RTCRtpReceiver.prototype))return;let t=e.RTCPeerConnection.prototype.getStats;e.RTCPeerConnection.prototype.getStats=function(){if(arguments.length>0&&arguments[0]instanceof e.MediaStreamTrack){let e,t,n,r=arguments[0];return(this.getSenders().forEach(t=>{t.track===r&&(e?n=!0:e=t)}),this.getReceivers().forEach(e=>(e.track===r&&(t?n=!0:t=e),e.track===r)),n||e&&t)?Promise.reject(new DOMException("There are more than one sender or receiver for the track.","InvalidAccessError")):e?e.getStats():t?t.getStats():Promise.reject(new DOMException("There is no sender or receiver for the track.","InvalidAccessError"))}return t.apply(this,arguments)}}function k(e){e.RTCPeerConnection.prototype.getLocalStreams=function(){return this._shimmedLocalStreams=this._shimmedLocalStreams||{},Object.keys(this._shimmedLocalStreams).map(e=>this._shimmedLocalStreams[e][0])};let t=e.RTCPeerConnection.prototype.addTrack;e.RTCPeerConnection.prototype.addTrack=function(e,n){if(!n)return t.apply(this,arguments);this._shimmedLocalStreams=this._shimmedLocalStreams||{};let r=t.apply(this,arguments);return this._shimmedLocalStreams[n.id]?-1===this._shimmedLocalStreams[n.id].indexOf(r)&&this._shimmedLocalStreams[n.id].push(r):this._shimmedLocalStreams[n.id]=[n,r],r};let n=e.RTCPeerConnection.prototype.addStream;e.RTCPeerConnection.prototype.addStream=function(e){this._shimmedLocalStreams=this._shimmedLocalStreams||{},e.getTracks().forEach(e=>{if(this.getSenders().find(t=>t.track===e))throw new DOMException("Track already exists.","InvalidAccessError")});let t=this.getSenders();n.apply(this,arguments);let r=this.getSenders().filter(e=>-1===t.indexOf(e));this._shimmedLocalStreams[e.id]=[e].concat(r)};let r=e.RTCPeerConnection.prototype.removeStream;e.RTCPeerConnection.prototype.removeStream=function(e){return this._shimmedLocalStreams=this._shimmedLocalStreams||{},delete this._shimmedLocalStreams[e.id],r.apply(this,arguments)};let i=e.RTCPeerConnection.prototype.removeTrack;e.RTCPeerConnection.prototype.removeTrack=function(e){return this._shimmedLocalStreams=this._shimmedLocalStreams||{},e&&Object.keys(this._shimmedLocalStreams).forEach(t=>{let n=this._shimmedLocalStreams[t].indexOf(e);-1!==n&&this._shimmedLocalStreams[t].splice(n,1),1===this._shimmedLocalStreams[t].length&&delete this._shimmedLocalStreams[t]}),i.apply(this,arguments)}}function R(e,t){if(!e.RTCPeerConnection)return;if(e.RTCPeerConnection.prototype.addTrack&&t.version>=65)return k(e);let n=e.RTCPeerConnection.prototype.getLocalStreams;e.RTCPeerConnection.prototype.getLocalStreams=function(){let e=n.apply(this);return this._reverseStreams=this._reverseStreams||{},e.map(e=>this._reverseStreams[e.id])};let r=e.RTCPeerConnection.prototype.addStream;e.RTCPeerConnection.prototype.addStream=function(t){if(this._streams=this._streams||{},this._reverseStreams=this._reverseStreams||{},t.getTracks().forEach(e=>{if(this.getSenders().find(t=>t.track===e))throw new DOMException("Track already exists.","InvalidAccessError")}),!this._reverseStreams[t.id]){let n=new e.MediaStream(t.getTracks());this._streams[t.id]=n,this._reverseStreams[n.id]=t,t=n}r.apply(this,[t])};let i=e.RTCPeerConnection.prototype.removeStream;function s(e,t){let n=t.sdp;return Object.keys(e._reverseStreams||[]).forEach(t=>{let r=e._reverseStreams[t],i=e._streams[r.id];n=n.replace(RegExp(i.id,"g"),r.id)}),new RTCSessionDescription({type:t.type,sdp:n})}e.RTCPeerConnection.prototype.removeStream=function(e){this._streams=this._streams||{},this._reverseStreams=this._reverseStreams||{},i.apply(this,[this._streams[e.id]||e]),delete this._reverseStreams[this._streams[e.id]?this._streams[e.id].id:e.id],delete this._streams[e.id]},e.RTCPeerConnection.prototype.addTrack=function(t,n){if("closed"===this.signalingState)throw new DOMException("The RTCPeerConnection's signalingState is 'closed'.","InvalidStateError");let r=[].slice.call(arguments,1);if(1!==r.length||!r[0].getTracks().find(e=>e===t))throw new DOMException("The adapter.js addTrack polyfill only supports a single  stream which is associated with the specified track.","NotSupportedError");if(this.getSenders().find(e=>e.track===t))throw new DOMException("Track already exists.","InvalidAccessError");this._streams=this._streams||{},this._reverseStreams=this._reverseStreams||{};let i=this._streams[n.id];if(i)i.addTrack(t),Promise.resolve().then(()=>{this.dispatchEvent(new Event("negotiationneeded"))});else{let r=new e.MediaStream([t]);this._streams[n.id]=r,this._reverseStreams[r.id]=n,this.addStream(r)}return this.getSenders().find(e=>e.track===t)},["createOffer","createAnswer"].forEach(function(t){let n=e.RTCPeerConnection.prototype[t];e.RTCPeerConnection.prototype[t]=({[t](){let e=arguments,t=arguments.length&&"function"==typeof arguments[0];return t?n.apply(this,[t=>{let n=s(this,t);e[0].apply(null,[n])},t=>{e[1]&&e[1].apply(null,t)},arguments[2]]):n.apply(this,arguments).then(e=>s(this,e))}})[t]});let o=e.RTCPeerConnection.prototype.setLocalDescription;e.RTCPeerConnection.prototype.setLocalDescription=function(){var e,t;let n;return arguments.length&&arguments[0].type?(arguments[0]=(e=this,t=arguments[0],n=t.sdp,Object.keys(e._reverseStreams||[]).forEach(t=>{let r=e._reverseStreams[t],i=e._streams[r.id];n=n.replace(RegExp(r.id,"g"),i.id)}),new RTCSessionDescription({type:t.type,sdp:n})),o.apply(this,arguments)):o.apply(this,arguments)};let a=Object.getOwnPropertyDescriptor(e.RTCPeerConnection.prototype,"localDescription");Object.defineProperty(e.RTCPeerConnection.prototype,"localDescription",{get(){let e=a.get.apply(this);return""===e.type?e:s(this,e)}}),e.RTCPeerConnection.prototype.removeTrack=function(e){let t;if("closed"===this.signalingState)throw new DOMException("The RTCPeerConnection's signalingState is 'closed'.","InvalidStateError");if(!e._pc)throw new DOMException("Argument 1 of RTCPeerConnection.removeTrack does not implement interface RTCRtpSender.","TypeError");if(e._pc!==this)throw new DOMException("Sender was not created by this connection.","InvalidAccessError");this._streams=this._streams||{},Object.keys(this._streams).forEach(n=>{this._streams[n].getTracks().find(t=>e.track===t)&&(t=this._streams[n])}),t&&(1===t.getTracks().length?this.removeStream(this._reverseStreams[t.id]):t.removeTrack(e.track),this.dispatchEvent(new Event("negotiationneeded")))}}function P(e,t){!e.RTCPeerConnection&&e.webkitRTCPeerConnection&&(e.RTCPeerConnection=e.webkitRTCPeerConnection),e.RTCPeerConnection&&t.version<53&&["setLocalDescription","setRemoteDescription","addIceCandidate"].forEach(function(t){let n=e.RTCPeerConnection.prototype[t];e.RTCPeerConnection.prototype[t]=({[t](){return arguments[0]=new("addIceCandidate"===t?e.RTCIceCandidate:e.RTCSessionDescription)(arguments[0]),n.apply(this,arguments)}})[t]})}function w(e,t){l(e,"negotiationneeded",e=>{let n=e.target;if(!(t.version<72)&&(!n.getConfiguration||"plan-b"!==n.getConfiguration().sdpSemantics)||"stable"===n.signalingState)return e})}"use strict";e(y,"shimMediaStream",()=>v),e(y,"shimOnTrack",()=>b),e(y,"shimGetSendersWithDtmf",()=>T),e(y,"shimSenderReceiverGetStats",()=>S),e(y,"shimAddTrackRemoveTrackWithNative",()=>k),e(y,"shimAddTrackRemoveTrack",()=>R),e(y,"shimPeerConnection",()=>P),e(y,"fixNegotiationNeeded",()=>w),e(y,"shimGetUserMedia",()=>C);var E={};function x(e,t){let n=e&&e.navigator,r=e&&e.MediaStreamTrack;if(n.getUserMedia=function(e,t,r){m("navigator.getUserMedia","navigator.mediaDevices.getUserMedia"),n.mediaDevices.getUserMedia(e).then(t,r)},!(t.version>55&&"autoGainControl"in n.mediaDevices.getSupportedConstraints())){let e=function(e,t,n){t in e&&!(n in e)&&(e[n]=e[t],delete e[t])},t=n.mediaDevices.getUserMedia.bind(n.mediaDevices);if(n.mediaDevices.getUserMedia=function(n){return"object"==typeof n&&"object"==typeof n.audio&&(e((n=JSON.parse(JSON.stringify(n))).audio,"autoGainControl","mozAutoGainControl"),e(n.audio,"noiseSuppression","mozNoiseSuppression")),t(n)},r&&r.prototype.getSettings){let t=r.prototype.getSettings;r.prototype.getSettings=function(){let n=t.apply(this,arguments);return e(n,"mozAutoGainControl","autoGainControl"),e(n,"mozNoiseSuppression","noiseSuppression"),n}}if(r&&r.prototype.applyConstraints){let t=r.prototype.applyConstraints;r.prototype.applyConstraints=function(n){return"audio"===this.kind&&"object"==typeof n&&(e(n=JSON.parse(JSON.stringify(n)),"autoGainControl","mozAutoGainControl"),e(n,"noiseSuppression","mozNoiseSuppression")),t.apply(this,[n])}}}}"use strict";function D(e,t){e.navigator.mediaDevices&&"getDisplayMedia"in e.navigator.mediaDevices||e.navigator.mediaDevices&&(e.navigator.mediaDevices.getDisplayMedia=function(n){if(!(n&&n.video)){let e=new DOMException("getDisplayMedia without video constraints is undefined");return e.name="NotFoundError",e.code=8,Promise.reject(e)}return!0===n.video?n.video={mediaSource:t}:n.video.mediaSource=t,e.navigator.mediaDevices.getUserMedia(n)})}"use strict";function I(e){"object"==typeof e&&e.RTCTrackEvent&&"receiver"in e.RTCTrackEvent.prototype&&!("transceiver"in e.RTCTrackEvent.prototype)&&Object.defineProperty(e.RTCTrackEvent.prototype,"transceiver",{get(){return{receiver:this.receiver}}})}function M(e,t){if("object"!=typeof e||!(e.RTCPeerConnection||e.mozRTCPeerConnection))return;!e.RTCPeerConnection&&e.mozRTCPeerConnection&&(e.RTCPeerConnection=e.mozRTCPeerConnection),t.version<53&&["setLocalDescription","setRemoteDescription","addIceCandidate"].forEach(function(t){let n=e.RTCPeerConnection.prototype[t];e.RTCPeerConnection.prototype[t]=({[t](){return arguments[0]=new("addIceCandidate"===t?e.RTCIceCandidate:e.RTCSessionDescription)(arguments[0]),n.apply(this,arguments)}})[t]});let n={inboundrtp:"inbound-rtp",outboundrtp:"outbound-rtp",candidatepair:"candidate-pair",localcandidate:"local-candidate",remotecandidate:"remote-candidate"},r=e.RTCPeerConnection.prototype.getStats;e.RTCPeerConnection.prototype.getStats=function(){let[e,i,s]=arguments;return r.apply(this,[e||null]).then(e=>{if(t.version<53&&!i)try{e.forEach(e=>{e.type=n[e.type]||e.type})}catch(t){if("TypeError"!==t.name)throw t;e.forEach((t,r)=>{e.set(r,Object.assign({},t,{type:n[t.type]||t.type}))})}return e}).then(i,s)}}function O(e){if(!("object"==typeof e&&e.RTCPeerConnection&&e.RTCRtpSender)||e.RTCRtpSender&&"getStats"in e.RTCRtpSender.prototype)return;let t=e.RTCPeerConnection.prototype.getSenders;t&&(e.RTCPeerConnection.prototype.getSenders=function(){let e=t.apply(this,[]);return e.forEach(e=>e._pc=this),e});let n=e.RTCPeerConnection.prototype.addTrack;n&&(e.RTCPeerConnection.prototype.addTrack=function(){let e=n.apply(this,arguments);return e._pc=this,e}),e.RTCRtpSender.prototype.getStats=function(){return this.track?this._pc.getStats(this.track):Promise.resolve(new Map)}}function L(e){if(!("object"==typeof e&&e.RTCPeerConnection&&e.RTCRtpSender)||e.RTCRtpSender&&"getStats"in e.RTCRtpReceiver.prototype)return;let t=e.RTCPeerConnection.prototype.getReceivers;t&&(e.RTCPeerConnection.prototype.getReceivers=function(){let e=t.apply(this,[]);return e.forEach(e=>e._pc=this),e}),l(e,"track",e=>(e.receiver._pc=e.srcElement,e)),e.RTCRtpReceiver.prototype.getStats=function(){return this._pc.getStats(this.track)}}function A(e){!e.RTCPeerConnection||"removeStream"in e.RTCPeerConnection.prototype||(e.RTCPeerConnection.prototype.removeStream=function(e){m("removeStream","removeTrack"),this.getSenders().forEach(t=>{t.track&&e.getTracks().includes(t.track)&&this.removeTrack(t)})})}function j(e){e.DataChannel&&!e.RTCDataChannel&&(e.RTCDataChannel=e.DataChannel)}function B(e){if(!("object"==typeof e&&e.RTCPeerConnection))return;let t=e.RTCPeerConnection.prototype.addTransceiver;t&&(e.RTCPeerConnection.prototype.addTransceiver=function(){this.setParametersPromises=[];let e=arguments[1]&&arguments[1].sendEncodings;void 0===e&&(e=[]);let n=(e=[...e]).length>0;n&&e.forEach(e=>{if("rid"in e&&!/^[a-z0-9]{0,16}$/i.test(e.rid))throw TypeError("Invalid RID value provided.");if("scaleResolutionDownBy"in e&&!(parseFloat(e.scaleResolutionDownBy)>=1))throw RangeError("scale_resolution_down_by must be >= 1.0");if("maxFramerate"in e&&!(parseFloat(e.maxFramerate)>=0))throw RangeError("max_framerate must be >= 0.0")});let r=t.apply(this,arguments);if(n){let{sender:t}=r,n=t.getParameters();"encodings"in n&&(1!==n.encodings.length||0!==Object.keys(n.encodings[0]).length)||(n.encodings=e,t.sendEncodings=e,this.setParametersPromises.push(t.setParameters(n).then(()=>{delete t.sendEncodings}).catch(()=>{delete t.sendEncodings})))}return r})}function U(e){if(!("object"==typeof e&&e.RTCRtpSender))return;let t=e.RTCRtpSender.prototype.getParameters;t&&(e.RTCRtpSender.prototype.getParameters=function(){let e=t.apply(this,arguments);return"encodings"in e||(e.encodings=[].concat(this.sendEncodings||[{}])),e})}function F(e){if(!("object"==typeof e&&e.RTCPeerConnection))return;let t=e.RTCPeerConnection.prototype.createOffer;e.RTCPeerConnection.prototype.createOffer=function(){return this.setParametersPromises&&this.setParametersPromises.length?Promise.all(this.setParametersPromises).then(()=>t.apply(this,arguments)).finally(()=>{this.setParametersPromises=[]}):t.apply(this,arguments)}}function N(e){if(!("object"==typeof e&&e.RTCPeerConnection))return;let t=e.RTCPeerConnection.prototype.createAnswer;e.RTCPeerConnection.prototype.createAnswer=function(){return this.setParametersPromises&&this.setParametersPromises.length?Promise.all(this.setParametersPromises).then(()=>t.apply(this,arguments)).finally(()=>{this.setParametersPromises=[]}):t.apply(this,arguments)}}"use strict";e(E,"shimOnTrack",()=>I),e(E,"shimPeerConnection",()=>M),e(E,"shimSenderGetStats",()=>O),e(E,"shimReceiverGetStats",()=>L),e(E,"shimRemoveStream",()=>A),e(E,"shimRTCDataChannel",()=>j),e(E,"shimAddTransceiver",()=>B),e(E,"shimGetParameters",()=>U),e(E,"shimCreateOffer",()=>F),e(E,"shimCreateAnswer",()=>N),e(E,"shimGetUserMedia",()=>x),e(E,"shimGetDisplayMedia",()=>D);var z={};function $(e){if("object"==typeof e&&e.RTCPeerConnection){if("getLocalStreams"in e.RTCPeerConnection.prototype||(e.RTCPeerConnection.prototype.getLocalStreams=function(){return this._localStreams||(this._localStreams=[]),this._localStreams}),!("addStream"in e.RTCPeerConnection.prototype)){let t=e.RTCPeerConnection.prototype.addTrack;e.RTCPeerConnection.prototype.addStream=function(e){this._localStreams||(this._localStreams=[]),this._localStreams.includes(e)||this._localStreams.push(e),e.getAudioTracks().forEach(n=>t.call(this,n,e)),e.getVideoTracks().forEach(n=>t.call(this,n,e))},e.RTCPeerConnection.prototype.addTrack=function(e,...n){return n&&n.forEach(e=>{this._localStreams?this._localStreams.includes(e)||this._localStreams.push(e):this._localStreams=[e]}),t.apply(this,arguments)}}"removeStream"in e.RTCPeerConnection.prototype||(e.RTCPeerConnection.prototype.removeStream=function(e){this._localStreams||(this._localStreams=[]);let t=this._localStreams.indexOf(e);if(-1===t)return;this._localStreams.splice(t,1);let n=e.getTracks();this.getSenders().forEach(e=>{n.includes(e.track)&&this.removeTrack(e)})})}}function V(e){if("object"==typeof e&&e.RTCPeerConnection&&("getRemoteStreams"in e.RTCPeerConnection.prototype||(e.RTCPeerConnection.prototype.getRemoteStreams=function(){return this._remoteStreams?this._remoteStreams:[]}),!("onaddstream"in e.RTCPeerConnection.prototype))){Object.defineProperty(e.RTCPeerConnection.prototype,"onaddstream",{get(){return this._onaddstream},set(e){this._onaddstream&&(this.removeEventListener("addstream",this._onaddstream),this.removeEventListener("track",this._onaddstreampoly)),this.addEventListener("addstream",this._onaddstream=e),this.addEventListener("track",this._onaddstreampoly=e=>{e.streams.forEach(e=>{if(this._remoteStreams||(this._remoteStreams=[]),this._remoteStreams.includes(e))return;this._remoteStreams.push(e);let t=new Event("addstream");t.stream=e,this.dispatchEvent(t)})})}});let t=e.RTCPeerConnection.prototype.setRemoteDescription;e.RTCPeerConnection.prototype.setRemoteDescription=function(){let e=this;return this._onaddstreampoly||this.addEventListener("track",this._onaddstreampoly=function(t){t.streams.forEach(t=>{if(e._remoteStreams||(e._remoteStreams=[]),e._remoteStreams.indexOf(t)>=0)return;e._remoteStreams.push(t);let n=new Event("addstream");n.stream=t,e.dispatchEvent(n)})}),t.apply(e,arguments)}}}function G(e){if("object"!=typeof e||!e.RTCPeerConnection)return;let t=e.RTCPeerConnection.prototype,n=t.createOffer,r=t.createAnswer,i=t.setLocalDescription,s=t.setRemoteDescription,o=t.addIceCandidate;t.createOffer=function(e,t){let r=arguments.length>=2?arguments[2]:arguments[0],i=n.apply(this,[r]);return t?(i.then(e,t),Promise.resolve()):i},t.createAnswer=function(e,t){let n=arguments.length>=2?arguments[2]:arguments[0],i=r.apply(this,[n]);return t?(i.then(e,t),Promise.resolve()):i};let a=function(e,t,n){let r=i.apply(this,[e]);return n?(r.then(t,n),Promise.resolve()):r};t.setLocalDescription=a,t.setRemoteDescription=a=function(e,t,n){let r=s.apply(this,[e]);return n?(r.then(t,n),Promise.resolve()):r},t.addIceCandidate=function(e,t,n){let r=o.apply(this,[e]);return n?(r.then(t,n),Promise.resolve()):r}}function J(e){let t=e&&e.navigator;if(t.mediaDevices&&t.mediaDevices.getUserMedia){let e=t.mediaDevices,n=e.getUserMedia.bind(e);t.mediaDevices.getUserMedia=e=>n(W(e))}!t.getUserMedia&&t.mediaDevices&&t.mediaDevices.getUserMedia&&(t.getUserMedia=(function(e,n,r){t.mediaDevices.getUserMedia(e).then(n,r)}).bind(t))}function W(e){return e&&void 0!==e.video?Object.assign({},e,{video:function e(t){return _(t)?Object.keys(t).reduce(function(n,r){let i=_(t[r]),s=i?e(t[r]):t[r],o=i&&!Object.keys(s).length;return void 0===s||o?n:Object.assign(n,{[r]:s})},{}):t}(e.video)}):e}function Y(e){if(!e.RTCPeerConnection)return;let t=e.RTCPeerConnection;e.RTCPeerConnection=function(e,n){if(e&&e.iceServers){let t=[];for(let n=0;n<e.iceServers.length;n++){let r=e.iceServers[n];void 0===r.urls&&r.url?(m("RTCIceServer.url","RTCIceServer.urls"),(r=JSON.parse(JSON.stringify(r))).urls=r.url,delete r.url,t.push(r)):t.push(e.iceServers[n])}e.iceServers=t}return new t(e,n)},e.RTCPeerConnection.prototype=t.prototype,"generateCertificate"in t&&Object.defineProperty(e.RTCPeerConnection,"generateCertificate",{get:()=>t.generateCertificate})}function H(e){"object"==typeof e&&e.RTCTrackEvent&&"receiver"in e.RTCTrackEvent.prototype&&!("transceiver"in e.RTCTrackEvent.prototype)&&Object.defineProperty(e.RTCTrackEvent.prototype,"transceiver",{get(){return{receiver:this.receiver}}})}function K(e){let t=e.RTCPeerConnection.prototype.createOffer;e.RTCPeerConnection.prototype.createOffer=function(e){if(e){void 0!==e.offerToReceiveAudio&&(e.offerToReceiveAudio=!!e.offerToReceiveAudio);let t=this.getTransceivers().find(e=>"audio"===e.receiver.track.kind);!1===e.offerToReceiveAudio&&t?"sendrecv"===t.direction?t.setDirection?t.setDirection("sendonly"):t.direction="sendonly":"recvonly"===t.direction&&(t.setDirection?t.setDirection("inactive"):t.direction="inactive"):!0!==e.offerToReceiveAudio||t||this.addTransceiver("audio",{direction:"recvonly"}),void 0!==e.offerToReceiveVideo&&(e.offerToReceiveVideo=!!e.offerToReceiveVideo);let n=this.getTransceivers().find(e=>"video"===e.receiver.track.kind);!1===e.offerToReceiveVideo&&n?"sendrecv"===n.direction?n.setDirection?n.setDirection("sendonly"):n.direction="sendonly":"recvonly"===n.direction&&(n.setDirection?n.setDirection("inactive"):n.direction="inactive"):!0!==e.offerToReceiveVideo||n||this.addTransceiver("video",{direction:"recvonly"})}return t.apply(this,arguments)}}function X(e){"object"!=typeof e||e.AudioContext||(e.AudioContext=e.webkitAudioContext)}e(z,"shimLocalStreamsAPI",()=>$),e(z,"shimRemoteStreamsAPI",()=>V),e(z,"shimCallbacksAPI",()=>G),e(z,"shimGetUserMedia",()=>J),e(z,"shimConstraints",()=>W),e(z,"shimRTCIceServerUrls",()=>Y),e(z,"shimTrackEventTransceiver",()=>H),e(z,"shimCreateOfferLegacy",()=>K),e(z,"shimAudioContext",()=>X);var Q={};"use strict";e(Q,"shimRTCIceCandidate",()=>ee),e(Q,"shimRTCIceCandidateRelayProtocol",()=>et),e(Q,"shimMaxMessageSize",()=>en),e(Q,"shimSendThrowTypeError",()=>er),e(Q,"shimConnectionState",()=>ei),e(Q,"removeExtmapAllowMixed",()=>es),e(Q,"shimAddIceCandidateNullOrEmpty",()=>eo),e(Q,"shimParameterlessSetLocalDescription",()=>ea);var q={};"use strict";let Z={};function ee(e){if(!e.RTCIceCandidate||e.RTCIceCandidate&&"foundation"in e.RTCIceCandidate.prototype)return;let n=e.RTCIceCandidate;e.RTCIceCandidate=function(e){if("object"==typeof e&&e.candidate&&0===e.candidate.indexOf("a=")&&((e=JSON.parse(JSON.stringify(e))).candidate=e.candidate.substring(2)),e.candidate&&e.candidate.length){let r=new n(e),i=t(q).parseCandidate(e.candidate);for(let e in i)e in r||Object.defineProperty(r,e,{value:i[e]});return r.toJSON=function(){return{candidate:r.candidate,sdpMid:r.sdpMid,sdpMLineIndex:r.sdpMLineIndex,usernameFragment:r.usernameFragment}},r}return new n(e)},e.RTCIceCandidate.prototype=n.prototype,l(e,"icecandidate",t=>(t.candidate&&Object.defineProperty(t,"candidate",{value:new e.RTCIceCandidate(t.candidate),writable:"false"}),t))}function et(e){!e.RTCIceCandidate||e.RTCIceCandidate&&"relayProtocol"in e.RTCIceCandidate.prototype||l(e,"icecandidate",e=>{if(e.candidate){let n=t(q).parseCandidate(e.candidate.candidate);"relay"===n.type&&(e.candidate.relayProtocol=({0:"tls",1:"tcp",2:"udp"})[n.priority>>24])}return e})}function en(e,n){if(!e.RTCPeerConnection)return;"sctp"in e.RTCPeerConnection.prototype||Object.defineProperty(e.RTCPeerConnection.prototype,"sctp",{get(){return void 0===this._sctp?null:this._sctp}});let r=function(e){if(!e||!e.sdp)return!1;let n=t(q).splitSections(e.sdp);return n.shift(),n.some(e=>{let n=t(q).parseMLine(e);return n&&"application"===n.kind&&-1!==n.protocol.indexOf("SCTP")})},i=function(e){let t=e.sdp.match(/mozilla...THIS_IS_SDPARTA-(\d+)/);if(null===t||t.length<2)return -1;let n=parseInt(t[1],10);return n!=n?-1:n},s=function(e){let t=65536;return"firefox"===n.browser&&(t=n.version<57?-1===e?16384:0x7ffffff5:n.version<60?57===n.version?65535:65536:0x7ffffff5),t},o=function(e,r){let i=65536;"firefox"===n.browser&&57===n.version&&(i=65535);let s=t(q).matchPrefix(e.sdp,"a=max-message-size:");return s.length>0?i=parseInt(s[0].substring(19),10):"firefox"===n.browser&&-1!==r&&(i=0x7ffffff5),i},a=e.RTCPeerConnection.prototype.setRemoteDescription;e.RTCPeerConnection.prototype.setRemoteDescription=function(){if(this._sctp=null,"chrome"===n.browser&&n.version>=76){let{sdpSemantics:e}=this.getConfiguration();"plan-b"===e&&Object.defineProperty(this,"sctp",{get(){return void 0===this._sctp?null:this._sctp},enumerable:!0,configurable:!0})}if(r(arguments[0])){let e,t=i(arguments[0]),n=s(t),r=o(arguments[0],t);e=0===n&&0===r?Number.POSITIVE_INFINITY:0===n||0===r?Math.max(n,r):Math.min(n,r);let a={};Object.defineProperty(a,"maxMessageSize",{get:()=>e}),this._sctp=a}return a.apply(this,arguments)}}function er(e){if(!(e.RTCPeerConnection&&"createDataChannel"in e.RTCPeerConnection.prototype))return;function t(e,t){let n=e.send;e.send=function(){let r=arguments[0],i=r.length||r.size||r.byteLength;if("open"===e.readyState&&t.sctp&&i>t.sctp.maxMessageSize)throw TypeError("Message too large (can send a maximum of "+t.sctp.maxMessageSize+" bytes)");return n.apply(e,arguments)}}let n=e.RTCPeerConnection.prototype.createDataChannel;e.RTCPeerConnection.prototype.createDataChannel=function(){let e=n.apply(this,arguments);return t(e,this),e},l(e,"datachannel",e=>(t(e.channel,e.target),e))}function ei(e){if(!e.RTCPeerConnection||"connectionState"in e.RTCPeerConnection.prototype)return;let t=e.RTCPeerConnection.prototype;Object.defineProperty(t,"connectionState",{get(){return({completed:"connected",checking:"connecting"})[this.iceConnectionState]||this.iceConnectionState},enumerable:!0,configurable:!0}),Object.defineProperty(t,"onconnectionstatechange",{get(){return this._onconnectionstatechange||null},set(e){this._onconnectionstatechange&&(this.removeEventListener("connectionstatechange",this._onconnectionstatechange),delete this._onconnectionstatechange),e&&this.addEventListener("connectionstatechange",this._onconnectionstatechange=e)},enumerable:!0,configurable:!0}),["setLocalDescription","setRemoteDescription"].forEach(e=>{let n=t[e];t[e]=function(){return this._connectionstatechangepoly||(this._connectionstatechangepoly=e=>{let t=e.target;if(t._lastConnectionState!==t.connectionState){t._lastConnectionState=t.connectionState;let n=new Event("connectionstatechange",e);t.dispatchEvent(n)}return e},this.addEventListener("iceconnectionstatechange",this._connectionstatechangepoly)),n.apply(this,arguments)}})}function es(e,t){if(!e.RTCPeerConnection||"chrome"===t.browser&&t.version>=71||"safari"===t.browser&&t.version>=605)return;let n=e.RTCPeerConnection.prototype.setRemoteDescription;e.RTCPeerConnection.prototype.setRemoteDescription=function(t){if(t&&t.sdp&&-1!==t.sdp.indexOf("\na=extmap-allow-mixed")){let n=t.sdp.split("\n").filter(e=>"a=extmap-allow-mixed"!==e.trim()).join("\n");e.RTCSessionDescription&&t instanceof e.RTCSessionDescription?arguments[0]=new e.RTCSessionDescription({type:t.type,sdp:n}):t.sdp=n}return n.apply(this,arguments)}}function eo(e,t){if(!(e.RTCPeerConnection&&e.RTCPeerConnection.prototype))return;let n=e.RTCPeerConnection.prototype.addIceCandidate;n&&0!==n.length&&(e.RTCPeerConnection.prototype.addIceCandidate=function(){return arguments[0]?("chrome"===t.browser&&t.version<78||"firefox"===t.browser&&t.version<68||"safari"===t.browser)&&arguments[0]&&""===arguments[0].candidate?Promise.resolve():n.apply(this,arguments):(arguments[1]&&arguments[1].apply(null),Promise.resolve())})}function ea(e,t){if(!(e.RTCPeerConnection&&e.RTCPeerConnection.prototype))return;let n=e.RTCPeerConnection.prototype.setLocalDescription;n&&0!==n.length&&(e.RTCPeerConnection.prototype.setLocalDescription=function(){let e=arguments[0]||{};if("object"!=typeof e||e.type&&e.sdp)return n.apply(this,arguments);if(!(e={type:e.type,sdp:e.sdp}).type)switch(this.signalingState){case"stable":case"have-local-offer":case"have-remote-pranswer":e.type="offer";break;default:e.type="answer"}return e.sdp||"offer"!==e.type&&"answer"!==e.type?n.apply(this,[e]):("offer"===e.type?this.createOffer:this.createAnswer).apply(this).then(e=>n.apply(this,[e]))})}"use strict";Z.generateIdentifier=function(){return Math.random().toString(36).substring(2,12)},Z.localCName=Z.generateIdentifier(),Z.splitLines=function(e){return e.trim().split("\n").map(e=>e.trim())},Z.splitSections=function(e){return e.split("\nm=").map((e,t)=>(t>0?"m="+e:e).trim()+"\r\n")},Z.getDescription=function(e){let t=Z.splitSections(e);return t&&t[0]},Z.getMediaSections=function(e){let t=Z.splitSections(e);return t.shift(),t},Z.matchPrefix=function(e,t){return Z.splitLines(e).filter(e=>0===e.indexOf(t))},Z.parseCandidate=function(e){let t,n={foundation:(t=0===e.indexOf("a=candidate:")?e.substring(12).split(" "):e.substring(10).split(" "))[0],component:{1:"rtp",2:"rtcp"}[t[1]]||t[1],protocol:t[2].toLowerCase(),priority:parseInt(t[3],10),ip:t[4],address:t[4],port:parseInt(t[5],10),type:t[7]};for(let e=8;e<t.length;e+=2)switch(t[e]){case"raddr":n.relatedAddress=t[e+1];break;case"rport":n.relatedPort=parseInt(t[e+1],10);break;case"tcptype":n.tcpType=t[e+1];break;case"ufrag":n.ufrag=t[e+1],n.usernameFragment=t[e+1];break;default:void 0===n[t[e]]&&(n[t[e]]=t[e+1])}return n},Z.writeCandidate=function(e){let t=[];t.push(e.foundation);let n=e.component;"rtp"===n?t.push(1):"rtcp"===n?t.push(2):t.push(n),t.push(e.protocol.toUpperCase()),t.push(e.priority),t.push(e.address||e.ip),t.push(e.port);let r=e.type;return t.push("typ"),t.push(r),"host"!==r&&e.relatedAddress&&e.relatedPort&&(t.push("raddr"),t.push(e.relatedAddress),t.push("rport"),t.push(e.relatedPort)),e.tcpType&&"tcp"===e.protocol.toLowerCase()&&(t.push("tcptype"),t.push(e.tcpType)),(e.usernameFragment||e.ufrag)&&(t.push("ufrag"),t.push(e.usernameFragment||e.ufrag)),"candidate:"+t.join(" ")},Z.parseIceOptions=function(e){return e.substring(14).split(" ")},Z.parseRtpMap=function(e){let t=e.substring(9).split(" "),n={payloadType:parseInt(t.shift(),10)};return n.name=(t=t[0].split("/"))[0],n.clockRate=parseInt(t[1],10),n.channels=3===t.length?parseInt(t[2],10):1,n.numChannels=n.channels,n},Z.writeRtpMap=function(e){let t=e.payloadType;void 0!==e.preferredPayloadType&&(t=e.preferredPayloadType);let n=e.channels||e.numChannels||1;return"a=rtpmap:"+t+" "+e.name+"/"+e.clockRate+(1!==n?"/"+n:"")+"\r\n"},Z.parseExtmap=function(e){let t=e.substring(9).split(" ");return{id:parseInt(t[0],10),direction:t[0].indexOf("/")>0?t[0].split("/")[1]:"sendrecv",uri:t[1],attributes:t.slice(2).join(" ")}},Z.writeExtmap=function(e){return"a=extmap:"+(e.id||e.preferredId)+(e.direction&&"sendrecv"!==e.direction?"/"+e.direction:"")+" "+e.uri+(e.attributes?" "+e.attributes:"")+"\r\n"},Z.parseFmtp=function(e){let t,n={},r=e.substring(e.indexOf(" ")+1).split(";");for(let e=0;e<r.length;e++)n[(t=r[e].trim().split("="))[0].trim()]=t[1];return n},Z.writeFmtp=function(e){let t="",n=e.payloadType;if(void 0!==e.preferredPayloadType&&(n=e.preferredPayloadType),e.parameters&&Object.keys(e.parameters).length){let r=[];Object.keys(e.parameters).forEach(t=>{void 0!==e.parameters[t]?r.push(t+"="+e.parameters[t]):r.push(t)}),t+="a=fmtp:"+n+" "+r.join(";")+"\r\n"}return t},Z.parseRtcpFb=function(e){let t=e.substring(e.indexOf(" ")+1).split(" ");return{type:t.shift(),parameter:t.join(" ")}},Z.writeRtcpFb=function(e){let t="",n=e.payloadType;return void 0!==e.preferredPayloadType&&(n=e.preferredPayloadType),e.rtcpFeedback&&e.rtcpFeedback.length&&e.rtcpFeedback.forEach(e=>{t+="a=rtcp-fb:"+n+" "+e.type+(e.parameter&&e.parameter.length?" "+e.parameter:"")+"\r\n"}),t},Z.parseSsrcMedia=function(e){let t=e.indexOf(" "),n={ssrc:parseInt(e.substring(7,t),10)},r=e.indexOf(":",t);return r>-1?(n.attribute=e.substring(t+1,r),n.value=e.substring(r+1)):n.attribute=e.substring(t+1),n},Z.parseSsrcGroup=function(e){let t=e.substring(13).split(" ");return{semantics:t.shift(),ssrcs:t.map(e=>parseInt(e,10))}},Z.getMid=function(e){let t=Z.matchPrefix(e,"a=mid:")[0];if(t)return t.substring(6)},Z.parseFingerprint=function(e){let t=e.substring(14).split(" ");return{algorithm:t[0].toLowerCase(),value:t[1].toUpperCase()}},Z.getDtlsParameters=function(e,t){return{role:"auto",fingerprints:Z.matchPrefix(e+t,"a=fingerprint:").map(Z.parseFingerprint)}},Z.writeDtlsParameters=function(e,t){let n="a=setup:"+t+"\r\n";return e.fingerprints.forEach(e=>{n+="a=fingerprint:"+e.algorithm+" "+e.value+"\r\n"}),n},Z.parseCryptoLine=function(e){let t=e.substring(9).split(" ");return{tag:parseInt(t[0],10),cryptoSuite:t[1],keyParams:t[2],sessionParams:t.slice(3)}},Z.writeCryptoLine=function(e){return"a=crypto:"+e.tag+" "+e.cryptoSuite+" "+("object"==typeof e.keyParams?Z.writeCryptoKeyParams(e.keyParams):e.keyParams)+(e.sessionParams?" "+e.sessionParams.join(" "):"")+"\r\n"},Z.parseCryptoKeyParams=function(e){if(0!==e.indexOf("inline:"))return null;let t=e.substring(7).split("|");return{keyMethod:"inline",keySalt:t[0],lifeTime:t[1],mkiValue:t[2]?t[2].split(":")[0]:void 0,mkiLength:t[2]?t[2].split(":")[1]:void 0}},Z.writeCryptoKeyParams=function(e){return e.keyMethod+":"+e.keySalt+(e.lifeTime?"|"+e.lifeTime:"")+(e.mkiValue&&e.mkiLength?"|"+e.mkiValue+":"+e.mkiLength:"")},Z.getCryptoParameters=function(e,t){return Z.matchPrefix(e+t,"a=crypto:").map(Z.parseCryptoLine)},Z.getIceParameters=function(e,t){let n=Z.matchPrefix(e+t,"a=ice-ufrag:")[0],r=Z.matchPrefix(e+t,"a=ice-pwd:")[0];return n&&r?{usernameFragment:n.substring(12),password:r.substring(10)}:null},Z.writeIceParameters=function(e){let t="a=ice-ufrag:"+e.usernameFragment+"\r\na=ice-pwd:"+e.password+"\r\n";return e.iceLite&&(t+="a=ice-lite\r\n"),t},Z.parseRtpParameters=function(e){let t={codecs:[],headerExtensions:[],fecMechanisms:[],rtcp:[]},n=Z.splitLines(e)[0].split(" ");t.profile=n[2];for(let r=3;r<n.length;r++){let i=n[r],s=Z.matchPrefix(e,"a=rtpmap:"+i+" ")[0];if(s){let n=Z.parseRtpMap(s),r=Z.matchPrefix(e,"a=fmtp:"+i+" ");switch(n.parameters=r.length?Z.parseFmtp(r[0]):{},n.rtcpFeedback=Z.matchPrefix(e,"a=rtcp-fb:"+i+" ").map(Z.parseRtcpFb),t.codecs.push(n),n.name.toUpperCase()){case"RED":case"ULPFEC":t.fecMechanisms.push(n.name.toUpperCase())}}}Z.matchPrefix(e,"a=extmap:").forEach(e=>{t.headerExtensions.push(Z.parseExtmap(e))});let r=Z.matchPrefix(e,"a=rtcp-fb:* ").map(Z.parseRtcpFb);return t.codecs.forEach(e=>{r.forEach(t=>{e.rtcpFeedback.find(e=>e.type===t.type&&e.parameter===t.parameter)||e.rtcpFeedback.push(t)})}),t},Z.writeRtpDescription=function(e,t){let n="";n+="m="+e+" ",n+=t.codecs.length>0?"9":"0",n+=" "+(t.profile||"UDP/TLS/RTP/SAVPF")+" ",n+=t.codecs.map(e=>void 0!==e.preferredPayloadType?e.preferredPayloadType:e.payloadType).join(" ")+"\r\n",n+="c=IN IP4 0.0.0.0\r\n",n+="a=rtcp:9 IN IP4 0.0.0.0\r\n",t.codecs.forEach(e=>{n+=Z.writeRtpMap(e),n+=Z.writeFmtp(e),n+=Z.writeRtcpFb(e)});let r=0;return t.codecs.forEach(e=>{e.maxptime>r&&(r=e.maxptime)}),r>0&&(n+="a=maxptime:"+r+"\r\n"),t.headerExtensions&&t.headerExtensions.forEach(e=>{n+=Z.writeExtmap(e)}),n},Z.parseRtpEncodingParameters=function(e){let t,n=[],r=Z.parseRtpParameters(e),i=-1!==r.fecMechanisms.indexOf("RED"),s=-1!==r.fecMechanisms.indexOf("ULPFEC"),o=Z.matchPrefix(e,"a=ssrc:").map(e=>Z.parseSsrcMedia(e)).filter(e=>"cname"===e.attribute),a=o.length>0&&o[0].ssrc,c=Z.matchPrefix(e,"a=ssrc-group:FID").map(e=>e.substring(17).split(" ").map(e=>parseInt(e,10)));c.length>0&&c[0].length>1&&c[0][0]===a&&(t=c[0][1]),r.codecs.forEach(e=>{if("RTX"===e.name.toUpperCase()&&e.parameters.apt){let r={ssrc:a,codecPayloadType:parseInt(e.parameters.apt,10)};a&&t&&(r.rtx={ssrc:t}),n.push(r),i&&((r=JSON.parse(JSON.stringify(r))).fec={ssrc:a,mechanism:s?"red+ulpfec":"red"},n.push(r))}}),0===n.length&&a&&n.push({ssrc:a});let p=Z.matchPrefix(e,"b=");return p.length&&(p=0===p[0].indexOf("b=TIAS:")?parseInt(p[0].substring(7),10):0===p[0].indexOf("b=AS:")?950*parseInt(p[0].substring(5),10)-16e3:void 0,n.forEach(e=>{e.maxBitrate=p})),n},Z.parseRtcpParameters=function(e){let t={},n=Z.matchPrefix(e,"a=ssrc:").map(e=>Z.parseSsrcMedia(e)).filter(e=>"cname"===e.attribute)[0];n&&(t.cname=n.value,t.ssrc=n.ssrc);let r=Z.matchPrefix(e,"a=rtcp-rsize");return t.reducedSize=r.length>0,t.compound=0===r.length,t.mux=Z.matchPrefix(e,"a=rtcp-mux").length>0,t},Z.writeRtcpParameters=function(e){let t="";return e.reducedSize&&(t+="a=rtcp-rsize\r\n"),e.mux&&(t+="a=rtcp-mux\r\n"),void 0!==e.ssrc&&e.cname&&(t+="a=ssrc:"+e.ssrc+" cname:"+e.cname+"\r\n"),t},Z.parseMsid=function(e){let t,n=Z.matchPrefix(e,"a=msid:");if(1===n.length)return{stream:(t=n[0].substring(7).split(" "))[0],track:t[1]};let r=Z.matchPrefix(e,"a=ssrc:").map(e=>Z.parseSsrcMedia(e)).filter(e=>"msid"===e.attribute);if(r.length>0)return{stream:(t=r[0].value.split(" "))[0],track:t[1]}},Z.parseSctpDescription=function(e){let t,n=Z.parseMLine(e),r=Z.matchPrefix(e,"a=max-message-size:");r.length>0&&(t=parseInt(r[0].substring(19),10)),isNaN(t)&&(t=65536);let i=Z.matchPrefix(e,"a=sctp-port:");if(i.length>0)return{port:parseInt(i[0].substring(12),10),protocol:n.fmt,maxMessageSize:t};let s=Z.matchPrefix(e,"a=sctpmap:");if(s.length>0){let e=s[0].substring(10).split(" ");return{port:parseInt(e[0],10),protocol:e[1],maxMessageSize:t}}},Z.writeSctpDescription=function(e,t){let n=[];return n="DTLS/SCTP"!==e.protocol?["m="+e.kind+" 9 "+e.protocol+" "+t.protocol+"\r\n","c=IN IP4 0.0.0.0\r\n","a=sctp-port:"+t.port+"\r\n"]:["m="+e.kind+" 9 "+e.protocol+" "+t.port+"\r\n","c=IN IP4 0.0.0.0\r\n","a=sctpmap:"+t.port+" "+t.protocol+" 65535\r\n"],void 0!==t.maxMessageSize&&n.push("a=max-message-size:"+t.maxMessageSize+"\r\n"),n.join("")},Z.generateSessionId=function(){return Math.random().toString().substr(2,22)},Z.writeSessionBoilerplate=function(e,t,n){return"v=0\r\no="+(n||"thisisadapterortc")+" "+(e||Z.generateSessionId())+" "+(void 0!==t?t:2)+" IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\n"},Z.getDirection=function(e,t){let n=Z.splitLines(e);for(let e=0;e<n.length;e++)switch(n[e]){case"a=sendrecv":case"a=sendonly":case"a=recvonly":case"a=inactive":return n[e].substring(2)}return t?Z.getDirection(t):"sendrecv"},Z.getKind=function(e){return Z.splitLines(e)[0].split(" ")[0].substring(2)},Z.isRejected=function(e){return"0"===e.split(" ",2)[1]},Z.parseMLine=function(e){let t=Z.splitLines(e)[0].substring(2).split(" ");return{kind:t[0],port:parseInt(t[1],10),protocol:t[2],fmt:t.slice(3).join(" ")}},Z.parseOLine=function(e){let t=Z.matchPrefix(e,"o=")[0].substring(2).split(" ");return{username:t[0],sessionId:t[1],sessionVersion:parseInt(t[2],10),netType:t[3],addressType:t[4],address:t[5]}},Z.isValidSDP=function(e){if("string"!=typeof e||0===e.length)return!1;let t=Z.splitLines(e);for(let e=0;e<t.length;e++)if(t[e].length<2||"="!==t[e].charAt(1))return!1;return!0},q=Z;let ec=function({window:e}={},t={shimChrome:!0,shimFirefox:!0,shimSafari:!0}){let n=function(e){let t={browser:null,version:null};if(void 0===e||!e.navigator||!e.navigator.userAgent)return t.browser="Not a browser.",t;let{navigator:n}=e;if(n.userAgentData&&n.userAgentData.brands){let e=n.userAgentData.brands.find(e=>"Chromium"===e.brand);if(e)return{browser:"chrome",version:parseInt(e.version,10)}}return n.mozGetUserMedia?(t.browser="firefox",t.version=d(n.userAgent,/Firefox\/(\d+)\./,1)):n.webkitGetUserMedia||!1===e.isSecureContext&&e.webkitRTCPeerConnection?(t.browser="chrome",t.version=d(n.userAgent,/Chrom(e|ium)\/(\d+)\./,2)):e.RTCPeerConnection&&n.userAgent.match(/AppleWebKit\/(\d+)\./)?(t.browser="safari",t.version=d(n.userAgent,/AppleWebKit\/(\d+)\./,1),t.supportsUnifiedPlan=e.RTCRtpTransceiver&&"currentDirection"in e.RTCRtpTransceiver.prototype):t.browser="Not a supported browser.",t}(e),r={browserDetails:n,commonShim:Q,extractVersion:d,disableLog:h,disableWarnings:u,sdp:q};switch(n.browser){case"chrome":if(!y||!y.shimPeerConnection||!t.shimChrome){f("Chrome shim is not included in this adapter release.");break}if(null===n.version){f("Chrome shim can not determine version, not shimming.");break}f("adapter.js shimming chrome."),r.browserShim=y,eo(e,n),ea(e,n),y.shimGetUserMedia(e,n),y.shimMediaStream(e,n),y.shimPeerConnection(e,n),y.shimOnTrack(e,n),y.shimAddTrackRemoveTrack(e,n),y.shimGetSendersWithDtmf(e,n),y.shimSenderReceiverGetStats(e,n),y.fixNegotiationNeeded(e,n),ee(e,n),et(e,n),ei(e,n),en(e,n),er(e,n),es(e,n);break;case"firefox":if(!E||!E.shimPeerConnection||!t.shimFirefox){f("Firefox shim is not included in this adapter release.");break}f("adapter.js shimming firefox."),r.browserShim=E,eo(e,n),ea(e,n),E.shimGetUserMedia(e,n),E.shimPeerConnection(e,n),E.shimOnTrack(e,n),E.shimRemoveStream(e,n),E.shimSenderGetStats(e,n),E.shimReceiverGetStats(e,n),E.shimRTCDataChannel(e,n),E.shimAddTransceiver(e,n),E.shimGetParameters(e,n),E.shimCreateOffer(e,n),E.shimCreateAnswer(e,n),ee(e,n),ei(e,n),en(e,n),er(e,n);break;case"safari":if(!z||!t.shimSafari){f("Safari shim is not included in this adapter release.");break}f("adapter.js shimming safari."),r.browserShim=z,eo(e,n),ea(e,n),z.shimRTCIceServerUrls(e,n),z.shimCreateOfferLegacy(e,n),z.shimCallbacksAPI(e,n),z.shimLocalStreamsAPI(e,n),z.shimRemoteStreamsAPI(e,n),z.shimTrackEventTransceiver(e,n),z.shimGetUserMedia(e,n),z.shimAudioContext(e,n),ee(e,n),et(e,n),en(e,n),er(e,n),es(e,n);break;default:f("Unsupported browser!")}return r}({window:"undefined"==typeof window?void 0:window}),ep=ec.default||ec,ed=new class{isWebRTCSupported(){return"undefined"!=typeof RTCPeerConnection}isBrowserSupported(){let e=this.getBrowser(),t=this.getVersion();return!!this.supportedBrowsers.includes(e)&&("chrome"===e?t>=this.minChromeVersion:"firefox"===e?t>=this.minFirefoxVersion:"safari"===e&&!this.isIOS&&t>=this.minSafariVersion)}getBrowser(){return ep.browserDetails.browser}getVersion(){return ep.browserDetails.version||0}isUnifiedPlanSupported(){let e,t=this.getBrowser(),n=ep.browserDetails.version||0;if("chrome"===t&&n<this.minChromeVersion)return!1;if("firefox"===t&&n>=this.minFirefoxVersion)return!0;if(!window.RTCRtpTransceiver||!("currentDirection"in RTCRtpTransceiver.prototype))return!1;let r=!1;try{(e=new RTCPeerConnection).addTransceiver("audio"),r=!0}catch(e){}finally{e&&e.close()}return r}toString(){return`Supports:
+    browser:${this.getBrowser()}
+    version:${this.getVersion()}
+    isIOS:${this.isIOS}
+    isWebRTCSupported:${this.isWebRTCSupported()}
+    isBrowserSupported:${this.isBrowserSupported()}
+    isUnifiedPlanSupported:${this.isUnifiedPlanSupported()}`}constructor(){this.isIOS="undefined"!=typeof navigator&&["iPad","iPhone","iPod"].includes(navigator.platform),this.supportedBrowsers=["firefox","chrome","safari"],this.minFirefoxVersion=59,this.minChromeVersion=72,this.minSafariVersion=605}},el=e=>!e||/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/.test(e),eh=()=>Math.random().toString(36).slice(2),eu={iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:["turn:eu-0.turn.peerjs.com:3478","turn:us-0.turn.peerjs.com:3478"],username:"peerjs",credential:"peerjsp"}],sdpSemantics:"unified-plan"},ef=new class extends n{noop(){}blobToArrayBuffer(e,t){let n=new FileReader;return n.onload=function(e){e.target&&t(e.target.result)},n.readAsArrayBuffer(e),n}binaryStringToArrayBuffer(e){let t=new Uint8Array(e.length);for(let n=0;n<e.length;n++)t[n]=255&e.charCodeAt(n);return t.buffer}isSecure(){return"https:"===location.protocol}constructor(...e){super(...e),this.CLOUD_HOST="0.peerjs.com",this.CLOUD_PORT=443,this.chunkedBrowsers={Chrome:1,chrome:1},this.defaultConfig=eu,this.browser=ed.getBrowser(),this.browserVersion=ed.getVersion(),this.pack=s,this.unpack=i,this.supports=function(){let e,t={browser:ed.isBrowserSupported(),webRTC:ed.isWebRTCSupported(),audioVideo:!1,data:!1,binaryBlob:!1,reliable:!1};if(!t.webRTC)return t;try{let n;e=new RTCPeerConnection(eu),t.audioVideo=!0;try{n=e.createDataChannel("_PEERJSTEST",{ordered:!0}),t.data=!0,t.reliable=!!n.ordered;try{n.binaryType="blob",t.binaryBlob=!ed.isIOS}catch(e){}}catch(e){}finally{n&&n.close()}}catch(e){}finally{e&&e.close()}return t}(),this.validateId=el,this.randomToken=eh}};"use strict";var em=new class{get logLevel(){return this._logLevel}set logLevel(e){this._logLevel=e}log(...e){this._logLevel>=3&&this._print(3,...e)}warn(...e){this._logLevel>=2&&this._print(2,...e)}error(...e){this._logLevel>=1&&this._print(1,...e)}setLogFunction(e){this._print=e}_print(e,...t){let n=["PeerJS: ",...t];for(let e in n)n[e]instanceof Error&&(n[e]="("+n[e].name+") "+n[e].message);e>=3?console.log(...n):e>=2?console.warn("WARNING",...n):e>=1&&console.error("ERROR",...n)}constructor(){this._logLevel=0}},e_={},eg=Object.prototype.hasOwnProperty,ey="~";function eC(){}function ev(e,t,n){this.fn=e,this.context=t,this.once=n||!1}function eb(e,t,n,r,i){if("function"!=typeof n)throw TypeError("The listener must be a function");var s=new ev(n,r||e,i),o=ey?ey+t:t;return e._events[o]?e._events[o].fn?e._events[o]=[e._events[o],s]:e._events[o].push(s):(e._events[o]=s,e._eventsCount++),e}function eT(e,t){0==--e._eventsCount?e._events=new eC:delete e._events[t]}function eS(){this._events=new eC,this._eventsCount=0}Object.create&&(eC.prototype=Object.create(null),new eC().__proto__||(ey=!1)),eS.prototype.eventNames=function(){var e,t,n=[];if(0===this._eventsCount)return n;for(t in e=this._events)eg.call(e,t)&&n.push(ey?t.slice(1):t);return Object.getOwnPropertySymbols?n.concat(Object.getOwnPropertySymbols(e)):n},eS.prototype.listeners=function(e){var t=ey?ey+e:e,n=this._events[t];if(!n)return[];if(n.fn)return[n.fn];for(var r=0,i=n.length,s=Array(i);r<i;r++)s[r]=n[r].fn;return s},eS.prototype.listenerCount=function(e){var t=ey?ey+e:e,n=this._events[t];return n?n.fn?1:n.length:0},eS.prototype.emit=function(e,t,n,r,i,s){var o=ey?ey+e:e;if(!this._events[o])return!1;var a,c,p=this._events[o],d=arguments.length;if(p.fn){switch(p.once&&this.removeListener(e,p.fn,void 0,!0),d){case 1:return p.fn.call(p.context),!0;case 2:return p.fn.call(p.context,t),!0;case 3:return p.fn.call(p.context,t,n),!0;case 4:return p.fn.call(p.context,t,n,r),!0;case 5:return p.fn.call(p.context,t,n,r,i),!0;case 6:return p.fn.call(p.context,t,n,r,i,s),!0}for(c=1,a=Array(d-1);c<d;c++)a[c-1]=arguments[c];p.fn.apply(p.context,a)}else{var l,h=p.length;for(c=0;c<h;c++)switch(p[c].once&&this.removeListener(e,p[c].fn,void 0,!0),d){case 1:p[c].fn.call(p[c].context);break;case 2:p[c].fn.call(p[c].context,t);break;case 3:p[c].fn.call(p[c].context,t,n);break;case 4:p[c].fn.call(p[c].context,t,n,r);break;default:if(!a)for(l=1,a=Array(d-1);l<d;l++)a[l-1]=arguments[l];p[c].fn.apply(p[c].context,a)}}return!0},eS.prototype.on=function(e,t,n){return eb(this,e,t,n,!1)},eS.prototype.once=function(e,t,n){return eb(this,e,t,n,!0)},eS.prototype.removeListener=function(e,t,n,r){var i=ey?ey+e:e;if(!this._events[i])return this;if(!t)return eT(this,i),this;var s=this._events[i];if(s.fn)s.fn!==t||r&&!s.once||n&&s.context!==n||eT(this,i);else{for(var o=0,a=[],c=s.length;o<c;o++)(s[o].fn!==t||r&&!s[o].once||n&&s[o].context!==n)&&a.push(s[o]);a.length?this._events[i]=1===a.length?a[0]:a:eT(this,i)}return this},eS.prototype.removeAllListeners=function(e){var t;return e?(t=ey?ey+e:e,this._events[t]&&eT(this,t)):(this._events=new eC,this._eventsCount=0),this},eS.prototype.off=eS.prototype.removeListener,eS.prototype.addListener=eS.prototype.on,eS.prefixed=ey,eS.EventEmitter=eS,e_=eS;var ek=function(e){return e.Data="data",e.Media="media",e}({}),eR=function(e){return e.BrowserIncompatible="browser-incompatible",e.Disconnected="disconnected",e.InvalidID="invalid-id",e.InvalidKey="invalid-key",e.Network="network",e.PeerUnavailable="peer-unavailable",e.SslUnavailable="ssl-unavailable",e.ServerError="server-error",e.SocketError="socket-error",e.SocketClosed="socket-closed",e.UnavailableID="unavailable-id",e.WebRTC="webrtc",e}({}),eP=function(e){return e.NegotiationFailed="negotiation-failed",e.ConnectionClosed="connection-closed",e}({}),ew=function(e){return e.NotOpenYet="not-open-yet",e.MessageToBig="message-too-big",e}({}),eE=function(e){return e.Binary="binary",e.BinaryUTF8="binary-utf8",e.JSON="json",e.None="raw",e}({}),ex=function(e){return e.Message="message",e.Disconnected="disconnected",e.Error="error",e.Close="close",e}({}),eD=function(e){return e.Heartbeat="HEARTBEAT",e.Candidate="CANDIDATE",e.Offer="OFFER",e.Answer="ANSWER",e.Open="OPEN",e.Error="ERROR",e.IdTaken="ID-TAKEN",e.InvalidKey="INVALID-KEY",e.Leave="LEAVE",e.Expire="EXPIRE",e}({});let eI="1.5.5";class eM extends e_.EventEmitter{start(e,t){this._id=e;let n=`${this._baseUrl}&id=${e}&token=${t}`;!this._socket&&this._disconnected&&(this._socket=new WebSocket(n+"&version="+eI),this._disconnected=!1,this._socket.onmessage=e=>{let t;try{t=JSON.parse(e.data),em.log("Server message received:",t)}catch(t){em.log("Invalid server message",e.data);return}this.emit(ex.Message,t)},this._socket.onclose=e=>{this._disconnected||(em.log("Socket closed.",e),this._cleanup(),this._disconnected=!0,this.emit(ex.Disconnected))},this._socket.onopen=()=>{this._disconnected||(this._sendQueuedMessages(),em.log("Socket open"),this._scheduleHeartbeat())})}_scheduleHeartbeat(){this._wsPingTimer=setTimeout(()=>{this._sendHeartbeat()},this.pingInterval)}_sendHeartbeat(){if(!this._wsOpen())return void em.log("Cannot send heartbeat, because socket closed");let e=JSON.stringify({type:eD.Heartbeat});this._socket.send(e),this._scheduleHeartbeat()}_wsOpen(){return!!this._socket&&1===this._socket.readyState}_sendQueuedMessages(){let e=[...this._messagesQueue];for(let t of(this._messagesQueue=[],e))this.send(t)}send(e){if(this._disconnected)return;if(!this._id)return void this._messagesQueue.push(e);if(!e.type)return void this.emit(ex.Error,"Invalid message");if(!this._wsOpen())return;let t=JSON.stringify(e);this._socket.send(t)}close(){this._disconnected||(this._cleanup(),this._disconnected=!0)}_cleanup(){this._socket&&(this._socket.onopen=this._socket.onmessage=this._socket.onclose=null,this._socket.close(),this._socket=void 0),clearTimeout(this._wsPingTimer)}constructor(e,t,n,r,i,s=5e3){super(),this.pingInterval=s,this._disconnected=!0,this._messagesQueue=[],this._baseUrl=(e?"wss://":"ws://")+t+":"+n+r+"peerjs?key="+i}}class eO{startConnection(e){let t=this._startPeerConnection();if(this.connection.peerConnection=t,this.connection.type===ek.Media&&e._stream&&this._addTracksToConnection(e._stream,t),e.originator){let n=this.connection,r={ordered:!!e.reliable},i=t.createDataChannel(n.label,r);n._initializeDataChannel(i),this._makeOffer()}else this.handleSDP("OFFER",e.sdp)}_startPeerConnection(){em.log("Creating RTCPeerConnection.");let e=new RTCPeerConnection(this.connection.provider.options.config);return this._setupListeners(e),e}_setupListeners(e){let t=this.connection.peer,n=this.connection.connectionId,r=this.connection.type,i=this.connection.provider;em.log("Listening for ICE candidates."),e.onicecandidate=e=>{e.candidate&&e.candidate.candidate&&(em.log(`Received ICE candidates for ${t}:`,e.candidate),i.socket.send({type:eD.Candidate,payload:{candidate:e.candidate,type:r,connectionId:n},dst:t}))},e.oniceconnectionstatechange=()=>{switch(e.iceConnectionState){case"failed":em.log("iceConnectionState is failed, closing connections to "+t),this.connection.emitError(eP.NegotiationFailed,"Negotiation of connection to "+t+" failed."),this.connection.close();break;case"closed":em.log("iceConnectionState is closed, closing connections to "+t),this.connection.emitError(eP.ConnectionClosed,"Connection to "+t+" closed."),this.connection.close();break;case"disconnected":em.log("iceConnectionState changed to disconnected on the connection with "+t);break;case"completed":e.onicecandidate=()=>{}}this.connection.emit("iceStateChanged",e.iceConnectionState)},em.log("Listening for data channel"),e.ondatachannel=e=>{em.log("Received data channel");let r=e.channel;i.getConnection(t,n)._initializeDataChannel(r)},em.log("Listening for remote stream"),e.ontrack=e=>{em.log("Received remote stream");let r=e.streams[0],s=i.getConnection(t,n);s.type===ek.Media&&this._addStreamToMediaConnection(r,s)}}cleanup(){em.log("Cleaning up PeerConnection to "+this.connection.peer);let e=this.connection.peerConnection;if(!e)return;this.connection.peerConnection=null,e.onicecandidate=e.oniceconnectionstatechange=e.ondatachannel=e.ontrack=()=>{};let t="closed"!==e.signalingState,n=!1,r=this.connection.dataChannel;r&&(n=!!r.readyState&&"closed"!==r.readyState),(t||n)&&e.close()}async _makeOffer(){let e=this.connection.peerConnection,t=this.connection.provider;try{let n=await e.createOffer(this.connection.options.constraints);em.log("Created offer."),this.connection.options.sdpTransform&&"function"==typeof this.connection.options.sdpTransform&&(n.sdp=this.connection.options.sdpTransform(n.sdp)||n.sdp);try{await e.setLocalDescription(n),em.log("Set localDescription:",n,`for:${this.connection.peer}`);let r={sdp:n,type:this.connection.type,connectionId:this.connection.connectionId,metadata:this.connection.metadata};if(this.connection.type===ek.Data){let e=this.connection;r={...r,label:e.label,reliable:e.reliable,serialization:e.serialization}}t.socket.send({type:eD.Offer,payload:r,dst:this.connection.peer})}catch(e){"OperationError: Failed to set local offer sdp: Called in wrong state: kHaveRemoteOffer"!=e&&(t.emitError(eR.WebRTC,e),em.log("Failed to setLocalDescription, ",e))}}catch(e){t.emitError(eR.WebRTC,e),em.log("Failed to createOffer, ",e)}}async _makeAnswer(){let e=this.connection.peerConnection,t=this.connection.provider;try{let n=await e.createAnswer();em.log("Created answer."),this.connection.options.sdpTransform&&"function"==typeof this.connection.options.sdpTransform&&(n.sdp=this.connection.options.sdpTransform(n.sdp)||n.sdp);try{await e.setLocalDescription(n),em.log("Set localDescription:",n,`for:${this.connection.peer}`),t.socket.send({type:eD.Answer,payload:{sdp:n,type:this.connection.type,connectionId:this.connection.connectionId},dst:this.connection.peer})}catch(e){t.emitError(eR.WebRTC,e),em.log("Failed to setLocalDescription, ",e)}}catch(e){t.emitError(eR.WebRTC,e),em.log("Failed to create answer, ",e)}}async handleSDP(e,t){t=new RTCSessionDescription(t);let n=this.connection.peerConnection,r=this.connection.provider;em.log("Setting remote description",t);try{await n.setRemoteDescription(t),em.log(`Set remoteDescription:${e} for:${this.connection.peer}`),"OFFER"===e&&await this._makeAnswer()}catch(e){r.emitError(eR.WebRTC,e),em.log("Failed to setRemoteDescription, ",e)}}async handleCandidate(e){em.log("handleCandidate:",e);try{await this.connection.peerConnection.addIceCandidate(e),em.log(`Added ICE candidate for:${this.connection.peer}`)}catch(e){this.connection.provider.emitError(eR.WebRTC,e),em.log("Failed to handleCandidate, ",e)}}_addTracksToConnection(e,t){if(em.log(`add tracks from stream ${e.id} to peer connection`),!t.addTrack)return em.error("Your browser does't support RTCPeerConnection#addTrack. Ignored.");e.getTracks().forEach(n=>{t.addTrack(n,e)})}_addStreamToMediaConnection(e,t){em.log(`add stream ${e.id} to media connection ${t.connectionId}`),t.addStream(e)}constructor(e){this.connection=e}}class eL extends e_.EventEmitter{emitError(e,t){em.error("Error:",t),this.emit("error",new eA(`${e}`,t))}}class eA extends Error{constructor(e,t){"string"==typeof t?super(t):(super(),Object.assign(this,t)),this.type=e}}class ej extends eL{get open(){return this._open}constructor(e,t,n){super(),this.peer=e,this.provider=t,this.options=n,this._open=!1,this.metadata=n.metadata}}class eB extends ej{get type(){return ek.Media}get localStream(){return this._localStream}get remoteStream(){return this._remoteStream}_initializeDataChannel(e){this.dataChannel=e,this.dataChannel.onopen=()=>{em.log(`DC#${this.connectionId} dc connection success`),this.emit("willCloseOnRemote")},this.dataChannel.onclose=()=>{em.log(`DC#${this.connectionId} dc closed for:`,this.peer),this.close()}}addStream(e){em.log("Receiving stream",e),this._remoteStream=e,super.emit("stream",e)}handleMessage(e){let t=e.type,n=e.payload;switch(e.type){case eD.Answer:this._negotiator.handleSDP(t,n.sdp),this._open=!0;break;case eD.Candidate:this._negotiator.handleCandidate(n.candidate);break;default:em.warn(`Unrecognized message type:${t} from peer:${this.peer}`)}}answer(e,t={}){if(this._localStream)return void em.warn("Local stream already exists on this MediaConnection. Are you answering a call twice?");for(let n of(this._localStream=e,t&&t.sdpTransform&&(this.options.sdpTransform=t.sdpTransform),this._negotiator.startConnection({...this.options._payload,_stream:e}),this.provider._getMessages(this.connectionId)))this.handleMessage(n);this._open=!0}close(){this._negotiator&&(this._negotiator.cleanup(),this._negotiator=null),this._localStream=null,this._remoteStream=null,this.provider&&(this.provider._removeConnection(this),this.provider=null),this.options&&this.options._stream&&(this.options._stream=null),this.open&&(this._open=!1,super.emit("close"))}constructor(e,t,n){super(e,t,n),this._localStream=this.options._stream,this.connectionId=this.options.connectionId||eB.ID_PREFIX+ef.randomToken(),this._negotiator=new eO(this),this._localStream&&this._negotiator.startConnection({_stream:this._localStream,originator:!0})}}eB.ID_PREFIX="mc_";class eU{_buildRequest(e){let t=this._options.secure?"https":"http",{host:n,port:r,path:i,key:s}=this._options,o=new URL(`${t}://${n}:${r}${i}${s}/${e}`);return o.searchParams.set("ts",`${Date.now()}${Math.random()}`),o.searchParams.set("version",eI),fetch(o.href,{referrerPolicy:this._options.referrerPolicy})}async retrieveId(){try{let e=await this._buildRequest("id");if(200!==e.status)throw Error(`Error. Status:${e.status}`);return e.text()}catch(t){em.error("Error retrieving ID",t);let e="";throw"/"===this._options.path&&this._options.host!==ef.CLOUD_HOST&&(e=" If you passed in a `path` to your self-hosted PeerServer, you'll also need to pass in that same path when creating a new Peer."),Error("Could not get an ID from the server."+e)}}async listAllPeers(){try{let e=await this._buildRequest("peers");if(200!==e.status){if(401===e.status){let e="";throw e=this._options.host===ef.CLOUD_HOST?"It looks like you're using the cloud server. You can email team@peerjs.com to enable peer listing for your API key.":"You need to enable `allow_discovery` on your self-hosted PeerServer to use this feature.",Error("It doesn't look like you have permission to list peers IDs. "+e)}throw Error(`Error. Status:${e.status}`)}return e.json()}catch(e){throw em.error("Error retrieving list peers",e),Error("Could not get list peers from the server."+e)}}constructor(e){this._options=e}}class eF extends ej{get type(){return ek.Data}_initializeDataChannel(e){this.dataChannel=e,this.dataChannel.onopen=()=>{em.log(`DC#${this.connectionId} dc connection success`),this._open=!0,this.emit("open")},this.dataChannel.onmessage=e=>{em.log(`DC#${this.connectionId} dc onmessage:`,e.data)},this.dataChannel.onclose=()=>{em.log(`DC#${this.connectionId} dc closed for:`,this.peer),this.close()}}close(e){if(e?.flush)return void this.send({__peerData:{type:"close"}});this._negotiator&&(this._negotiator.cleanup(),this._negotiator=null),this.provider&&(this.provider._removeConnection(this),this.provider=null),this.dataChannel&&(this.dataChannel.onopen=null,this.dataChannel.onmessage=null,this.dataChannel.onclose=null,this.dataChannel=null),this.open&&(this._open=!1,super.emit("close"))}send(e,t=!1){return this.open?this._send(e,t):void this.emitError(ew.NotOpenYet,"Connection is not open. You should listen for the `open` event before sending messages.")}async handleMessage(e){let t=e.payload;switch(e.type){case eD.Answer:await this._negotiator.handleSDP(e.type,t.sdp);break;case eD.Candidate:await this._negotiator.handleCandidate(t.candidate);break;default:em.warn("Unrecognized message type:",e.type,"from peer:",this.peer)}}constructor(e,t,n){super(e,t,n),this.connectionId=this.options.connectionId||eF.ID_PREFIX+eh(),this.label=this.options.label||this.connectionId,this.reliable=!!this.options.reliable,this._negotiator=new eO(this),this._negotiator.startConnection(this.options._payload||{originator:!0,reliable:this.reliable})}}eF.ID_PREFIX="dc_",eF.MAX_BUFFERED_AMOUNT=8388608;class eN extends eF{get bufferSize(){return this._bufferSize}_initializeDataChannel(e){super._initializeDataChannel(e),this.dataChannel.binaryType="arraybuffer",this.dataChannel.addEventListener("message",e=>this._handleDataMessage(e))}_bufferedSend(e){(this._buffering||!this._trySend(e))&&(this._buffer.push(e),this._bufferSize=this._buffer.length)}_trySend(e){if(!this.open)return!1;if(this.dataChannel.bufferedAmount>eF.MAX_BUFFERED_AMOUNT)return this._buffering=!0,setTimeout(()=>{this._buffering=!1,this._tryBuffer()},50),!1;try{this.dataChannel.send(e)}catch(e){return em.error(`DC#:${this.connectionId} Error when sending:`,e),this._buffering=!0,this.close(),!1}return!0}_tryBuffer(){if(!this.open||0===this._buffer.length)return;let e=this._buffer[0];this._trySend(e)&&(this._buffer.shift(),this._bufferSize=this._buffer.length,this._tryBuffer())}close(e){if(e?.flush)return void this.send({__peerData:{type:"close"}});this._buffer=[],this._bufferSize=0,super.close()}constructor(...e){super(...e),this._buffer=[],this._bufferSize=0,this._buffering=!1}}class ez extends eN{close(e){super.close(e),this._chunkedData={}}_handleDataMessage({data:e}){let t=i(e),n=t.__peerData;if(n)return"close"===n.type?void this.close():void this._handleChunk(t);this.emit("data",t)}_handleChunk(e){let t=e.__peerData,n=this._chunkedData[t]||{data:[],count:0,total:e.total};if(n.data[e.n]=new Uint8Array(e.data),n.count++,this._chunkedData[t]=n,n.total===n.count){delete this._chunkedData[t];let e=function(e){let t=0;for(let n of e)t+=n.byteLength;let n=new Uint8Array(t),r=0;for(let t of e)n.set(t,r),r+=t.byteLength;return n}(n.data);this._handleDataMessage({data:e})}}_send(e,t){let n=s(e);return n instanceof Promise?this._send_blob(n):!t&&n.byteLength>this.chunker.chunkedMTU?void this._sendChunks(n):void this._bufferedSend(n)}async _send_blob(e){let t=await e;if(t.byteLength>this.chunker.chunkedMTU)return void this._sendChunks(t);this._bufferedSend(t)}_sendChunks(e){let t=this.chunker.chunk(e);for(let e of(em.log(`DC#${this.connectionId} Try to send ${t.length} chunks...`),t))this.send(e,!0)}constructor(e,t,r){super(e,t,r),this.chunker=new n,this.serialization=eE.Binary,this._chunkedData={}}}class e$ extends eN{_handleDataMessage({data:e}){super.emit("data",e)}_send(e,t){this._bufferedSend(e)}constructor(...e){super(...e),this.serialization=eE.None}}class eV extends eN{_handleDataMessage({data:e}){let t=this.parse(this.decoder.decode(e)),n=t.__peerData;if(n&&"close"===n.type)return void this.close();this.emit("data",t)}_send(e,t){let n=this.encoder.encode(this.stringify(e));if(n.byteLength>=ef.chunkedMTU)return void this.emitError(ew.MessageToBig,"Message too big for JSON channel");this._bufferedSend(n)}constructor(...e){super(...e),this.serialization=eE.JSON,this.encoder=new TextEncoder,this.decoder=new TextDecoder,this.stringify=JSON.stringify,this.parse=JSON.parse}}class eG extends eL{get id(){return this._id}get options(){return this._options}get open(){return this._open}get socket(){return this._socket}get connections(){let e=Object.create(null);for(let[t,n]of this._connections)e[t]=n;return e}get destroyed(){return this._destroyed}get disconnected(){return this._disconnected}_createServerConnection(){let e=new eM(this._options.secure,this._options.host,this._options.port,this._options.path,this._options.key,this._options.pingInterval);return e.on(ex.Message,e=>{this._handleMessage(e)}),e.on(ex.Error,e=>{this._abort(eR.SocketError,e)}),e.on(ex.Disconnected,()=>{this.disconnected||(this.emitError(eR.Network,"Lost connection to server."),this.disconnect())}),e.on(ex.Close,()=>{this.disconnected||this._abort(eR.SocketClosed,"Underlying socket is already closed.")}),e}_initialize(e){this._id=e,this.socket.start(e,this._options.token)}_handleMessage(e){let t=e.type,n=e.payload,r=e.src;switch(t){case eD.Open:this._lastServerId=this.id,this._open=!0,this.emit("open",this.id);break;case eD.Error:this._abort(eR.ServerError,n.msg);break;case eD.IdTaken:this._abort(eR.UnavailableID,`ID "${this.id}" is taken`);break;case eD.InvalidKey:this._abort(eR.InvalidKey,`API KEY "${this._options.key}" is invalid`);break;case eD.Leave:em.log(`Received leave message from ${r}`),this._cleanupPeer(r),this._connections.delete(r);break;case eD.Expire:this.emitError(eR.PeerUnavailable,`Could not connect to peer ${r}`);break;case eD.Offer:{let e=n.connectionId,t=this.getConnection(r,e);if(t&&(t.close(),em.warn(`Offer received for existing Connection ID:${e}`)),n.type===ek.Media){let i=new eB(r,this,{connectionId:e,_payload:n,metadata:n.metadata});t=i,this._addConnection(r,t),this.emit("call",i)}else{if(n.type!==ek.Data)return void em.warn(`Received malformed connection type:${n.type}`);let i=new this._serializers[n.serialization](r,this,{connectionId:e,_payload:n,metadata:n.metadata,label:n.label,serialization:n.serialization,reliable:n.reliable});t=i,this._addConnection(r,t),this.emit("connection",i)}for(let n of this._getMessages(e))t.handleMessage(n);break}default:{if(!n)return void em.warn(`You received a malformed message from ${r} of type ${t}`);let i=n.connectionId,s=this.getConnection(r,i);s&&s.peerConnection?s.handleMessage(e):i?this._storeMessage(i,e):em.warn("You received an unrecognized message:",e)}}}_storeMessage(e,t){this._lostMessages.has(e)||this._lostMessages.set(e,[]),this._lostMessages.get(e).push(t)}_getMessages(e){let t=this._lostMessages.get(e);return t?(this._lostMessages.delete(e),t):[]}connect(e,t={}){if(t={serialization:"default",...t},this.disconnected){em.warn("You cannot connect to a new Peer because you called .disconnect() on this Peer and ended your connection with the server. You can create a new Peer to reconnect, or call reconnect on this peer if you believe its ID to still be available."),this.emitError(eR.Disconnected,"Cannot connect to new Peer after disconnecting from server.");return}let n=new this._serializers[t.serialization](e,this,t);return this._addConnection(e,n),n}call(e,t,n={}){if(this.disconnected){em.warn("You cannot connect to a new Peer because you called .disconnect() on this Peer and ended your connection with the server. You can create a new Peer to reconnect."),this.emitError(eR.Disconnected,"Cannot connect to new Peer after disconnecting from server.");return}if(!t)return void em.error("To call a peer, you must provide a stream from your browser's `getUserMedia`.");let r=new eB(e,this,{...n,_stream:t});return this._addConnection(e,r),r}_addConnection(e,t){em.log(`add connection ${t.type}:${t.connectionId} to peerId:${e}`),this._connections.has(e)||this._connections.set(e,[]),this._connections.get(e).push(t)}_removeConnection(e){let t=this._connections.get(e.peer);if(t){let n=t.indexOf(e);-1!==n&&t.splice(n,1)}this._lostMessages.delete(e.connectionId)}getConnection(e,t){let n=this._connections.get(e);if(!n)return null;for(let e of n)if(e.connectionId===t)return e;return null}_delayedAbort(e,t){setTimeout(()=>{this._abort(e,t)},0)}_abort(e,t){em.error("Aborting!"),this.emitError(e,t),this._lastServerId?this.disconnect():this.destroy()}destroy(){this.destroyed||(em.log(`Destroy peer with ID:${this.id}`),this.disconnect(),this._cleanup(),this._destroyed=!0,this.emit("close"))}_cleanup(){for(let e of this._connections.keys())this._cleanupPeer(e),this._connections.delete(e);this.socket.removeAllListeners()}_cleanupPeer(e){let t=this._connections.get(e);if(t)for(let e of t)e.close()}disconnect(){if(this.disconnected)return;let e=this.id;em.log(`Disconnect peer with ID:${e}`),this._disconnected=!0,this._open=!1,this.socket.close(),this._lastServerId=e,this._id=null,this.emit("disconnected",e)}reconnect(){if(this.disconnected&&!this.destroyed)em.log(`Attempting reconnection to server with ID ${this._lastServerId}`),this._disconnected=!1,this._initialize(this._lastServerId);else if(this.destroyed)throw Error("This peer cannot reconnect to the server. It has already been destroyed.");else if(this.disconnected||this.open)throw Error(`Peer ${this.id} cannot reconnect because it is not disconnected from the server!`);else em.error("In a hurry? We're still trying to make the initial connection!")}listAllPeers(e=e=>{}){this._api.listAllPeers().then(t=>e(t)).catch(e=>this._abort(eR.ServerError,e))}constructor(e,t){let n;if(super(),this._serializers={raw:e$,json:eV,binary:ez,"binary-utf8":ez,default:ez},this._id=null,this._lastServerId=null,this._destroyed=!1,this._disconnected=!1,this._open=!1,this._connections=new Map,this._lostMessages=new Map,e&&e.constructor==Object?t=e:e&&(n=e.toString()),t={debug:0,host:ef.CLOUD_HOST,port:ef.CLOUD_PORT,path:"/",key:eG.DEFAULT_KEY,token:ef.randomToken(),config:ef.defaultConfig,referrerPolicy:"strict-origin-when-cross-origin",serializers:{},...t},this._options=t,this._serializers={...this._serializers,...this.options.serializers},"/"===this._options.host&&(this._options.host=window.location.hostname),this._options.path&&("/"!==this._options.path[0]&&(this._options.path="/"+this._options.path),"/"!==this._options.path[this._options.path.length-1]&&(this._options.path+="/")),void 0===this._options.secure&&this._options.host!==ef.CLOUD_HOST?this._options.secure=ef.isSecure():this._options.host==ef.CLOUD_HOST&&(this._options.secure=!0),this._options.logFunction&&em.setLogFunction(this._options.logFunction),em.logLevel=this._options.debug||0,this._api=new eU(t),this._socket=this._createServerConnection(),!ef.supports.audioVideo&&!ef.supports.data)return void this._delayedAbort(eR.BrowserIncompatible,"The current browser does not support WebRTC");if(n&&!ef.validateId(n))return void this._delayedAbort(eR.InvalidID,`ID "${n}" is invalid`);n?this._initialize(n):this._api.retrieveId().then(e=>this._initialize(e)).catch(e=>this._abort(eR.ServerError,e))}}eG.DEFAULT_KEY="peerjs",window.peerjs={Peer:eG,util:ef},window.Peer=eG})();
+
+
+</script>
 <script>
 "use strict";
 /* ============================================================
@@ -833,7 +1019,8 @@ const State = {
          ai:[false,false,false,false,false], aiOn:false, aiMode:0,  // 0 humans · 1 CPU · 2 CPU*
          variant:"simple",           // "arrows" = full rules, "simple" = grains only
          lost:[0,0,0,0,0],           // lost[p] = grains of player p that have fallen off the grid
-         ownCost:false,              // rule switch: your own grains that YOUR avalanche pushes out cost a point each (own −1) or nothing (own 0)
+         ownCost:0,                  // the own rule: each of your own grains that YOUR avalanche pushes out costs a point with this probability (0, .2, .5 or 1)
+         ownRngS:1,                  // its own seeded generator, dealt at every new game, so online devices roll the same dice
          scored:[0,0,0,0,0],         // scored[p] = points p has earned, i.e. other players' grains
                                      //   pushed off the grid by avalanches p himself started
          mover:0,                    // whose move the avalanche now running belongs to
@@ -1077,7 +1264,7 @@ function toppleSite(k){
           /* the point goes to whoever started this avalanche, and only if the grain is
              somebody else's — nobody scores off a grain another player pushed out */
           if(G.mover && ow!==G.mover) G.scored[G.mover]++;
-          else if(G.mover && ow===G.mover && G.ownCost) G.scored[G.mover]--; }   // own folder out: −1
+          else if(G.mover && ow===G.mover && G.ownCost>0 && ownRoll()<G.ownCost) G.scored[G.mover]--; }   // own folder out: −1 with probability ownCost
         else G.greyLost++; }
       if(slow) spawnDepart(i,j,ddx[d],ddy[d],ow);
     }
@@ -1327,6 +1514,7 @@ function newGame(startMode){
     seedCritical(undefined, gameTransientDrops(State.L*State.L));
   ownResync(true);                              // every pre-existing grain is grey / nobody's
   G.greyStart=greyOnBoard();                    // the X game ends when all of these are gone
+  G.ownRngS=(Math.random()*4294967295)>>>0;     // the dice of the own rule, dealt with the board (same on every online device)
   if(State.grassberger) gbInitStacks();
   State.sizes=[]; State.grains=0; State.lastSize=0; State.maxSize=0;
   State.areas=[]; State.lins=[]; State.perims=[]; State.lefts=[]; avMemReset();
@@ -1391,7 +1579,11 @@ function gameStepWork(){
   const G=State.game;
   if(G.over) return;
   if(!G.animating){
-    if(G.ai[G.turn] && G.aiTimer>0){ G.aiTimer--; if(G.aiTimer===0) aiPlayTurn(); }
+    if(G.ai[G.turn] && G.aiTimer>0){ G.aiTimer--;
+      if(G.aiTimer===0 && !G.thinking){
+        G.thinking=true; setThinking(true);
+        setTimeout(()=>{ try{ aiPlayTurn(); } finally { G.thinking=false; setThinking(false); } }, 60);
+      } }
     return;
   }
   if(State.aval.running){
@@ -1570,10 +1762,13 @@ function oppCanWinNow(S1, p, myPts, greysLeft, drops, budget){
 }
 /* the move's worth under the GAME scoring: one point per folder of any OTHER player
    pushed off; the mover's own folders and the grey ones count nothing at all */
+const OWN_STEPS=[0,0.2,0.5,1];
+function ownRoll(){ const G=State.game; G.ownRngS=(Math.imul(G.ownRngS,1664525)+1013904223)>>>0; return G.ownRngS/4294967296; }
+function ownLabel(p){ return p>=1? "own 1" : p<=0? "own 0" : "own "+String(p).replace(/^0/,""); }
 function moveGain(p,lost){
   const G=State.game, P=G.players; let g=0;
   for(let q2=1;q2<=P;q2++) if(q2!==p) g+=lost[q2];
-  if(G.ownCost) g-=lost[p];                        // the mover's own folders out cost a point each
+  if(G.ownCost>0) g-=G.ownCost*lost[p];            // the mover's own folders out cost a point each with probability ownCost: expected loss
   return g;
 }
 /* gain-only shortcut: a drop on a sub-critical site cannot start an avalanche, so its
@@ -2515,6 +2710,12 @@ function aiChooseMoveHyperMulti(p, rounds){
 /* the ladder: CPU = one ply · CPU* = two plies (or the multiplayer round-robin) ·
    CPU** = two full rounds (four plies / two-round multi) · CPU*** = three full rounds
    (six plies, 2-player only) */
+function setThinking(on){
+  const ov=document.getElementById("thinkOv"); if(!ov) return;
+  const G=State.game, lvl=CPU_LABEL[G.aiMode]||"CPU";
+  const t=document.getElementById("thinkTxt"); if(t) t.textContent=lvl+" is thinking\u2026"+(G.aiMode>=5? " (this can take a while)" : "");
+  ov.classList.toggle("on", !!on);
+}
 function aiPlayTurn(){
   const G=State.game; if(!G.on||G.over||G.animating) return;
   const p=G.turn;
@@ -4578,7 +4779,7 @@ function renderAll(){
   updateStats();
 }
 function setAnalysisPanels(show){
-  for(const id of ["plotBar","statRow","statRow2","cardA","cardS"]){
+  for(const id of ["plotBar","statRow","statRow2","statRow3","cardA","cardS"]){
     const el=document.getElementById(id); if(el) el.style.display = show ? "" : "none";
   }
 }
@@ -4844,7 +5045,7 @@ function syncWordUI(){
      +"boundary, whoever pushed them. Your <b>score</b> counts the "+many+" belonging to <i>other "
      +"players</i> that <b>your own</b> avalanches have pushed off &mdash; a "+one+" that somebody else "
      +"pushes out earns you nothing, so with 3 or 4 players each point has exactly one owner"
-     +(State.game.ownCost? " &mdash; and under <b>own &minus;1</b> every one of <b>your own</b> "+many+" that your avalanche throws out <b>costs you a point</b> (the win target is then 5)."
+     +(State.game.ownCost>0? " &mdash; and under <b>"+ownLabel(State.game.ownCost)+"</b> every one of <b>your own</b> "+many+" that your avalanche throws out <b>costs you a point with probability "+State.game.ownCost+"</b>"+(State.game.ownCost>=0.5? " (the win target is then 5)":"")+"."
                           : "; under <b>own 0</b> your own "+many+" going out cost nothing.")
      +" Grey "
      +many+" that were on the lattice before the game count for nobody. Setting <b>win</b> to its "
@@ -4853,7 +5054,7 @@ function syncWordUI(){
      +"game switches to <b>&#9889; sudden death</b>: play continues, and the first player to take the "
      +"outright lead wins on the spot.");
 }
-function G_HINT(){ return "Tap a free site or one you control, then a direction — or swipe out of it. The arrow is <b>optional</b>: tap the turn marker (or Skip) to go straight to your "+unitOne()+". Then tap any site to drop it."; }
+function G_HINT(){ if(State.game.variant==="simple") return "Tap any site to drop your "+unitOne()+". Folders that topple off the board score for whoever started the avalanche."; return "Tap a free site or one you control, then a direction — or swipe out of it. The arrow is <b>optional</b>: tap the turn marker (or Skip) to go straight to your "+unitOne()+". Then tap any site to drop it."; }
 function gameSay(msg){
   const el=document.getElementById("gHint"); if(!el) return;
   if(msg){ el.dataset.warn="1"; el.innerHTML='<span style="color:#ff9db0">'+msg+'</span>'; }
@@ -5013,6 +5214,7 @@ function gameSyncUI(){
   const who=P_NAME[G.turn]+(G.ai[G.turn]?" (computer)":"");
   let msg;
   if(G.over) msg=P_NAME[G.winner||gameLeader()]+" wins!";   // the golden circle says the rest
+  else if(G.thinking) msg=who+" — thinking…";
   else if(G.animating) msg=who+" — avalanche…";
   else if(simple)      msg=who+" — drop a "+unitOne();
   else if(G.phase==="arrow") msg=who+" — ① arrow";
@@ -5311,7 +5513,26 @@ function wire(){
     }
     updateMainTitle(); renderAll();
   };
-  btnGame.onclick=()=>setGame(!State.game.on);
+  /* PLAY, the Game buttons and the story's Play all lead to the same place: the phone-style game */
+  const _setGame=setGame;
+  window.setGame=function(on){ _setGame(on);
+    document.body.classList.toggle("gamemode",!!on);
+    if(on){ setFold("learnWrap",false); setFold("storyWrap",false); syncTitleCaret(); syncStoryCaret(); window.scrollTo(0,0); }
+    applyCanvasSizes(); renderAll(); };
+  window.enterGame=function(){ if(!State.game.on) setGame(true); else { document.body.classList.add("gamemode"); applyCanvasSizes(); renderAll(); } window.scrollTo(0,0); };
+  btnGame.onclick=()=>{ if(State.game.on) document.getElementById("btnBTW").click(); else enterGame(); };
+  document.getElementById("playBtn").onclick=enterGame;
+  document.getElementById("storyPlay").onclick=enterGame;
+  document.getElementById("storyHow").onclick=()=>{ enterGame(); setFold("exWrap",true); exSelect("win"); document.getElementById("appHelp").classList.add("active"); applyCanvasSizes(); renderAll(); };
+  document.getElementById("appReturn").onclick=()=>{ if(window.Net && Net.on) netLeave(false); document.getElementById("btnBTW").click(); };
+  document.getElementById("appHelp").onclick=()=>{ const w=document.getElementById("exWrap"), open=w.classList.contains("closed");
+    setFold("exWrap",open); if(open) exSelect(State.model); document.getElementById("appHelp").classList.toggle("active",open); applyCanvasSizes(); renderAll(); };
+  document.getElementById("appName").onclick=()=>{ document.getElementById("appHelp").click(); };
+  window.syncStoryCaret=function(){ const c=document.getElementById("storyCaret"), w=document.getElementById("storyWrap");
+    if(c&&w) c.textContent=w.classList.contains("closed")? "\u25BE" : "\u25B4"; };
+  document.getElementById("storyBtn").onclick=()=>{ const w=document.getElementById("storyWrap"), open=w.classList.contains("closed");
+    setFold("storyWrap",open); if(open){ setFold("learnWrap",false); syncTitleCaret(); } syncStoryCaret(); };
+  document.getElementById("storyHead").onclick=()=>{ document.getElementById("storyBtn").click(); };
   document.getElementById("gameHead").onclick=()=>setFold("gameWrap",document.getElementById("gameWrap").classList.contains("closed"));
   document.getElementById("simHead").onclick=()=>{
     const opening=document.getElementById("simWrap").classList.contains("closed");
@@ -5321,8 +5542,8 @@ function wire(){
   document.getElementById("learnHead").onclick=()=>{ const w=document.getElementById("learnWrap");
     setFold("learnWrap", w.classList.contains("closed")); syncTitleCaret(); };
   /* the title itself opens the story of the applet */
-  document.getElementById("appTitleBtn").onclick=()=>{ const w=document.getElementById("learnWrap");
-    setFold("learnWrap", w.classList.contains("closed")); syncTitleCaret(); };
+  document.getElementById("appTitleBtn").onclick=()=>{ const w=document.getElementById("learnWrap"), open=w.classList.contains("closed");
+    setFold("learnWrap", open); if(open){ setFold("storyWrap",false); syncStoryCaret(); } syncTitleCaret(); };
   window.syncTitleCaret=function(){ const c=document.getElementById("titleCaret"), w=document.getElementById("learnWrap");
     if(c&&w) c.textContent=w.classList.contains("closed")? "\u25BE" : "\u25B4"; };
   document.getElementById("lookHead").onclick=()=>setFold("lookWrap",document.getElementById("lookWrap").classList.contains("closed"));
@@ -5462,10 +5683,11 @@ function wire(){
   /* own −1 ⇄ own 0: a scoring rule change resets the win target (5 under own −1, the usual
      10 under own 0) and starts a fresh game */
   window.syncOwnSeg=function(){ const G=State.game, b=document.getElementById("gbOwn"); if(!b) return;
-    b.textContent = G.ownCost? "own \u22121" : "own 0";      // the button always names the rule in force
-    b.classList.toggle("active", G.ownCost); };
+    b.textContent = ownLabel(G.ownCost);                        // the button always names the rule in force
+    b.classList.toggle("active", G.ownCost>0); };
   document.getElementById("gbOwn").onclick=()=>{ const G=State.game;
-    G.ownCost=!G.ownCost; G.target= G.ownCost? 5 : defaultTarget(); gameTargetRange(); syncOwnSeg();
+    const i=OWN_STEPS.indexOf(G.ownCost); G.ownCost=OWN_STEPS[(i<0?0:i+1)%OWN_STEPS.length];
+    G.target= G.ownCost>=0.5? 5 : defaultTarget(); gameTargetRange(); syncOwnSeg();
     syncWordUI(); if(G.on) newGame(); };
   const tg=document.getElementById("gbTarget");
   tg.oninput=()=>{ const G=State.game; G.target=WIN_STEPS[parseInt(tg.value)]||WIN_STEPS[0];
@@ -5646,9 +5868,10 @@ function wire(){
       +'the same game without the arrow half: pure drops, for a quick first game.)</p>',
     win:
       '<p><span class="exh">How to win.</span> You score <b>one point for every folder belonging to '
-      +'another player that <i>your own</i> avalanche pushes off the board</b>. Under the <b>own &minus;1</b> rule '
-      +'(switch it on in the control strip; the win target then drops to 5) you also <b>lose a point for every '
-      +'folder of your own</b> that your avalanche throws out; under <b>own 0</b>, the default, they cost nothing. '
+      +'another player that <i>your own</i> avalanche pushes off the board</b>. The <b>own</b> switch in the strip '
+      +'decides what your own folders cost when <i>your</i> avalanche throws them out: under <b>own 0</b>, the default, '
+      +'nothing; under <b>own .2</b> and <b>own .5</b> each one costs you a point with that probability (the dice are '
+      +'rolled as the folder leaves); under <b>own 1</b> every one costs a point. At .5 and 1 the win target drops to 5. '
       +'Grey folders count for nobody, and what an opponent pushes out is <i>their</i> point &mdash; every '
       +'departing folder is booked exactly once.</p>'
       +'<p><b>The race:</b> with <b>win</b> set to a number (3&ndash;25), the first player to reach it '
@@ -5661,6 +5884,20 @@ function wire(){
       +'<p>The computer opponents (CPU&#185; to CPU&#8309;) all honour the same law: they seize a winning move '
       +'the instant one exists, and they refuse any move that would let <i>anybody else</i> win on the '
       +'next stroke &mdash; in the race, on the grey clock, and in sudden death alike.</p>',
+    science:
+      '<p><span class="exh">The science behind the office.</span> The office is a <b>sandpile</b>. In 1987 '
+      +'<b>Per Bak, Chao Tang and Kurt Wiesenfeld</b> showed that a pile fed one grain at a time drives itself, '
+      +'without anyone tuning anything, to a critical state in which the next grain may do nothing or may set '
+      +'off an avalanche of any size &mdash; <b>self-organized criticality</b>. The BTW desks play their rule directly: '
+      +'a desk topples when it holds more than three folders and sends one to each neighbour.</p>'
+      +'<p>The everyday desk rule (Nem1: a desk topples at <b>two</b> folders and deals them along a fixed axis that '
+      +'then flips) and the Z<sub>c</sub>=1 rotor desks are partly inspired by the <b>Eulerian-walker</b> sandpile of '
+      +'<b>Priezzhev, Dhar, Dhar and Krishnamurthy</b> (1996), where an arrow on each site, not chance, decides '
+      +'where the next grain goes &mdash; which is what makes every avalanche here fully predictable.</p>'
+      +'<p>The idea that a critical office has <b>fragile points</b> &mdash; desks where one extra folder disturbs the '
+      +'whole room most &mdash; comes from the study of the critical attractor of the classic sandpile by '
+      +'<b>Engsig and Sneppen</b> (2025). Finding those points before your rivals do is the whole art of the game. '
+      +'Press <b>Return</b> for the full applet: the models, the plots and the references.</p>',
   };
   let exCur="btw";
   window.exSelect=function(t){
@@ -5732,7 +5969,7 @@ function applyCanvasSizes(){
      fit the window outright — score line, card chrome, legend and page padding subtracted —
      and the whole board stays visible without scrolling.  Outside the game the page scrolls
      through several panels anyway, so the looser 0.92 fraction is right there. */
-  const GAME_VPAD=132;      // score line + card chrome + page padding
+  const GAME_VPAD=176;      // app bar + score line + card chrome + page padding
   const availV = State.game.on ? (availH - GAME_VPAD) : availH*0.92;
   BIG = Math.round(Math.max(260, Math.min(1024, Math.min(availW, Math.max(300, availV)))));
   /* three abreast on a wide screen; on a phone they stack one per row, so each plot is
@@ -5756,6 +5993,9 @@ function applyCanvasSizes(){
     c.style.width=BIG+"px"; c.style.height="auto"; }
   for(const id of ["aPlot","sPlot"]){ const c=document.getElementById(id); c.width=BIG; c.height=BIG; }
   for(const id of ["timePlot","distPlot","curPlot","areaPlot","massPlot","perimPlot"]){ const c=document.getElementById(id); c.width=SMALL_W; c.height=SMALL_H; }
+  { const half = stacked ? SMALL_W : Math.max(120, Math.round((BIG-12)/2));   // the scaling plots sit two abreast
+    for(const id of ["fsSPlot","fsAPlot","fsCSPlot","fsCAPlot"]){ const c=document.getElementById(id); c.width=half; c.height=half; } }
+  if(typeof fsRedraw==="function") fsRedraw();
 }
 /* ---------- responsive control placement ----------
    On narrow screens (phones) the run row, the model row, the view row and the whole
@@ -5870,6 +6110,395 @@ gameTargetRange(); gameBuildChips(); syncSizeSeg(); syncCPUBtn(); syncWordUI(); 
 window.addEventListener("resize", onViewportResize);
 window.addEventListener("orientationchange", onViewportResize);
 renderAll();
+/* ============================================================
+   FINITE-SIZE SCALING STUDY
+   Three sizes L, L/2^n, L/2^(2n) are run one after another with the model in play (BTW,
+   Manna, Zc=1 or Nem1): a transient of t·L² grains through seedCritical, then N avalanches
+   (drop + full relaxation) whose sizes and areas are kept.  Log-binned P(s) and P(a) are
+   plotted for the three sizes, and the collapse s^τ P(s) against s/L^D with τ chosen to make
+   the largest system's curve flattest and D to make the cutoffs coincide.
+   ============================================================ */
+const FS={ sizes:[], sizesS:[], areasA:[], done:false, running:false, stop:false, model:"", tau:{s:1.2,a:1.3}, D:{s:2.7,a:2.0}, auto:{s:true,a:true}, hist:null };
+const FS_COL={ dark:["#c084fc","#34d3ee","#ffb347"], light:["#7c3aed","#0e7c9a","#c2410c"] };
+const FS_LS=[8,16,32,64,128,256,512,1024,2048];
+{ const sel=document.getElementById("fsL"); sel.innerHTML=FS_LS.map(L=>'<option value="'+L+'"'+(L===64?' selected':'')+'>'+L+'</option>').join(""); }
+function fsPlanSizes(){
+  const L=parseInt(document.getElementById("fsL").value)||64;
+  let n=parseInt(document.getElementById("fsN").value)||1;
+  const nMax=Math.max(1, Math.floor(Math.log2(L/8)/2)); if(n>nMax){ n=nMax; document.getElementById("fsN").value=n; }
+  return [L>>(2*n), L>>n, L];                       // smallest first
+}
+function fsDefaultT(){ const L=parseInt(document.getElementById("fsL").value)||64; return Math.round(Math.pow(L,2.5)); }
+function fsGrains(Li){ const L=parseInt(document.getElementById("fsL").value)||64, T=Math.max(1000, parseInt(document.getElementById("fsT").value)||fsDefaultT());
+  return Math.max(300, Math.round(T*Math.pow(Li/L,2.5))); }
+function fsSyncPlan(){ const sz=fsPlanSizes(); const el=document.getElementById("fsStatus");
+  if(el && !FS.running) el.innerHTML="Sizes: "+sz.join(", ")+" &middot; grains: "+sz.map(L=>fsGrains(L).toLocaleString("en")).join(", ")+"."; }
+document.getElementById("fsL").addEventListener("change", ()=>{ document.getElementById("fsT").value=fsDefaultT(); fsSyncPlan(); });
+document.getElementById("fsN").addEventListener("change", fsSyncPlan);
+document.getElementById("fsT").addEventListener("input", fsSyncPlan);
+function fsStatus(t){ const el=document.getElementById("fsStatus"); if(el) el.innerHTML=t; }
+/* the clock: elapsed time and the system in progress, on the control panel and on every plot */
+function fsClock(txt){ const on=!!txt; const c=document.getElementById("fsClock"); c.textContent=txt||""; c.classList.toggle("on",on);
+  document.querySelectorAll("#statRow3 .fsclock").forEach(e=>{ e.textContent=txt||""; e.classList.toggle("on",on); }); }
+function fsFmt(ms){ const s=Math.floor(ms/1000); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+/* one system: T grains in all, the first third a transient, the rest sampled — in slices so the page stays alive */
+function fsRunOne(L, T, onDone, onProgress){
+  alloc(L); probed=false; spriteCacheClear();
+  State.sizes=[]; State.areas=[]; State.lins=[]; State.perims=[]; State.lefts=[];
+  const nTrans=Math.round(T/3), sz=[], ar=[]; let k=0;
+  const slice=()=>{
+    if(FS.stop){ onDone(sz, ar, true); return; }
+    const t0=performance.now();
+    while(k<T && performance.now()-t0<40){
+      beginGrainAt((Math.random()*L*L)|0, undefined); resolveFull();
+      if(k>=nTrans && State.lastSize>0){ sz.push(State.lastSize); ar.push(State.areas[State.areas.length-1]); }
+      k++;
+      if(State.sizes.length>5000){ State.sizes.length=0; State.areas.length=0; State.lins.length=0; State.perims.length=0; State.lefts.length=0; }
+    }
+    onProgress(k, nTrans, T);
+    if(k<T) setTimeout(slice, 0); else onDone(sz, ar, false);
+  };
+  setTimeout(slice, 0);
+}
+function fsRun(){
+  if(FS.running) return;
+  const sizes=fsPlanSizes();
+  FS.running=true; FS.stop=false; FS.done=false; FS.sizes=[]; FS.sizesS=[]; FS.areasA=[]; FS.model=modelName(); FS.hist=null;
+  document.getElementById("fsRun").disabled=true; document.getElementById("fsStop").style.display="";
+  const keep={ grass:State.grassberger, trace:State.trace, stress:State.stressCol, Li:document.getElementById("Lsel").value, game:State.game.on };
+  if(keep.game){ fsStatus("Leave the game first (Return), then run the study."); FS.running=false; document.getElementById("fsRun").disabled=false; document.getElementById("fsStop").style.display="none"; return; }
+  State.running=false; updateRunUI(); State.grassberger=false; State.trace=false; State.stressCol=null;
+  document.getElementById("statRow3").style.display=""; applyCanvasSizes(); fsRedraw();
+  const tStart=performance.now(); let i=0;
+  const tick=(L,k,nTrans,T)=>{ const el=fsFmt(performance.now()-tStart);
+    fsClock("⏱ "+el+" · system "+(i+1)+" of "+sizes.length+" (L = "+L+")");
+    fsStatus("L = "+L+": "+(k<nTrans? "transient "+Math.round(100*k/nTrans)+"%" : "sampling "+Math.round(100*(k-nTrans)/(T-nTrans))+"%")+" · "+k.toLocaleString("en")+" / "+T.toLocaleString("en")+" grains"+(FS.sizes.length? " · done: L = "+FS.sizes.join(", ") : "")); };
+  const next=()=>{
+    if(i>=sizes.length || FS.stop){ finish(); return; }
+    const L=sizes[i], T=fsGrains(L); tick(L,0,Math.round(T/3),T);
+    setTimeout(()=>{
+      fsRunOne(L, T, (sz, ar, stopped)=>{
+        if(sz.length>50){ FS.sizes.push(L); FS.sizesS.push(sz); FS.areasA.push(ar); FS.hist=null; FS.done=FS.sizes.length>=2; if(FS.done) fsFitAll(); fsRedraw(); }
+        i++; if(stopped) finish(); else next();
+      }, (k,nTrans,T)=>tick(L,k,nTrans,T));
+    }, 20);
+  };
+  const finish=()=>{
+    FS.running=false; FS.done=FS.sizes.length>=2;
+    document.getElementById("fsRun").disabled=false; document.getElementById("fsStop").style.display="none";
+    const el=fsFmt(performance.now()-tStart); fsClock("");
+    State.grassberger=keep.grass; State.trace=keep.trace;
+    setLfromIndex(parseInt(keep.Li)); if(State.grassberger) gbInitStacks();
+    resetCriticalStart();
+    if(FS.done){ FS.hist=null; FS.auto.s=true; FS.auto.a=true; fsFitAll(); fsStatus("Done in "+el+": L = "+FS.sizes.join(", ")+" ("+FS.model+"). &tau; = "+FS.tau.s.toFixed(2)+", D = "+FS.D.s.toFixed(2)+"; &tau;<sub>a</sub> = "+FS.tau.a.toFixed(2)+", D<sub>a</sub> = "+FS.D.a.toFixed(2)+". Drag the sliders under the collapse plots to explore."); }
+    else fsStatus("Stopped after "+el+", before two sizes were complete.");
+    fsRedraw(); document.getElementById("statRow3").scrollIntoView({behavior:"smooth", block:"nearest"});
+  };
+  next();
+}
+document.getElementById("fsRun").onclick=fsRun;
+document.getElementById("fsStop").onclick=()=>{ FS.stop=true; };
+/* ---- log-binned, normalised histograms: P(x) = counts / (N · integers in the bin) ---- */
+const FS_BINW=0.15;
+function fsHist(vals){
+  const bins={}; let n=0;
+  for(const v of vals){ if(v<1) continue; n++; const b=Math.round(Math.log10(v)/FS_BINW); bins[b]=(bins[b]||0)+1; }
+  const pts=[];
+  for(const b in bins){ const bn=+b, lo=Math.pow(10,(bn-0.5)*FS_BINW), hi=Math.pow(10,(bn+0.5)*FS_BINW);
+    const nInt=Math.max(1, Math.floor(hi-1e-9)-Math.ceil(lo)+1);
+    pts.push({lx:bn*FS_BINW, ly:Math.log10(bins[b]/(n*nInt)), c:bins[b]}); }
+  pts.sort((a,b)=>a.lx-b.lx); return pts;
+}
+function fsHists(){ if(!FS.hist) FS.hist={ s:FS.sizesS.map(fsHist), a:FS.areasA.map(fsHist) }; return FS.hist; }
+/* τ: least-squares slope of the largest system over its power-law range — from x = 2 up to a
+   quarter of the last well-sampled bin, i.e. the flattest x^τ P(x) before the cutoff bends it */
+function fsFitTau(h){
+  const good=h.filter(p=>p.c>=20); if(good.length<3) return null;
+  const lxMax=good[good.length-1].lx-Math.log10(4);
+  const F=h.filter(p=>p.lx>=Math.log10(2)-1e-9 && p.lx<=lxMax && p.c>=20); if(F.length<3) return null;
+  let n=F.length,Sx=0,Sy=0,Sxx=0,Sxy=0; for(const p of F){ Sx+=p.lx; Sy+=p.ly; Sxx+=p.lx*p.lx; Sxy+=p.lx*p.ly; }
+  const den=n*Sxx-Sx*Sx; if(Math.abs(den)<1e-12) return null; return -(n*Sxy-Sx*Sy)/den;
+}
+/* D: the cutoff of each system, s_c(L), is where its compensated curve x^τ P(x) has fallen to
+   half of its own plateau; the exponent D is the slope of log s_c against log L, so the three
+   cutoffs land on top of each other at s/L^D ≈ const */
+function fsCollapsed(h, L, tau, D){ const lD=D*Math.log10(L); return h.map(p=>({u:p.lx-lD, y:p.ly+tau*p.lx, c:p.c})); }
+function fsInterp(curve, u){
+  if(u<curve[0].u || u>curve[curve.length-1].u) return null;
+  for(let i=1;i<curve.length;i++) if(curve[i].u>=u){ const a=curve[i-1], b=curve[i]; const f=(u-a.u)/((b.u-a.u)||1e-9); return a.y+f*(b.y-a.y); }
+  return null;
+}
+function fsCutoff(h, tau){
+  const pts=h.filter(p=>p.c>=3).map(p=>({lx:p.lx, y:p.ly+tau*p.lx, c:p.c})); if(pts.length<4) return null;
+  const core=pts.filter(p=>p.lx>=Math.log10(2) && p.c>=20).map(p=>p.y).sort((a,b)=>a-b); if(core.length<2) return null;
+  const plateau=core[(core.length/2)|0], lvl=plateau-Math.log10(2);
+  let iMax=0; for(let i=1;i<pts.length;i++) if(pts[i].y>pts[iMax].y-1e-9 && pts[i].lx<=pts[iMax].lx+0.5) iMax=i;   // start the search from the plateau
+  for(let i=1;i<pts.length;i++){ if(pts[i].y<lvl && pts[i-1].y>=lvl && pts[i].lx>Math.log10(2)){
+      const f=(pts[i-1].y-lvl)/((pts[i-1].y-pts[i].y)||1e-9); return pts[i-1].lx+f*(pts[i].lx-pts[i-1].lx); } }
+  return null;
+}
+function fsFitD(hs, Ls, tau){
+  const xs=[], ys=[];
+  hs.forEach((h,i)=>{ const c=fsCutoff(h,tau); if(c!==null){ xs.push(Math.log10(Ls[i])); ys.push(c); } });
+  if(xs.length<2) return null;
+  let n=xs.length,Sx=0,Sy=0,Sxx=0,Sxy=0; for(let i=0;i<n;i++){ Sx+=xs[i]; Sy+=ys[i]; Sxx+=xs[i]*xs[i]; Sxy+=xs[i]*ys[i]; }
+  const den=n*Sxx-Sx*Sx; if(Math.abs(den)<1e-12) return null;
+  return Math.max(1, Math.min(4, (n*Sxy-Sx*Sy)/den));
+}
+function fsFitAll(){
+  const H=fsHists();
+  for(const k of ["s","a"]){
+    if(!FS.auto[k]) continue;
+    const hs=H[k]; const tau=fsFitTau(hs[hs.length-1]); if(tau!==null) FS.tau[k]=Math.max(0.5, Math.min(2.5, tau));
+    const D=fsFitD(hs, FS.sizes, FS.tau[k]); if(D!==null) FS.D[k]=D;
+  }
+  fsSyncSliders();
+}
+function fsSyncSliders(){
+  document.getElementById("fsTauS").value=FS.tau.s; document.getElementById("fsDS").value=FS.D.s;
+  document.getElementById("fsTauA").value=FS.tau.a; document.getElementById("fsDA").value=FS.D.a;
+  document.getElementById("fsTauSV").textContent=FS.tau.s.toFixed(2); document.getElementById("fsDSV").textContent=FS.D.s.toFixed(2);
+  document.getElementById("fsTauAV").textContent=FS.tau.a.toFixed(2); document.getElementById("fsDAV").textContent=FS.D.a.toFixed(2);
+}
+[["fsTauS","tau","s"],["fsDS","D","s"],["fsTauA","tau","a"],["fsDA","D","a"]].forEach(([id,key,k])=>{
+  document.getElementById(id).oninput=ev=>{ FS[key][k]=parseFloat(ev.target.value); FS.auto[k]=false; fsSyncSliders(); fsRedraw(); }; });
+document.getElementById("fsAutoS").onclick=()=>{ FS.auto.s=true; if(FS.done) fsFitAll(); fsRedraw(); };
+document.getElementById("fsAutoA").onclick=()=>{ FS.auto.a=true; if(FS.done) fsFitAll(); fsRedraw(); };
+/* ---- the four plots ---- */
+function fsEmpty(canvas, light, msg){
+  const ctx=canvas.getContext("2d"), W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=light? "#ffffff" : "#05050b"; ctx.fillRect(0,0,W,H);
+  const fs=plotFont(W); ctx.fillStyle=light? "#5a5670" : "#9a93b5"; ctx.font=fs+"px sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  const lines=msg.split("\n"); lines.forEach((l,i)=>ctx.fillText(l, W/2, H/2+(i-(lines.length-1)/2)*fs*1.4));
+}
+function fsDrawDist(canvas, light, big, k){
+  if(FS.sizes.length<1){ fsEmpty(canvas, light, FS.running? "sampling the first system\u2026" : "Run the scaling study\n(Simulation controls)"); return; }
+  const ctx=canvas.getContext("2d"), W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=light? "#ffffff" : "#05050b"; ctx.fillRect(0,0,W,H);
+  const fs=plotFont(W), m=plotMargins(W,H,fs,big), pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const hs=fsHists()[k]; let xmax=0, ymin=Infinity, ymax=-Infinity;
+  for(const h of hs) for(const p of h){ if(p.lx>xmax) xmax=p.lx; if(p.ly<ymin) ymin=p.ly; if(p.ly>ymax) ymax=p.ly; }
+  xmax=Math.max(1,Math.ceil(xmax)); ymin=Math.floor(ymin); ymax=Math.ceil(Math.max(ymax, ymin+1));
+  const sx=lx=>m.l+lx/xmax*pw, sy=ly=>m.t+ph-(ly-ymin)/(ymax-ymin)*ph;
+  const name=k==="s"? "s" : "a";
+  plotFrame(ctx,W,H,m,light,{fs, sx, sy, xt:decadeTicks(0,xmax), yt:decadeTicks(ymin,ymax,7),
+    xl:(k==="s"? "avalanche size s" : "avalanche area a"), yl:"P("+name+")",
+    title: big? "P("+name+") for L = "+FS.sizes.join(", ")+" \u2014 "+FS.model : ""});
+  ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,pw+1,ph+1); ctx.clip();
+  const cols=light? FS_COL.light : FS_COL.dark;
+  hs.forEach((h,i)=>drawSeries(ctx,sx,sy,h.map(p=>[p.lx,p.ly]),cols[i],fs));
+  ctx.restore();
+  hs.forEach((h,i)=>legendLine(ctx, m.l+fs*0.8, m.t+fs*(1.2+1.3*i), cols[i], "L = "+FS.sizes[i], fs, light));
+}
+function fsDrawCollapse(canvas, light, big, k){
+  if(!FS.done){ fsEmpty(canvas, light, FS.running? "the collapse needs two systems\u2026" : "Run the scaling study\n(Simulation controls)"); return; }
+  const ctx=canvas.getContext("2d"), W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=light? "#ffffff" : "#05050b"; ctx.fillRect(0,0,W,H);
+  const fs=plotFont(W), m=plotMargins(W,H,fs,big), pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const hs=fsHists()[k], tau=FS.tau[k], D=FS.D[k];
+  const cs=hs.map((h,i)=>fsCollapsed(h, FS.sizes[i], tau, D));
+  let umin=Infinity, umax=-Infinity, ymin=Infinity, ymax=-Infinity;
+  for(const c of cs) for(const p of c){ if(p.u<umin) umin=p.u; if(p.u>umax) umax=p.u; if(p.y<ymin) ymin=p.y; if(p.y>ymax) ymax=p.y; }
+  umin=Math.floor(umin); umax=Math.ceil(umax); ymin=Math.floor(ymin); ymax=Math.ceil(Math.max(ymax, ymin+1));
+  const sx=u=>m.l+(u-umin)/(umax-umin)*pw, sy=y=>m.t+ph-(y-ymin)/(ymax-ymin)*ph;
+  const name=k==="s"? "s" : "a", sub=k==="s"? "" : "a";
+  plotFrame(ctx,W,H,m,light,{fs, sx, sy, xt:decadeTicks(umin,umax,7), yt:decadeTicks(ymin,ymax,7),
+    xl:name+" / L^D", yl:name+"^\u03c4 P("+name+")",
+    title: big? "Collapse \u03c4"+sub+" = "+tau.toFixed(2)+", D"+sub+" = "+D.toFixed(2)+" \u2014 L = "+FS.sizes.join(", ")+" ("+FS.model+")" : ""});
+  ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,pw+1,ph+1); ctx.clip();
+  const cols=light? FS_COL.light : FS_COL.dark;
+  cs.forEach((c,i)=>drawSeries(ctx,sx,sy,c.map(p=>[p.u,p.y]),cols[i],fs));
+  ctx.restore();
+  cs.forEach((c,i)=>legendLine(ctx, m.l+fs*0.8, m.t+fs*(1.2+1.3*i), cols[i], "L = "+FS.sizes[i], fs, light));
+  ctx.fillStyle=light? "#1f1f2a" : "#e6e2f2"; ctx.font="600 "+fs+"px sans-serif"; ctx.textAlign="right"; ctx.textBaseline="top";
+  ctx.fillText("\u03c4"+sub+" = "+tau.toFixed(2)+"   D"+sub+" = "+D.toFixed(2), W-m.r-fs*0.3, m.t+fs*0.4);
+}
+Object.assign(PLOT_DRAW, { fsS:(cv,l,b)=>fsDrawDist(cv,l,b,"s"), fsA:(cv,l,b)=>fsDrawDist(cv,l,b,"a"), fsCS:(cv,l,b)=>fsDrawCollapse(cv,l,b,"s"), fsCA:(cv,l,b)=>fsDrawCollapse(cv,l,b,"a") });
+Object.assign(PLOT_FILE, { fsS:"fss_Ps_three_sizes.png", fsA:"fss_Pa_three_sizes.png", fsCS:"fss_collapse_s.png", fsCA:"fss_collapse_a.png" });
+Object.assign(State.plotBg, { fsS:false, fsA:false, fsCS:false, fsCA:false });
+window.fsRedraw=function(){ for(const [id,k] of [["fsSPlot","fsS"],["fsAPlot","fsA"],["fsCSPlot","fsCS"],["fsCAPlot","fsCA"]]){ const c=document.getElementById(id); if(c) PLOT_DRAW[k](c, State.plotBg[k], false); } };
+document.querySelectorAll('[data-pbg^="fs"]').forEach(b=>{ b.onclick=()=>{ const k=b.dataset.pbg; State.plotBg[k]=!State.plotBg[k]; syncPlotBgBtns(); fsRedraw(); }; });
+{ const m=document.getElementById("btnAllPlotBg"); const old=m.onclick; m.onclick=()=>{ old(); fsRedraw(); }; }
+fsSyncSliders(); fsRedraw();
+/* ============================================================
+   ONLINE PLAY.  The game is deterministic, so the phones only exchange the seed of the
+   starting office and the moves; every phone replays the same avalanche.  The host is
+   seat 1 and relays every move to every guest; a checksum of the board travels with each
+   move so a divergence is noticed at once.
+   ============================================================ */
+const Net={ on:false, host:false, peer:null, conns:[], hostConn:null, seat:0, names:[], code:"", queue:[], applying:false, started:false, lastPump:0 };
+const NET_ICE={ iceServers:[ {urls:"stun:stun.l.google.com:19302"}, {urls:"stun:stun1.l.google.com:19302"}
+  /* if two phones on strict mobile networks cannot connect, add a TURN relay here, e.g. from
+     Cloudflare Realtime or metered.ca (both have free tiers):
+     ,{urls:"turn:HOST:443?transport=tcp", username:"USER", credential:"PASS"} */ ] };
+const NET_PREFIX="bureaucracy-battles-";
+function seededRandom(seed){ let s=(seed>>>0)||1; return ()=>{ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+function netHash(){ let h=5381; const N=State.L*State.L;
+  for(let k=0;k<N;k++){ h=(Math.imul(h,33)^State.z[k])>>>0; h=(Math.imul(h,33)^(State.arrow[k]+1))>>>0;
+    const os=State.own[k]; for(let i=0;i<os.length;i++) h=(Math.imul(h,33)^(os[i]+7))>>>0; }
+  return h; }
+/* the same office on every phone: newGame runs on a seeded generator, the first mover is the seed's */
+const _newGame=newGame;
+function newGameSeeded(seed, mode){
+  const orig=Math.random; Math.random=seededRandom(seed);
+  try{ _newGame(mode); } finally{ Math.random=orig; }
+  const G=State.game; G.turn=1+(seed%G.players); G.aiTimer=0; G.aiMode=0; applyRoster(); syncCPUBtn(); gameSyncUI(); renderAll();
+}
+newGame=function(mode){
+  if(!Net.on || Net.applying) return _newGame(mode);
+  if(Net.host){ if(Net.conns.some(c=>c.open)) netStartGame(); else return _newGame(mode); }   /* the host's ↻ new (or a settings change) deals a fresh office to everybody */
+  else gameSay("Only the host can start a new office.");
+};
+/* the three halves of a move go out to the other phones; out of turn, a tap only says whose turn it is */
+function netMyTurn(){ return !Net.on || Net.applying || State.game.turn===Net.seat; }
+function netWho(){ return P_NAME[State.game.turn]; }
+const _gpa=gamePlaceArrow, _gsk=gameSkipArrows, _gag=gameAddGrain;
+gamePlaceArrow=function(k,dir){ if(!netMyTurn()){ gameSay("Waiting for "+netWho()+"\u2026"); return false; }
+  const pre=netHash(); const ok=_gpa(k,dir); if(ok && Net.on && !Net.applying) netSendMove({t:"mv",kind:"arrow",k:k,dir:dir,seat:Net.seat,pre:pre}); return ok; };
+gameSkipArrows=function(){ if(!netMyTurn()){ gameSay("Waiting for "+netWho()+"\u2026"); return; }
+  const G=State.game, was=G.phase, pre=netHash(); _gsk(); if(was==="arrow" && G.phase==="grain" && Net.on && !Net.applying) netSendMove({t:"mv",kind:"skip",seat:Net.seat,pre:pre}); };
+gameAddGrain=function(k){ if(!netMyTurn()){ gameSay("Waiting for "+netWho()+"\u2026"); return false; }
+  const pre=netHash(); const ok=_gag(k); if(ok && Net.on && !Net.applying) netSendMove({t:"mv",kind:"grain",k:k,seat:Net.seat,pre:pre}); return ok; };
+/* two buttons were bound to the original Skip before it was wrapped: rebind them */
+document.getElementById("gSkip").onclick=()=>gameSkipArrows();
+{ const gt=document.getElementById("gTurn"); if(gt && gt.onclick===_gsk) gt.onclick=()=>gameSkipArrows(); }
+function netSendMove(m){ if(Net.host) netBroadcast(m,null); else if(Net.hostConn) Net.hostConn.send(m); }
+function netBroadcast(m,except){ for(const c of Net.conns) if(c!==except && c.open) c.send(m); }
+/* incoming moves wait until the avalanche on this phone has finished */
+function netPump(){
+  const G=State.game; if(!Net.on || !Net.queue.length) return;
+  if(G.animating || G.thinking) return;
+  const m=Net.queue[0];
+  if(G.turn!==m.seat){ if(Date.now()-Net.lastPump>4000){ netBad("turn order differs"); } return; }
+  Net.queue.shift(); Net.lastPump=Date.now();
+  if(m.pre!==undefined && m.pre!==netHash()) netBad("boards differ");
+  Net.applying=true;
+  try{ if(m.kind==="arrow") gamePlaceArrow(m.k,m.dir); else if(m.kind==="skip") gameSkipArrows(); else if(m.kind==="grain") gameAddGrain(m.k); }
+  finally{ Net.applying=false; }
+}
+setInterval(netPump, 50);
+function netBad(why){ const p=document.getElementById("netPill"); p.classList.add("bad"); p.textContent="\u26a0 out of sync ("+why+") \u2014 host: \u21bb new"; }
+function netPill(txt,bad){ const p=document.getElementById("netPill"); p.style.display=txt?"block":"none"; p.textContent=txt||""; p.classList.toggle("bad",!!bad); }
+function netMsg(t){ document.getElementById("netMsg").innerHTML=t||""; }
+function netCode(){ const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s=""; for(let i=0;i<5;i++) s+=A[(Math.random()*A.length)|0]; return s; }
+function netNameOf(){ const v=document.getElementById("netName").value.trim().slice(0,12); try{ localStorage.setItem("bb_name",v); }catch(e){} return v||"Manager"; }
+function netApplyNames(){ const G=State.game;
+  for(let p=1;p<=4;p++){ const n=Net.names[p-1]; if(!n) continue;
+    P_NAME[p]=n+(p===Net.seat?" (you)":""); P_SHORT[p]=n.slice(0,8); }
+  gameBuildChips(); gameSyncUI(); }
+function netSetup(){ const G=State.game;
+  return { t:"setup", seed:(Math.random()*4294967295)>>>0, L:G.L, model:State.model, variant:G.variant, target:G.target,
+           players:1+Net.conns.length, own:G.ownCost, names:[netNameOf()].concat(Net.conns.map(c=>c.bbName||"Guest")) }; }
+function netApplySetup(s){
+  const G=State.game; Net.applying=true;
+  try{
+    G.L=s.L; if(State.model!==s.model){ setModel3(s.model); syncModelSeg(); }
+    G.variant=s.variant; document.querySelectorAll("#segVariant button").forEach(x=>x.classList.toggle("active",x.dataset.var===s.variant));
+    G.players=s.players; document.querySelectorAll("#segPlayers button").forEach(x=>x.classList.toggle("active",x.dataset.np===String(s.players)));
+    G.target=s.target===null? Infinity : s.target; G.ownCost=(+s.own)||0; if(typeof syncOwnSeg==="function") syncOwnSeg(); G.aiMode=0; applyRoster();
+    Net.names=s.names.slice(); Net.queue.length=0; Net.started=true;
+    if(!G.on) setGame(true);
+    newGameSeeded(s.seed,"critical"); syncSizeSeg(); gameTargetRange(); netApplyNames();
+  } finally{ Net.applying=false; }
+  netPill("online \u00b7 "+Net.code+" \u00b7 "+G.players+" managers");
+  document.getElementById("onlineBg").classList.remove("on"); if(!document.body.classList.contains("gamemode")) enterGame();
+}
+function netStartGame(){
+  if(!Net.host) return;
+  const n=1+Net.conns.filter(c=>c.open).length;
+  if(n<2){ netMsg("Nobody has joined yet."); return; }
+  if(n>4){ netMsg("At most four managers."); return; }
+  Net.conns=Net.conns.filter(c=>c.open);
+  const s=netSetup(); s.target=(s.target===Infinity)? null : s.target;
+  Net.conns.forEach((c,i)=>{ if(c.open) c.send(Object.assign({},s,{seat:i+2})); });
+  netApplySetup(s);
+}
+function netRoster(){ const el=document.getElementById("netRoster"); if(!el) return;
+  const names=[netNameOf()+" (host)"].concat(Net.conns.filter(c=>c.open).map(c=>c.bbName||"\u2026"));
+  el.innerHTML="At the table: <b>"+names.join("</b>, <b>")+"</b>"+(names.length<2? " \u2014 waiting for friends\u2026":"");
+  const b=document.getElementById("netStartBtn"); b.disabled=names.length<2; b.textContent=Net.started? "Deal a new office":"Start the game"; }
+function netHandle(c,m){
+  if(!m||typeof m!=="object") return;
+  if(m.t==="hello"){ c.bbName=String(m.name||"Guest").slice(0,12); netRoster(); return; }
+  if(m.t==="setup"){ if(!Net.host) netApplySetup(m); return; }
+  if(m.t==="mv"){ if(Net.host){ netBroadcast(m,c); } Net.queue.push(m); return; }
+  if(m.t==="full"){ netMsg("That office is already playing or full."); netLeave(false); return; }
+  if(m.t==="bye"){ c.bbLeft=true; gameSay((c.bbName||"A manager")+" left the game."); return; }
+}
+function netMakePeer(id, onOpen){
+  if(typeof Peer==="undefined"){ netMsg("Online play is not available in this build."); return null; }
+  if(!navigator.onLine){ netMsg("No internet connection."); return null; }
+  const p=new Peer(id,Object.assign({config:NET_ICE, debug:0}, window.BB_PEER_OPTS||{}));
+  p.on("open", onOpen);
+  p.on("error", e=>{ const t=String(e&&e.type||e);
+    if(t==="unavailable-id"){ netMsg("Code taken \u2014 try again."); netLeave(false); }
+    else if(t==="peer-unavailable"){ netMsg("No office with that code. Check the letters with the host."); netLeave(false); }
+    else if(t==="network"||t==="server-error"||t==="socket-error"){ netMsg("Could not reach the meeting server. Check the internet connection and try again."); netLeave(false); }
+    else netMsg("Connection problem: "+t); });
+  p.on("disconnected", ()=>{ try{ p.reconnect(); }catch(e){} });
+  return p;
+}
+function netHost(){
+  netLeave(false); Net.on=true; Net.host=true; Net.seat=1; Net.code=netCode();
+  document.body.classList.add("neton","nethost");
+  netMsg("Setting up the office\u2026");
+  Net.peer=netMakePeer(NET_PREFIX+Net.code, ()=>{
+    document.getElementById("netHostInfo").style.display=""; document.getElementById("netHostBtn").style.display="none";
+    document.getElementById("netJoinSec").style.display="none"; document.getElementById("netLeaveBtn").style.display="";
+    document.getElementById("netCode").textContent=Net.code; netMsg("Tell your friends the code. They tap Online \u2192 Join.");
+    netPill("hosting \u00b7 "+Net.code); netRoster();
+  });
+  if(!Net.peer) return;
+  Net.peer.on("connection", c=>{
+    if(Net.started || Net.conns.filter(x=>x.open).length>=3){ c.on("open",()=>{ c.send({t:"full"}); setTimeout(()=>c.close(),500); }); return; }
+    Net.conns.push(c);
+    c.on("data", m=>netHandle(c,m));
+    c.on("open", ()=>netRoster());
+    c.on("close", ()=>{ Net.conns=Net.conns.filter(x=>x!==c); netRoster(); if(Net.started && !c.bbLeft) gameSay((c.bbName||"A manager")+" lost the connection."); });
+  });
+}
+function netJoin(){
+  const code=document.getElementById("netJoinCode").value.trim().toUpperCase();
+  if(code.length!==5){ netMsg("The code has five letters."); return; }
+  netLeave(false); Net.on=true; Net.host=false; Net.code=code;
+  document.body.classList.add("neton"); document.body.classList.remove("nethost");
+  netMsg("Looking for the office "+code+"\u2026");
+  Net.peer=netMakePeer(undefined, ()=>{
+    const c=Net.peer.connect(NET_PREFIX+code,{reliable:true, serialization:"json"});
+    Net.hostConn=c;
+    c.on("open", ()=>{ c.send({t:"hello",name:netNameOf()}); Net.seat=0; netMsg("Joined! Waiting for the host to start\u2026");
+      document.getElementById("netHostSec").style.display="none"; document.getElementById("netJoinSec").style.display="none";
+      document.getElementById("netLeaveBtn").style.display=""; netPill("joined \u00b7 "+code+" \u00b7 waiting for the host"); });
+    c.on("data", m=>{ if(m&&m.t==="setup" && m.seat) Net.seat=m.seat; netHandle(c,m); });
+    c.on("close", ()=>{ if(Net.on){ gameSay("The host left the game."); netLeave(true); } });
+    c.on("error", ()=>netMsg("Could not connect to the host."));
+  });
+}
+/* a guest's seat: the host numbers seats in join order, so the guest learns its seat from
+   the roster it is sent — the last name at the time of the setup was added by the host for
+   this connection only if it is the newest; to be exact the host sends the seat explicitly */
+function netLeave(say){
+  const wasOn=Net.on;
+  try{ if(Net.host) netBroadcast({t:"bye"},null); else if(Net.hostConn&&Net.hostConn.open) Net.hostConn.send({t:"bye"}); }catch(e){}
+  try{ if(Net.peer) Net.peer.destroy(); }catch(e){}
+  Net.on=false; Net.host=false; Net.peer=null; Net.conns=[]; Net.hostConn=null; Net.seat=0; Net.code=""; Net.queue.length=0; Net.started=false;
+  document.body.classList.remove("neton","nethost"); netPill("");
+  for(let p=1;p<=4;p++){ P_NAME[p]="Player "+p; P_SHORT[p]="P"+p; }
+  document.getElementById("netHostInfo").style.display="none"; document.getElementById("netHostBtn").style.display="";
+  document.getElementById("netJoinSec").style.display=""; document.getElementById("netHostSec").style.display="";
+  document.getElementById("netLeaveBtn").style.display="none";
+  if(wasOn){ gameBuildChips(); gameSyncUI(); if(say) netMsg("You left the online game."); }
+}
+{ const $=id=>document.getElementById(id);
+  try{ $("netName").value=localStorage.getItem("bb_name")||""; }catch(e){}
+  $("appOnline").onclick=()=>{ $("onlineBg").classList.add("on"); if(!Net.on) netMsg(""); };
+  $("netCloseBtn").onclick=()=>$("onlineBg").classList.remove("on");
+  $("onlineBg").onclick=ev=>{ if(ev.target.id==="onlineBg") $("onlineBg").classList.remove("on"); };
+  $("netHostBtn").onclick=netHost; $("netJoinBtn").onclick=netJoin; $("netStartBtn").onclick=netStartGame;
+  $("netLeaveBtn").onclick=()=>netLeave(true);
+  $("netJoinCode").addEventListener("keydown",ev=>{ if(ev.key==="Enter") netJoin(); });
+  window.addEventListener("beforeunload", ()=>{ if(Net.on) netLeave(false); });
+}
 requestAnimationFrame(frame);
 </script>
 </body>
