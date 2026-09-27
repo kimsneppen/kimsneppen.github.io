@@ -17,7 +17,13 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
-  .app{max-width:1180px;margin:0 auto;padding:2px 16px 26px}
+  /* the applet spans the whole window; the control panel is a drawer that
+     slides in from the right (the "controls" tab at the right edge, or the
+     key k). On wide windows an open drawer pushes the display aside, on
+     narrow ones it overlays it. */
+  :root{--ctlw:308px}
+  .app{max-width:none;margin:0;padding:2px 12px 18px;transition:padding-right .22s ease}
+  @media (min-width:1000px){ body.ctl-open .app{padding-right:calc(var(--ctlw) + 18px)} }
   header{padding:2px 2px 6px}
   header h1{font-size:20px;margin:0 0 3px;letter-spacing:-.01em}
   .titledrop{border-top:0;position:relative}
@@ -109,7 +115,7 @@
     font-variant-numeric:tabular-nums;
   }
   .tctl b.on{color:var(--accent)}
-  .layout{display:grid;grid-template-columns:minmax(0,1fr) 288px;gap:14px;align-items:start}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
   .layout > *{min-width:0}
 
   /* ---------- display panel ---------- */
@@ -211,6 +217,24 @@
   .cornerpng button.busy{opacity:.55}
   .cornerpng button.sqbtn{width:28px;height:28px;padding:0;font-size:15px;line-height:26px;text-align:center;color:var(--ink2)}
   .cornerpng button.sqbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  /* small copies of Run / Pause and Reset, always at hand on the display itself */
+  .cornerpng button.runbtn,.cornerpng button.rstbtn{width:30px;height:28px;padding:0;font-size:13px;line-height:26px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .cornerpng button.runbtn{background:var(--accent);color:#fff;border-color:var(--accent);font-size:12px}
+  .cornerpng button.runbtn.paused{background:rgba(255,255,255,.88);color:var(--accent)}
+  .display.darkbg .cornerpng button.runbtn.paused{background:rgba(16,19,28,.85)}
+  .cornerpng button.rstbtn{font-size:16px;color:var(--ink2)}
+  .cornerpng .cgap{width:6px}
+  /* the L switch: 64 | 128 | 256, the one in use lit; crossed out when the run uses another L */
+  .cornerpng .lseg{position:relative;display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:rgba(255,255,255,.88)}
+  .cornerpng .lseg button{border:0;border-radius:0;background:transparent;padding:0 7px;height:28px;font-size:11px;line-height:26px;color:var(--ink2);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700}
+  .cornerpng .lseg button + button{border-left:1px solid var(--line)}
+  .cornerpng .lseg button.on{background:var(--accent);color:#fff}
+  .cornerpng .lseg.other::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.85;
+    background:linear-gradient(to top right,transparent calc(50% - 1.2px),#dc2626 calc(50% - 1.2px),#dc2626 calc(50% + 1.2px),transparent calc(50% + 1.2px)),
+               linear-gradient(to top left,transparent calc(50% - 1.2px),#dc2626 calc(50% - 1.2px),#dc2626 calc(50% + 1.2px),transparent calc(50% + 1.2px))}
+  .display.darkbg .cornerpng .lseg{background:rgba(16,19,28,.85);border-color:#2a3140}
+  .display.darkbg .cornerpng .lseg button{color:#c7d2fe}
+  .display.darkbg .cornerpng .lseg button.on{color:#fff;background:var(--accent)}
   /* view-preset toggle, to the right of the tilt/rot/dist box */
   #bViewTog{display:none;padding:4px 9px;font-size:13px;font-weight:700}
   .dispbar .viewhead{font-weight:700;color:var(--accent)}
@@ -359,12 +383,28 @@
   .dispbar .stat b{display:inline-block;font-variant-numeric:tabular-nums}
   #rt{min-width:46px} #rmean{min-width:52px} #rw{min-width:44px}
 
-  /* ---------- control panel ---------- */
+  /* ---------- control panel: a drawer at the right edge ---------- */
   .controls{
-    background:var(--panel);border:1px solid var(--line);border-radius:14px;
-    padding:12px 14px;box-shadow:0 1px 3px rgba(22,35,59,.06);
-    font-size:13px;
+    position:fixed;top:0;right:0;bottom:0;width:var(--ctlw);max-width:94vw;z-index:150;
+    background:var(--panel);border-left:1px solid var(--line);border-radius:0;
+    padding:10px 14px 14px;box-shadow:-8px 0 28px rgba(22,35,59,.16);
+    font-size:13px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    transform:translateX(calc(100% + 30px));transition:transform .22s ease;visibility:hidden;
   }
+  body.ctl-open .controls{transform:none;visibility:visible}
+  .ctlhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;font-weight:650;color:var(--ink)}
+  .ctlhead .tbtn{font-size:16px;padding:3px 9px;line-height:1}
+  /* the pull tab: a small vertical tab at the right edge of the window */
+  .ctltab{
+    position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:149;
+    writing-mode:vertical-rl;text-orientation:mixed;
+    padding:12px 5px;border:1px solid var(--line);border-right:0;border-radius:9px 0 0 9px;
+    background:rgba(255,255,255,.92);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;
+    box-shadow:-2px 0 10px rgba(22,35,59,.12);letter-spacing:.02em;user-select:none;
+  }
+  .ctltab:hover{background:var(--accent-soft)}
+  body.ctl-open .ctltab{display:none}
+  @media (prefers-reduced-motion:reduce){ .controls,.app{transition:none} }
   .btnrow{display:flex;gap:7px;margin-bottom:6px}
   .btn{
     flex:1;padding:9px 0;border-radius:9px;border:1px solid var(--line);
@@ -421,7 +461,7 @@
   /* phone / narrow tablet: single column, controls reachable at all times */
   @media (max-width:860px){
     :root{--fab:64px}
-    .app{padding:10px 10px calc(var(--fab) + 14px)}
+    .app{padding:8px 8px 14px}
     .layout{grid-template-columns:minmax(0,1fr);gap:10px}
     .canvas-wrap{height:min(96vw,460px)}
     header h1{font-size:17px}
@@ -437,6 +477,8 @@
     .presets{left:8px;bottom:8px}
     .cornerpng{right:8px;bottom:8px}
     .cornerpng button{padding:7px 11px;font-size:12.5px}
+    .cornerpng button.runbtn,.cornerpng button.rstbtn{width:36px;height:34px;line-height:32px;padding:0}
+    .cornerpng .lseg button{height:34px;line-height:32px;padding:0 8px;font-size:12px}
     .lyap{padding:8px 8px 10px}
     .lyaphead{font-size:12px}
     .lyrow{gap:3px 9px}
@@ -455,13 +497,14 @@
     .dispbar select{padding:7px 8px;font-size:13px}
     summary{padding:13px 2px}
 
-    /* Run / Step / Reset / .png always within thumb reach */
+    /* Run / Step / Reset / .png always within thumb reach while the drawer is open */
     .btnrow{
-      position:fixed;left:8px;right:8px;bottom:8px;z-index:120;gap:8px;margin:0;
+      position:sticky;bottom:0;z-index:120;gap:8px;margin:0 0 6px;
       background:rgba(255,255,255,.93);backdrop-filter:blur(8px);
       border:1px solid var(--line);border-radius:14px;padding:7px;
       box-shadow:0 6px 22px rgba(22,35,59,.18);
     }
+    .controls{padding-bottom:8px}
     .btn{padding:13px 0;font-size:15px}
     .btn.png{padding:13px 14px;font-size:13.5px}
     details:first-of-type{margin-top:0}
@@ -469,7 +512,7 @@
 
   /* small phones */
   @media (max-width:560px){
-    .app{padding:8px 8px calc(var(--fab) + 12px)}
+    .app{padding:6px 6px 12px}
     header h1{font-size:15.5px}
     .eqrow{gap:2px 10px}
     header .eq{font-size:12px}
@@ -488,6 +531,11 @@
     .presets button{padding:6px 8px;font-size:11px}
     .rdout{font-size:10.5px;gap:2px 7px;padding:3px 7px}
     .cornerpng button{padding:6px 9px;font-size:12px}
+    .cornerpng button.runbtn,.cornerpng button.rstbtn{width:34px;height:32px;line-height:30px}
+    /* narrow: the corner row wraps into two right-aligned lines beside the presets title */
+    .cornerpng{flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 118px);row-gap:5px}
+    .cornerpng .cgap{display:none}
+    .cornerpng .lseg button{height:32px;line-height:30px;padding:0 6px;font-size:11px}
     .lyaphead .ttl{width:100%}
     #cbTopCan{width:64px}
     .cbar.cbtop{font-size:10.5px}
@@ -1003,6 +1051,12 @@
           <span class="lam" id="rsatWrap" style="display:none" title="saturated separation of the two interfaces in the free run: the time average of |&delta;h| after they have fully diverged — the window within which the interface varies">D<sub>sat</sub> = <b id="rsat">—</b></span>
         </div>
         <div class="cornerpng">
+          <button id="bRun2" class="runbtn" title="run / pause (space)">&#10074;&#10074;</button>
+          <button id="bReset2" class="rstbtn" title="reset: restart from the initial condition">&#8635;</button>
+          <div class="lseg" id="segL2" title="box length L (the control panel's setting; crossed out when the run uses another L — a click still starts that L)">
+            <button data-v="64">64</button><button data-v="128">128</button><button data-v="256">256</button>
+          </div>
+          <span class="cgap"></span>
           <button id="bPngClean" title="save only the surface — no axes, labels, frame or colour bar — as a PNG (key c)">.png</button>
           <button id="bPngSq" title="the clean picture cut to the drawing itself and compressed into a square (key s)">sq</button>
           <button id="bFlip" class="sqbtn" title="plot −h instead of h (slope and curvature flip with it; |∇h| and the λ densities do not). The equation itself is unchanged.">±</button>
@@ -1033,26 +1087,26 @@
             <input type="range" id="rngWfDist" min="1.2" max="10" step="0.1" value="3"><b class="sv" id="wfDistVal">3.0&middot;L</b></div>
         </div>
         <div class="sub" id="v3Ctl">
-          <div><span>tilt</span><input type="range" id="rngTilt" min="0" max="85" step="1" value="50"><b class="sv" id="v3TiltVal">50&deg;</b></div>
+          <div><span>tilt</span><input type="range" id="rngTilt" min="0" max="85" step="1" value="62"><b class="sv" id="v3TiltVal">62&deg;</b></div>
           <div><span>rot</span><input type="range" id="rngRot" min="0" max="360" step="5" value="0"><b class="sv" id="v3RotVal">0&deg;</b></div>
           <div><span>dist</span><input type="range" id="rngDist" min="1.1" max="10" step="0.1" value="5"><b class="sv" id="v3DistVal">5.0&middot;L</b></div>
         </div>
         </div>
         <div class="presets" id="presetBox">
           <div class="prow">
-            <button id="bPre1" title="1D KS: periodic, L=256, dx=0.25, dt=0.05, jet &minus;&nabla;&sup2;h">KS 1D</button>
-            <button id="bPre2" title="2D KS: surface 3D, dx=0.5, flames &nabla;&sup2;h, tilt 50&deg;">KS 2D</button>
+            <button id="bPre1" title="1D KS: periodic, L=128, dx=0.5 (256 points), dt=0.1, jet &minus;&nabla;&sup2;h">KS 1D</button>
+            <button id="bPre2" title="2D KS: L=128, dx=0.5 (256&sup2; points), surface 3D, flames &nabla;&sup2;h, tilt 62&deg;">KS 2D</button>
           </div>
           <div class="prow">
-            <button id="bPre1a" title="KS 1D with &alpha; = 1 (extra &alpha;|&nabla;h| growth)">KS 1D abs1</button>
+            <button id="bPre1a" title="KS 1D with &alpha; = 1 (extra &alpha;|&nabla;h| growth), dt = 0.1">KS 1D abs1</button>
             <button id="bPre2a" title="KS 2D with &alpha; = 1.5, dt = 0.1">KS 2D abs1</button>
           </div>
           <div class="prow">
-            <button id="bPre1n" title="KS 1D with strong nonlinearity &beta; = 1.5, dt = 0.01">KS 1D nnl</button>
-            <button id="bPre2n" title="KS 2D with strong nonlinearity &beta; = 1.5, dt = 0.02">KS 2D nnl</button>
+            <button id="bPre1n" title="KS 1D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.05">KS 1D nnl</button>
+            <button id="bPre2n" title="KS 2D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.1">KS 2D nnl</button>
           </div>
           <div class="prow">
-            <button id="bPreBeauty" class="beautybtn" data-pre="beauty" title="Beauty — Absolute 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 50&deg;, rot 0&deg;, dist 5&middot;L)">Absolute 2D</button>
+            <button id="bPreBeauty" class="beautybtn" data-pre="beauty" title="Beauty — Absolute 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 62&deg;, rot 0&deg;, dist 5&middot;L)">Absolute 2D</button>
           </div>
           <button class="phead" id="presetHead" title="the one-click runs — click to fold / unfold">presets <b>&#9652;</b></button>
         </div>
@@ -1113,8 +1167,10 @@
     </section>
    </div>
 
-    <!-- =============== control panel =============== -->
-    <aside class="controls">
+    <!-- =============== control panel (drawer) =============== -->
+    <button class="ctltab" id="ctlTab" title="open the control panel (key k)">controls &#9666;</button>
+    <aside class="controls" id="ctlPanel">
+      <div class="ctlhead"><span>Controls</span><button class="tbtn" id="ctlClose" title="close the control panel (key k or Esc)">&times;</button></div>
       <div class="btnrow">
         <button class="btn primary" id="bRun">Run</button>
         <button class="btn" id="bStep">Step</button>
@@ -1135,10 +1191,10 @@
               <button data-v="periodic" class="on">periodic</button><button data-v="open">open</button>
             </div>
           </div>
-          <div class="row"><label>lattice size L</label>
+          <div class="row"><label>box length L</label>
             <select id="selL">
-              <option>32</option><option>64</option><option>128</option>
-              <option selected>256</option><option>512</option>
+              <option>32</option><option>64</option><option selected>128</option>
+              <option>256</option><option>512</option>
             </select>
           </div>
           <div class="row"><label>wavenumber n = <span class="vv" id="nVal">5</span></label>
@@ -1171,9 +1227,9 @@
             </select>
           </div>
           <div class="row"><label>lattice step dx</label>
-            <select id="selDx">
+            <select id="selDx" title="lattice spacing; the box L is resolved with L/dx points per direction">
               <option>0.1</option><option>0.2</option><option>0.25</option>
-              <option>0.5</option><option selected>1</option>
+              <option selected>0.5</option><option>1</option>
             </select>
           </div>
           <div class="row"><label>steps / frame</label>
@@ -1184,11 +1240,13 @@
           </div>
           <div class="hint">ETDRK4 integrates the stiff linear part exactly; dt is limited only by the
           nonlinearity. dt = 0.1 is accurate; dt = 0.25 is usually still stable. Space is spectral, so
-          dx = 1 costs no accuracy; the dx control shrinks the lattice spacing (physical length
-          L·dx) to resolve the same cells with more points. The time step picks itself from
+          dx = 1 costs no accuracy; the dx control sets the lattice spacing, and the box of
+          length L is resolved with L/dx points (in 2D at most 512&sup2;: a finer dx is
+          raised automatically). The time step picks itself from
           the strength of the nonlinear terms — 0.1 for plain KS, 0.02 up to |&beta;| = 2,
-          0.01 for 2 &lt; |&beta;| &le; 3.5 and 0.005 beyond (0.01 in 2D, where one step
-          costs L times more and the measured error is already ~10&#8315;&sup3;), and 0.02
+          0.01 for 2 &lt; |&beta;| &le; 3.5 and 0.005 beyond (in 2D, where one step costs L
+          times more, 0.05 up to |&beta;| = 2 and 0.01 beyond 3.5: measured &lang;W&rang;, growth
+          speed and &lambda; at &beta; = 1.5 are the same at dt = 0.02, 0.05 and 0.1), and 0.02
           for the +&nabla;&#8308;+&nabla;&#8310; equation — unless a finer display line
           spacing &Delta;t demands a smaller one. Steps per frame are rescaled at the same
           time, so the animation keeps roughly its pace when dt drops. Both are yours to
@@ -1237,7 +1295,7 @@
       <details>
         <summary>Systematic scan</summary>
         <div class="sect scan">
-          <div class="hint" style="margin-bottom:6px">Scan one coefficient of the equation and tabulate the largest Lyapunov exponent (Benettin and free run) and the mean width W. Runs in the background without drawing; the results appear in the section under the Lyapunov panel.</div>
+          <div class="hint" style="margin-bottom:6px">Scan one coefficient of the equation and tabulate the largest Lyapunov exponent (Benettin and free run) and the mean width W. Runs in a background worker without drawing, so it keeps its full speed when the tab is hidden or the screen is locked (the screen is kept awake while the tab is in front); the results appear in the section under the Lyapunov panel. Keep the browser open: a closed tab, sleep or hibernation ends the scan.</div>
           <div class="row"><label>linear terms</label>
             <div class="seg ordseg" id="scOrd"><button data-v="4" class="on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button><button data-v="6">+&nabla;&#8308;h +&nabla;&#8310;h</button><button data-v="both" title="run both equations and tabulate them side by side, as in the first table of the main text">both</button></div></div>
           <div class="row"><label>(&nabla;h)&sup2;</label>
@@ -1249,15 +1307,15 @@
           <div class="row"><label>scanned coefficient</label>
             <select id="scPar"><option value="beta">&beta;</option><option value="alpha">&alpha;</option><option value="gamma">&gamma;</option><option value="delta">&delta;</option><option value="L">system size L</option></select></div>
           <div class="row" id="scLRow" style="display:none"><label>sizes 16, 32, … , 2<sup>n</sup>, n =</label>
-            <select id="scNmax" title="the sizes L = 16, 32, 64, … up to 2^n are sampled (2D: at most 2^8)"></select></div>
+            <select id="scNmax" title="the sizes L = 16, 32, 64, … up to 2^n are sampled; each has L/dx lattice points (2D: at most 256 points, L ≤ 256·dx)"></select></div>
           <div class="row" id="scRangeRow"><label>from &middot; to &middot; step</label>
             <span class="triple"><input type="number" id="scMin" value="-1" step="any" title="first value"><input type="number" id="scMax" value="1" step="any" title="last value"><select id="scStep" title="step of the scanned coefficient; the points −0.4, −0.3, −0.2, −0.1, −0.05, 0, +0.1 and +0.2 are always included"><option>0.05</option><option>0.1</option><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option><option>5</option></select></span></div>
           <div class="row"><label>dimension</label>
             <div class="seg mini" id="scDim"><button data-v="1" class="on">1D</button><button data-v="2">2D</button></div></div>
-          <div class="row"><label>size L</label>
-            <select id="scL"><option>32</option><option>64</option><option>128</option><option selected>256</option><option>512</option></select></div>
+          <div class="row"><label>box length L</label>
+            <select id="scL" title="physical length of the box; the lattice has L/dx points per direction"><option>32</option><option>64</option><option selected>128</option><option>256</option><option>512</option></select></div>
           <div class="row"><label>lattice step dx</label>
-            <select id="scDx" title="lattice spacing; the physical length is L·dx"><option>0.1</option><option>0.2</option><option selected>0.25</option><option>0.5</option><option>1</option></select></div>
+            <select id="scDx" title="lattice spacing; the box L is resolved with L/dx points per direction (2D: at most 256&sup2;)"><option>0.1</option><option>0.2</option><option>0.25</option><option selected>0.5</option><option>1</option></select></div>
           <div class="row"><label>time step dt (at most)</label>
             <select id="scDtMax" title="upper bound of the time step; the automatic rule lowers it further for large coefficients"><option>0.005</option><option>0.01</option><option>0.02</option><option selected>0.05</option><option>0.1</option><option>0.2</option></select></div>
           <div class="row"><label>boundary</label>
@@ -1282,6 +1340,13 @@
           Lyapunov measurements and the tables of results — is explained in the main text that
           pulls down from the title above the display; this menu only says what each switch,
           menu and button changes.</p>
+          <p><b>This panel</b> slides in from the right edge (the <i>controls</i> tab, or the key
+          k; &times; or Esc closes it) so that the display can have the whole window. On a wide
+          window an open panel pushes the display aside, on a narrow one it lies over it. Run /
+          Pause and Reset are also at hand as the small &#9654; / &#10074;&#10074; and &#8635; buttons in the
+          lower right corner of the display, followed by a box-length switch 64 | 128 | 256 that
+          lights the L in use; when the run uses another L (32 or 512, set in the panel) the
+          switch is crossed out, but a click still restarts the run with that L.</p>
 
           <h3>The equation in the header</h3>
           <p>The header shows the equation that is being integrated right now. Three parts of it
@@ -1311,8 +1376,8 @@
           steep, this term only matters on the steep flanks of the cells. &beta; &gt; 0 gives the
           steep flanks extra growth; &beta; &lt; 0 holds them back. The menu runs from &minus;5 to
           +5, with fine steps close to zero on the negative side where the behaviour changes
-          quickly. The time step follows the choice (0.02 up to |&beta;| = 2, then 0.01 and 0.005)
-          so that the integration stays accurate.</p>
+          quickly. The time step follows the choice (0.02 up to |&beta;| = 2, then 0.01 and 0.005;
+          in 2D 0.05 up to |&beta;| = 2) so that the integration stays accurate.</p>
           <h4>&gamma;&nabla;&sup2;(&nabla;h)&sup2; — a conserved version of the KS nonlinearity</h4>
           <p>Taking the Laplacian of (&nabla;h)&sup2; produces a term whose average over the box is
           exactly zero: it moves material around on the surface but never adds any, so it does
@@ -1334,12 +1399,13 @@
           states: <i>off</i> &rarr; <b>&alpha; = +3</b>, h drawn upward &rarr; <b>&alpha; = &minus;3</b>, drawn
           with &minus;h upward (the &plusmn; button is switched on) &rarr; <i>off</i>. Both runs are 2D,
           L = 256, periodic, with the Euclidean steepness &radic;(h<sub>x</sub>&sup2;+h<sub>y</sub>&sup2;), the
-          surface coloured by h &minus; &lang;h&rang; in jet in the default view (tilt 50&deg;, rotation 0&deg;,
+          surface coloured by h &minus; &lang;h&rang; in jet in the default view (tilt 62&deg;, rotation 0&deg;,
           distance 5&thinsp;L). Changing any parameter by hand returns the button to <i>off</i>.</p>
 
           <h3>Model menu</h3>
-          <p><b>Dimension and box.</b> 1D or 2D, box size L in lattice units (dx = 1 unless
-          changed under Numerics), periodic or open boundaries. Periodic means the surface wraps
+          <p><b>Dimension and box.</b> 1D or 2D, the physical length L of the box (default 128;
+          the lattice has L/dx points per direction, dx = 0.5 unless changed under Numerics),
+          periodic or open boundaries. Periodic means the surface wraps
           around; open means a flat wall at each end (realised by mirroring the surface, so the
           slope is zero at the walls). Open runs cost 2&times; (1D) or 4&times; (2D) the work.</p>
           <p><b>Initial condition.</b> A standing wave that fits the box: n full waves (periodic)
@@ -1384,12 +1450,12 @@
           perspective).</p>
           <h4>Presets</h4>
           <p>The box in the lower left corner holds the one-click runs: KS 1D / 2D, the same with
-          &alpha; = 1 (1.5 in 2D), with &beta; = 1.5, and the Absolute 2D toggle. Its title line
+          &alpha; = 1 (1.5 in 2D), with &beta; = &minus;0.5 (<i>nnl</i>), and the Absolute 2D toggle. Its title line
           names the preset that is running (<i>presets</i> when the run has been changed by hand),
           and a click on it folds the box to that line and back.</p>
           <h4>Viewpoint button</h4>
           <p>The small <b>&#8645;</b> button next to the view button jumps between two
-          viewpoints: on the 2D surface between the default tilt 50&deg;, rotation 0&deg;, distance
+          viewpoints: on the 2D surface between the default tilt 62&deg;, rotation 0&deg;, distance
           5&thinsp;L and tilt 45&deg;, rotation 45&deg;, distance 3&thinsp;L; in the 1D 3D modes between distance
           5&thinsp;L and infinity (no perspective).</p>
           <h4>What is drawn and how it is coloured</h4>
@@ -1456,13 +1522,13 @@
           <i>both</i>, which runs the two equations and tabulates them side by side like the first
           table of the main text), (&nabla;h)&sup2; and the fixed coefficients, pick the quantity to scan — &alpha;, &beta;, &gamma;, &delta; or the box size
           L — with its range and step (the values &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.1, &minus;0.05, 0, +0.1 and +0.2
-          are always included; L runs 16, 32, … up to 2<sup>n</sup>), the dimension, box size L (default 256), lattice step dx (default 0.25) and an upper bound
+          are always included; L runs 16, 32, … up to 2<sup>n</sup>), the dimension, the box length L (default 128), the lattice step dx (default 0.5; the lattice has L/dx points) and an upper bound
           on the time step dt (default 0.05; the automatic rule lowers it further for large
           coefficients), the boundary, the transient (the total time
           per sample is twice the transient: the Benettin exponent is measured in the first half
           of the measurement, the free runs in the second) and the number of random initial
           conditions (each start draws its wavenumber n from 3…11 and its amplitude from
-          0.05…0.2, plus the usual noise). <i>Start sampling</i> pauses the display and integrates in the background;
+          0.05…0.2, plus the usual noise). <i>Start sampling</i> pauses the display and integrates in a background worker thread, which the browser does not slow down when the tab is hidden or the screen is locked (while the tab is in front the screen is also kept from switching off; the page title shows the progress);
           the section under the Lyapunov panel fills with a table and a figure: &lambda; (free run
           and Benettin, a dot per start and a line through the means), D<sub>sat</sub> — the
           saturated separation of the free runs, averaged over the runs and the starts, on a log
@@ -1481,11 +1547,12 @@
   </div>
 </div>
 
-<script>
+<script id="coreScript">
 'use strict';
 /* ============================== CORE ==============================
    Pseudospectral ETDRK4 solver for the Kuramoto–Sivashinsky equation
-        dh/dt = -Lap h - Lap^2 h + |grad h|^2 ,  dx = 1.
+        dh/dt = -Lap h - Lap^2 h + |grad h|^2
+   on a box of physical length L resolved with N = L/dx lattice points.
    Open (flat) boundaries via even mirror extension = cosine basis.
    ================================================================== */
 
@@ -1510,9 +1577,69 @@ function fftTables(n){
   return T;
 }
 
-/* in-place radix-2 complex FFT on re/im[off .. off+n) */
+/* ---- mixed-radix FFT (Stockham autosort) for lengths that are not a power
+   of two: with L the physical length and dx = 0.1 or 0.2 the lattice has
+   L/dx = 2^a·5 points. Any small prime factor is handled (radix 2 by a plain
+   butterfly, the others by a direct small DFT), so the length only has to be
+   even for the Hermitian bookkeeping of the solver. Plans (stage twiddles and
+   scratch buffers) are cached per length. */
+const MRP = new Map();
+function mrPlan(n){
+  let P = MRP.get(n); if(P) return P;
+  const stages = []; let m = n, s = 1, len = n;
+  while(len > 1){
+    let r = 2; if(len % 2){ r = 3; while(len % r) r += 2; }
+    m = len/r;
+    const tw = new Float64Array(2*len);                 // exp(-i 2π j p / len), index j*m + p
+    for(let j=0;j<r;j++) for(let p=0;p<m;p++){ const a = -2*Math.PI*j*p/len; tw[2*(j*m+p)] = Math.cos(a); tw[2*(j*m+p)+1] = Math.sin(a); }
+    const dr = new Float64Array(r*r), di = new Float64Array(r*r);   // the r-point DFT matrix
+    for(let j=0;j<r;j++) for(let k=0;k<r;k++){ const a = -2*Math.PI*((j*k)%r)/r; dr[j*r+k] = Math.cos(a); di[j*r+k] = Math.sin(a); }
+    stages.push({ r, m, s, len, tw, dr, di });
+    s *= r; len = m;
+  }
+  P = { stages, xr:new Float64Array(n), xi:new Float64Array(n), yr:new Float64Array(n), yi:new Float64Array(n),
+        ar:new Float64Array(16), ai:new Float64Array(16) };
+  MRP.set(n, P); return P;
+}
+function fftMixed(re, im, off, n, inv){
+  const P = mrPlan(n), sg = inv ? -1 : 1;
+  let xr = P.xr, xi = P.xi, yr = P.yr, yi = P.yi;
+  for(let i=0;i<n;i++){ xr[i] = re[off+i]; xi[i] = im[off+i]; }
+  const ar = P.ar, ai = P.ai;
+  for(const st of P.stages){
+    const r = st.r, m = st.m, s = st.s, tw = st.tw, dr = st.dr, di = st.di;
+    if(r === 2){
+      for(let p=0;p<m;p++){
+        const wr = tw[2*(m+p)], wi = sg*tw[2*(m+p)+1];
+        for(let q=0;q<s;q++){
+          const i0 = q + s*p, i1 = i0 + s*m, o = q + s*2*p;
+          const a0r = xr[i0], a0i = xi[i0], a1r = xr[i1], a1i = xi[i1];
+          yr[o] = a0r + a1r; yi[o] = a0i + a1i;
+          const br = a0r - a1r, bi = a0i - a1i;
+          yr[o+s] = br*wr - bi*wi; yi[o+s] = br*wi + bi*wr;
+        }
+      }
+    } else {
+      for(let p=0;p<m;p++) for(let q=0;q<s;q++){
+        for(let k=0;k<r;k++){ const idx = q + s*(p + k*m); ar[k] = xr[idx]; ai[k] = xi[idx]; }
+        for(let j=0;j<r;j++){
+          let br = 0, bi = 0;
+          for(let k=0;k<r;k++){ const cr = dr[j*r+k], ci = sg*di[j*r+k]; br += ar[k]*cr - ai[k]*ci; bi += ar[k]*ci + ai[k]*cr; }
+          const wr = tw[2*(j*m+p)], wi = sg*tw[2*(j*m+p)+1], o = q + s*(r*p + j);
+          yr[o] = br*wr - bi*wi; yi[o] = br*wi + bi*wr;
+        }
+      }
+    }
+    let t = xr; xr = yr; yr = t; t = xi; xi = yi; yi = t;
+  }
+  const f = inv ? 1/n : 1;
+  for(let i=0;i<n;i++){ re[off+i] = f*xr[i]; im[off+i] = f*xi[i]; }
+}
+
+/* in-place radix-2 complex FFT on re/im[off .. off+n) — any other length goes to the mixed-radix routine */
 function fftRange(re, im, off, n, inv){
   if(n < 2) return;
+  if(n & (n-1)){ fftMixed(re, im, off, n, inv); return; }
   const T = fftTables(n), rev = T.rev, C = T.c, S = T.s;
   for(let i=1; i<n; i++){
     const j = rev[i];
@@ -1554,19 +1681,23 @@ function fft2(re, im, nx, ny, inv, sr, si){   // rows then columns, no sub-array
 
 function cdivRe(ar, ai, br, bi){ return (ar*br + ai*bi)/(br*br + bi*bi); }
 
-/* P = {dim:1|2, L, bc:'periodic'|'open', dt, nwx, nwy, amp} */
+/* P = {dim:1|2, L, dx, bc:'periodic'|'open', dt, nwx, nwy, amp}
+   L is the physical length of the box and dx the lattice spacing: the box is
+   resolved with N = L/dx points per direction (N must be even; a power of two
+   times 5 is fine, see fftMixed). P.N, when given, overrides L/dx. */
 function buildSim(P){
   const mirror = P.bc === 'open';
-  const nx = mirror ? 2*P.L : P.L;
+  const dxp = P.dx || 1;                    // lattice spacing: physical length = N*dx
+  const N = P.N || Math.max(2, Math.round(P.L/dxp));
+  const nx = mirror ? 2*N : N;
   const ny = P.dim === 2 ? nx : 1;
   const M  = nx*ny;
-  const physNx = P.L, physNy = P.dim === 2 ? P.L : 1;
+  const physNx = N, physNy = P.dim === 2 ? N : 1;
 
   // --- mode tables: wavenumbers, linear operator, dealias mask ---
   const KX = new Float64Array(M), KY = new Float64Array(M), K2 = new Float64Array(M);
   const LIN = new Float64Array(M), mask = new Float64Array(M);
   const mlx = Math.floor(nx/3), mly = Math.floor(ny/3);
-  const dxp = P.dx || 1;                    // lattice spacing: physical length = N*dx
   for(let j=0; j<ny; j++){
     const mj = (j <= ny/2) ? j : j-ny;
     const ky = (ny === 1) ? 0 : 2*Math.PI*mj/(ny*dxp);
@@ -1713,7 +1844,7 @@ function buildSim(P){
     }
   }
 
-  const s = { P, nx, ny, M, physNx, physNy, mirror, t:0, meanH:0, h, W:0, hmax:0 };
+  const s = { P, nx, ny, M, N, dx:dxp, L:N*dxp, physNx, physNy, mirror, t:0, meanH:0, h, W:0, hmax:0 };
 
   const HP = ny > 1 ? PART : null;
   function hermitize(xr, xi){
@@ -2188,8 +2319,8 @@ function buildSim(P){
   s.perturb = function(eps){
     hr.set(vr); hi.set(vi); FT(hr, hi, true);
     const seg = f => {
-      const a = Math.floor(f*P.L/32);
-      return [a, Math.max(a+1, Math.floor((f+1)*P.L/32))];
+      const a = Math.floor(f*N/32);
+      return [a, Math.max(a+1, Math.floor((f+1)*N/32))];
     };
     const add = (i, j) => {
       hr[j*nx+i] += eps;
@@ -2218,7 +2349,7 @@ function buildSim(P){
 
   // --- initial condition: standing wave matched to the boundary condition ---
   (function init(){
-    const Lp = P.L, a = P.amp;
+    const Lp = N, a = P.amp;                // the standing wave is set on the N lattice points
     for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){
       let f;
       if(!mirror){
@@ -2246,9 +2377,76 @@ function buildSim(P){
 
   return s;
 }
-/* ============================ END CORE ============================ */
 
-/* ============================== UI =============================== */
+/* ---- one sample of the systematic scan --------------------------------
+   Shared by the main thread and the scan worker (the worker is built from the
+   text of this script).  Protocol: transient c.tTrans from a small random
+   start; then the twin is switched on: the first half of the remaining time
+   gives the Benettin exponent, the second half repeated free runs whose
+   fitted slopes give the long-run exponent; W and the power spectrum are
+   averaged over the measurement.  report(t) is called every ~30 ms of wall
+   time and yieldFn() awaited, so that messages (progress, stop) get through;
+   stopped() is polled at the same points.  Returns null when the run diverged
+   or was stopped. */
+/* a random start: wavenumber n drawn from 3…11 and amplitude from 0.05…0.2, reproducibly from the start index */
+function scRandomIC(seed){
+  let s = (seed*2654435761 + 12345) >>> 0;
+  const rnd = () => { s = (s + 0x6D2B79F5) >>> 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0)/4294967296; };
+  return { n: 3 + Math.floor(rnd()*9), amp: +(0.05 + 0.15*rnd()).toFixed(3) };
+}
+async function scanSample(c, value, seed, report, stopped, yieldFn){
+  const ic = seed === undefined ? { n: 4, amp: 0 } : scRandomIC(seed);
+  const P = { dim: c.dim, L: c.L, bc: c.bc, dt: c.dt, dx: c.dx || 1, nwx: ic.n, nwy: ic.n, amp: ic.amp, eps: 0.1,
+              alpha: c.alpha, beta: c.beta, gamma: c.gamma, delta: c.delta, order: c.order, nl2: c.nl2, absMode: 'euclid', seed, noise: 0.1 };
+  if(c.par === 'L') P.L = value; else P[c.par] = value;
+  const m = buildSim(P); m.lyap.on = false;
+  const spf = 5, fdt = c.dt*spf, bad = () => !isFinite(m.W) || m.W > 1e4;
+  let last = performance.now();
+  /* time-averaged power spectrum over the whole measurement (both halves) */
+  const spec = new Float64Array(m.spectrumK.length); let nspec = 0, specOn = false;
+  const run = async T => {                         // integrate T time units in UI-friendly chunks
+    const n = Math.max(1, Math.round(T/fdt)); let wsum = 0;
+    for(let k=0;k<n;k++){
+      m.frame(spf); if(m.lyap.on) m.lyapRenorm(); wsum += m.W;
+      if(specOn){ m.spectrumAccumulate(spec); nspec++; }
+      if(bad() || stopped()) return NaN;
+      if(performance.now() - last > 30){ last = performance.now(); report(m.t); await yieldFn(); }
+    }
+    return wsum/n;
+  };
+  await run(c.tTrans); if(bad() || stopped()) return null;
+  const half = Math.max(fdt*4, (c.tTotal - c.tTrans)/2);
+  m.lyap.on = true; m.lyap.mode = 'renorm'; m.lyapReset(false);
+  let G = 0, T = 0, wsum = 0, nf = 0; const nB = Math.max(2, Math.round(half/fdt));
+  for(let k=0;k<nB;k++){
+    m.frame(spf); m.lyapRenorm(); wsum += m.W; nf++; m.spectrumAccumulate(spec); nspec++;
+    if(!m.lyap.warm && k > 0){ G += Math.log(m.lyap.norm/m.lyap.eps); T += fdt; }
+    if(bad()) return null; if(stopped()) return null;
+    if(performance.now() - last > 30){ last = performance.now(); report(m.t); await yieldFn(); }
+  }
+  const ben = T > 0 ? G/T : NaN, Wm = wsum/nf;
+  m.lyap.mode = 'free'; const slopes = [], sats = []; let tWin = 0, nsat = 0; const cap = Math.min(600, half*0.6);
+  specOn = true;
+  while(tWin < half){
+    m.lyapReset(false); let tr = 0;
+    while(tr < cap && tWin < half){ const r = await run(Math.min(10, half - tWin)); tr += 10; tWin += 10; if(!isFinite(r)) return null; if(m.lyap.tSat >= 0 && m.t > m.lyap.tSat + 60) break; }
+    if(isFinite(m.lyap.fit.lam) && tr >= 30){ slopes.push(m.lyap.fit.lam); const sv = m.satValue(); if(isFinite(sv)){ sats.push(sv); if(isFinite(m.lyap.dSat)) nsat++; } }
+  }
+  const satM = sats.length ? sats.reduce((a,b)=>a+b,0)/sats.length : NaN;
+  const mean = slopes.reduce((a,b)=>a+b,0)/Math.max(1, slopes.length);
+  const sd = Math.sqrt(slopes.reduce((a,b)=>a+(b-mean)**2,0)/Math.max(1, slopes.length-1));
+  for(let i=0;i<spec.length;i++) spec[i] /= Math.max(1, nspec);
+  return { free: slopes.length ? mean : NaN, sd: slopes.length > 1 ? sd : 0, n: slopes.length, ben, sat: satM, satOK: nsat > 0, eps: m.lyap.eps, W: Wm, spec, k: m.spectrumK };
+}
+/* ============================ END CORE ============================ */
+</script>
+<script>
+'use strict';
+/* ============================== UI ===============================
+   The core above sits in its own <script id="coreScript"> so that the
+   systematic scan can run the same solver inside a Web Worker (built from
+   that script's text) — off the main thread, where a hidden tab or a locked
+   screen does not throttle it. */
 (function(){
   const $ = id => document.getElementById(id);
   const cv = $('view');
@@ -2262,9 +2460,26 @@ function buildSim(P){
   let clean = false, onScreen = true;
   const capInset = () => onScreen ? 96 : 0;
 
-  const params = { dim:1, L:256, bc:'periodic', n:5, amp:0.1, eps:0.1, dt:0.1, dx:1, alpha:0, beta:0, gamma:0, delta:0, order:4,
+  const params = { dim:1, L:128, bc:'periodic', n:5, amp:0.1, eps:0.1, dt:0.1, dx:0.5, alpha:0, beta:0, gamma:0, delta:0, order:4,
                    nl2:true, absMode:'euclid' };
   let stepsPerFrame = 5;
+  /* L is the physical length of the box, dx the lattice spacing: the lattice
+     has L/dx points per direction. dx is offered in the fixed list DXV; in 2D
+     it is raised, if necessary, so that the lattice stays at ≤ 512² points
+     (open boundaries mirror it to 1024²), which is what the memory allows. */
+  const DXV = [0.1, 0.2, 0.25, 0.5, 1];
+  let dxClamped = false;
+  const latticeN = () => Math.max(2, Math.round(params.L/params.dx));
+  function clampDx(){
+    dxClamped = false;
+    if(params.dim !== 2) return;
+    while(latticeN() > 512){
+      const i = DXV.indexOf(params.dx);
+      if(i < 0 || i >= DXV.length-1) break;
+      params.dx = DXV[i+1]; dxClamped = true;
+    }
+    if(dxClamped) $('selDx').value = ''+params.dx;
+  }
   let dtplot = 0.2, keepN = 2000, dispGain = 25;   // dtplot: internal capture cadence
   /* plotted variable: 1D — 'h' or 'dx' (dh/dx) on the y axis of every plot;
      2D — 'h', 'dx' (∂h/∂x), 'absdx' (|∇h| = √(hx²+hy²)) or 'lap' (∇²h): the
@@ -2276,8 +2491,8 @@ function buildSim(P){
   let profScale = 1e-6;
   let stamp = 0;
   let qkind = 'plain';
-  const modeSel = { 1:'wf3dsc', 2:'map' };
-  const view = { tilt:50, rot:0, dist:5 };
+  const modeSel = { 1:'wf3dsw', 2:'map' };
+  const view = { tilt:62, rot:0, dist:5 };   // default viewpoint of the 2D surface: tilt 62°
   let snapshots = [], nextSnap = 0;
   let wfSepAuto = true, wfSep = 2;
   let qbuf = null;
@@ -2579,7 +2794,7 @@ function buildSim(P){
     const small = window.innerWidth <= 860;
     /* the display fills the viewport from its top edge to the bottom; the
        Lyapunov section lives below it and is reached by scrolling */
-    let target = Math.round(vh - top - 14 - (small ? 74 : 0));
+    let target = Math.round(vh - top - 14);
     if(small) target = Math.min(target, Math.round(vh*0.76));
     target = Math.max(small ? 230 : 300, target);
     const cur = parseFloat(wrap.style.height) || 0;
@@ -2594,6 +2809,7 @@ function buildSim(P){
   function rebuild(){
     if(!beautyBuilding){ if(beauty !== 'off') setBeauty('off'); if(curPreset || $('presetHead').classList.contains('run')) setPresetLabel(null); }   // any change by hand leaves the preset
     diverged = false; $('divergedMsg').style.display = 'none';
+    clampDx(); updateHint();
     sim = buildSim({ dim:params.dim, L:params.L, bc:params.bc, dt:params.dt, dx:params.dx,
                      nwx:params.n, nwy:params.n, amp:params.amp, eps:params.eps,
                      alpha:params.alpha, beta:params.beta, gamma:params.gamma, delta:params.delta, order:params.order,
@@ -2604,8 +2820,8 @@ function buildSim(P){
     profScale = Math.max(1e-6, sim.hmax);
     for(const k in qscales){ qscales[k] = 1e-6; scaleStamp[k] = -1; }
     for(const k in qwin) delete qwin[k];
-    stC.width = params.L; stC.height = stH; stRows = 0;
-    stCtx.fillStyle = TH.stBlank; stCtx.fillRect(0,0,params.L,stH);
+    stC.width = sim.physNx; stC.height = stH; stRows = 0;
+    stCtx.fillStyle = TH.stBlank; stCtx.fillRect(0,0,sim.physNx,stH);
     fldC.width = sim.physNx; fldC.height = Math.max(1, sim.physNy);
     snapshots = []; nextSnap = 0; capture();
     wfScale = 0; gCache.stamp = -1; swReset();
@@ -2723,7 +2939,7 @@ function buildSim(P){
   function xAxis(x0, x1, y0, y1, grid){
     ctx.textAlign = 'center'; ctx.textBaseline = 'top';
     for(let qi=0;qi<=4;qi++){
-      const xv = qi*params.L*params.dx/4, x = x0 + (x1-x0)*qi/4;
+      const xv = qi*params.L/4, x = x0 + (x1-x0)*qi/4;
       if(grid){
         ctx.strokeStyle = TH.grid2; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1); ctx.stroke();
@@ -3115,10 +3331,10 @@ function buildSim(P){
     ctx.strokeRect(px+0.5, py+0.5, side, side);
     axisFont(); ctx.fillStyle = TH.label;
     ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillText('0', px+4, py+side+5); ctx.fillText(fmt(params.L*params.dx), px+side-6, py+side+5);
+    ctx.fillText('0', px+4, py+side+5); ctx.fillText(fmt(params.L), px+side-6, py+side+5);
     ctx.fillText('x', px+side/2, py+side+5);
     ctx.textAlign='right'; ctx.textBaseline='middle';
-    ctx.fillText('0', px-5, py+side-6); ctx.fillText(fmt(params.L*params.dx), px-5, py+8);
+    ctx.fillText('0', px-5, py+side-6); ctx.fillText(fmt(params.L), px-5, py+8);
     ctx.save(); ctx.translate(px-20, py+side/2); ctx.rotate(-Math.PI/2);
     ctx.textAlign='center'; ctx.textBaseline='alphabetic';
     ctx.fillText('y', 0, 0); ctx.restore();
@@ -3834,7 +4050,7 @@ function buildSim(P){
       pxR = pxL + side + keyW + gap;
     }
     ctx.imageSmoothingEnabled = true;
-    const Lbox = fmt(params.L*params.dx);
+    const Lbox = fmt(params.L);
     const nodeI = ly.node % nx, nodeJ = (ly.node - nodeI)/nx;
     function square(px, py, fld, yAxis){
       ctx.save(); ctx.translate(px, py+side); ctx.scale(1,-1);
@@ -3908,8 +4124,7 @@ function buildSim(P){
     if(params.gamma !== 0) eq += (params.gamma > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.gamma)) + '·∇²(∇h)²';
     if(params.delta !== 0) eq += (params.delta > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.delta)) + '·∇²h(∇h)²';
     const geom = (params.dim === 1 ? '1+1 D' : '2+1 D') + ',  ' + params.bc +
-                 ',  L = ' + params.L + ' × dx ' + params.dx +
-                 ' = ' + fmt(params.L*params.dx);
+                 ',  L = ' + params.L + ',  dx = ' + params.dx + ' (' + sim.physNx + (params.dim === 2 ? '²' : '') + ' points)';
     const num  = 'dt = ' + params.dt + ',  ETDRK4 pseudospectral,  t = ' + sim.t.toFixed(1);
     const ly = sim.lyap, lamOK = ly.on && ly.ready && isFinite(ly.lam);
     const stat = (flipSign ? 'plotted −h,  ' : '') + '⟨h⟩ = ' + (SG()*sim.meanH).toFixed(2) + ',  W = ' + sim.W.toFixed(3) +
@@ -4003,7 +4218,7 @@ function buildSim(P){
     const tag = (params.dim === 1 ? 'KS1D' : 'KS2D') + (params.nl2 ? '' : '_nosq') +
                 (params.alpha ? '_a' + fmtTerm(params.alpha) + (params.dim === 2 && params.absMode === 'sum' ? 'sum' : '') : '') +
                 (params.beta  ? '_b' + fmtTerm(params.beta)  : '') +
-                '_L' + params.L + '_t' + sim.t.toFixed(0) +
+                '_L' + params.L + '_dx' + params.dx + '_t' + sim.t.toFixed(0) +
                 (kind === 'clean' ? '_clean' : kind === 'sq' ? '_sq' : '');
     if(!btn.dataset.label) btn.dataset.label = btn.textContent;   // survives rapid re-clicks
     const label = btn.dataset.label;
@@ -4066,6 +4281,7 @@ function buildSim(P){
       advance(stepsPerFrame);
       draw();
     }
+    syncRun2();
     requestAnimationFrame(tick);
   }
 
@@ -4081,7 +4297,6 @@ function buildSim(P){
   }
   seg($('segDim'), ()=>''+params.dim, v=>{
     params.dim = +v;
-    if(!userL){ params.L = params.dim === 2 ? 128 : 256; $('selL').value = ''+params.L; }   // default box: 256 in 1D, 128 in 2D
     if(!userSpf){ stepsPerFrame = params.dim === 2 ? 2 : 5; $('selSpf').value = ''+stepsPerFrame; noteSpfRef(); }   // default pace: 2 steps/frame in 2D, 5 in 1D
     if(params.dim === 1 && yvar !== 'h' && yvar !== 'dx'){   // 1D plots only h or dh/dx
       yvar = 'h'; setSeg('segYvar', yvar); setSeg('segYvar2', yvar); setSeg('segYvar4', yvar);
@@ -4149,14 +4364,14 @@ function buildSim(P){
     placeViewTog();
   }
   /* the viewpoint toggle sits just right of whichever detail box is showing:
-     2D surface → tilt 50°, rot 0°, dist 5L (default)  ⇄  tilt 45°, rot 45°, dist 3L;
+     2D surface → tilt 62°, rot 0°, dist 5L (default)  ⇄  tilt 45°, rot 45°, dist 3L;
      1D 3D modes → dist 5L ⇄ ∞ */
   function placeViewTog(){
     const b = $('bViewTog');
     const surf = params.dim===2 && modeSel[2]==='surface';
     const w3 = params.dim===1 && is3dMode(modeSel[1]);
     b.style.display = (surf || w3) ? 'inline-block' : 'none';
-    b.title = surf ? 'switch viewpoint: tilt 50°, rot 0°, dist 5·L (default)  ⇄  tilt 45°, rot 45°, dist 3·L'
+    b.title = surf ? 'switch viewpoint: tilt 62°, rot 0°, dist 5·L (default)  ⇄  tilt 45°, rot 45°, dist 3·L'
                    : 'switch viewpoint: dist 5·L  ⇄  ∞ (no perspective)';
   }
   $('viewHead').addEventListener('click', ()=>{ const f = $('viewBox').classList.toggle('folded'); $('viewHead').classList.toggle('open', !f); });
@@ -4170,8 +4385,8 @@ function buildSim(P){
   foldForWidth(); window.addEventListener('resize', ()=>setTimeout(foldForWidth, 0));
   $('bViewTog').addEventListener('click', ()=>{
     if(params.dim===2 && modeSel[2]==='surface'){
-      const atDefault = Math.abs(view.tilt-50)<0.5 && (view.rot%360)<0.5 && view.dist>4.9;
-      view.tilt = atDefault ? 45 : 50; view.rot = atDefault ? 45 : 0; view.dist = atDefault ? 3 : 5;
+      const atDefault = Math.abs(view.tilt-62)<0.5 && (view.rot%360)<0.5 && view.dist>4.9;
+      view.tilt = atDefault ? 45 : 62; view.rot = atDefault ? 45 : 0; view.dist = atDefault ? 3 : 5;
       $('rngTilt').value = view.tilt; $('v3TiltVal').textContent = view.tilt+'°';
       $('rngRot').value = view.rot; $('v3RotVal').textContent = view.rot+'°';
       $('rngDist').value = view.dist; $('v3DistVal').textContent = view.dist.toFixed(1)+'·L';
@@ -4213,17 +4428,18 @@ function buildSim(P){
 
   function updateHint(){
     const per = params.bc === 'periodic';
-    const k = per ? 2*Math.PI*params.n/(params.L*params.dx) : Math.PI*params.n/(params.L*params.dx);
+    const k = per ? 2*Math.PI*params.n/params.L : Math.PI*params.n/params.L;
     const om = params.order === 6 ? Math.pow(k,4)-Math.pow(k,6) : k*k-Math.pow(k,4);
     const wave = per
       ? (params.dim === 2 ? 'h₀ = A·sin(2πnx/L)·sin(2πny/L)' : 'h₀ = A·sin(2πn·x/L), n full waves')
       : (params.dim === 2 ? 'h₀ = A·cos(πnx/L)·cos(πny/L), flat walls' : 'h₀ = A·cos(πn·x/L), n half waves, flat walls');
     $('icHint').textContent = wave + ' (+ ε strip), k = ' + k.toFixed(3) +
-      ', ω = ' + om.toFixed(3) + (om > 0 ? ' — grows' : ' — decays');
+      ', ω = ' + om.toFixed(3) + (om > 0 ? ' — grows' : ' — decays') +
+      '. Lattice: ' + latticeN() + (params.dim === 2 ? '²' : '') + ' points (L/dx)' + (dxClamped ? ' — dx raised to ' + params.dx + ' to keep the 2D lattice at ≤ 512² points' : '');
   }
 
-  let userL = false, userSpf = false;
-  $('selL').addEventListener('change', e=>{ params.L = +e.target.value; userL = true; updateHint(); rebuild(); });
+  let userSpf = false;
+  $('selL').addEventListener('change', e=>{ params.L = +e.target.value; updateHint(); rebuild(); });
   $('rngN').addEventListener('input', e=>{ $('nVal').textContent = e.target.value; });
   $('rngN').addEventListener('change', e=>{
     params.n = +e.target.value; $('nVal').textContent = params.n;
@@ -4301,13 +4517,20 @@ function buildSim(P){
      one: measured against a dt = 0.001 reference at t = 20, the relative error of
      the whole β range is ~3e-4 at dt = 0.02 and ~1e-4 at dt = 0.01, while the
      |β| ≥ 3 runs at dt ≥ 0.05 visibly drift.  Runs stay bounded to |β| = 5 even
-     at dt = 0.25, so these values leave a wide margin. */
+     at dt = 0.25, so these values leave a wide margin.
+     2D, β = 1.5 (the KS 2D nnl preset), 128² and 256² lattices, runs of 300–600
+     time units from random starts: ⟨W⟩, the growth speed ⟨∂h/∂t⟩ and the
+     Benettin λ at dt = 0.05, 0.1 and 0.2 all lie within the start-to-start
+     scatter of the dt = 0.02 values (W 1.01–1.04 / 1.11–1.16, v 0.564–0.591,
+     λ 0.14–0.17), and the short-time rms error against a dt = 0.0025 reference
+     is 0.1 % at 0.02, 0.3 % at 0.05, 0.6 % at 0.1 — so 2D uses 0.05 up to
+     |β| = 2 and the preset runs at 0.1 (a 2D step costs L× more). */
   function dtForTerms(){
     const b = Math.abs(params.beta);
     let dt;
     if(b > 3.5) dt = params.dim === 2 ? 0.01 : 0.005;      // a 2D step costs L× more
     else if(b > 2) dt = 0.01;
-    else if(b > 0) dt = 0.02;
+    else if(b > 0) dt = params.dim === 2 ? 0.05 : 0.02;    // 2D: see the note below
     else if(Math.abs(params.alpha) > 2) dt = 0.05;         // steep facets at large |α|
     else dt = params.order === 6 ? 0.02 : 0.1;
     /* the two second-derivative nonlinearities: measured against dt = 0.002 over
@@ -4509,6 +4732,8 @@ function buildSim(P){
     const tag = document.activeElement.tagName;
     if(/SELECT|BUTTON|INPUT|TEXTAREA/.test(tag)) return;
     if(e.code === 'Space'){ e.preventDefault(); $('bRun').click(); }
+    else if(e.key === 'k' || e.key === 'K'){ e.preventDefault(); setCtlOpen(!document.body.classList.contains('ctl-open')); }
+    else if(e.key === 'Escape' && document.body.classList.contains('ctl-open')){ e.preventDefault(); setCtlOpen(false); }
     else if(e.key === '+' || e.key === '=' || e.key === '-' || e.key === '−'){
       e.preventDefault(); toggleTheme();
     }
@@ -4516,6 +4741,46 @@ function buildSim(P){
     else if(e.key === 'c' || e.key === 'C'){ e.preventDefault(); exportPNG('clean'); }
     else if(e.key === 's' || e.key === 'S'){ e.preventDefault(); exportPNG('sq'); }
   });
+
+  /* ---- the control drawer: closed by default so the display has the whole
+     window; the choice is remembered. The canvas follows the width change
+     through its ResizeObserver. ---- */
+  function setCtlOpen(open){
+    document.body.classList.toggle('ctl-open', open);
+    try{ localStorage.setItem('ks-ctl-open', open ? '1' : '0'); }catch(e){}
+    setTimeout(reflow, 240);
+  }
+  $('ctlTab').addEventListener('click', ()=>setCtlOpen(true));
+  $('ctlClose').addEventListener('click', ()=>setCtlOpen(false));
+  try{ if(localStorage.getItem('ks-ctl-open') === '1' && window.innerWidth > 860) document.body.classList.add('ctl-open'); }catch(e){}
+
+  /* small copies of Run / Pause and Reset in the lower right corner of the display */
+  $('bRun2').addEventListener('click', ()=>$('bRun').click());
+  $('bReset2').addEventListener('click', ()=>$('bReset').click());
+  /* the L switch beside them: sets L like the control panel's menu (the run
+     restarts with the new box, running state kept); the button of the L in use
+     is lit, and a cross covers the switch while the run uses another L */
+  document.querySelectorAll('#segL2 button').forEach(b => b.addEventListener('click', ()=>{
+    const L = +b.dataset.v; if(params.L === L) return;
+    params.L = L; $('selL').value = ''+L; updateHint(); rebuild();
+  }));
+  let l2State = -1;
+  function syncL2(){
+    if(l2State === params.L) return;
+    l2State = params.L;
+    const seg = $('segL2'); let any = false;
+    seg.querySelectorAll('button').forEach(b => { const on = +b.dataset.v === params.L; b.classList.toggle('on', on); any = any || on; });
+    seg.classList.toggle('other', !any);
+  }
+  let run2State = null;
+  function syncRun2(){
+    syncL2();
+    const r = running && !diverged;
+    if(run2State === r) return;
+    run2State = r;
+    const b = $('bRun2'); b.innerHTML = r ? '&#10074;&#10074;' : '&#9654;'; b.classList.toggle('paused', !r);
+    b.title = r ? 'pause (space)' : 'run (space)';
+  }
 
   // drag to rotate the 3D surface (sliders follow)
   let dragging = false, dragX = 0, dragY = 0;
@@ -4581,12 +4846,17 @@ function buildSim(P){
     running = true; $('bRun').textContent = 'Pause';
   }
   function base1D(){
-    params.dim=1; params.L=256; params.bc='periodic'; params.dx=0.25; params.order=4;
+    params.dim=1; params.L=128; params.bc='periodic'; params.dx=0.5; params.order=4;
     params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.amp=0.1; params.eps=0.1; params.n=5; params.nl2=true; params.absMode='euclid';
-    params.dt=0.05; $('selDt').value='0.05';
-    stepsPerFrame=2; $('selSpf').value='2';
+    /* dt = 0.1 (was 0.05): at β = 0 and at α = 1, 1D, L = 128, dx = 0.5, runs of
+       8000 time units from three random starts give the same ⟨W⟩, growth speed and
+       λ at dt = 0.05, 0.1, 0.2 and 0.25 (e.g. λ = 0.092–0.096 throughout), so 0.1 —
+       the largest step the 3D display's line spacing Δt = 0.1 admits — is used,
+       one step per frame to keep the pace of the animation */
+    params.dt=0.1; $('selDt').value='0.1';
+    stepsPerFrame=1; $('selSpf').value='1';
     dispGain=2; keepN=5000;
-    yvar='h'; qkind='nlap'; modeSel[1]='wf3dsc';
+    yvar='h'; qkind='nlap'; modeSel[1]='wf3dsw';
     wfDt=0.1; wf3dTilt=25; wf3dDist=10;
     swStepPx=1.5; $('rngVsep').value=2; $('vsepVal').textContent='1.5';
     wfSepAuto=false; wfSep=0.02;
@@ -4602,8 +4872,8 @@ function buildSim(P){
     params.dt=0.2; $('selDt').value='0.2';
     stepsPerFrame=2; $('selSpf').value='2';
     dispGain=2; yvar='h'; qkind='lap'; modeSel[2]='surface';
-    view.tilt=50; view.rot=0; view.dist=5;
-    $('rngTilt').value=50; $('v3TiltVal').textContent='50°';
+    view.tilt=62; view.rot=0; view.dist=5;
+    $('rngTilt').value=62; $('v3TiltVal').textContent='62°';
     $('rngRot').value=0;   $('v3RotVal').textContent='0°';
     $('rngDist').value=5;  $('v3DistVal').textContent='5.0·L';
     if(!darkBG){ darkBG = true; applyTheme(); }   // black background by default
@@ -4617,13 +4887,16 @@ function buildSim(P){
     params.dt=0.1; $('selDt').value='0.1';
   }, 'bPre2a'));
   $('bPre1n').addEventListener('click', ()=>runPreset(()=>{
-    base1D(); params.beta=1.5;
-    params.dt=0.01; $('selDt').value='0.01';
-    stepsPerFrame=5; $('selSpf').value='5';
+    base1D(); params.beta=-0.5;
+    /* β = −0.5 (was +1.5). dt = 0.05: at β = −0.5, 1D, L = 128, dx = 0.5, runs of 6000 time
+       units from three starts give the same ⟨W⟩, growth speed and λ at dt = 0.02, 0.05 and
+       0.1 (see the project note); the automatic rule would take 0.02 */
+    params.dt=0.05; $('selDt').value='0.05';
+    stepsPerFrame=2; $('selSpf').value='2';
   }, 'bPre1n'));
   $('bPre2n').addEventListener('click', ()=>runPreset(()=>{
-    base2D(); params.beta=1.5;
-    params.dt=0.02; $('selDt').value='0.02';
+    base2D(); params.beta=-0.5;
+    params.dt=0.1; $('selDt').value='0.1';    // β = −0.5 (was +1.5); dt checked as for β = +1.5 (see dtForTerms)
   }, 'bPre2n'));
   /* ---- Beauty: special runs chosen for their looks. One button in the display cycles
      off → Absolute 2D with α = +3 (h upward) → Absolute 2D with α = −3 (−h upward) → off ---- */
@@ -4640,7 +4913,7 @@ function buildSim(P){
     stepsPerFrame=2; $('selSpf').value='2';
     qkind='h'; yvar='h';
     setLUT('jet'); $('cmap').value='jet';
-    /* base2D already set the default viewpoint: tilt 50°, rot 0°, dist 5·L */
+    /* base2D already set the default viewpoint: tilt 62°, rot 0°, dist 5·L */
     setFlip(sign < 0);                 // α = −3: −h drawn upward
   }
   function startBeauty(v){
@@ -4971,12 +5244,15 @@ function buildSim(P){
   $('scPar').addEventListener('change', scRows); scRows();
   seg($('scOrd'), ()=>''+scOrd, v=>{ scOrd = v === 'both' ? 'both' : +v; });
   seg($('scNL2'), ()=>(scNL2?'1':'0'), v=>{ scNL2 = v === '1'; });
-  seg($('scDim'), ()=>''+scDim, v=>{ scDim = +v; if(scDim === 2 && +$('scL').value > 128) $('scL').value = '64'; });
+  /* 2D scans are capped at 256 lattice points per direction (L/dx ≤ 256): the box is halved until it fits */
+  function scFit2D(){ if(scDim !== 2) return; const dx = +$('scDx').value; let L = +$('scL').value; while(L/dx > 256 && L > 32) L /= 2; $('scL').value = ''+L; }
+  seg($('scDim'), ()=>''+scDim, v=>{ scDim = +v; scFit2D(); });
+  $('scDx').addEventListener('change', scFit2D);
   seg($('scBC'), ()=>scBC, v=>{ scBC = v; });
   /* the same time-step rule as the main display */
   function scDt(c){
     const b = Math.abs(c.beta); let dt;
-    if(b > 3.5) dt = c.dim === 2 ? 0.01 : 0.005; else if(b > 2) dt = 0.01; else if(b > 0) dt = 0.02;
+    if(b > 3.5) dt = c.dim === 2 ? 0.01 : 0.005; else if(b > 2) dt = 0.01; else if(b > 0) dt = c.dim === 2 ? 0.05 : 0.02;
     else if(Math.abs(c.alpha) > 2) dt = 0.05; else dt = c.order === 6 ? 0.02 : 0.1;
     if(c.gamma !== 0) dt = Math.min(dt, 0.02);
     if(c.delta !== 0) dt = Math.min(dt, 0.01);
@@ -4994,58 +5270,76 @@ function buildSim(P){
     }
     return eq;
   }
+  /* the sample protocol (scanSample) lives in the core script, shared with the worker */
   const yieldUI = () => new Promise(r => setTimeout(r, 0));
-  /* one sample: returns {free, sd, n, ben, W} or null when the run diverged */
-  /* a random start: wavenumber n drawn from 3…11 and amplitude from 0.05…0.2, reproducibly from the start index */
-  function scRandomIC(seed){
-    let s = (seed*2654435761 + 12345) >>> 0;
-    const rnd = () => { s = (s + 0x6D2B79F5) >>> 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0)/4294967296; };
-    return { n: 3 + Math.floor(rnd()*9), amp: +(0.05 + 0.15*rnd()).toFixed(3) };
-  }
-  async function scSample(c, value, seed, report){
-    const ic = seed === undefined ? { n: 4, amp: 0 } : scRandomIC(seed);
-    const P = { dim: c.dim, L: c.L, bc: c.bc, dt: c.dt, dx: c.dx || 1, nwx: ic.n, nwy: ic.n, amp: ic.amp, eps: 0.1,
-                alpha: c.alpha, beta: c.beta, gamma: c.gamma, delta: c.delta, order: c.order, nl2: c.nl2, absMode: 'euclid', seed, noise: 0.1 };
-    if(c.par === 'L') P.L = value; else P[c.par] = value;
-    const m = buildSim(P); m.lyap.on = false;
-    const spf = 5, fdt = c.dt*spf, bad = () => !isFinite(m.W) || m.W > 1e4;
-    let last = performance.now();
-    /* time-averaged power spectrum over the whole measurement (both halves) */
-    const spec = new Float64Array(m.spectrumK.length); let nspec = 0, specOn = false;
-    const run = async T => {                         // integrate T time units in UI-friendly chunks
-      const n = Math.max(1, Math.round(T/fdt)); let wsum = 0;
-      for(let k=0;k<n;k++){
-        m.frame(spf); if(m.lyap.on) m.lyapRenorm(); wsum += m.W;
-        if(specOn){ m.spectrumAccumulate(spec); nspec++; }
-        if(bad() || SC.stop) return NaN;
-        if(performance.now() - last > 30){ last = performance.now(); report(m.t); await yieldUI(); }
+  async function scSample(c, value, seed, report){ return scanSample(c, value, seed, report, () => SC.stop, yieldUI); }
+
+  /* ---- the scan worker ----------------------------------------------------
+     A Web Worker built from the text of the core script integrates the samples
+     off the main thread.  In a hidden tab the browser throttles the page's
+     timers to one per second (after a few minutes, one per minute), and a
+     locked screen hides the tab — the old timer-driven scan then crawled.  A
+     dedicated worker is not throttled, and it yields between chunks through a
+     MessageChannel rather than a timer, so the scan runs on at full speed with
+     the screen locked or another tab in front.  Progress and stop requests
+     travel as messages; the main thread falls back to integrating in place
+     when a worker cannot be created (blob workers are blocked in some
+     embedded viewers). */
+  let scWorker = null, scJobId = 0; const scJobs = new Map();
+  function scWorkerBody(){
+    let stop = false, cont = null;
+    const ch = new MessageChannel();
+    ch.port1.onmessage = () => { const f = cont; cont = null; if(f) f(); };
+    const yieldW = () => new Promise(r => { cont = r; ch.port2.postMessage(0); });
+    self.onmessage = async e => {
+      const d = e.data;
+      if(d.cmd === 'stop'){ stop = true; return; }
+      if(d.cmd === 'sample'){
+        stop = false; let lastRep = 0;
+        const rep = t => { const now = performance.now(); if(now - lastRep > 150){ lastRep = now; self.postMessage({ progress: true, id: d.id, t }); } };
+        let r = null;
+        try{ r = await scanSample(d.cfg, d.value, d.seed, rep, () => stop, yieldW); }
+        catch(err){ self.postMessage({ done: true, id: d.id, error: String(err) }); return; }
+        self.postMessage({ done: true, id: d.id, result: r });
       }
-      return wsum/n;
     };
-    await run(c.tTrans); if(bad() || SC.stop) return null;
-    const half = Math.max(fdt*4, (c.tTotal - c.tTrans)/2);
-    m.lyap.on = true; m.lyap.mode = 'renorm'; m.lyapReset(false);
-    let G = 0, T = 0, wsum = 0, nf = 0; const nB = Math.max(2, Math.round(half/fdt));
-    for(let k=0;k<nB;k++){
-      m.frame(spf); m.lyapRenorm(); wsum += m.W; nf++; m.spectrumAccumulate(spec); nspec++;
-      if(!m.lyap.warm && k > 0){ G += Math.log(m.lyap.norm/m.lyap.eps); T += fdt; }
-      if(bad()) return null; if(SC.stop) return null;
-      if(performance.now() - last > 30){ last = performance.now(); report(m.t); await yieldUI(); }
-    }
-    const ben = T > 0 ? G/T : NaN, Wm = wsum/nf;
-    m.lyap.mode = 'free'; const slopes = [], sats = []; let tWin = 0, nsat = 0; const cap = Math.min(600, half*0.6);
-    specOn = true;
-    while(tWin < half){
-      m.lyapReset(false); let tr = 0;
-      while(tr < cap && tWin < half){ const r = await run(Math.min(10, half - tWin)); tr += 10; tWin += 10; if(!isFinite(r)) return null; if(m.lyap.tSat >= 0 && m.t > m.lyap.tSat + 60) break; }
-      if(isFinite(m.lyap.fit.lam) && tr >= 30){ slopes.push(m.lyap.fit.lam); const sv = m.satValue(); if(isFinite(sv)){ sats.push(sv); if(isFinite(m.lyap.dSat)) nsat++; } }
-    }
-    const satM = sats.length ? sats.reduce((a,b)=>a+b,0)/sats.length : NaN;
-    const mean = slopes.reduce((a,b)=>a+b,0)/Math.max(1, slopes.length);
-    const sd = Math.sqrt(slopes.reduce((a,b)=>a+(b-mean)**2,0)/Math.max(1, slopes.length-1));
-    for(let i=0;i<spec.length;i++) spec[i] /= Math.max(1, nspec);
-    return { free: slopes.length ? mean : NaN, sd: slopes.length > 1 ? sd : 0, n: slopes.length, ben, sat: satM, satOK: nsat > 0, eps: m.lyap.eps, W: Wm, spec, k: m.spectrumK };
   }
+  function scGetWorker(){
+    if(scWorker) return scWorker;
+    try{
+      const src = document.getElementById('coreScript').textContent + '\n(' + scWorkerBody.toString() + ')();\n';
+      const url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+      const w = new Worker(url);
+      w.onmessage = e => {
+        const d = e.data, j = scJobs.get(d.id); if(!j) return;
+        if(d.progress){ j.report(d.t); return; }
+        if(d.done){ scJobs.delete(d.id); if(d.error) j.reject(new Error(d.error)); else j.resolve(d.result); }
+      };
+      w.onerror = err => { for(const j of scJobs.values()) j.reject(err); scJobs.clear(); try{ w.terminate(); }catch(e){} if(scWorker === w) scWorker = null; };
+      scWorker = w;
+    } catch(e){ scWorker = null; }
+    return scWorker;
+  }
+  function scSampleAny(c, value, seed, report){
+    const w = scGetWorker();
+    if(!w) return scSample(c, value, seed, report);
+    return new Promise((resolve, reject) => {
+      const id = ++scJobId; scJobs.set(id, { resolve, reject, report });
+      w.postMessage({ cmd: 'sample', id, cfg: c, value, seed });
+    }).catch(() => SC.stop ? null : scSample(c, value, seed, report));   // worker trouble: integrate in place
+  }
+  /* keep the screen from switching off (and locking) by itself while a scan runs;
+     the lock is dropped by the browser whenever the tab is hidden and taken again
+     when it comes back — the worker keeps computing in between */
+  let wakeLock = null;
+  async function scKeepAwake(on){
+    if(on){
+      try{ if(navigator.wakeLock && !wakeLock && document.visibilityState === 'visible'){ wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch(e){ wakeLock = null; }
+    } else if(wakeLock){ try{ wakeLock.release(); } catch(e){} wakeLock = null; }
+  }
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible' && SC.running) scKeepAwake(true); });
+  window.addEventListener('beforeunload', e => { if(SC.running){ e.preventDefault(); e.returnValue = ''; } });
+  const TITLE0 = document.title;
   async function scRun(){
     if(SC.running) return;
     const orders = scOrd === 'both' ? [4, 6] : [scOrd];
@@ -5053,12 +5347,14 @@ function buildSim(P){
                 par: $('scPar').value, dim: scDim, L: +$('scL').value, dx: +$('scDx').value, dtMax: +$('scDtMax').value, bc: scBC, tTrans: +$('scTrans').value, nmc: +$('scNMC').value };
     c.tTotal = 2*c.tTrans;
     const v0 = +$('scMin').value, v1 = +$('scMax').value, st = +$('scStep').value;
-    let vals = [];
-    if(c.par === 'L'){                            // L = 16, 32, … , 2^n (2D: at most 2^8)
-      const nmax = Math.min(+$('scNmax').value, c.dim === 2 ? 8 : 20);
+    let vals = [], capNote = '';
+    if(c.par === 'L'){                            // L = 16, 32, … , 2^n (2D: at most 256 lattice points, L ≤ 256·dx)
+      let nmax = Math.min(+$('scNmax').value, 20);
+      if(c.dim === 2) while(nmax > 4 && (1<<nmax)/c.dx > 256) nmax--;
       for(let L = 16; L <= (1<<nmax); L *= 2) vals.push(L);
-      if(c.dim === 2 && +$('scNmax').value > 8) $('scStatus').textContent = '2D: sizes capped at 256';
+      if(c.dim === 2 && +$('scNmax').value > nmax) capNote = '   —   2D: sizes capped at L = ' + (1<<nmax) + ' (256 lattice points at dx = ' + c.dx + ')';
     } else {
+      if(c.dim === 2 && c.L/c.dx > 256){ $('scStatus').textContent = '2D: L/dx = ' + Math.round(c.L/c.dx) + ' points per direction is too many — at most 256 (raise dx or lower L)'; return; }
       if(!(v1 >= v0)){ $('scStatus').textContent = 'the range needs from ≤ to'; return; }
       for(let v = v0; v <= v1 + 1e-9; v += st) vals.push(+v.toFixed(6));
       for(const v of [-0.4, -0.3, -0.2, -0.1, -0.05, 0, 0.1, 0.2]) if(!vals.some(x => Math.abs(x - v) < 1e-9)) vals.push(v);   // always sampled
@@ -5067,12 +5363,13 @@ function buildSim(P){
     }
     SC.running = true; SC.stop = false; SC.rows = []; SC.rows2 = orders.length > 1 ? [] : null; SC.par = c.par; SC.cfg = c; SC.eq = scEquation(c, c.par);
     SC.eq2 = orders.length > 1 ? scEquation(Object.assign({}, c, { order: 6 }), c.par) : null;
-    SC.geo = '  (dx = ' + c.dx + (c.par === 'L' ? '' : ', L = ' + c.L) + ')';
+    SC.geo = '  (dx = ' + c.dx + (c.par === 'L' ? '' : ', L = ' + c.L + ', ' + Math.round(c.L/c.dx) + (c.dim === 2 ? '²' : '') + ' points') + ')';
     $('scStart').disabled = true; $('scStop').disabled = false;
+    scKeepAwake(true);
     /* the main display pauses: all the time goes into the scan */
     const wasRunning = running; running = false; $('bRun').textContent = 'Run';
     if(scanPanel.classList.contains('closed')) setScanOpen(true);
-    $('scanEq').textContent = (SC.eq2 ? SC.eq + '   and   ' + SC.eq2 : SC.eq) + '   —   ' + (c.dim === 2 ? '2D, ' : '1D, ') + c.bc + ', dx = ' + c.dx + ', dt ≤ ' + c.dtMax + ', transient ' + c.tTrans + ', total ' + c.tTotal + ' per sample' + (c.nmc > 1 ? ', ' + c.nmc + ' initial conditions' : '') + (c.par === 'L' ? '' : ', L = ' + c.L);
+    $('scanEq').textContent = (SC.eq2 ? SC.eq + '   and   ' + SC.eq2 : SC.eq) + '   —   ' + (c.dim === 2 ? '2D, ' : '1D, ') + c.bc + ', dx = ' + c.dx + ', dt ≤ ' + c.dtMax + ', transient ' + c.tTrans + ', total ' + c.tTotal + ' per sample' + (c.nmc > 1 ? ', ' + c.nmc + ' initial conditions' : '') + (c.par === 'L' ? '' : ', L = ' + c.L + ' (' + Math.round(c.L/c.dx) + (c.dim === 2 ? '²' : '') + ' points)') + capNote;
     const t0 = performance.now(), total = vals.length*c.nmc*orders.length; let done = 0;
     for(let i=0;i<vals.length && !SC.stop;i++) for(const ord of orders){
       if(SC.stop) break;
@@ -5080,8 +5377,8 @@ function buildSim(P){
       const rowsOut = ord === orders[0] ? SC.rows : SC.rows2;
       const samples = []; let diverged = false;
       for(let j=0;j<c.nmc && !SC.stop;j++){
-        const rep = t => { const el = (performance.now()-t0)/1000; $('scStatus').textContent = GSYM[c.par] + ' = ' + v + ' (' + (i+1) + '/' + vals.length + ')' + (orders.length > 1 ? (ord === 4 ? ', KS' : ', ∇⁴+∇⁶') : '') + (c.nmc > 1 ? ', start ' + (j+1) + '/' + c.nmc : '') + ', t = ' + t.toFixed(0) + ' / ' + c.tTotal + ', dt = ' + cc.dt + '  ·  ' + Math.round(100*(done + Math.min(1, t/c.tTotal))/total) + ' %  ·  ' + fmt(el) + ' s'; };
-        const r = await scSample(cc, v, c.nmc > 1 ? j : undefined, rep);
+        const rep = t => { const el = (performance.now()-t0)/1000, pct = Math.round(100*(done + Math.min(1, t/c.tTotal))/total); $('scStatus').textContent = GSYM[c.par] + ' = ' + v + ' (' + (i+1) + '/' + vals.length + ')' + (orders.length > 1 ? (ord === 4 ? ', KS' : ', ∇⁴+∇⁶') : '') + (c.nmc > 1 ? ', start ' + (j+1) + '/' + c.nmc : '') + ', t = ' + t.toFixed(0) + ' / ' + c.tTotal + ', dt = ' + cc.dt + '  ·  ' + pct + ' %  ·  ' + fmt(el) + ' s'; document.title = pct + ' % scan · ' + TITLE0; };
+        const r = await scSampleAny(cc, v, c.nmc > 1 ? j : undefined, rep);
         if(SC.stop) break;
         if(!r){ diverged = true; break; }
         samples.push(r); done++;
@@ -5101,10 +5398,11 @@ function buildSim(P){
     $('scStatus').textContent = (SC.stop ? 'stopped after ' : 'done: ') + SC.rows.length + ' of ' + vals.length + ' values in ' + fmt((performance.now()-t0)/1000) + ' s';
     $('scanInfo').textContent = SC.rows.length + ' values' + (c.nmc > 1 ? ' × ' + c.nmc + ' starts' : '');
     SC.running = false; $('scStart').disabled = false; $('scStop').disabled = true;
+    scKeepAwake(false); document.title = TITLE0;
     running = wasRunning; if(running) $('bRun').textContent = 'Pause';
   }
   $('scStart').addEventListener('click', scRun);
-  $('scStop').addEventListener('click', ()=>{ SC.stop = true; });
+  $('scStop').addEventListener('click', ()=>{ SC.stop = true; if(scWorker) scWorker.postMessage({ cmd: 'stop' }); });
 
   /* ---- results section ---- */
   const scanPanel = $('scanPanel'), scv = $('scanView'), scctx = scv.getContext('2d');
