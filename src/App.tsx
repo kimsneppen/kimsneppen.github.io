@@ -152,7 +152,7 @@ const MODELS: Model[] = [
     title: "Culture Spreading",
     description:
       "A model of words and culture centers",
-    file: "/models/swearewords.html",
+    file: "/models/swearwords.html",
     thumbnail: "/thumbnails/swarewords.png",
   },    
   {
