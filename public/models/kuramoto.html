@@ -24,7 +24,9 @@
   :root{--ctlw:308px}
   .app{max-width:none;margin:0;padding:2px 12px 18px;transition:padding-right .22s ease}
   @media (min-width:1000px){ body.ctl-open .app{padding-right:calc(var(--ctlw) + 18px)} }
-  header{padding:2px 2px 6px}
+  header{padding:2px 2px 6px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 16px}
+  header .titledrop{flex:0 0 auto}
+  header .eqrow{flex:1 1 auto;min-width:0}
   header h1{font-size:20px;margin:0 0 3px;letter-spacing:-.01em}
   .titledrop{border-top:0;position:relative}
   .titledrop summary{padding:2px 0 4px;display:flex;align-items:center;gap:10px}
@@ -82,7 +84,12 @@
   .lamtab td.sat{color:var(--ink2)}
   @media (max-width:560px){ .lamtabwrap{flex-direction:column;align-items:stretch} .lamtabcol{width:100%} .lamtab{font-size:11px} .lamtab th,.lamtab td{padding:2px 5px}
     .lamtabside{flex-direction:row;flex-wrap:wrap;justify-content:flex-start;gap:6px 8px;width:100%} .lamtabside .lamside2{margin-top:0;flex-basis:100%;text-align:left} }
-  .eqrow{display:flex;flex-wrap:wrap;gap:4px 20px;align-items:center}
+  .eqrow{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+  .eqrow > .eq:first-child{margin-right:-8px}
+  .eqrow > .ordtog{margin-right:-9px}
+  .ordtog button:not(.on){display:none}
+  .ordtog button.on{cursor:pointer}
+  .ordtog button.on::after{content:" \21C4";font-family:system-ui,sans-serif;font-style:normal;font-size:10px;opacity:.7;margin-left:3px}
   .eq{
     font-size:13.5px;color:var(--ink2);
     font-family:Georgia,"Times New Roman",serif;font-style:italic;
@@ -567,7 +574,9 @@
   /* landscape phone: keep the display usable, shrink chrome */
   @media (max-height:520px) and (orientation:landscape){
     .canvas-wrap{height:min(78vh,360px)}
-    header{padding:2px 2px 6px}
+    header{padding:2px 2px 6px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 16px}
+  header .titledrop{flex:0 0 auto}
+  header .eqrow{flex:1 1 auto;min-width:0}
     header h1{font-size:15px}
   }
 
@@ -1000,7 +1009,7 @@
     </details>
     <div class="eqrow">
       <span class="eq">&part;h/&part;t =</span>
-      <span class="seg ordseg" id="segOrd" title="toggle the two linear terms">
+      <span class="seg ordseg ordtog" id="segOrd" title="the linear terms in use — click to switch to the other pair (&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h &harr; +&nabla;&#8308;h +&nabla;&#8310;h)">
         <button data-v="4" class="on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button>
         <button data-v="6">+&nabla;&#8308;h +&nabla;&#8310;h</button>
       </span>
@@ -1008,8 +1017,8 @@
               title="the KS nonlinearity (&nabla;h)&sup2; — click to switch it off (crossed out) or on. Without it the equation is linear and blows up, so &beta; is set to 1 automatically when no other nonlinear term is on (and back to 0 when (&nabla;h)&sup2; returns)">+ (&nabla;h)&sup2;</span>
         <span class="term" id="termA">+ &alpha;|&nabla;h|</span>
         <span class="seg ordseg absseg" id="segAbs" hidden
-              title="|&nabla;h| in 2D: the Euclidean norm &radic;((&part;h/&part;x)&sup2;+(&part;h/&part;y)&sup2;)">
-          <button data-v="euclid" class="on">+ &alpha;&radic;(h<sub>x</sub>&sup2;+h<sub>y</sub>&sup2;)</button>
+              title="|&nabla;h| in 2D: the Euclidean norm &radic;((&nabla;h)&sup2;) = &radic;((&part;h/&part;x)&sup2;+(&part;h/&part;y)&sup2;)">
+          <button data-v="euclid" class="on">+ &alpha;&radic;((&nabla;h)&sup2;)</button>
         </span>
         <span class="term" id="termB">+ &beta;(&nabla;h)&#8308;</span>
         <span class="term" id="termG" title="&gamma;&nabla;&sup2;[(&nabla;h)&sup2;]: the conserved counterpart of the KS nonlinearity — it redistributes height without changing the mean">+ &gamma;&nabla;&sup2;(&nabla;h)&sup2;</span>
@@ -1091,7 +1100,7 @@
           <button id="bRun2" class="runbtn" title="run / pause (space)">&#10074;&#10074;</button>
           <button id="bReset2" class="rstbtn" title="reset: restart from the initial condition">&#8635;</button>
           <div class="lseg" id="segL2" title="box length L (the control panel's setting; crossed out when the run uses another L — a click still starts that L)">
-            <button data-v="64">64</button><button data-v="128">128</button><button data-v="256">256</button>
+            <button data-v="64">64</button><button data-v="128">128</button><button data-v="256">256</button><button data-v="512">512</button>
           </div>
           <span class="cgap"></span>
           <button id="bPngClean" title="save only the surface — no axes, labels, frame or colour bar — as a PNG (key c)">.png</button>
@@ -1278,7 +1287,7 @@
           <div class="hint">ETDRK4 integrates the stiff linear part exactly; dt is limited only by the
           nonlinearity. dt = 0.1 is accurate; dt = 0.25 is usually still stable. Space is spectral, so
           dx = 1 costs no accuracy; the dx control sets the lattice spacing, and the box of
-          length L is resolved with L/dx points (in 2D at most 512&sup2;: a finer dx is
+          length L is resolved with L/dx points (in 2D at most 1024&sup2;: a finer dx is
           raised automatically). The time step picks itself from
           the strength of the nonlinear terms — 0.1 for plain KS, 0.02 up to |&beta;| = 2,
           0.01 for 2 &lt; |&beta;| &le; 3.5 and 0.005 beyond (in 2D, where one step costs L
@@ -1381,14 +1390,16 @@
           k; &times; or Esc closes it) so that the display can have the whole window. On a wide
           window an open panel pushes the display aside, on a narrow one it lies over it. Run /
           Pause and Reset are also at hand as the small &#9654; / &#10074;&#10074; and &#8635; buttons in the
-          lower right corner of the display, followed by a box-length switch 64 | 128 | 256 that
-          lights the L in use; when the run uses another L (32 or 512, set in the panel) the
+          lower right corner of the display, followed by a box-length switch 64 | 128 | 256 | 512 that
+          lights the L in use; when the run uses another L (32, set in the panel) the
           switch is crossed out, but a click still restarts the run with that L.</p>
 
           <h3>The equation in the header</h3>
           <p>The header shows the equation that is being integrated right now. Three parts of it
-          are clickable. The <b>linear terms</b> toggle between &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h
-          (KS) and +&nabla;&#8308;h + &nabla;&#8310;h (one order higher in derivatives). The
+          are clickable. The <b>linear terms</b> are a toggle button that shows only the pair in
+          use — &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h (KS) or +&nabla;&#8308;h + &nabla;&#8310;h (one order
+          higher in derivatives) — and a click switches to the other pair. On a wide window the
+          equation sits on the title line, so that the display can have the rest of the height. The
           <b>(&nabla;h)&sup2;</b> term is a switch: click it and it is crossed out and dropped. The
           switch acts on the running surface, so you can watch one equation's pattern turn into
           the other's without a reset. Without (&nabla;h)&sup2; nothing stops the growth of the
@@ -1405,7 +1416,7 @@
           slower. The menu offers &alpha; from &minus;5 to +5. Beyond |&alpha;| = 2 the time step
           is lowered to 0.05 by itself, because the sharp ridges this term produces need finer
           steps. In 2D the steepness is the length of the slope vector,
-          <i>&radic;(h<sub>x</sub>&sup2;+h<sub>y</sub>&sup2;)</i>, which treats all directions alike; in 1D it is
+          <i>&radic;((&nabla;h)&sup2;) = &radic;(h<sub>x</sub>&sup2;+h<sub>y</sub>&sup2;)</i>, which treats all directions alike; in 1D it is
           simply |dh/dx|.</p>
           <h4>&beta;(&nabla;h)&#8308; — the next power of the slope</h4>
           <p>(&nabla;h)&sup2; is the first term of a series in the slope; (&nabla;h)&#8308; is the next
@@ -1435,7 +1446,7 @@
           looks; everything is set up and the simulation starts at once. It cycles through three
           states: <i>off</i> &rarr; <b>&alpha; = +3</b>, h drawn upward &rarr; <b>&alpha; = &minus;3</b>, drawn
           with &minus;h upward (the &plusmn; button is switched on) &rarr; <i>off</i>. Both runs are 2D,
-          L = 256, periodic, with the Euclidean steepness &radic;(h<sub>x</sub>&sup2;+h<sub>y</sub>&sup2;), the
+          L = 256, periodic, with the Euclidean steepness &radic;((&nabla;h)&sup2;), the
           surface coloured by h &minus; &lang;h&rang; in jet in the default view (tilt 62&deg;, rotation 0&deg;,
           distance 5&thinsp;L). Changing any parameter by hand returns the button to <i>off</i>.</p>
 
@@ -2502,15 +2513,17 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   let stepsPerFrame = 5;
   /* L is the physical length of the box, dx the lattice spacing: the lattice
      has L/dx points per direction. dx is offered in the fixed list DXV; in 2D
-     it is raised, if necessary, so that the lattice stays at ≤ 512² points
-     (open boundaries mirror it to 1024²), which is what the memory allows. */
+     it is raised, if necessary, so that the lattice stays at ≤ 1024² points
+     (open boundaries mirror it to 2048²), which is what the memory allows;
+     in 1D any length is allowed (L = 256 at dx = 0.25 and L = 512 at dx = 0.5
+     both give 1024 points). */
   const DXV = [0.1, 0.2, 0.25, 0.5, 1];
   let dxClamped = false;
   const latticeN = () => Math.max(2, Math.round(params.L/params.dx));
   function clampDx(){
     dxClamped = false;
     if(params.dim !== 2) return;
-    while(latticeN() > 512){
+    while(latticeN() > 1024){
       const i = DXV.indexOf(params.dx);
       if(i < 0 || i >= DXV.length-1) break;
       params.dx = DXV[i+1]; dxClamped = true;
@@ -4155,7 +4168,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function eqLines(){
     const lin = params.order === 6 ? '+∇⁴h + ∇⁶h' : '−∇²h − ∇⁴h';
     let eq = '∂h/∂t = ' + lin + (params.nl2 ? ' + (∇h)²' : '');
-    const absTxt = params.dim === 2 ? (params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·√(hₓ²+hᵧ²)') : '·|∇h|';
+    const absTxt = params.dim === 2 ? (params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·√((∇h)²)') : '·|∇h|';
     if(params.alpha !== 0) eq += (params.alpha > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.alpha)) + absTxt;
     if(params.beta  !== 0) eq += (params.beta  > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.beta))  + '·(∇h)⁴';
     if(params.gamma !== 0) eq += (params.gamma > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.gamma)) + '·∇²(∇h)²';
@@ -4236,8 +4249,10 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function exportPNG(kind){
     kind = kind || 'stamp';
     const btn = $(kind === 'stamp' ? 'bPng' : (kind === 'sq' ? 'bPngSq' : 'bPngClean'));
-    const r = cv.parentElement.getBoundingClientRect();
-    let w = Math.max(360, Math.round(r.width)), h = Math.max(260, Math.round(r.height));
+    /* the picture is rendered at exactly the size the display has on screen, so
+       that the file shows what the window shows — the whole of it and no more */
+    const r = cv.getBoundingClientRect();
+    let w = Math.max(120, Math.round(r.width)), h = Math.max(120, Math.round(r.height));
     const scale = 2;
     const isMap = params.dim === 2 && modeSel[2] === 'map';
     if(kind !== 'stamp' && isMap){ w = h = Math.min(w, h); }   // the bare square field
@@ -4365,7 +4380,13 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const i = YCYCLE.indexOf(yvar);
     setYvar(YCYCLE[(i < 0 ? 0 : i + 1) % YCYCLE.length]);
   });
-  seg($('segOrd'), ()=>''+params.order, v=>{
+  /* the header toggle shows only the linear terms in use; a click switches to the other pair */
+  $('segOrd').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const other = params.order === 4 ? '6' : '4';
+    $('segOrd').querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.v === other));
+    setOrder(+other);
+  }));
+  function setOrder(v){
     params.order = +v;
     sim.setOrder(params.order);          // switches the running equation, keeps the field
     sim.lyapResetAvg();                  // λ refers to the equation now being integrated
@@ -4373,7 +4394,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     updateHint();
     syncLyOptions();                     // the term labels follow the linear operator
     if(!running) draw();
-  });
+  }
 
   function updateOverlays(){
     $('vsepWrap').style.display = params.dim===1 ? 'flex' : 'none';
@@ -4472,7 +4493,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       : (params.dim === 2 ? 'h₀ = A·cos(πnx/L)·cos(πny/L), flat walls' : 'h₀ = A·cos(πn·x/L), n half waves, flat walls');
     $('icHint').textContent = wave + ' (+ ε strip), k = ' + k.toFixed(3) +
       ', ω = ' + om.toFixed(3) + (om > 0 ? ' — grows' : ' — decays') +
-      '. Lattice: ' + latticeN() + (params.dim === 2 ? '²' : '') + ' points (L/dx)' + (dxClamped ? ' — dx raised to ' + params.dx + ' to keep the 2D lattice at ≤ 512² points' : '');
+      '. Lattice: ' + latticeN() + (params.dim === 2 ? '²' : '') + ' points (L/dx)' + (dxClamped ? ' — dx raised to ' + params.dx + ' to keep the 2D lattice at ≤ 1024² points' : '');
   }
 
   let userSpf = false;
@@ -5046,8 +5067,23 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     return { beta: r[0], ks, o6 };
   });
   const pmv = (m, sd, fmt) => fmt(m) + ' ± ' + fmt(Math.abs(sd));
+  /* D sat is quoted to two significant digits, its spread to the same number of decimals;
+     below 0.01 as a power of ten with a one-digit mantissa (4·10⁻⁷), for HTML or canvas text */
+  const SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  const supTxt = n => String(n).split('').map(ch => SUP[ch] || ch).join('');
+  function fmtPow10(v, html){
+    let e = Math.floor(Math.log10(Math.abs(v))), m = Math.round(Math.abs(v)/Math.pow(10, e));
+    if(m >= 10){ m = 1; e += 1; }
+    return (v < 0 ? '−' : '') + m + '·10' + (html ? '<sup>' + String(e).replace('-', '−') + '</sup>' : supTxt(e));
+  }
+  function fmtSig2(v, sd, html){
+    if(!isFinite(v)) return '—';
+    if(Math.abs(v) < 0.01) return fmtPow10(v, html);
+    const d = Math.max(0, 1 - Math.floor(Math.log10(Math.max(Math.abs(v), isFinite(sd) ? Math.abs(sd) : 0))));
+    return v.toFixed(d) + (isFinite(sd) && sd > 0 ? ' ± ' + Math.abs(sd).toFixed(d) : '');
+  }
   const f2d = v => (v < -0.005 ? '−' : '') + Math.abs(v).toFixed(2);
-  const fmtSatTxt = s => s.sat < 0.01 ? s.sat.toExponential(1).replace('e-', 'e−') + (s.sf ? '†' : '') : pmv(s.sat, s.ss, f2d) + (s.sf ? '†' : '');
+  const fmtSatTxt = (s, html) => fmtSig2(s.sat, s.ss, html) + (s.sf ? '†' : '');
   function buildLamTable256(T, DATA, note){
     const EQ4 = '∂h/∂t = −∇²h − ∇⁴h + (∇h)² + β(∇h)⁴', EQ6 = '∂h/∂t = +∇⁴h + ∇⁶h + (∇h)² + β(∇h)⁴';
     let h = '<tr><th></th><th class="grp" colspan="4">' + EQ4 + '</th><th class="grp" colspan="4">' + EQ6 + '</th></tr>';
@@ -5055,7 +5091,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     h += '<tr><th>β</th>' + hd + hd + '</tr>';
     const cells = (s, last) => '<td class="' + lamClass(s.f) + '">' + pmv(s.f, s.fs, f3) + '</td>' +
       '<td class="bn">' + pmv(s.b, s.bs, f3) + '</td>' +
-      '<td class="sat">' + fmtSatTxt(s) + '</td>' +
+      '<td class="sat">' + fmtSatTxt(s, true) + '</td>' +
       '<td' + (last ? '' : ' class="sep"') + '>' + pmv(s.W, s.Ws, f2d) + '</td>';
     for(const r of DATA) h += '<tr><td class="b">' + (r.beta > 0 ? '+' : '') + r.beta + '</td>' + cells(r.ks, false) + cells(r.o6, true) + '</tr>';
     T.innerHTML = h;
@@ -5543,7 +5579,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   $('scanBW').addEventListener('click', ()=>{ SC.dark = !SC.dark; scanPanel.classList.toggle('dark', SC.dark); renderScan(); });
   const pm = (m, sd) => f3(m) + (sd > 0 ? ' ± ' + sd.toFixed(3) : '');
   /* D_sat: two decimals, or exponent form when tiny; † when no free run reached the plateau (too short a window) */
-  const fmtSat = r => !isFinite(r.sat) ? '—' : (r.sat >= 0.01 ? r.sat.toFixed(2) + (r.sdSat > 0.005 ? ' ± ' + r.sdSat.toFixed(2) : '') : r.sat.toExponential(1)) + (r.satOK ? '' : '†');
+  const fmtSat = (r, html) => !isFinite(r.sat) ? '—' : fmtSig2(r.sat, r.sdSat, html) + (r.satOK ? '' : '†');
   function renderScan(){
     if(!scanOpen) return;
     const T = $('scanTable'), sym = GSYM[SC.par] || SC.par;
@@ -5559,7 +5595,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     else h += '<tr><th></th><th colspan="6" class="grp eqh">' + SC.eq + SC.geo + '</th></tr>';
     h += '<tr><th>' + sym + '</th>' + thFree + thBen + thSat + thW + (two ? thFree + thBen + thSat + thW : '<th title="number of free runs (all starts)">runs</th><th>dt</th>') + '</tr>';
     const cells = (r, g2) => { const c1 = g2 ? ' g2' : ''; return !r ? '<td colspan="4" class="' + c1 + '"></td>' : r.dv ? '<td class="dv' + c1 + '" colspan="4">diverges</td>'
-      : '<td class="' + lamClass(r.free) + c1 + '">' + pm(r.free, r.sdFree) + '</td><td>' + pm(r.ben, r.sdBen) + '</td><td>' + fmtSat(r) + '</td><td>' + r.W.toFixed(2) + (r.sdW > 0 ? ' ± ' + r.sdW.toFixed(2) : '') + '</td>'; };
+      : '<td class="' + lamClass(r.free) + c1 + '">' + pm(r.free, r.sdFree) + '</td><td>' + pm(r.ben, r.sdBen) + '</td><td>' + fmtSat(r, true) + '</td><td>' + r.W.toFixed(2) + '</td>'; };
     for(const r of SC.rows){
       const r2 = two ? SC.rows2.find(q => q.v === r.v) : null;
       h += '<tr><td class="b">' + (r.v > 0 ? '+' : '') + r.v + '</td>' + cells(r, false) + (two ? cells(r2, true) : (r.dv ? '<td colspan="2"></td>' : '<td>' + r.n + '</td><td>' + r.dt + '</td>')) + '</tr>';
@@ -5847,7 +5883,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const mono = '11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace', sans = '10.5px system-ui,sans-serif';
     const mc = document.createElement('canvas').getContext('2d');
     const wtxt = (t, f) => { mc.font = f; return mc.measureText(t).width; };
-    const wCell = r => r.W.toFixed(2) + (r.sdW > 0 ? ' ± ' + r.sdW.toFixed(2) : '');
+    const wCell = r => r.W.toFixed(2);
     const cellTexts = r => r && !r.dv ? [pm(r.free, r.sdFree), pm(r.ben, r.sdBen), fmtSat(r), wCell(r)] : ['', '', '', ''];
     const heads = ['λ free', 'Benettin', 'D sat', 'W'];
     const groups = two ? [{ eq: SC.eq + SC.geo, rows }, { eq: SC.eq2 + SC.geo, rows: SC.rows2 }] : [{ eq: SC.eq + SC.geo, rows }];
