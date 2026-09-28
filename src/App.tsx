@@ -148,6 +148,14 @@ const MODELS: Model[] = [
     thumbnail: "/thumbnails/sneppen_2d.png",
   },    
   {
+    id: "swarewords",
+    title: "Culture Spreading",
+    description:
+      "A model of words and culture centers",
+    file: "/models/swarewords.html",
+    thumbnail: "/thumbnails/swarewords.png",
+  },    
+  {
     id: "trimurti",
     title: "Trimurti dynamics",
     description:
