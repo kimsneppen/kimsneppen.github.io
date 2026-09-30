@@ -108,6 +108,14 @@ const MODELS: Model[] = [
     thumbnail: "/thumbnails/baby.png",
   },
   {
+    id: "Excitable",
+    title: "Excitable Heart",
+    description:
+      "Excitable heart with defects",
+    file: "/models/excitable_media.html",
+    thumbnail: "/thumbnails/excitable-heart.png",
+  },
+  {
     id: "nucleosome-swi6",
     title: "Nucleosome & Swi6",
     description:
