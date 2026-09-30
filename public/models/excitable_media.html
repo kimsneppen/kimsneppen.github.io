@@ -1,0 +1,961 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Excitable Media Lattice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: full-height simulation stage on the left, scrolling control panel on the right; stacks on phones */
+:root{
+  --bg:#eef0f2; --panel:#fbfbfc; --fg:#1b1e22; --muted:#626a73; --line:#d6dade;
+  --accent:#c2410c; --accent-fg:#ffffff; --stage:#0b0c0e; --chip:#e7eaee;
+  --f-sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131518; --panel:#1a1d21; --fg:#e8eaed; --muted:#99a1ab; --line:#2c3137;
+  --accent:#fb8a3c; --accent-fg:#1a1208; --stage:#050607; --chip:#252a30; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131518; --panel:#1a1d21; --fg:#e8eaed; --muted:#99a1ab; --line:#2c3137;
+  --accent:#fb8a3c; --accent-fg:#1a1208; --stage:#050607; --chip:#252a30; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 var(--f-sans)}
+#app{display:flex;height:100vh;height:100dvh;min-height:0;overflow:hidden}
+#stage{flex:1;min-width:0;height:100%;position:relative;background:var(--stage)}
+#cv{position:absolute;left:0;top:0;display:block;touch-action:none;cursor:crosshair}
+#hint{position:absolute;right:12px;top:8px;left:50%;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#9aa3ad;font:12px var(--f-mono);pointer-events:none;text-shadow:0 1px 2px #000}
+#ov3d{position:absolute;left:10px;bottom:10px;background:rgba(14,16,19,.82);color:#e6e8eb;border:1px solid rgba(255,255,255,.14);border-radius:9px;padding:6px 10px 8px;display:flex;flex-direction:column;gap:5px;max-width:calc(100% - 20px);backdrop-filter:blur(3px)}
+#ov3d .ovh{display:flex;justify-content:space-between;align-items:center;gap:10px;font:600 11px var(--f-sans);text-transform:uppercase;letter-spacing:.08em;color:#aab2bc}
+#ov3d .ovh button{background:none;border:0;color:#aab2bc;cursor:pointer;font:12px var(--f-mono);padding:2px 4px}
+#ovBody{display:flex;flex-direction:column;gap:5px}
+#ov3d .row{grid-template-columns:62px minmax(70px,120px) 50px;gap:6px}
+#ov3d .row label,#ov3d .chk,#ov3d .sel{font-size:12px;color:#e6e8eb}
+#ov3d input[type=number],#ov3d select{background:#1b1e22;color:#e6e8eb;border-color:#3a4048;font-size:11px}
+#ov3d .sel{grid-template-columns:62px 1fr}
+
+.ptitle{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
+#tools{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;z-index:4;max-width:calc(100% - 20px)}
+.tbar{display:flex;gap:4px;background:rgba(14,16,19,.82);border:1px solid rgba(255,255,255,.14);border-radius:9px;padding:4px}
+.tbar button{border:0;background:transparent;color:#e6e8eb;font:500 12px var(--f-sans);padding:6px 9px;border-radius:6px;cursor:pointer}
+.tbar button[aria-pressed="true"]{background:#fb8a3c;color:#1a1208}
+.tbar button:hover{background:rgba(255,255,255,.1)} .tbar button[aria-pressed="true"]:hover{background:#fb8a3c}
+#skey{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px 10px;background:rgba(14,16,19,.82);color:#e6e8eb;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:5px 9px;font-size:11px}
+#skey i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+#pngModal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:grid;place-items:center;padding:16px}
+#pngModal .pm{background:var(--panel);color:var(--fg);border-radius:10px;padding:12px;max-width:min(900px,100%);max-height:100%;display:flex;flex-direction:column;gap:8px;overflow:auto}
+#pngModal .pmh{display:flex;justify-content:space-between;align-items:center}
+#pngModal .pmh button{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;padding:5px 10px;cursor:pointer}
+#pngModal img{max-width:100%;max-height:70vh;object-fit:contain;background:repeating-conic-gradient(#8882 0 25%,#0000 0 50%) 0 0/16px 16px;border-radius:4px}
+#pngModal .pmf{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:12px;color:var(--muted)}
+#pngModal a{color:var(--accent);font-weight:600}
+@media (max-width:600px){#hint{display:none} #ov3d{bottom:56px}}
+#busy{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(14,16,19,.88);color:#e6e8eb;border:1px solid rgba(255,255,255,.16);border-radius:9px;padding:10px 16px;font:500 14px var(--f-sans);z-index:6}
+#presets{position:absolute;left:10px;top:70px;z-index:4;display:flex;flex-direction:column;gap:5px}
+#presets button{display:flex;gap:2px;padding:3px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:rgba(14,16,19,.82);cursor:pointer;font:500 12px var(--f-sans);color:#aab2bc;backdrop-filter:blur(3px)}
+#presets button span{padding:4px 8px;border-radius:5px;white-space:nowrap}
+#presets button.on{border-color:#fb8a3c}
+#presets button.on[data-v="0"] .va, #presets button.on[data-v="1"] .vb{background:#fb8a3c;color:#1a1208}
+#presets button:not(.on) .va{color:#e6e8eb}
+#presets button:focus-visible{outline:2px solid #fb8a3c;outline-offset:2px}
+@media (max-width:600px){#presets{flex-direction:row;flex-wrap:wrap;top:66px;right:10px}}
+#note{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);background:rgba(14,16,19,.88);color:#e6e8eb;border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:6px 12px;font:12px var(--f-sans);z-index:6;max-width:calc(100% - 20px);text-align:center}
+.intro .credit{margin-top:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,.14);font-size:12px;color:#aab2bc}
+#srcInfo{font:11px var(--f-mono);color:var(--muted);margin-top:-4px}
+#panel{width:330px;flex:none;overflow-y:auto;background:var(--panel);border-left:1px solid var(--line);padding:14px 16px 24px;display:flex;flex-direction:column;gap:14px}
+h1{font-size:16px;font-weight:600;margin:0;letter-spacing:.01em;text-wrap:balance}
+details.about{position:absolute;left:10px;top:10px;z-index:5;width:max-content;max-width:min(470px,calc(100% - 20px));border:1px solid rgba(255,255,255,.16);border-radius:9px;background:rgba(14,16,19,.88);color:#e8eaed;backdrop-filter:blur(4px)}
+details.about[open]{width:min(470px,calc(100% - 20px))}
+details.about summary{list-style:none;cursor:pointer;padding:7px 10px 7px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+details.about summary::-webkit-details-marker{display:none}
+details.about summary .sub{display:block;font:11px var(--f-mono);color:#9aa3ad;margin-top:1px}
+details.about summary .car{flex:none;width:26px;height:26px;border-radius:6px;display:grid;place-items:center;background:rgba(255,255,255,.1);color:#e8eaed;font-size:12px;transition:transform .2s}
+details.about[open] summary .car{transform:rotate(180deg)}
+details.about summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:9px}
+.intro{padding:2px 12px 12px;font-size:13px;line-height:1.5;display:flex;flex-direction:column;gap:9px;max-height:70vh;overflow-y:auto}
+.intro p{margin:0}
+.intro h3{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:#9aa3ad;margin:4px 0 0;font-weight:600}
+.intro .ref{font-size:12px;color:#aab2bc;border-left:2px solid #fb8a3c;padding-left:8px}
+.intro a{color:#ffa060}
+.intro em{font-style:italic}
+@media (prefers-reduced-motion:reduce){details.about summary .car{transition:none}}
+section{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:0;font-weight:600}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--chip);border-radius:8px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;color:var(--fg);padding:7px 0;border-radius:6px;font:500 13px var(--f-sans);cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--accent-fg)}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+button.b{border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:8px 0;border-radius:7px;font:500 13px var(--f-sans);cursor:pointer}
+button.b.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:grid;grid-template-columns:92px 1fr 74px;align-items:center;gap:8px}
+.row label{font-size:13px}
+.row label i{font-family:var(--f-mono);font-style:normal}
+.row input[type=range]{width:100%;accent-color:var(--accent);min-width:0}
+.row input[type=number]{width:100%;font:12px var(--f-mono);padding:4px 5px;border:1px solid var(--line);border-radius:5px;background:var(--bg);color:var(--fg);font-variant-numeric:tabular-nums}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.chk input{accent-color:var(--accent);width:16px;height:16px;margin:0}
+.sel{display:grid;grid-template-columns:92px 1fr;align-items:center;gap:8px;font-size:13px}
+select{font:13px var(--f-sans);padding:5px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);width:100%}
+#stats{font:12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums;display:grid;grid-template-columns:1fr 1fr;gap:2px 10px}
+#stats b{color:var(--fg);font-weight:500}
+#legend{width:100%;height:14px;border-radius:3px;display:block}
+.leglab{display:flex;justify-content:space-between;font:11px var(--f-mono);color:var(--muted);margin-top:-4px}
+.note{font-size:12px;color:var(--muted);line-height:1.45;margin:0}
+.note code{font-family:var(--f-mono);font-size:11.5px}
+@media (max-width:820px){
+  #app{flex-direction:column;height:auto;overflow:visible}
+  #stage{flex:none;height:min(92vw,68vh);min-height:260px}
+  #panel{width:100%;border-left:0;border-top:1px solid var(--line);overflow:visible}
+}
+</style>
+
+</head><body><div id="app">
+  <div id="stage"><canvas id="cv"></canvas><div id="hint"></div>
+    <div id="presets" role="group" aria-label="Demonstrations">
+      <button type="button" data-k="1" title="Anatomical heart on an FCC lattice. Click again to switch between healthy and sick (p_cut = 0.83 of all connections); switching back keeps the current state."><span class="va">Real</span><span class="vb">Sick</span></button>
+      <button type="button" data-k="2" title="2D sheet with Max = 12. Click again to switch between p = 1 and p = 0.92; switching back keeps the current state."><span class="va">2D</span><span class="vb">2D-stoc</span></button>
+      <button type="button" data-k="3" title="1D line with p = 1. Click again to switch to p = 0.9 and back."><span class="va">1D</span><span class="vb">1D p=0.9</span></button>
+    </div>
+    <div id="busy" hidden>Building heart…</div>
+    <div id="note" hidden role="status"></div>
+    <div id="tools">
+      <div id="skey" hidden><span><i style="background:#8a93a0"></i>site (darker = more cut links)</span><span><i style="background:#00c8aa"></i>defect</span><span><i style="background:#ff3ce6"></i>pacemaker</span><span><i style="background:#b23036"></i>vessel from lungs / to body</span><span><i style="background:#3a5cb2"></i>vessel to lungs / from body</span></div>
+      <div class="tbar"><button type="button" id="structB" aria-pressed="false">Structure</button><button type="button" id="bgB" aria-pressed="false">White bg</button><button type="button" id="pngB">PNG</button></div>
+    </div>
+    <div id="pngModal" hidden><div class="pm"><div class="pmh"><b>Snapshot</b><button type="button" id="pngClose">Close</button></div><img id="pngImg" alt="Snapshot of the lattice"><div class="pmf"><a id="pngDl" download="excitable-media.png" href="#">Download PNG</a><span>If the link does nothing here, right-click or long-press the image and save it.</span></div></div></div>
+    <details class="about" id="about">
+      <summary><span><h1>Discrete Excitable Media</h1><span class="sub">0 → 1 → … → Max → f → 0</span></span><span class="car" aria-hidden="true">▾</span></summary>
+      <div class="intro">
+        <p>An <b>excitable medium</b> is a spatially extended system whose elements sit in a stable resting state, can be pushed into a short excited state by an excited neighbour, and then pass through a refractory period during which they cannot fire again. Excitation therefore travels as a wave that cannot turn back into the tissue it has just left. Heart muscle, nerve fibres, the Belousov–Zhabotinsky reaction and aggregating <em>Dictyostelium</em> amoebae are classic examples. Their typical patterns are target waves around pacemakers and rotating spirals, which become scroll waves in 3D.</p>
+        <h3>First model</h3>
+        <p>Norbert Wiener and Arturo Rosenblueth gave the first mathematical model of an excitable medium while studying impulse conduction in heart muscle. Each element is resting, excited or refractory, and they showed how a wave circulating around an obstacle can sustain flutter by re-entry.</p>
+        <p class="ref">N. Wiener &amp; A. Rosenblueth, Arch. Inst. Cardiol. México 16, 205 (1946).</p>
+        <h3>First cellular automaton</h3>
+        <p>James Greenberg and Stuart Hastings turned the idea into a cellular automaton on a lattice: a resting site becomes excited if a neighbour is excited, then steps through a fixed sequence of refractory states back to rest. The model in this applet is a stochastic variant: the refractory count 0…Max advances with probability <i>p</i>, Max is the resting excitable state and f is the excited state.</p>
+        <p class="ref">J. M. Greenberg &amp; S. P. Hastings, SIAM J. Appl. Math. 34, 515 (1978).</p>
+        <h3>Defects and atrial fibrillation</h3>
+        <p>Christensen, Manani and Peters modelled atrial tissue as a lattice of cells in which neighbouring cells along the fibre direction are always coupled, while side-to-side (transverse) couplings exist only with some probability. As transverse couplings become sparse, small circuits of poorly coupled cells can trap a re-entrant wave, and a regular paced rhythm switches to fibrillation-like turbulence. The model identifies critical regions whose ablation stops the fibrillation.</p>
+        <p class="ref">K. Christensen, K. A. Manani &amp; N. S. Peters, <a href="https://scholar.google.com/citations?view_op=view_citation&amp;hl=da&amp;user=KV2BfOIAAAAJ&amp;cstart=20&amp;pagesize=80&amp;citation_for_view=KV2BfOIAAAAJ:XiSMed-E-HIC" target="_blank" rel="noopener">Simple model for identifying critical regions in atrial fibrillation</a>, Phys. Rev. Lett. 114, 028104 (2015).</p>
+        <p>In the applet, <b>p<sub>cut</sub></b> removes this fraction of the nearest-neighbour connections at random. Set <i>Cut</i> to "transverse only" to keep the connections along x intact, as in that model (p<sub>cut</sub> is then one minus the transverse coupling probability). Try a square lattice with the pacemaker on and raise p<sub>cut</sub> towards 1. <b>p<sub>defect</sub></b> instead removes whole sites by holding them at 0.</p>
+        <h3>Demonstrations</h3>
+        <p>The three buttons under the title start ready-made runs. Click a running demo again to flip its parameters; the lattice state is kept when you flip back, so you can see that fibrillation, once started, can persist (it is metastable). <b>Real ⇄ Sick</b>: anatomical FCC heart with Max = 100; Sick restarts the heart with p<sub>cut</sub> = 0.83 of all connections cut (if no wave gets through, a new random cut pattern is drawn until one does), and Real restores all connections without resetting. <b>2D ⇄ 2D-stoc</b> and <b>1D ⇄ 1D p=0.9</b> start from the default settings (Max = 12, no defects, sources or cuts, black background), with p = 1 or 0.92 in 2D and p = 1 or 0.9 in 1D.</p>
+        <h3>Heart geometry</h3>
+        <p>The <b>Heart</b> view runs the same automaton on the outer <i>H</i> cell layers of a heart-shaped solid whose largest horizontal circumference is <i>L</i> sites, on a simple cubic or FCC lattice. Click the button again to switch to <b>Real H.</b>, a rough anatomical shape with tapered ventricles, two atria, the aorta, the pulmonary trunk and the superior vena cava. The great vessels are open-ended hollow tubes that contain no heart muscle and stay inactive. They are coloured as in anatomy atlases: red for oxygenated blood (the four pulmonary veins coming from the lungs, and the aorta), blue for deoxygenated blood (the pulmonary arteries going to the lungs, and the superior vena cava). The exception is the myocardial sleeves: atrial muscle extends a short way into each pulmonary vein and into the superior vena cava, and these sleeves are excitable. Pulmonary-vein sleeves are the most common source of the ectopic beats that trigger atrial fibrillation. The pacemaker sits where the sinus node would be: the top of one lobe, or the junction of the superior vena cava and the right atrium. Cut the heart open with <i>z</i><sub>c</sub> to see the wall.</p>
+        <p class="credit">This applet was made by Kim Sneppen, August 2026.</p>
+      </div>
+    </details>
+    <div id="ov3d" hidden><div class="ovh"><span>3D view</span><button id="ovTog" type="button" aria-expanded="true">hide</button></div><div id="ovBody"></div></div>
+  </div>
+  <aside id="panel">
+    <div class="ptitle">Controls</div>
+
+    <div class="seg" id="dimSeg" role="tablist" aria-label="Dimension">
+      <button data-d="1" type="button">1D</button><button data-d="2" type="button">2D</button><button data-d="3" type="button">3D</button><button data-d="4" type="button">Heart</button>
+    </div>
+    <div class="btns">
+      <button class="b primary" id="runB" type="button">Pause</button>
+      <button class="b" id="stepB" type="button">Step</button>
+      <button class="b" id="resetB" type="button">Reset</button>
+    </div>
+    <div id="stats"></div>
+    <div>
+      <canvas id="legend" width="300" height="14"></canvas>
+      <div class="leglab"><span>0</span><span id="lgMid"></span><span id="lgMax">Max</span><span>f</span></div>
+    </div>
+
+    <section id="secLat"><h2>Lattice</h2></section>
+    <section id="secModel"><h2>Dynamics</h2></section>
+    <section id="secSrc"><h2>Sources, defects &amp; cuts</h2></section>
+    <section id="secView"><h2>Display</h2></section>
+    <section>
+      <h2>Model</h2>
+      <p class="note">Each site holds <code>s ∈ {0,…,Max, f}</code>. Per step: <code>s&lt;Max → s+1</code> with probability <code>p</code>; <code>Max → f</code> only if a nearest neighbour is <code>f</code> (or a source fires); <code>f → 0</code>. Defects are held at 0; a cut connection never transmits excitation. 1D: open ends. 2D: periodic in L and H; square (4 neighbours, periodic) or triangular (6 neighbours, open boundaries, drawn as a rhombus). 3D: simple cubic (6 neighbours, periodic in both L directions) or face-centred cubic (12 neighbours, stacked triangular layers, open boundaries); open top and bottom along H in both. p<sub>source</sub> sets the density of randomly placed pacemaker sites, which fire whenever they recover to Max; p<sub>spont</sub> is an optional per-step probability that any resting site fires on its own. Defects are added or removed one by one as p<sub>defect</sub> changes; slide to 0 and back for a fresh pattern. Click or drag on the 1D/2D lattice to excite sites; drag the 3D view to rotate.</p>
+    </section>
+  </aside>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const cv=$('cv'), ctx=cv.getContext('2d');
+
+const S={dim:2,L:200,H:200,link:true,Max:8,p:1,center:true,psrc:0,pspont:0,pdef:0,pcut:0,markSrc:true,cutMode:'all',heart:'toy',struct:false,bgWhite:false,noText:false,up:true,init:'rest',lat:'sq',
+  scheme:'flames',rev:false,showDef:true,spf:1,delay:30,zc:0,cut:true,view:'box',az:35,el:28,running:true};
+const RANGES={1:{L:[20,2000,400]},2:{L:[10,800,200],H:[10,800,200]},3:{L:[8,128,60],H:[1,128,60]},4:{L:[40,360,240],H:[1,20,4]}};
+
+let N=0,NS=0,HG=null,st,nx,def,isSrc,center=0,t=0,nexc=0,perm,K=0,Ks=0,bondU=null,nCut=0;
+// positive half of the neighbour directions for each lattice; bond (i,d) links site i to i+D[d]
+function dirs(){const d=S.dim, tri=S.lat==='tri';
+  if(d===1) return [[1,0,0]];
+  if(d===2) return tri?[[1,0,0],[0,1,0],[1,-1,0]]:[[1,0,0],[0,1,0]];
+  return tri?[[1,0,0],[0,1,0],[1,-1,0],[0,0,1],[-1,0,1],[0,-1,1]]:[[1,0,0],[0,1,0],[0,0,1]];}
+// each bond carries a fixed random number; it is cut when that number is below p_cut, so raising or lowering p_cut adds or heals bonds without reshuffling
+function randomBonds(){const nb=N*dirs().length; bondU=new Uint16Array(nb); const B=4096;
+  const tmp=new Uint32Array(B); for(let k=0;k<nb;k+=B){crypto.getRandomValues(tmp); const e=Math.min(B,nb-k); for(let q=0;q<e;q++) bondU[k+q]=tmp[q]&65535;} countCuts();}
+function cutThr(){return Math.round(S.pcut*65536)}
+let nElig=0;
+let cdeg=null;
+// visit every existing bond once: cb(i,j,d,b) with b the index into bondU
+function forEachBond(cb){const D=dirs(), nd=D.length;
+  if(S.dim===4){const g=HG, am=g.actMask, off=g.off; for(let a=0;a<g.act.length;a++){const i=g.act[a]; for(let d=0;d<nd;d++){const j=i+off[d]; if(am[j]) cb(i,j,d,i*nd+d);}} return;}
+  const Lx=S.L, Ly=S.dim===1?1:S.dim===2?S.H:S.L, Lz=S.dim===3?S.H:1, per=S.dim>1&&S.lat!=='tri';
+  for(let z=0;z<Lz;z++) for(let y=0;y<Ly;y++) for(let x=0;x<Lx;x++){const i=(z*Ly+y)*Lx+x;
+    for(let d=0;d<nd;d++){let X=x+D[d][0],Y=y+D[d][1],Z=z+D[d][2]; if(per){X=(X+Lx)%Lx;Y=(Y+Ly)%Ly;}
+      if(X>=0&&X<Lx&&Y>=0&&Y<Ly&&Z>=0&&Z<Lz) cb(i,(Z*Ly+Y)*Lx+X,d,i*nd+d);}}}
+function countCuts(){const th=cutThr(), tr=S.cutMode==='trans'; let c=0, el=0;
+  if(!cdeg||cdeg.length!==N) cdeg=new Uint8Array(N); else cdeg.fill(0);
+  forEachBond((i,j,d,b)=>{ if(tr&&d===0) return; el++; if(bondU[b]<th){c++; cdeg[i]++; cdeg[j]++;} });
+  nCut=c; nElig=el; dirty=true;}
+function setPcut(v){ if(v===0&&S.pcut>0){S.pcut=0; randomBonds();} S.pcut=v; countCuts(); }
+const SQ3=Math.sqrt(3);
+function basis2(){return S.lat==='tri'?[[1,0],[0.5,SQ3/2]]:[[1,0],[0,1]]}
+function basis3(){return S.lat==='tri'?[[1,0,0],[0.5,SQ3/2,0],[0.5,SQ3/6,Math.sqrt(2/3)]]:[[1,0,0],[0,1,0],[0,0,1]]}
+// 1D history
+const T=500; let hist,histPtr=0,histCount=0,histCv=document.createElement('canvas'),histCtx,histImg;
+// 2D
+let offCv=document.createElement('canvas'),offCtx,offImg,off32;
+// 3D faces
+let topCv=document.createElement('canvas'),xCv=document.createElement('canvas'),yCv=document.createElement('canvas');
+let topImg,xImg,yImg;
+
+/* ---------- colours ---------- */
+const SCHEMES={
+  flames:['#000000','#3a0300','#8e1200','#d23c00','#f47a12'],
+  blue:['#00040f','#001c4a','#0b4f9e','#3a90e2','#b1d8ff'],
+  grey:['#000000','#3a3a3a','#7a7a7a','#b4b4b4','#e2e2e2'],
+  red:['#0c0000','#420003','#86000a','#c8101c','#ff5a5a']
+};
+const hex=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+const DEFC=1023, EMPTY=1022; let LUT=new Uint32Array(1024), LUTrgb=[];
+function pack(r,g,b){return ((255<<24)|(b<<16)|(g<<8)|r)>>>0}
+function buildLUT(){
+  const stops=SCHEMES[S.scheme].map(hex), M=S.Max;
+  LUTrgb=[];
+  for(let s=0;s<=M;s++){
+    let u=M?s/M:1; if(S.rev) u=1-u;
+    const k=u*(stops.length-1), i=Math.min(stops.length-2,Math.floor(k)), f=k-i;
+    const c=[0,1,2].map(j=>Math.round(stops[i][j]*(1-f)+stops[i+1][j]*f));
+    LUTrgb[s]=c; LUT[s]=pack(c[0],c[1],c[2]);
+  }
+  LUTrgb[M+1]=[255,240,0]; LUT[M+1]=pack(255,240,0);
+  const dc=S.showDef?(S.scheme==='blue'?[255,60,110]:[0,200,170]):LUTrgb[0];
+  LUTrgb[DEFC]=dc; LUT[DEFC]=pack(dc[0],dc[1],dc[2]);
+  drawLegend(); dirty=true;
+}
+function drawLegend(){
+  const c=$('legend'), g=c.getContext('2d'), w=c.width, h=c.height, M=S.Max, fw=Math.round(w*0.1);
+  for(let x=0;x<w-fw;x++){const s=Math.round(x/(w-fw-1)*M), q=LUTrgb[s]; g.fillStyle=`rgb(${q})`; g.fillRect(x,0,1,h);}
+  g.fillStyle='rgb(255,240,0)'; g.fillRect(w-fw,0,fw,h);
+  $('lgMax').textContent=M; $('lgMid').textContent=M>3?Math.round(M/2):'';
+}
+
+/* ---------- heart geometry ---------- */
+// Symmetric "Heart": Taubin's heart surface (x²+9/4 y²+z²−1)³ − x²z³ − 9/80 y²z³ < 0; z up, apex down
+function heartF(x,y,z){const a=x*x+2.25*y*y+z*z-1; return a*a*a-x*x*z*z*z-0.1125*y*y*z*z*z;}
+// "Real H.": anatomical sketch built from smooth unions of tapered ellipsoids (ventricles, atria) and capsules (great vessels)
+const smin=(a,b,k)=>{const h=Math.max(k-Math.abs(a-b),0)/k; return Math.min(a,b)-h*h*k*0.25;};
+function sdEll(x,y,z,rx,ry,rz){const k0=Math.hypot(x/rx,y/ry,z/rz), k1=Math.hypot(x/(rx*rx),y/(ry*ry),z/(rz*rz)); return k1>0?k0*(k0-1)/k1:-Math.min(rx,ry,rz);}
+function sdTaper(x,y,z,c,r,t0){const X=x-c[0],Y=y-c[1],Z=z-c[2], u=Math.max(0,Math.min(1,(Z/r[2]+1)/2)), s=t0+(1-t0)*Math.pow(u,0.6); return sdEll(X,Y,Z,r[0]*s,r[1]*s,r[2]);}
+function sdCap(x,y,z,a,b,r){const bx=b[0]-a[0],by=b[1]-a[1],bz=b[2]-a[2],px=x-a[0],py=y-a[1],pz=z-a[2]; const h=Math.max(0,Math.min(1,(px*bx+py*by+pz*bz)/(bx*bx+by*by+bz*bz))); return Math.hypot(px-bx*h,py-by*h,pz-bz*h)-r;}
+const RH_ROT=(()=>{const a=-24*Math.PI/180,b=18*Math.PI/180; return {ca:Math.cos(a),sa:Math.sin(a),cb:Math.cos(b),sb:Math.sin(b)};})();
+function realLocal(x,y,z){ // world -> heart-local coordinates (inverse of the tilt that points the apex down and to the patient's left)
+  const R=RH_ROT; let X=x*R.cb+y*R.sb, Y=-x*R.sb+y*R.cb; const Z=z; // undo rotation about z
+  return [X*R.ca-Z*R.sa, Y, X*R.sa+Z*R.ca]; }                     // undo rotation about y
+// flat-ended cylinder from a to b with radius r
+function sdCyl(x,y,z,a,b,r){const bx=b[0]-a[0],by=b[1]-a[1],bz=b[2]-a[2], L=Math.hypot(bx,by,bz), px=x-a[0],py=y-a[1],pz=z-a[2];
+  const h=(px*bx+py*by+pz*bz)/L, rad=Math.sqrt(Math.max(0,px*px+py*py+pz*pz-h*h)), dx=rad-r, dy=Math.abs(h-L/2)-L/2;
+  return Math.min(Math.max(dx,dy),0)+Math.hypot(Math.max(dx,0),Math.max(dy,0));}
+const lerp3=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+// pulmonary veins: [start inside the left atrium, open end towards the lung]; the first 40% carries a myocardial sleeve
+const PV=[[[0.55,0.62,0.95],[1.1,1.0,1.18]],[[0.55,0.64,0.7],[1.1,1.02,0.55]],[[0.05,0.66,0.95],[-0.4,1.05,1.18]],[[0.05,0.68,0.7],[-0.4,1.07,0.55]]];
+// great vessels as chains of cylinders; type 1 = oxygenated (red), 2 = deoxygenated (blue); open = open far end
+const VESSELS=[
+  {type:1, r:0.2,  ri:0.14, open:true,  pts:[[0,0.05,0.55],[0.05,0.1,1.35],[0.3,0.5,1.55],[0.45,0.95,1.35],[0.45,1.0,0.72]]}, // aorta with arch
+  {type:2, r:0.18, ri:0.12, open:false, pts:[[-0.15,-0.35,0.5],[-0.08,-0.3,1.2]]},                                         // pulmonary trunk
+  {type:2, r:0.12, ri:0.08, open:true,  pts:[[-0.08,-0.3,1.2],[0.45,0.05,1.3]]},                                            // left pulmonary artery
+  {type:2, r:0.12, ri:0.08, open:true,  pts:[[-0.08,-0.3,1.2],[-0.4,0.35,1.38]]},                                           // right pulmonary artery
+  {type:2, r:0.14, ri:0.09, open:true,  pts:[[-0.64,0.2,1.26],[-0.64,0.22,1.62]]},                                          // superior vena cava
+  ...PV.map(([s,e])=>({type:1, r:0.1, ri:0.065, open:true, pts:[lerp3(s,e,0.35),e]}))                                       // pulmonary veins
+];
+function vesselOuter(v,X,Y,Z){let d=1e9; const p=v.pts;
+  for(let k=0;k<p.length-1;k++) d=Math.min(d,sdCyl(X,Y,Z,p[k],p[k+1],v.r));
+  for(let k=1;k<p.length-1;k++) d=Math.min(d,Math.hypot(X-p[k][0],Y-p[k][1],Z-p[k][2])-v.r); return d;}
+function vesselLumen(v,X,Y,Z){let d=1e9; const p=v.pts, n=p.length;
+  for(let k=0;k<n-1;k++){let b=p[k+1]; if(v.open&&k===n-2){const a=p[k]; b=lerp3(a,b,1+0.25/Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]));} d=Math.min(d,sdCyl(X,Y,Z,p[k],b,v.ri));}
+  for(let k=1;k<n-(v.open?1:0);k++) d=Math.min(d,Math.hypot(X-p[k][0],Y-p[k][1],Z-p[k][2])-v.ri); return d;}
+function realMyo(x,y,z){const [X,Y,Z]=realLocal(x,y,z);
+  const lv=sdTaper(X,Y,Z,[0.2,0.1,-0.05],[0.62,0.58,1.0],0.28), rv=sdTaper(X,Y,Z,[-0.35,-0.22,0.05],[0.55,0.44,0.85],0.35);
+  const ra=Math.hypot(X+0.62,Y-0.12,Z-0.78)-0.42, la=sdEll(X-0.3,Y-0.45,Z-0.82,0.5,0.35,0.32);
+  let d=smin(smin(lv,rv,0.18),smin(ra,la,0.12),0.2);
+  // myocardial sleeves: first part of the superior vena cava and of each pulmonary vein carry atrial muscle
+  d=smin(d,sdCap(X,Y,Z,[-0.64,0.18,1.0],[-0.64,0.2,1.3],0.14),0.06);
+  for(const [s,e] of PV) d=smin(d,sdCap(X,Y,Z,s,lerp3(s,e,0.4),0.1),0.05);
+  return [d,X,Y,Z];}
+// vessel walls are hollow tubes with open ends; the lumen is only carved outside the muscle
+function realSD(x,y,z){const [m,X,Y,Z]=realMyo(x,y,z); let d=m;
+  for(const v of VESSELS){let w=vesselOuter(v,X,Y,Z); if(w<d&&m>0.02) w=Math.max(w,-vesselLumen(v,X,Y,Z)); if(w<d) d=w;}
+  return d;}
+// ventricles and atria only: used to measure the circumference L
+function realBody(x,y,z){const [X,Y,Z]=realLocal(x,y,z);
+  const lv=sdTaper(X,Y,Z,[0.2,0.1,-0.05],[0.62,0.58,1.0],0.28), rv=sdTaper(X,Y,Z,[-0.35,-0.22,0.05],[0.55,0.44,0.85],0.35);
+  const ra=Math.hypot(X+0.62,Y-0.12,Z-0.78)-0.42, la=sdEll(X-0.3,Y-0.45,Z-0.82,0.5,0.35,0.32);
+  return smin(smin(lv,rv,0.18),smin(ra,la,0.12),0.2);}
+// 0 = heart muscle (excitable), otherwise the type of the nearest vessel (kept inactive)
+function realVesselType(x,y,z){const [m,X,Y,Z]=realMyo(x,y,z); if(m<=0.02) return 0; let best=1e9,t=1;
+  for(const v of VESSELS){const w=vesselOuter(v,X,Y,Z); if(w<best){best=w;t=v.type;}} return t;}
+const SHAPES={
+  toy:{f:heartF, sa:[0.56,0,1.15], name:'heart'},
+  real:{f:realSD, perF:realBody, sdf:true, vessel:realVesselType, sa:null, saLocal:[-0.62,0.18,1.02], name:'anatomical heart'}
+};
+// bounds and largest horizontal circumference of a shape, found numerically once and cached
+function shapeInfo(key){const sh=SHAPES[key]; if(sh.info) return sh.info; let f=sh.f;
+  let mn=[9,9,9],mx=[-9,-9,-9]; const h=0.06;
+  for(let x=-2.2;x<=2.2;x+=h)for(let y=-2.2;y<=2.2;y+=h)for(let z=-2.2;z<=2.4;z+=h) if(f(x,y,z)<0){const v=[x,y,z];for(let q=0;q<3;q++){if(v[q]<mn[q])mn[q]=v[q];if(v[q]>mx[q])mx[q]=v[q];}}
+  for(let q=0;q<3;q++){mn[q]-=0.08;mx[q]+=0.08;}
+  f=sh.perF||sh.f; let best=0; const Rm=Math.hypot(mx[0]-mn[0],mx[1]-mn[1]), dr=Rm/220;
+  for(let z=mn[2]+0.05;z<mx[2];z+=(mx[2]-mn[2])/45){ let cx=0,cy=0,c=0;
+    for(let i=0;i<40;i++)for(let j=0;j<40;j++){const x=mn[0]+(i+.5)*(mx[0]-mn[0])/40, y=mn[1]+(j+.5)*(mx[1]-mn[1])/40; if(f(x,y,z)<0){cx+=x;cy+=y;c++;}}
+    if(c<6) continue; cx/=c; cy/=c; let per=0,px=null,py=null,fx=0,fy=0;
+    for(let a=0;a<=120;a++){const th=a*Math.PI/60,co=Math.cos(th),sn=Math.sin(th); let last=0;
+      for(let r=Rm;r>0;r-=dr) if(f(cx+r*co,cy+r*sn,z)<0){last=r;break;} // march inward: first hit is the outer boundary
+      const X=cx+last*co,Y=cy+last*sn; if(px!==null) per+=Math.hypot(X-px,Y-py); px=X;py=Y;}
+    if(per>best) best=per;}
+  if(sh.saLocal){ // sinus node given in local coordinates -> world
+    const R=RH_ROT, [X,Y,Z]=sh.saLocal, x1=X*R.ca+Z*R.sa, z1=-X*R.sa+Z*R.ca; sh.sa=[x1*R.cb-Y*R.sb, x1*R.sb+Y*R.cb, z1]; }
+  return sh.info={mn,mx,per:best};}
+// voxelise the outer H layers of the shape on a cubic or FCC lattice
+function buildHeart(){
+  const sh=SHAPES[S.heart], I=shapeInfo(S.heart), f=sh.f, s=S.L/I.per, fcc=S.lat==='tri', pad=2;
+  const E=fcc?[[1,0,0],[0.5,SQ3/2,0],[0.5,SQ3/6,Math.sqrt(2/3)]]:[[1,0,0],[0,1,0],[0,0,1]];
+  // inverse basis to find the lattice-coordinate range covering the bounding box
+  const inv=(p)=>{const k=p[2]/E[2][2], j=(p[1]-k*E[2][1])/E[1][1], i=p[0]-j*E[1][0]-k*E[2][0]; return [i,j,k];};
+  let lo=[1e9,1e9,1e9],hi=[-1e9,-1e9,-1e9];
+  for(const X of [I.mn[0],I.mx[0]])for(const Y of [I.mn[1],I.mx[1]])for(const Z of [I.mn[2],I.mx[2]]){const q=inv([(X-I.mn[0])*s,(Y-I.mn[1])*s,(Z-I.mn[2])*s]);for(let a=0;a<3;a++){lo[a]=Math.min(lo[a],q[a]);hi[a]=Math.max(hi[a],q[a]);}}
+  const i0=Math.floor(lo[0])-pad, j0=Math.floor(lo[1])-pad, k0=Math.floor(lo[2])-pad;
+  const nx=Math.ceil(hi[0])-i0+pad+1, ny=Math.ceil(hi[1])-j0+pad+1, nz=Math.ceil(hi[2])-k0+pad+1, o2=nx*ny, n=o2*nz;
+  const pos=(ii,j,k)=>{const a=ii+i0,b=j+j0,c=k+k0; return [a*E[0][0]+b*E[1][0]+c*E[2][0], b*E[1][1]+c*E[2][1], c*E[2][2]];}; // lattice units
+  const toShape=p=>[I.mn[0]+p[0]/s, I.mn[1]+p[1]/s, I.mn[2]+p[2]/s];
+  const layer=new Uint8Array(n);
+  if(sh.sdf){ // distance-bound shapes: test 4×4×4 blocks at their centre and skip or fill whole blocks far from the surface
+    const B=4, Rb=2*B*1.8/s;
+    for(let k=pad;k<nz-pad;k+=B) for(let j=pad;j<ny-pad;j+=B) for(let ii=pad;ii<nx-pad;ii+=B){
+      const q=toShape(pos(ii+B/2-.5,j+B/2-.5,k+B/2-.5)), v=f(q[0],q[1],q[2]), ke=Math.min(k+B,nz-pad), je=Math.min(j+B,ny-pad), ie=Math.min(ii+B,nx-pad);
+      if(v>Rb) continue;
+      for(let kk=k;kk<ke;kk++) for(let jj=j;jj<je;jj++) for(let i2=ii;i2<ie;i2++){ const idx=kk*o2+jj*nx+i2;
+        if(v<-Rb){layer[idx]=255; continue;} const p=toShape(pos(i2,jj,kk)); if(f(p[0],p[1],p[2])<0) layer[idx]=255; } } }
+  else for(let k=pad;k<nz-pad;k++) for(let j=pad;j<ny-pad;j++) for(let ii=pad;ii<nx-pad;ii++){const q=toShape(pos(ii,j,k)); if(f(q[0],q[1],q[2])<0) layer[k*o2+j*nx+ii]=255;}
+  const off=fcc?[1,nx,1-nx,o2,o2-1,o2-nx]:[1,nx,o2], nb=[]; for(const o of off){nb.push(o,-o);}
+  const Q=new Int32Array(n); let qh=0,qt=0; const Hl=S.H;
+  for(let i=0;i<n;i++) if(layer[i]===255){ for(let d=0;d<nb.length;d++) if(layer[i+nb[d]]===0){layer[i]=1;Q[qt++]=i;break;} }
+  while(qh<qt){const i=Q[qh++], l=layer[i]; if(l>=Hl) continue; for(let d=0;d<nb.length;d++){const j=i+nb[d]; if(layer[j]===255){layer[j]=l+1;Q[qt++]=j;}}}
+  const ves=new Uint8Array(n), actMask=new Uint8Array(n); let na=0,ns=0,nv=0;
+  for(let i=0;i<n;i++){const l=layer[i]; if(l<1||l>Hl) continue;
+    if(sh.vessel){const k=(i/o2)|0, j=((i-k*o2)/nx)|0, ii=i-k*o2-j*nx, q=toShape(pos(ii,j,k)); const vt=sh.vessel(q[0],q[1],q[2]); if(vt){ves[i]=vt;nv++;}}
+    if(!ves[i]){actMask[i]=1;na++;} if(l===1) ns++;}
+  const act=new Int32Array(na), vlist=new Int32Array(nv), surf=new Int32Array(ns), nrm=new Float32Array(ns*3); let vc=0;
+  let a=0,b=0,kmin=nz,kmax=0; const bmn=[1e9,1e9,1e9], bmx=[-1e9,-1e9,-1e9]; let top=-1,best=1e9;
+  for(let i=0;i<n;i++){const l=layer[i]; if(l<1||l>Hl) continue; if(ves[i]) vlist[vc++]=i; else act[a++]=i;
+    const k=(i/o2)|0, j=((i-k*o2)/nx)|0, ii=i-k*o2-j*nx, p=pos(ii,j,k);
+    for(let q=0;q<3;q++){if(p[q]<bmn[q])bmn[q]=p[q]; if(p[q]>bmx[q])bmx[q]=p[q];} if(k<kmin)kmin=k; if(k>kmax)kmax=k;
+    if(l===1){const [x,y,z]=toShape(p), h=0.01;
+      let gx=f(x+h,y,z)-f(x-h,y,z), gy=f(x,y+h,z)-f(x,y-h,z), gz=f(x,y,z+h)-f(x,y,z-h), gl=Math.hypot(gx,gy,gz);
+      if(!(gl>1e-12)){gx=x;gy=y;gz=z;gl=Math.hypot(x,y,z)||1;}
+      nrm[b*3]=gx/gl; nrm[b*3+1]=gy/gl; nrm[b*3+2]=gz/gl; surf[b++]=i;
+      if(!ves[i]){const dd=Math.hypot(x-sh.sa[0],y-sh.sa[1],z-sh.sa[2]); if(dd<best){best=dd;top=i;}} } }
+  HG={nx,ny,nz,o2,layer,act,ves,actMask,vlist,surf,nrm,kmin,kmax,top,off,E,i0,j0,k0,bmn,bmx,
+      cen:[(bmn[0]+bmx[0])/2,(bmn[1]+bmx[1])/2,(bmn[2]+bmx[2])/2]};
+}
+function hpos(i){const g=HG,k=(i/g.o2)|0, j=((i-k*g.o2)/g.nx)|0, ii=i-k*g.o2-j*g.nx, E=g.E, A=ii+g.i0,B=j+g.j0,C=k+g.k0;
+  return [A*E[0][0]+B*E[1][0]+C*E[2][0]-g.cen[0], B*E[1][1]+C*E[2][1]-g.cen[1], C*E[2][2]-g.cen[2], k];}
+
+/* ---------- allocation / init ---------- */
+// heart builds take a few seconds: show a notice, let the page paint, and debounce slider drags
+let rebuildTimer=null, building=false;
+function rebuild(){
+  if(S.dim!==4){ clearTimeout(rebuildTimer); building=false; $('busy').hidden=true; alloc(); return; }
+  $('busy').hidden=false; building=true; clearTimeout(rebuildTimer);
+  rebuildTimer=setTimeout(()=>requestAnimationFrame(()=>setTimeout(()=>{ alloc(); building=false; srcInfo(); $('busy').hidden=true; dirty=true; },0)),200);
+}
+function alloc(){
+  const {dim,L,H}=S;
+  if(dim===4){ buildHeart(); N=HG.nx*HG.ny*HG.nz; NS=HG.act.length; center=HG.top;
+    zcCtl.setRange(0,HG.nz-1); if(S.zc>HG.nz-1||!zcTouched) S.zc=HG.kmax; zcCtl.set(S.zc); }
+  else { HG=null; N=dim===1?L:dim===2?L*H:L*L*H; NS=N;
+    center=dim===1?(L>>1):dim===2?(H>>1)*L+(L>>1):((H>>1)*L+(L>>1))*L+(L>>1); }
+  st=new Uint16Array(N); nx=new Uint16Array(N); def=new Uint8Array(N); isSrc=new Uint8Array(N);
+  if(dim===1){hist=new Uint16Array(L*T).fill(EMPTY);histPtr=0;histCount=0;histCv.width=L;histCv.height=T;histCtx=histCv.getContext('2d');histImg=histCtx.createImageData(L,T);}
+  if(dim===2){offCv.width=L;offCv.height=H;offCtx=offCv.getContext('2d');offImg=offCtx.createImageData(L,H);off32=new Uint32Array(offImg.data.buffer);}
+  if(dim===3){
+    topCv.width=L;topCv.height=L;xCv.width=L;xCv.height=H;yCv.width=L;yCv.height=H;
+    topImg=topCv.getContext('2d').createImageData(L,L);xImg=xCv.getContext('2d').createImageData(L,H);yImg=yCv.getContext('2d').createImageData(L,H);
+    zcCtl.setRange(0,H-1); if(S.zc>H-1||S.zc<0||!zcTouched) S.zc=H>>1; zcCtl.set(S.zc);
+  }
+  initPerm(); randomBonds(); initState();
+}
+// One partially shuffled site list: defects occupy perm[0..K), source sites perm[N-1-Ks..N-1),
+// free sites lie in between, and the centre site is parked at perm[N-1] so it is never chosen.
+function swp(a,b){const q=perm[a]; perm[a]=perm[b]; perm[b]=q;}
+function initPerm(){
+  if(HG){perm=HG.act.slice();} else {perm=new Int32Array(N); for(let i=0;i<N;i++) perm[i]=i;}
+  const pc=perm.indexOf(center); swp(pc,NS-1); K=0; Ks=0; isSrc.fill(0); def.fill(0); adjustDefects(); adjustSources();
+}
+function adjustSources(){
+  const target=Math.max(0,Math.min(NS-1-K,Math.round(S.psrc*NS))), F=S.Max+1;
+  // new pacemakers are added on top of the existing ones and fire at once if they are resting
+  while(Ks<target){const e=NS-2-Ks, j=K+Math.floor(Math.random()*(e-K+1)); swp(j,e); const i=perm[e]; isSrc[i]=1; if(st&&st[i]===S.Max) st[i]=F; Ks++;}
+  while(Ks>target){const a=NS-1-Ks, j=a+Math.floor(Math.random()*Ks); swp(j,a); isSrc[perm[a]]=0; Ks--;}
+  dirty=true; if(typeof srcInfo==='function') srcInfo();
+}
+function adjustDefects(){
+  const target=Math.max(0,Math.min(NS-1-Ks,Math.round(S.pdef*NS)));
+  while(K<target){const j=K+Math.floor(Math.random()*(NS-1-Ks-K)); swp(K,j); const i=perm[K]; def[i]=1; st[i]=0; K++;}
+  while(K>target){const j=Math.floor(Math.random()*K); const a=perm[j]; perm[j]=perm[K-1]; perm[K-1]=a; K--; def[perm[K]]=0;}
+  dirty=true;
+}
+function newDefects(){for(let k=0;k<K;k++) def[perm[k]]=0; K=0; adjustDefects();}
+function initState(){
+  const M=S.Max,F=M+1;
+  const setS=i=>{st[i]=S.init==='rest'?M:(Math.random()<0.08?F:Math.floor(Math.random()*(M+1)));};
+  if(HG){st.fill(0); for(let a=0;a<HG.act.length;a++) setS(HG.act[a]);}
+  else for(let i=0;i<N;i++) setS(i);
+  for(let i=0;i<N;i++) if(def[i]) st[i]=0;
+  t=0; nexc=count(); if(S.dim===1){hist.fill(EMPTY);histPtr=0;histCount=0;record();}
+  dirty=true;
+}
+function count(){const F=S.Max+1;let c=0;for(let i=0;i<N;i++) if(st[i]===F) c++;return c}
+function changeMax(nm){
+  const oF=S.Max+1; S.Max=nm; const F=nm+1;
+  for(let i=0;i<N;i++){const s=st[i]; st[i]=s===oF?F:Math.min(s,nm);}
+  buildLUT();
+}
+
+/* ---------- dynamics ---------- */
+function step(){
+  const {dim,L,H,Max:M,p,pspont:ps}=S, F=M+1, R=Math.random, pAll=p>=1, tri=S.lat==='tri';
+  let ne=0;
+  if(dim===4){ne=stepHeart(M,F,p,pAll,ps);}
+  else if(S.pcut>0){ne=stepCut(M,F,p,pAll,ps);}
+  else if(dim===1){
+    for(let i=0;i<L;i++){
+      if(def[i]){nx[i]=0;continue}
+      const s=st[i];
+      if(s===F){nx[i]=0;continue}
+      if(s<M){nx[i]=(pAll||R()<p)?s+1:s;continue}
+      if((i>0&&st[i-1]===F)||(i<L-1&&st[i+1]===F)||(ps>0&&R()<ps)){nx[i]=F;ne++}else nx[i]=M;
+    }
+  }else if(dim===2&&tri){ // triangular, open boundaries: (±1,0),(0,±1),(+1,-1),(-1,+1)
+    for(let y=0;y<H;y++){ const yo=y*L;
+      for(let x=0;x<L;x++){
+        const i=yo+x;
+        if(def[i]){nx[i]=0;continue}
+        const s=st[i];
+        if(s===F){nx[i]=0;continue}
+        if(s<M){nx[i]=(pAll||R()<p)?s+1:s;continue}
+        if((x>0&&st[i-1]===F)||(x<L-1&&st[i+1]===F)||(y>0&&(st[i-L]===F||(x<L-1&&st[i-L+1]===F)))||(y<H-1&&(st[i+L]===F||(x>0&&st[i+L-1]===F)))||(ps>0&&R()<ps)){nx[i]=F;ne++}else nx[i]=M;
+      }
+    }
+  }else if(dim===2){
+    for(let y=0;y<H;y++){
+      const yo=y*L, ym=((y+H-1)%H)*L, yp=((y+1)%H)*L;
+      for(let x=0;x<L;x++){
+        const i=yo+x;
+        if(def[i]){nx[i]=0;continue}
+        const s=st[i];
+        if(s===F){nx[i]=0;continue}
+        if(s<M){nx[i]=(pAll||R()<p)?s+1:s;continue}
+        const xm=x?x-1:L-1, xp=x<L-1?x+1:0;
+        if(st[yo+xm]===F||st[yo+xp]===F||st[ym+x]===F||st[yp+x]===F||(ps>0&&R()<ps)){nx[i]=F;ne++}else nx[i]=M;
+      }
+    }
+  }else{
+    const LL=L*L;
+    for(let z=0;z<H;z++){
+      const zo=z*LL;
+      for(let y=0;y<L;y++){
+        const yo=zo+y*L, ym=zo+((y+L-1)%L)*L, yp=zo+((y+1)%L)*L;
+        for(let x=0;x<L;x++){
+          const i=yo+x;
+          if(def[i]){nx[i]=0;continue}
+          const s=st[i];
+          if(s===F){nx[i]=0;continue}
+          if(s<M){nx[i]=(pAll||R()<p)?s+1:s;continue}
+          let e;
+          if(tri){ // FCC, open boundaries. in-plane (±1,0),(0,±1),(1,-1),(-1,1); above (0,0),(-1,0),(0,-1); below (0,0),(1,0),(0,1)
+            const xl=x>0, xr=x<L-1, yl=y>0, yr=y<L-1;
+            e=(xl&&st[i-1]===F)||(xr&&st[i+1]===F)||(yl&&(st[i-L]===F||(xr&&st[i-L+1]===F)))||(yr&&(st[i+L]===F||(xl&&st[i+L-1]===F)))||
+              (z<H-1&&(st[i+LL]===F||(xl&&st[i+LL-1]===F)||(yl&&st[i+LL-L]===F)))||
+              (z>0&&(st[i-LL]===F||(xr&&st[i-LL+1]===F)||(yr&&st[i-LL+L]===F)));
+          }else{
+            const xm=x?x-1:L-1, xp=x<L-1?x+1:0;
+            e=st[yo+xm]===F||st[yo+xp]===F||st[ym+x]===F||st[yp+x]===F||(z>0&&st[i-LL]===F)||(z<H-1&&st[i+LL]===F);
+          }
+          if(e||(ps>0&&R()<ps)){nx[i]=F;ne++}else nx[i]=M;
+        }
+      }
+    }
+  }
+  // pacemaker in the middle: fires as soon as it has recovered to Max
+  if(S.center&&!def[center]&&st[center]===M&&nx[center]!==F){nx[center]=F;ne++}
+  // random pacemaker sites (density p_source): fire whenever recovered to Max
+  for(let k=NS-1-Ks;k<NS-1;k++){const i=perm[k]; if(st[i]===M&&nx[i]!==F){nx[i]=F;ne++}}
+  const tmp=st; st=nx; nx=tmp; t++; nexc=ne;
+  if(dim===1) record();
+  if(sick.on) sickCheck();
+}
+// heart shell: cubic neighbours, only active sites are updated; inactive sites stay at 0 and never excite
+function stepHeart(M,F,p,pAll,ps){
+  const g=HG, act=g.act, R=Math.random, off=g.off, nd=off.length, th=cutThr(), tr=S.cutMode==='trans', U=bondU; let ne=0;
+  for(let a=0;a<act.length;a++){const i=act[a];
+    if(def[i]){nx[i]=0;continue}
+    const s=st[i];
+    if(s===F){nx[i]=0;continue}
+    if(s<M){nx[i]=(pAll||R()<p)?s+1:s;continue}
+    let e=false;
+    for(let d=0;d<nd;d++){const o=off[d], j1=i+o, j2=i-o;
+      if(st[j1]===F&&(th===0||(tr&&d===0)||U[i*nd+d]>=th)){e=true;break;}
+      if(st[j2]===F&&(th===0||(tr&&d===0)||U[j2*nd+d]>=th)){e=true;break;}}
+    if(e||(ps>0&&R()<ps)){nx[i]=F;ne++}else nx[i]=M;
+  }
+  return ne;
+}
+// general update used whenever some connections are cut
+function stepCut(M,F,p,pAll,ps){
+  const D=dirs(), nd=D.length, R=Math.random, Lx=S.L, Ly=S.dim===1?1:S.dim===2?S.H:S.L, Lz=S.dim===3?S.H:1;
+  const per=S.dim>1&&S.lat!=='tri', th=cutThr(), tr=S.cutMode==='trans', U=bondU;
+  let ne=0;
+  for(let z=0;z<Lz;z++) for(let y=0;y<Ly;y++) for(let x=0;x<Lx;x++){
+    const i=(z*Ly+y)*Lx+x;
+    if(def[i]){nx[i]=0;continue}
+    const s=st[i];
+    if(s===F){nx[i]=0;continue}
+    if(s<M){nx[i]=(pAll||R()<p)?s+1:s;continue}
+    let e=false;
+    for(let d=0;d<nd&&!e;d++){
+      const dx=D[d][0],dy=D[d][1],dz=D[d][2], open=tr&&d===0;
+      let X=x+dx,Y=y+dy,Z=z+dz; if(per){X=(X+Lx)%Lx;Y=(Y+Ly)%Ly;}
+      if(X>=0&&X<Lx&&Y>=0&&Y<Ly&&Z>=0&&Z<Lz){const j=(Z*Ly+Y)*Lx+X; if(st[j]===F&&(open||U[i*nd+d]>=th)){e=true;break;}}
+      X=x-dx;Y=y-dy;Z=z-dz; if(per){X=(X+Lx)%Lx;Y=(Y+Ly)%Ly;}
+      if(X>=0&&X<Lx&&Y>=0&&Y<Ly&&Z>=0&&Z<Lz){const j=(Z*Ly+Y)*Lx+X; if(st[j]===F&&(open||U[j*nd+d]>=th)){e=true;break;}}
+    }
+    if(e||(ps>0&&R()<ps)){nx[i]=F;ne++}else nx[i]=M;
+  }
+  return ne;
+}
+function record(){hist.set(st,histPtr*S.L);for(let i=0;i<S.L;i++) if(def[i]) hist[histPtr*S.L+i]=DEFC; histPtr=(histPtr+1)%T; if(histCount<T) histCount++;}
+
+/* ---------- sick heart: redraw the cut pattern until a wave propagates ---------- */
+// after a reset, watch three pacemaker periods; if the last period has almost no excited sites the
+// wave never got out of the cut pattern, so draw new random cut links (same p_cut) and restart
+const sick={on:false,tries:0,win:0,maxP:0,quiet:0,ok:false};
+function sickStart(){ Object.assign(sick,{on:true,tries:1,win:0,maxP:0,quiet:0,ok:false}); sickNote(); }
+function sickStop(msg){ sick.on=false; const n=$('note'); if(msg){n.textContent=msg; n.hidden=false; setTimeout(()=>{n.hidden=true;},4000);} else n.hidden=true; }
+function sickNote(){ const n=$('note'); n.textContent=`Sick heart: cut pattern ${sick.tries}, checking that a wave propagates…`; n.hidden=false; }
+// runs every step while Sick is on: a pacemaker period with (almost) nothing excited counts as quiet;
+// two quiet periods in a row mean no wave is running, so draw a new random cut pattern and restart
+function sickCheck(){
+  const per=S.Max+2, thr=Math.max(20,NS*0.002); sick.win++; if(nexc>sick.maxP) sick.maxP=nexc;
+  if(sick.win<per) return;
+  sick.quiet=sick.maxP<thr?sick.quiet+1:0; sick.win=0; sick.maxP=0;
+  if(!sick.ok&&sick.quiet===0){ sick.ok=true; const n=$('note'); n.textContent=`Wave propagating (cut pattern ${sick.tries}).`; setTimeout(()=>{ if(sick.ok) n.hidden=true; },3000); }
+  if(sick.quiet<2) return;
+  if(sick.tries>=40){ sickStop('No propagating wave found in 40 cut patterns at this p_cut.'); return; }
+  sick.tries++; sick.quiet=0; sick.ok=false; randomBonds(); initState(); sickNote();
+}
+
+/* ---------- rendering ---------- */
+let TOPR=70; const BOTR=20;
+let W=1,Hc=1,dpr=1,dirty=true,rect={x:0,y:0,w:1,h:1};
+function resize(){
+  const r=$('stage').getBoundingClientRect(); dpr=Math.min(window.devicePixelRatio||1,2);
+  W=Math.max(1,Math.floor(Math.min(r.width,window.innerWidth))); Hc=Math.max(1,Math.floor(Math.min(r.height,window.innerHeight-Math.max(0,r.top))));
+  cv.style.width=W+'px'; cv.style.height=Hc+'px';
+  TOPR=W<600?112:70; // on phones the preset row sits under the title
+  cv.width=Math.round(W*dpr); cv.height=Math.round(Hc*dpr); dirty=true;
+}
+new ResizeObserver(resize).observe($('stage')); window.addEventListener('resize',resize);
+
+// structure view: sites grey (darker the more of their connections are cut), defects teal, pacemakers magenta
+const C_DEF=pack(0,200,170), C_SRC=pack(255,60,230), C_PM=pack(255,255,255);
+function structCol(i){ if(def[i]) return C_DEF; if(isSrc[i]) return C_SRC; if(S.center&&i===center) return C_PM;
+  const z=2*dirs().length, f=cdeg?1-Math.min(1,cdeg[i]/z):1, g=Math.round(40+120*f); return pack(g,g+6,g+14);}
+const C_VR=pack(178,48,54), C_VB=pack(58,92,178);
+function colorOf(i){ if(HG&&HG.ves[i]) return HG.ves[i]===1?C_VR:C_VB; return S.struct?structCol(i):(def[i]?LUT[DEFC]:LUT[st[i]])}
+function bgRGB(){return S.bgWhite?[255,255,255]:[7,8,10]}
+function fg(a){return S.bgWhite?`rgba(20,22,26,${a})`:`rgba(255,255,255,${a})`}
+let exportRect=null;
+function render(){
+  ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle=`rgb(${bgRGB()})`; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.imageSmoothingEnabled=false;
+  if(S.dim===1) render1(); else if(S.dim===2) render2(); else if(S.dim===3) render3(); else renderHeart();
+  const F=S.Max+1;
+  $('stats').innerHTML=`<span>t = <b>${t}</b></span><span>sites = <b>${NS.toLocaleString()}</b></span>`+
+    `<span>excited = <b>${nexc.toLocaleString()}</b></span><span>ρ<sub>f</sub> = <b>${(nexc/NS).toFixed(4)}</b></span>`+
+    `<span>defects = <b>${K.toLocaleString()}</b></span><span>sources = <b>${(Ks+(S.center?1:0)).toLocaleString()}</b></span>`+
+    `<span style="grid-column:1/-1">cut bonds = <b>${nCut.toLocaleString()}</b> of ${nElig.toLocaleString()}</span>`;
+}
+function fitRect(cw,ch,stretch){
+  const m=12, aw=W-2*m, ah=Hc-2*m-18;
+  let w,h; if(stretch){w=aw;h=ah}else{const s=Math.min(aw/cw,ah/ch);w=cw*s;h=ch*s}
+  rect={x:(W-w)/2,y:(Hc-18-h)/2+2,w,h}; return rect;
+}
+function render1(){
+  const L=S.L, d=new Uint32Array(histImg.data.buffer);
+  if(S.struct){for(let y=0;y<T;y++) for(let x=0;x<L;x++) d[y*L+x]=structCol(x);} else for(let k=0;k<L*T;k++){const s=hist[k]; d[k]=s===EMPTY?0:LUT[s];}
+  histCtx.putImageData(histImg,0,0);
+  const pe=$('presets'), pb=pe?pe.offsetTop+pe.offsetHeight+8:TOPR; // keep the time axis clear of the preset buttons
+  const m=12, axW=46, top=Math.max(TOPR,pb), bot=BOTR;
+  const r={x:m+axW,y:top,w:Math.max(10,W-2*m-axW),h:Math.max(10,Hc-top-bot)}; rect=r;
+  const rowH=r.h/T, older=T-histPtr; exportRect={x:r.x,y:r.y,w:r.w,h:r.h};
+  // draw in a local frame where time runs down from y=0; flip it when time runs upward
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  if(S.up){ctx.translate(0,r.y+r.h);ctx.scale(1,-1);} else ctx.translate(0,r.y);
+  if(S.struct){ctx.drawImage(histCv,0,0,L,T,r.x,0,r.w,r.h);}
+  else if(histCount<T){
+    if(histCount>0) ctx.drawImage(histCv,0,0,L,histCount,r.x,0,r.w,histCount*rowH);
+  }else{
+    if(older>0) ctx.drawImage(histCv,0,histPtr,L,older,r.x,0,r.w,older*rowH);
+    if(histPtr>0) ctx.drawImage(histCv,0,0,L,histPtr,r.x,older*rowH,r.w,histPtr*rowH);
+  }
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.strokeStyle=fg(.25); ctx.lineWidth=1; ctx.strokeRect(r.x-.5,r.y-.5,r.w+1,r.h+1);
+  { const y0=S.up?r.y+r.h+2:r.y-2, d=S.up?8:-8; ctx.fillStyle=fg(1);
+    const mk=i=>{const cx=r.x+(i+.5)/L*r.w; ctx.beginPath(); ctx.moveTo(cx,y0); ctx.lineTo(cx-5,y0+d); ctx.lineTo(cx+5,y0+d); ctx.fill();};
+    if(S.center) mk(center); if(S.markSrc) for(let k=NS-1-Ks;k<NS-1;k++) mk(perm[k]); }
+  // time axis: thick white arrow with bold label
+  const axX=m+16, yA=S.up?r.y+r.h:r.y, yB=S.up?r.y:r.y+r.h, dir=S.up?1:-1;
+  ctx.strokeStyle=fg(1); ctx.fillStyle=fg(1); ctx.lineWidth=5; ctx.lineCap='butt';
+  ctx.beginPath(); ctx.moveTo(axX,yA); ctx.lineTo(axX,yB+dir*16); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(axX,yB); ctx.lineTo(axX-10,yB+dir*20); ctx.lineTo(axX+10,yB+dir*20); ctx.closePath(); ctx.fill();
+  ctx.save(); ctx.translate(axX+20,(r.y+r.h/2)); ctx.rotate(-Math.PI/2);
+  ctx.font='700 15px "IBM Plex Sans",system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  if(!S.noText) ctx.fillText('time',0,0); ctx.restore();
+}
+function render2(){
+  for(let i=0;i<N;i++) off32[i]=colorOf(i);
+  offCtx.putImageData(offImg,0,0);
+  const [b1,b2]=basis2(), L=S.L, H=S.H, m=12;
+  const xs=[0,L*b1[0],H*b2[0],L*b1[0]+H*b2[0]], ys=[0,L*b1[1],H*b2[1],L*b1[1]+H*b2[1]];
+  const mnx=Math.min(...xs),mxx=Math.max(...xs),mny=Math.min(...ys),mxy=Math.max(...ys);
+  const sc=Math.min((W-2*m)/(mxx-mnx),(Hc-TOPR-BOTR)/(mxy-mny));
+  const ox=W/2-sc*(mnx+mxx)/2, oy=TOPR+(Hc-TOPR-BOTR)/2-sc*(mny+mxy)/2;
+  view2={sc,ox,oy,b1,b2}; exportRect={x:ox+sc*mnx,y:oy+sc*mny,w:sc*(mxx-mnx),h:sc*(mxy-mny)};
+  ctx.setTransform(dpr*sc*b1[0],dpr*sc*b1[1],dpr*sc*b2[0],dpr*sc*b2[1],dpr*ox,dpr*oy);
+  ctx.drawImage(offCv,0,0);
+  if(S.markSrc||S.struct){ ctx.setTransform(dpr,0,0,dpr,0,0); ctx.strokeStyle=S.struct?'rgb(255,60,230)':fg(1); ctx.lineWidth=1.5; const rr=Math.max(3,sc*1.2);
+    const mark=i=>{const x=i%L+.5, y=((i/L)|0)+.5; ctx.beginPath(); ctx.arc(ox+sc*(x*b1[0]+y*b2[0]), oy+sc*(x*b1[1]+y*b2[1]), rr,0,6.2832); ctx.stroke();};
+    if(S.center) mark(center); for(let k=NS-1-Ks;k<NS-1;k++) mark(perm[k]); }
+}
+let view2=null;
+// 3D projection: world coords relative to box centre
+function projCoef(){
+  const th=S.az*Math.PI/180, ph=S.el*Math.PI/180, c=Math.cos(th), s=Math.sin(th), cp=Math.cos(ph), sp=Math.sin(ph);
+  // x' = X c - Y s ; y' = X s + Y c ; sx = x' ; sy = -(Z cp + y' sp) ; depth = -y' cp + Z sp
+  return {ax:c, ay:-s, bx:-s*sp, by:-c*sp, bz:-cp, dx:-s*cp, dy:-c*cp, dz:sp};
+}
+function render3(){
+  const {L,H}=S, LL=L*L, P=projCoef(), zc=S.cut?S.zc:H-1;
+  const E3=basis3();
+  const ph=(x,y,z)=>[x*E3[0][0]+y*E3[1][0]+z*E3[2][0], x*E3[0][1]+y*E3[1][1]+z*E3[2][1], x*E3[0][2]+y*E3[1][2]+z*E3[2][2]];
+  const prp=(X,Y,Z)=>[P.ax*X+P.ay*Y, P.bx*X+P.by*Y+P.bz*Z, P.dx*X+P.dy*Y+P.dz*Z];
+  const pr=(x,y,z)=>prp(...ph(x,y,z));
+  const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2], dvec=[P.dx,P.dy,P.dz];
+  const faceVis=(k)=>{const n=cross(E3[(k+1)%3],E3[(k+2)%3]); const sg=dot(n,E3[k])>0?1:-1; return sg*dot(n,dvec)>0;};
+  // fit
+  let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
+  for(const X of [-L/2,L/2])for(const Y of [-L/2,L/2])for(const Z of [-H/2,H/2]){const q=pr(X,Y,Z);mnx=Math.min(mnx,q[0]);mxx=Math.max(mxx,q[0]);mny=Math.min(mny,q[1]);mxy=Math.max(mxy,q[1]);}
+  const m=16, sc=Math.min((W-2*m)/(mxx-mnx),(Hc-TOPR-BOTR)/(mxy-mny));
+  const ox=W/2-sc*(mnx+mxx)/2, oy=TOPR+(Hc-TOPR-BOTR)/2-sc*(mny+mxy)/2;
+  const toS=(x,y,z)=>{const q=pr(x-L/2,y-L/2,z-H/2);return [ox+sc*q[0],oy+sc*q[1]]};
+  const vec=(x,y,z)=>{const q=pr(x,y,z);return [sc*q[0],sc*q[1]]};
+  const face=(cvs,img,sw,sh,O,A,B,shade)=>{
+    cvs.getContext('2d').putImageData(img,0,0);
+    const o=toS(...O), a=vec(...A), b=vec(...B);
+    ctx.setTransform(dpr*a[0],dpr*a[1],dpr*b[0],dpr*b[1],dpr*o[0],dpr*o[1]);
+    ctx.drawImage(cvs,0,0,sw,sh,0,0,sw,sh);
+    if(shade){ctx.fillStyle=`rgba(0,0,0,${shade})`;ctx.fillRect(0,0,sw,sh);}
+  };
+  if(S.view==='box'){
+    // top slice z = zc
+    const t32=new Uint32Array(topImg.data.buffer), zo=zc*LL;
+    for(let k=0;k<LL;k++) t32[k]=colorOf(zo+k);
+    face(topCv,topImg,L,L,[0,0,zc+1],[1,0,0],[0,1,0],0);
+    // x face
+    const xPos=faceVis(0), xi=xPos?L-1:0, x32=new Uint32Array(xImg.data.buffer);
+    for(let z=0;z<=zc;z++) for(let y=0;y<L;y++) x32[z*L+y]=colorOf(z*LL+y*L+xi);
+    face(xCv,xImg,L,zc+1,[xPos?L:0,0,0],[0,1,0],[0,0,1],0.18);
+    // y face
+    const yPos=faceVis(1), yi=yPos?L-1:0, y32=new Uint32Array(yImg.data.buffer);
+    for(let z=0;z<=zc;z++){const b=z*LL+yi*L; for(let x=0;x<L;x++) y32[z*L+x]=colorOf(b+x);}
+    face(yCv,yImg,L,zc+1,[0,yPos?L:0,0],[1,0,0],[0,0,1],0.34);
+  }else{
+    // excited voxels only, depth-bucketed painter's algorithm
+    const F=S.Max+1, NB=48, buckets=Array.from({length:NB},()=>[]);
+    let dmax=1; for(const X of [-L/2,L/2])for(const Y of [-L/2,L/2])for(const Z of [-H/2,H/2]) dmax=Math.max(dmax,Math.abs(pr(X,Y,Z)[2]));
+    for(let z=0;z<=zc;z++){const zo=z*LL;
+      for(let y=0;y<L;y++){const yo=zo+y*L;
+        for(let x=0;x<L;x++) if(S.struct?(def[yo+x]||isSrc[yo+x]||(S.center&&yo+x===center)):st[yo+x]===F){
+          const [X,Y,Z]=ph(x+.5-L/2,y+.5-L/2,z+.5-H/2);
+          const d=P.dx*X+P.dy*Y+P.dz*Z; let b=Math.floor((d/dmax*.5+.5)*NB); b=b<0?0:b>=NB?NB-1:b;
+          buckets[b].push(ox+sc*(P.ax*X+P.ay*Y), oy+sc*(P.bx*X+P.by*Y+P.bz*Z), colorOf(yo+x));
+        }}}
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const sz=Math.max(1.2,sc*1.08), h=sz/2;
+    for(let b=0;b<NB;b++){const arr=buckets[b]; if(!arr.length) continue;
+      const u=b/(NB-1), r=Math.round(120+135*u), g=Math.round(100+140*u), bl=Math.round(u*40);
+      ctx.fillStyle=`rgb(${r},${g},${bl})`;
+      for(let k=0;k<arr.length;k+=3){ if(S.struct){const c=arr[k+2]; ctx.fillStyle=`rgb(${c&255},${(c>>>8)&255},${(c>>>16)&255})`;} ctx.fillRect(arr[k]-h,arr[k+1]-h,sz,sz);} }
+  }
+  // wireframe of full box + cut plane
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.lineWidth=1;
+  const C=[[0,0,0],[L,0,0],[L,L,0],[0,L,0],[0,0,H],[L,0,H],[L,L,H],[0,L,H]].map(c=>toS(...c));
+  const E=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  ctx.strokeStyle=fg(.28); ctx.beginPath();
+  for(const [a,b] of E){ctx.moveTo(...C[a]);ctx.lineTo(...C[b]);} ctx.stroke();
+  { let a=1e9,b=-1e9,c=1e9,e=-1e9; for(const q of C){a=Math.min(a,q[0]);b=Math.max(b,q[0]);c=Math.min(c,q[1]);e=Math.max(e,q[1]);} exportRect={x:a,y:c,w:b-a,h:e-c}; }
+  if(S.cut&&zc<H-1){const q=[[0,0],[L,0],[L,L],[0,L]].map(([x,y])=>toS(x,y,zc+1));
+    ctx.strokeStyle='rgba(251,138,60,.8)'; ctx.beginPath(); ctx.moveTo(...q[0]); for(let k=1;k<4;k++) ctx.lineTo(...q[k]); ctx.closePath(); ctx.stroke();}
+  // axis label
+  if(S.noText) return; const a0=toS(0,0,0), aH=toS(0,0,H); ctx.fillStyle=fg(.6); ctx.font='11px "IBM Plex Mono",monospace';
+  ctx.fillText('z',aH[0]+4,aH[1]); ctx.fillText('0',a0[0]+4,a0[1]+12);
+}
+
+// heart: software z-buffer splatting of voxels, shaded with the surface normal
+let hzb=null, himg=null;
+function renderHeart(){
+  const g=HG, P=projCoef(), cw=cv.width, ch=cv.height, cut=S.cut&&S.zc<g.kmax, zc=cut?S.zc:g.kmax;
+  if(!himg||himg.width!==cw||himg.height!==ch){himg=ctx.createImageData(cw,ch); hzb=new Float32Array(cw*ch);}
+  const bg=bgRGB(), pix=new Uint32Array(himg.data.buffer); pix.fill(pack(bg[0],bg[1],bg[2])); hzb.fill(-1e9);
+  let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
+  for(const X of [g.bmn[0]-g.cen[0]-1,g.bmx[0]-g.cen[0]+1])for(const Y of [g.bmn[1]-g.cen[1]-1,g.bmx[1]-g.cen[1]+1])for(const Z of [g.bmn[2]-g.cen[2]-1,g.bmx[2]-g.cen[2]+1]){
+    const sx=P.ax*X+P.ay*Y, sy=P.bx*X+P.by*Y+P.bz*Z; mnx=Math.min(mnx,sx);mxx=Math.max(mxx,sx);mny=Math.min(mny,sy);mxy=Math.max(mxy,sy);}
+  const m=16, sc=Math.min((W-2*m)/(mxx-mnx),(Hc-TOPR-BOTR)/(mxy-mny));
+  const ox=W/2-sc*(mnx+mxx)/2, oy=TOPR+(Hc-TOPR-BOTR)/2-sc*(mny+mxy)/2;
+  let ex0=1e9,ex1=-1e9,ey0=1e9,ey1=-1e9;
+  const k2=sc*dpr, sz=Math.max(1,Math.ceil(k2*(g.off.length===6?1.2:1.3))), hs=sz/2;
+  const vw=[P.dx,P.dy,P.dz], up=[-P.bx,-P.by,-P.bz], rt=[P.ax,P.ay,0];
+  let Lw=[vw[0]+.6*up[0]-.45*rt[0], vw[1]+.6*up[1]-.45*rt[1], vw[2]+.6*up[2]-.45*rt[2]]; const ll=Math.hypot(...Lw); Lw=Lw.map(v=>v/ll);
+  const splat=(i,col,shade,under)=>{
+    const p=hpos(i), X=p[0],Y=p[1],Z=p[2];
+    const sx=(ox+sc*(P.ax*X+P.ay*Y))*dpr, sy=(oy+sc*(P.bx*X+P.by*Y+P.bz*Z))*dpr, d=P.dx*X+P.dy*Y+P.dz*Z;
+    const c=pack(Math.round((col&255)*shade),Math.round(((col>>>8)&255)*shade),Math.round(((col>>>16)&255)*shade));
+    let x0=Math.round(sx-hs), y0=Math.round(sy-hs), x1=x0+sz, y1=y0+sz; if(x0<0)x0=0; if(y0<0)y0=0; if(x1>cw)x1=cw; if(y1>ch)y1=ch;
+    if(x0<ex0)ex0=x0; if(x1>ex1)ex1=x1; if(y0<ey0)ey0=y0; if(y1>ey1)ey1=y1;
+    for(let y=y0;y<y1;y++){let q=y*cw+x0; for(let x=x0;x<x1;x++,q++){ if(under){ if(hzb[q]===-1e9){hzb[q]=-1e8; pix[q]=c;} } else if(d>hzb[q]){hzb[q]=d; pix[q]=c;} }}
+  };
+  const surf=g.surf, nrm=g.nrm, F=S.Max+1, o2=g.o2;
+  if(S.view==='box'){
+    for(let q=0;q<surf.length;q++){const i=surf[q], k=(i/o2)|0; if(k>zc) continue;
+      const a=nrm[q*3],b=nrm[q*3+1],c=nrm[q*3+2], nv=a*vw[0]+b*vw[1]+c*vw[2];
+      if(!cut&&nv<-0.2) continue;
+      const lam=Math.abs(a*Lw[0]+b*Lw[1]+c*Lw[2]); splat(i,colorOf(i),nv<0?0.3+0.35*lam:0.32+0.68*lam,false);}
+    if(cut){const sh=0.4+0.6*Math.max(0,Lw[2]); for(const A of [g.act,g.vlist]) for(let q=0;q<A.length;q++){const i=A[q]; if(((i/o2)|0)===zc) splat(i,colorOf(i),sh,false);}}
+  }else{
+    const A=g.act, dm=Math.hypot(g.bmx[0]-g.bmn[0],g.bmx[1]-g.bmn[1],g.bmx[2]-g.bmn[2])/2||1;
+    for(let q=0;q<A.length;q++){const i=A[q]; const show=S.struct?(def[i]||isSrc[i]||(S.center&&i===center)):st[i]===F; if(!show) continue; const p=hpos(i); if(p[3]>zc) continue;
+      const d=P.dx*p[0]+P.dy*p[1]+P.dz*p[2];
+      splat(i,S.struct?structCol(i):LUT[F],0.5+0.5*Math.max(0,Math.min(1,d/dm*.5+.5)),false);}
+    const sil=S.bgWhite?pack(170,176,186):pack(70,74,82);
+    for(let q=0;q<surf.length;q++){const i=surf[q]; if(((i/o2)|0)>zc) continue; const nv=nrm[q*3]*vw[0]+nrm[q*3+1]*vw[1]+nrm[q*3+2]*vw[2]; if(nv<0) continue; splat(i,sil,S.bgWhite?1:0.35+0.4*nv,true);}
+  }
+  // pacemakers stay visible in the structure view even when they are small
+  ctx.putImageData(himg,0,0);
+  exportRect=ex1>ex0?{x:ex0/dpr,y:ey0/dpr,w:(ex1-ex0)/dpr,h:(ey1-ey0)/dpr}:null;
+}
+
+/* ---------- loop ---------- */
+let last=0;
+function frame(now){
+  if(building||(S.dim===4&&!HG)){requestAnimationFrame(frame);return;} // geometry is being rebuilt
+  if(S.running&&now-last>=S.delay){last=now; for(let k=0;k<S.spf;k++) step(); dirty=true;}
+  if(dirty){render();dirty=false;}
+  requestAnimationFrame(frame);
+}
+
+/* ---------- UI helpers ---------- */
+function slider(parent,o){
+  const row=document.createElement('div'); row.className='row'; row.id='row-'+o.id;
+  row.innerHTML=`<label for="s-${o.id}">${o.label}</label><input type="range" id="s-${o.id}"><input type="number" id="n-${o.id}" aria-label="${o.id} value">`;
+  parent.appendChild(row);
+  const r=row.children[1], n=row.children[2];
+  let min=o.min,max=o.max;
+  const lg=!!o.log, e0=o.e0, e1=o.e1, V=o.vals;
+  const near=v=>{let b=0;for(let k=1;k<V.length;k++) if(Math.abs(V[k]-v)<Math.abs(V[b]-v)) b=k; return b;};
+  const toV=q=>V?V[+q]:lg?(q<=0?0:Math.pow(10,e0+(e1-e0)*q/1000)):+q;
+  const fromV=v=>V?near(v):lg?(v<=0?0:Math.max(1,Math.min(1000,Math.round(1000*(Math.log10(v)-e0)/(e1-e0))))):v;
+  const fmt=v=>lg?(v===0?'0':+v.toPrecision(2)):(o.step<1?(+v).toFixed(2):String(v));
+  function setAttrs(){ if(V){r.min=0;r.max=V.length-1;r.step=1;n.min=min;n.max=max;n.step=1;} else if(lg){r.min=0;r.max=1000;r.step=1;n.min=0;n.max=Math.pow(10,e1);n.step='any';}
+    else{r.min=min;r.max=max;r.step=o.step;n.min=min;n.max=max;n.step=o.step;} }
+  setAttrs();
+  const ctl={set(v){r.value=fromV(v);n.value=fmt(v)},setRange(a,b){min=a;max=b;setAttrs()},row,label:row.children[0]};
+  r.addEventListener('input',()=>{const v=toV(r.value);n.value=fmt(v);o.on(v)});
+  n.addEventListener('change',()=>{let v=parseFloat(n.value);if(isNaN(v))v=lg?0:min;
+    v=lg?Math.max(0,Math.min(Math.pow(10,e1),v)):Math.max(min,Math.min(max,v)); if(!lg&&o.step>=1) v=Math.round(v);
+    r.value=fromV(v); n.value=fmt(v); o.on(v)});
+  ctl.set(o.value); return ctl;
+}
+function check(parent,id,label,val,on){
+  const l=document.createElement('label'); l.className='chk';
+  l.innerHTML=`<input type="checkbox" id="c-${id}"${val?' checked':''}><span>${label}</span>`;
+  parent.appendChild(l); l.firstChild.addEventListener('change',e=>on(e.target.checked)); return l;
+}
+function select(parent,id,label,opts,val,on){
+  const l=document.createElement('label'); l.className='sel';
+  l.innerHTML=`<span>${label}</span><select id="sel-${id}">${opts.map(([v,t])=>`<option value="${v}"${v===val?' selected':''}>${t}</option>`).join('')}</select>`;
+  parent.appendChild(l); l.querySelector('select').addEventListener('change',e=>on(e.target.value)); return l;
+}
+
+/* ---------- build panel ---------- */
+const lat=$('secLat'), mod=$('secModel'), src=$('secSrc'), s3=$('ovBody'), vw=$('secView');
+const LCtl=slider(lat,{id:'L',label:'<i>L</i> length',min:10,max:800,step:1,value:S.L,on:v=>{S.L=v; if(S.link&&(S.dim===2||S.dim===3)){S.H=Math.min(v,RANGES[S.dim].H[1]);HCtl.set(S.H);} rebuild();}});
+const HCtl=slider(lat,{id:'H',label:'<i>H</i> height',min:10,max:800,step:1,value:S.H,on:v=>{S.H=v; if(S.link&&S.dim!==4){S.link=false;$('c-link').checked=false;} rebuild(); setHint();}});
+const linkEl=check(lat,'link','Keep <i>H</i> = <i>L</i>',S.link,v=>{S.link=v; if(v){S.H=Math.min(S.L,RANGES[S.dim].H[1]);HCtl.set(S.H);alloc();}});
+const latEl=select(lat,'lat','Lattice',[['sq','Square (4)'],['tri','Triangular (6)']],S.lat,v=>{S.lat=v;rebuild();setHint();});
+select(lat,'init','Initial state',[['rest','All resting (Max)'],['rand','Random states']],S.init,v=>{S.init=v;initState();});
+
+const MaxCtl=slider(mod,{id:'Max',label:'<i>Max</i>',vals:[1,2,3,4,5,6,7,8,9,10,12,15,20,30,40,50,60,70,100,200,300,500],min:1,max:500,step:1,value:S.Max,on:v=>changeMax(v)});
+const pCtl=slider(mod,{id:'p',label:'<i>p</i> advance',min:0,max:1,step:0.01,value:S.p,on:v=>S.p=v});
+const spfCtl=slider(mod,{id:'spf',label:'Steps / frame',min:1,max:20,step:1,value:S.spf,on:v=>S.spf=v});
+const delayCtl=slider(mod,{id:'delay',label:'Delay (ms)',min:0,max:500,step:10,value:S.delay,on:v=>S.delay=v});
+
+check(src,'center','Pacemaker at centre site',S.center,v=>{S.center=v; if(v&&def[center]){def[center]=0;} dirty=true;});
+const psrcCtl=slider(src,{id:'psrc',label:'<i>p</i><sub>source</sub>',log:true,e0:-6,e1:-1,value:S.psrc,on:v=>{S.psrc=v;adjustSources();}});
+const si=document.createElement('div'); si.id='srcInfo'; src.appendChild(si);
+function srcInfo(){si.textContent=Ks?`${Ks} random pacemaker site${Ks>1?'s':''}, kept when p changes`:'no random pacemaker sites';}
+const pspontCtl=slider(src,{id:'pspont',label:'<i>p</i><sub>spont</sub>',log:true,e0:-7,e1:-1,value:S.pspont,on:v=>{S.pspont=v;}});
+const pdefCtl=slider(src,{id:'pdef',label:'<i>p</i><sub>defect</sub>',log:true,e0:-4,e1:0,value:S.pdef,on:v=>{S.pdef=v;adjustDefects();}});
+const regen=document.createElement('button'); regen.className='b'; regen.type='button'; regen.textContent='New defect pattern';
+regen.addEventListener('click',newDefects); src.appendChild(regen);
+const pcutCtl=slider(src,{id:'pcut',label:'<i>p</i><sub>cut</sub>',min:0,max:1,step:0.01,value:S.pcut,on:v=>setPcut(v)});
+select(src,'cutMode','Cut',[['all','All connections'],['trans','Transverse only (keep x)']],S.cutMode,v=>{S.cutMode=v;countCuts();});
+
+let zcTouched=false;
+check(s3,'cut','Transparent for <i>z</i> &gt; <i>z</i><sub>c</sub>',S.cut,v=>{S.cut=v;dirty=true;});
+const zcCtl=slider(s3,{id:'zc',label:'<i>z</i><sub>c</sub>',min:0,max:59,step:1,value:S.zc,on:v=>{S.zc=v;zcTouched=true;dirty=true;}});
+select(s3,'view','Render',[['box','Solid box'],['exc','Excited only']],S.view,v=>{S.view=v;dirty=true;});
+const azCtl=slider(s3,{id:'az',label:'Azimuth',min:-180,max:180,step:1,value:S.az,on:v=>{S.az=v;dirty=true;}});
+const elCtl=slider(s3,{id:'el',label:'Elevation',min:2,max:89,step:1,value:S.el,on:v=>{S.el=v;dirty=true;}});
+
+select(vw,'scheme','Colour scale',[['flames','Flames'],['red','Red'],['blue','Blue'],['grey','Grey']],S.scheme,v=>{S.scheme=v;buildLUT();});
+check(vw,'markSrc','Mark pacemaker sites (1D, 2D)',S.markSrc,v=>{S.markSrc=v;dirty=true;});
+const upEl=check(vw,'up','1D: time runs upward',S.up,v=>{S.up=v;dirty=true;});
+check(vw,'rev','Reverse scale',S.rev,v=>{S.rev=v;buildLUT();});
+check(vw,'showDef','Highlight defects',S.showDef,v=>{S.showDef=v;buildLUT();});
+
+/* ---------- dimension switch ---------- */
+function setDim(d){
+  S.dim=d; const R=RANGES[d];
+  LCtl.setRange(R.L[0],R.L[1]); S.L=R.L[2]; LCtl.set(S.L);
+  if(R.H){HCtl.setRange(R.H[0],R.H[1]); S.H=R.H[2]; HCtl.set(S.H);} else S.H=1;
+  HCtl.row.hidden=d===1; linkEl.hidden=d===1||d===4;
+  LCtl.label.innerHTML=d===1?'<i>L</i> length':d===4?'<i>L</i> circumf.':'<i>L</i> width';
+  HCtl.label.innerHTML=d===3?'<i>H</i> thickness':d===4?'<i>H</i> layers':'<i>H</i> height';
+  S.link=d!==4; $('c-link').checked=S.link;
+  $('ov3d').hidden=d<3; latEl.hidden=d===1; upEl.hidden=d!==1;
+  $('sel-view').options[0].text=d===4?'Surface':'Solid box';
+  $('c-center').nextElementSibling.textContent=d===4?'Pacemaker at the sinus node':'Pacemaker at centre site';
+  const ls=latEl.querySelector('select'); ls.options[0].text=d>=3?'Simple cubic (6)':'Square (4)'; ls.options[1].text=d>=3?'FCC (12)':'Triangular (6)';
+  document.querySelectorAll('#dimSeg button').forEach(b=>b.classList.toggle('on',+b.dataset.d===d));
+  setHint();
+  zcTouched=false; if(d===4){S.az=20;S.el=15;azCtl.set(S.az);elCtl.set(S.el);} rebuild(); srcInfo();
+}
+function heartBtn(){const b=document.querySelector('#dimSeg button[data-d="4"]'); b.textContent=S.heart==='toy'?'Heart':'Real H.'; b.title='Click again to switch between the symmetric heart and a more anatomical heart';}
+document.querySelectorAll('#dimSeg button').forEach(b=>b.addEventListener('click',()=>{const d=+b.dataset.d;
+  if(d===4&&S.dim===4){S.heart=S.heart==='toy'?'real':'toy'; heartBtn(); leavePreset(); zcTouched=false; rebuild(); setHint(); return;}
+  leavePreset(); setDim(d);}));
+
+function setHint(){const d=S.dim;$('hint').textContent=d===4?'drag to rotate · outer '+S.H+' layer'+(S.H>1?'s':'')+' of '+(S.heart==='toy'?'a heart':'an anatomical heart')+' · '+(S.lat==='tri'?'FCC':'cubic'):d===1?'x → · click to excite':d===2?(S.lat==='tri'?'triangular · open boundaries · click to excite':'periodic L × H · click or drag to excite'):'drag to rotate · '+(S.lat==='tri'?'FCC · open boundaries':'cubic · periodic in x,y');}
+$('ovTog').addEventListener('click',()=>{const b=$('ovBody'),h=!b.hidden;b.hidden=h;$('ovTog').textContent=h?'show':'hide';$('ovTog').setAttribute('aria-expanded',String(!h));});
+if(window.innerWidth<820){$('ovBody').hidden=true;$('ovTog').textContent='show';$('ovTog').setAttribute('aria-expanded','false');}
+$('structB').addEventListener('click',()=>{S.struct=!S.struct; $('structB').setAttribute('aria-pressed',String(S.struct)); $('structB').textContent=S.struct?'Dynamics':'Structure'; $('skey').hidden=!S.struct; if(S.struct) countCuts(); dirty=true;});
+$('bgB').addEventListener('click',()=>{S.bgWhite=!S.bgWhite; $('bgB').setAttribute('aria-pressed',String(S.bgWhite)); $('bgB').textContent=S.bgWhite?'Black bg':'White bg'; dirty=true;});
+$('pngB').addEventListener('click',()=>{
+  S.noText=true; render(); S.noText=false; dirty=true;
+  const r=exportRect||{x:0,y:0,w:W,h:Hc}, pad=6;
+  const x0=Math.max(0,Math.floor((r.x-pad)*dpr)), y0=Math.max(0,Math.floor((r.y-pad)*dpr)), x1=Math.min(cv.width,Math.ceil((r.x+r.w+pad)*dpr)), y1=Math.min(cv.height,Math.ceil((r.y+r.h+pad)*dpr));
+  const c=document.createElement('canvas'); c.width=Math.max(1,x1-x0); c.height=Math.max(1,y1-y0);
+  c.getContext('2d').drawImage(cv,x0,y0,c.width,c.height,0,0,c.width,c.height);
+  const url=c.toDataURL('image/png'), name=`excitable-${['','1d','2d','3d',S.heart==='toy'?'heart':'realheart'][S.dim]}-t${t}${S.struct?'-structure':''}.png`;
+  $('pngImg').src=url; $('pngDl').href=url; $('pngDl').download=name; $('pngModal').hidden=false; lastPng={c,name};
+  if(dlCap) savePng(); // published page: ask the viewer to save through the platform
+  else { try{const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();}catch(e){} } // local file
+});
+let dlCap=null, lastPng=null;
+try{ window.claude?.use?.('downloads')?.then(d=>{dlCap=d;}).catch(()=>{}); }catch(e){}
+function savePng(){ if(!lastPng||!dlCap) return; lastPng.c.toBlob(b=>{ dlCap.save({filename:lastPng.name,data:b}).catch(err=>{ if(err&&err.code!=='declined') console.log('save failed',err.code); }); },'image/png'); }
+$('pngDl').addEventListener('click',e=>{ if(dlCap){ e.preventDefault(); savePng(); } });
+$('pngClose').addEventListener('click',()=>{$('pngModal').hidden=true;});
+$('pngModal').addEventListener('click',e=>{if(e.target.id==='pngModal') $('pngModal').hidden=true;});
+/* ---------- demonstration presets (upper left) ---------- */
+// each button starts its demo; clicking it again flips between two parameter sets without resetting the state
+const PRE={cur:0,v:0};
+function setMaxV(v){changeMax(v); MaxCtl.set(v);}
+function setP(v){S.p=v; pCtl.set(v);}
+function setPcutV(v){setPcut(v); pcutCtl.set(v);}
+function setBg(white){S.bgWhite=white; $('bgB').setAttribute('aria-pressed',String(white)); $('bgB').textContent=white?'Black bg':'White bg'; dirty=true;}
+function presetUI(){document.querySelectorAll('#presets button').forEach(b=>{const on=+b.dataset.k===PRE.cur; b.classList.toggle('on',on); b.dataset.v=on?PRE.v:0; b.setAttribute('aria-pressed',String(on));});}
+// the applet's default parameters, used by the 1D and 2D demos (nothing is carried over from the heart demo)
+function resetDefaults(){
+  setMaxV(12); setP(1); S.spf=1; spfCtl.set(1); S.delay=30; delayCtl.set(30);
+  S.lat='sq'; $('sel-lat').value='sq'; S.cutMode='all'; $('sel-cutMode').value='all'; S.init='rest'; $('sel-init').value='rest';
+  S.pdef=0; pdefCtl.set(0); S.psrc=0; psrcCtl.set(0); S.pspont=0; pspontCtl.set(0); S.pcut=0; pcutCtl.set(0);
+  S.center=true; $('c-center').checked=true; setBg(false);
+  if(S.struct) $('structB').click();
+}
+function startPreset(k){
+  sickStop(); PRE.cur=k; PRE.v=0;
+  if(k===1){ S.heart='real'; heartBtn(); S.lat='tri'; $('sel-lat').value='tri'; S.cutMode='all'; $('sel-cutMode').value='all';
+    setBg(true); setMaxV(100); S.spf=5; spfCtl.set(5); setP(1); setPcutV(0); S.center=true; $('c-center').checked=true; setDim(4); }
+  else { resetDefaults(); setDim(k===2?2:1); }
+  setRun(true); presetUI();
+}
+function flipPreset(){
+  const k=PRE.cur; PRE.v=1-PRE.v;
+  if(k===1){ if(PRE.v===1){ setPcutV(0.83); if(!building){ initState(); sickStart(); } } else { sickStop(); setPcutV(0); } } // sick: reset the state; healthy again: keep it
+  else if(k===2) setP(PRE.v?0.92:1);
+  else setP(PRE.v?0.9:1);
+  presetUI(); dirty=true;
+}
+document.querySelectorAll('#presets button').forEach(b=>b.addEventListener('click',()=>{const k=+b.dataset.k; if(PRE.cur===k) flipPreset(); else startPreset(k);}));
+// any manual change of geometry leaves the demo mode
+function leavePreset(){ sickStop(); if(PRE.cur){PRE.cur=0; presetUI();} }
+/* ---------- buttons ---------- */
+function setRun(v){S.running=v;$('runB').textContent=v?'Pause':'Run';}
+$('runB').addEventListener('click',()=>setRun(!S.running));
+$('stepB').addEventListener('click',()=>{setRun(false);step();dirty=true;});
+$('resetB').addEventListener('click',()=>{initState();});
+window.addEventListener('keydown',e=>{if(e.code==='Space'&&!/INPUT|SELECT|BUTTON/.test(e.target.tagName)){e.preventDefault();setRun(!S.running);}});
+
+/* ---------- pointer ---------- */
+let drag=null;
+function excite(ev){
+  const b=cv.getBoundingClientRect(), px=ev.clientX-b.left, py=ev.clientY-b.top, r=rect, F=S.Max+1;
+  if(S.dim===2){ if(!view2) return;
+    const {sc,ox,oy,b1,b2}=view2, qx=(px-ox)/sc, qy=(py-oy)/sc, det=b1[0]*b2[1]-b2[0]*b1[1];
+    const u=(qx*b2[1]-b2[0]*qy)/det, v=(b1[0]*qy-qx*b1[1])/det; if(u<0||u>=S.L||v<0||v>=S.H) return;
+    const x=Math.floor(u), y=Math.floor(v), rr=Math.max(1,Math.round(S.L/120));
+    for(let dy=-rr-1;dy<=rr+1;dy++)for(let dx=-rr-1;dx<=rr+1;dx++){const X=dx*b1[0]+dy*b2[0],Y=dx*b1[1]+dy*b2[1]; if(X*X+Y*Y>rr*rr+.01)continue;
+      let yy=y+dy, xx=x+dx;
+      if(S.lat==='tri'){ if(xx<0||xx>=S.L||yy<0||yy>=S.H) continue; } else { yy=(yy+S.H)%S.H; xx=(xx+S.L)%S.L; }
+      const i=yy*S.L+xx; if(!def[i]) st[i]=F;}
+    nexc=count(); dirty=true; return; }
+  const fx=(px-r.x)/r.w, fy=(py-r.y)/r.h; if(fx<0||fx>=1||fy<0||fy>=1) return;
+  if(S.dim===1){const x=Math.floor(fx*S.L); for(let k=-1;k<=1;k++){const i=x+k; if(i>=0&&i<S.L&&!def[i]) st[i]=F;}}
+  else{const x=Math.floor(fx*S.L), y=Math.floor(fy*S.H), rr=Math.max(1,Math.round(S.L/120));
+    for(let dy=-rr;dy<=rr;dy++)for(let dx=-rr;dx<=rr;dx++){if(dx*dx+dy*dy>rr*rr)continue;
+      const i=((y+dy+S.H)%S.H)*S.L+((x+dx+S.L)%S.L); if(!def[i]) st[i]=F;}}
+  nexc=count(); dirty=true;
+}
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId); drag={x:e.clientX,y:e.clientY}; if(S.dim<3) excite(e);});
+cv.addEventListener('pointermove',e=>{if(!drag)return;
+  if(S.dim>=3){S.az+=(e.clientX-drag.x)*0.5; if(S.az>180)S.az-=360; if(S.az<-180)S.az+=360;
+    S.el=Math.max(2,Math.min(89,S.el+(e.clientY-drag.y)*0.4)); azCtl.set(Math.round(S.az)); elCtl.set(Math.round(S.el)); dirty=true;}
+  else excite(e);
+  drag={x:e.clientX,y:e.clientY};});
+const endDrag=()=>drag=null; cv.addEventListener('pointerup',endDrag); cv.addEventListener('pointercancel',endDrag);
+
+/* ---------- start ---------- */
+buildLUT(); resize(); startPreset(2); requestAnimationFrame(frame);
+window.EM={S,sick,setPcut:v=>setPcutV(v),setMax:v=>setMaxV(v),step:()=>step(),stats:()=>({t,nexc,NS}),initState:()=>initState()}; // handle for testing from the console
+})();
+</script>
+</body></html>
