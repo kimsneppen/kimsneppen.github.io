@@ -217,17 +217,20 @@ function fIndex(f){ let b=0; for(let i=0;i<F_STEPS.length;i++) if(Math.abs(F_STE
 // per-map defaults: number of centers, island-bridge range (km), default sea routes (lon/lat port chains,
 // [lon,lat,0] = waypoint at sea), roads (lon/lat polylines), sea route / road strengths (default 1)
 const DEFAULTS = {
-  'Europe':{n:12,bridgeKm:30,lanes:[[[-5.80,35.77],[-5.60,36.01]],[[1.31,51.13],[1.86,50.95]],[[12.29,41.73],[9.50,40.92]],[[12.31,56.13],[11.9,56.85,0],[11.0,57.6,0],[10.75,57.95,0],[8.00,58.15]],[[-4.63,53.31],[-6.26,53.35]],[[22.95,36.55],[25.13,35.34]],[[18.07,59.33],[24.75,59.44]],[[18.07,59.33],[22.27,60.45]],[[18.07,59.33],[21.14,55.71]],
-    // Gilleleje (Zealand) - Kattegat - Skagen - along the Norwegian coast - Troms (northern Norway), all at sea
-    [[12.31,56.13],[11.9,56.85,0],[11.0,57.6,0],[10.75,57.95,0],[9.5,58.05,0],[7.5,57.75,0],[5.4,58.2,0],[4.6,59.3,0],[4.4,60.8,0],[4.5,62.2,0],[6.8,63.3,0],[8.9,64.2,0],[10.6,65.3,0],[12.0,66.4,0],[11.8,67.6,0],[12.6,68.3,0],[14.6,69.0,0],[16.0,69.55,0],[17.6,69.95,0],[18.2,69.75]]]},
-  'Ancient Middle East':{n:5,bridgeKm:30,laneStr:0.01,lanes:[[[35.65,34.12],[25.16,35.30]],[[25.16,35.30],[22.95,36.55]],[[25.16,35.30],[26.24,39.96]],[[25.16,35.30],[22.90,32.85]],[[32.42,34.77],[25.16,35.30]],[[33.32,35.34],[32.84,36.08]],
+  'Europe':{n:12,bridgeKm:30,lanes:[[[-5.80,35.77],[-5.60,36.01]],[[1.31,51.13],[1.86,50.95]],[[12.29,41.73],[9.50,40.92]],[[-4.63,53.31],[-6.26,53.35]],[[22.95,36.55],[25.13,35.34]],[[18.07,59.33],[24.75,59.44]],[[18.07,59.33],[22.27,60.45]],[[18.07,59.33],[21.14,55.71]],
+    // Gilleleje (Zealand) - Kattegat - Skagen - Kristiansand - along the Norwegian coast - Trondheim, all at sea
+    [[12.31,56.13],[11.9,56.85,0],[11.0,57.6,0],[10.75,57.95,0],[9.5,58.05,0],[8.00,58.15],[7.5,57.75,0],[5.4,58.2,0],[4.6,59.3,0],[4.4,60.8,0],[4.5,62.2,0],[6.8,63.3,0],[7.6,63.62,0],[8.6,63.95,0],[9.5,63.78,0],[9.64,63.66,0],[9.87,63.54,0],[10.0,63.46,0],[10.40,63.43]],
+    [[11.14,55.33],[11.0,55.1,0],[10.95,54.6,0],[10.3,54.6,0],[10.05,54.66,0],[9.57,54.52]],   // Korsoer (Zealand) - Great Belt - Kiel Bay - Slesvig
+    [[11.25,55.97],[10.68,56.19]],                                                        // Sjaellands Odde - Ebeltoft (Djursland)
+    [[18.07,59.33],[18.9,59.05,0],[18.6,58.5,0],[18.30,57.64]]]},                         // Stockholm - Visby (Gotland)
+  'Ancient Middle East':{n:5,bridgeKm:30,laneStr:0.001,lanes:[[[35.65,34.12],[25.16,35.30]],[[25.16,35.30],[22.95,36.55]],[[25.16,35.30],[26.24,39.96]],[[25.16,35.30],[22.90,32.85]],[[32.42,34.77],[25.16,35.30]],[[33.32,35.34],[32.84,36.08]],
     [[25.16,35.30],[30.30,31.40]]]},                 // Knossos - Nile delta
-  'India':{n:15,bridgeKm:20,laneStr:0.01,roadStr:0.001,
+  'India':{n:15,bridgeKm:20,laneStr:0.125,roadStr:0.002,
     lanes:[[[80.27,13.08],[80.45,12.2,0],[80.15,11.0,0],[79.95,10.05,0],[79.4,9.6,0],[79.78,9.08]]],   // Chennai - Palk Bay - Mannar (NW Sri Lanka)
-    roads:[[[74.8,32.73],[77.21,28.61],[83.0,26.22],[86.9,22.57]]]},  // 150 km S of Srinagar - New Delhi - 100 km N of Varanasi - 150 km W of Kolkata
-  'Denmark':{n:10,bridgeKm:15,lanes:[
+    roads:[[[74.8,32.73],[77.21,28.61],[83.0,26.22],[86.9,22.57]]],   // 150 km S of Srinagar - New Delhi - 100 km N of Varanasi - 150 km W of Kolkata
+    bands:{'Kandy':{h:95,w:25,s:[70,95],l:[28,48]}}},               // dark greens, far from Chennai / Kochi (blue-violet / purple)
+  'Denmark':{n:10,bridgeKm:15,laneStr:0.01,roadStr:1,lanes:[
     [[9.96,57.59],[8.00,58.15]],                       // Hirtshals - Kristiansand
-    [[12.31,56.13],[11.97,57.71]],                     // Gilleleje - Gothenburg
     [[11.25,55.97],[10.68,56.19]],                     // Sjaellands Odde - Ebeltoft (Jutland)
     [[14.77,55.29],[14.35,55.56]],                     // Bornholm - Simrishamn
     [[16.45,57.27],[18.30,57.64]],                     // Oskarshamn - Visby
@@ -235,7 +238,15 @@ const DEFAULTS = {
     [[18.65,54.35],[19.0,54.72,0],[18.25,57.03]],      // Gdansk - (east of Hel) - Burgsvik, S Gotland
     [[18.07,59.33],[18.9,59.05,0],[18.6,58.5,0],[18.30,57.64]],   // Stockholm - Visby
     [[10.69,53.87],[10.95,54.05,0],[11.6,54.3,0],[12.3,54.62,0],[13.3,55.0,0],[14.0,55.3,0],[14.8,55.42,0],[15.6,55.6,0],[17.3,56.4,0],[17.9,57.2,0],[18.30,57.64]] // Luebeck - north of Bornholm - Visby
-  ]},
+  ],
+  // Haervejen (the Army Road) along the spine of Jutland: Viborg - Noerre Snede - Bække - Roedding - Padborg - Slesvig
+  roads:[[[9.40,56.45],[9.43,56.27],[9.40,55.96],[9.24,55.84],[9.12,55.58],[9.06,55.37],[9.24,55.18],[9.33,54.97],[9.36,54.82],[9.57,54.52]]],
+  // the four Danish centers get fixed colour families; the other centers share the hues 90..320 (greens, blues, purples)
+  freeHue:[90,320],
+  bands:{'Slesvig':{h:350,w:16,s:[70,90],l:[38,55]},     // red
+         'Odense':{h:24,w:12,s:[90,100],l:[50,62]},      // orange
+         'Roskilde':{h:48,w:12,s:[90,100],l:[52,68]},    // yellow
+         'Viborg':{h:18,w:16,s:[40,60],l:[20,34]}}},     // brown
   'Japan':{n:1,bridgeKm:30},
 };
 
@@ -334,7 +345,8 @@ function loadMap(idx, keepCenters){
   for(let k=0;k<n;k++){ const c=defaultCenter(k); c.site=nearestSite(c.x,c.y); if(c.site>=0){c.x=sx[c.site];c.y=sy[c.site];} centers.push(c); }
   fit();
 }
-function defaultCenter(k){
+function defaultCenter(k){ const c=defaultCenter0(k), B=(DEFAULTS[M.name]||{}).bands||{}; if(B[c.name])c.band=B[c.name]; return c; }
+function defaultCenter0(k){
   if(k===0){ const c=proj(M.capital.lon,M.capital.lat); return {x:c[0],y:c[1],f:0.5,name:M.capital.name}; }
   const ex=EXTRA[M.name]||[];
   if(k-1<ex.length){ const e=ex[k-1], p=proj(e.lon,e.lat); return {x:p[0],y:p[1],f:0.5,name:e.name}; }
@@ -473,14 +485,22 @@ function flame(v){ v=0.06+0.94*Math.min(1,Math.max(0,v)); return [255*Math.min(1
 function rainbow(v){ return hsl2rgb(300*(1-v),90,50); }
 function hash(w,seed){ let h=Math.sin(w*12.9898+seed*78.233)*43758.5453; return h-Math.floor(h); }
 function wordRGB(w,k){
-  const key=w*16+k; let c=wordColors.get(key); if(c)return c;
+  const key=w*32+k; let c=wordColors.get(key); if(c)return c;
   const n=Math.max(1,centers.length), h1=hash(w,1), h2=hash(w,2);
   if(colorMode==='bands'){
-    const kk=((k%n)+n)%n; let hue0,width; if(n===1){hue0=0;width=60;} else {hue0=kk*360/n; width=Math.min(60,0.8*360/n);}
-    c=hsl2rgb((hue0+h1*width)%360,60+30*h2,35+35*(1-h2));
+    const b=bandOf(((k%n)+n)%n), s=b.s||[60,90], l=b.l||[35,70];
+    c=hsl2rgb(((b.h+h1*b.w)%360+360)%360, s[0]+(s[1]-s[0])*h2, l[0]+(l[1]-l[0])*(1-h2));
   } else { const v=0.03+0.94*h1; c=colorMode==='jet'?jet(v):rainbow(v); }
   wordColors.set(key,c); return c;
 }
+// hue band of center k: a fixed colour family (c.band), else an even share of the free hues
+function bandOf(k){ const n=Math.max(1,centers.length), c=centers[k]; if(c&&c.band)return c.band;
+  const FH=(DEFAULTS[M.name]||{}).freeHue;
+  if(FH){ const free=centers.filter(x=>!x.band), m=Math.max(0,free.indexOf(c)), nf=Math.max(1,free.length), span=FH[1]-FH[0]; return {h:FH[0]+m*span/nf, w:Math.min(60,0.8*span/nf)}; }
+  return n===1?{h:0,w:60}:{h:k*360/n,w:Math.min(60,0.8*360/n)}; }
+function centerCol(k){ if(colorMode==='bands'&&centers[k]){ const b=bandOf(k), s=b.s||[60,90], l=b.l||[35,70];  // marker = middle of its word colours
+    const r=hsl2rgb((b.h+b.w/2)%360,(s[0]+s[1])/2,(l[0]+l[1])/2); return `rgb(${r[0]|0},${r[1]|0},${r[2]|0})`; }
+  return CENTER_COL[k%CENTER_COL.length]; }
 function computeUpstream(){ const N=sx.length; upstream=new Float32Array(N).fill(1);
   for(let s=0;s<N;s++){ if(from[s]<0)continue; let u=from[s],steps=0; while(u>=0&&steps<20000){upstream[u]+=1;u=from[u];steps++;} } }
 
@@ -538,7 +558,7 @@ function draw(){
   // centers
   const sm=w<560, cr=sm?4.5:7;
   centers.forEach((c,k)=>{ if(c.site<0)return; const x=X(c.x),y=Y(c.y);
-    ctx.beginPath(); ctx.arc(x,y,cr,0,7); ctx.fillStyle=CENTER_COL[k%CENTER_COL.length]; ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,cr,0,7); ctx.fillStyle=centerCol(k); ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
     ctx.font=(sm?'bold 10px':'bold 12px')+' system-ui,sans-serif'; ctx.fillStyle='#111'; ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=3;
     const g=cr+3, tw=ctx.measureText(c.name).width; const lx=(x+g+tw>w-4)?x-g-tw:x+g;
     ctx.strokeText(c.name,lx,y+(sm?3.5:4)); ctx.fillText(c.name,lx,y+(sm?3.5:4)); });
@@ -636,7 +656,7 @@ function updateLaneInfo(){ $('laneInfo').textContent=`${lanesKm.length} sea rout
 
 function renderCenters(){
   const box=$('centers'); box.innerHTML='';
-  centers.forEach((c,k)=>{ const d=document.createElement('div'); d.className='center'; d.style.borderLeftColor=CENTER_COL[k%CENTER_COL.length];
+  centers.forEach((c,k)=>{ const d=document.createElement('div'); d.className='center'; d.style.borderLeftColor=centerCol(k);
     d.innerHTML=`<label><b>${c.name}</b> <span class="v">f = ${c.f.toFixed(2)} ≈ 1 word / ${(delta/c.f).toFixed(0)} yr</span></label>
       <input type="range" min="0" max="${F_STEPS.length-1}" step="1" value="${fIndex(c.f)}" data-k="${k}" class="fSl">
       <div class="row"><button class="moveBtn">Move ${c.name}</button></div>`; box.appendChild(d); });
@@ -667,7 +687,7 @@ $('nCenters').addEventListener('change',()=>{ const n=+$('nCenters').value;
   wordColors.clear(); renderCenters(); draw(); });
 $('p').addEventListener('input',()=>$('pV').textContent=$('p').value);
 $('view').addEventListener('change',draw);
-$('colorSel').addEventListener('change',()=>{ colorMode=$('colorSel').value; wordColors.clear(); $('tbColor').textContent='Colours: '+colorMode+' ▸'; draw(); });
+$('colorSel').addEventListener('change',()=>{ colorMode=$('colorSel').value; wordColors.clear(); $('tbColor').textContent='Colours: '+colorMode+' ▸'; renderCenters(); draw(); });
 $('showLattice').addEventListener('change',draw);
 function toggleRun(){ running=!running; for(const id of ['runBtn','tbRun'])$(id).textContent=running?'Pause':'Run'; if(running)requestAnimationFrame(loop); }
 $('runBtn').addEventListener('click',toggleRun); $('tbRun').addEventListener('click',toggleRun);
@@ -685,7 +705,7 @@ $('roadBtn').addEventListener('click',()=>setMode(mode==='road'?'none':'road'));
 $('clearBtn').addEventListener('click',()=>{ lanesKm=[]; roadsKm=[]; pendingRoad=[]; pendingLane=[]; rebuildAll(); });
 // overlay buttons
 $('tbDelta').addEventListener('click',()=>{ const dmin=minAllowedDelta(); let i=DELTAS.indexOf(delta); do{ i=(i+1)%DELTAS.length; }while(DELTAS[i]<dmin); delta=DELTAS[i]; fillDeltaSel(); buildLattice(true); renderCenters(); draw(); });
-$('tbColor').addEventListener('click',()=>{ const modes=['bands','jet','rainbow']; colorMode=modes[(modes.indexOf(colorMode)+1)%3]; $('colorSel').value=colorMode; wordColors.clear(); $('tbColor').textContent='Colours: '+colorMode+' ▸'; draw(); });
+$('tbColor').addEventListener('click',()=>{ const modes=['bands','jet','rainbow']; colorMode=modes[(modes.indexOf(colorMode)+1)%3]; $('colorSel').value=colorMode; wordColors.clear(); $('tbColor').textContent='Colours: '+colorMode+' ▸'; renderCenters(); draw(); });
 $('tbLane').addEventListener('click',()=>setMode(mode==='lane'?'none':'lane'));
 $('tbRoad').addEventListener('click',()=>setMode(mode==='road'?'none':'road'));
 $('tbAdd').addEventListener('click',()=>setMode(mode==='add'?'none':'add'));
