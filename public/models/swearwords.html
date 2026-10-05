@@ -75,6 +75,19 @@
   #info dl{margin:4px 0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
   #info dt{font-weight:600}
   #info dd{margin:0}
+  #hist{flex:0 0 auto;margin-top:6px;background:var(--panel);border:1px solid var(--line);border-radius:8px;font-size:13px}
+  #hist summary{cursor:pointer;padding:6px 12px;font-weight:700;font-size:14px;list-style:none;display:flex;align-items:center;gap:6px}
+  #hist summary::-webkit-details-marker{display:none}
+  #hist summary::before{content:'▸';font-size:12px;color:var(--muted)}
+  #hist[open] summary::before{content:'▾'}
+  #hist .body{padding:0 14px 10px;max-height:40vh;overflow-y:auto}
+  #hist p{margin:6px 0;max-width:80em}
+  #hist h4{margin:10px 0 4px;font-size:13px}
+  #hist dl{margin:4px 0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+  #hist dt{font-weight:600;white-space:nowrap}
+  #hist dd{margin:0}
+  #hist .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+  @media (max-width:480px){ #hist dl{grid-template-columns:1fr;gap:0} #hist dd{margin:0 0 6px 15px} }
   #collapseBtn{position:absolute;top:50%;right:0;transform:translateY(-50%);z-index:7;width:18px;height:64px;padding:0;border-radius:6px 0 0 6px;border:1px solid var(--line);border-right:none;background:#fff;font-size:12px;color:var(--muted);cursor:pointer}
   @media (max-width:1150px){
     #panel{flex-basis:270px;width:270px;padding:8px 10px 20px}
@@ -147,6 +160,7 @@
       <button id="collapseBtn" title="Hide / show control panel">»</button>
     </div>
     <div id="status"><span id="stTime">t = 0 yr</span><span id="stSites"></span><span id="stWords"></span><span id="stHint"></span></div>
+    <details id="hist"><summary id="histTitle">History</summary><div class="body" id="histBody"></div></details>
     <div id="footer">Applet is made by Kim Sneppen, September 2026.</div>
   </div>
 
@@ -284,7 +298,7 @@ const DEFAULTS = {
          'Roskilde':{h:48,w:12,s:[90,100],l:[52,68]},    // yellow
          'Viborg':{h:18,w:16,s:[40,60],l:[20,34]}}},     // brown
   'Japan':{n:1,bridgeKm:80},
-  'Italy':{n:8},
+  'Italy':{n:11},
   'France (1000-1500)':{n:6,roadStr:1,roads:[[[2.35,48.86],[1.90,47.90]]]},   // Paris - Orleans
   'Germany':{n:13},
   'Great Britain':{n:11},
@@ -324,7 +338,7 @@ const EXTRA = {
   'Eurasia':[{name:'London',lon:-0.13,lat:51.51},{name:'Paris',lon:2.35,lat:48.86},{name:'Kyiv',lon:30.52,lat:50.45},{name:'Moscow',lon:37.62,lat:55.75},{name:'Constantinople',lon:28.98,lat:41.01},{name:'Babylon',lon:44.42,lat:32.54},{name:'Delhi',lon:77.21,lat:28.61},{name:'Chennai',lon:80.27,lat:13.08},{name:'Beijing',lon:116.40,lat:39.90},{name:'Chengdu',lon:104.07,lat:30.57},{name:'Xi\'an',lon:108.94,lat:34.34},{name:'Hanoi',lon:105.85,lat:21.03},{name:'Angkor',lon:103.87,lat:13.41},{name:'Ayutthaya',lon:100.57,lat:14.35},{name:'Kyoto',lon:135.77,lat:35.01}],
   'Europe (1000-1500)':[{name:'Paris',lon:2.35,lat:48.86},{name:'Constantinople',lon:28.98,lat:41.01},{name:'Moscow',lon:37.62,lat:55.75},{name:'London',lon:-0.13,lat:51.51},{name:'Cologne',lon:6.96,lat:50.94},{name:'Prague',lon:14.42,lat:50.08},{name:'Kyiv',lon:30.52,lat:50.45},{name:'Fez',lon:-5.00,lat:34.03},{name:'Córdoba',lon:-4.78,lat:37.89},{name:'Roskilde',lon:12.08,lat:55.64},{name:'Stockholm',lon:18.07,lat:59.33},{name:'Madrid',lon:-3.70,lat:40.42},{name:'Vienna',lon:16.37,lat:48.21}],
   'Ancient Middle East':[{name:'Luxor',lon:32.64,lat:25.69},{name:'Babylon',lon:44.42,lat:32.54},{name:'Hattusa',lon:34.62,lat:40.02},{name:'Susa',lon:48.25,lat:32.19},{name:'Mycenae',lon:22.76,lat:37.73},{name:'Ur',lon:46.10,lat:30.96},{name:'Memphis',lon:31.25,lat:29.85},{name:'Troy',lon:26.24,lat:39.96},{name:'Byblos',lon:35.65,lat:34.12}],
-  'Italy':[{name:'Milano',lon:9.19,lat:45.46},{name:'Venice',lon:12.32,lat:45.44},{name:'Genova',lon:8.93,lat:44.41},{name:'Florence',lon:11.25,lat:43.77},{name:'Naples',lon:14.27,lat:40.85},{name:'Siena',lon:11.33,lat:43.32},{name:'Ferrara',lon:11.62,lat:44.84}],
+  'Italy':[{name:'Milano',lon:9.19,lat:45.46},{name:'Venice',lon:12.32,lat:45.44},{name:'Genova',lon:8.93,lat:44.41},{name:'Florence',lon:11.25,lat:43.77},{name:'Naples',lon:14.27,lat:40.85},{name:'Siena',lon:11.33,lat:43.32},{name:'Ferrara',lon:11.62,lat:44.84},{name:'Mantua',lon:10.79,lat:45.16},{name:'Urbino',lon:12.64,lat:43.73},{name:'Chambéry',lon:5.92,lat:45.57}],
   'France (1000-1500)':[{name:'Dijon',lon:5.04,lat:47.32},{name:'Rouen',lon:1.10,lat:49.44},{name:'Bordeaux',lon:-0.58,lat:44.84},{name:'Rennes',lon:-1.68,lat:48.12},{name:'Marseille',lon:5.37,lat:43.30}],
   'Germany':[{name:'Dresden',lon:13.74,lat:51.05},{name:'Munich',lon:11.58,lat:48.14},{name:'Lübeck',lon:10.69,lat:53.87},{name:'Augsburg',lon:10.90,lat:48.37},{name:'Vienna',lon:16.37,lat:48.21},{name:'Heidelberg',lon:8.67,lat:49.40},{name:'Mainz',lon:8.27,lat:50.00},{name:'Bonn',lon:7.10,lat:50.73},{name:'Prague',lon:14.42,lat:50.08},{name:'Nuremberg',lon:11.08,lat:49.45},{name:'Schwerin',lon:11.42,lat:53.63},{name:'Stuttgart',lon:9.18,lat:48.78}],
   'Great Britain':[{name:'York',lon:-1.08,lat:53.96},{name:'Norwich',lon:1.30,lat:52.63},{name:'Bristol',lon:-2.59,lat:51.45},{name:'Winchester',lon:-1.31,lat:51.06},{name:'Coventry',lon:-1.51,lat:52.41},{name:'Edinburgh',lon:-3.19,lat:55.95},{name:'St Andrews',lon:-2.80,lat:56.34},{name:'Perth',lon:-3.43,lat:56.40},{name:'Aberdeen',lon:-2.10,lat:57.15},{name:'Pembroke',lon:-4.92,lat:51.67}],
@@ -337,11 +351,258 @@ const EXTRA = {
   'Africa':[{name:'Lagos',lon:3.38,lat:6.52},{name:'Johannesburg',lon:28.05,lat:-26.20},{name:'Nairobi',lon:36.82,lat:-1.29},{name:'Addis Ababa',lon:38.75,lat:9.02},{name:'Casablanca',lon:-7.59,lat:33.57},{name:'Kinshasa',lon:15.31,lat:-4.32},{name:'Abidjan',lon:-4.01,lat:5.35},{name:'Accra',lon:-0.19,lat:5.60},{name:'Dar es Salaam',lon:39.28,lat:-6.79},{name:'Dakar',lon:-17.44,lat:14.69},{name:'Algiers',lon:3.06,lat:36.75},{name:'Luanda',lon:13.23,lat:-8.84},{name:'Kampala',lon:32.58,lat:0.35}],
 };
 
+// historical background per map: title, overview (HTML) and one or two lines per cultural center
+const HISTORY = {
+'Japan':{title:'Japan from Heian to Edo, 794–1868',
+  text:`<p>In 794 the imperial court moved to Heian-kyō, today's Kyoto, which stayed the seat of the emperor for more than a thousand years. Court aristocrats, Buddhist temples and later the great merchant houses made Kyoto the centre of taste, poetry and refined speech: the <i>Tale of Genji</i>, the tea ceremony, Noh theatre and the Kyoto dialect all radiated from here. Political power shifted to warrior governments in Kamakura (1185–1333), back to Kyoto under the Ashikaga shoguns, and through a century of civil war (1467–1568) to the Tokugawa shogunate in Edo (1603–1868). Even then Kyoto and Osaka set fashion and language for much of western Japan, while Edo grew into one of the largest cities in the world.</p>
+<p>This is the setting of the classic dialect studies behind this applet. Yanagita Kunio (<i>Kagyū-kō</i>, 1930) noticed that words for “snail” form rings around Kyoto, with the oldest forms surviving at the far ends of the country; Matsumoto Osamu later found the same concentric pattern for the insults <i>aho</i> and <i>baka</i>. New words were coined in the capital and spread outwards along roads and coastal shipping at roughly one kilometre per year, overrunning the older words but never quite reaching Kyūshū, northern Tōhoku or the Ryūkyū islands.</p>`,
+  cities:{'Kyoto':'Imperial capital Heian-kyō (794–1869): court culture, Buddhist temples, the <i>Tale of Genji</i>; the source of new words in the concentric dialect pattern.',
+    'Tokyo':'As Edo, seat of the Tokugawa shoguns from 1603 and by 1700 a city of about a million; home of kabuki, ukiyo-e prints and its own Edo speech.',
+    'Fukuoka':'Hakata, Japan’s gateway to Korea and China for trade, monks and ideas; site of the Mongol landings of 1274 and 1281.',
+    'Sapporo':'In this period part of Ezo, the land of the Ainu with their own language; Sapporo was founded only in 1868–69 as capital of Hokkaido.',
+    'Sendai':'Castle town founded in 1600 by Date Masamune, centre of the powerful Date domain in northern Japan.'}},
+
+'China (1000-1500)':{title:'China under the Song, Yuan and early Ming, 1000–1500',
+  text:`<p>Around the year 1000 the Song dynasty (960–1279) ruled the most populous and commercialised state on Earth. Rice cultivation in the south, the Grand Canal, printing, paper money and a civil service recruited through examinations created a dense network of market towns. Neo-Confucian scholars such as Zhu Xi (1130–1200) defined an orthodoxy that was taught in every county school. After the Jurchen took the north in 1127 the court fled to Hangzhou, and the economic and cultural centre of gravity shifted permanently to the Yangtze delta.</p>
+<p>The Mongols united China under the Yuan dynasty (1271–1368) and built their capital at Beijing, linking China to the Silk Road and the Indian Ocean; Marco Polo and Ibn Battuta described its cities. The Ming (1368–1644) restored Chinese rule, first from Nanjing and from 1421 again from Beijing, sent Zheng He’s fleets to Africa (1405–1433) and rebuilt the Great Wall. Spoken Chinese stayed split into mutually unintelligible varieties (Wu, Yue, Min, Mandarin and others), but officials everywhere used a common written language and a court koiné, so new words travelled along the canals and roads that tied the empire together.</p>`,
+  cities:{'Beijing':'Khanbaliq, the Mongol Yuan capital from 1272, and from 1421 the Ming capital with the Forbidden City; northern Mandarin speech spread from here.',
+    'Hangzhou':'Lin’an, capital of the Southern Song (1138–1276) and perhaps the largest city in the world; Marco Polo’s “Quinsai”.',
+    'Guangzhou':'China’s main seaport for the trade with Southeast Asia, India and the Arab world, with a large Muslim merchant community.',
+    "Xi'an":'The former Tang capital Chang’an; by now a regional centre guarding the road to Central Asia and the Silk Road.',
+    'Chengdu':'Capital of Sichuan, where the world’s first government paper money (<i>jiaozi</i>) was issued around 1024; a centre of printing.',
+    'Nanjing':'First Ming capital (1368–1421) with the longest city wall in the world and the Porcelain Tower.',
+    'Suzhou':'City of canals, silk and scholar gardens; the richest town of the Yangtze delta and a centre of Wu culture.',
+    'Shanghai':'A modest county seat (from 1292) living from cotton and coastal trade; its rise as a world city came after 1843.',
+    'Wuhan':'Wuchang and Hankou at the meeting of the Yangtze and Han rivers, the hub of inland river trade.',
+    'Taipei':'Taiwan lay outside the Chinese state; it was home to Austronesian peoples, and Chinese settlement began only after 1600.'}},
+
+'Europe (1000-1500)':{title:'Europe in the High and Late Middle Ages, 1000–1500',
+  text:`<p>After the year 1000 Europe grew rapidly: forests were cleared, towns were founded by the hundreds and long-distance trade revived through Italian merchants, the Champagne fairs and the Hanseatic League of the Baltic. Latin Christendom was held together by the papacy, monastic orders, pilgrim routes such as the Way of St James and new universities (Bologna, Paris, Oxford). Gothic cathedrals spread from the Paris basin across the continent. In the east, Byzantium and the Orthodox principalities of Rus’ formed a second Christian world, while Muslim Iberia and Morocco were centres of philosophy, medicine and science.</p>
+<p>The period also saw crusades (from 1096), the Mongol invasion of Rus’ (1237–1240), the Christian reconquest of most of Iberia, and the Black Death of 1347–1351, which killed a third of the population. Vernacular languages gained ground on Latin: Dante, Chaucer and Villon wrote in Italian, English and French. By 1500 the Ottomans had taken Constantinople (1453), Moscow had thrown off Mongol rule (1480), the printing press was spreading from Mainz, and Portuguese and Spanish ships had reached India and America. Ideas, words and fashions moved along the trade roads and sea lanes drawn on this map.</p>`,
+  cities:{'Rome':'Seat of the popes and centre of Latin Christendom, although the papacy resided in Avignon from 1309 to 1377.',
+    'Paris':'Capital of the Capetian kings; its university (c. 1200) and Gothic architecture set standards for all of Latin Europe.',
+    'Constantinople':'Capital of Byzantium and the largest Christian city until the sack of 1204; Ottoman capital from 1453.',
+    'Moscow':'Grew from a small fort to the capital of Muscovy; Ivan III ended Mongol overlordship in 1480.',
+    'London':'England’s largest city and port, with Westminster as royal and parliamentary seat; London English became the national standard.',
+    'Cologne':'The largest city in Germany: archbishop-elector, Hanseatic merchants and a Gothic cathedral begun in 1248.',
+    'Prague':'Capital of Bohemia and imperial residence of Charles IV, who founded its university in 1348; birthplace of the Hussite reform.',
+    'Kyiv':'Capital of Kievan Rus’ and cradle of its Orthodox Christian culture; sacked by the Mongols in 1240.',
+    'Fez':'Capital of the Marinid sultans, with the al-Qarawiyyin mosque-university, a centre of learning in the Maghreb.',
+    'Córdoba':'Capital of the Caliphate until 1031 and around 1000 the largest city in Europe; home of Averroes and Maimonides; Castilian from 1236.',
+    'Roskilde':'Royal seat and bishopric of Denmark; its cathedral became the burial church of the Danish kings.',
+    'Stockholm':'Founded around 1250 at the outlet of Lake Mälaren; a German-influenced trading town that became Sweden’s capital.',
+    'Madrid':'The Moorish fortress Mayrit, taken by Castile in 1085; still a small town, capital of Spain only from 1561.',
+    'Vienna':'Residence of the Babenberg dukes and from 1278 of the Habsburgs; university founded 1365.'}},
+
+'Ancient Middle East':{title:'The Bronze Age Middle East, 3000–1100 BCE',
+  text:`<p>Between the Nile, the Aegean and the Iranian plateau the first states, scripts and cities appeared. Sumerian city-states in southern Mesopotamia invented cuneiform writing around 3200 BCE, and Egypt was unified under the pharaohs at about the same time. Over the next two thousand years empires rose and fell: Akkad, the Third Dynasty of Ur, Old Babylon under Hammurabi, the Hittites in Anatolia, Mitanni, Assyria and the New Kingdom of Egypt. In the Aegean the Minoans of Crete and later the Mycenaean Greeks built palace economies and sea trade.</p>
+<p>The Late Bronze Age (c. 1550–1200 BCE) was a truly international system: kings wrote to each other in Akkadian, the diplomatic language of the time, exchanged gold, horses and princesses, and ships carried copper from Cyprus, tin from the east and cedar from Lebanon. Religious ideas, myths, writing systems and luxury styles spread along the Way of Horus, the King’s Highway and the sea routes. Around 1200 BCE this world collapsed in war, drought and migration (the “Sea Peoples”); out of the ruins came the Phoenician alphabet, the ancestor of Greek, Latin and Arabic script.</p>`,
+  cities:{'Knossos':'Palace centre of Minoan Crete (c. 1900–1450 BCE), with Linear A script and a sea network across the Aegean.',
+    'Luxor':'Thebes, capital of New Kingdom Egypt, with the temples of Karnak and Luxor and the tombs of the Valley of the Kings.',
+    'Babylon':'Hammurabi’s capital (c. 1750 BCE), famous for his law code; Babylonian became the language of learning and diplomacy.',
+    'Hattusa':'Capital of the Hittites in Anatolia; its clay archives hold the oldest written Indo-European language.',
+    'Susa':'Capital of Elam on the edge of the Iranian plateau, long a rival and partner of the Mesopotamian kingdoms.',
+    'Mycenae':'Fortified palace of the Mycenaean Greeks (c. 1600–1200 BCE), writing early Greek in Linear B; Homer’s city of Agamemnon.',
+    'Ur':'Sumerian city with royal tombs and the ziggurat of Ur-Nammu; capital of the Third Dynasty of Ur (c. 2100 BCE).',
+    'Memphis':'Capital of Old Kingdom Egypt beside the pyramids of Giza and Saqqara, and a lasting administrative centre.',
+    'Troy':'Wealthy citadel guarding the Dardanelles, remembered in the legend of the Trojan War.',
+    'Byblos':'Ancient Phoenician port shipping cedar to Egypt; a key site in the early history of the alphabet.'}},
+
+'Italy':{title:'Italy in the Renaissance, 1350–1550',
+  text:`<p>Late medieval Italy was a mosaic of republics, duchies, the Papal States and the Kingdom of Naples. Its cities were the richest in Europe, living from banking, cloth, and the trade of Venice and Genoa across the Mediterranean and the Black Sea. In this competitive world of small states, princes and merchant patricians used art, architecture and learning to display their power. Humanists, beginning with Petrarch, recovered classical Latin and Greek texts, and in Florence artists such as Brunelleschi, Donatello and Masaccio developed linear perspective and a new realism around 1420. The movement spread from court to court: Milan, Ferrara, Mantua, Urbino, Rome, Venice and Naples all competed for the best painters, architects and scholars.</p>
+<p>Language followed culture. The Tuscan of Dante, Petrarch and Boccaccio became the model for written Italian, codified by Pietro Bembo in 1525 and spread by Venice’s printing presses, while people continued to speak very different regional dialects. The High Renaissance (c. 1490–1527) of Leonardo, Michelangelo, Raphael and Titian coincided with the Italian Wars (1494–1559), in which France and Spain fought over the peninsula; the Sack of Rome in 1527 marked the end of the golden age, although Renaissance ideas had by then spread all over Europe.</p>`,
+  cities:{'Rome (Papal)':'After the popes returned from Avignon, they rebuilt Rome as a Renaissance capital: the Sistine Chapel, Bramante’s new St Peter’s (1506), Raphael and Michelangelo.',
+    'Milano':'Duchy of the Visconti and Sforza, with the Duomo and the castle; Leonardo painted the <i>Last Supper</i> here and Bramante built here.',
+    'Venice':'Maritime republic and Europe’s largest printing centre around 1500 (Aldus Manutius); the Venetian painters Bellini, Giorgione and Titian.',
+    'Genova':'Republic of bankers and seafarers (Bank of San Giorgio, 1407) with colonies in the Black Sea; home town of Columbus.',
+    'Florence':'Birthplace of the Renaissance under the Medici: Brunelleschi’s dome, Botticelli, Leonardo, Michelangelo, Machiavelli; its Tuscan became written Italian.',
+    'Naples':'Capital of the Aragonese kingdom from 1442, with a lively humanist academy (Pontano, Sannazaro).',
+    'Siena':'Banking republic and rival of Florence, famous for the Sienese school of painting (Duccio, Simone Martini, Lorenzetti); conquered by Florence in 1555.',
+    'Ferrara':'Court of the Este dukes, where Boiardo and Ariosto wrote their chivalric epics; its “Addizione Erculea” was the first modern town plan.',
+    'Mantua':'Court of the Gonzaga and of Isabella d’Este; Mantegna’s Camera degli Sposi and Alberti’s church of Sant’Andrea.',
+    'Urbino':'Federico da Montefeltro’s ideal court with its ducal palace; birthplace of Raphael and setting of Castiglione’s <i>Book of the Courtier</i>.',
+    'Chambéry':'Capital of the counts, later dukes of Savoy until 1563; a French-speaking Alpine state that later moved its capital to Turin and in 1861 united Italy.'}},
+
+'France (1000-1500)':{title:'France in the Middle Ages, 1000–1500',
+  text:`<p>Around 1000 the Capetian king directly controlled little more than the region around Paris and Orléans. The rest of the kingdom was held by powerful princes: the dukes of Normandy, who conquered England in 1066, the counts of Champagne and Flanders, the dukes of Burgundy, Aquitaine and Brittany, and the counts of Toulouse; Provence even belonged to the Holy Roman Empire. Over five centuries the kings gradually absorbed these principalities, through marriages, confiscations and war. France meanwhile led Latin Europe in culture: Gothic architecture (Saint-Denis, Chartres, Notre-Dame), the University of Paris, the chivalric romance, and the troubadour poetry of the south.</p>
+<p>The kingdom was split linguistically between the <i>langue d’oïl</i> of the north, the <i>langue d’oc</i> (Occitan) of the south, and Breton in the west. The Albigensian Crusade (1209–1229) brought the south under northern control. The Hundred Years’ War (1337–1453) against England, Joan of Arc and the recovery of Normandy and Aquitaine strengthened the monarchy, and Louis XI and his successors acquired Burgundy (1477), Provence (1481) and Brittany (1491). With royal power the Paris form of French spread as the language of administration, a process made official in 1539.</p>`,
+  cities:{'Paris':'Capetian capital with the University of Paris and Notre-Dame; the speech of Paris became standard French.',
+    'Dijon':'Capital of the Valois dukes of Burgundy (1363–1477), whose brilliant court rivalled the king’s; the sculptor Claus Sluter worked here.',
+    'Rouen':'Capital of the duchy of Normandy, whose dukes became kings of England in 1066; Joan of Arc was burnt here in 1431.',
+    'Bordeaux':'Capital of Aquitaine and English from 1154 (through Eleanor of Aquitaine) until 1453; its wine trade bound it to England.',
+    'Rennes':'Capital of the Duchy of Brittany with Nantes; the Breton-speaking west kept its independence until the union with France (1491–1532).',
+    'Marseille':'The great Mediterranean port of Occitan-speaking Provence, a crusader harbour, French only from 1481.'}},
+
+'Germany':{title:'The Holy Roman Empire, 1250–1650',
+  text:`<p>After the fall of the Hohenstaufen emperors (1250) the German lands never became a centralised kingdom. The Holy Roman Empire was instead a federation of hundreds of princes, bishops and free cities under an elected emperor; the Golden Bull of 1356 fixed the seven electors (the archbishops of Mainz, Cologne and Trier, the King of Bohemia, the Count Palatine, the Duke of Saxony and the Margrave of Brandenburg). From 1438 the emperors were almost always Habsburgs ruling from Vienna or Prague. Every court and city became a cultural centre of its own, which is why Germany still has many regional capitals and strong dialect differences.</p>
+<p>The cities flourished: the Hanseatic League led by Lübeck dominated trade in the North Sea and the Baltic, and the South German cities of Augsburg and Nuremberg became centres of banking, crafts and art (Dürer, Holbein). Gutenberg’s printing press (Mainz, c. 1450) made the Empire the heart of the book trade. Luther’s Reformation (1517) and his Bible translation, based on the chancery language of Saxony, laid the foundation of standard written German, which slowly replaced Low German in the north. Religious division ended in the catastrophe of the Thirty Years’ War (1618–1648), which devastated the Empire.</p>`,
+  cities:{'Berlin':'A small twin town (Berlin-Cölln) that became the residence of the Hohenzollern electors of Brandenburg in 1486.',
+    'Dresden':'Residence of the Wettin dukes and electors of Saxony; the Saxon chancery language was the basis of Luther’s German.',
+    'Munich':'Residence of the Wittelsbach dukes of Bavaria, with the late Gothic Frauenkirche (1488) and a Counter-Reformation court.',
+    'Lübeck':'“Queen of the Hanse” and seat of its assemblies; Low German from Lübeck was the trade language of the whole Baltic.',
+    'Augsburg':'Imperial city of the Fugger and Welser bankers; the Augsburg Confession (1530) and the Peace of Augsburg (1555).',
+    'Vienna':'Habsburg capital, centre of the empire’s German-speaking southeast; it withstood the Ottoman siege of 1529.',
+    'Heidelberg':'Residence of the Elector Palatine, with Germany’s oldest university (1386) and a centre of Calvinism.',
+    'Mainz':'Seat of the archbishop-elector and arch-chancellor of the Empire, and Gutenberg’s home, where printing with movable type began.',
+    'Bonn':'Frequent, and from 1597 permanent, residence of the archbishop-electors of Cologne.',
+    'Prague':'Capital of Bohemia and imperial residence under Charles IV and Rudolf II; city of Jan Hus and of the Defenestration of 1618.',
+    'Nuremberg':'Rich imperial free city of craftsmen, instrument makers and printers; home of Albrecht Dürer and Hans Sachs.',
+    'Schwerin':'Residence of the dukes of Mecklenburg in the Low German-speaking north.',
+    'Stuttgart':'Residence of the counts, from 1495 dukes, of Württemberg in Swabia.'}},
+
+'Great Britain':{title:'Britain in the Middle Ages, 1000–1500',
+  text:`<p>The Norman Conquest of 1066 replaced the English aristocracy with a French-speaking elite: for three centuries the court, law and church used French and Latin, while English survived as the language of the people and absorbed thousands of French words. Norman lords pushed into Wales, where Edward I completed the conquest in 1283 and built his ring of castles. Scotland remained an independent kingdom; its Wars of Independence (1296–1357) under Wallace and Robert the Bruce secured its separate identity, and Gaelic retreated to the Highlands while Scots, a sister language of English, spread in the Lowlands.</p>
+<p>The wool and cloth trade made England rich and linked it to Flanders and Italy. Cathedrals, monasteries and the universities of Oxford and Cambridge, and later St Andrews, Glasgow and Aberdeen, were the centres of learning. After the Black Death (1348–49) English came back as the language of government and literature; Chaucer wrote in London English, which became the standard, especially after Caxton’s printing press in Westminster (1476). The century closed with the Wars of the Roses and the victory of Henry Tudor (1485), born in Pembroke.</p>`,
+  cities:{'London':'England’s largest city and port, with Westminster as royal seat and Parliament; London English became the national standard.',
+    'York':'Former Viking Jórvík, seat of the archbishop of the north and second city of medieval England, with York Minster.',
+    'Norwich':'Rich cloth city of East Anglia, for long one of the largest towns of England; home of the mystic Julian of Norwich.',
+    'Bristol':'Port for wine, wool and the Atlantic; John Cabot sailed from here to North America in 1497.',
+    'Winchester':'Old capital of Wessex and of the early Norman kings, where the Domesday Book was kept.',
+    'Coventry':'Prosperous cloth town of the Midlands, famous for its mystery plays.',
+    'Edinburgh':'Royal burgh beneath its castle that became the capital of Scotland in the 15th century.',
+    'St Andrews':'Ecclesiastical capital of Scotland and site of its first university (1413).',
+    'Perth':'Royal burgh beside Scone, where the kings of Scots were inaugurated.',
+    'Aberdeen':'North Sea trading port, with King’s College founded in 1495.',
+    'Pembroke':'Norman castle in “Little England beyond Wales”, an English-speaking enclave; birthplace of Henry VII Tudor (1457).'}},
+
+'Russia':{title:'The expansion of Russia, 1480–1917',
+  text:`<p>When Ivan III of Moscow ended the overlordship of the Golden Horde in 1480, Muscovy was a forest state in the upper Volga basin. Within two centuries it became the largest country on Earth. Ivan IV conquered the Tatar khanates of Kazan (1552) and Astrakhan (1556), opening the Volga and the road east. Cossacks and fur traders crossed the Urals (Yermak, 1582) and reached the Pacific in 1639. Peter the Great turned Russia towards Europe, founded St Petersburg (1703) and made it the capital; under Catherine II the empire took the Black Sea coast and partitions of Poland. In the 19th century it expanded into the Caucasus, Central Asia and the Far East.</p>
+<p>Russian settlers, administrators and the Orthodox church carried the Russian language over this vast territory, layering it over Tatar, Finno-Ugric, Siberian and many other languages. Because Siberia was settled so recently and so quickly, Russian there is remarkably uniform, while the old dialect differences are found in European Russia. The Trans-Siberian railway (1891–1916) finally tied Moscow to Vladivostok and brought millions of new settlers east.</p>`,
+  cities:{'Moscow':'Capital of Muscovy, with the Kremlin as seat of tsar and patriarch; it saw itself as the “Third Rome” after the fall of Constantinople.',
+    'St Petersburg':'Founded by Peter the Great in 1703 as his “window to Europe”; imperial capital from 1712 to 1918.',
+    'Novosibirsk':'Founded in 1893 where the Trans-Siberian railway bridged the Ob, and soon the largest city of Siberia.',
+    'Kazan':'Capital of the Tatar Khanate of Kazan, conquered in 1552; the meeting point of Russian and Tatar, Christian and Muslim culture.',
+    'Vladivostok':'Founded in 1860 as Russia’s Pacific naval port, the eastern terminus of the Trans-Siberian railway.'}},
+
+'Denmark':{title:'Denmark and the Baltic in the Viking Age and Middle Ages, 800–1400',
+  text:`<p>In the Viking Age Danish kings ruled Jutland, the islands and Scania, defended in the south by the Danevirke rampart and the trading town of Hedeby. Viking fleets raided and settled in England and Normandy, and around 965 Harald Bluetooth declared on the Jelling stone that he had “made the Danes Christian”. Under Cnut the Great (1016–1035) Denmark, England and Norway formed a North Sea empire. In the following centuries bishoprics, monasteries and towns appeared; Lund became the archbishopric of all Scandinavia (1103), and the Valdemar kings (1157–1241) made Denmark the leading Baltic power, codifying the law of Jutland in 1241.</p>
+<p>From the 13th century German merchants of the Hanseatic League, led by Lübeck, dominated the Baltic trade in herring, grain, furs and timber, and Low German strongly influenced the Scandinavian languages. Danish was spoken in many regional dialects, from Jutland to Scania and Bornholm, with the royal centres on Zealand setting the trend. Wars over Schleswig and the Sound tolls culminated when Valdemar IV sacked Visby (1361) and was defeated by the Hanse; in 1397 the Kalmar Union united Denmark, Norway and Sweden under Queen Margrethe I.</p>`,
+  cities:{'Roskilde':'Royal seat and bishopric from the 10th century; its cathedral is the burial church of the Danish kings, and Viking ships were sunk in its fjord.',
+    'Viborg':'Ancient assembly site where Danish kings were acclaimed, and legal centre of Jutland (Jutlandic Law, 1241).',
+    'Odense':'Centre of Funen and shrine of King Canute IV, killed here in 1086 and venerated as a saint.',
+    'Slesvig':'Heir of Hedeby, the great Viking trading town at the Danevirke; seat of the dukes of Schleswig.',
+    'Hamburg':'Archbishopric of the mission to the north (Ansgar, 831) and a leading Hanseatic port.',
+    'Lübeck':'Refounded in 1159, head of the Hanseatic League and master of Baltic trade.',
+    'Visby':'Walled Hanseatic town on Gotland, hub of the Baltic trade; sacked by Valdemar IV in 1361.',
+    'Stockholm':'Founded around 1250 by Birger Jarl; the trading centre of Lake Mälaren and Sweden.',
+    'Klaipėda':'Memel, founded in 1252 by the Teutonic Order at the mouth of the Curonian Lagoon.',
+    'Gdańsk':'Danzig, a Pomeranian town ruled by the Teutonic Order from 1308; Hanseatic port for Polish grain.',
+    'Copenhagen':'Fishing and trading town given to Bishop Absalon in 1167; it became the royal capital in the 15th century.',
+    'Aalborg':'Market town at the Limfjord crossing, with the Viking burial field of Lindholm Høje nearby.',
+    'Kristiansand':'Founded only in 1641 by Christian IV; in this period the Agder coast of southern Norway.',
+    'Esbjerg':'Founded only in 1868; in this period nearby Ribe, Denmark’s oldest town (c. 700), was the gateway to the North Sea.',
+    'Malmö':'Scanian town near the great herring markets of Skanör; Scania was Danish until 1658.',
+    'Lund':'Archbishopric for all of Scandinavia from 1103, with its Romanesque cathedral.',
+    'Aarhus':'The Viking town Aros on Jutland’s east coast, a bishopric from 948.'}},
+
+'USA':{title:'The United States, 1790–today',
+  text:`<p>The young republic of 1790 was a strip of states along the Atlantic coast, with Philadelphia, New York and Boston as its leading cities. Within a century it spread across the continent through the Louisiana Purchase (1803), the war with Mexico (1846–48) and the displacement of Native American nations. Canals, steamboats and above all railroads tied the country together; the first transcontinental railroad was completed in 1869. Mass immigration from Europe, the forced migration and later the Great Migration of African Americans, and the settlement of the West made American English a mixture of many origins, with its main regional dialects reflecting the early colonial settlements of New England, the Mid-Atlantic and the South.</p>
+<p>In the 20th century the United States became the world’s leading economy and cultural power. Newspapers and publishing in New York, film in Hollywood, radio and television networks, and jazz, blues and rock’n’roll spread American culture nationally and then worldwide. After 1950 the interstate highways, air conditioning and the aerospace, oil and technology industries shifted population to the Sun Belt of the South and West. The north-eastern corridor from Boston to Washington remains the densest network of cities, while Texas and California have become new centres.</p>`,
+  cities:{'Washington':'Federal capital since 1800, seat of Congress, the President and the Supreme Court.',
+    'New York':'The largest city since the 1790s, gateway for immigrants (Ellis Island), centre of finance, publishing, theatre and media.',
+    'Boston':'Puritan and revolutionary city (the Tea Party, 1773) and, with Harvard (1636) and MIT, a centre of learning.',
+    'Houston':'Founded in 1836, it grew with the Texas oil boom after 1901 and NASA’s mission control (1961).',
+    'Atlanta':'Railway junction founded in 1837, capital of the “New South” and centre of the civil rights movement of Martin Luther King.',
+    'Phoenix':'Founded in 1868 in the Arizona desert; it boomed after 1950 with irrigation and air conditioning.',
+    'San Francisco':'Boom town of the 1849 Gold Rush, Pacific gateway, 1960s counter-culture and neighbour of Silicon Valley.',
+    'Seattle':'Supply port of the Klondike Gold Rush, later home of Boeing, Microsoft and Amazon.',
+    'Los Angeles':'Spanish pueblo of 1781 that became the capital of the film and entertainment industry.',
+    'Chicago':'Railway and grain hub of the Midwest, birthplace of the skyscraper and of Chicago blues.'}},
+
+'North America (1450)':{title:'North America and Mesoamerica around 1450',
+  text:`<p>On the eve of European contact, North America was home to many millions of people speaking hundreds of languages. In central Mexico the Mexica of Tenochtitlan, allied since 1428 with Texcoco and Tlacopan, were building the Aztec Triple Alliance, a tribute empire that spread Nahuatl as a language of trade and government from the Gulf to the Pacific. Its rivals were the Purépecha (Tarascan) empire in the west, which defeated the Aztecs around 1478, and the independent Nahua state of Tlaxcala. In Oaxaca, Zapotec and Mixtec kingdoms flourished; in Yucatán the League of Mayapan had just collapsed (c. 1440s), and in highland Guatemala the K’iche’ and Kaqchikel Maya fought for supremacy. Markets, long-distance merchants (<i>pochteca</i>) and pilgrimage centres such as Cholula connected these states.</p>
+<p>Further north the great Mississippian chiefdoms, with their temple mounds at Cahokia and Moundville, had passed their peak, and their populations were dispersing. In the northeast the Haudenosaunee (Iroquois) Confederacy of five nations was forming, and Iroquoian farmers lived in palisaded villages along the St Lawrence. On the Pacific coast the Haida, Makah and other peoples built a rich maritime culture of cedar canoes, plank houses and whaling, with ideas and goods moving by sea along the coast.</p>`,
+  cities:{'Tenochtitlan':'Island capital of the Mexica founded in 1325, with perhaps 200,000 people; roads ran across the lake to Texcoco, the city of the poet-king Nezahualcoyotl, and to Tlatelolco with its great market.',
+    'Tzintzuntzan':'Capital of the Purépecha (Tarascan) empire on Lake Pátzcuaro, whose unique language and metalwork set it apart from the Aztecs.',
+    'Tlaxcala':'Confederation of Nahua towns that was never conquered by the Aztecs; it later allied with Cortés (1519).',
+    'Cholula':'Holy city of Quetzalcoatl with the largest pyramid in the world by volume; a centre of pilgrimage, pottery and trade.',
+    'Mayapan':'Walled capital of the Maya League of Mayapan in Yucatán, the last great Maya city, which collapsed in the 1440s.',
+    "Q'umarkaj":'Capital of the K’iche’ Maya kingdom in highland Guatemala, whose traditions are recorded in the <i>Popol Vuh</i>.',
+    'Iximche':'Capital of the Kaqchikel Maya, founded around 1470 after their break with the K’iche’.',
+    'Mitla':'Zapotec religious centre in Oaxaca, famous for the geometric stone mosaics of its palaces.',
+    'Cahokia':'Largest city of the Mississippian culture (peak c. 1100, perhaps 10–20,000 people) with Monks Mound; largely abandoned by 1400.',
+    'Moundville':'Mississippian ceremonial centre in Alabama with 29 earthen mounds, at its height 1200–1400.',
+    'Haida Gwaii':'Islands of the seafaring Haida, renowned for their cedar canoes, plank houses and carved monumental poles.',
+    'Ozette':'Makah whaling village on Cape Alava, later buried and preserved by a mudslide, giving a unique view of daily life.',
+    'St Lawrence Valley':'Villages of the St Lawrence Iroquoians such as Stadacona (Quebec) and Hochelaga (Montreal), visited by Cartier in 1535 and vanished by 1600.',
+    'Mohawk Valley':'Homeland of the Mohawk, “Keepers of the Eastern Door” of the Haudenosaunee (Iroquois) Confederacy.'}},
+
+'South America':{title:'South America from conquest to independence, 1530–1900',
+  text:`<p>In 1530 the Inca empire stretched along the Andes from Ecuador to Chile, held together by roads, relay runners and the Quechua language. Within a few years Pizarro’s small force exploited a civil war, captured the Inca ruler Atahualpa (1532) and took Cusco; epidemics of European diseases killed much of the population. Spain organised the continent into viceroyalties governed from Lima, later also from Bogotá and Buenos Aires, while Portugal colonised the Atlantic coast of Brazil, which grew rich on sugar, gold and the labour of millions of enslaved Africans. Silver from Potosí, carried to Lima and the Atlantic, financed the Spanish empire and world trade.</p>
+<p>Spanish and Portuguese spread as languages of the cities, the church and administration, while Quechua, Aymara and Guaraní remained the languages of the countryside, and African languages and religions shaped the culture of Brazil and the Caribbean coast. Between 1810 and 1825 the Spanish colonies won their independence in the wars led by Simón Bolívar and José de San Martín; Brazil became an independent empire in 1822 and a republic in 1889. Mass immigration from Italy, Spain and Germany then transformed Buenos Aires, Montevideo and southern Brazil.</p>`,
+  cities:{'Rio de Janeiro':'Founded in 1565; capital of colonial Brazil from 1763, seat of the exiled Portuguese court (1808–1821) and of the Brazilian empire.',
+    'Buenos Aires':'Refounded in 1580; capital of the Viceroyalty of the Río de la Plata (1776), where the May Revolution of 1810 started independence.',
+    'Montevideo':'Spanish fortress founded in the 1720s against the Portuguese; capital of independent Uruguay from 1828.',
+    'Santiago':'Founded in 1541 by Pedro de Valdivia; capital of the Captaincy of Chile and of the independent republic.',
+    'La Paz':'Founded in 1548 on the silver route from Potosí to Lima, in the heart of the Aymara-speaking highlands.',
+    'Lima':'“City of the Kings” (1535), capital of the Viceroyalty of Peru, with the oldest university in the Americas (San Marcos, 1551).',
+    'Quito':'Northern capital of the Inca, Spanish from 1534, renowned for the baroque art of the Quito school.',
+    'Bogotá':'Founded in 1538 at the Muisca centre Bacatá; capital of the Viceroyalty of New Granada.',
+    'Caracas':'Founded in 1567; birthplace of Simón Bolívar and starting point of the independence of northern South America.'}},
+
+'Eurasia':{title:'The Old World, 500 BCE – 1500 CE',
+  text:`<p>For two thousand years the great civilisations of Eurasia developed in parallel but were never isolated. Around 500 BCE the “Axial Age” produced the teachings of the Buddha, Confucius, the Hebrew prophets and the Greek philosophers. Empires then united huge regions: Persia, Alexander and the Hellenistic kingdoms, the Maurya in India, Han China and the Roman Empire. Between them caravan routes across Central Asia, later called the Silk Road, and the monsoon sea lanes of the Indian Ocean carried silk, spices, horses and ideas. Buddhism travelled from India to China, Korea and Japan; Christianity spread through the Roman world; and after 632 Islam spread from Arabia to Spain and India within a century.</p>
+<p>In the Middle Ages the Abbasid caliphate, Tang and Song China, Byzantium and the Khmer and Chola states were the cultural centres of the world, and inventions such as paper, the compass and gunpowder moved westwards. The Mongol empire of the 13th century connected almost the whole continent, allowing merchants like Marco Polo to cross it, but also carried the Black Death. By 1500 the Ottomans held Constantinople, the Ming ruled China, and European ships had opened the sea route around Africa to India.</p>`,
+  cities:{'Rome':'Capital of the Roman Empire, which spread Latin and later Christianity across the west; afterwards seat of the popes.',
+    'London':'Founded by the Romans as Londinium; from the 11th century the capital of England.',
+    'Paris':'Capital of the Frankish and Capetian kings and, with its university, an intellectual centre of medieval Europe.',
+    'Kyiv':'Capital of Kievan Rus’, which adopted Orthodox Christianity from Byzantium in 988.',
+    'Moscow':'From the 14th century capital of Muscovy, which saw itself as the successor of Byzantium.',
+    'Constantinople':'Capital of the Eastern Roman Empire from 330 to 1453 and then of the Ottomans; the bridge between Europe and Asia.',
+    'Babylon':'The ancient metropolis of Mesopotamia; nearby Baghdad (762) became the Abbasid capital with its House of Wisdom.',
+    'Delhi':'Capital of the Delhi Sultanate from 1206, the meeting point of Persian and Indian culture.',
+    'Chennai':'The Tamil coast of the Pallava and Chola kingdoms, whose fleets and merchants carried Indian culture to Southeast Asia.',
+    'Beijing':'Capital of the Mongol Yuan and from 1421 of the Ming emperors.',
+    'Chengdu':'Rich capital of Sichuan, where paper money was first issued by a government (c. 1024).',
+    "Xi'an":'Chang’an, capital of the Han and Tang dynasties and eastern terminus of the Silk Road.',
+    'Hanoi':'Thăng Long, capital of the Vietnamese kingdom of Đại Việt from 1010.',
+    'Angkor':'Capital of the Khmer empire, with Angkor Wat (12th century), the largest religious monument in the world.',
+    'Ayutthaya':'Capital of the Siamese kingdom founded in 1351, a cosmopolitan trading port.',
+    'Kyoto':'Capital of Heian Japan from 794, where Chinese-inspired court culture developed into a distinctly Japanese one.'}},
+
+'India (1000-1500)':{title:'South Asia, 1000–1500',
+  text:`<p>Around 1000 South Asia was divided among regional kingdoms: the Chola empire dominated the south and sent its fleets to Sri Lanka and Southeast Asia, Rajput dynasties ruled the north and west, and the Pala and Sena kings ruled Bengal. Mahmud of Ghazni raided the north-west from 1000 onwards and made Lahore an outpost of Persian culture. In 1206 the Delhi Sultanate was founded; under the Khaljis and Tughluqs it briefly controlled most of the subcontinent. Persian became the language of the courts, and from its contact with the spoken dialects around Delhi grew Hindavi, the ancestor of Hindi and Urdu. Sufi saints and the poets of the Bhakti movement, such as Kabir, preached in the vernacular languages.</p>
+<p>From the 14th century the Sultanate broke up into regional states: the Bahmani sultanate in the Deccan, the sultanates of Gujarat, Bengal and Kashmir, and the Hindu empire of Vijayanagara (1336–1646) in the south. Each court promoted its own regional language and literature, from Marathi and Telugu to Bengali and Kashmiri. Indian Ocean trade linked the ports of Gujarat, Malabar and Bengal to Arabia, East Africa and China, and in 1498 Vasco da Gama arrived at Calicut. In 1526 Babur defeated the last Delhi sultan and founded the Mughal empire.</p>`,
+  cities:{'New Delhi':'Delhi, capital of the Delhi Sultanate (1206–1526) with the Qutb Minar; home of Amir Khusrau, the father of Hindavi poetry.',
+    'Karachi':'Then a fishing village; the ports of Sindh were Debal and later Thatta, and Karachi grew only in the 18th century.',
+    'Lahore':'Eastern capital of the Ghaznavids and gateway of Persian culture into India, with the shrine of the Sufi Data Ganj Bakhsh.',
+    'Srinagar':'Capital of the Kashmir sultanate (from 1339), with a flourishing Persian culture and the poetry of Lal Ded.',
+    'Jodhpur':'Founded in 1459 by Rao Jodha of the Rathore Rajputs as capital of Marwar, with the Mehrangarh fort.',
+    'Ahmedabad':'Founded in 1411 by Sultan Ahmad Shah as capital of Gujarat, a great centre of textiles and trade.',
+    'Varanasi':'The holiest city of Hinduism on the Ganges; home of the 15th-century weaver-poet Kabir.',
+    'Kolkata':'Founded only in 1690; in this period Bengal’s capitals were Gauda and Pandua, and Chaitanya (b. 1486) preached in nearby Nadia.',
+    'Dhaka':'Eastern Bengal, where nearby Sonargaon was a capital and centre of the famous muslin weaving.',
+    'Pune':'Region of the Marathi-speaking Deccan, where Dnyaneshwar (c. 1290) wrote the first great Marathi work.',
+    'Hyderabad':'Founded in 1591; in this period nearby Golconda was a fortress of the Kakatiya and from 1518 capital of the Qutb Shahi sultans.',
+    'Chennai':'Founded as Madras in 1639; nearby Mylapore was an old Tamil port and pilgrimage site.',
+    'Kochi':'Spice port of Malabar whose natural harbour was opened by a flood in 1341; trade with Arabs and Chinese, and with the Portuguese from 1500.',
+    'Kandy':'Highland kingdom of Sri Lanka founded in the late 15th century, guardian of the Tooth Relic of the Buddha.',
+    'Kathmandu':'Valley of the Newar Malla kings, with pagoda temples where Hindu and Buddhist traditions mingled.'}},
+
+'Africa':{title:'Africa in the age of independence, 1950–today',
+  text:`<p>In 1950 almost all of Africa was ruled by European colonial powers. Starting with Libya (1951), Sudan and Ghana (1957), most countries became independent within two decades; Portugal’s colonies followed in 1975, Zimbabwe in 1980, Namibia in 1990, and apartheid in South Africa ended in 1994. The new states kept the colonial borders, which cut across peoples and languages, and many adopted English, French or Portuguese as official languages, alongside Arabic in the north and Swahili in the east.</p>
+<p>Since then Africa has seen the fastest urbanisation in the world. Cities such as Lagos, Kinshasa and Cairo grew to more than ten million people, and urban cultures became the main source of new words, music and fashions. Kinshasa’s Congolese rumba carried Lingala across Central Africa, Nigerian films (Nollywood) and Afrobeats spread Nigerian Pidgin and Yoruba slang, and urban slangs such as Sheng in Nairobi, Nouchi in Abidjan and Tsotsitaal in Johannesburg mix local and colonial languages. With more than 2,000 languages, Africa is the most linguistically diverse continent, and its big cities are where most of this mixing and innovation now happens.</p>`,
+  cities:{'Cairo':'The largest city of the Arab world; its films, music and al-Azhar university spread Egyptian Arabic across the Middle East.',
+    'Lagos':'Nigeria’s megacity and capital until 1991; home of Nollywood, Afrobeat and Afrobeats, and of Nigerian Pidgin.',
+    'Johannesburg':'Gold-mining city founded in 1886; the Soweto uprising of 1976 began here; economic heart of South Africa.',
+    'Nairobi':'Founded in 1899 as a railway depot, capital of Kenya and home of the Sheng street language.',
+    'Addis Ababa':'Founded in 1886 by Menelik II; capital of never-colonised Ethiopia and seat of the African Union (OAU, 1963).',
+    'Casablanca':'Morocco’s economic capital and largest city, where Moroccan Arabic (Darija), Berber and French meet.',
+    'Kinshasa':'Capital of Congo and of Congolese rumba and soukous, which carried Lingala across Africa.',
+    'Abidjan':'Economic capital of Côte d’Ivoire, home of the Nouchi street slang and coupé-décalé music.',
+    'Accra':'Capital of Ghana, the first colony south of the Sahara to win independence (1957, Nkrumah); home of highlife music.',
+    'Dar es Salaam':'Tanzania’s largest city; Nyerere made Swahili the national language, and the city gave rise to bongo flava music.',
+    'Dakar':'Capital of Senegal and of Senghor’s Négritude movement; Wolof spread here as the urban lingua franca.',
+    'Algiers':'Capital of Algeria, independent in 1962 after a long war; Arabic, Berber and French meet here.',
+    'Luanda':'Capital of Angola, independent in 1975; birthplace of semba and kuduro music.',
+    'Kampala':'Capital of Uganda and seat of the Buganda kingdom, where Luganda is the city’s language.'}},
+};
+
 // big cities used for naming added / moved centers (lon, lat)
 const CITIES=[
 ['Tokyo',139.69,35.69],['Kyoto',135.77,35.01],['Osaka',135.50,34.69],['Nagoya',136.91,35.18],['Sapporo',141.35,43.06],['Sendai',140.87,38.27],['Fukuoka',130.40,33.59],['Hiroshima',132.46,34.39],['Kagoshima',130.56,31.60],['Niigata',139.02,37.92],['Kanazawa',136.66,36.56],['Nagasaki',129.87,32.75],['Kumamoto',130.71,32.80],['Okayama',133.92,34.66],['Kobe',135.18,34.69],['Yokohama',139.64,35.44],['Matsuyama',132.77,33.84],['Kochi',133.53,33.56],['Akita',140.10,39.72],['Aomori',140.74,40.82],['Hakodate',140.73,41.77],['Asahikawa',142.37,43.77],['Kushiro',144.38,42.98],['Shizuoka',138.38,34.98],['Nara',135.80,34.69],['Fukushima',140.47,37.75],['Morioka',141.15,39.70],['Toyama',137.21,36.70],['Matsue',133.05,35.47],['Wakayama',135.17,34.23],
 ['Beijing',116.40,39.90],['Shanghai',121.47,31.23],['Guangzhou',113.26,23.13],['Chengdu',104.07,30.57],["Xi'an",108.94,34.34],['Wuhan',114.31,30.59],['Chongqing',106.55,29.56],['Nanjing',118.80,32.06],['Suzhou',120.62,31.30],['Yangzhou',119.42,32.39],['Hsinchu',120.97,24.80],['Harbin',126.53,45.80],['Shenyang',123.43,41.80],['Tianjin',117.20,39.08],['Hangzhou',120.15,30.27],['Kunming',102.71,25.04],['Lanzhou',103.83,36.06],['Urumqi',87.62,43.83],['Lhasa',91.11,29.65],['Hong Kong',114.17,22.32],['Qingdao',120.38,36.07],['Zhengzhou',113.63,34.75],['Changsha',112.94,28.23],['Taiyuan',112.55,37.87],['Hohhot',111.75,40.84],['Xiamen',118.09,24.48],['Nanning',108.32,22.82],['Guiyang',106.63,26.65],['Kashgar',75.99,39.47],['Dalian',121.61,38.91],['Jinan',117.00,36.67],['Fuzhou',119.30,26.07],['Taipei',121.56,25.03],['Seoul',126.98,37.57],['Busan',129.08,35.18],['Pyongyang',125.75,39.02],['Ulaanbaatar',106.92,47.92],['Hanoi',105.85,21.03],['Angkor',103.87,13.41],['Ayutthaya',100.57,14.35],
-['Rome',12.50,41.90],['Milan',9.19,45.46],['Naples',14.27,40.85],['Venice',12.32,45.44],['Palermo',13.36,38.12],['Turin',7.69,45.07],['Genoa',8.93,44.41],['Florence',11.25,43.77],['Bologna',11.34,44.49],['Bari',16.87,41.12],['Cagliari',9.11,39.22],['Catania',15.09,37.50],['Trieste',13.77,45.65],['Ancona',13.52,43.62],['Reggio Calabria',15.65,38.11],['Perugia',12.39,43.11],['Verona',10.99,45.44],['Siena',11.33,43.32],['Ferrara',11.62,44.84],['Chambéry',5.92,45.57],['Aosta',7.32,45.74],
+['Rome',12.50,41.90],['Milan',9.19,45.46],['Naples',14.27,40.85],['Venice',12.32,45.44],['Palermo',13.36,38.12],['Turin',7.69,45.07],['Genoa',8.93,44.41],['Florence',11.25,43.77],['Bologna',11.34,44.49],['Bari',16.87,41.12],['Cagliari',9.11,39.22],['Catania',15.09,37.50],['Trieste',13.77,45.65],['Ancona',13.52,43.62],['Reggio Calabria',15.65,38.11],['Perugia',12.39,43.11],['Verona',10.99,45.44],['Siena',11.33,43.32],['Ferrara',11.62,44.84],['Mantua',10.79,45.16],['Urbino',12.64,43.73],['Chambéry',5.92,45.57],['Aosta',7.32,45.74],
 ['Paris',2.35,48.86],['Lyon',4.83,45.76],['Marseille',5.37,43.30],['Bordeaux',-0.58,44.84],['Lille',3.06,50.63],['Toulouse',1.44,43.60],['Nantes',-1.55,47.22],['Strasbourg',7.75,48.57],['Nice',7.26,43.70],['Rennes',-1.68,48.12],['Brest',-4.49,48.39],['Rouen',1.10,49.44],['Dijon',5.04,47.32],['Montpellier',3.88,43.61],['Clermont-Ferrand',3.09,45.78],['Limoges',1.26,45.83],['Tours',0.69,47.39],['Reims',4.03,49.26],['Grenoble',5.72,45.19],['Caen',-0.37,49.18],['Ajaccio',8.74,41.93],['Poitiers',0.34,46.58],['Orléans',1.90,47.90],['Nancy',6.18,48.69],['Perpignan',2.90,42.70],['Bayonne',-1.47,43.49],
 ['Berlin',13.40,52.52],['Munich',11.58,48.14],['Hamburg',9.99,53.55],['Cologne',6.96,50.94],['Frankfurt',8.68,50.11],['Stuttgart',9.18,48.78],['Dresden',13.74,51.05],['Leipzig',12.37,51.34],['Hanover',9.73,52.37],['Nuremberg',11.08,49.45],['Bremen',8.81,53.08],['Kiel',10.13,54.32],['Rostock',12.10,54.09],['Lübeck',10.69,53.87],['Münster',7.63,51.96],['Kassel',9.49,51.31],['Magdeburg',11.63,52.13],['Freiburg',7.85,47.99],['Regensburg',12.10,49.01],['Erfurt',11.03,50.98],['Dortmund',7.47,51.51],['Düsseldorf',6.78,51.23],['Würzburg',9.93,49.79],['Flensburg',9.44,54.78],['Szczecin',14.55,53.43],['Vienna',16.37,48.21],['Zurich',8.54,47.38],['Geneva',6.14,46.20],['Bern',7.45,46.95],['Prague',14.42,50.08],['Amsterdam',4.90,52.37],['Brussels',4.35,50.85],['Luxembourg',6.13,49.61],['Salzburg',13.05,47.81],['Innsbruck',11.40,47.27],['Graz',15.44,47.07],['Basel',7.59,47.56],['Augsburg',10.90,48.37],['Heidelberg',8.67,49.40],['Mainz',8.27,50.00],['Bonn',7.10,50.73],['Brno',16.61,49.20],['Linz',14.29,48.31],
 ['London',-0.13,51.51],['Edinburgh',-3.19,55.95],['Manchester',-2.24,53.48],['Cardiff',-3.18,51.48],['Belfast',-5.93,54.60],['Birmingham',-1.90,52.48],['Glasgow',-4.25,55.86],['Liverpool',-2.98,53.41],['Leeds',-1.55,53.80],['Newcastle',-1.61,54.98],['Bristol',-2.59,51.45],['Norwich',1.30,52.63],['Aberdeen',-2.10,57.15],['Inverness',-4.22,57.48],['Plymouth',-4.14,50.38],['York',-1.08,53.96],['Nottingham',-1.15,52.95],['Southampton',-1.40,50.90],['Dublin',-6.26,53.35],['Cork',-8.47,51.90],['Galway',-9.05,53.27],['Oxford',-1.26,51.75],['Cambridge',0.12,52.21],['Exeter',-3.53,50.72],['Dover',1.31,51.13],['Calais',1.86,50.95],['Olbia',9.50,40.92],['Ostia',12.29,41.73],['Carlisle',-2.94,54.89],['Hull',-0.33,53.74],['Stornoway',-6.39,58.21],['Kirkwall',-2.96,58.98],['Lerwick',-1.15,60.15],['Penzance',-5.54,50.12],['Winchester',-1.31,51.06],['Coventry',-1.51,52.41],['St Andrews',-2.80,56.34],['Perth',-3.43,56.40],['Pembroke',-4.92,51.67],
@@ -738,7 +999,16 @@ function renderCenters(){
   box.querySelectorAll('.fSl').forEach(sl=>sl.addEventListener('input',e=>{ const k=+e.target.dataset.k; centers[k].f=F_STEPS[+e.target.value];
     e.target.parentElement.querySelector('span.v').textContent=`f = ${centers[k].f.toFixed(2)} ≈ 1 word / ${(delta/centers[k].f).toFixed(0)} yr`; }));
   box.querySelectorAll('.moveBtn').forEach((b,k)=>b.addEventListener('click',()=>setMode(mode==='move'&&moveIdx===k?'none':'move',k)));
+  renderHistory();
 }
+// history panel: overview of the period for this map and a note on each current center
+function renderHistory(){
+  const h=HISTORY[M.name]; $('histTitle').textContent=h?'History: '+h.title:'History: '+M.name;
+  if(!h){ $('histBody').innerHTML='<p class="small">No historical notes for this map.</p>'; return; }
+  const notes=h.cities||{};
+  const rows=centers.map((c,k)=>{ const note=notes[c.name]||notes[c.name.replace(/ \d+$/,'')];
+    return `<dt><span class="dot" style="background:${centerCol(k)}"></span>${c.name}</dt><dd>${note||'<span class="small">No historical note for this location.</span>'}</dd>`; }).join('');
+  $('histBody').innerHTML=h.text+'<h4>Cultural centers on the map</h4><dl>'+rows+'</dl>'; }
 
 // ---------- controls ----------
 MAPS.forEach((m,i)=>{ for(const id of ['mapSel','tbMapSel']){ const o=document.createElement('option'); o.value=i; o.textContent=(m.name.includes('(')||m.noCap)?m.name:m.name+' ('+m.capital.name+')'; $(id).appendChild(o); } });
