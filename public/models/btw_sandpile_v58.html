@@ -377,6 +377,77 @@
   #statRow3 .plotholder{display:flex; justify-content:center;}
   @media (max-width: 480px){ #statRow3 .card{flex:1 1 100%; max-width:100%;} }
   #statRow3 .card .field{font-size:11px;}
+
+  /* ---- toggle switches: Arrows ⇄ Folders and 2P → 3P → 4P are one button each, showing
+     the option in play; a tap steps to the next one (wired in JS, the old segments stay) ---- */
+  body:not(.gamemode) .mainholder > #gbView{display:none;}   /* on the board only in the game */
+  .seg.cycle{border-color:var(--accent);}
+  .seg.cycle button:not(.active){display:none;}
+  .seg.cycle button.active{display:inline-flex; align-items:center; gap:5px;}
+  .seg.cycle button.active::after{content:"\21C4"; font-size:.85em; opacity:.75;}
+  #segPlayers.cycle button.active::after{content:"\25B8";}
+
+  /* ================= GAME ON A PHONE: one fixed screen =================
+     The page no longer scrolls: app bar on top, the control line and the board in the
+     middle, and the arrow pad pinned to the bottom edge.  The board is sized in JS
+     (applyCanvasSizes → gamePhoneFit) to exactly the height left over.  The rest of the
+     game panel (speed, new game, legal sites, ledger) is dropped — the control line
+     above the board already carries what a player needs. */
+  @media (max-width: 900px){
+    html:has(body.gamemode){height:100%; overflow:hidden; overscroll-behavior:none;}
+    body.gamemode{position:fixed; inset:0; height:100vh; height:100dvh; overflow:hidden;
+      display:flex; flex-direction:column; overscroll-behavior:none;}
+    body.gamemode #appBar{flex:0 0 auto; padding:max(6px,env(safe-area-inset-top)) 12px 2px;}
+    body.gamemode #netPill{flex:0 0 auto;}
+    body.gamemode .wrap{flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain;
+      flex-direction:column; justify-content:flex-start; gap:6px;
+      padding:4px 8px max(8px,env(safe-area-inset-bottom));}
+    body.gamemode .col{flex:0 0 auto; gap:0;}
+    body.gamemode .col > .card{padding:5px;}
+    body.gamemode #main{margin:0 auto;}
+    body.gamemode #exWrap{margin:0 0 6px;}
+    body.gamemode #scoreBar{position:relative; margin:0 0 5px; padding:4px; gap:4px;}
+    body.gamemode .sbctl{gap:4px; row-gap:4px;}
+    body.gamemode #gbReset, body.gamemode #gbCPU, body.gamemode #gbModel, body.gamemode #gbSize,
+    body.gamemode #gbOwn, body.gamemode .seg button{padding:6px 8px; font-size:12px;}
+    /* sudden death floats over the top of the board instead of pushing it down */
+    body.gamemode #sdWarn{position:absolute; left:4px; right:4px; top:calc(100% + 6px); z-index:9;}
+    /* the arrow pad: phase + skip on the left, the four keys on the right, the hint below */
+    body.gamemode .controls{flex:0 0 auto; margin-top:auto;}
+    body.gamemode #gameWrap .foldbody > :not(.padkeep){display:none !important;}
+    body.gamemode #gameWrap .foldbody{display:grid !important; padding:0; gap:6px 8px;
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      grid-template-areas:"win pad" "skip pad" "hint hint";
+      align-items:stretch;}
+    /* the ① / ② phase buttons go: the turn marker on the board and Skip do the job */
+    body.gamemode #gPhaseRow{display:none !important;}
+    body.gamemode #gSkipRow{grid-area:skip;}
+    body.gamemode #gSkip{padding:8px 4px; font-size:13px; white-space:nowrap; min-height:40px;}
+    /* the win slider, moved down here from the control line (relocateControls) */
+    body.gamemode #gameWrap .winsel{grid-area:win; flex:none; min-width:0; min-height:40px; gap:6px;
+      padding:4px 10px; border:1px solid var(--edge); border-radius:6px; background:#20203033; font-size:13px;}
+    body.gamemode #gameWrap .winsel b{font-size:15px;}
+    body.gamemode #gameWrap .foldbody:has(> .dpad[style*="none"]) .winsel{grid-column:1 / -1;}   /* Folders: full width */
+    body.neton:not(.nethost) #gameWrap .winsel{pointer-events:none; opacity:.55;}
+    /* the office view button sits in the board's lower-right corner, above the objective line */
+    body.gamemode .mainholder > #gbView{position:absolute; right:6px; bottom:max(24px,7%); z-index:7;
+      background:rgba(10,10,18,0.72); padding:5px 10px; font-size:12px;}
+    body.lightbg.gamemode .mainholder > #gbView{background:rgba(255,255,255,0.8); color:#1a1a26;}
+    body.gamemode .dpad{grid-area:pad; gap:3px;}
+    body.gamemode .dpad button{padding:0; min-height:30px; font-size:16px;}
+    body.gamemode #gHint{grid-area:hint; font-size:11px; line-height:1.35; height:2.7em; overflow:hidden;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; text-align:center;}
+  }
+  /* a phone on its side: the pad moves to the right of the board */
+  @media (max-width: 900px) and (orientation: landscape) and (max-height: 600px){
+    body.gamemode .wrap{flex-direction:row; align-items:flex-start; justify-content:center;}
+    body.gamemode .col{flex:0 1 auto; min-width:0;}
+    body.gamemode .controls{width:200px; min-width:200px; margin-top:0; align-self:flex-end;}
+    body.gamemode #gameWrap .foldbody{grid-template-columns:minmax(0,1fr);
+      grid-template-areas:"pad" "win" "skip" "hint";}
+    body.gamemode .dpad button{min-height:36px;}
+    body.gamemode #gHint{height:auto; -webkit-line-clamp:4;}
+  }
 </style>
 </head>
 <body>
@@ -411,18 +482,18 @@
       <div class="foldbody">
         <div class="gturn p1" id="gTurn"><span class="dot p1"></span><span id="gTurnTxt">Player 1 — arrow</span></div>
 
-        <div class="row">
+        <div class="row padkeep" id="gPhaseRow">
           <button id="gPhaseArrow" class="active" style="flex:1 1 auto">① Arrow</button>
           <button id="gPhaseGrain" style="flex:1 1 auto">② Grain</button>
         </div>
-        <div class="hint" id="gHint">Tap a site you control, then a direction — or swipe out of it. Then switch to ② and tap any site to drop your grain.</div>
+        <div class="hint padkeep" id="gHint">Tap a site you control, then a direction — or swipe out of it. Then switch to ② and tap any site to drop your grain.</div>
 
-        <div class="dpad">
+        <div class="dpad padkeep">
           <button id="dU">▲</button>
           <button id="dL">◀</button><button id="dX">remove</button><button id="dR">▶</button>
           <button id="dD">▼</button>
         </div>
-        <div class="row">
+        <div class="row padkeep" id="gSkipRow">
           <button id="gSkip" style="flex:1 1 auto">Skip arrow ▸ grain</button>
         </div>
 
@@ -794,10 +865,10 @@
           <button id="gbModel" title="Toppling model — click to cycle Nem1 → Zc=1 → BTW">Nem1</button>
           <button id="gbReset" class="freeze" title="New game from a fresh critical pile">↻ new</button>
           <button id="gbSize" title="Board size — click to step through L = 3, 4, 5, 7">L=3</button>
-          <span class="seg" id="segVariant" title="Game rules">
+          <span class="seg cycle" id="segVariant" title="Game rules — tap to switch Arrows ⇄ Folders">
             <button data-var="arrows" class="active">Arrows</button><button data-var="simple">Folders</button>
           </span>
-          <span class="seg" id="segPlayers" title="Number of players">
+          <span class="seg cycle" id="segPlayers" title="Number of players — tap to step 2P → 3P → 4P">
             <button data-np="2" class="active">2P</button><button data-np="3">3P</button><button data-np="4">4P</button>
           </span>
           <button id="gbCPU" title="Toggle the computer opponent">no CPU</button>
@@ -5667,6 +5738,13 @@ function wire(){
     if(G.players>2 && G.aiMode>4) G.aiMode=4;          // CPU⁴ and CPU⁵ are 2-player only
     applyRoster(); syncCPUBtn(); if(G.on) newGame(); });
   segSel("#segSpeed","sp",v=>{ State.game.speed=parseInt(v); });
+  /* the toggle switches: only the option in play is shown, and tapping it steps on */
+  document.querySelectorAll(".seg.cycle").forEach(sg=>sg.addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b || !b.classList.contains("active")) return;
+    e.stopPropagation(); e.preventDefault();
+    const bs=[...sg.querySelectorAll("button")];
+    bs[(bs.indexOf(b)+1)%bs.length].click();
+  },true));
   /* BTW (z_c = 3, sheds 4) ⇄ Zc=1 (sheds the two lowest grains to random neighbours) */
   window.syncModelSeg=function(){
     const mb=document.getElementById("gbModel");
@@ -6027,7 +6105,9 @@ function applyCanvasSizes(){
      through several panels anyway, so the looser 0.92 fraction is right there. */
   const GAME_VPAD=176;      // app bar + score line + card chrome + page padding
   const availV = State.game.on ? (availH - GAME_VPAD) : availH*0.92;
-  BIG = Math.round(Math.max(260, Math.min(1024, Math.min(availW, Math.max(300, availV)))));
+  const fit = (State.game.on && narrow) ? gamePhoneFit() : null;
+  if(fit) BIG = Math.round(Math.max(160, Math.min(1024, availW - fit.side, fit.h)));
+  else BIG = Math.round(Math.max(260, Math.min(1024, Math.min(availW, Math.max(300, availV)))));
   /* three abreast on a wide screen; on a phone they stack one per row, so each plot is
      drawn at the full panel width rather than being stretched from a third of it */
   const stacked=(typeof window!=="undefined" && window.innerWidth<=480);
@@ -6053,6 +6133,43 @@ function applyCanvasSizes(){
     for(const id of ["fsSPlot","fsAPlot","fsCSPlot","fsCAPlot"]){ const c=document.getElementById(id); c.width=half; c.height=half; } }
   if(typeof fsRedraw==="function") fsRedraw();
 }
+/* ---------- the game on a phone: the board takes exactly the height that is left ----------
+   Only when the fixed-screen phone layout is in force (the CSS makes .wrap the scroll box).
+   Everything else in the scroll box — score line, card chrome, arrow pad, padding — is
+   measured, the board's own current height taken back out, and the board gets the rest.
+   The "How to play" fold is left out of the sum: opened, it simply scrolls. */
+function gamePhoneFit(){
+  if(!document.body.classList.contains("gamemode")) return null;
+  const wrap=document.querySelector(".wrap"), col=document.querySelector(".col"),
+        ctrl=document.querySelector(".controls"), c=document.getElementById("main");
+  if(!wrap||!col||!ctrl||!c) return null;
+  const ws=getComputedStyle(wrap);
+  if(ws.overflowY!=="auto") return null;
+  const row=(ws.flexDirection==="row"), gap=parseFloat(ws.rowGap||ws.gap)||0;
+  const pad=parseFloat(ws.paddingTop)+parseFloat(ws.paddingBottom);
+  const ex=document.getElementById("exWrap");
+  const exH=(ex && !ex.classList.contains("closed"))? ex.getBoundingClientRect().height+6 : 0;
+  const ctrlH=ctrl.offsetHeight;
+  let other = col.getBoundingClientRect().height - c.getBoundingClientRect().height - exH + pad;
+  if(!row && ctrlH>0) other += gap + ctrlH;
+  const side = row ? (ctrl.offsetWidth + (parseFloat(ws.columnGap)||0)) : 0;
+  return { h: Math.floor(wrap.clientHeight - other - 2), side };
+}
+/* whenever a bar around the board changes height (players, rules, CPU, the help fold,
+   the arrow pad coming and going) the board is refitted so nothing ever scrolls */
+let _gpfRaf=0;
+function gamePhoneRefit(){
+  if(_gpfRaf) return;
+  _gpfRaf=requestAnimationFrame(()=>{ _gpfRaf=0;
+    if(State.game.on && window.innerWidth<=900 && document.body.classList.contains("gamemode")){
+      const before=BIG; applyCanvasSizes(); if(BIG!==before) renderAll(); }
+  });
+}
+if(typeof ResizeObserver!=="undefined"){
+  const ro=new ResizeObserver(gamePhoneRefit);
+  for(const id of ["scoreBar","appBar","netPill","exWrap","gameWrap"]){
+    const el=document.getElementById(id); if(el) ro.observe(el); }
+}
 /* ---------- responsive control placement ----------
    On narrow screens (phones) the run row, the model row, the view row and the whole
    "Simulation controls" fold move UP to sit just below the main display panel, so the
@@ -6077,6 +6194,19 @@ function relocateControls(){
     ctrl.insertBefore(parts[1], gameWrap);
     ctrl.insertBefore(parts[2], gameWrap);
     ctrl.insertBefore(parts[3], lookWrap);             // the simulation fold returns above "Colours…"
+  }
+  /* in the phone game the win slider drops into the arrow pad and the office-view button
+     moves onto the board itself, so the control line above the board gets shorter */
+  const win=document.querySelector(".winsel"), view=document.getElementById("gbView"),
+        holder=document.querySelector(".mainholder"), skipRow=document.getElementById("gSkipRow");
+  if(win && view && holder && skipRow){
+    if(narrow){
+      win.classList.add("padkeep"); skipRow.parentNode.insertBefore(win, skipRow);
+      holder.appendChild(view);
+    } else {
+      win.classList.remove("padkeep"); document.querySelector("#scoreBar .sbctl").appendChild(win);
+      const right=document.getElementById("sbRight"); right.parentNode.insertBefore(view, right);
+    }
   }
   _ctrlRelocated=narrow;
 }
