@@ -331,6 +331,8 @@
     border:1px solid var(--line);background:rgba(255,255,255,.88);color:var(--accent);font-weight:700;cursor:pointer;
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
+  .scan-pbtn.scan-ytog{transform:translateX(-100%);white-space:nowrap}
+  .scan-pbtn.scan-ytog.on{color:var(--accent);border-color:var(--accent)}
   .scanpanel.dark .scan-pbtn{background:rgba(16,19,28,.85);border-color:#2a3140}
   canvas#scanView{position:absolute;inset:0;width:100%;height:100%;border-radius:8px}
   .scanpanel.dark{background:#0b0d13;border-color:#2a3140}
@@ -1188,8 +1190,8 @@
             <button id="bPre2n" title="KS 2D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.1">KS 2D nnl</button>
           </div>
           <div class="prow">
-            <button id="bPreK1" title="+&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2;: the &Lambda; = 4 equation with the standard KS nonlinearity, 1D, periodic, L = 128, dx = 0.5, dt = 0.01 — the view, colours and line density of KS 1D (one line per step)">KKS 1D</button>
-            <button id="bPreK2" title="+&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 2D: L = 128, dx = 0.5 (256&sup2; points), dt = 0.01 — surface 3D, flames &nabla;&sup2;h, tilt 62&deg;, as KS 2D">KKS 2D</button>
+            <button id="bPreK1" title="+&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2;: the &Lambda; = 4 equation with the standard KS nonlinearity, 1D, periodic, L = 128, dx = 0.5, dt = 0.005 — the view, colours and line density of KS 1D">KKS 1D</button>
+            <button id="bPreK2" title="+&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 2D: L = 128, dx = 0.5 (256&sup2; points), dt = 0.005 — surface 3D, flames &nabla;&sup2;h, tilt 62&deg;, as KS 2D">KKS 2D</button>
           </div>
           <div class="prow">
             <button id="bPreBeauty" class="beautybtn" data-pre="beauty" title="Beauty — Absolute 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 62&deg;, rot 0&deg;, dist 5&middot;L)">Absolute 2D</button>
@@ -2332,7 +2334,7 @@ function buildSim(P){
     /* a separation that is still decreasing (λ < 0, or a long transient) has its
        minimum at the end: then fit the last two thirds of the record instead,
        so that a negative slope is reported rather than nothing */
-    if(n - i0 < 5 || T[n-1] - T[i0] < 2){
+    if(n - i0 < 5 || (T[n-1] - T[i0] < 2 && !(Math.log(D[n-1]/D[i0]) >= 3))){
       const tC = T[0] + (T[n-1] - T[0])/3;
       i0 = 0; while(i0 < n-1 && T[i0] < tC) i0++;
     }
@@ -2342,7 +2344,11 @@ function buildSim(P){
       const x = T[i], y = Math.log(D[i]);
       sx+=x; sy+=y; sxx+=x*x; sxy+=x*y; m++; t1 = x;
     }
-    if(m >= 5 && t1 - T[i0] >= 2){
+    /* the stretch must last 2 time units — or, for a fast instability (the Λ equation: λ ≈ 5
+       at Λ = 4, more beyond, where |δh| crosses from 10⁻⁶ to saturation in under 2 time units),
+       carry a growth of at least e³ ≈ 20 */
+    const grown = m >= 2 ? Math.log(D[i0 + m - 1]/D[i0]) : 0;
+    if(m >= 5 && (t1 - T[i0] >= 2 || grown >= 3)){
       const den = m*sxx - sx*sx;
       lyap.fit = { t0:T[i0], t1, lam: den > 0 ? (m*sxy - sx*sy)/den : NaN,
                    b: (sy - ((m*sxy - sx*sy)/den)*sx)/m };
@@ -5102,18 +5108,19 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     params.dt=0.1; $('selDt').value='0.1';    // β = −0.5 (was +1.5); dt checked as for β = +1.5 (see dtForTerms)
   }, 'bPre2n'));
   /* ---- KKS: the Λ = 4 equation, +∇²h + 4∇⁴h + ∇⁶h + (∇h)², with the views of KS 1D / KS 2D.
-     Its fastest wave grows at 6.9 (KS: 0.25), so dt = 0.01 (see dtLam); in 1D the line spacing
-     Δt drops with it, which keeps KS 1D's one line per step and so its line density. ---- */
+     Its fastest wave grows at 6.9 (KS: 0.25); the presets run at dt = 0.005, half of what dtLam
+     would pick, with twice the steps per frame, and the 1D line spacing Δt = 0.01 keeps the
+     line density of the earlier dt = 0.01 version. ---- */
   $('bPreK1').addEventListener('click', ()=>runPreset(()=>{
     base1D(); params.order=246; params.lam=4;
-    params.dt=0.01; $('selDt').value='0.01';
-    stepsPerFrame=1; $('selSpf').value='1';
+    params.dt=0.005; $('selDt').value='0.005';
+    stepsPerFrame=2; $('selSpf').value='2';      // two steps per frame: the pace and the line density of before
     wfDt=0.01;
   }, 'bPreK1'));
   $('bPreK2').addEventListener('click', ()=>runPreset(()=>{
     base2D(); params.order=246; params.lam=4;
-    params.dt=0.01; $('selDt').value='0.01';
-    stepsPerFrame=2; $('selSpf').value='2';
+    params.dt=0.005; $('selDt').value='0.005';
+    stepsPerFrame=5; $('selSpf').value='5';      // (the per-frame time budget trims this on a slow machine)
   }, 'bPreK2'));
   /* ---- Beauty: special runs chosen for their looks. One button in the display cycles
      off → Absolute 2D with α = +3 (h upward) → Absolute 2D with α = −3 (−h upward) → off ---- */
@@ -5854,14 +5861,17 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     c.font = '600 ' + px(13) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'left'; c.textBaseline = 'top';
     const geo = S.cfg ? '  (' + (S.cfg.dim === 2 ? '2D' : '1D') + ', ' + S.cfg.bc + (S.cfg.dx ? ', dx = ' + S.cfg.dx : '') + (S.par === 'L' ? '' : ', L = ' + S.cfg.L) + ')' : '';
     const ttl = (only ? ({ lam: 'λ against ' + sym, sat: 'D sat against ' + sym, W: 'W against ' + sym, WL: 'W against L, log–log', spec: 'Power spectra' }[only]) : 'λ and W against ' + sym) + (extra.length ? ', ' + sets.length + ' equations' : '');
-    c.fillText(rows.length ? ttl + geo : 'λ and W against the scanned quantity', 12*F, 6*F);
+    c.fillText(rows.length ? (c.measureText(ttl + geo).width < w - 24*F ? ttl + geo : ttl) : 'λ and W against the scanned quantity', 12*F, 6*F);
     if(!rows.length){ c.fillStyle = lab; c.font = px(12) + ' system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(S.running ? 'sampling…' : 'no data yet', w/2, h/2); if(!only) S.layout = []; return; }
     const x0 = 78*F, x1 = w - 16*F;
     const isL = S.par === 'L', vs = rows.map(r => r.v);
     const vmin = Math.min(...vs), vmax = Math.max(...vs), span = Math.max(vmax - vmin, 1e-9), pad = 0.04*span;
     const X = v => isL ? x0 + (x1-x0)*(vs.indexOf(v) + 0.5)/vs.length : x0 + (x1-x0)*(v - vmin + pad)/(span + 2*pad);
     const panels = only ? [{ name: only, y0: 62*F, y1: h - 52*F, xlab: true }] : scanLayout(S, h, F);
-    if(!only) S.layout = panels.map(p => ({ name: p.name, x0, y0: p.y0 }));
+    if(!only) S.layout = panels.map(p => ({ name: p.name, x0, x1, y0: p.y0 }));
+    /* on screen the D sat and W panels carry a lin/log toggle in their upper right corner:
+       the legend line there steps aside for it (not in the exported pictures) */
+    const legR = F === 1 && !only ? 82*F : 8*F;
     const dotsL = r => (r.samples || [{ free: r.free, ben: r.ben, sat: r.sat, W: r.W }]);
     const o = { ink, grid, zero, lab, bg, F, x0, x1, col1, col2, colW, col3, X, sym, isL, rows, dotsL, px };
     function axis(p, lo, hi, label, tick){
@@ -5873,6 +5883,19 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       c.save(); c.translate(16*F, (p.y0+p.y1)/2); c.rotate(-Math.PI/2); c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.font = px(15) + ' system-ui,sans-serif'; c.fillText(label, 0, 0); c.restore();
       c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1);
       return Y;
+    }
+    /* decades on a log y axis: grid, 10ⁿ labels, axis name, frame; returns v ↦ y for v > 0 */
+    function logYAxis(p, ymin, ymax, label){
+      const Yl = v => p.y1 - (p.y1-p.y0)*(Math.log10(v) - ymin)/(ymax - ymin);
+      const sup = n => String(n).replace('-', '−').replace(/[−0-9]/g, ch => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['−0123456789'.indexOf(ch)]);
+      const ystep = Math.max(1, Math.ceil((ymax - ymin)/6));
+      c.lineWidth = 1*F; c.strokeStyle = grid;
+      for(let d = ymin; d <= ymax; d += ystep){ const y = p.y1 - (p.y1-p.y0)*(d - ymin)/(ymax - ymin); c.beginPath(); c.moveTo(x0, y); c.lineTo(x1, y); c.stroke(); }
+      c.font = px(16.5) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'right'; c.textBaseline = 'middle';
+      for(let d = ymin; d <= ymax; d += ystep) c.fillText('10' + sup(d), x0 - 6*F, p.y1 - (p.y1-p.y0)*(d - ymin)/(ymax - ymin));
+      c.save(); c.translate(16*F, (p.y0+p.y1)/2); c.rotate(-Math.PI/2); c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.font = px(15) + ' system-ui,sans-serif'; c.fillText(label, 0, 0); c.restore();
+      c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1);
+      return Yl;
     }
     /* x grid in a panel, with the tick labels and the axis name below it when asked */
     /* coefficient axis: numbers at the integers (every 0.5 when the range is short), tick marks in
@@ -5936,59 +5959,82 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         c.fillStyle = lab; c.fillText((rows2 ? lab0 + ': ' : '') + 'λ Benettin' + (nmc && !rows2 ? ' — hollow dot per start' : ''), lx + 32*F, ly2);
       } else if(p.name === 'sat'){
         xTicks(p, p.xlab);
-        /* log scale; the translucent red band marks D_sat below the seed distance ε of the twin —
-           a "plateau" there means the two interfaces never separated (steady or frozen state) */
+        /* log scale (default) or linear, by the toggle in the corner; on the log scale the
+           translucent red band marks D_sat below the seed distance ε of the twin — a "plateau"
+           there means the two interfaces never separated (steady or frozen state) */
+        const logS = S.logSat !== false;
         const sr = rows.filter(r => isFinite(r.sat) && r.sat > 0), eps = (rows.find(r => r.eps > 0) || { eps: 1e-6 }).eps;
         const srx = extra.map(e => ({ col: e.col, rows: e.rows.filter(r => isFinite(r.sat) && r.sat > 0) })), sr2 = [].concat(...srx.map(e => e.rows));
         const L10 = Math.log10, le = L10(eps);
-        let ymax = le + 1, ymin = le - 0.5;
-        for(const r of sr.concat(sr2)){ for(const d of dotsL(r)) if(d.sat > 0) ymax = Math.max(ymax, L10(d.sat)); ymax = Math.max(ymax, L10(r.sat)); }
-        for(const r of rows) if(r.W > 0) ymax = Math.max(ymax, L10(Math.SQRT2*r.W));
-        ymax = Math.ceil(ymax + 0.7); ymin = Math.floor(ymin);
-        const Y3 = v => p.y1 - (p.y1-p.y0)*(v - ymin)/(ymax - ymin);
-        const sup = n => String(n).replace('-', '−').replace(/[−0-9]/g, ch => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['−0123456789'.indexOf(ch)]);
-        const ystep = Math.max(1, Math.ceil((ymax - ymin)/6));
-        c.lineWidth = 1*F; c.strokeStyle = grid;
-        for(let d = ymin; d <= ymax; d += ystep){ c.beginPath(); c.moveTo(x0, Y3(d)); c.lineTo(x1, Y3(d)); c.stroke(); }
-        c.fillStyle = 'rgba(220,38,38,0.16)'; c.fillRect(x0, Y3(le), x1 - x0, p.y1 - Y3(le));
-        c.strokeStyle = 'rgba(220,38,38,0.6)'; c.lineWidth = 1*F; c.setLineDash([2*F, 3*F]); c.beginPath(); c.moveTo(x0, Y3(le)); c.lineTo(x1, Y3(le)); c.stroke(); c.setLineDash([]);
-        c.font = px(16.5) + ' system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'right'; c.textBaseline = 'middle';
-        for(let d = ymin; d <= ymax; d += ystep) c.fillText('10' + sup(d), x0 - 6*F, Y3(d));
-        c.save(); c.translate(16*F, (p.y0+p.y1)/2); c.rotate(-Math.PI/2); c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.font = px(15) + ' system-ui,sans-serif'; c.fillText('D sat', 0, 0); c.restore();
-        c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1);
+        const allSets = [[rows, col1], ...extra.map(e => [e.rows, e.col])];
+        let T3;
+        if(logS){
+          let ymax = le + 1, ymin = le - 0.5;
+          for(const r of sr.concat(sr2)){ for(const d of dotsL(r)) if(d.sat > 0) ymax = Math.max(ymax, L10(d.sat)); ymax = Math.max(ymax, L10(r.sat)); }
+          for(const [rr] of allSets) for(const r of rr) if(r.W > 0) ymax = Math.max(ymax, L10(Math.SQRT2*r.W));
+          ymax = Math.ceil(ymax + 0.7); ymin = Math.floor(ymin);
+          T3 = logYAxis(p, ymin, ymax, 'D sat');
+          const yE = T3(eps);
+          c.fillStyle = 'rgba(220,38,38,0.16)'; c.fillRect(x0, yE, x1 - x0, p.y1 - yE);
+          c.strokeStyle = 'rgba(220,38,38,0.6)'; c.lineWidth = 1*F; c.setLineDash([2*F, 3*F]); c.beginPath(); c.moveTo(x0, yE); c.lineTo(x1, yE); c.stroke(); c.setLineDash([]);
+        } else {
+          let top = 0;
+          for(const r of sr.concat(sr2)){ for(const d of dotsL(r)) if(d.sat > 0) top = Math.max(top, d.sat); top = Math.max(top, r.sat); }
+          for(const [rr] of allSets) for(const r of rr) if(r.W > 0) top = Math.max(top, Math.SQRT2*r.W);
+          const st = niceCeil(Math.max(top, 1e-9)/4), ymx = Math.ceil(top/st + 0.3)*st;
+          T3 = axis(p, 0, ymx, 'D sat', st);
+        }
         c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
-        /* √2·W for comparison: two uncorrelated interfaces */
-        /* √2·W of every equation, dotted in that equation's colour */
-        for(const [rr, col] of [[rows, col1], ...extra.map(e => [e.rows, e.col])]){ c.strokeStyle = col; c.lineWidth = 1.2*F; c.setLineDash([3*F, 4*F]); c.beginPath(); let k0 = 0; rr.forEach(r => { if(!(r.W > 0)) return; k0++ ? c.lineTo(X(r.v), Y3(L10(Math.SQRT2*r.W))) : c.moveTo(X(r.v), Y3(L10(Math.SQRT2*r.W))); }); c.stroke(); c.setLineDash([]); }
-        c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); sr.forEach((r, i) => i ? c.lineTo(X(r.v), Y3(L10(r.sat))) : c.moveTo(X(r.v), Y3(L10(r.sat)))); c.stroke();
-        c.fillStyle = col1; for(const r of sr) for(const d of dotsL(r)) if(d.sat > 0){ c.beginPath(); c.arc(X(r.v), Y3(L10(d.sat)), 3.2*F, 0, 2*Math.PI); c.fill(); }
-        for(const e of srx){ if(!e.rows.length) continue;
-          c.strokeStyle = e.col; c.lineWidth = 2.2*F; c.beginPath(); e.rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y3(L10(r.sat))) : c.moveTo(X(r.v), Y3(L10(r.sat)))); c.stroke();
-          c.fillStyle = e.col; for(const r of e.rows) for(const d of dotsL(r)) if(d.sat > 0){ c.beginPath(); c.arc(X(r.v), Y3(L10(d.sat)), 3.2*F, 0, 2*Math.PI); c.fill(); }
+        /* √2·W of every equation, dotted in that equation's colour: two uncorrelated interfaces */
+        for(const [rr, col] of allSets){ c.strokeStyle = col; c.lineWidth = 1.2*F; c.setLineDash([3*F, 4*F]); c.beginPath(); let k0 = 0; rr.forEach(r => { if(!(r.W > 0)) return; k0++ ? c.lineTo(X(r.v), T3(Math.SQRT2*r.W)) : c.moveTo(X(r.v), T3(Math.SQRT2*r.W)); }); c.stroke(); c.setLineDash([]); }
+        for(const [rr, col] of [[sr, col1], ...srx.map(e => [e.rows, e.col])]){ if(!rr.length) continue;
+          c.strokeStyle = col; c.lineWidth = 2.2*F; c.beginPath(); rr.forEach((r, i) => i ? c.lineTo(X(r.v), T3(r.sat)) : c.moveTo(X(r.v), T3(r.sat))); c.stroke();
+          c.fillStyle = col; for(const r of rr) for(const d of dotsL(r)) if(d.sat > 0){ c.beginPath(); c.arc(X(r.v), T3(d.sat), 3.2*F, 0, 2*Math.PI); c.fill(); }
         }
         c.restore();
         c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillStyle = lab;
         { const long = 'saturated separation of the free runs' + (rows2 ? ' (indigo: ' + lab0 + extra.map((e, i) => (i ? ', lime: ' : ', cyan: ') + e.lab).join('') + ')' : S.cfg && S.cfg.nmc > 1 ? ' — dot per start, line through the means' : '') + ';  dotted: √2·W';
           const short = rows2 ? 'D sat — indigo, cyan' + (extra.length > 1 ? ', lime' : '') + ': the equations in order;  dotted: √2·W' : 'D sat of the free runs;  dotted: √2·W';
-          c.fillText(c.measureText(long).width < (x1 - x0) - 70*F ? long : short, x1 - 8*F, p.y0 + 12*F); }
-        c.textAlign = 'left'; c.fillStyle = dark ? '#fca5a5' : '#b91c1c';
-        c.fillText((x1 - x0) < 420*F ? 'red: below the seed distance ε' : 'red: below the seed distance ε = 10' + sup(Math.round(L10(eps))) + ' — the interfaces never separated', x0 + 8*F, Y3(le) + 12*F);
+          const room = (x1 - x0) - 70*F - legR, pick = [long, short, 'dotted: √2·W'].find(t => c.measureText(t).width < room);
+          if(pick) c.fillText(pick, x1 - legR, p.y0 + 12*F); }
+        if(logS){
+          const sup = n => String(n).replace('-', '−').replace(/[−0-9]/g, ch => '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['−0123456789'.indexOf(ch)]);
+          c.textAlign = 'left'; c.fillStyle = dark ? '#fca5a5' : '#b91c1c';
+          const pick = ['red: below the seed distance ε = 10' + sup(Math.round(le)) + ' — the interfaces never separated', 'red: below the seed distance ε', 'red: < ε'].find(t => c.measureText(t).width < (x1 - x0) - 16*F);
+          if(pick) c.fillText(pick, x0 + 8*F, T3(eps) + 12*F);
+        }
       } else if(p.name === 'W'){
         xTicks(p, p.xlab);
-        let wtop = 0; for(const r of rows.concat(...extra.map(e => e.rows))) for(const d of dotsL(r)) wtop = Math.max(wtop, d.W);
-        const stW = niceCeil(Math.max(wtop, 1e-6)/4), wmax = Math.ceil(wtop/stW + 0.3)*stW;
-        const Y2 = axis(p, 0, wmax, 'W', stW);
-        c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y2(r.W)) : c.moveTo(X(r.v), Y2(r.W))); c.stroke();
-        c.fillStyle = col1; for(const r of rows) for(const d of dotsL(r)){ c.beginPath(); c.arc(X(r.v), Y2(d.W), 3.2*F, 0, 2*Math.PI); c.fill(); }
+        /* linear (default) or log scale, by the toggle in the corner */
+        const logW = !!S.logW, allW = [[rows, col1], ...extra.map(e => [e.rows, e.col])];
+        let Y2;
+        if(logW){
+          let lo = Infinity, hi = -Infinity;
+          for(const [rr] of allW) for(const r of rr) for(const d of dotsL(r)) if(d.W > 0){ lo = Math.min(lo, Math.log10(d.W)); hi = Math.max(hi, Math.log10(d.W)); }
+          if(!isFinite(lo)){ lo = -1; hi = 0; }
+          let ymin = Math.floor(lo), ymax = Math.ceil(hi + 0.15); if(ymax <= ymin) ymax = ymin + 1;
+          Y2 = logYAxis(p, ymin, ymax, 'W');
+        } else {
+          let wtop = 0; for(const [rr] of allW) for(const r of rr) for(const d of dotsL(r)) wtop = Math.max(wtop, d.W);
+          const stW = niceCeil(Math.max(wtop, 1e-6)/4), wmax = Math.ceil(wtop/stW + 0.3)*stW;
+          Y2 = axis(p, 0, wmax, 'W', stW);
+        }
+        c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
+        for(const [rr, col] of allW){
+          const ok = rr.filter(r => !logW || r.W > 0);
+          c.strokeStyle = col; c.lineWidth = 2.2*F; c.beginPath(); ok.forEach((r, i) => i ? c.lineTo(X(r.v), Y2(r.W)) : c.moveTo(X(r.v), Y2(r.W))); c.stroke();
+          c.fillStyle = col; for(const r of ok) for(const d of dotsL(r)) if(!logW || d.W > 0){ c.beginPath(); c.arc(X(r.v), Y2(d.W), 3.2*F, 0, 2*Math.PI); c.fill(); }
+        }
+        c.restore();
+        c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillStyle = lab;
         if(rows2){
-          for(const e of extra){
-            c.strokeStyle = e.col; c.lineWidth = 2.2*F; c.beginPath(); e.rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y2(r.W)) : c.moveTo(X(r.v), Y2(r.W))); c.stroke();
-            c.fillStyle = e.col; for(const r of e.rows) for(const d of dotsL(r)){ c.beginPath(); c.arc(X(r.v), Y2(d.W), 3.2*F, 0, 2*Math.PI); c.fill(); }
-          }
-          c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillStyle = lab;
-          { const long = 'W — indigo: ' + lab0 + extra.map((e, i) => (i ? ', lime: ' : ', cyan: ') + e.lab).join('');
-          c.fillText(c.measureText(long).width < (x1 - x0) - 70*F ? long : 'W — indigo, cyan' + (extra.length > 1 ? ', lime' : '') + ': the equations in order', x1 - 8*F, p.y0 + 12*F); }
-        } else if(S.cfg && S.cfg.nmc > 1){ c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.textAlign = 'right'; c.fillStyle = lab; c.fillText((x1 - x0) < 420*F ? 'W — dots: starts, line: means' : 'W — dot per start, line through the means', x1 - 8*F, p.y0 + 12*F); }
+          const long = 'W — indigo: ' + lab0 + extra.map((e, i) => (i ? ', lime: ' : ', cyan: ') + e.lab).join('');
+          const room = (x1 - x0) - 70*F - legR, pick = [long, 'W — indigo, cyan' + (extra.length > 1 ? ', lime' : '') + ': the equations in order', 'W — indigo, cyan' + (extra.length > 1 ? ', lime' : '')].find(t => c.measureText(t).width < room);
+          if(pick) c.fillText(pick, x1 - legR, p.y0 + 12*F);
+        } else if(S.cfg && S.cfg.nmc > 1){
+          const pick = ['W — dot per start, line through the means', 'W — dots: starts, line: means'].find(t => c.measureText(t).width < (x1 - x0) - 70*F - legR);
+          if(pick) c.fillText(pick, x1 - legR, p.y0 + 12*F);
+        }
       } else if(p.name === 'WL'){
         drawWLPanel(c, p, o);
       } else if(p.name === 'spec'){
@@ -6088,6 +6134,16 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       b.style.left = Math.round(p.x0 + 4) + 'px'; b.style.top = Math.round(p.y0 + 4) + 'px';
       b.addEventListener('click', ()=>exportScanPanel(p.name));
       box.appendChild(b);
+      /* D sat and W: a lin / log toggle for the y axis in the upper right corner */
+      if((p.name === 'sat' || p.name === 'W') && p.x1){
+        const key = p.name === 'sat' ? 'logSat' : 'logW', isLog = p.name === 'sat' ? SC.logSat !== false : !!SC.logW;
+        const t = document.createElement('button'); t.className = 'scan-pbtn scan-ytog' + (isLog ? ' on' : '');
+        t.textContent = (isLog ? 'log y' : 'lin y') + ' ⇄';
+        t.title = (p.name === 'sat' ? 'D sat' : 'W') + ' on a ' + (isLog ? 'logarithmic' : 'linear') + ' y axis — click for ' + (isLog ? 'linear' : 'logarithmic');
+        t.style.left = Math.round(p.x1 - 4) + 'px'; t.style.top = Math.round(p.y0 + 4) + 'px';
+        t.addEventListener('click', ()=>{ SC[key] = !isLog; renderScan(); });
+        box.appendChild(t);
+      }
     }
   }
   function exportScanPanel(name){
