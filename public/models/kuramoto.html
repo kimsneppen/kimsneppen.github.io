@@ -128,8 +128,6 @@
   .tctl select{font-style:normal;font-size:12.5px;padding:3px 4px;border:1px solid var(--line);border-radius:8px;
     background:#fff;color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:600}
   .tctl select.on{color:var(--accent);border-color:var(--accent)}
-  .presets button.beautybtn{color:#be185d;border-color:#f9a8d4}
-  .presets button.beautybtn.on{background:#be185d;color:#fff}
   .tctl b{
     min-width:40px;font-style:normal;font-weight:600;font-size:11.5px;color:var(--muted);
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
@@ -298,14 +296,20 @@
   .scan input.num{width:80px}
   .scan select.scsel{min-width:70px}
   .scan .row select{min-width:70px}
-  /* the linear terms of a scan: three lines — which equations (any combination, ticked), the
-     Λ scan, and Λ held fixed; the Λ line that does not apply is greyed */
+  /* the linear terms of a scan: three lines — which equations (any combination, ticked, in the
+     order of the column groups; ▲ moves one up), the Λ scan, and Λ held fixed; the Λ line that
+     does not apply is greyed */
   .scan .scordrow{flex-direction:column;align-items:stretch;gap:5px}
   .scan .scmulti{flex-direction:column;min-width:0}
-  .scan .scmulti button{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line)}
-  .scan .scmulti button:last-child{border-bottom:0}
-  .scan .scmulti button::before{content:"\2610\00a0\00a0";font-style:normal;font-family:system-ui,sans-serif}
-  .scan .scmulti button.on::before{content:"\2611\00a0\00a0"}
+  .scan .scmulti .scoitem{display:flex;border-bottom:1px solid var(--line)}
+  .scan .scmulti .scoitem:last-child{border-bottom:0}
+  .scan .scmulti .scotog{text-align:left;padding:6px 10px}
+  .scan .scmulti .scotog::before{content:"\2610\00a0\00a0";font-style:normal;font-family:system-ui,sans-serif}
+  .scan .scmulti .scotog.on::before{content:"\2611\00a0\00a0"}
+  .scan .scmulti .scoup{flex:0 0 34px;padding:0;border-left:1px solid var(--line);font-style:normal;
+    font-family:system-ui,sans-serif;font-size:11px;color:var(--muted)}
+  .scan .scmulti .scoup:hover{color:var(--accent);background:var(--accent-soft)}
+  .scan .scmulti .scoitem:first-child .scoup{visibility:hidden}
   .row label i.sub{display:block;font-size:11px;opacity:.7;font-style:italic}
   .scan .scgroup{transition:opacity .15s}
   .scan .scgroup.dim{opacity:.42}
@@ -407,6 +411,7 @@
     white-space:nowrap;
   }
   .display.darkbg .presets button{background:rgba(16,19,28,.85);border-color:#2a3140}
+  .display.darkbg .presets button.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .wfctl.v3 input{width:96px}
   .display.darkbg .wfctl{background:rgba(16,19,28,.85);border-color:#2a3140;color:#aab3c7}
   .seg.mini{min-width:118px}
@@ -1194,7 +1199,7 @@
             <button id="bPreK2" title="+&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 2D: L = 128, dx = 0.5 (256&sup2; points), dt = 0.005 — surface 3D, flames &nabla;&sup2;h, tilt 62&deg;, as KS 2D">KKS 2D</button>
           </div>
           <div class="prow">
-            <button id="bPreBeauty" class="beautybtn" data-pre="beauty" title="Beauty — Absolute 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 62&deg;, rot 0&deg;, dist 5&middot;L)">Absolute 2D</button>
+            <button id="bPreBeauty" data-pre="beauty" title="Beauty — Art 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 62&deg;, rot 0&deg;, dist 5&middot;L)">Art 2D</button>
           </div>
           <button class="phead" id="presetHead" title="the one-click runs — click to fold / unfold">presets <b>&#9652;</b></button>
         </div>
@@ -1390,9 +1395,9 @@
         <summary>Systematic scan</summary>
         <div class="sect scan">
           <div class="hint" style="margin-bottom:6px">Scan one coefficient of the equation and tabulate the largest Lyapunov exponent (Benettin and free run) and the mean width W. Runs in a background worker without drawing, so it keeps its full speed when the tab is hidden or the screen is locked (the screen is kept awake while the tab is in front); the results appear in the section under the Lyapunov panel. Keep the browser open: a closed tab, sleep or hibernation ends the scan.</div>
-          <div class="row scordrow"><label>linear terms <i class="sub">click to include</i></label>
-            <div class="seg ordseg scmulti" id="scOrd" title="click an equation to include it in the scan or leave it out — any combination; two or three are run with the same settings and tabulated side by side">
-              <button data-v="4" class="on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button><button data-v="6">+&nabla;&#8308;h +&nabla;&#8310;h</button><button data-v="246">+&nabla;&sup2;h +&Lambda;&nabla;&#8308;h +&nabla;&#8310;h</button></div></div>
+          <div class="row scordrow"><label>linear terms <i class="sub">click to include &middot; &#9650; moves up — top to bottom is the order of the columns</i></label>
+            <div class="seg ordseg scmulti" id="scOrd" title="click an equation to include it in the scan or leave it out — any combination; two or three are run with the same settings and tabulated side by side, in the order of this list (&#9650; moves an equation up)">
+              <div class="scoitem" data-v="4"><button class="scotog on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="6"><button class="scotog">+&nabla;&#8308;h +&nabla;&#8310;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="246"><button class="scotog">+&nabla;&sup2;h +&Lambda;&nabla;&#8308;h +&nabla;&#8310;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div></div></div>
           <div class="row scgroup" id="scLamScanRow"><label><button class="tbtn sclamtog" id="scLamScan" title="scan &Lambda; itself (only the &Lambda; equation depends on it, so it alone is run)">scan &Lambda;</button> from 2 to &middot; step</label>
             <span class="triple"><select id="scLamMax" title="last value of &Lambda;"></select><select id="scLamStep" title="step of &Lambda;"><option>0.1</option><option>0.25</option><option selected>0.5</option><option>1</option><option>2</option></select></span></div>
           <div class="row scgroup" id="scLamFixRow"><label>&Lambda; fixed at <i class="sub">when another coefficient is scanned</i></label>
@@ -1428,7 +1433,7 @@
             <button class="btn" id="scStop" disabled>stop</button>
           </div>
           <div class="hint" id="scStatus">idle</div>
-          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each. <b>&Lambda;</b> belongs to the third equation: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 2 up to the chosen maximum and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value. The &Lambda; equation needs a time step of about 0.1/g<sub>max</sub> (0.01 at &Lambda; = 4, 0.0005 at &Lambda; = 10), so a long transient at large &Lambda; is slow. The scanned points are the range in the chosen step plus always &minus;0.1, 0 and +0.1; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient, then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A value whose run diverges is marked yellow.</div>
+          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 2 up to the chosen maximum and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value. The &Lambda; equation needs a time step of about 0.1/g<sub>max</sub> (0.01 at &Lambda; = 4, 0.0005 at &Lambda; = 10), so a long transient at large &Lambda; is slow. The scanned points are the range in the chosen step plus always &minus;0.1, 0 and +0.1; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient, then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A value whose run diverges is marked yellow.</div>
         </div>
       </details>
 
@@ -1498,7 +1503,7 @@
           which sign matters, and the measured Lyapunov exponents — see <i>Variant models</i> and
           the tables in the main text above the display.</p>
           <h4>Beauty — special runs</h4>
-          <p>The <b>Absolute 2D</b> button in the presets box of the display starts a run chosen for its
+          <p>The <b>Art 2D</b> button in the presets box of the display starts a run chosen for its
           looks; everything is set up and the simulation starts at once. It cycles through three
           states: <i>off</i> &rarr; <b>&alpha; = +3</b>, h drawn upward &rarr; <b>&alpha; = &minus;3</b>, drawn
           with &minus;h upward (the &plusmn; button is switched on) &rarr; <i>off</i>. Both runs are 2D,
@@ -1554,7 +1559,7 @@
           perspective).</p>
           <h4>Presets</h4>
           <p>The box in the lower left corner holds the one-click runs: KS 1D / 2D, the same with
-          &alpha; = 1 (1.5 in 2D), with &beta; = &minus;0.5 (<i>nnl</i>), and the Absolute 2D toggle. Its title line
+          &alpha; = 1 (1.5 in 2D), with &beta; = &minus;0.5 (<i>nnl</i>), and the Art 2D toggle. Its title line
           names the preset that is running (<i>presets</i> when the run has been changed by hand),
           and a click on it folds the box to that line and back.</p>
           <h4>Viewpoint button</h4>
@@ -1640,8 +1645,15 @@
           &epsilon; of the twin, where a "plateau" means the interfaces never separated — W, for an L scan also W
           against L on log–log axes with the fitted exponent, and the time-averaged power spectra
           (for a coefficient scan the largest, the smallest and the zero value; for L the largest
-          and the fourth-largest box). Every panel has a <b>.png</b> button in its upper left
-          corner that saves that panel alone; <i>plot .png</i> and <i>table .png</i> in the head
+          and the fourth-largest box). Two or three equations appear side by side in the order of
+          the list of linear terms (&#9650; moves one up). In the table &lambda; free, Benettin and
+          D<sub>sat</sub> are <span style="color:#b91c1c">red</span> where both exponents are
+          above 0.03 and the largest D<sub>sat</sub> reaches W/100,
+          <span style="color:#1d4ed8">blue</span> where either exponent is negative or the largest
+          D<sub>sat</sub> stays below W/1000 (the twins never parted), and uncoloured in between. Every panel has a <b>.png</b> button in its upper left
+          corner that saves that panel alone, and the &lambda;, D<sub>sat</sub> and W panels a
+          lin / log switch in the upper right (on the log scale &lambda; is shown only above 0.001);
+          <i>plot .png</i> and <i>table .png</i> in the head
           save the whole figure and the table, and the circle toggles a black or white
           background. A value whose run diverges is marked yellow; <i>stop</i> ends the scan and
           keeps what has been measured.</p>
@@ -5037,6 +5049,18 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     document.querySelectorAll('.presets .prow button').forEach(b => { if(b.id !== 'bPreBeauty') b.classList.toggle('on', b.id === id); });
   }
   $('presetHead').addEventListener('click', ()=>{ $('presetBox').classList.toggle('folded'); });
+  /* on a narrow display the open presets box would cover the Run / Reset / L buttons of the lower
+     right corner: it then rises to sit just above them */
+  function placePresets(){
+    const box = $('presetBox'), cp = box.parentElement.querySelector('.cornerpng');
+    box.style.bottom = '';
+    if(box.classList.contains('folded') || !cp) return;
+    const a = box.getBoundingClientRect(), wrap = box.offsetParent; if(!wrap) return;
+    const hit = [...cp.children].map(e => e.getBoundingClientRect()).filter(b => b.width && b.left < a.right + 6 && b.top < a.bottom + 6 && b.bottom > a.top - 6);
+    if(hit.length) box.style.bottom = Math.ceil(wrap.getBoundingClientRect().bottom - Math.min(...hit.map(b => b.top)) + 6) + 'px';
+  }
+  { const ro = new ResizeObserver(()=>placePresets()); ro.observe($('presetBox')); const cp = $('presetBox').parentElement.querySelector('.cornerpng'); if(cp) ro.observe(cp); }
+  window.addEventListener('resize', placePresets);
   function runPreset(setup, id){
     running = false;
     beautyBuilding = true;              // the preset's own rebuild must not clear the labels
@@ -5123,8 +5147,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     stepsPerFrame=5; $('selSpf').value='5';      // (the per-frame time budget trims this on a slow machine)
   }, 'bPreK2'));
   /* ---- Beauty: special runs chosen for their looks. One button in the display cycles
-     off → Absolute 2D with α = +3 (h upward) → Absolute 2D with α = −3 (−h upward) → off ---- */
-  const BEAUTY_LABEL = { off: 'Absolute 2D', abs2dp: 'Absolute 2D  α = +3', abs2dm: 'Absolute 2D  α = −3, −h' };
+     off → Art 2D with α = +3 (h upward) → Art 2D with α = −3 (−h upward) → off ---- */
+  const BEAUTY_LABEL = { off: 'Art 2D', abs2dp: 'Art 2D  α = +3', abs2dm: 'Art 2D  α = −3, −h' };
   function setBeauty(v){
     beauty = v;
     const b = $('bPreBeauty'); b.classList.toggle('on', v !== 'off'); b.textContent = BEAUTY_LABEL[v];
@@ -5574,6 +5598,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   ['scA','scB','scG','scD'].forEach(id => { $(id).value = '0'; });
   let scNL2 = true, scDim = 1, scBC = 'periodic';
   const scOrds = new Set([4]);                     // the equations included in the scan
+  const scOrdList = [4, 6, 246];                   // their order: column groups left to right, colours in turn
   (function(){
     const mx = $('scLamMax'), fx = $('scLamFix');
     for(let v = 3; v <= 20; v++){ const o = document.createElement('option'); o.value = ''+v; o.textContent = ''+v; mx.appendChild(o); }
@@ -5588,7 +5613,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     if(isLam) scOrds.add(246);                     // a Λ scan needs the Λ equation
     $('scLRow').style.display = isL ? '' : 'none';
     $('scRangeRow').style.display = (isL || isLam) ? 'none' : '';
-    $('scOrd').querySelectorAll('button').forEach(b => b.classList.toggle('on', scOrds.has(+b.dataset.v)));
+    const box = $('scOrd');
+    for(const v of scOrdList) box.appendChild(box.querySelector('.scoitem[data-v="' + v + '"]'));   // the list in scan order
+    box.querySelectorAll('.scoitem').forEach(it => it.querySelector('.scotog').classList.toggle('on', scOrds.has(+it.dataset.v)));
     const has = scOrds.has(246);
     $('scLamScanRow').classList.toggle('dim', !has || !isLam); $('scLamFixRow').classList.toggle('dim', !has || isLam);
     $('scLamScan').classList.toggle('on', isLam);
@@ -5596,12 +5623,20 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     $('scLamFix').disabled = !has || isLam;
   }
   $('scPar').addEventListener('change', scRows);
-  $('scOrd').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-    const v = +b.dataset.v;
-    if(scOrds.has(v)){ if(scOrds.size === 1) return; scOrds.delete(v); if(v === 246 && $('scPar').value === 'lam') $('scPar').value = 'beta'; }
-    else scOrds.add(v);
-    scRows();
-  }));
+  $('scOrd').querySelectorAll('.scoitem').forEach(it => {
+    const v = +it.dataset.v;
+    it.querySelector('.scotog').addEventListener('click', () => {
+      if(scOrds.has(v)){ if(scOrds.size === 1) return; scOrds.delete(v); if(v === 246 && $('scPar').value === 'lam') $('scPar').value = 'beta'; }
+      else scOrds.add(v);
+      scRows();
+    });
+    /* ▲: swap with the equation above — the order of the column groups and of the colours */
+    it.querySelector('.scoup').addEventListener('click', () => {
+      const i = scOrdList.indexOf(v); if(i < 1) return;
+      scOrdList[i] = scOrdList[i-1]; scOrdList[i-1] = v;
+      scRows();
+    });
+  });
   $('scLamScan').addEventListener('click', () => { $('scPar').value = $('scPar').value === 'lam' ? 'beta' : 'lam'; scRows(); });
   scRows();
   seg($('scNL2'), ()=>(scNL2?'1':'0'), v=>{ scNL2 = v === '1'; });
@@ -5705,7 +5740,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   async function scRun(){
     if(SC.running) return;
     const par0 = $('scPar').value;
-    const orders = par0 === 'lam' ? [246] : [4, 6, 246].filter(o => scOrds.has(o));
+    const orders = par0 === 'lam' ? [246] : scOrdList.filter(o => scOrds.has(o));
     const c = { order: orders[0], lam: +$('scLamFix').value, nl2: scNL2, alpha: +$('scA').value, beta: +$('scB').value, gamma: +$('scG').value, delta: +$('scD').value,
                 par: $('scPar').value, dim: scDim, L: +$('scL').value, dx: +$('scDx').value, dtMax: +$('scDtMax').value, bc: scBC, tTrans: +$('scTrans').value, nmc: +$('scNMC').value };
     c.tTotal = 2*c.tTrans;
@@ -5786,20 +5821,34 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const pm = (m, sd) => f3(m) + (sd > 0 ? ' ± ' + sd.toFixed(3) : '');
   const f3n = v => isFinite(v) ? f3(v) : '—';
   /* D_sat of a scan point as the smallest → largest value met in its free runs (all starts),
-     one significant digit: (1→3)·10⁻⁵ when both share a power of ten, 1·10⁻⁶→0.1 across
-     decades, 0.2→0.4 from 0.01 up */
+     one significant digit each. From 0.01 up as decimals, 0.2→0.4; below, one power of ten for
+     both ends whenever they differ by less than a factor 99 — the power of the smaller one:
+     (1→3)·10⁻⁵, (2→90)·10⁻⁷ for 2·10⁻⁷ → 9·10⁻⁶; two powers only across wider ranges, 1·10⁻⁶→0.1 */
   const fmt1 = (v, html) => v >= 0.01 ? String(+v.toPrecision(1)) : fmtPow10(v, html);
+  const mant1 = v => { let e = Math.floor(Math.log10(v)), m = Math.round(v/Math.pow(10, e)); if(m >= 10){ m = 1; e += 1; } return { m, e }; };
   function fmtRange(lo, hi, html){
     const arr = html ? '<span class="arr">→</span>' : '→';
     if(+lo.toPrecision(1) === +hi.toPrecision(1)) return fmt1(hi, html);
-    if(hi < 0.1){
-      let e = Math.floor(Math.log10(hi)), mb = Math.round(hi/Math.pow(10, e));
-      if(mb >= 10){ mb = 1; e += 1; }
-      const ma = Math.round(lo/Math.pow(10, e));
-      if(ma >= 1 && ma < mb) return '(' + ma + arr + mb + ')·10' + (html ? '<sup>' + String(e).replace('-', '−') + '</sup>' : supTxt(e));
+    if(lo > 0 && lo < 0.01){
+      const a = mant1(lo), b = mant1(hi), nb = Math.round(b.m*Math.pow(10, b.e - a.e));   // hi in units of 10^(power of lo)
+      if(b.e >= a.e && nb > a.m && nb < 99*a.m) return '(' + a.m + arr + nb + ')·10' + (html ? '<sup>' + String(a.e).replace('-', '−') + '</sup>' : supTxt(a.e));
     }
     return fmt1(lo, html) + arr + fmt1(hi, html);
   }
+  /* the colour of a scan row in the table — λ free, Benettin and D sat alike. Red (chaotic) when both
+     measurements give a positive exponent (λ free and Benettin above 0.03) and the free runs really
+     separated: the largest D sat reaches W/100. Blue (not chaotic) when either exponent is negative —
+     as printed, i.e. below −0.0005, so that a blue 0.000 never stands beside an uncoloured one — or
+     when the largest D sat stays below W/1000: the twins never parted, whatever the fitted slopes say.
+     In between: uncoloured. */
+  function scanClass(r){
+    if(!r || r.dv) return '';
+    const lams = [r.free, r.ben].filter(isFinite); if(!lams.length) return '';
+    const dmax = isFinite(r.satMax) ? r.satMax : r.sat, sep = isFinite(dmax) && r.W > 0 ? dmax/r.W : NaN;
+    if(sep < 1/1000 || lams.some(v => v < -0.0005)) return 'fz';
+    return lams.length === 2 && Math.min(...lams) > 0.03 && sep >= 1/100 ? 'ch' : '';
+  }
+  const SCAN_NOTE = 'red: chaotic — λ free and Benettin both &gt; 0.03 and the largest D<sub>sat</sub> ≥ W/100 · blue: not chaotic — λ free or Benettin negative, or the largest D<sub>sat</sub> &lt; W/1000 (the twins never parted) · uncoloured: in between · yellow: the run diverges';
   /* D_sat: two decimals, or exponent form when tiny; † when no free run reached the plateau (too short a window) */
   const fmtSat = (r, html) => (isFinite(r.satMin) && isFinite(r.satMax) && r.satMax > 0 ? fmtRange(r.satMin, r.satMax, html)
                                 : isFinite(r.sat) ? fmtSig2(r.sat, 0, html) : '—') + (isFinite(r.sat) && !r.satOK ? '†' : '');
@@ -5814,15 +5863,17 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const thSat = '<th title="saturated separation of the two interfaces in the free runs — the window within which the interface can vary (√2·W for uncorrelated interfaces): the smallest → the largest value met in the free runs' + (nmc > 1 ? ' of all random starts' : '') + '">D<sub>sat</sub></th>';
     const thW = '<th title="mean interface width' + (nmc > 1 ? '; ± spread over the random starts' : '') + '">W</th>';
     let h = '';
-    if(two) h += '<tr><th></th>' + sets.map((s, i) => '<th colspan="4" class="grp eqh' + (i ? ' eq2' : '') + '">' + s.eq + SC.geo + '</th>').join('') + '</tr>';
-    else h += '<tr><th></th><th colspan="6" class="grp eqh">' + SC.eq + SC.geo + '</th></tr>';
+    /* L and dx stand in the line above the table (#scanEq), not in the column heads */
+    if(two) h += '<tr><th></th>' + sets.map((s, i) => '<th colspan="4" class="grp eqh' + (i ? ' eq2' : '') + '">' + s.eq + '</th>').join('') + '</tr>';
+    else h += '<tr><th></th><th colspan="6" class="grp eqh">' + SC.eq + '</th></tr>';
     h += '<tr><th>' + sym + '</th>' + thFree + thBen + thSat + thW + (two ? sets.slice(1).map(() => thFree + thBen + thSat + thW).join('') : '<th title="number of free runs (all starts)">runs</th><th>dt</th>') + '</tr>';
-    const cells = (r, g2) => { const c1 = g2 ? ' g2' : ''; return !r ? '<td colspan="4" class="' + c1 + '"></td>' : r.dv ? '<td class="dv' + c1 + '" colspan="4">diverges</td>'
-      : '<td class="' + lamClass(r.free) + c1 + '">' + f3n(r.free) + '</td><td>' + f3n(r.ben) + '</td><td>' + fmtSat(r, true) + '</td><td>' + r.W.toFixed(2) + '</td>'; };
+    const cells = (r, g2) => { const c1 = g2 ? ' g2' : ''; if(!r) return '<td colspan="4" class="' + c1 + '"></td>'; if(r.dv) return '<td class="dv' + c1 + '" colspan="4">diverges</td>';
+      const k = scanClass(r);
+      return '<td class="' + k + c1 + '">' + f3n(r.free) + '</td><td class="' + k + '">' + f3n(r.ben) + '</td><td class="' + k + '">' + fmtSat(r, true) + '</td><td>' + r.W.toFixed(2) + '</td>'; };
     for(const r of SC.rows){
       h += '<tr><td class="b">' + (r.v > 0 ? '+' : '') + r.v + '</td>' + cells(r, false) + (two ? sets.slice(1).map(s => cells(s.rows.find(q => q.v === r.v), true)).join('') : (r.dv ? '<td colspan="2"></td>' : '<td>' + r.n + '</td><td>' + r.dt + '</td>')) + '</tr>';
     }
-    h += '<tr><td colspan="' + (two ? 1 + 4*sets.length : 7) + '" class="note"><div>red: chaotic (λ ≥ 0.05) · blue: steady or frozen (λ &lt; 0.02) · yellow: the run diverges · D<sub>sat</sub>: saturated separation of the free runs (†: no run reached the plateau within the window — lengthen the transient). ' + sets.map(s => s.eq).join('  and  ') + '</div></td></tr>';
+    h += '<tr><td colspan="' + (two ? 1 + 4*sets.length : 7) + '" class="note"><div>' + SCAN_NOTE + ' · D<sub>sat</sub>: saturated separation of the free runs, smallest → largest (†: no run reached the plateau within the window — lengthen the transient). ' + sets.map(s => s.eq).join('  and  ') + SC.geo + '</div></td></tr>';
     T.innerHTML = h;
     const dpr = window.devicePixelRatio || 1, r = scv.parentElement.getBoundingClientRect();
     const w = Math.max(100, Math.round(r.width)), hh = Math.max(100, Math.round(r.height));
@@ -5918,45 +5969,69 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     for(const p of panels){
       if(p.name === 'lam'){
         xTicks(p, p.xlab);
-        let top = 0.05, bot = 0;
-        /* a free run too short to fit leaves NaN: it must not poison the axis range */
-        const grow = d => { for(const v of [d.free, d.ben]) if(isFinite(v)){ top = Math.max(top, v); bot = Math.min(bot, v); } };
-        for(const r of rows) for(const d of dotsL(r)) grow(d);
-        for(const e of extra) for(const r of e.rows) for(const d of dotsL(r)) grow(d);
-        const st = niceCeil(Math.max(top - Math.min(bot, 0), 1e-6)/4), lmax = Math.ceil(top/st + 0.3)*st, lmin = Math.min(-0.1*lmax, Math.floor(bot/st)*st);
-        const Y1 = axis(p, lmin, lmax, 'λ', st);
-        c.strokeStyle = col1; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.ben)) : c.moveTo(X(r.v), Y1(r.ben))); c.stroke(); c.setLineDash([]);
-        c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.free)) : c.moveTo(X(r.v), Y1(r.free))); c.stroke();
-        for(const r of rows) for(const d of dotsL(r)){
-          c.fillStyle = col1; c.beginPath(); c.arc(X(r.v), Y1(d.free), 3.2*F, 0, 2*Math.PI); c.fill();
-          c.strokeStyle = col1; c.lineWidth = 1.4*F; c.fillStyle = bg; c.beginPath(); c.arc(X(r.v), Y1(d.ben), 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
+        /* linear (default) or log scale, by the toggle in the corner; the log scale shows only
+           the values above 0.001 — lines break where an exponent is smaller (or negative) */
+        const logL = !!S.logLam, LMIN = 1e-3, okL = v => isFinite(v) && (!logL || v > LMIN);
+        let Y1;
+        if(logL){
+          let hiL = -2;
+          const growL = d => { for(const v of [d.free, d.ben]) if(okL(v)) hiL = Math.max(hiL, Math.log10(v)); };
+          for(const r of rows) for(const d of dotsL(r)) growL(d);
+          for(const e of extra) for(const r of e.rows) for(const d of dotsL(r)) growL(d);
+          Y1 = logYAxis(p, -3, Math.ceil(hiL + 0.15), 'λ');
+        } else {
+          let top = 0.05, bot = 0;
+          /* a free run too short to fit leaves NaN: it must not poison the axis range */
+          const grow = d => { for(const v of [d.free, d.ben]) if(isFinite(v)){ top = Math.max(top, v); bot = Math.min(bot, v); } };
+          for(const r of rows) for(const d of dotsL(r)) grow(d);
+          for(const e of extra) for(const r of e.rows) for(const d of dotsL(r)) grow(d);
+          const st = niceCeil(Math.max(top - Math.min(bot, 0), 1e-6)/4), lmax = Math.ceil(top/st + 0.3)*st, lmin = Math.min(-0.1*lmax, Math.floor(bot/st)*st);
+          Y1 = axis(p, lmin, lmax, 'λ', st);
         }
-        extra.forEach((e, ei) => {
-          const col = e.col, rr = e.rows;
-          c.strokeStyle = col; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); rr.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.ben)) : c.moveTo(X(r.v), Y1(r.ben))); c.stroke(); c.setLineDash([]);
-          c.lineWidth = 2.2*F; c.beginPath(); rr.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.free)) : c.moveTo(X(r.v), Y1(r.free))); c.stroke();
-          for(const r of rr) for(const d of dotsL(r)){
-            c.fillStyle = col; c.beginPath(); c.arc(X(r.v), Y1(d.free), 3.2*F, 0, 2*Math.PI); c.fill();
-            c.strokeStyle = col; c.lineWidth = 1.4*F; c.fillStyle = bg; c.beginPath(); c.arc(X(r.v), Y1(d.ben), 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
-          }
-          /* one legend line per further equation, right-aligned in the top margin:
-             solid = free run, dashed = Benettin */
-          c.font = px(11) + ' system-ui,sans-serif'; c.textBaseline = 'middle'; c.textAlign = 'right';
-          const rx = x1 - 4*F, ly = (30 + 16*ei)*F;
-          c.fillStyle = lab; c.fillText(e.lab + ': free / Benettin', rx - 66*F, ly);
+        /* one line through the means of `key`; on the log scale it breaks at the values left out */
+        const lamLine = (rr, key) => { c.beginPath(); let on = false; for(const r of rr){ const v = r[key]; if(!okL(v)){ if(logL) on = false; continue; } on ? c.lineTo(X(r.v), Y1(v)) : c.moveTo(X(r.v), Y1(v)); on = true; } c.stroke(); };
+        const lamDots = (rr, col) => { for(const r of rr) for(const d of dotsL(r)){
+          if(okL(d.free)){ c.fillStyle = col; c.beginPath(); c.arc(X(r.v), Y1(d.free), 3.2*F, 0, 2*Math.PI); c.fill(); }
+          if(okL(d.ben)){ c.strokeStyle = col; c.lineWidth = 1.4*F; c.fillStyle = bg; c.beginPath(); c.arc(X(r.v), Y1(d.ben), 3*F, 0, 2*Math.PI); c.fill(); c.stroke(); }
+        } };
+        c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
+        for(const [rr, col] of [[rows, col1], ...extra.map(e => [e.rows, e.col])]){
+          c.strokeStyle = col; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); lamLine(rr, 'ben'); c.setLineDash([]);
+          c.lineWidth = 2.2*F; lamLine(rr, 'free');
+          lamDots(rr, col);
+        }
+        c.restore();
+        c.font = px(11) + ' system-ui,sans-serif'; c.textBaseline = 'middle';
+        if(logL){                      // on screen the panel's .png button and the lin/log toggle sit in the upper corners
+          const nx = x0 + (F === 1 && !only ? 50 : 8)*F, room = x1 - legR - nx - 8*F;
+          const pick = ['log scale: only λ > 0.001 shown', 'only λ > 0.001'].find(t => c.measureText(t).width < room);
+          if(pick){ c.textAlign = 'left'; c.fillStyle = lab; c.fillText(pick, nx, p.y0 + 12*F); }
+        }
+        /* legend in the top margin: the first equation on the left (solid = free run, dashed =
+           Benettin), one line per further equation on the right. Where the two sides would run into
+           each other the labels shorten, and on a very narrow figure the right side is left out
+           (the D sat and W panels name the colours) */
+        const nmc = S.cfg && S.cfg.nmc > 1, lx = x0 + 4*F, ly = 30*F, ly2 = ly + 16*F, rx = x1 - 4*F;
+        const narrow = (x1 - x0) < 420*F;
+        const legL = full => [(rows2 && full ? lab0 + ': ' : '') + 'λ free run' + (nmc && !rows2 ? (narrow ? ' — dots: starts, line: means' : ' — dot per start, line through the means') : ''),
+                              (rows2 && full ? lab0 + ': ' : '') + 'λ Benettin' + (nmc && !rows2 ? ' — hollow dot per start' : '')];
+        const legR2 = full => extra.map(e => full ? e.lab + ': free / Benettin' : e.lab);
+        const wMax = ts => Math.max(0, ...ts.map(t => c.measureText(t).width));
+        const fitsLR = (L, R) => !R.length || lx + 32*F + wMax(L) + 12*F < rx - 66*F - wMax(R);
+        let lt = legL(true), rt = legR2(true);
+        if(!fitsLR(lt, rt)){ lt = legL(false); rt = legR2(true); if(!fitsLR(lt, rt)){ rt = legR2(false); if(!fitsLR(lt, rt)) rt = []; } }
+        rt.forEach((t, ei) => {
+          const col = extra[ei].col, ly = (30 + 16*ei)*F;
+          c.textAlign = 'right'; c.fillStyle = lab; c.fillText(t, rx - 66*F, ly);
           c.strokeStyle = col; c.lineWidth = 2.2*F; c.beginPath(); c.moveTo(rx - 60*F, ly); c.lineTo(rx - 34*F, ly); c.stroke();
           c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); c.moveTo(rx - 26*F, ly); c.lineTo(rx, ly); c.stroke(); c.setLineDash([]);
         });
-        /* legend */
-        c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
-        const nmc = S.cfg && S.cfg.nmc > 1, lx = x0 + 4*F, ly = 30*F;
+        c.textAlign = 'left';
         c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + 26*F, ly); c.stroke(); c.fillStyle = col1; c.beginPath(); c.arc(lx + 13*F, ly, 3.2*F, 0, 2*Math.PI); c.fill();
-        const narrow = (x1 - x0) < 420*F;
-        c.fillStyle = lab; c.fillText((rows2 ? lab0 + ': ' : '') + 'λ free run' + (nmc && !rows2 ? (narrow ? ' — dots: starts, line: means' : ' — dot per start, line through the means') : ''), lx + 32*F, ly);
-        const ly2 = ly + 16*F;
+        c.fillStyle = lab; c.fillText(lt[0], lx + 32*F, ly);
         c.strokeStyle = col1; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); c.moveTo(lx, ly2); c.lineTo(lx + 26*F, ly2); c.stroke(); c.setLineDash([]);
         c.fillStyle = bg; c.beginPath(); c.arc(lx + 13*F, ly2, 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
-        c.fillStyle = lab; c.fillText((rows2 ? lab0 + ': ' : '') + 'λ Benettin' + (nmc && !rows2 ? ' — hollow dot per start' : ''), lx + 32*F, ly2);
+        c.fillStyle = lab; c.fillText(lt[1], lx + 32*F, ly2);
       } else if(p.name === 'sat'){
         xTicks(p, p.xlab);
         /* log scale (default) or linear, by the toggle in the corner; on the log scale the
@@ -6134,12 +6209,12 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       b.style.left = Math.round(p.x0 + 4) + 'px'; b.style.top = Math.round(p.y0 + 4) + 'px';
       b.addEventListener('click', ()=>exportScanPanel(p.name));
       box.appendChild(b);
-      /* D sat and W: a lin / log toggle for the y axis in the upper right corner */
-      if((p.name === 'sat' || p.name === 'W') && p.x1){
-        const key = p.name === 'sat' ? 'logSat' : 'logW', isLog = p.name === 'sat' ? SC.logSat !== false : !!SC.logW;
+      /* λ, D sat and W: a lin / log toggle for the y axis in the upper right corner */
+      if((p.name === 'lam' || p.name === 'sat' || p.name === 'W') && p.x1){
+        const key = { lam: 'logLam', sat: 'logSat', W: 'logW' }[p.name], isLog = p.name === 'sat' ? SC.logSat !== false : !!SC[key];
         const t = document.createElement('button'); t.className = 'scan-pbtn scan-ytog' + (isLog ? ' on' : '');
         t.textContent = (isLog ? 'log y' : 'lin y') + ' ⇄';
-        t.title = (p.name === 'sat' ? 'D sat' : 'W') + ' on a ' + (isLog ? 'logarithmic' : 'linear') + ' y axis — click for ' + (isLog ? 'linear' : 'logarithmic');
+        t.title = { lam: 'λ', sat: 'D sat', W: 'W' }[p.name] + ' on a ' + (isLog ? 'logarithmic' : 'linear') + ' y axis — click for ' + (isLog ? 'linear' : 'logarithmic') + (p.name === 'lam' ? ' (only the values above 0.001 are shown on the log scale)' : '');
         t.style.left = Math.round(p.x1 - 4) + 'px'; t.style.top = Math.round(p.y0 + 4) + 'px';
         t.addEventListener('click', ()=>{ SC[key] = !isLog; renderScan(); });
         box.appendChild(t);
@@ -6159,46 +6234,64 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     drawScanFigure(c, W, H, SC, SC.dark, 4.0);
     savePng(oc, 'scan_lambda_vs_' + SC.par + '.png');
   });
-  /* the table as a picture: the sampled equation(s) over the columns they belong to, columns
-     as narrow as their contents allow, a dashed rule between the two equations; no caption text */
+  /* the table as a picture: the sampled equation(s) over the columns they belong to — broken
+     onto two or three lines rather than widening the columns —, columns as narrow as their
+     contents allow, a dashed rule between neighbouring equations, and L, dx in one small line
+     under the table instead of in the column heads; no caption text */
   $('scanTabPng').addEventListener('click', ()=>{
     const rows = SC.rows; if(!rows.length) return;
-    const two = !!SC.rows2, k = 2, rowH = 18, dark = SC.dark, GAP = 14, M = 16;
-    const mono = '11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace', sans = '10.5px system-ui,sans-serif';
+    const k = 2, rowH = 18, eqH = 14, dark = SC.dark, GAP = 8, GGAP = 20, M = 12;
+    const mono = '11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace', sans = '10.5px system-ui,sans-serif', eqf = '600 10.5px system-ui,sans-serif';
     const mc = document.createElement('canvas').getContext('2d');
     const wtxt = (t, f) => { mc.font = f; return mc.measureText(t).width; };
-    const wCell = r => r.W.toFixed(2);
-    const cellTexts = r => r && !r.dv ? [f3n(r.free), f3n(r.ben), fmtSat(r), wCell(r)] : ['', '', '', ''];
+    const cellTexts = r => r && !r.dv ? [f3n(r.free), f3n(r.ben), fmtSat(r), r.W.toFixed(2)] : ['', '', '', ''];
     const heads = ['λ free', 'Benettin', 'D sat', 'W'];
-    const groups = (SC.sets || [{ eq: SC.eq, rows }]).map(s => ({ eq: s.eq + SC.geo, rows: s.rows }));
+    const groups = (SC.sets || [{ eq: SC.eq, rows }]).map(s => ({ eq: s.eq, rows: s.rows })), two = groups.length > 1;
     /* column widths from the contents */
     const w0 = Math.max(wtxt(GSYM[SC.par] || SC.par, sans), ...rows.map(r => wtxt((r.v > 0 ? '+' : '') + r.v, mono)));
     const gw = groups.map(g => heads.map((h, j) => Math.max(wtxt(h, sans), ...g.rows.map(r => wtxt(cellTexts(r)[j], mono)))));
-    /* a group is at least as wide as its equation line */
-    groups.forEach((g, gi) => { const need = wtxt(g.eq, '600 10.5px system-ui,sans-serif') + 8 - (gw[gi].reduce((a, b) => a + b, 0) + 4*GAP); if(need > 0) gw[gi] = gw[gi].map(wc => wc + need/4); });
-    const xs = []; let x = M + w0;                       // right edges of the columns
-    xs.push(x);
-    const gx = [];                                       // [left, right] of each group
-    groups.forEach((g, gi) => { const left = x + GAP/2; gw[gi].forEach(wc => { x += GAP + wc; xs.push(x); }); gx.push([left, x + GAP/2]); if(gi < groups.length - 1) x += GAP; });
-    const W = x + M, H = rowH*(rows.length + 2) + 12;
-    const oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
+    /* an equation wider than its columns is broken before a + or − into the fewest lines (at most
+       three) that fit, as evenly as possible; only when even three lines do not fit do the columns widen */
+    function wrapEq(eq, room){
+      const toks = eq.split(/ (?=[+−] )/), T = toks.length, cuts = [[]];
+      for(let i = 1; i < T; i++){ cuts.push([i]); for(let j = i + 1; j < T; j++) cuts.push([i, j]); }
+      let best = null;
+      for(const cut of cuts){
+        const b = [0, ...cut, T], lines = b.slice(1).map((e, i) => toks.slice(b[i], e).join(' '));
+        const w = Math.max(...lines.map(t => wtxt(t, eqf))), fits = w <= room;
+        const better = !best || (fits !== best.fits ? fits : fits ? (lines.length < best.lines.length || (lines.length === best.lines.length && w < best.w)) : w < best.w);
+        if(better) best = { lines, w, fits };
+      }
+      return best;
+    }
+    const eqs = groups.map((g, gi) => {
+      const room = gw[gi].reduce((a, b) => a + b, 0) + 3*GAP, e = wrapEq(g.eq, room);
+      if(e.w > room) gw[gi] = gw[gi].map(wc => wc + (e.w - room)/4);
+      return e.lines;
+    });
+    const nEq = Math.max(...eqs.map(l => l.length));
+    /* x: right edges of the columns; gx: [left, right] of each group's columns */
+    let x = M + w0; const xs = [x], gx = [];
+    groups.forEach((g, gi) => {
+      x += gi ? GGAP : GAP + 2; const l = x;
+      gw[gi].forEach((wc, j) => { x += (j ? GAP : 0) + wc; xs.push(x); });
+      gx.push([l, x]);
+    });
+    const geo = SC.geo.trim().replace(/^\(|\)$/g, '');
+    const W = x + M, top = 6, yHead = top + nEq*eqH + 4 + rowH/2, H = yHead + rowH*rows.length + rowH/2 + 22;
+    const oc = document.createElement('canvas'); oc.width = Math.ceil(W*k); oc.height = Math.ceil(H*k);
     const c = oc.getContext('2d'); c.scale(k, k);
     c.fillStyle = dark ? '#0b0d13' : '#fff'; c.fillRect(0, 0, W, H);
     const ink = dark ? '#e8ecf5' : '#16233b', lab = dark ? '#aab3c7' : '#4a5872', line = dark ? '#2a3140' : '#eef1f6', rule = dark ? '#3a4152' : '#dde3ec';
-    let y = 6 + rowH/2;
-    /* the equations over their columns */
-    c.font = '600 10.5px system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'center'; c.textBaseline = 'middle';
-    groups.forEach((g, gi) => {
-      const [l, r] = gx[gi]; let t = g.eq;
-      while(wtxt(t, '600 10.5px system-ui,sans-serif') > r - l - 4 && t.length > 8) t = t.slice(0, -2) + '…';
-      c.fillText(t, (l + r)/2, y);
-    });
-    y += rowH;
+    const red = dark ? '#fca5a5' : '#b91c1c', blue = dark ? '#93c5fd' : '#1d4ed8';
+    /* the equations over their columns, the last line of each just above the column heads */
+    c.font = eqf; c.fillStyle = ink; c.textAlign = 'center'; c.textBaseline = 'middle';
+    eqs.forEach((ls, gi) => { const [l, r] = gx[gi]; ls.forEach((t, i) => c.fillText(t, (l + r)/2, top + eqH*(nEq - ls.length + i + 0.5))); });
+    let y = yHead;
     c.font = sans; c.fillStyle = lab; c.textAlign = 'right';
     c.fillText(GSYM[SC.par] || SC.par, xs[0], y);
     groups.forEach((g, gi) => heads.forEach((h, j) => c.fillText(h, xs[1 + gi*4 + j], y)));
     c.strokeStyle = rule; c.lineWidth = 1; c.beginPath(); c.moveTo(M, y + rowH/2); c.lineTo(W - M, y + rowH/2); c.stroke();
-    const lamCol = v => v >= 0.05 ? (dark ? '#fca5a5' : '#b91c1c') : (v < 0.02 ? (dark ? '#93c5fd' : '#1d4ed8') : ink);
     for(const r of rows){
       y += rowH; c.font = mono; c.textAlign = 'right';
       c.fillStyle = ink; c.fillText((r.v > 0 ? '+' : '') + r.v, xs[0], y);
@@ -6206,19 +6299,22 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         const q = gi === 0 ? r : g.rows.find(z => z.v === r.v);
         const [l, rr] = gx[gi];
         if(!q) return;
-        if(q.dv){ c.fillStyle = '#fde68a'; c.fillRect(l, y - rowH/2 + 1, rr - l, rowH - 2); c.fillStyle = '#7c2d12'; c.textAlign = 'center'; c.font = sans; c.fillText('diverges', (l + rr)/2, y); c.font = mono; c.textAlign = 'right'; return; }
-        const t = cellTexts(q);
-        c.fillStyle = lamCol(q.free); c.fillText(t[0], xs[1 + gi*4], y);
-        c.fillStyle = ink; for(let j=1;j<4;j++) c.fillText(t[j], xs[1 + gi*4 + j], y);
+        if(q.dv){ c.fillStyle = '#fde68a'; c.fillRect(l - 3, y - rowH/2 + 1, rr - l + 6, rowH - 2); c.fillStyle = '#7c2d12'; c.textAlign = 'center'; c.font = sans; c.fillText('diverges', (l + rr)/2, y); c.font = mono; c.textAlign = 'right'; return; }
+        /* λ free, Benettin and D sat in the colour of the row's verdict (scanClass), W in black */
+        const t = cellTexts(q), cl = scanClass(q), col = cl === 'ch' ? red : cl === 'fz' ? blue : ink;
+        c.fillStyle = col; for(let j=0;j<3;j++) c.fillText(t[j], xs[1 + gi*4 + j], y);
+        c.fillStyle = ink; c.fillText(t[3], xs[1 + gi*4 + 3], y);
       });
       c.strokeStyle = line; c.beginPath(); c.moveTo(M, y + rowH/2); c.lineTo(W - M, y + rowH/2); c.stroke();
     }
-    /* dashed rule between the two equations, from the equation line to the last row */
-    if(two){
-      const xr = (gx[0][1] + gx[1][0])/2;
-      c.strokeStyle = lab; c.lineWidth = 1.2; c.setLineDash([4, 4]); c.beginPath(); c.moveTo(xr, 6); c.lineTo(xr, y + rowH/2); c.stroke(); c.setLineDash([]);
-    }
-    savePng(oc, 'scan_table_' + SC.par + (two ? '_both' : '') + '.png');
+    /* dashed rules between neighbouring equations, from the top to the last row */
+    c.strokeStyle = lab; c.lineWidth = 1.2; c.setLineDash([4, 4]);
+    for(let gi = 1; gi < gx.length; gi++){ const xr = (gx[gi-1][1] + gx[gi][0])/2; c.beginPath(); c.moveTo(xr, top); c.lineTo(xr, y + rowH/2); c.stroke(); }
+    c.setLineDash([]);
+    /* the box: one small line under the table */
+    c.font = '10px system-ui,sans-serif'; c.fillStyle = lab; c.textAlign = 'left'; c.textBaseline = 'middle';
+    c.fillText(geo, M, y + rowH/2 + 12);
+    savePng(oc, 'scan_table_' + SC.par + (two ? '_' + (groups.length === 2 ? 'both' : groups.length + 'eqs') : '') + '.png');
   });
 
   /* read-only access to the running model from the console (e.g. for checks) */
