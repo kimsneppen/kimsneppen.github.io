@@ -343,6 +343,7 @@
   .scanpanel.dark .lamtab td.ch{color:#fca5a5} .scanpanel.dark .lamtab td.fz{color:#93c5fd}
   .scanpanel.dark .lamtab td.note{color:#8391ab}
   /* two or three equations side by side make the table wider than the panel: it scrolls sideways */
+  .scantab .arr{font-size:.8em;margin:0 1px}
   .scanbody .scantab{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
   @media (max-width:560px){ .scan-wrap{height:640px} .scan .triple input,.scan .triple select{width:48px} .scantab{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch} .scantab th,.scantab td{padding:2px 9px 2px 0} }
   #lNode{min-width:58px} .lyap.two #lNode{min-width:124px}
@@ -1185,6 +1186,10 @@
           <div class="prow">
             <button id="bPre1n" title="KS 1D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.05">KS 1D nnl</button>
             <button id="bPre2n" title="KS 2D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.1">KS 2D nnl</button>
+          </div>
+          <div class="prow">
+            <button id="bPreK1" title="+&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2;: the &Lambda; = 4 equation with the standard KS nonlinearity, 1D, periodic, L = 128, dx = 0.5, dt = 0.01 — the view, colours and line density of KS 1D (one line per step)">KKS 1D</button>
+            <button id="bPreK2" title="+&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 2D: L = 128, dx = 0.5 (256&sup2; points), dt = 0.01 — surface 3D, flames &nabla;&sup2;h, tilt 62&deg;, as KS 2D">KKS 2D</button>
           </div>
           <div class="prow">
             <button id="bPreBeauty" class="beautybtn" data-pre="beauty" title="Beauty — Absolute 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 62&deg;, rot 0&deg;, dist 5&middot;L)">Absolute 2D</button>
@@ -2584,7 +2589,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const mean = slopes.reduce((a,b)=>a+b,0)/Math.max(1, slopes.length);
   const sd = Math.sqrt(slopes.reduce((a,b)=>a+(b-mean)**2,0)/Math.max(1, slopes.length-1));
   for(let i=0;i<spec.length;i++) spec[i] /= Math.max(1, nspec);
-  return { free: slopes.length ? mean : NaN, sd: slopes.length > 1 ? sd : 0, n: slopes.length, ben, sat: satM, satOK: nsat > 0, eps: m.lyap.eps, W: Wm, spec, k: m.spectrumK };
+  return { free: slopes.length ? mean : NaN, sd: slopes.length > 1 ? sd : 0, n: slopes.length, ben, sat: satM, satOK: nsat > 0,
+           satMin: sats.length ? Math.min(...sats) : NaN, satMax: sats.length ? Math.max(...sats) : NaN,
+           eps: m.lyap.eps, W: Wm, spec, k: m.spectrumK };
 }
 /* ============================ END CORE ============================ */
 </script>
@@ -5016,7 +5023,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta);
   }
   /* the presets box: folds to its title line, which names the preset that is running */
-  const PRESET_NAME = { bPre1:'KS 1D', bPre2:'KS 2D', bPre1a:'KS 1D abs1', bPre2a:'KS 2D abs1', bPre1n:'KS 1D nnl', bPre2n:'KS 2D nnl' };
+  const PRESET_NAME = { bPre1:'KS 1D', bPre2:'KS 2D', bPre1a:'KS 1D abs1', bPre2a:'KS 2D abs1', bPre1n:'KS 1D nnl', bPre2n:'KS 2D nnl', bPreK1:'KKS 1D', bPreK2:'KKS 2D' };
   let curPreset = null;
   function setPresetLabel(id, text){
     curPreset = id;
@@ -5094,6 +5101,20 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     base2D(); params.beta=-0.5;
     params.dt=0.1; $('selDt').value='0.1';    // β = −0.5 (was +1.5); dt checked as for β = +1.5 (see dtForTerms)
   }, 'bPre2n'));
+  /* ---- KKS: the Λ = 4 equation, +∇²h + 4∇⁴h + ∇⁶h + (∇h)², with the views of KS 1D / KS 2D.
+     Its fastest wave grows at 6.9 (KS: 0.25), so dt = 0.01 (see dtLam); in 1D the line spacing
+     Δt drops with it, which keeps KS 1D's one line per step and so its line density. ---- */
+  $('bPreK1').addEventListener('click', ()=>runPreset(()=>{
+    base1D(); params.order=246; params.lam=4;
+    params.dt=0.01; $('selDt').value='0.01';
+    stepsPerFrame=1; $('selSpf').value='1';
+    wfDt=0.01;
+  }, 'bPreK1'));
+  $('bPreK2').addEventListener('click', ()=>runPreset(()=>{
+    base2D(); params.order=246; params.lam=4;
+    params.dt=0.01; $('selDt').value='0.01';
+    stepsPerFrame=2; $('selSpf').value='2';
+  }, 'bPreK2'));
   /* ---- Beauty: special runs chosen for their looks. One button in the display cycles
      off → Absolute 2D with α = +3 (h upward) → Absolute 2D with α = −3 (−h upward) → off ---- */
   const BEAUTY_LABEL = { off: 'Absolute 2D', abs2dp: 'Absolute 2D  α = +3', abs2dm: 'Absolute 2D  α = −3, −h' };
@@ -5707,13 +5728,13 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
                                  lab: o === 246 && c.par !== 'lam' ? '+∇²h + ' + c.lam + '∇⁴h + ∇⁶h' : LINLAB[o] }));
     SC.rows = SC.sets[0].rows; SC.eq = SC.sets[0].eq;
     SC.rows2 = SC.sets.length > 1 ? SC.sets[1].rows : null; SC.eq2 = SC.sets.length > 1 ? SC.sets[1].eq : null;
-    SC.geo = '  (dx = ' + c.dx + (c.par === 'L' ? '' : ', L = ' + c.L + ', ' + Math.round(c.L/c.dx) + (c.dim === 2 ? '²' : '') + ' points') + ')';
+    SC.geo = '  (' + (c.par === 'L' ? '' : 'L = ' + c.L + ', ') + 'dx = ' + c.dx + ')';
     $('scStart').disabled = true; $('scStop').disabled = false;
     scKeepAwake(true);
     /* the main display pauses: all the time goes into the scan */
     const wasRunning = running; running = false; $('bRun').textContent = 'Run';
     if(scanPanel.classList.contains('closed')) setScanOpen(true);
-    $('scanEq').textContent = SC.sets.map(s => s.eq).join('   and   ') + '   —   ' + (c.dim === 2 ? '2D, ' : '1D, ') + c.bc + ', dx = ' + c.dx + ', dt ≤ ' + c.dtMax + ', transient ' + c.tTrans + ', total ' + c.tTotal + ' per sample' + (c.nmc > 1 ? ', ' + c.nmc + ' initial conditions' : '') + (c.par === 'L' ? '' : ', L = ' + c.L + ' (' + Math.round(c.L/c.dx) + (c.dim === 2 ? '²' : '') + ' points)') + capNote;
+    $('scanEq').textContent = SC.sets.map(s => s.eq).join('   and   ') + '   —   ' + (c.dim === 2 ? '2D, ' : '1D, ') + c.bc + ', dx = ' + c.dx + ', dt ≤ ' + c.dtMax + ', transient ' + c.tTrans + ', total ' + c.tTotal + ' per sample' + (c.nmc > 1 ? ', ' + c.nmc + ' initial conditions' : '') + (c.par === 'L' ? '' : ', L = ' + c.L) + capNote;
     const t0 = performance.now(), total = vals.length*c.nmc*orders.length; let done = 0;
     for(let i=0;i<vals.length && !SC.stop;i++) for(const ord of orders){
       if(SC.stop) break;
@@ -5735,7 +5756,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         /* spread of the free-run value: over the starts when NMC > 1, else the scatter of the repeated free runs */
         const sdFree = samples.length > 1 ? sdev('free') : samples[0].sd;
         const spec = new Float64Array(samples[0].spec.length); for(const sm of samples) for(let i=0;i<spec.length;i++) spec[i] += sm.spec[i]/samples.length;
-        rowsOut.push({ v, free: mean('free'), sdFree, n: samples.reduce((a,b)=>a+b.n,0), ben: mean('ben'), sdBen: sdev('ben'), sat: mean('sat'), sdSat: sdev('sat'), satOK: samples.some(s => s.satOK), eps: samples[0].eps, W: mean('W'), sdW: sdev('W'), nmc: samples.length, dt: cc.dt, samples, spec, k: samples[0].k });
+        rowsOut.push({ v, free: mean('free'), sdFree, n: samples.reduce((a,b)=>a+b.n,0), ben: mean('ben'), sdBen: sdev('ben'), sat: mean('sat'), sdSat: sdev('sat'), satOK: samples.some(s => s.satOK),
+                     satMin: Math.min(...samples.map(s => isFinite(s.satMin) ? s.satMin : Infinity)), satMax: Math.max(...samples.map(s => isFinite(s.satMax) ? s.satMax : -Infinity)), eps: samples[0].eps, W: mean('W'), sdW: sdev('W'), nmc: samples.length, dt: cc.dt, samples, spec, k: samples[0].k });
       }
       renderScan();
     }
@@ -5755,24 +5777,41 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   $('scanToggle').addEventListener('click', ()=>setScanOpen(!scanOpen));
   $('scanBW').addEventListener('click', ()=>{ SC.dark = !SC.dark; scanPanel.classList.toggle('dark', SC.dark); renderScan(); });
   const pm = (m, sd) => f3(m) + (sd > 0 ? ' ± ' + sd.toFixed(3) : '');
+  const f3n = v => isFinite(v) ? f3(v) : '—';
+  /* D_sat of a scan point as the smallest → largest value met in its free runs (all starts),
+     one significant digit: (1→3)·10⁻⁵ when both share a power of ten, 1·10⁻⁶→0.1 across
+     decades, 0.2→0.4 from 0.01 up */
+  const fmt1 = (v, html) => v >= 0.01 ? String(+v.toPrecision(1)) : fmtPow10(v, html);
+  function fmtRange(lo, hi, html){
+    const arr = html ? '<span class="arr">→</span>' : '→';
+    if(+lo.toPrecision(1) === +hi.toPrecision(1)) return fmt1(hi, html);
+    if(hi < 0.1){
+      let e = Math.floor(Math.log10(hi)), mb = Math.round(hi/Math.pow(10, e));
+      if(mb >= 10){ mb = 1; e += 1; }
+      const ma = Math.round(lo/Math.pow(10, e));
+      if(ma >= 1 && ma < mb) return '(' + ma + arr + mb + ')·10' + (html ? '<sup>' + String(e).replace('-', '−') + '</sup>' : supTxt(e));
+    }
+    return fmt1(lo, html) + arr + fmt1(hi, html);
+  }
   /* D_sat: two decimals, or exponent form when tiny; † when no free run reached the plateau (too short a window) */
-  const fmtSat = (r, html) => !isFinite(r.sat) ? '—' : fmtSig2(r.sat, r.sdSat, html) + (r.satOK ? '' : '†');
+  const fmtSat = (r, html) => (isFinite(r.satMin) && isFinite(r.satMax) && r.satMax > 0 ? fmtRange(r.satMin, r.satMax, html)
+                                : isFinite(r.sat) ? fmtSig2(r.sat, 0, html) : '—') + (isFinite(r.sat) && !r.satOK ? '†' : '');
   function renderScan(){
     if(!scanOpen) return;
     const T = $('scanTable'), sym = GSYM[SC.par] || SC.par;
     if(!SC.rows.length){ T.innerHTML = '<tr><td class="note"><div>' + (SC.running ? 'sampling…' : 'no scan yet — set up a scan in the control panel (Systematic scan) and press start') + '</div></td></tr>'; drawScanFigure(scctx, null, null, SC, SC.dark, 1); placeScanButtons(); return; }
     scv.parentElement.style.height = (SC.par === 'L' ? (window.innerWidth <= 560 ? 1060 : 1260) : (window.innerWidth <= 560 ? 840 : 1000)) + 'px';
     const nmc = SC.cfg.nmc, sets = SC.sets || [{ eq: SC.eq, rows: SC.rows }], two = sets.length > 1;
-    const thFree = '<th title="mean slope of ln|δh|(t) over repeated free runs' + (nmc > 1 ? '; ± spread over the random starts' : '; ± scatter of the runs') + '">λ free</th>';
-    const thBen = '<th title="Benettin running average over the first half of the measurement' + (nmc > 1 ? '; ± spread over the random starts' : '') + '">Benettin</th>';
-    const thSat = '<th title="saturated separation of the two interfaces in the free runs — the window within which the interface can vary (√2·W for uncorrelated interfaces)' + (nmc > 1 ? '; averaged over the random starts, ± spread' : '') + '">D<sub>sat</sub></th>';
+    const thFree = '<th title="mean slope of ln|δh|(t) over repeated free runs' + (nmc > 1 ? ', averaged over the random starts' : '') + '">λ free</th>';
+    const thBen = '<th title="Benettin running average over the first half of the measurement' + (nmc > 1 ? ', averaged over the random starts' : '') + '">Benettin</th>';
+    const thSat = '<th title="saturated separation of the two interfaces in the free runs — the window within which the interface can vary (√2·W for uncorrelated interfaces): the smallest → the largest value met in the free runs' + (nmc > 1 ? ' of all random starts' : '') + '">D<sub>sat</sub></th>';
     const thW = '<th title="mean interface width' + (nmc > 1 ? '; ± spread over the random starts' : '') + '">W</th>';
     let h = '';
     if(two) h += '<tr><th></th>' + sets.map((s, i) => '<th colspan="4" class="grp eqh' + (i ? ' eq2' : '') + '">' + s.eq + SC.geo + '</th>').join('') + '</tr>';
     else h += '<tr><th></th><th colspan="6" class="grp eqh">' + SC.eq + SC.geo + '</th></tr>';
     h += '<tr><th>' + sym + '</th>' + thFree + thBen + thSat + thW + (two ? sets.slice(1).map(() => thFree + thBen + thSat + thW).join('') : '<th title="number of free runs (all starts)">runs</th><th>dt</th>') + '</tr>';
     const cells = (r, g2) => { const c1 = g2 ? ' g2' : ''; return !r ? '<td colspan="4" class="' + c1 + '"></td>' : r.dv ? '<td class="dv' + c1 + '" colspan="4">diverges</td>'
-      : '<td class="' + lamClass(r.free) + c1 + '">' + pm(r.free, r.sdFree) + '</td><td>' + pm(r.ben, r.sdBen) + '</td><td>' + fmtSat(r, true) + '</td><td>' + r.W.toFixed(2) + '</td>'; };
+      : '<td class="' + lamClass(r.free) + c1 + '">' + f3n(r.free) + '</td><td>' + f3n(r.ben) + '</td><td>' + fmtSat(r, true) + '</td><td>' + r.W.toFixed(2) + '</td>'; };
     for(const r of SC.rows){
       h += '<tr><td class="b">' + (r.v > 0 ? '+' : '') + r.v + '</td>' + cells(r, false) + (two ? sets.slice(1).map(s => cells(s.rows.find(q => q.v === r.v), true)).join('') : (r.dv ? '<td colspan="2"></td>' : '<td>' + r.n + '</td><td>' + r.dt + '</td>')) + '</tr>';
     }
@@ -5863,11 +5902,11 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         for(const e of extra) for(const r of e.rows) for(const d of dotsL(r)) grow(d);
         const st = niceCeil(Math.max(top - Math.min(bot, 0), 1e-6)/4), lmax = Math.ceil(top/st + 0.3)*st, lmin = Math.min(-0.1*lmax, Math.floor(bot/st)*st);
         const Y1 = axis(p, lmin, lmax, 'λ', st);
-        c.strokeStyle = col2; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.ben)) : c.moveTo(X(r.v), Y1(r.ben))); c.stroke(); c.setLineDash([]);
+        c.strokeStyle = col1; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.ben)) : c.moveTo(X(r.v), Y1(r.ben))); c.stroke(); c.setLineDash([]);
         c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y1(r.free)) : c.moveTo(X(r.v), Y1(r.free))); c.stroke();
         for(const r of rows) for(const d of dotsL(r)){
           c.fillStyle = col1; c.beginPath(); c.arc(X(r.v), Y1(d.free), 3.2*F, 0, 2*Math.PI); c.fill();
-          c.strokeStyle = col2; c.lineWidth = 1.4*F; c.fillStyle = bg; c.beginPath(); c.arc(X(r.v), Y1(d.ben), 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
+          c.strokeStyle = col1; c.lineWidth = 1.4*F; c.fillStyle = bg; c.beginPath(); c.arc(X(r.v), Y1(d.ben), 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
         }
         extra.forEach((e, ei) => {
           const col = e.col, rr = e.rows;
@@ -5892,7 +5931,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         const narrow = (x1 - x0) < 420*F;
         c.fillStyle = lab; c.fillText((rows2 ? lab0 + ': ' : '') + 'λ free run' + (nmc && !rows2 ? (narrow ? ' — dots: starts, line: means' : ' — dot per start, line through the means') : ''), lx + 32*F, ly);
         const ly2 = ly + 16*F;
-        c.strokeStyle = col2; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); c.moveTo(lx, ly2); c.lineTo(lx + 26*F, ly2); c.stroke(); c.setLineDash([]);
+        c.strokeStyle = col1; c.lineWidth = 1.6*F; c.setLineDash([5*F, 4*F]); c.beginPath(); c.moveTo(lx, ly2); c.lineTo(lx + 26*F, ly2); c.stroke(); c.setLineDash([]);
         c.fillStyle = bg; c.beginPath(); c.arc(lx + 13*F, ly2, 3*F, 0, 2*Math.PI); c.fill(); c.stroke();
         c.fillStyle = lab; c.fillText((rows2 ? lab0 + ': ' : '') + 'λ Benettin' + (nmc && !rows2 ? ' — hollow dot per start' : ''), lx + 32*F, ly2);
       } else if(p.name === 'sat'){
@@ -5919,17 +5958,18 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         c.strokeStyle = ink; c.lineWidth = 1.2*F; c.strokeRect(x0 + 0.5, p.y0 + 0.5, x1 - x0 - 1, p.y1 - p.y0 - 1);
         c.save(); c.beginPath(); c.rect(x0, p.y0, x1-x0, p.y1-p.y0); c.clip();
         /* √2·W for comparison: two uncorrelated interfaces */
-        c.strokeStyle = colW; c.lineWidth = 1.2*F; c.setLineDash([3*F, 4*F]); c.beginPath(); let k0 = 0; rows.forEach(r => { if(!(r.W > 0)) return; k0++ ? c.lineTo(X(r.v), Y3(L10(Math.SQRT2*r.W))) : c.moveTo(X(r.v), Y3(L10(Math.SQRT2*r.W))); }); c.stroke(); c.setLineDash([]);
-        c.strokeStyle = col3; c.lineWidth = 2.2*F; c.beginPath(); sr.forEach((r, i) => i ? c.lineTo(X(r.v), Y3(L10(r.sat))) : c.moveTo(X(r.v), Y3(L10(r.sat)))); c.stroke();
-        c.fillStyle = col3; for(const r of sr) for(const d of dotsL(r)) if(d.sat > 0){ c.beginPath(); c.arc(X(r.v), Y3(L10(d.sat)), 3.2*F, 0, 2*Math.PI); c.fill(); }
+        /* √2·W of every equation, dotted in that equation's colour */
+        for(const [rr, col] of [[rows, col1], ...extra.map(e => [e.rows, e.col])]){ c.strokeStyle = col; c.lineWidth = 1.2*F; c.setLineDash([3*F, 4*F]); c.beginPath(); let k0 = 0; rr.forEach(r => { if(!(r.W > 0)) return; k0++ ? c.lineTo(X(r.v), Y3(L10(Math.SQRT2*r.W))) : c.moveTo(X(r.v), Y3(L10(Math.SQRT2*r.W))); }); c.stroke(); c.setLineDash([]); }
+        c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); sr.forEach((r, i) => i ? c.lineTo(X(r.v), Y3(L10(r.sat))) : c.moveTo(X(r.v), Y3(L10(r.sat)))); c.stroke();
+        c.fillStyle = col1; for(const r of sr) for(const d of dotsL(r)) if(d.sat > 0){ c.beginPath(); c.arc(X(r.v), Y3(L10(d.sat)), 3.2*F, 0, 2*Math.PI); c.fill(); }
         for(const e of srx){ if(!e.rows.length) continue;
           c.strokeStyle = e.col; c.lineWidth = 2.2*F; c.beginPath(); e.rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y3(L10(r.sat))) : c.moveTo(X(r.v), Y3(L10(r.sat)))); c.stroke();
           c.fillStyle = e.col; for(const r of e.rows) for(const d of dotsL(r)) if(d.sat > 0){ c.beginPath(); c.arc(X(r.v), Y3(L10(d.sat)), 3.2*F, 0, 2*Math.PI); c.fill(); }
         }
         c.restore();
         c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillStyle = lab;
-        { const long = 'saturated separation of the free runs' + (rows2 ? ' (magenta: ' + lab0 + extra.map((e, i) => (i ? ', lime: ' : ', cyan: ') + e.lab).join('') + ')' : S.cfg && S.cfg.nmc > 1 ? ' — dot per start, line through the means' : '') + ';  dotted: √2·W';
-          const short = rows2 ? 'D sat — magenta, cyan' + (extra.length > 1 ? ', lime' : '') + ': the equations in order;  dotted: √2·W' : 'D sat of the free runs;  dotted: √2·W';
+        { const long = 'saturated separation of the free runs' + (rows2 ? ' (indigo: ' + lab0 + extra.map((e, i) => (i ? ', lime: ' : ', cyan: ') + e.lab).join('') + ')' : S.cfg && S.cfg.nmc > 1 ? ' — dot per start, line through the means' : '') + ';  dotted: √2·W';
+          const short = rows2 ? 'D sat — indigo, cyan' + (extra.length > 1 ? ', lime' : '') + ': the equations in order;  dotted: √2·W' : 'D sat of the free runs;  dotted: √2·W';
           c.fillText(c.measureText(long).width < (x1 - x0) - 70*F ? long : short, x1 - 8*F, p.y0 + 12*F); }
         c.textAlign = 'left'; c.fillStyle = dark ? '#fca5a5' : '#b91c1c';
         c.fillText((x1 - x0) < 420*F ? 'red: below the seed distance ε' : 'red: below the seed distance ε = 10' + sup(Math.round(L10(eps))) + ' — the interfaces never separated', x0 + 8*F, Y3(le) + 12*F);
@@ -5938,16 +5978,16 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         let wtop = 0; for(const r of rows.concat(...extra.map(e => e.rows))) for(const d of dotsL(r)) wtop = Math.max(wtop, d.W);
         const stW = niceCeil(Math.max(wtop, 1e-6)/4), wmax = Math.ceil(wtop/stW + 0.3)*stW;
         const Y2 = axis(p, 0, wmax, 'W', stW);
-        c.strokeStyle = colW; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y2(r.W)) : c.moveTo(X(r.v), Y2(r.W))); c.stroke();
-        c.fillStyle = colW; for(const r of rows) for(const d of dotsL(r)){ c.beginPath(); c.arc(X(r.v), Y2(d.W), 3.2*F, 0, 2*Math.PI); c.fill(); }
+        c.strokeStyle = col1; c.lineWidth = 2.2*F; c.beginPath(); rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y2(r.W)) : c.moveTo(X(r.v), Y2(r.W))); c.stroke();
+        c.fillStyle = col1; for(const r of rows) for(const d of dotsL(r)){ c.beginPath(); c.arc(X(r.v), Y2(d.W), 3.2*F, 0, 2*Math.PI); c.fill(); }
         if(rows2){
           for(const e of extra){
             c.strokeStyle = e.col; c.lineWidth = 2.2*F; c.beginPath(); e.rows.forEach((r, i) => i ? c.lineTo(X(r.v), Y2(r.W)) : c.moveTo(X(r.v), Y2(r.W))); c.stroke();
             c.fillStyle = e.col; for(const r of e.rows) for(const d of dotsL(r)){ c.beginPath(); c.arc(X(r.v), Y2(d.W), 3.2*F, 0, 2*Math.PI); c.fill(); }
           }
           c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillStyle = lab;
-          { const long = 'W — green: ' + lab0 + extra.map((e, i) => (i ? ', lime: ' : ', cyan: ') + e.lab).join('');
-          c.fillText(c.measureText(long).width < (x1 - x0) - 70*F ? long : 'W — green, cyan' + (extra.length > 1 ? ', lime' : '') + ': the equations in order', x1 - 8*F, p.y0 + 12*F); }
+          { const long = 'W — indigo: ' + lab0 + extra.map((e, i) => (i ? ', lime: ' : ', cyan: ') + e.lab).join('');
+          c.fillText(c.measureText(long).width < (x1 - x0) - 70*F ? long : 'W — indigo, cyan' + (extra.length > 1 ? ', lime' : '') + ': the equations in order', x1 - 8*F, p.y0 + 12*F); }
         } else if(S.cfg && S.cfg.nmc > 1){ c.font = px(11) + ' system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.textAlign = 'right'; c.fillStyle = lab; c.fillText((x1 - x0) < 420*F ? 'W — dots: starts, line: means' : 'W — dot per start, line through the means', x1 - 8*F, p.y0 + 12*F); }
       } else if(p.name === 'WL'){
         drawWLPanel(c, p, o);
@@ -5987,7 +6027,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   /* W against L, log–log, dot per start and a line through the means; the fitted slope of the
      means (the roughness exponent, W ∝ L^α) is written in the corner */
   function drawWLPanel(c, p, o){
-    const { ink, lab, bg, F, x0, x1, colW, rows, dotsL } = o;
+    const { ink, lab, bg, F, x0, x1, col1, rows, dotsL } = o; const colW = col1;   // the first equation's colour, as in every panel
     c.font = '600 ' + (11*F).toFixed(1) + 'px system-ui,sans-serif'; c.fillStyle = ink; c.textAlign = 'left'; c.textBaseline = 'bottom';
     c.fillText((x1 - x0) < 420*F ? 'W against L, log–log' : 'Width against system size, log–log', x0, p.y0 - 8*F);
     const pts = rows.filter(r => r.W > 0 && r.v > 0).map(r => ({ x: Math.log10(r.v), y: Math.log10(r.W), r }));
@@ -6072,7 +6112,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const mc = document.createElement('canvas').getContext('2d');
     const wtxt = (t, f) => { mc.font = f; return mc.measureText(t).width; };
     const wCell = r => r.W.toFixed(2);
-    const cellTexts = r => r && !r.dv ? [pm(r.free, r.sdFree), pm(r.ben, r.sdBen), fmtSat(r), wCell(r)] : ['', '', '', ''];
+    const cellTexts = r => r && !r.dv ? [f3n(r.free), f3n(r.ben), fmtSat(r), wCell(r)] : ['', '', '', ''];
     const heads = ['λ free', 'Benettin', 'D sat', 'W'];
     const groups = (SC.sets || [{ eq: SC.eq, rows }]).map(s => ({ eq: s.eq + SC.geo, rows: s.rows }));
     /* column widths from the contents */
