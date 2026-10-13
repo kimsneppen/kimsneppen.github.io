@@ -655,21 +655,21 @@
         k = &radic;(2/3) and the growth near k = 0 is much weaker. The chaotic cell pattern
         persists with slightly smaller cells — a first hint that the qualitative picture does
         not depend on the exact form of the linear terms.</p>
-        <p>A third setting of the toggle, <b>+&nabla;&sup2;h + &Lambda;&nabla;&#8308;h +
-        &nabla;&#8310;h</b>, keeps all three derivatives and puts the instability in the middle one,
-        with a strength &Lambda; chosen in the header (2 to 10 in steps of 0.5; a capital &Lambda;,
-        because &lambda; is the Lyapunov exponent). A wave now grows at the rate
-        &omega; = &minus;k&sup2; + &Lambda;k&#8308; &minus; k&#8310; = &minus;k&sup2;(1 &minus; &Lambda;k&sup2; + k&#8308;).
-        The +&nabla;&sup2;h term is ordinary diffusion: unlike KS, the longest waves are damped
-        as well as the shortest, and only a band in between grows, from
-        k&sup2; = (&Lambda; &minus; &radic;(&Lambda;&sup2;&minus;4))/2 to (&Lambda; + &radic;(&Lambda;&sup2;&minus;4))/2 —
-        roughly 1/&radic;&Lambda; &lt; k &lt; &radic;&Lambda;. For &Lambda; &le; 2 the band does not
-        exist and the flat surface is stable; just above 2 a narrow band around k = 1 opens; as
-        &Lambda; grows the band widens to both sides and the fastest growth rate rises like
-        (4/27)&Lambda;&sup3; — 0.76 at &Lambda; = 2.5, 6.9 at 4, 28 at 6 and 142 at 10. The
-        surface becomes far rougher (in 1D the width W grows roughly like &Lambda;<sup>3.4</sup>,
-        from about 7 at &Lambda; = 2.5 to about 800 at &Lambda; = 10), and the time step has to
-        shrink with the growth rate, so large &Lambda; runs slowly.</p>
+        <p>A third setting of the toggle, <b>&Lambda;&nabla;&sup2;h + &nabla;&#8308;h +
+        &nabla;&#8310;h</b>, keeps all three derivatives: it is the previous equation with an
+        ordinary diffusion &Lambda;&nabla;&sup2;h added, of a strength &Lambda; chosen in the header
+        (0.01 to 0.3; a capital &Lambda;, because &lambda; is the Lyapunov exponent). A wave now grows
+        at the rate &omega; = &minus;&Lambda;k&sup2; + k&#8308; &minus; k&#8310; = &minus;k&sup2;(&Lambda; &minus; k&sup2; + k&#8308;).
+        Unlike KS, the longest waves are damped as well as the shortest, and only a band in
+        between grows, from k&sup2; = (1 &minus; &radic;(1&minus;4&Lambda;))/2 to (1 + &radic;(1&minus;4&Lambda;))/2.
+        As &Lambda; &rarr; 0 this is the band 0 &lt; k &lt; 1 of the +&nabla;&#8308;h + &nabla;&#8310;h
+        equation; as &Lambda; rises the band narrows from below, and at &Lambda; = 1/4 it closes at
+        k = 1/&radic;2: for &Lambda; &ge; 1/4 the flat surface is stable. The fastest growth rate
+        falls from 4/27 &asymp; 0.148 (&Lambda; &rarr; 0) to 0.135 at &Lambda; = 0.02, 0.107 at
+        1/16, 0.054 at 0.15 and 0 at 1/4. The presets KKS 1D and 2D run &Lambda; = 1/16: that is
+        exactly the equation +&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h rescaled (x &rarr; 2x,
+        t &rarr; 64t, h &rarr; h/16), so its Lyapunov exponent is 64 times smaller and its width 16
+        times smaller than in that form.</p>
         <h3>The slope expansion: &alpha; and &beta;</h3>
         <p>A front that advances at a speed depending only on its local tilt, v(&nabla;h), adds
         a term v(&nabla;h) to &part;h/&part;t. Expanding v in the slope gives, by the symmetry
@@ -1049,10 +1049,10 @@
     </details>
     <div class="eqrow">
       <span class="eq">&part;h/&part;t =</span>
-      <span class="seg ordseg ordtog" id="segOrd" title="the linear terms in use — click to step to the next set: &minus;&nabla;&sup2;h &minus;&nabla;&#8308;h &rarr; +&nabla;&#8308;h +&nabla;&#8310;h &rarr; +&nabla;&sup2;h +&Lambda;&nabla;&#8308;h +&nabla;&#8310;h">
+      <span class="seg ordseg ordtog" id="segOrd" title="the linear terms in use — click to step to the next set: &minus;&nabla;&sup2;h &minus;&nabla;&#8308;h &rarr; +&nabla;&#8308;h +&nabla;&#8310;h &rarr; &Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h">
         <button data-v="4" class="on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button>
         <button data-v="6">+&nabla;&#8308;h +&nabla;&#8310;h</button>
-        <button data-v="246">+&nabla;&sup2;h +&Lambda;&nabla;&#8308;h +&nabla;&#8310;h</button>
+        <button data-v="246">&Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h</button>
       </span>
       <span class="eq eqterms"><span class="term on nl2" id="termNL2" role="button" tabindex="0"
               title="the KS nonlinearity (&nabla;h)&sup2; — click to switch it off (crossed out) or on. Without it the equation is linear and blows up, so &beta; is set to 1 automatically when no other nonlinear term is on (and back to 0 when (&nabla;h)&sup2; returns)">+ (&nabla;h)&sup2;</span>
@@ -1073,7 +1073,7 @@
         <select id="selGamma" title="&gamma;: coefficient of the &nabla;&sup2;(&nabla;h)&sup2; term"></select></span>
       <span class="tctl">&delta;
         <select id="selDelta" title="&delta;: coefficient of the &nabla;&sup2;h&middot;(&nabla;h)&sup2; term (only &delta; &ge; 0: negative &delta; blows up in finite time)"></select></span>
-      <span class="tctl" id="lamCtl" hidden title="&Lambda;: coefficient of the &nabla;&#8308;h term of +&nabla;&sup2;h +&Lambda;&nabla;&#8308;h +&nabla;&#8310;h. The flat surface is unstable only for &Lambda; &gt; 2; the growth rate of the fastest wave rises like &Lambda;&sup3;, and the time step falls with it. (Capital &Lambda;, because &lambda; is the Lyapunov exponent.)">&Lambda;
+      <span class="tctl" id="lamCtl" hidden title="&Lambda;: coefficient of the &nabla;&sup2;h term of &Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h — a diffusion that damps the long waves. The flat surface is unstable only for &Lambda; &lt; 1/4; the fastest wave grows at most at 4/27 (&Lambda; &rarr; 0), 0.107 at the KKS value &Lambda; = 1/16 = 0.0625. (Capital &Lambda;, because &lambda; is the Lyapunov exponent.)">&Lambda;
         <select id="selLam"></select></span>
     </div>
   </header>
@@ -1195,8 +1195,8 @@
             <button id="bPre2n" title="KS 2D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.1">KS 2D nnl</button>
           </div>
           <div class="prow">
-            <button id="bPreK1" title="+&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2;: the &Lambda; = 4 equation with the standard KS nonlinearity, 1D, periodic, L = 128, dx = 0.5, dt = 0.005 — the view, colours and line density of KS 1D">KKS 1D</button>
-            <button id="bPreK2" title="+&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 2D: L = 128, dx = 0.5 (256&sup2; points), dt = 0.005 — surface 3D, flames &nabla;&sup2;h, tilt 62&deg;, as KS 2D">KKS 2D</button>
+            <button id="bPreK1" title="0.0625&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2;: the &Lambda; = 1/16 equation with the standard KS nonlinearity, 1D, periodic, L = 128, dx = 0.5, dt = 0.1 — the view, colours, time step and line density of KS 1D">KKS 1D</button>
+            <button id="bPreK2" title="0.0625&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 2D: L = 128, dx = 0.5 (256&sup2; points), dt = 0.2 — surface 3D, flames &nabla;&sup2;h, tilt 62&deg;, time step as KS 2D">KKS 2D</button>
           </div>
           <div class="prow">
             <button id="bPreBeauty" data-pre="beauty" title="Beauty — Art 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 62&deg;, rot 0&deg;, dist 5&middot;L)">Art 2D</button>
@@ -1340,10 +1340,9 @@
           the strength of the nonlinear terms — 0.1 for plain KS, 0.02 up to |&beta;| = 2,
           0.01 for 2 &lt; |&beta;| &le; 3.5 and 0.005 beyond (in 2D, where one step costs L
           times more, 0.05 up to |&beta;| = 2 and 0.01 beyond 3.5: measured &lang;W&rang;, growth
-          speed and &lambda; at &beta; = 1.5 are the same at dt = 0.02, 0.05 and 0.1), and 0.02
-          for the +&nabla;&#8308;+&nabla;&#8310; equation, and 0.1/g<sub>max</sub> for the
-          +&nabla;&sup2;+&Lambda;&nabla;&#8308;+&nabla;&#8310; equation, g<sub>max</sub> being its fastest
-          growth rate (0.01 at &Lambda; = 4, 0.002 at 6, 0.0005 at 10: measured stable and converged)
+          speed and &lambda; at &beta; = 1.5 are the same at dt = 0.02, 0.05 and 0.1), 0.02
+          for the +&nabla;&#8308;+&nabla;&#8310; equation, and 0.1 for the &Lambda;&nabla;&sup2;+&nabla;&#8308;+&nabla;&#8310;
+          equation (its W and &lambda; at &Lambda; = 0.01 and 1/16 are the same for dt = 0.005 to 0.2)
           — unless a finer display line
           spacing &Delta;t demands a smaller one. Steps per frame are rescaled at the same
           time, so the animation keeps roughly its pace when dt drops. Both are yours to
@@ -1397,9 +1396,9 @@
           <div class="hint" style="margin-bottom:6px">Scan one coefficient of the equation and tabulate the largest Lyapunov exponent (Benettin and free run) and the mean width W. Runs in a background worker without drawing, so it keeps its full speed when the tab is hidden or the screen is locked (the screen is kept awake while the tab is in front); the results appear in the section under the Lyapunov panel. Keep the browser open: a closed tab, sleep or hibernation ends the scan.</div>
           <div class="row scordrow"><label>linear terms <i class="sub">click to include &middot; &#9650; moves up — top to bottom is the order of the columns</i></label>
             <div class="seg ordseg scmulti" id="scOrd" title="click an equation to include it in the scan or leave it out — any combination; two or three are run with the same settings and tabulated side by side, in the order of this list (&#9650; moves an equation up)">
-              <div class="scoitem" data-v="4"><button class="scotog on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="6"><button class="scotog">+&nabla;&#8308;h +&nabla;&#8310;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="246"><button class="scotog">+&nabla;&sup2;h +&Lambda;&nabla;&#8308;h +&nabla;&#8310;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div></div></div>
-          <div class="row scgroup" id="scLamScanRow"><label><button class="tbtn sclamtog" id="scLamScan" title="scan &Lambda; itself (only the &Lambda; equation depends on it, so it alone is run)">scan &Lambda;</button> from 2 to &middot; step</label>
-            <span class="triple"><select id="scLamMax" title="last value of &Lambda;"></select><select id="scLamStep" title="step of &Lambda;"><option>0.1</option><option>0.25</option><option selected>0.5</option><option>1</option><option>2</option></select></span></div>
+              <div class="scoitem" data-v="4"><button class="scotog on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="6"><button class="scotog">+&nabla;&#8308;h +&nabla;&#8310;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="246"><button class="scotog">&Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div></div></div>
+          <div class="row scgroup" id="scLamScanRow"><label><button class="tbtn sclamtog" id="scLamScan" title="scan &Lambda; itself (only the &Lambda; equation depends on it, so it alone is run)">scan &Lambda;</button> from &middot; step <i class="sub">up to the first value above 1/4</i></label>
+            <span class="triple"><select id="scLamMin" title="first value of &Lambda;"><option>0.01</option><option>0.02</option><option selected>0.05</option></select><select id="scLamStep" title="step of &Lambda;; the scan stops at the first value above 0.25, where the flat surface is stable"><option>0.01</option><option>0.02</option><option selected>0.05</option></select></span></div>
           <div class="row scgroup" id="scLamFixRow"><label>&Lambda; fixed at <i class="sub">when another coefficient is scanned</i></label>
             <select id="scLamFix" title="the value of &Lambda; while &beta; (or another coefficient, or L) is scanned"></select></div>
           <div class="row"><label>(&nabla;h)&sup2;</label>
@@ -1433,7 +1432,7 @@
             <button class="btn" id="scStop" disabled>stop</button>
           </div>
           <div class="hint" id="scStatus">idle</div>
-          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 2 up to the chosen maximum and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value. The &Lambda; equation needs a time step of about 0.1/g<sub>max</sub> (0.01 at &Lambda; = 4, 0.0005 at &Lambda; = 10), so a long transient at large &Lambda; is slow. The scanned points are the range in the chosen step plus always &minus;0.1, 0 and +0.1; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient, then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A value whose run diverges is marked yellow.</div>
+          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (KKS: 0.0625). The scanned points are the range in the chosen step plus always &minus;0.1, 0 and +0.1; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient, then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
         </div>
       </details>
 
@@ -1456,10 +1455,10 @@
           <p>The header shows the equation that is being integrated right now. Three parts of it
           are clickable. The <b>linear terms</b> are a toggle button that shows only the set in
           use — &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h (KS), +&nabla;&#8308;h + &nabla;&#8310;h (one order
-          higher in derivatives) or +&nabla;&sup2;h + &Lambda;&nabla;&#8308;h + &nabla;&#8310;h — and a click
-          steps to the next one. With the last one a <b>&Lambda;</b> menu (2 to 10 in steps of 0.5)
-          appears after &delta;; like the other coefficients it acts on the running surface, and
-          the display height follows the much rougher surface this equation makes. On a wide window the
+          higher in derivatives) or &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h — and a click
+          steps to the next one. With the last one a <b>&Lambda;</b> menu (0.01 to 0.3; unstable
+          below 1/4, KKS at 1/16 = 0.0625) appears after &delta;; like the other coefficients it acts
+          on the running surface. On a wide window the
           equation sits on the title line, so that the display can have the rest of the height. The
           <b>(&nabla;h)&sup2;</b> term is a switch: click it and it is crossed out and dropped. The
           switch acts on the running surface, so you can watch one equation's pattern turn into
@@ -1655,7 +1654,8 @@
           lin / log switch in the upper right (on the log scale &lambda; is shown only above 0.001);
           <i>plot .png</i> and <i>table .png</i> in the head
           save the whole figure and the table, and the circle toggles a black or white
-          background. A value whose run diverges is marked yellow; <i>stop</i> ends the scan and
+          background. A run that diverges is repeated at dt/4 and then dt/16 (marked * in the table);
+          a value that diverges all three times is marked yellow; <i>stop</i> ends the scan and
           keeps what has been measured.</p>
         </div>
       </details>
@@ -1824,22 +1824,15 @@ function fft2(re, im, nx, ny, inv, sr, si){   // rows then columns, no sub-array
   }
 }
 
-/* the +∇²h + Λ∇⁴h + ∇⁶h equation: its fastest linear growth rate, at k² = (Λ+√(Λ²−3))/3, rises
-   like (4/27)Λ³ — 0.76 at Λ = 2.5, 6.9 at Λ = 4, 28 at Λ = 6, 142 at Λ = 10 — and the time step
-   has to follow it.  Measured in 1D (L = 128, dx = 0.5, runs of 400 growth times): dt·g_max = 0.2
-   is stable up to Λ = 6 but diverges at Λ = 10, 0.1 is stable everywhere, and ⟨W⟩ at 0.1/g_max
-   agrees with 0.02/g_max within the chaotic scatter.  So dt = 0.1/g_max, rounded down to a
-   1–2–5 value and never above 0.1. */
-function lamGrowth(lam){
-  if(!(lam > Math.sqrt(3))) return 0;
-  const u = (lam + Math.sqrt(lam*lam - 3))/3;
-  return Math.max(0, -u + lam*u*u - u*u*u);
-}
-function dtLam(lam){
-  const g = lamGrowth(lam), t = g > 1 ? 0.1/g : 0.1, e = Math.floor(Math.log10(t)), b = Math.pow(10, e);
-  const m = t/b, f = m >= 5 ? 5 : m >= 2 ? 2 : 1;
-  return Math.min(0.1, +(f*b).toPrecision(1));
-}
+/* the Λ∇²h + ∇⁴h + ∇⁶h equation (order 246): the +∇⁴h + ∇⁶h equation with a diffusion of
+   strength Λ added. A wave grows at −Λk² + k⁴ − k⁶; the band exists only for Λ < 1/4, and the
+   fastest growth, at k² = (1 + √(1−3Λ))/3, is at most 4/27 (Λ → 0): 0.135 at Λ = 0.02, 0.107 at
+   0.0625, 0.054 at 0.15, 0 at 0.25. The default Λ = 1/16 is the earlier +∇²h + 4∇⁴h + ∇⁶h
+   equation rescaled exactly: x → 2x, t → 64t, h → h/16 (λ falls 64-fold, W 16-fold, and a box
+   L of the old equation is a box 2L here). Λ∇²h is linear, so ETDRK4 does it exactly and it sets
+   no limit on the time step: dt = 0.1, as for KS, is measured converged (see the KKS presets). */
+const LAM0 = 0.0625;
+const lamOf = P => isFinite(P.lam) ? P.lam : LAM0;
 
 function cdivRe(ar, ai, br, bi){ return (ar*br + ai*bi)/(br*br + bi*bi); }
 
@@ -1877,16 +1870,16 @@ function buildSim(P){
 
   /* linear operator: order 4 (KS): w = k^2 - k^4;  order 6: w = k^4 - k^6
      (instability from the Laplacian of the Laplacian). Same band 0<k<1.
-     order 246: +∇²h + Λ∇⁴h + ∇⁶h, w = −k² + Λk⁴ − k⁶ = −k²(1 − Λk² + k⁴): stable for
-     Λ ≤ 2; for Λ > 2 the band k² ∈ ((Λ−√(Λ²−4))/2, (Λ+√(Λ²−4))/2) grows, fastest at
-     k² = (Λ+√(Λ²−3))/3 — the growth rate rises like (4/27)Λ³. */
+     order 246: Λ∇²h + ∇⁴h + ∇⁶h, w = −Λk² + k⁴ − k⁶ = −k²(Λ − k² + k⁴): stable for
+     Λ ≥ 1/4; for Λ < 1/4 the band k² ∈ ((1−√(1−4Λ))/2, (1+√(1−4Λ))/2) grows, fastest at
+     k² = (1+√(1−3Λ))/3 — at most 4/27, the rate of the order-6 equation (Λ = 0). */
   function fillLin(order, lam){
     for(let p=0;p<M;p++){
       const k2 = K2[p], k4 = k2*k2;
-      LIN[p] = (order === 6) ? k4 - k4*k2 : (order === 246) ? -k2 + lam*k4 - k4*k2 : k2 - k4;
+      LIN[p] = (order === 6) ? k4 - k4*k2 : (order === 246) ? -lam*k2 + k4 - k4*k2 : k2 - k4;
     }
   }
-  fillLin(P.order, P.lam || 4);
+  fillLin(P.order, lamOf(P));
 
   // --- ETDRK4 coefficients (Kassam & Trefethen) ---
   const E=new Float64Array(M), E2=new Float64Array(M), Qc=new Float64Array(M),
@@ -2140,10 +2133,10 @@ function buildSim(P){
      t1r = T_lin1 δh, t1i = T_lin2 δh, t4r = Δ(∇h)², t4i = Δ α|∇h|, t2r = Δ β(∇h)⁴,
      t2i = Δ δ∇²h(∇h)², t5r = Δ γ∇²(∇h)² */
   function budgetFields(){
-    const o6 = s.P.order === 6, o246 = s.P.order === 246, lm = s.P.lam || 4;
+    const o6 = s.P.order === 6, o246 = s.P.order === 246, lm = lamOf(s.P);
     for(let p=0;p<M;p++){
-      /* 246: slot 1 holds the two damping terms ∇²h + ∇⁶h, slot 2 the driving term Λ∇⁴h */
-      const k2=K2[p], k4=k2*k2, m1 = o246 ? -k2 - k4*k2 : o6 ? k4 : k2, m2 = o246 ? lm*k4 : o6 ? -k4*k2 : -k4;
+      /* 246: slot 1 holds the two damping terms Λ∇²h + ∇⁶h, slot 2 the driving term ∇⁴h */
+      const k2=K2[p], k4=k2*k2, m1 = o246 ? -lm*k2 - k4*k2 : o6 ? k4 : k2, m2 = o246 ? k4 : o6 ? -k4*k2 : -k4;
       const ar=m1*dr[p], ai=m1*di[p], br=m2*dr[p], bi=m2*di[p];
       t1r[p] = ar - bi; t1i[p] = ai + br;        // Â + iB̂ → A in the real, B in the imaginary part
     }
@@ -2356,9 +2349,8 @@ function buildSim(P){
       const x = T[i], y = Math.log(D[i]);
       sx+=x; sy+=y; sxx+=x*x; sxy+=x*y; m++; t1 = x;
     }
-    /* the stretch must last 2 time units — or, for a fast instability (the Λ equation: λ ≈ 5
-       at Λ = 4, more beyond, where |δh| crosses from 10⁻⁶ to saturation in under 2 time units),
-       carry a growth of at least e³ ≈ 20 */
+    /* the stretch must last 2 time units — or, for a fast instability (where |δh| crosses
+       from 10⁻⁶ to saturation in under 2 time units), carry a growth of at least e³ ≈ 20 */
     const grown = m >= 2 ? Math.log(D[i0 + m - 1]/D[i0]) : 0;
     if(m >= 5 && (t1 - T[i0] >= 2 || grown >= 3)){
       const den = m*sxx - sx*sx;
@@ -2454,7 +2446,7 @@ function buildSim(P){
     if(nl2 !== undefined) NL2 = nl2 ? 1 : 0;
     if(absMode !== undefined) ABS_SUM = absMode === 'sum';
   };
-  s.setOrder = function(o){ s.P.order = o; fillLin(o, s.P.lam || 4); computeCoeffs(s.P.dt); };
+  s.setOrder = function(o){ s.P.order = o; fillLin(o, lamOf(s.P)); computeCoeffs(s.P.dt); };
   s.setLam = function(l){ s.P.lam = l; fillLin(s.P.order, l); computeCoeffs(s.P.dt); };
 
   /* derived fields for colouring, computed spectrally:
@@ -2633,7 +2625,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   let clean = false, onScreen = true;
   const capInset = () => onScreen ? 96 : 0;
 
-  const params = { dim:1, L:128, bc:'periodic', n:5, amp:0.1, eps:0.1, dt:0.1, dx:0.5, alpha:0, beta:0, gamma:0, delta:0, order:4, lam:4,
+  const params = { dim:1, L:128, bc:'periodic', n:5, amp:0.1, eps:0.1, dt:0.1, dx:0.5, alpha:0, beta:0, gamma:0, delta:0, order:4, lam:0.0625,
                    nl2:true, absMode:'euclid' };
   let stepsPerFrame = 5;
   /* L is the physical length of the box, dx the lattice spacing: the lattice
@@ -2688,7 +2680,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const activeTermKeys = () => TERMKEYS.filter(termActive);
   function termLabel(k){
     const o6 = params.order === 6, o246 = params.order === 246;
-    return { lyLin1: o246 ? '∇²h+∇⁶h' : o6 ? '+∇⁴h' : '−∇²h', lyLin2: o246 ? 'Λ∇⁴h' : o6 ? '+∇⁶h' : '−∇⁴h',
+    return { lyLin1: o246 ? 'Λ∇²h+∇⁶h' : o6 ? '+∇⁴h' : '−∇²h', lyLin2: o246 ? '+∇⁴h' : o6 ? '+∇⁶h' : '−∇⁴h',
              lyNL2: '(∇h)²', lyA: 'α|∇h|', lyB: 'β(∇h)⁴', lyG: 'γ∇²(∇h)²', lyD: 'δ∇²h(∇h)²' }[k] || k;
   }
   const qscalesP = {}, qscalesN = {};          // extremes of λ>0 and λ<0 (split mode)
@@ -2993,7 +2985,6 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     stamp++;
     qbuf = new Float64Array(sim.M);
     profScale = Math.max(1e-6, sim.hmax);
-    if(params.order === 246) profScale = Math.max(profScale, lamProf());   // see lamGain
     for(const k in qscales){ qscales[k] = 1e-6; scaleStamp[k] = -1; }
     for(const k in qwin) delete qwin[k];
     stC.width = sim.physNx; stC.height = stH; stRows = 0;
@@ -4292,7 +4283,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      the plain display, no overlays, at 2x resolution, with the equation that is
      actually being integrated and its parameters stamped in blue in the corner */
   function eqLines(){
-    const lin = params.order === 6 ? '+∇⁴h + ∇⁶h' : params.order === 246 ? '+∇²h + ' + params.lam + '·∇⁴h + ∇⁶h' : '−∇²h − ∇⁴h';
+    const lin = params.order === 6 ? '+∇⁴h + ∇⁶h' : params.order === 246 ? params.lam + '·∇²h + ∇⁴h + ∇⁶h' : '−∇²h − ∇⁴h';
     let eq = '∂h/∂t = ' + lin + (params.nl2 ? ' + (∇h)²' : '');
     const absTxt = params.dim === 2 ? (params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·√((∇h)²)') : '·|∇h|';
     if(params.alpha !== 0) eq += (params.alpha > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.alpha)) + absTxt;
@@ -4535,8 +4526,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     syncLyOptions();                     // the term labels follow the linear operator
     if(!running) draw();
   }
-  /* Λ: 2 to 10 in steps of 0.5 */
-  const LAMV = []; for(let v = 2; v <= 10 + 1e-9; v += 0.5) LAMV.push(+v.toFixed(1));
+  /* Λ: the unstable range 0.01 … 0.25 (1/16 = 0.0625 is the KKS value), and 0.3 just beyond it */
+  const LAMV = [0.01, 0.02, 0.03, 0.04, 0.05, 0.0625, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.3];
   (function(){ const el = $('selLam'); for(const v of LAMV){ const o = document.createElement('option'); o.value = ''+v; o.textContent = ''+v; el.appendChild(o); } el.value = ''+params.lam; el.classList.add('on'); })();
   $('selLam').addEventListener('change', e => {
     params.lam = +e.target.value;
@@ -4636,7 +4627,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const per = params.bc === 'periodic';
     const k = per ? 2*Math.PI*params.n/params.L : Math.PI*params.n/params.L;
     const om = params.order === 6 ? Math.pow(k,4)-Math.pow(k,6)
-             : params.order === 246 ? -k*k + params.lam*Math.pow(k,4) - Math.pow(k,6) : k*k-Math.pow(k,4);
+             : params.order === 246 ? -params.lam*k*k + Math.pow(k,4) - Math.pow(k,6) : k*k-Math.pow(k,4);
     const wave = per
       ? (params.dim === 2 ? 'h₀ = A·sin(2πnx/L)·sin(2πny/L)' : 'h₀ = A·sin(2πn·x/L), n full waves')
       : (params.dim === 2 ? 'h₀ = A·cos(πnx/L)·cos(πny/L), flat walls' : 'h₀ = A·cos(πn·x/L), n half waves, flat walls');
@@ -4656,16 +4647,11 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   $('selDx').addEventListener('change', e=>{ params.dx = +e.target.value; updateHint(); rebuild(); });
   $('selSpf').addEventListener('change', e=>{ userSpf = true; stepsPerFrame = +e.target.value; noteSpfRef(); });
   $('selGain').addEventListener('change', e=>{ dispGain = +e.target.value; wfScale = 0; draw(); });
-  /* The Λ equation is far rougher than KS: in 1D (L = 128) the width W grows roughly like
-     7·(Λ/2.5)^3.4 — 7 at Λ = 2.5, 38 at 4, 110 at 6, 790 at 10, against W ≈ 1.3 for KS.  The
-     stacked profiles take their height unit from the initial amplitude (profScale), which would
-     let them overrun the panel, so for that equation the unit follows the expected roughness
-     instead; the colours scale themselves to the data and keep the display amplitude. */
+  /* a change of the linear terms or of Λ: the stacked profiles take their height unit from the
+     surface again (the Λ equation is about as rough as the +∇⁴h + ∇⁶h one, W ≈ 1–3) */
   let gainBefore246 = null;            // (kept for the presets' bookkeeping)
-  const lamProf = () => 0.1*7.2*Math.pow(Math.max(params.lam, 2.2)/2.5, 3.4)/1.3;
   function lamGain(){
-    if(params.order === 246) profScale = Math.max(1e-6, lamProf());
-    else if(sim) profScale = Math.max(1e-6, Math.min(profScale, Math.max(sim.hmax, 0.1)));
+    if(sim) profScale = Math.max(1e-6, Math.min(profScale, Math.max(sim.hmax, 0.1)));
     wfScale = 0;
   }
   $('selKeep').addEventListener('change', e=>{
@@ -4751,8 +4737,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     else if(b > 2) dt = 0.01;
     else if(b > 0) dt = params.dim === 2 ? 0.05 : 0.02;    // 2D: see the note below
     else if(Math.abs(params.alpha) > 2) dt = 0.05;         // steep facets at large |α|
-    else dt = params.order === 6 ? 0.02 : 0.1;
-    if(params.order === 246) dt = Math.min(dt, dtLam(params.lam));   // see dtLam in the core
+    else dt = params.order === 6 ? 0.02 : 0.1;   // the Λ equation: as KS, see the KKS presets
     /* the two second-derivative nonlinearities: measured against dt = 0.002 over
        300 time units, γ∇²(∇h)² is converged (W to 0.1 %) already at 0.02 for
        |γ| ≤ 5, δ∇²h(∇h)² needs 0.01 (2 % at 0.02 for δ = 0.5, exact at 0.01) */
@@ -5131,20 +5116,18 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     base2D(); params.beta=-0.5;
     params.dt=0.1; $('selDt').value='0.1';    // β = −0.5 (was +1.5); dt checked as for β = +1.5 (see dtForTerms)
   }, 'bPre2n'));
-  /* ---- KKS: the Λ = 4 equation, +∇²h + 4∇⁴h + ∇⁶h + (∇h)², with the views of KS 1D / KS 2D.
-     Its fastest wave grows at 6.9 (KS: 0.25); the presets run at dt = 0.005, half of what dtLam
-     would pick, with twice the steps per frame, and the 1D line spacing Δt = 0.01 keeps the
-     line density of the earlier dt = 0.01 version. ---- */
+  /* ---- KKS: the Λ = 1/16 equation, 0.0625∇²h + ∇⁴h + ∇⁶h + (∇h)², with the views, time steps
+     and pace of KS 1D / KS 2D. Its fastest wave grows at 0.107 (KS: 0.25). 1D, L = 128, dx = 0.5,
+     three starts × 4000 time units: ⟨W⟩ = 1.54–1.78 and Benettin λ = 0.070–0.083 alike at
+     dt = 0.005, 0.02, 0.05, 0.1 and 0.2 (and at Λ = 0.01 W = 1.92–2.01, λ = 0.087–0.109 for
+     dt = 0.02 … 0.2); 2D, L = 64, two starts × 600: W = 3.57–3.83, λ = 0.38–0.43 alike at
+     dt = 0.02, 0.05, 0.1 and 0.2 — so the KS steps serve unchanged. ---- */
   $('bPreK1').addEventListener('click', ()=>runPreset(()=>{
-    base1D(); params.order=246; params.lam=4;
-    params.dt=0.005; $('selDt').value='0.005';
-    stepsPerFrame=2; $('selSpf').value='2';      // two steps per frame: the pace and the line density of before
-    wfDt=0.01;
+    base1D(); params.order=246; params.lam=0.0625;
+    params.n=16;      // k = 2π·16/128 = 0.785, the fastest wave (KS 1D's n = 5, k = 0.245, lies below the band 0.26 < k < 0.97)
   }, 'bPreK1'));
   $('bPreK2').addEventListener('click', ()=>runPreset(()=>{
-    base2D(); params.order=246; params.lam=4;
-    params.dt=0.005; $('selDt').value='0.005';
-    stepsPerFrame=5; $('selSpf').value='5';      // (the per-frame time budget trims this on a slow machine)
+    base2D(); params.order=246; params.lam=0.0625;
   }, 'bPreK2'));
   /* ---- Beauty: special runs chosen for their looks. One button in the display cycles
      off → Art 2D with α = +3 (h upward) → Art 2D with α = −3 (−h upward) → off ---- */
@@ -5592,7 +5575,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      first half of (T_tot − T_tr): Benettin; second half: free runs.        */
   const SC = { rows: [], running: false, stop: false, dark: false, eq: '', par: 'beta', cfg: null };
   const GSYM = { alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', L: 'L', lam: 'Λ' };
-  const LINLAB = { 4: '−∇²h − ∇⁴h', 6: '+∇⁴h + ∇⁶h', 246: '+∇²h + Λ∇⁴h + ∇⁶h' };
+  const LINLAB = { 4: '−∇²h − ∇⁴h', 6: '+∇⁴h + ∇⁶h', 246: 'Λ∇²h + ∇⁴h + ∇⁶h' };
   const GLAB = { alpha: 'α|∇h|', beta: 'β(∇h)⁴', gamma: 'γ∇²(∇h)²', delta: 'δ∇²h(∇h)²' };
   fillSel('scA', ALPHAV); fillSel('scB', BETAV); fillSel('scG', BETAV); fillSel('scD', DELTAV);
   ['scA','scB','scG','scD'].forEach(id => { $(id).value = '0'; });
@@ -5600,11 +5583,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const scOrds = new Set([4]);                     // the equations included in the scan
   const scOrdList = [4, 6, 246];                   // their order: column groups left to right, colours in turn
   (function(){
-    const mx = $('scLamMax'), fx = $('scLamFix');
-    for(let v = 3; v <= 20; v++){ const o = document.createElement('option'); o.value = ''+v; o.textContent = ''+v; mx.appendChild(o); }
-    mx.value = '10';
-    for(let v = 2; v <= 10 + 1e-9; v += 0.5){ const o = document.createElement('option'); o.value = ''+v; o.textContent = ''+v; fx.appendChild(o); }
-    fx.value = '4';
+    const fx = $('scLamFix');
+    for(const v of LAMV){ const o = document.createElement('option'); o.value = ''+v; o.textContent = ''+v; fx.appendChild(o); }
+    fx.value = '0.0625';
   })();
   (function(){ const el = $('scNmax'); for(let n=5;n<=20;n++){ const o = document.createElement('option'); o.value = ''+n; o.textContent = n + '  (L = ' + (1<<n) + ')'; el.appendChild(o); } el.value = '8'; })();
   /* the three lines of the linear terms: which equations, the Λ scan, Λ held fixed */
@@ -5650,14 +5631,13 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const b = Math.abs(c.beta); let dt;
     if(b > 3.5) dt = c.dim === 2 ? 0.01 : 0.005; else if(b > 2) dt = 0.01; else if(b > 0) dt = c.dim === 2 ? 0.05 : 0.02;
     else if(Math.abs(c.alpha) > 2) dt = 0.05; else dt = c.order === 6 ? 0.02 : 0.1;
-    if(c.order === 246) dt = Math.min(dt, dtLam(c.lam));
     if(c.gamma !== 0) dt = Math.min(dt, 0.02);
     if(c.delta !== 0) dt = Math.min(dt, 0.01);
     if(c.dtMax > 0) dt = Math.min(dt, c.dtMax);
     return dt;
   }
   function scEquation(c, par){
-    const lin = c.order === 6 ? '+∇⁴h + ∇⁶h' : c.order === 246 ? (par === 'lam' ? '+∇²h + Λ∇⁴h + ∇⁶h' : '+∇²h + ' + c.lam + '·∇⁴h + ∇⁶h') : '−∇²h − ∇⁴h';
+    const lin = c.order === 6 ? '+∇⁴h + ∇⁶h' : c.order === 246 ? (par === 'lam' ? 'Λ∇²h + ∇⁴h + ∇⁶h' : c.lam + '·∇²h + ∇⁴h + ∇⁶h') : '−∇²h − ∇⁴h';
     let eq = '∂h/∂t = ' + lin + (c.nl2 ? ' + (∇h)²' : '');
     for(const k of ['alpha','beta','gamma','delta']){
       if(k === par) eq += ' + ' + GLAB[k];
@@ -5746,11 +5726,10 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     c.tTotal = 2*c.tTrans;
     const v0 = +$('scMin').value, v1 = +$('scMax').value, st = +$('scStep').value;
     let vals = [], capNote = '';
-    if(c.par === 'lam'){                          // Λ = 2, 2 + step, … , max
+    if(c.par === 'lam'){                          // Λ = first, first + step, … up to the first value above 1/4
       if(c.dim === 2 && c.L/c.dx > 256){ $('scStatus').textContent = '2D: L/dx = ' + Math.round(c.L/c.dx) + ' points per direction is too many — at most 256 (raise dx or lower L)'; return; }
-      const top = +$('scLamMax').value, st = +$('scLamStep').value;
-      for(let v = 2; v <= top + 1e-9; v += st) vals.push(+v.toFixed(6));
-      if(vals.length > 200){ $('scStatus').textContent = 'too many values (' + vals.length + ') — coarsen the step'; return; }
+      const l0 = +$('scLamMin').value, st = +$('scLamStep').value;
+      for(let i = 0; ; i++){ const v = +(l0 + i*st).toFixed(6); vals.push(v); if(v > 0.25 + 1e-9) break; }
     } else if(c.par === 'L'){                     // L = 16, 32, … , 2^n (2D: at most 256 lattice points, L ≤ 256·dx)
       let nmax = Math.min(+$('scNmax').value, 20);
       if(c.dim === 2) while(nmax > 4 && (1<<nmax)/c.dx > 256) nmax--;
@@ -5767,7 +5746,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     SC.running = true; SC.stop = false; SC.par = c.par; SC.cfg = c;
     /* one result set per equation; SC.rows is the first, the others ride along side by side */
     SC.sets = orders.map(o => ({ order: o, rows: [], eq: scEquation(Object.assign({}, c, { order: o }), c.par),
-                                 lab: o === 246 && c.par !== 'lam' ? '+∇²h + ' + c.lam + '∇⁴h + ∇⁶h' : LINLAB[o] }));
+                                 lab: o === 246 && c.par !== 'lam' ? c.lam + '∇²h + ∇⁴h + ∇⁶h' : LINLAB[o] }));
     SC.rows = SC.sets[0].rows; SC.eq = SC.sets[0].eq;
     SC.rows2 = SC.sets.length > 1 ? SC.sets[1].rows : null; SC.eq2 = SC.sets.length > 1 ? SC.sets[1].eq : null;
     SC.geo = '  (' + (c.par === 'L' ? '' : 'L = ' + c.L + ', ') + 'dx = ' + c.dx + ')';
@@ -5777,21 +5756,29 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const wasRunning = running; running = false; $('bRun').textContent = 'Run';
     if(scanPanel.classList.contains('closed')) setScanOpen(true);
     $('scanEq').textContent = SC.sets.map(s => s.eq).join('   and   ') + '   —   ' + (c.dim === 2 ? '2D, ' : '1D, ') + c.bc + ', dx = ' + c.dx + ', dt ≤ ' + c.dtMax + ', transient ' + c.tTrans + ', total ' + c.tTotal + ' per sample' + (c.nmc > 1 ? ', ' + c.nmc + ' initial conditions' : '') + (c.par === 'L' ? '' : ', L = ' + c.L) + capNote;
-    const t0 = performance.now(), total = vals.length*c.nmc*orders.length; let done = 0;
+    const t0 = performance.now(), total = vals.length*c.nmc*orders.length; let done = 0, nRedo = 0, nDiv = 0;
     for(let i=0;i<vals.length && !SC.stop;i++) for(const ord of orders){
       if(SC.stop) break;
       const v = vals[i]; const cc = Object.assign({}, c, { order: ord }); if(c.par === 'L') cc.L = v; else cc[c.par] = v; cc.dt = scDt(cc);
       const rowsOut = SC.sets[orders.indexOf(ord)].rows;
-      const samples = []; let diverged = false;
+      const samples = []; let diverged = false, dtRun = cc.dt;
       for(let j=0;j<c.nmc && !SC.stop;j++){
-        const rep = t => { const el = (performance.now()-t0)/1000, pct = Math.round(100*(done + Math.min(1, t/c.tTotal))/total); $('scStatus').textContent = GSYM[c.par] + ' = ' + v + ' (' + (i+1) + '/' + vals.length + ')' + (orders.length > 1 ? ', ' + LINLAB[ord] : '') + (c.nmc > 1 ? ', start ' + (j+1) + '/' + c.nmc : '') + ', t = ' + t.toFixed(0) + ' / ' + c.tTotal + ', dt = ' + cc.dt + '  ·  ' + pct + ' %  ·  ' + fmt(el) + ' s'; document.title = pct + ' % scan · ' + TITLE0; };
-        const r = await scSampleAny(cc, v, c.nmc > 1 ? j : undefined, rep);
+        /* a run that diverges is repeated at dt/4, and once more at dt/16; the smaller step then
+           also serves the remaining starts of this value. Three divergences: the value is given up */
+        let r = null;
+        while(!SC.stop){
+          const cr = dtRun === cc.dt ? cc : Object.assign({}, cc, { dt: dtRun }), redo = dtRun < cc.dt ? ' (rerun after divergence at dt = ' + cc.dt + ')' : '';
+          const rep = t => { const el = (performance.now()-t0)/1000, pct = Math.round(100*(done + Math.min(1, t/c.tTotal))/total); $('scStatus').textContent = GSYM[c.par] + ' = ' + v + ' (' + (i+1) + '/' + vals.length + ')' + (orders.length > 1 ? ', ' + LINLAB[ord] : '') + (c.nmc > 1 ? ', start ' + (j+1) + '/' + c.nmc : '') + ', t = ' + t.toFixed(0) + ' / ' + c.tTotal + ', dt = ' + dtRun + redo + '  ·  ' + pct + ' %  ·  ' + fmt(el) + ' s'; document.title = pct + ' % scan · ' + TITLE0; };
+          r = await scSampleAny(cr, v, c.nmc > 1 ? j : undefined, rep);
+          if(r || SC.stop || dtRun < cc.dt/10) break;
+          dtRun = +(dtRun/4).toPrecision(6);
+        }
         if(SC.stop) break;
         if(!r){ diverged = true; break; }
         samples.push(r); done++;
       }
       if(SC.stop) break;
-      if(diverged){ rowsOut.push({ v, dv: true }); done += c.nmc - samples.length; }
+      if(diverged){ rowsOut.push({ v, dv: true, dt: cc.dt }); done += c.nmc - samples.length; nDiv++; }
       else {
         const mean = k => samples.reduce((a,b)=>a+b[k],0)/samples.length;
         const sdev = k => { const m = mean(k); return samples.length > 1 ? Math.sqrt(samples.reduce((a,b)=>a+(b[k]-m)**2,0)/(samples.length-1)) : 0; };
@@ -5799,11 +5786,13 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         const sdFree = samples.length > 1 ? sdev('free') : samples[0].sd;
         const spec = new Float64Array(samples[0].spec.length); for(const sm of samples) for(let i=0;i<spec.length;i++) spec[i] += sm.spec[i]/samples.length;
         rowsOut.push({ v, free: mean('free'), sdFree, n: samples.reduce((a,b)=>a+b.n,0), ben: mean('ben'), sdBen: sdev('ben'), sat: mean('sat'), sdSat: sdev('sat'), satOK: samples.some(s => s.satOK),
-                     satMin: Math.min(...samples.map(s => isFinite(s.satMin) ? s.satMin : Infinity)), satMax: Math.max(...samples.map(s => isFinite(s.satMax) ? s.satMax : -Infinity)), eps: samples[0].eps, W: mean('W'), sdW: sdev('W'), nmc: samples.length, dt: cc.dt, samples, spec, k: samples[0].k });
+                     satMin: Math.min(...samples.map(s => isFinite(s.satMin) ? s.satMin : Infinity)), satMax: Math.max(...samples.map(s => isFinite(s.satMax) ? s.satMax : -Infinity)), eps: samples[0].eps, W: mean('W'), sdW: sdev('W'), nmc: samples.length, dt: dtRun, dt0: cc.dt, samples, spec, k: samples[0].k });
+        if(dtRun < cc.dt) nRedo++;
       }
       renderScan();
     }
-    $('scStatus').textContent = (SC.stop ? 'stopped after ' : 'done: ') + SC.rows.length + ' of ' + vals.length + ' values in ' + fmt((performance.now()-t0)/1000) + ' s';
+    $('scStatus').textContent = (SC.stop ? 'stopped after ' : 'done: ') + SC.rows.length + ' of ' + vals.length + ' values in ' + fmt((performance.now()-t0)/1000) + ' s' +
+      (nRedo ? ' · ' + nRedo + ' rerun at a smaller dt after divergence' : '') + (nDiv ? ' · ' + nDiv + ' diverged also at dt/4 and dt/16' : '');
     $('scanInfo').textContent = SC.rows.length + ' values' + (c.nmc > 1 ? ' × ' + c.nmc + ' starts' : '');
     SC.running = false; $('scStart').disabled = false; $('scStop').disabled = true;
     scKeepAwake(false); document.title = TITLE0;
@@ -5848,7 +5837,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     if(sep < 1/1000 || lams.some(v => v < -0.0005)) return 'fz';
     return lams.length === 2 && Math.min(...lams) > 0.03 && sep >= 1/100 ? 'ch' : '';
   }
-  const SCAN_NOTE = 'red: chaotic — λ free and Benettin both &gt; 0.03 and the largest D<sub>sat</sub> ≥ W/100 · blue: not chaotic — λ free or Benettin negative, or the largest D<sub>sat</sub> &lt; W/1000 (the twins never parted) · uncoloured: in between · yellow: the run diverges';
+  const SCAN_NOTE = 'red: chaotic — λ free and Benettin both &gt; 0.03 and the largest D<sub>sat</sub> ≥ W/100 · blue: not chaotic — λ free or Benettin negative, or the largest D<sub>sat</sub> &lt; W/1000 (the twins never parted) · uncoloured: in between · yellow: diverged at dt, dt/4 and dt/16 · *: rerun at a smaller dt after a divergence';
   /* D_sat: two decimals, or exponent form when tiny; † when no free run reached the plateau (too short a window) */
   const fmtSat = (r, html) => (isFinite(r.satMin) && isFinite(r.satMax) && r.satMax > 0 ? fmtRange(r.satMin, r.satMax, html)
                                 : isFinite(r.sat) ? fmtSig2(r.sat, 0, html) : '—') + (isFinite(r.sat) && !r.satOK ? '†' : '');
@@ -5867,9 +5856,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     if(two) h += '<tr><th></th>' + sets.map((s, i) => '<th colspan="4" class="grp eqh' + (i ? ' eq2' : '') + '">' + s.eq + '</th>').join('') + '</tr>';
     else h += '<tr><th></th><th colspan="6" class="grp eqh">' + SC.eq + '</th></tr>';
     h += '<tr><th>' + sym + '</th>' + thFree + thBen + thSat + thW + (two ? sets.slice(1).map(() => thFree + thBen + thSat + thW).join('') : '<th title="number of free runs (all starts)">runs</th><th>dt</th>') + '</tr>';
-    const cells = (r, g2) => { const c1 = g2 ? ' g2' : ''; if(!r) return '<td colspan="4" class="' + c1 + '"></td>'; if(r.dv) return '<td class="dv' + c1 + '" colspan="4">diverges</td>';
+    const cells = (r, g2) => { const c1 = g2 ? ' g2' : ''; if(!r) return '<td colspan="4" class="' + c1 + '"></td>'; if(r.dv) return '<td class="dv' + c1 + '" colspan="4" title="diverged at dt = ' + r.dt + ', ' + r.dt/4 + ' and ' + r.dt/16 + '">diverged — also at dt/4 and dt/16</td>';
       const k = scanClass(r);
-      return '<td class="' + k + c1 + '">' + f3n(r.free) + '</td><td class="' + k + '">' + f3n(r.ben) + '</td><td class="' + k + '">' + fmtSat(r, true) + '</td><td>' + r.W.toFixed(2) + '</td>'; };
+      return '<td class="' + k + c1 + '">' + f3n(r.free) + '</td><td class="' + k + '">' + f3n(r.ben) + '</td><td class="' + k + '">' + fmtSat(r, true) + '</td>' + (r.dt < r.dt0 ? '<td title="rerun at dt = ' + r.dt + ' after divergence at dt = ' + r.dt0 + '">' + r.W.toFixed(2) + '*' : '<td>' + r.W.toFixed(2)) + '</td>'; };
     for(const r of SC.rows){
       h += '<tr><td class="b">' + (r.v > 0 ? '+' : '') + r.v + '</td>' + cells(r, false) + (two ? sets.slice(1).map(s => cells(s.rows.find(q => q.v === r.v), true)).join('') : (r.dv ? '<td colspan="2"></td>' : '<td>' + r.n + '</td><td>' + r.dt + '</td>')) + '</tr>';
     }
@@ -5952,7 +5941,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     /* coefficient axis: numbers at the integers (every 0.5 when the range is short), tick marks in
        between at half the label step; L axis: one label per sampled size */
     const lo = vmin - pad, hi = vmax + pad;
-    const lstep = isL ? 0 : (span >= 2 ? Math.max(1, Math.ceil(span/6)) : 0.5), tstep = lstep/2;
+    /* short ranges (a Λ scan spans 0.01 … 0.3) get a 1–2–5 step of about a fifth of the range */
+    const nice125 = v => { const p = Math.pow(10, Math.floor(Math.log10(v))), m = v/p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10)*p; };
+    const lstep = isL ? 0 : (span >= 2 ? Math.max(1, Math.ceil(span/6)) : span >= 1 ? 0.5 : nice125(span/5)), tstep = lstep/2;
     const seq = (st) => { const a = []; for(let v = Math.ceil(lo/st - 1e-9)*st; v <= hi + 1e-9; v += st) a.push(+v.toFixed(6)); return a; };
     function xTicks(p, label){
       const xt = isL ? vs : seq(lstep), xm = isL ? [] : seq(tstep).filter(v => !xt.some(u => Math.abs(u - v) < 1e-9));
@@ -6244,7 +6235,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const mono = '11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace', sans = '10.5px system-ui,sans-serif', eqf = '600 10.5px system-ui,sans-serif';
     const mc = document.createElement('canvas').getContext('2d');
     const wtxt = (t, f) => { mc.font = f; return mc.measureText(t).width; };
-    const cellTexts = r => r && !r.dv ? [f3n(r.free), f3n(r.ben), fmtSat(r), r.W.toFixed(2)] : ['', '', '', ''];
+    const cellTexts = r => r && !r.dv ? [f3n(r.free), f3n(r.ben), fmtSat(r), r.W.toFixed(2) + (r.dt < r.dt0 ? '*' : '')] : ['', '', '', ''];
     const heads = ['λ free', 'Benettin', 'D sat', 'W'];
     const groups = (SC.sets || [{ eq: SC.eq, rows }]).map(s => ({ eq: s.eq, rows: s.rows })), two = groups.length > 1;
     /* column widths from the contents */
@@ -6299,7 +6290,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         const q = gi === 0 ? r : g.rows.find(z => z.v === r.v);
         const [l, rr] = gx[gi];
         if(!q) return;
-        if(q.dv){ c.fillStyle = '#fde68a'; c.fillRect(l - 3, y - rowH/2 + 1, rr - l + 6, rowH - 2); c.fillStyle = '#7c2d12'; c.textAlign = 'center'; c.font = sans; c.fillText('diverges', (l + rr)/2, y); c.font = mono; c.textAlign = 'right'; return; }
+        if(q.dv){ c.fillStyle = '#fde68a'; c.fillRect(l - 3, y - rowH/2 + 1, rr - l + 6, rowH - 2); c.fillStyle = '#7c2d12'; c.textAlign = 'center'; c.font = sans; c.fillText('diverged — also at dt/4 and dt/16', (l + rr)/2, y); c.font = mono; c.textAlign = 'right'; return; }
         /* λ free, Benettin and D sat in the colour of the row's verdict (scanClass), W in black */
         const t = cellTexts(q), cl = scanClass(q), col = cl === 'ch' ? red : cl === 'fz' ? blue : ink;
         c.fillStyle = col; for(let j=0;j<3;j++) c.fillText(t[j], xs[1 + gi*4 + j], y);
