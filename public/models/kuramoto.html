@@ -666,7 +666,8 @@
         equation; as &Lambda; rises the band narrows from below, and at &Lambda; = 1/4 it closes at
         k = 1/&radic;2: for &Lambda; &ge; 1/4 the flat surface is stable. The fastest growth rate
         falls from 4/27 &asymp; 0.148 (&Lambda; &rarr; 0) to 0.135 at &Lambda; = 0.02, 0.107 at
-        1/16, 0.054 at 0.15 and 0 at 1/4. The presets KKS 1D and 2D run &Lambda; = 1/16: that is
+        1/16, 0.084 at 0.1, 0.054 at 0.15, 0.026 at 0.2 and 0 at 1/4. The presets KKS 1D and 2D run
+        &Lambda; = 0.1, where the band is 0.34 &lt; k &lt; 0.94. &Lambda; = 1/16 is
         exactly the equation +&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h rescaled (x &rarr; 2x,
         t &rarr; 64t, h &rarr; h/16), so its Lyapunov exponent is 64 times smaller and its width 16
         times smaller than in that form.</p>
@@ -1073,7 +1074,7 @@
         <select id="selGamma" title="&gamma;: coefficient of the &nabla;&sup2;(&nabla;h)&sup2; term"></select></span>
       <span class="tctl">&delta;
         <select id="selDelta" title="&delta;: coefficient of the &nabla;&sup2;h&middot;(&nabla;h)&sup2; term (only &delta; &ge; 0: negative &delta; blows up in finite time)"></select></span>
-      <span class="tctl" id="lamCtl" hidden title="&Lambda;: coefficient of the &nabla;&sup2;h term of &Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h — a diffusion that damps the long waves. The flat surface is unstable only for &Lambda; &lt; 1/4; the fastest wave grows at most at 4/27 (&Lambda; &rarr; 0), 0.107 at the KKS value &Lambda; = 1/16 = 0.0625. (Capital &Lambda;, because &lambda; is the Lyapunov exponent.)">&Lambda;
+      <span class="tctl" id="lamCtl" hidden title="&Lambda;: coefficient of the &nabla;&sup2;h term of &Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h — a diffusion that damps the long waves. The flat surface is unstable only for &Lambda; &lt; 1/4; the fastest wave grows at most at 4/27 (&Lambda; &rarr; 0), 0.107 at &Lambda; = 1/16 = 0.0625 and 0.084 at the KKS value &Lambda; = 0.1, 0.026 at 0.2. (Capital &Lambda;, because &lambda; is the Lyapunov exponent.)">&Lambda;
         <select id="selLam"></select></span>
     </div>
   </header>
@@ -1195,8 +1196,8 @@
             <button id="bPre2n" title="KS 2D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.1">KS 2D nnl</button>
           </div>
           <div class="prow">
-            <button id="bPreK1" title="0.0625&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2;: the &Lambda; = 1/16 equation with the standard KS nonlinearity, 1D, periodic, L = 128, dx = 0.5, dt = 0.1 — the view, colours, time step and line density of KS 1D">KKS 1D</button>
-            <button id="bPreK2" title="0.0625&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 2D: L = 128, dx = 0.5 (256&sup2; points), dt = 0.2 — surface 3D, flames &nabla;&sup2;h, tilt 62&deg;, time step as KS 2D">KKS 2D</button>
+            <button id="bPreK1" title="0.1&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2;: the &Lambda; = 0.1 equation with the standard KS nonlinearity, 1D, periodic, L = 128, dx = 0.5, dt = 0.1 — the view, colours, time step and line density of KS 1D">KKS 1D</button>
+            <button id="bPreK2" title="0.1&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 2D: L = 128, dx = 0.5 (256&sup2; points), dt = 0.2 — surface 3D, flames &nabla;&sup2;h, tilt 62&deg;, time step as KS 2D">KKS 2D</button>
           </div>
           <div class="prow">
             <button id="bPreBeauty" data-pre="beauty" title="Beauty — Art 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 62&deg;, rot 0&deg;, dist 5&middot;L)">Art 2D</button>
@@ -1342,7 +1343,7 @@
           times more, 0.05 up to |&beta;| = 2 and 0.01 beyond 3.5: measured &lang;W&rang;, growth
           speed and &lambda; at &beta; = 1.5 are the same at dt = 0.02, 0.05 and 0.1), 0.02
           for the +&nabla;&#8308;+&nabla;&#8310; equation, and 0.1 for the &Lambda;&nabla;&sup2;+&nabla;&#8308;+&nabla;&#8310;
-          equation (its W and &lambda; at &Lambda; = 0.01 and 1/16 are the same for dt = 0.005 to 0.2)
+          equation (its W and &lambda; at &Lambda; = 0.01, 1/16, 0.1 and 0.2 are the same for dt = 0.02 to 0.2)
           — unless a finer display line
           spacing &Delta;t demands a smaller one. Steps per frame are rescaled at the same
           time, so the animation keeps roughly its pace when dt drops. Both are yours to
@@ -1432,7 +1433,7 @@
             <button class="btn" id="scStop" disabled>stop</button>
           </div>
           <div class="hint" id="scStatus">idle</div>
-          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (KKS: 0.0625). The scanned points are the range in the chosen step plus always &minus;0.1, 0 and +0.1; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient, then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
+          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (default 0.1, as KKS). The scanned points are the range in the chosen step plus always &minus;0.1, 0 and +0.1; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient, then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
         </div>
       </details>
 
@@ -1457,7 +1458,7 @@
           use — &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h (KS), +&nabla;&#8308;h + &nabla;&#8310;h (one order
           higher in derivatives) or &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h — and a click
           steps to the next one. With the last one a <b>&Lambda;</b> menu (0.01 to 0.3; unstable
-          below 1/4, KKS at 1/16 = 0.0625) appears after &delta;; like the other coefficients it acts
+          below 1/4, KKS at 0.1) appears after &delta;; like the other coefficients it acts
           on the running surface. On a wide window the
           equation sits on the title line, so that the display can have the rest of the height. The
           <b>(&nabla;h)&sup2;</b> term is a switch: click it and it is crossed out and dropped. The
@@ -1646,10 +1647,10 @@
           (for a coefficient scan the largest, the smallest and the zero value; for L the largest
           and the fourth-largest box). Two or three equations appear side by side in the order of
           the list of linear terms (&#9650; moves one up). In the table &lambda; free, Benettin and
-          D<sub>sat</sub> are <span style="color:#b91c1c">red</span> where both exponents are
-          above 0.03 and the largest D<sub>sat</sub> reaches W/100,
-          <span style="color:#1d4ed8">blue</span> where either exponent is negative or the largest
-          D<sub>sat</sub> stays below W/1000 (the twins never parted), and uncoloured in between. Every panel has a <b>.png</b> button in its upper left
+          D<sub>sat</sub> are <span style="color:#b91c1c">red</span> (chaos) where both exponents are
+          above 0.005 and the largest D<sub>sat</sub> exceeds 0.01&middot;W,
+          <span style="color:#1d4ed8">blue</span> (no chaos) where either exponent is negative or the largest
+          D<sub>sat</sub> stays below 0.001&middot;W (the twins never parted), and black — doubtful — in between. Every panel has a <b>.png</b> button in its upper left
           corner that saves that panel alone, and the &lambda;, D<sub>sat</sub> and W panels a
           lin / log switch in the upper right (on the log scale &lambda; is shown only above 0.001);
           <i>plot .png</i> and <i>table .png</i> in the head
@@ -1827,11 +1828,11 @@ function fft2(re, im, nx, ny, inv, sr, si){   // rows then columns, no sub-array
 /* the Λ∇²h + ∇⁴h + ∇⁶h equation (order 246): the +∇⁴h + ∇⁶h equation with a diffusion of
    strength Λ added. A wave grows at −Λk² + k⁴ − k⁶; the band exists only for Λ < 1/4, and the
    fastest growth, at k² = (1 + √(1−3Λ))/3, is at most 4/27 (Λ → 0): 0.135 at Λ = 0.02, 0.107 at
-   0.0625, 0.054 at 0.15, 0 at 0.25. The default Λ = 1/16 is the earlier +∇²h + 4∇⁴h + ∇⁶h
-   equation rescaled exactly: x → 2x, t → 64t, h → h/16 (λ falls 64-fold, W 16-fold, and a box
+   0.0625, 0.084 at 0.1, 0.054 at 0.15, 0.026 at 0.2, 0 at 0.25. The default (KKS) is Λ = 0.1.
+   Λ = 1/16 is the earlier +∇²h + 4∇⁴h + ∇⁶h equation rescaled exactly: x → 2x, t → 64t, h → h/16 (λ falls 64-fold, W 16-fold, and a box
    L of the old equation is a box 2L here). Λ∇²h is linear, so ETDRK4 does it exactly and it sets
    no limit on the time step: dt = 0.1, as for KS, is measured converged (see the KKS presets). */
-const LAM0 = 0.0625;
+const LAM0 = 0.1;
 const lamOf = P => isFinite(P.lam) ? P.lam : LAM0;
 
 function cdivRe(ar, ai, br, bi){ return (ar*br + ai*bi)/(br*br + bi*bi); }
@@ -2625,7 +2626,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   let clean = false, onScreen = true;
   const capInset = () => onScreen ? 96 : 0;
 
-  const params = { dim:1, L:128, bc:'periodic', n:5, amp:0.1, eps:0.1, dt:0.1, dx:0.5, alpha:0, beta:0, gamma:0, delta:0, order:4, lam:0.0625,
+  const params = { dim:1, L:128, bc:'periodic', n:5, amp:0.1, eps:0.1, dt:0.1, dx:0.5, alpha:0, beta:0, gamma:0, delta:0, order:4, lam:0.1,
                    nl2:true, absMode:'euclid' };
   let stepsPerFrame = 5;
   /* L is the physical length of the box, dx the lattice spacing: the lattice
@@ -4526,7 +4527,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     syncLyOptions();                     // the term labels follow the linear operator
     if(!running) draw();
   }
-  /* Λ: the unstable range 0.01 … 0.25 (1/16 = 0.0625 is the KKS value), and 0.3 just beyond it */
+  /* Λ: the unstable range 0.01 … 0.25 (0.1 is the KKS value; 1/16 = 0.0625 the old Λ = 4 equation rescaled), and 0.3 just beyond it */
   const LAMV = [0.01, 0.02, 0.03, 0.04, 0.05, 0.0625, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.225, 0.25, 0.3];
   (function(){ const el = $('selLam'); for(const v of LAMV){ const o = document.createElement('option'); o.value = ''+v; o.textContent = ''+v; el.appendChild(o); } el.value = ''+params.lam; el.classList.add('on'); })();
   $('selLam').addEventListener('change', e => {
@@ -5116,18 +5117,21 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     base2D(); params.beta=-0.5;
     params.dt=0.1; $('selDt').value='0.1';    // β = −0.5 (was +1.5); dt checked as for β = +1.5 (see dtForTerms)
   }, 'bPre2n'));
-  /* ---- KKS: the Λ = 1/16 equation, 0.0625∇²h + ∇⁴h + ∇⁶h + (∇h)², with the views, time steps
-     and pace of KS 1D / KS 2D. Its fastest wave grows at 0.107 (KS: 0.25). 1D, L = 128, dx = 0.5,
-     three starts × 4000 time units: ⟨W⟩ = 1.54–1.78 and Benettin λ = 0.070–0.083 alike at
-     dt = 0.005, 0.02, 0.05, 0.1 and 0.2 (and at Λ = 0.01 W = 1.92–2.01, λ = 0.087–0.109 for
-     dt = 0.02 … 0.2); 2D, L = 64, two starts × 600: W = 3.57–3.83, λ = 0.38–0.43 alike at
-     dt = 0.02, 0.05, 0.1 and 0.2 — so the KS steps serve unchanged. ---- */
+  /* ---- KKS: the Λ = 0.1 equation, 0.1∇²h + ∇⁴h + ∇⁶h + (∇h)², with the views, time steps and
+     pace of KS 1D / KS 2D. Its fastest wave grows at 0.084 (KS: 0.25), in the band 0.34 < k < 0.94.
+     Time steps, 1D, L = 128, dx = 0.5: at Λ = 0.1 (4000 time units) W = 1.38–1.56 and Benettin
+     λ = 0.055–0.066 alike at dt = 0.02, 0.1 and 0.2; at Λ = 0.2 (two starts) W = 0.46–0.64 and
+     Benettin λ = 0.014–0.018 alike at dt = 0.02, 0.05, 0.1 and 0.2; at Λ = 1/16 (three starts)
+     W = 1.54–1.78, λ = 0.070–0.083 at dt = 0.005 … 0.2; at Λ = 0.01 W = 1.92–2.01, λ = 0.087–0.109
+     at dt = 0.02 … 0.2. 2D, L = 64, two starts × 600: Λ = 0.2 W = 1.80–2.14, λ = 0.14–0.17 at
+     dt = 0.05, 0.1, 0.2; Λ = 1/16 W = 3.57–3.83, λ = 0.38–0.43 at dt = 0.02 … 0.2. So the KS
+     steps serve unchanged. ---- */
   $('bPreK1').addEventListener('click', ()=>runPreset(()=>{
-    base1D(); params.order=246; params.lam=0.0625;
-    params.n=16;      // k = 2π·16/128 = 0.785, the fastest wave (KS 1D's n = 5, k = 0.245, lies below the band 0.26 < k < 0.97)
+    base1D(); params.order=246; params.lam=0.1;
+    params.n=16;      // k = 2π·16/128 = 0.785, the fastest wave (KS 1D's n = 5, k = 0.245, lies below the band 0.34 < k < 0.94)
   }, 'bPreK1'));
   $('bPreK2').addEventListener('click', ()=>runPreset(()=>{
-    base2D(); params.order=246; params.lam=0.0625;
+    base2D(); params.order=246; params.lam=0.1;
   }, 'bPreK2'));
   /* ---- Beauty: special runs chosen for their looks. One button in the display cycles
      off → Art 2D with α = +3 (h upward) → Art 2D with α = −3 (−h upward) → off ---- */
@@ -5585,7 +5589,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   (function(){
     const fx = $('scLamFix');
     for(const v of LAMV){ const o = document.createElement('option'); o.value = ''+v; o.textContent = ''+v; fx.appendChild(o); }
-    fx.value = '0.0625';
+    fx.value = '0.1';
   })();
   (function(){ const el = $('scNmax'); for(let n=5;n<=20;n++){ const o = document.createElement('option'); o.value = ''+n; o.textContent = n + '  (L = ' + (1<<n) + ')'; el.appendChild(o); } el.value = '8'; })();
   /* the three lines of the linear terms: which equations, the Λ scan, Λ held fixed */
@@ -5808,7 +5812,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   $('scanToggle').addEventListener('click', ()=>setScanOpen(!scanOpen));
   $('scanBW').addEventListener('click', ()=>{ SC.dark = !SC.dark; scanPanel.classList.toggle('dark', SC.dark); renderScan(); });
   const pm = (m, sd) => f3(m) + (sd > 0 ? ' ± ' + sd.toFixed(3) : '');
-  const f3n = v => isFinite(v) ? f3(v) : '—';
+  /* the scan's exponents keep their sign however small (−0.000), so that the blue rule below — any
+     negative exponent — can be read off the table */
+  const f3n = v => !isFinite(v) ? '—' : (v < 0 ? '−' : '') + Math.abs(v).toFixed(3);
   /* D_sat of a scan point as the smallest → largest value met in its free runs (all starts),
      one significant digit each. From 0.01 up as decimals, 0.2→0.4; below, one power of ten for
      both ends whenever they differ by less than a factor 99 — the power of the smaller one:
@@ -5825,19 +5831,18 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     return fmt1(lo, html) + arr + fmt1(hi, html);
   }
   /* the colour of a scan row in the table — λ free, Benettin and D sat alike. Red (chaotic) when both
-     measurements give a positive exponent (λ free and Benettin above 0.03) and the free runs really
-     separated: the largest D sat reaches W/100. Blue (not chaotic) when either exponent is negative —
-     as printed, i.e. below −0.0005, so that a blue 0.000 never stands beside an uncoloured one — or
-     when the largest D sat stays below W/1000: the twins never parted, whatever the fitted slopes say.
-     In between: uncoloured. */
+     measurements give a positive exponent, λ free and Benettin above 0.005, and the free runs really
+     separated: the largest D sat exceeds 0.01·W. Blue (no chaos) when either exponent is negative, or
+     when the largest D sat stays below 0.001·W: the twins never parted, whatever the fitted slopes
+     say. In between: black — doubtful. */
   function scanClass(r){
     if(!r || r.dv) return '';
     const lams = [r.free, r.ben].filter(isFinite); if(!lams.length) return '';
     const dmax = isFinite(r.satMax) ? r.satMax : r.sat, sep = isFinite(dmax) && r.W > 0 ? dmax/r.W : NaN;
-    if(sep < 1/1000 || lams.some(v => v < -0.0005)) return 'fz';
-    return lams.length === 2 && Math.min(...lams) > 0.03 && sep >= 1/100 ? 'ch' : '';
+    if(sep < 0.001 || lams.some(v => v < 0)) return 'fz';
+    return lams.length === 2 && Math.min(...lams) > 0.005 && sep > 0.01 ? 'ch' : '';
   }
-  const SCAN_NOTE = 'red: chaotic — λ free and Benettin both &gt; 0.03 and the largest D<sub>sat</sub> ≥ W/100 · blue: not chaotic — λ free or Benettin negative, or the largest D<sub>sat</sub> &lt; W/1000 (the twins never parted) · uncoloured: in between · yellow: diverged at dt, dt/4 and dt/16 · *: rerun at a smaller dt after a divergence';
+  const SCAN_NOTE = 'red: chaotic — λ free and Benettin both &gt; 0.005 and the largest D<sub>sat</sub> &gt; 0.01·W · blue: no chaos — λ free or Benettin negative, or the largest D<sub>sat</sub> &lt; 0.001·W (the twins never parted) · black: doubtful, in between · yellow: diverged at dt, dt/4 and dt/16 · *: rerun at a smaller dt after a divergence';
   /* D_sat: two decimals, or exponent form when tiny; † when no free run reached the plateau (too short a window) */
   const fmtSat = (r, html) => (isFinite(r.satMin) && isFinite(r.satMax) && r.satMax > 0 ? fmtRange(r.satMin, r.satMax, html)
                                 : isFinite(r.sat) ? fmtSig2(r.sat, 0, html) : '—') + (isFinite(r.sat) && !r.satOK ? '†' : '');
