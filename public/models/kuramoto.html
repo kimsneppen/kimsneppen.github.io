@@ -48,6 +48,13 @@
   .dropbox a{color:var(--accent);text-decoration:none}
   .dropbox a:hover{text-decoration:underline}
   .dropbox .refs{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px}
+  /* citations [n] link to their reference: the reference lights up, with a button back to the text */
+  .dropbox a.cite{font-weight:600}
+  .dropbox .refs p{scroll-margin:40px 0;border-radius:6px;transition:background .3s}
+  .dropbox .refs p.hit{background:var(--accent-soft);box-shadow:0 0 0 4px var(--accent-soft)}
+  .dropbox .refs .refback{display:none;margin-left:6px;padding:1px 7px;font-size:11.5px;border:1px solid var(--line);
+    border-radius:6px;background:#fff;color:var(--accent);cursor:pointer;white-space:nowrap}
+  .dropbox .refs p.hit .refback{display:inline-block}
   .dropbox h2{font-size:14px;color:var(--ink);margin:16px 0 4px;padding-top:10px;border-top:1px solid var(--line);letter-spacing:0}
   .dropbox h3{font-size:13px;color:var(--accent);margin:12px 0 2px;font-weight:650}
   .lamtabwrap{display:flex;gap:12px;align-items:flex-start;margin:8px 0}
@@ -626,20 +633,20 @@
         have a short-wavelength cut-off (for a flame, e.g. a minimal ignition heat), supplied by the
         gentlest possible regularization, &minus;&nabla;&#8308;h. Adding also the simplest possible
         nonlinearity, the tilt-dependent growth (&nabla;h)&sup2;, one obtains the deterministic
-        Kuramoto–Sivashinsky (KS) equation</p>
+        Kuramoto–Sivashinsky (KS) equation [<a class="cite" href="#ref-1">1</a>,&nbsp;<a class="cite" href="#ref-2">2</a>]</p>
         <p class="eqc">&part;h/&part;t = &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h + (&nabla;h)&sup2;,</p>
         <p>where the constants in front of the three terms have been rescaled away by an appropriate
         scaling of space x, time t and height h. The competition between long-wavelength growth,
         short-wavelength damping and nonlinear mode coupling produces cells of a preferred size
         (&lambda; = 2&pi;&radic;2 in these units) in a state of perpetual spatiotemporal chaos.</p>
         <p><b>Chaos as noise: the KPZ connection.</b> The KS equation shares the basic symmetries of
-        the Kardar–Parisi–Zhang (KPZ) equation, and its spatiotemporal chaos acts on large scales as
+        the Kardar–Parisi–Zhang (KPZ) equation [<a class="cite" href="#ref-11">11</a>], and its spatiotemporal chaos acts on large scales as
         an emergent, self-generated noise. One therefore expects the large-scale behaviour of the
         Kuramoto–Sivashinsky equation to fall in the same universality class as the KPZ equation, as
-        explored in Refs.&nbsp;[3–5]. In this translation the characteristic cell has wavelength
+        explored in Refs.&nbsp;[<a class="cite" href="#ref-3">3</a>,&nbsp;<a class="cite" href="#ref-4">4</a>,&nbsp;<a class="cite" href="#ref-5">5</a>]. In this translation the characteristic cell has wavelength
         2&pi;/k<sub>max</sub>, where k<sub>max</sub> = 1/&radic;2 is the wavenumber selected by the
         linearly unstable term, and the emergent large-scale dynamics carries an effective diffusion
-        constant of about 15 (see Refs.&nbsp;[3–5]).</p>
+        constant of about 15 (see Refs.&nbsp;[<a class="cite" href="#ref-3">3</a>,&nbsp;<a class="cite" href="#ref-4">4</a>,&nbsp;<a class="cite" href="#ref-5">5</a>]).</p>
 
         <h2>Variant models: extra terms in the equation</h2>
         <p>The KS equation is the <i>lowest-order</i> description of a growing front: it keeps only
@@ -654,7 +661,8 @@
         0 &lt; k &lt; 1 is the same, but the fastest mode moves from k = 1/&radic;2 to
         k = &radic;(2/3) and the growth near k = 0 is much weaker. The chaotic cell pattern
         persists with slightly smaller cells — a first hint that the qualitative picture does
-        not depend on the exact form of the linear terms.</p>
+        not depend on the exact form of the linear terms. (It is the Nikolaevskiy equation of the
+        next paragraph at r = 1 [<a class="cite" href="#ref-12">12</a>].)</p>
         <p>A third setting of the toggle, <b>&Lambda;&nabla;&sup2;h + &nabla;&#8308;h +
         &nabla;&#8310;h</b>, keeps all three derivatives: it is the previous equation with an
         ordinary diffusion &Lambda;&nabla;&sup2;h added, of a strength &Lambda; chosen in the header
@@ -671,16 +679,31 @@
         exactly the equation +&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h rescaled (x &rarr; 2x,
         t &rarr; 64t, h &rarr; h/16), so its Lyapunov exponent is 64 times smaller and its width 16
         times smaller than in that form.</p>
+        <p><b>From seismic waves.</b> This equation was not invented here: up to a rescaling it is
+        the <b>Nikolaevskiy equation</b>, which Nikolaevskiy derived in 1989 as a model of
+        longitudinal <i>seismic</i> waves — the compression waves by which earthquakes shake the
+        ground — in a viscoelastic medium with internal oscillators, written for the displacement
+        velocity of the medium [<a class="cite" href="#ref-12">12</a>]. There the band of growing waves describes a medium that
+        amplifies seismic waves of intermediate wavelength while it damps longer and shorter ones,
+        and the nonlinear seismic waves of such an unstable medium were analysed by Beresnev and
+        Nikolaevskiy [<a class="cite" href="#ref-29">29</a>]. In its usual form it is an equation for u — the displacement velocity of
+        the seismic model, the slope u = &part;h/&part;x of the front here — with growth rate (r &minus; 1)k&sup2; + 2k&#8308; &minus; k&#8310;; rescaling k&sup2; &rarr; 2k&sup2;
+        and time by 8 turns it into &minus;&Lambda;k&sup2; + k&#8308; &minus; k&#8310; with <b>&Lambda; = (1 &minus; r)/4</b>,
+        so &Lambda; = 1/4 is the onset r = 0 of the seismic model, and &Lambda; = 0.1 is r = 0.6. The
+        equation has since become a standard example of spatiotemporal chaos that sets in right at
+        onset ("soft-mode turbulence") [<a class="cite" href="#ref-13">13</a>,&nbsp;<a class="cite" href="#ref-14">14</a>,&nbsp;<a class="cite" href="#ref-15">15</a>]; the seismic original also carries dispersive
+        terms, which can stabilize travelling waves [<a class="cite" href="#ref-30">30</a>].</p>
         <h3>The slope expansion: &alpha; and &beta;</h3>
         <p>A front that advances at a speed depending only on its local tilt, v(&nabla;h), adds
-        a term v(&nabla;h) to &part;h/&part;t. Expanding v in the slope gives, by the symmetry
+        a term v(&nabla;h) to &part;h/&part;t [<a class="cite" href="#ref-11">11</a>,&nbsp;<a class="cite" href="#ref-16">16</a>]. Expanding v in the slope gives, by the symmetry
         x &rarr; &minus;x, only even powers and even functions: |&nabla;h|, (&nabla;h)&sup2;,
         (&nabla;h)&#8308;, … The KS equation keeps (&nabla;h)&sup2;, the term that lets a tilted
         piece of front grow faster (a tilted flame front sees more fuel per unit length). The
         two pull-down menus switch on its neighbours:</p>
         <p><b>&alpha;|&nabla;h|</b> is the term <i>below</i> (&nabla;h)&sup2; in the expansion — it
         is not analytic at zero slope and describes a front whose speed changes at first order
-        in the tilt, like a facetted crystal. With &alpha; &gt; 0 tilted parts grow faster
+        in the tilt, like a facetted crystal; it is also the growth term of a front that moves at
+        a constant speed along its normal in the level-set description of moving fronts [<a class="cite" href="#ref-17">17</a>]. With &alpha; &gt; 0 tilted parts grow faster
         still: the cells become flatter and sharper, ridges form facets, the surface width W
         shrinks (W &asymp; 0.8 at &alpha; = 1 against 2.7 for KS on the default lattice) while
         the exponent stays chaotic, &lambda; &asymp; 0.09. With &alpha; &lt; 0 tilted parts are
@@ -688,7 +711,10 @@
         and the dynamics remains chaotic, &lambda; &asymp; 0.08.</p>
         <p><b>&beta;(&nabla;h)&#8308;</b> is the term <i>above</i> (&nabla;h)&sup2;. It is small where
         slopes are gentle and takes over where they are steep — precisely the place where the
-        long-wavelength, small-slope expansion behind KS is least trustworthy.</p>
+        long-wavelength, small-slope expansion behind KS is least trustworthy. For a flame whose
+        front advances at a fixed normal speed the full slope dependence is
+        &radic;(1 + (&nabla;h)&sup2;) = 1 + (&nabla;h)&sup2;/2 &minus; (&nabla;h)&#8308;/8 + …, a negative &beta;;
+        keeping it was proposed for strongly wrinkled flames [<a class="cite" href="#ref-18">18</a>].</p>
         <h3>The sign of the correction decides</h3>
         <p>Since (&nabla;h)&sup2; &ge; 0 always adds growth, the <i>sign</i> of the next term
         decides whether steep slopes are rewarded further or held back, and the two signs give
@@ -735,8 +761,11 @@
         are still second order in the slope. <b>&gamma;&nabla;&sup2;(&nabla;h)&sup2;</b> is the
         conserved counterpart of the KS nonlinearity: being a Laplacian of something, it moves
         height around without changing the mean — the nonlinearity of conserved growth
-        (Villain–Lai–Das Sarma). <b>&delta;&nabla;&sup2;h&middot;(&nabla;h)&sup2;</b> is a diffusion whose
-        coefficient is the squared slope: for &delta; &gt; 0 steep parts of the front are smoothed
+        (conserved KPZ and Villain–Lai–Das Sarma [<a class="cite" href="#ref-19">19</a>,&nbsp;<a class="cite" href="#ref-20">20</a>,&nbsp;<a class="cite" href="#ref-21">21</a>]; KS with this term added is the
+        "minimal deposition equation" of amorphous thin films [<a class="cite" href="#ref-22">22</a>]).
+        <b>&delta;&nabla;&sup2;h&middot;(&nabla;h)&sup2;</b> is a diffusion whose coefficient is the squared
+        slope — in one dimension (&delta;/3)&part;<sub>x</sub>(&part;<sub>x</sub>h)&sup3;, the cubic,
+        slope-selecting surface current of epitaxial growth [<a class="cite" href="#ref-23">23</a>,&nbsp;<a class="cite" href="#ref-24">24</a>]: for &delta; &gt; 0 steep parts of the front are smoothed
         harder than flat parts, for &delta; &lt; 0 they are sharpened. Both terms carry two more
         derivatives than (&nabla;h)&sup2;, and that decides their fate: for the "wrong" sign they
         are not regularized by &minus;&nabla;&#8308;h at all. <b>&gamma; &gt; 0 and &delta; &lt; 0 blow up in
@@ -770,6 +799,7 @@
         beyond a time of order 1/&lambda;; zero or negative means the pattern is periodic or
         steady. For the KS equation on a large box &lambda; &asymp; 0.09 in the units of the
         equation — a memory of about ten time units, roughly the time a cell takes to split.
+        (On Lyapunov exponents of the KS equation see [<a class="cite" href="#ref-27">27</a>,&nbsp;<a class="cite" href="#ref-28">28</a>].)
         Open the section below the display to start the measurement.</p>
         <h3>Benettin's method</h3>
         <p>An exponentially growing separation soon stops being small, so the applet measures
@@ -1023,28 +1053,152 @@
         only the width responding (W from 4.7 at &beta; = 0 to 1.0 at &beta; = 5). The freezing that
         organizes the 1D picture — the band of &beta; in which the front settles into a steady cellular
         pattern — has no counterpart in this 2D box.</p>
+
+        <h2>Related equations in the literature</h2>
+        <p><b>Origins.</b> The KS equation was found twice: by Kuramoto and Tsuzuki for the phase
+        turbulence of oscillating chemical media [<a class="cite" href="#ref-1">1</a>] — it is the phase equation of the complex
+        Ginzburg–Landau equation near its Benjamin–Feir instability [<a class="cite" href="#ref-6">6</a>,&nbsp;<a class="cite" href="#ref-7">7</a>] — and by Sivashinsky
+        for flame fronts [<a class="cite" href="#ref-2">2</a>], whose hydrodynamic (Darrieus–Landau) version replaces &minus;&nabla;&sup2;h
+        by a nonlocal term proportional to |k| (the Michelson–Sivashinsky equation [<a class="cite" href="#ref-8">8</a>]). It also
+        governs thin liquid films running down a wall (the Benney equation [<a class="cite" href="#ref-9">9</a>]), and with a
+        dispersive term &part;<sup>3</sup>h/&part;x<sup>3</sup> added it becomes the Kawahara equation
+        [<a class="cite" href="#ref-10">10</a>]. Written for the slope u = &part;h/&part;x it is a Burgers equation with an unstable
+        linear part, and at large scales it is expected to behave like the KPZ equation
+        [<a class="cite" href="#ref-3">3</a>,&nbsp;<a class="cite" href="#ref-4">4</a>,&nbsp;<a class="cite" href="#ref-5">5</a>,&nbsp;<a class="cite" href="#ref-11">11</a>].</p>
+        <p><b>The &Lambda; equation is the Nikolaevskiy equation.</b> Its growth rate
+        &minus;&Lambda;k&sup2; + k&#8308; &minus; k&#8310; becomes, after k&sup2; &rarr; 2k&sup2; and a division by 8,
+        the growth rate (r &minus; 1)k&sup2; + 2k&#8308; &minus; k&#8310; of the Nikolaevskiy equation [<a class="cite" href="#ref-12">12</a>],
+        derived as a model of longitudinal seismic waves [<a class="cite" href="#ref-12">12</a>,&nbsp;<a class="cite" href="#ref-29">29</a>,&nbsp;<a class="cite" href="#ref-30">30</a>], with <b>&Lambda; = (1 &minus; r)/4</b>: the threshold
+        &Lambda; = 1/4 is its onset r = 0, and the +&nabla;&#8308;h + &nabla;&#8310;h equation is r = 1.
+        Unlike the Swift–Hohenberg equation, it keeps a neutral long-wave (Goldstone) mode, and the
+        coupling to that mode makes every periodic pattern unstable: the front is chaotic right
+        at onset ("soft-mode turbulence") [<a class="cite" href="#ref-13">13</a>,&nbsp;<a class="cite" href="#ref-14">14</a>,&nbsp;<a class="cite" href="#ref-15">15</a>] — in line with the positive exponents the scan
+        finds all the way up to &Lambda; = 0.2.</p>
+        <p><b>The extra nonlinear terms.</b> &alpha;|&nabla;h| and &beta;(&nabla;h)&#8308; are the neighbours
+        of (&nabla;h)&sup2; in the expansion of a slope-dependent front speed v(&nabla;h) [<a class="cite" href="#ref-11">11</a>,&nbsp;<a class="cite" href="#ref-16">16</a>].
+        |&nabla;h| is the growth term of a front moving at constant normal speed in the
+        level-set (Hamilton–Jacobi) description [<a class="cite" href="#ref-17">17</a>], and keeping the full slope dependence
+        &radic;(1 + (&nabla;h)&sup2;) of a flame — whose next term after (&nabla;h)&sup2;/2 is
+        &minus;(&nabla;h)&#8308;/8, a negative &beta; — was proposed for strongly wrinkled flames by
+        Joulin and Cambray [<a class="cite" href="#ref-18">18</a>]. &gamma;&nabla;&sup2;(&nabla;h)&sup2; is the nonlinearity of conserved
+        growth, the conserved KPZ and Villain–Lai–Das Sarma equations [<a class="cite" href="#ref-19">19</a>,&nbsp;<a class="cite" href="#ref-20">20</a>,&nbsp;<a class="cite" href="#ref-21">21</a>]; KS with this
+        term added is the "minimal deposition equation" of amorphous thin-film growth [<a class="cite" href="#ref-22">22</a>].
+        &delta;&nabla;&sup2;h(&nabla;h)&sup2; equals, in one dimension, (&delta;/3)&part;<sub>x</sub>(&part;<sub>x</sub>h)&sup3;:
+        the cubic, slope-dependent surface current that selects a slope in epitaxial growth
+        (&delta; &gt; 0) [<a class="cite" href="#ref-23">23</a>,&nbsp;<a class="cite" href="#ref-24">24</a>]. Anisotropic, noisy KS equations of the same family describe
+        surfaces eroded by ion beams [<a class="cite" href="#ref-25">25</a>,&nbsp;<a class="cite" href="#ref-26">26</a>].</p>
+        <p><b>Lyapunov exponents.</b> KS is the standard test case for spatiotemporal chaos: its
+        chaos is extensive, the number of positive Lyapunov exponents growing in proportion to
+        the system size [<a class="cite" href="#ref-27">27</a>], and its covariant Lyapunov vectors split into "physical" modes,
+        whose number also grows with the system size, and a remainder of strongly damped modes
+        decoupled from them [<a class="cite" href="#ref-28">28</a>].</p>
         <div class="refs">
-          <p>[1] Y. Kuramoto &amp; T. Tsuzuki, <i>Persistent propagation of concentration waves in
+          <p id="ref-1">[1] Y. Kuramoto &amp; T. Tsuzuki, <i>Persistent propagation of concentration waves in
           dissipative media far from thermal equilibrium</i>,
           <a href="https://doi.org/10.1143/PTP.55.356" target="_blank" rel="noopener">Prog. Theor.
           Phys. 55, 356 (1976)</a>.</p>
-          <p>[2] G.&thinsp;I. Sivashinsky, <i>Nonlinear analysis of hydrodynamic instability in laminar
+          <p id="ref-2">[2] G.&thinsp;I. Sivashinsky, <i>Nonlinear analysis of hydrodynamic instability in laminar
           flames — I. Derivation of basic equations</i>,
           <a href="https://doi.org/10.1016/0094-5765(77)90096-0" target="_blank" rel="noopener">Acta
           Astronautica 4, 1177 (1977)</a>.</p>
-          <p>[3] V. Yakhot, <i>Large-scale properties of unstable systems governed by the
+          <p id="ref-3">[3] V. Yakhot, <i>Large-scale properties of unstable systems governed by the
           Kuramoto-Sivashinsky equation</i>,
           <a href="https://doi.org/10.1103/PhysRevA.24.642" target="_blank" rel="noopener">Phys.
           Rev. A 24, 642 (1981)</a>.</p>
-          <p>[4] K. Sneppen, J. Krug, M.&thinsp;H. Jensen, C. Jayaprakash &amp; T. Bohr, <i>Dynamic
+          <p id="ref-4">[4] K. Sneppen, J. Krug, M.&thinsp;H. Jensen, C. Jayaprakash &amp; T. Bohr, <i>Dynamic
           scaling and crossover analysis for the Kuramoto-Sivashinsky equation</i>,
           <a href="https://doi.org/10.1103/PhysRevA.46.R7351" target="_blank" rel="noopener">Phys.
           Rev. A 46, R7351 (1992)</a>.</p>
-          <p>[5] I. Procaccia, M.&thinsp;H. Jensen, V.&thinsp;S. L&rsquo;vov, K. Sneppen &amp;
+          <p id="ref-5">[5] I. Procaccia, M.&thinsp;H. Jensen, V.&thinsp;S. L&rsquo;vov, K. Sneppen &amp;
           R. Zeitak, <i>Surface roughening and the long-wavelength properties of the
           Kuramoto-Sivashinsky equation</i>,
           <a href="https://doi.org/10.1103/PhysRevA.46.3220" target="_blank" rel="noopener">Phys.
           Rev. A 46, 3220 (1992)</a>.</p>
+          <p id="ref-6">[6] Y. Kuramoto, <i>Chemical Oscillations, Waves, and Turbulence</i>,
+          <a href="https://doi.org/10.1007/978-3-642-69689-3" target="_blank" rel="noopener">Springer
+          Series in Synergetics (Springer, 1984)</a>.</p>
+          <p id="ref-7">[7] I.&thinsp;S. Aranson &amp; L. Kramer, <i>The world of the complex Ginzburg-Landau
+          equation</i>, <a href="https://doi.org/10.1103/RevModPhys.74.99" target="_blank" rel="noopener">Rev.
+          Mod. Phys. 74, 99 (2002)</a>.</p>
+          <p id="ref-8">[8] D.&thinsp;M. Michelson &amp; G.&thinsp;I. Sivashinsky, <i>Nonlinear analysis of
+          hydrodynamic instability in laminar flames — II. Numerical experiments</i>,
+          <a href="https://doi.org/10.1016/0094-5765(77)90097-2" target="_blank" rel="noopener">Acta
+          Astronautica 4, 1207 (1977)</a>.</p>
+          <p id="ref-9">[9] D.&thinsp;J. Benney, <i>Long waves on liquid films</i>,
+          <a href="https://doi.org/10.1002/sapm1966451150" target="_blank" rel="noopener">J. Math.
+          Phys. 45, 150 (1966)</a>.</p>
+          <p id="ref-10">[10] T. Kawahara, <i>Formation of saturated solitons in a nonlinear dispersive system with
+          instability and dissipation</i>,
+          <a href="https://doi.org/10.1103/PhysRevLett.51.381" target="_blank" rel="noopener">Phys.
+          Rev. Lett. 51, 381 (1983)</a>.</p>
+          <p id="ref-11">[11] M. Kardar, G. Parisi &amp; Y.-C. Zhang, <i>Dynamic scaling of growing interfaces</i>,
+          <a href="https://doi.org/10.1103/PhysRevLett.56.889" target="_blank" rel="noopener">Phys.
+          Rev. Lett. 56, 889 (1986)</a>.</p>
+          <p id="ref-12">[12] V.&thinsp;N. Nikolaevskii, <i>Dynamics of viscoelastic media with internal
+          oscillators</i>, in <i>Recent Advances in Engineering Science</i>, Lecture Notes in
+          Engineering (Springer, 1989), <a href="https://doi.org/10.1007/978-3-642-83695-4_21" target="_blank" rel="noopener">pp.&nbsp;210–221</a>.</p>
+          <p id="ref-13">[13] M.&thinsp;I. Tribelsky &amp; M.&thinsp;G. Velarde, <i>Short-wavelength instability in
+          systems with slow long-wavelength dynamics</i>,
+          <a href="https://doi.org/10.1103/PhysRevE.54.4973" target="_blank" rel="noopener">Phys.
+          Rev. E 54, 4973 (1996)</a>.</p>
+          <p id="ref-14">[14] M.&thinsp;I. Tribelsky &amp; K. Tsuboi, <i>New scenario for transition to
+          turbulence?</i>, <a href="https://doi.org/10.1103/PhysRevLett.76.1631" target="_blank" rel="noopener">Phys.
+          Rev. Lett. 76, 1631 (1996)</a>.</p>
+          <p id="ref-15">[15] P.&thinsp;C. Matthews &amp; S.&thinsp;M. Cox, <i>One-dimensional pattern formation with
+          Galilean invariance near a stationary bifurcation</i>,
+          <a href="https://doi.org/10.1103/PhysRevE.62.R1473" target="_blank" rel="noopener">Phys.
+          Rev. E 62, R1473 (2000)</a>.</p>
+          <p id="ref-16">[16] J. Krug &amp; P. Meakin, <i>Universal finite-size effects in the rate of growth
+          processes</i>, <a href="https://doi.org/10.1088/0305-4470/23/18/009" target="_blank" rel="noopener">J.
+          Phys. A 23, L987 (1990)</a>.</p>
+          <p id="ref-17">[17] S. Osher &amp; J.&thinsp;A. Sethian, <i>Fronts propagating with curvature-dependent
+          speed: Algorithms based on Hamilton-Jacobi formulations</i>,
+          <a href="https://doi.org/10.1016/0021-9991(88)90002-2" target="_blank" rel="noopener">J.
+          Comput. Phys. 79, 12 (1988)</a>.</p>
+          <p id="ref-18">[18] G. Joulin &amp; P. Cambray, <i>On a tentative, approximate evolution equation for
+          markedly wrinkled premixed flames</i>,
+          <a href="https://doi.org/10.1080/00102209208951805" target="_blank" rel="noopener">Combust.
+          Sci. Technol. 81, 243 (1992)</a>.</p>
+          <p id="ref-19">[19] T. Sun, H. Guo &amp; M. Grant, <i>Dynamics of driven interfaces with a conservation
+          law</i>, <a href="https://doi.org/10.1103/PhysRevA.40.6763" target="_blank" rel="noopener">Phys.
+          Rev. A 40, 6763 (1989)</a>.</p>
+          <p id="ref-20">[20] J. Villain, <i>Continuum models of crystal growth from atomic beams with and without
+          desorption</i>, <a href="https://doi.org/10.1051/jp1:1991114" target="_blank" rel="noopener">J.
+          Phys. I France 1, 19 (1991)</a>.</p>
+          <p id="ref-21">[21] Z.-W. Lai &amp; S. Das Sarma, <i>Kinetic growth with surface relaxation: Continuum
+          versus atomistic models</i>,
+          <a href="https://doi.org/10.1103/PhysRevLett.66.2348" target="_blank" rel="noopener">Phys.
+          Rev. Lett. 66, 2348 (1991)</a>.</p>
+          <p id="ref-22">[22] M. Raible, S.&thinsp;J. Linz &amp; P. H&auml;nggi, <i>Amorphous thin film growth:
+          Minimal deposition equation</i>,
+          <a href="https://doi.org/10.1103/PhysRevE.62.1691" target="_blank" rel="noopener">Phys.
+          Rev. E 62, 1691 (2000)</a>.</p>
+          <p id="ref-23">[23] M. Siegert &amp; M. Plischke, <i>Slope selection and coarsening in molecular beam
+          epitaxy</i>, <a href="https://doi.org/10.1103/PhysRevLett.73.1517" target="_blank" rel="noopener">Phys.
+          Rev. Lett. 73, 1517 (1994)</a>.</p>
+          <p id="ref-24">[24] J. Krug, <i>Origins of scale invariance in growth processes</i>,
+          <a href="https://doi.org/10.1080/00018739700101498" target="_blank" rel="noopener">Adv.
+          Phys. 46, 139 (1997)</a>.</p>
+          <p id="ref-25">[25] R. Cuerno &amp; A.-L. Barab&aacute;si, <i>Dynamic scaling of ion-sputtered
+          surfaces</i>, <a href="https://doi.org/10.1103/PhysRevLett.74.4746" target="_blank" rel="noopener">Phys.
+          Rev. Lett. 74, 4746 (1995)</a>.</p>
+          <p id="ref-26">[26] M. Rost &amp; J. Krug, <i>Anisotropic Kuramoto-Sivashinsky equation for surface
+          growth and erosion</i>, <a href="https://doi.org/10.1103/PhysRevLett.75.3894" target="_blank" rel="noopener">Phys.
+          Rev. Lett. 75, 3894 (1995)</a>.</p>
+          <p id="ref-27">[27] P. Manneville, <i>Liapounov exponents for the Kuramoto-Sivashinsky model</i>, in
+          <i>Macroscopic Modelling of Turbulent Flows</i>, Lecture Notes in Physics (Springer, 1985),
+          <a href="https://doi.org/10.1007/3-540-15644-5_26" target="_blank" rel="noopener">pp.&nbsp;319–326</a>.</p>
+          <p id="ref-28">[28] H.-l. Yang, K.&thinsp;A. Takeuchi, F. Ginelli, H. Chat&eacute; &amp; G. Radons,
+          <i>Hyperbolicity and the effective dimension of spatially extended dissipative
+          systems</i>, <a href="https://doi.org/10.1103/PhysRevLett.102.074102" target="_blank" rel="noopener">Phys.
+          Rev. Lett. 102, 074102 (2009)</a>.</p>
+          <p id="ref-29">[29] I.&thinsp;A. Beresnev &amp; V.&thinsp;N. Nikolaevskiy, <i>A model for nonlinear seismic
+          waves in a medium with instability</i>,
+          <a href="https://doi.org/10.1016/0167-2789(93)90217-O" target="_blank" rel="noopener">Physica
+          D 66, 1 (1993)</a>.</p>
+          <p id="ref-30">[30] E. Simbawa, P.&thinsp;C. Matthews &amp; S.&thinsp;M. Cox, <i>Nikolaevskiy equation with
+          dispersion</i>, <a href="https://doi.org/10.1103/PhysRevE.81.036220" target="_blank" rel="noopener">Phys.
+          Rev. E 81, 036220 (2010)</a>.</p>
         </div>
       </div>
     </details>
@@ -6312,6 +6466,37 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     c.fillText(geo, M, y + rowH/2 + 12);
     savePng(oc, 'scan_table_' + SC.par + (two ? '_' + (groups.length === 2 ? 'both' : groups.length + 'eqs') : '') + '.png');
   });
+
+  /* citations [n] in the pull-down text: a click scrolls to reference n and lights it up, and the
+     reference's "↩ back" button returns to the citation (the href #ref-n is the no-script fallback) */
+  (function(){
+    const box = document.querySelector('.dropbox'); if(!box) return;
+    let from = null;
+    /* scroll the pull-down box itself (not the page) so that el sits in its middle */
+    const show = el => {
+      const b = box.getBoundingClientRect(), r = el.getBoundingClientRect();
+      const top = box.scrollTop + (r.top - b.top) - (box.clientHeight - r.height)/2;
+      box.scrollTo({ top: Math.max(0, top), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    };
+    box.querySelectorAll('.refs p[id]').forEach(p => {
+      const b = document.createElement('button'); b.className = 'refback'; b.type = 'button';
+      b.textContent = '↩ back'; b.title = 'back to where this reference is cited'; p.appendChild(b);
+    });
+    box.addEventListener('click', e => {
+      const t = e.target.closest('a.cite, button.refback'); if(!t) return;
+      e.preventDefault();
+      if(t.classList.contains('refback')){
+        t.parentElement.classList.remove('hit');
+        if(from){ show(from); from.focus({ preventScroll: true }); }
+        return;
+      }
+      const ref = document.getElementById(t.getAttribute('href').slice(1)); if(!ref) return;
+      from = t;
+      box.querySelectorAll('.refs p.hit').forEach(p => p.classList.remove('hit'));
+      ref.classList.add('hit');
+      show(ref);
+    });
+  })();
 
   /* read-only access to the running model from the console (e.g. for checks) */
   window.ksSim = () => sim;
