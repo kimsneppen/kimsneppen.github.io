@@ -1358,7 +1358,7 @@
           </div>
           <div class="ysep" id="vsepWrap" title="vertical displacement per curve">
             <span>&Delta;y</span>
-            <input type="range" id="rngVsep" min="0" max="11" step="1" value="5">
+            <input type="range" id="rngVsep" min="0" max="16" step="1" value="10">
             <b class="svv" id="vsepVal">3.0</b>
           </div>
         <div class="sub" id="wfCtl">
@@ -4968,13 +4968,16 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   $('selGamma').addEventListener('change', e=>{ params.gamma = +e.target.value; applyTerms(); autoDt(); if(!running) draw(); });
   $('selDelta').addEventListener('change', e=>{ params.delta = +e.target.value; applyTerms(); autoDt(); if(!running) draw(); });
 
-  // top-bar vertical displacement per curve (discrete steps)
-  const DYVALS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 10];
+  /* top-bar vertical displacement per curve (discrete steps). In the profiles view the spacing
+     doubles with every unit of Δy from 0.5 up, and below 0.5 shrinks in proportion to Δy (0.01 is a
+     fiftieth of 0.5), so that thousands of stacked curves fit; in the 3D sweep views Δy sets the
+     curves per page, at most 500 — about a pixel apart — so steps below 1 look alike there */
+  const DYVALS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 10];
   $('rngVsep').addEventListener('input', e=>{
-    const v = DYVALS[Math.max(0, Math.min(11, +e.target.value|0))];
+    const v = DYVALS[Math.max(0, Math.min(DYVALS.length - 1, +e.target.value|0))];
     $('vsepVal').textContent = '' + v;
     if(params.dim === 1 && modeSel[1] === 'profiles'){
-      wfSep = 0.02*Math.pow(2, v-3); wfSepAuto = false;
+      wfSep = 0.02*Math.pow(2, Math.max(v, 0.5) - 3)*Math.min(1, v/0.5); wfSepAuto = false;
       $('rngSep').value = Math.max(-2.31, Math.log10(wfSep));
       $('wfSepVal').textContent = 'Δh ' + (+wfSep.toPrecision(2));
     } else {
@@ -5270,7 +5273,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     dispGain=2; keepN=5000;
     yvar='h'; qkind='nlap'; modeSel[1]='wf3dsw';
     wfDt=0.1; wf3dTilt=25; wf3dDist=10;
-    swStepPx=1.5; $('rngVsep').value=2; $('vsepVal').textContent='1.5';
+    swStepPx=1.5; $('rngVsep').value=DYVALS.indexOf(1.5); $('vsepVal').textContent='1.5';
     wfSepAuto=false; wfSep=0.02;
     $('selKeep').value='5000';
     $('rngWfTilt').value=25; $('wfTiltVal').textContent='25°';
