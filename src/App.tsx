@@ -645,6 +645,10 @@ export default function App() {
       <footer className="mt-8 border-t border-rule">
         <div className="mx-auto max-w-6xl px-6 py-10 text-center text-[12px] text-muted-foreground">
           © {year} Kim Sneppen
+          <span className="mx-2">·</span>
+          <a href="/apps/bureaucracy-battles/privacy.html" className="text-muted-foreground">
+            Bureaucracy Battles privacy policy
+          </a>
         </div>
       </footer>
     </div>

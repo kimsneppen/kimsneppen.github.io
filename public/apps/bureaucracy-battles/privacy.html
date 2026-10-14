@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bureaucracy Battles — Privacy policy</title>
+<style>
+  :root{--txt:#222; --muted:#666; --bg:#fff; --line:#e4e4ea; --accent:#7c3aed;}
+  @media (prefers-color-scheme: dark){ :root{--txt:#e8e6f0; --muted:#a09bb5; --bg:#12121c; --line:#2c2a3c; --accent:#c084fc;} }
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; max-width:680px; margin:40px auto; padding:0 16px;
+       line-height:1.55; color:var(--txt); background:var(--bg);}
+  h1{font-size:26px; margin:0 0 4px;}
+  h2{font-size:18px; margin:28px 0 6px; padding-top:14px; border-top:1px solid var(--line);}
+  .updated{color:var(--muted); font-size:14px; margin:0 0 20px;}
+  .summary{border-left:3px solid var(--accent); padding:4px 0 4px 14px; margin:18px 0;}
+  ul{padding-left:22px;} li{margin:4px 0;}
+  a{color:var(--accent);}
+  code{font-size:13px;}
+</style>
+</head>
+<body>
+<h1>Bureaucracy Battles — Privacy policy</h1>
+<p class="updated">Last updated: 14 October 2026</p>
+
+<p>Bureaucracy Battles is a strategy game for Android by Kim Sneppen, Copenhagen, Denmark
+(“I”, “me” below). This policy explains what happens to information when you play it.</p>
+
+<div class="summary">
+<p><b>In short:</b> I collect no personal data. The game has no accounts, no advertising, no analytics
+and no tracking, and I run no servers that could receive anything from it. If you choose to play
+online, the name you type and your moves go directly to the phones of the people you play with.</p>
+</div>
+
+<h2>What is stored on your phone</h2>
+<p>The game keeps two small items in its own storage on your device:</p>
+<ul>
+  <li>whether you have unlocked the full office, so it stays unlocked;</li>
+  <li>the name you typed for online play, so you do not have to type it again.</li>
+</ul>
+<p>Neither is sent to me. Uninstalling the game deletes both.</p>
+
+<h2>What I collect</h2>
+<p>Nothing. The game contains no analytics, advertising, crash-reporting or tracking code, and it
+does not ask for an account, your contacts, your location or any other personal information.</p>
+
+<h2>In-app purchase</h2>
+<p>The optional purchase of the full office is handled entirely by Google Play Billing. The game
+only receives a confirmation that the purchase was made and never sees your payment details.
+Google’s handling of your payment is covered by
+<a href="https://policies.google.com/privacy">Google’s privacy policy</a>.</p>
+
+<h2>Online play</h2>
+<p>Online play is optional; nothing below happens unless you open <i>Online</i> and host or join a
+game. When you do:</p>
+<ul>
+  <li><b>Other players.</b> The name you typed, your moves and a checksum of the board are sent
+    to the devices of the players in the same game, over an encrypted direct connection (WebRTC).</li>
+  <li><b>Finding each other.</b> To find each other, the devices post short-lived connection
+    requests to public Nostr relays (currently <code>nos.lol</code>, <code>relay.primal.net</code>,
+    <code>relay.snort.social</code>, <code>nostr-pub.wellorder.net</code>,
+    <code>relay.mostro.network</code>, <code>relay.sigit.io</code> and
+    <code>relay-rpi.edufeed.org</code>). A request contains the technical network details needed
+    to set up the direct connection, such as your device’s IP address, and is encrypted with a
+    key derived from the five-letter office code. Your name and moves are not part of it.</li>
+  <li><b>Network address.</b> To find its public network address, your device asks STUN servers
+    run by Google and Cloudflare.</li>
+  <li><b>When a direct connection is blocked.</b> If your networks do not allow a direct
+    connection, the game may pass the encrypted game traffic through a relay (TURN) server of the
+    Open Relay Project (metered.ca).</li>
+</ul>
+<p>Like any internet server, these relays and servers see your device’s IP address. They are run
+by independent third parties under their own policies. I do not operate them and receive nothing
+from them. Nothing about your games is stored by me.</p>
+
+<h2>Children</h2>
+<p>The game is not directed at children under 13. It does not knowingly collect personal
+information from anyone, including children.</p>
+
+<h2>Your choices</h2>
+<ul>
+  <li>To keep everything on your phone, simply do not use online play; the rest of the game works offline.</li>
+  <li>To remove the stored name and unlock state, uninstall the game. A purchase can be restored
+    afterwards through Google Play.</li>
+</ul>
+
+<h2>Changes</h2>
+<p>If this policy changes, the new version will be posted on this page with a new date.</p>
+
+<h2>Contact</h2>
+<p>Questions about this policy: <a href="mailto:ksneppen@gmail.com">ksneppen@gmail.com</a></p>
+</body>
+</html>
