@@ -240,6 +240,9 @@
     border:1px solid var(--line);border-radius:8px;padding:4px 11px;backdrop-filter:blur(2px);
   }
   .rdout .lam b{color:var(--accent)}
+  /* the read-out, the view menu and the divergence warning hang just below the display bar,
+     however many rows it wraps into (--barB is set by the script; the fixed tops are fallbacks) */
+  .canvas-wrap .rdout,.canvas-wrap .wfctl,.canvas-wrap .diverged{top:var(--barB, 48px)}
   /* clean-picture buttons: lower right corner of the display */
   .cornerpng{position:absolute;right:12px;bottom:10px;display:flex;gap:5px;z-index:3}
   .cornerpng button{
@@ -379,6 +382,16 @@
   .cbar .cbmin{min-width:32px;text-align:right} .cbar .cbmax{min-width:32px}
   .cbar .cblab{font-family:Georgia,"Times New Roman",serif;font-style:italic;color:var(--ink);margin-right:2px;min-width:44px}
   .cbar.off{display:none}
+  /* free / fixed colour scale beside the top colour bar */
+  .dispbar .cbfix{display:inline-flex;align-items:center;gap:4px}
+  .dispbar .cbfix.off{display:none}
+  .dispbar .cbseg{min-width:0;border-radius:7px;background:rgba(255,255,255,.88)}
+  .dispbar .cbseg button{flex:0 0 auto;padding:2px 7px;font-size:11px;line-height:1.45;background:transparent}
+  .dispbar .cbseg button.on{background:var(--accent);color:#fff}
+  .dispbar .cbfix select{min-width:0;padding:2px 3px;font-size:11.5px;border-radius:7px}
+  .display.darkbg .dispbar .cbseg{background:rgba(16,19,28,.85);border-color:#2a3140}
+  .display.darkbg .dispbar .cbseg button{color:#c7d2fe}
+  .display.darkbg .dispbar .cbseg button.on{color:#fff;background:var(--accent)}
   .cbar.clickable{cursor:pointer}
   .cbar.clickable canvas{box-shadow:0 0 0 1px var(--accent-soft)}
   .splitbtn{font-size:11.5px;padding:5px 8px;color:var(--ink2);white-space:nowrap}
@@ -1284,6 +1297,10 @@
         <span class="cbar cbtop" id="cbTop" title="colour scale of the display: extreme values of the coloured quantity">
           <b class="cbmin" id="cbTopMin">−1</b><canvas class="cbcan" id="cbTopCan" width="90" height="10"></canvas><b class="cbmax" id="cbTopMax">+1</b>
         </span>
+        <span class="cbfix" id="cbFix" title="colour scale — free: it follows the coloured quantity slowly (adiabatically); fixed: the colour bar spans the value chosen in the menu (± for signed quantities). Remembered for each colouring (the λ colourings share one) and kept when the model changes">
+          <span class="seg mini cbseg" id="segCbFix"><button data-v="free" class="on">free</button><button data-v="fixed">fixed</button></span>
+          <select id="selCbFix" hidden title="end value of the colour bar (± for signed quantities)"></select>
+        </span>
         <button id="bSplit" class="tbtn splitbtn" hidden title="standard: the chosen colour map over the whole λ range. grey λ&lt;0: the colour map only where λ &gt; 0, grey (λ = 0) to black (most negative λ) where λ &lt; 0">standard</button>
         <span class="spacer"></span>
         <select id="qty" title="colour by">
@@ -1790,6 +1807,15 @@
           itself (1D and 2D), paints &lambda; &gt; 0 with the chosen map and &lambda; &lt; 0 from
           grey to black on one common scale (the 98th percentile of |&lambda;|, since these
           densities have heavy tails).</p>
+          <h4>Free or fixed colour scale</h4>
+          <p>Beside the short colour bar above the display a <b>free / fixed</b> switch sets how the
+          colours are scaled. <i>Free</i> (the default when the page opens) lets the scale follow the
+          coloured quantity slowly, as described above. <i>Fixed</i> holds the colour bar at a value
+          from a menu — 0.01, 0.02, 0.04, 0.08, 0.16, 0.3, 0.5, 1, 2, 3, 5 or 10 (&plusmn; for signed
+          quantities) — so that pictures of different runs, or of the same run at different times,
+          can be compared colour for colour; it starts at the value nearest the free scale of the
+          moment. The setting is remembered for each colouring — all the &lambda; colourings share
+          one — and kept when the equation, a coefficient or a preset changes.</p>
           <h4>Saving pictures</h4>
           <p>The <b>.png</b> button in the control panel writes the display — without any control
           overlays — at twice the screen resolution, with the equation and its parameters stamped
@@ -3072,13 +3098,23 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function cidx(kind, v, S){
     if(!splitOn(kind)) return lutIdx(mapT(kind, v, S));
     const neg = kind === 'nlydiv', lam = neg ? -v : v;
-    if(lam > 0){ const t = clamp01(lam/qscalesP[kind]); return lutIdx(neg ? 0.5 - 0.5*t : 0.5 + 0.5*t); }
-    return greyIdx(clamp01(-lam/qscalesN[kind]));
+    if(lam > 0){ const t = clamp01(lam/splitS(kind, 1)); return lutIdx(neg ? 0.5 - 0.5*t : 0.5 + 0.5*t); }
+    return greyIdx(clamp01(-lam/splitS(kind, 0)));
   }
   const effKind = () => (qkind==='plain' ? (yvar==='dx' ? 'dx' : 'h') : qkind);
   /* the display amplitude magnifies heights and derivative colours; the
      logarithmic divergence ln(|δh|/ε) is already a pure number and keeps its scale */
-  const scaleFor = kind => isLyKind(kind) ? niceCeil(ensureScale(kind).s) : niceCeil(ensureScale(kind).s)/dispGain;
+  /* colour scale: free — it adapts slowly to what is on screen (above) — or fixed at a value of
+     CBFIXV, chosen beside the top colour bar. Remembered per colouring (the λ colourings share one)
+     and kept across model changes and presets; the page starts free. The free scale keeps being
+     tracked while fixed, so switching back is seamless. */
+  const CBFIXV = [0.01, 0.02, 0.04, 0.08, 0.16, 0.3, 0.5, 1, 2, 3, 5, 10];
+  const fixedScale = {};
+  const fixKey = kind => isLyKind(kind) ? 'ly' : kind;
+  const fixedOf = kind => fixedScale[fixKey(kind)] || 0;
+  const scaleFor = kind => { const s = niceCeil(ensureScale(kind).s); return fixedOf(kind) || (isLyKind(kind) ? s : s/dispGain); };
+  /* the scales of the two halves in 'grey λ<0' mode (P: λ > 0, N: λ < 0); a fixed scale serves both */
+  const splitS = (kind, P) => fixedOf(kind) || (P ? qscalesP[kind] : qscalesN[kind]);
   function kindLabel(kind){
     const two = params.dim === 2;
     if(isTermKind(kind)) return 'λ(' + termLabel(kind) + ')';
@@ -3277,9 +3313,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     ctx.fillStyle = TH.cbtext; ctx.font = '10.5px system-ui,sans-serif';
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
     if(splitOn(kind)){
-      ctx.fillText('+'+fmt(qscalesP[kind]), x+w+4, y+8);
+      ctx.fillText('+'+fmt(splitS(kind, 1)), x+w+4, y+8);
       ctx.fillText('0',                     x+w+4, y+h/2+3);
-      ctx.fillText('−'+fmt(qscalesN[kind]), x+w+4, y+h-1);
+      ctx.fillText('−'+fmt(splitS(kind, 0)), x+w+4, y+h-1);
     } else if(signed){
       ctx.fillText('+'+fmt(scale), x+w+4, y+8);
       ctx.fillText('0',            x+w+4, y+h/2+3);
@@ -3844,7 +3880,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      the map currently in use, with the extreme values of its scale. The gradient
      is repainted only when the colour map changes and the labels only when their
      text changes, so a running model does not touch the layout. ---- */
-  const CB = { key:'', top:{min:'',max:''}, ly:{min:'',max:'',lab:''}, off:null, split:null };
+  const CB = { key:'', top:{min:'',max:''}, ly:{min:'',max:'',lab:''}, off:null, split:null, fix:null };
   function paintBar(can, kind){
     const cw = can.width, ch = can.height;
     const c2 = can.getContext('2d');
@@ -3856,7 +3892,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const used = qkind !== 'plain' || params.dim === 2 || modeSel[1] === 'spacetime';
     if(CB.off !== !used){
       CB.off = !used;
-      $('cbTop').classList.toggle('off', !used); $('cbLy').classList.toggle('off', !used);
+      $('cbTop').classList.toggle('off', !used); $('cbLy').classList.toggle('off', !used); $('cbFix').classList.toggle('off', !used);
     }
     if(!used) return;
     const kind = effKind();
@@ -3882,9 +3918,16 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       $('bSplit').classList.toggle('on', lySplit);
     }
     $('cbTop').classList.toggle('clickable', canSplit);
+    /* the free / fixed switch shows the setting of the colouring now in use */
+    const fv = fixedOf(kind), fixTxt = fixKey(kind) + '|' + fv;
+    if(CB.fix !== fixTxt){
+      CB.fix = fixTxt;
+      setSeg('segCbFix', fv ? 'fixed' : 'free');
+      $('selCbFix').hidden = !fv; if(fv) $('selCbFix').value = '' + fv;
+    }
     const S = scaleFor(kind), signed = kind !== 'absdx';
-    const lo = sp ? '−' + fmt(qscalesN[kind]) : (signed ? '−' + fmt(S) : '0');
-    const hi = sp ? '+' + fmt(qscalesP[kind]) : ((signed ? '+' : '') + fmt(S));
+    const lo = sp ? '−' + fmt(splitS(kind, 0)) : (signed ? '−' + fmt(S) : '0');
+    const hi = sp ? '+' + fmt(splitS(kind, 1)) : ((signed ? '+' : '') + fmt(S));
     setLab('cbTopMin', 'min', CB.top, lo); setLab('cbTopMax', 'max', CB.top, hi);
     setLab('cbLyMin',  'min', CB.ly,  lo); setLab('cbLyMax',  'max', CB.ly,  hi);
     setLab('cbLyLab',  'lab', CB.ly,  kindLabel(kind));
@@ -4334,7 +4377,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
          lower right corner: the key that links the two figures */
       const cbw = 8, cbh = Math.min(ph - 30, 64), lab = kindLabel(qkind);
       const sp = splitOn(qkind);
-      const tx = '+' + fmt(sp ? qscalesP[qkind] : Sq), tn = '−' + fmt(sp ? qscalesN[qkind] : Sq);
+      const tx = '+' + fmt(sp ? splitS(qkind, 1) : Sq), tn = '−' + fmt(sp ? splitS(qkind, 0) : Sq);
       ctx.font = '10.5px system-ui,sans-serif';
       const tw = Math.max(ctx.measureText(tx).width, ctx.measureText(tn).width, ctx.measureText(lab).width);
       const bw = cbw + 8 + tw + 10, bh = cbh + 26;
@@ -4452,9 +4495,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const spl = splitOn(qkind);
     key(kx, py+18, cbh, t => { const c = 3*(linked ? barIdx(qkind, t) : lutIdx(t)); return 'rgb('+LT[c]+','+LT[c+1]+','+LT[c+2]+')'; });
     ctx.fillStyle = TH.label; ctx.textBaseline='alphabetic';
-    ctx.fillText(linked ? '+'+fmt(spl ? qscalesP[qkind] : Sq) : '+1', kx+12, py+26);
+    ctx.fillText(linked ? '+'+fmt(spl ? splitS(qkind, 1) : Sq) : '+1', kx+12, py+26);
     ctx.fillText('0', kx+12, py+18+cbh/2+3);
-    ctx.fillText(linked ? '−'+fmt(spl ? qscalesN[qkind] : Sq) : '−1', kx+12, py+18+cbh);
+    ctx.fillText(linked ? '−'+fmt(spl ? splitS(qkind, 0) : Sq) : '−1', kx+12, py+18+cbh);
     /* right / lower square */
     py = pyR;
     square(pxR, py, lyFld2, stacked);
@@ -5062,6 +5105,16 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     lySplit = !lySplit; draw();
   }
   $('bSplit').addEventListener('click', toggleSplit);
+  /* free / fixed colour scale: 'fixed' starts at the menu value nearest the current free scale,
+     so the picture does not jump; the menu then sets it */
+  (function(){ const el = $('selCbFix'); for(const v of CBFIXV){ const o = document.createElement('option'); o.value = '' + v; o.textContent = '' + v; el.appendChild(o); } })();
+  seg($('segCbFix'), () => fixedOf(effKind()) ? 'fixed' : 'free', v => {
+    const kind = effKind(), k = fixKey(kind);
+    if(v === 'free') delete fixedScale[k];
+    else { const cur = scaleFor(kind); fixedScale[k] = CBFIXV.reduce((b, x) => Math.abs(Math.log(x/cur)) < Math.abs(Math.log(b/cur)) ? x : b); }
+    CB.fix = null; draw();
+  });
+  $('selCbFix').addEventListener('change', e => { fixedScale[fixKey(effKind())] = +e.target.value; CB.fix = null; draw(); });
   $('cbTop').addEventListener('click', toggleSplit);
   $('cbTop').title = 'colour scale of the display — click to switch between the standard map and "grey λ<0" when colouring by λ(x)';
 
@@ -5243,6 +5296,11 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   { const ro = new ResizeObserver(()=>placePresets()); ro.observe($('presetBox')); const cp = $('presetBox').parentElement.querySelector('.cornerpng'); if(cp) ro.observe(cp); }
   window.addEventListener('resize', placePresets);
+  /* --barB: the bottom of the display bar, below which the read-out, the view menu and the
+     divergence warning are placed (the bar wraps onto more rows on narrow screens) */
+  { const bar = document.querySelector('.dispbar'), wrap = bar.parentElement;
+    const place = () => wrap.style.setProperty('--barB', Math.round(bar.offsetTop + bar.offsetHeight + 8) + 'px');
+    new ResizeObserver(place).observe(bar); place(); }
   function runPreset(setup, id){
     running = false;
     beautyBuilding = true;              // the preset's own rebuild must not clear the labels
