@@ -48,6 +48,12 @@
   .dropbox a{color:var(--accent);text-decoration:none}
   .dropbox a:hover{text-decoration:underline}
   .dropbox .refs{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px}
+  /* "More details on the variant models": a pull-down at the end of the text, styled as a heading;
+     its arrow follows its own state, not that of the open title pull-down around it */
+  .dropbox details.more{border-top:1px solid var(--line);margin:16px 0 4px}
+  .dropbox details.more > summary{padding:10px 0 4px;font-size:14px;font-weight:650;color:var(--accent);justify-content:flex-start}
+  .dropbox details.more > summary::after{margin-left:8px;transform:rotate(-45deg)}
+  .dropbox details.more[open] > summary::after{transform:rotate(45deg)}
   /* citations [n] link to their reference: the reference lights up, with a button back to the text */
   .dropbox a.cite{font-weight:600}
   .dropbox .refs p{scroll-margin:40px 0;border-radius:6px;transition:background .3s}
@@ -89,6 +95,7 @@
   .lamtab td.pm{color:var(--muted);font-size:10.5px;padding-left:2px}
   .lamtab td.pm.ch,.lamtab td.pm.fz{color:inherit}
   .lamtab td.sat{color:var(--ink2)}
+  .lamtab .arr{font-size:.8em;margin:0 1px}
   @media (max-width:560px){ .lamtabwrap{flex-direction:column;align-items:stretch} .lamtabcol{width:100%} .lamtab{font-size:11px} .lamtab th,.lamtab td{padding:2px 5px}
     .lamtabside{flex-direction:row;flex-wrap:wrap;justify-content:flex-start;gap:6px 8px;width:100%} .lamtabside .lamside2{margin-top:0;flex-basis:100%;text-align:left} }
   .eqrow{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
@@ -648,145 +655,23 @@
         linearly unstable term, and the emergent large-scale dynamics carries an effective diffusion
         constant of about 15 (see Refs.&nbsp;[<a class="cite" href="#ref-3">3</a>,&nbsp;<a class="cite" href="#ref-4">4</a>,&nbsp;<a class="cite" href="#ref-5">5</a>]).</p>
 
-        <h2>Variant models: extra terms in the equation</h2>
-        <p>The KS equation is the <i>lowest-order</i> description of a growing front: it keeps only
-        the first terms of two expansions — in derivatives (long wavelengths) and in the slope
-        &nabla;h (gentle tilts). The header lets you go one step further in either expansion and
-        see what survives.</p>
-        <h3>Higher derivatives</h3>
-        <p>The toggle at the left replaces the two linear terms by
-        +&nabla;&#8308;h + &nabla;&#8310;h. The instability is then carried by the fourth derivative
-        and the cut-off by the sixth; a wave with wavenumber k grows at the rate
-        &omega; = k&#8308; &minus; k&#8310; instead of k&sup2; &minus; k&#8308;. The unstable band
-        0 &lt; k &lt; 1 is the same, but the fastest mode moves from k = 1/&radic;2 to
-        k = &radic;(2/3) and the growth near k = 0 is much weaker. The chaotic cell pattern
-        persists with slightly smaller cells — a first hint that the qualitative picture does
-        not depend on the exact form of the linear terms. (It is the Nikolaevskiy equation of the
-        next paragraph at r = 1 [<a class="cite" href="#ref-12">12</a>].)</p>
-        <p>A third setting of the toggle, <b>&Lambda;&nabla;&sup2;h + &nabla;&#8308;h +
-        &nabla;&#8310;h</b>, keeps all three derivatives: it is the previous equation with an
-        ordinary diffusion &Lambda;&nabla;&sup2;h added, of a strength &Lambda; chosen in the header
-        (0.01 to 0.3; a capital &Lambda;, because &lambda; is the Lyapunov exponent). A wave now grows
-        at the rate &omega; = &minus;&Lambda;k&sup2; + k&#8308; &minus; k&#8310; = &minus;k&sup2;(&Lambda; &minus; k&sup2; + k&#8308;).
-        Unlike KS, the longest waves are damped as well as the shortest, and only a band in
-        between grows, from k&sup2; = (1 &minus; &radic;(1&minus;4&Lambda;))/2 to (1 + &radic;(1&minus;4&Lambda;))/2.
-        As &Lambda; &rarr; 0 this is the band 0 &lt; k &lt; 1 of the +&nabla;&#8308;h + &nabla;&#8310;h
-        equation; as &Lambda; rises the band narrows from below, and at &Lambda; = 1/4 it closes at
-        k = 1/&radic;2: for &Lambda; &ge; 1/4 the flat surface is stable. The fastest growth rate
-        falls from 4/27 &asymp; 0.148 (&Lambda; &rarr; 0) to 0.135 at &Lambda; = 0.02, 0.107 at
-        1/16, 0.084 at 0.1, 0.054 at 0.15, 0.026 at 0.2 and 0 at 1/4. The presets KKS 1D and 2D run
-        &Lambda; = 0.1, where the band is 0.34 &lt; k &lt; 0.94. &Lambda; = 1/16 is
-        exactly the equation +&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h rescaled (x &rarr; 2x,
-        t &rarr; 64t, h &rarr; h/16), so its Lyapunov exponent is 64 times smaller and its width 16
-        times smaller than in that form.</p>
-        <p><b>From seismic waves.</b> This equation was not invented here: up to a rescaling it is
-        the <b>Nikolaevskiy equation</b>, which Nikolaevskiy derived in 1989 as a model of
-        longitudinal <i>seismic</i> waves — the compression waves by which earthquakes shake the
-        ground — in a viscoelastic medium with internal oscillators, written for the displacement
-        velocity of the medium [<a class="cite" href="#ref-12">12</a>]. There the band of growing waves describes a medium that
-        amplifies seismic waves of intermediate wavelength while it damps longer and shorter ones,
-        and the nonlinear seismic waves of such an unstable medium were analysed by Beresnev and
-        Nikolaevskiy [<a class="cite" href="#ref-29">29</a>]. In its usual form it is an equation for u — the displacement velocity of
-        the seismic model, the slope u = &part;h/&part;x of the front here — with growth rate (r &minus; 1)k&sup2; + 2k&#8308; &minus; k&#8310;; rescaling k&sup2; &rarr; 2k&sup2;
-        and time by 8 turns it into &minus;&Lambda;k&sup2; + k&#8308; &minus; k&#8310; with <b>&Lambda; = (1 &minus; r)/4</b>,
-        so &Lambda; = 1/4 is the onset r = 0 of the seismic model, and &Lambda; = 0.1 is r = 0.6. The
-        equation has since become a standard example of spatiotemporal chaos that sets in right at
-        onset ("soft-mode turbulence") [<a class="cite" href="#ref-13">13</a>,&nbsp;<a class="cite" href="#ref-14">14</a>,&nbsp;<a class="cite" href="#ref-15">15</a>]; the seismic original also carries dispersive
-        terms, which can stabilize travelling waves [<a class="cite" href="#ref-30">30</a>].</p>
-        <h3>The slope expansion: &alpha; and &beta;</h3>
-        <p>A front that advances at a speed depending only on its local tilt, v(&nabla;h), adds
-        a term v(&nabla;h) to &part;h/&part;t [<a class="cite" href="#ref-11">11</a>,&nbsp;<a class="cite" href="#ref-16">16</a>]. Expanding v in the slope gives, by the symmetry
-        x &rarr; &minus;x, only even powers and even functions: |&nabla;h|, (&nabla;h)&sup2;,
-        (&nabla;h)&#8308;, … The KS equation keeps (&nabla;h)&sup2;, the term that lets a tilted
-        piece of front grow faster (a tilted flame front sees more fuel per unit length). The
-        two pull-down menus switch on its neighbours:</p>
-        <p><b>&alpha;|&nabla;h|</b> is the term <i>below</i> (&nabla;h)&sup2; in the expansion — it
-        is not analytic at zero slope and describes a front whose speed changes at first order
-        in the tilt, like a facetted crystal; it is also the growth term of a front that moves at
-        a constant speed along its normal in the level-set description of moving fronts [<a class="cite" href="#ref-17">17</a>]. With &alpha; &gt; 0 tilted parts grow faster
-        still: the cells become flatter and sharper, ridges form facets, the surface width W
-        shrinks (W &asymp; 0.8 at &alpha; = 1 against 2.7 for KS on the default lattice) while
-        the exponent stays chaotic, &lambda; &asymp; 0.09. With &alpha; &lt; 0 tilted parts are
-        <i>slowed</i>: the cells grow taller and rounder (W &asymp; 4.7 at &alpha; = &minus;1),
-        and the dynamics remains chaotic, &lambda; &asymp; 0.08.</p>
-        <p><b>&beta;(&nabla;h)&#8308;</b> is the term <i>above</i> (&nabla;h)&sup2;. It is small where
-        slopes are gentle and takes over where they are steep — precisely the place where the
-        long-wavelength, small-slope expansion behind KS is least trustworthy. For a flame whose
-        front advances at a fixed normal speed the full slope dependence is
-        &radic;(1 + (&nabla;h)&sup2;) = 1 + (&nabla;h)&sup2;/2 &minus; (&nabla;h)&#8308;/8 + …, a negative &beta;;
-        keeping it was proposed for strongly wrinkled flames [<a class="cite" href="#ref-18">18</a>].</p>
-        <h3>The sign of the correction decides</h3>
-        <p>Since (&nabla;h)&sup2; &ge; 0 always adds growth, the <i>sign</i> of the next term
-        decides whether steep slopes are rewarded further or held back, and the two signs give
-        genuinely different worlds (measured on the default lattice, L = 128, periodic, after a
-        long run):</p>
-        <p><b>&beta; &gt; 0</b> rewards steep regions with extra growth. The steep flanks race ahead,
-        the surface flattens (W drops from 2.7 to 1.3 at &beta; = 2) and the mean height climbs
-        faster. At &beta; = 0.5 the front is still clearly chaotic (&lambda; &asymp; 0.07; the shape
-        changes by more than its own width every 20 time units). By &beta; = 2 the chaos is
-        essentially gone: the front settles into a steady cellular pattern that changes by only a
-        tenth of its width in 20 time units, and the measured exponent drops to &lambda; &asymp; 0.02
-        — a growth time of 50 time units, an order of magnitude slower than the cell dynamics
-        of KS. What remains is <i>metastability</i>, not chaos: long steady episodes that are
-        very weakly unstable, ending now and then in a rearrangement of a few cells, after which a
-        new steady front forms. With (&nabla;h)&sup2; switched off and &beta;(&nabla;h)&#8308; as the only
-        nonlinearity the front is steady outright, and the long-time divergence of two nearly
-        identical fronts is nil (free run slope &asymp; 0.00), even though the Benettin average
-        taken over a whole episode may show a small positive number (see <i>Benettin versus free
-        run</i> below).</p>
-        <p><b>&beta; &lt; 0</b> penalizes steep slopes. The cells grow tall and the front
-        <i>freezes</i>: already at &beta; = &minus;0.5 the largest Lyapunov exponent drops to
-        zero (measured &lambda; = &minus;0.001), and at &beta; = &minus;1.5 it is 0.01 — a steady or
-        slowly drifting cellular pattern instead of spatiotemporal chaos. The Lyapunov vector
-        then has a very long wavelength (k&#772; &asymp; 0.16 rather than the cell wavenumber
-        0.7): what remains "unstable" is a slow, large-scale reshuffling of cells, not the
-        splitting and merging that defines KS chaos.</p>
-        <p>The full &lambda;(&beta;) dependence for both equations, measured after the transient, is
-        tabulated at the end of this text. This is the sobering lesson of the variant models. The chaos of the KS equation is
-        robust against the |&nabla;h| correction, but a (&nabla;h)&#8308; term of moderate size — of
-        either sign, once |&beta;| is of order one — eliminates it: negative &beta; freezes the
-        cells, positive &beta; flattens them into a steady pattern with only rare rearrangements.
-        And it is not even robust against the form of the linear terms in this respect: with
-        +&nabla;&#8308;h + &nabla;&#8310;h in place of &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h the chaos survives
-        every positive &beta; (table). Whether a real front is chaotic therefore
-        depends on physics that the lowest-order expansion has thrown away — which casts doubt on
-        the range of validity of the long-wavelength, small-slope approximation as a description
-        of real chaotic fronts, and suggests that the universal large-scale (KPZ) behaviour should
-        be looked for only where the slopes stay gentle. The term budget of the Lyapunov section
-        (below) shows the mechanism directly: switch &beta; on and watch the &beta;(&nabla;h)&#8308;
-        strip take away the divergence that (&nabla;h)&sup2; and &minus;&nabla;&sup2;h produce on the
-        steep flanks.</p>
-        <h3>Two more terms with second derivatives: &gamma; and &delta;</h3>
-        <p>The last two menus add terms of the next order in the <i>derivative</i> expansion that
-        are still second order in the slope. <b>&gamma;&nabla;&sup2;(&nabla;h)&sup2;</b> is the
-        conserved counterpart of the KS nonlinearity: being a Laplacian of something, it moves
-        height around without changing the mean — the nonlinearity of conserved growth
-        (conserved KPZ and Villain–Lai–Das Sarma [<a class="cite" href="#ref-19">19</a>,&nbsp;<a class="cite" href="#ref-20">20</a>,&nbsp;<a class="cite" href="#ref-21">21</a>]; KS with this term added is the
-        "minimal deposition equation" of amorphous thin films [<a class="cite" href="#ref-22">22</a>]).
-        <b>&delta;&nabla;&sup2;h&middot;(&nabla;h)&sup2;</b> is a diffusion whose coefficient is the squared
-        slope — in one dimension (&delta;/3)&part;<sub>x</sub>(&part;<sub>x</sub>h)&sup3;, the cubic,
-        slope-selecting surface current of epitaxial growth [<a class="cite" href="#ref-23">23</a>,&nbsp;<a class="cite" href="#ref-24">24</a>]: for &delta; &gt; 0 steep parts of the front are smoothed
-        harder than flat parts, for &delta; &lt; 0 they are sharpened. Both terms carry two more
-        derivatives than (&nabla;h)&sup2;, and that decides their fate: for the "wrong" sign they
-        are not regularized by &minus;&nabla;&#8308;h at all. <b>&gamma; &gt; 0 and &delta; &lt; 0 blow up in
-        finite time</b> — at every time step tried, from 0.02 down to 0.002, so this is the equation
-        and not the integrator — and the run then stops with the "diverged" warning; the &delta; menu therefore offers only
-        &delta; &ge; 0. For
-        &gamma; &lt; 0 and &delta; &gt; 0 the runs are bounded and the integration is converged
-        already at the automatic time step (&gamma;: 0.02, &delta;: 0.01; W agrees with a
-        dt = 0.002 reference to 0.1 % for |&gamma;| &le; 5 and at dt = 0.01 for &delta;). A negative
-        &gamma; flattens the KS pattern strongly (W &asymp; 0.9 at &gamma; = &minus;0.5, 0.6 at
-        &minus;2) while the mean height still climbs; a positive &delta; keeps W near the KS value
-        (1.1–2.2). Both appear in the Lyapunov term budget and in the colour menu like the other
-        terms, so their share of the divergence can be read off directly — at &gamma; = &minus;0.5
-        in 2D, for instance, the &gamma; term <i>adds</i> +0.18 to &Lambda; while at &delta; = 0.5 the
-        &delta; term <i>removes</i> &minus;0.14, in both cases with the total still near the KS value.</p>
-        <p>Practical notes: the (&nabla;h)&sup2; term itself can be crossed out in the header. The
-        equation is then linear and would grow without bound, so &beta; jumps to 1 automatically
-        (and back to 0 when the term returns) — a way to see that &beta;(&nabla;h)&#8308; alone can
-        saturate the instability, giving cells of the same size but a different shape. The time
-        step follows the menus automatically, because the fourth power of the slope needs a
-        finer step than KS.</p>
+        <p><b>Variant models.</b> The KS equation is the <i>lowest-order</i> description of a growing
+        front: it keeps only the first terms of two expansions — in derivatives (long wavelengths) and
+        in the slope &nabla;h (gentle tilts). The header lets you go one step further in either. The
+        linear terms can be replaced by +&nabla;&#8308;h + &nabla;&#8310;h, or by &Lambda;&nabla;&sup2;h +
+        &nabla;&#8308;h + &nabla;&#8310;h — the Nikolaevskiy equation of seismic waves
+        [<a class="cite" href="#ref-12">12</a>] — and the nonlinearity (&nabla;h)&sup2; can be joined by
+        &alpha;|&nabla;h|, &beta;(&nabla;h)&#8308;, &gamma;&nabla;&sup2;(&nabla;h)&sup2; and
+        &delta;&nabla;&sup2;h(&nabla;h)&sup2;. Where these variants come from and what each of them does to
+        the front is described in <a class="tomore" href="#variantDetails"><i>More details on the variant models</i></a> at the end of this text;
+        the tables below measure how the slope correction &beta; changes the chaos for three of the
+        linear forms.</p>
+        <p><b>Measuring chaos.</b> KS is the standard test case for spatiotemporal chaos: its chaos is
+        extensive, the number of positive Lyapunov exponents growing in proportion to the system size
+        [<a class="cite" href="#ref-27">27</a>], and its covariant Lyapunov vectors split into "physical"
+        modes, whose number also grows with the system size, and a remainder of strongly damped modes
+        decoupled from them [<a class="cite" href="#ref-28">28</a>]. The applet measures the largest of
+        these exponents, for KS and for every variant.</p>
 
         <h2>How chaotic? The largest Lyapunov exponent</h2>
         <h3>The idea</h3>
@@ -799,7 +684,6 @@
         beyond a time of order 1/&lambda;; zero or negative means the pattern is periodic or
         steady. For the KS equation on a large box &lambda; &asymp; 0.09 in the units of the
         equation — a memory of about ten time units, roughly the time a cell takes to split.
-        (On Lyapunov exponents of the KS equation see [<a class="cite" href="#ref-27">27</a>,&nbsp;<a class="cite" href="#ref-28">28</a>].)
         Open the section below the display to start the measurement.</p>
         <h3>Benettin's method</h3>
         <p>An exponentially growing separation soon stops being small, so the applet measures
@@ -921,39 +805,45 @@
         peak reach a hundred times the typical value — so the colour scale is set at the 98th
         percentile of |c| and the rare peaks saturate. The twin doubles the work per step;
         close the section to run at full speed.</p>
-        <h2>Table: Lyapunov exponent against &beta; for the two equations</h2>
-        <p>Measured with this applet's systematic scan (control panel &rarr; <i>Systematic scan</i>, both
-        equations) in 1D, periodic, for a box of physical length L = 256 resolved with dx = 0.5, i.e.
-        512 lattice points — twice the box and twice the resolution of the earlier L = 128, dx = 1 scan,
-        which remains available from the download buttons on the right. &alpha; = 0, (&nabla;h)&sup2; on.
-        <b>Protocol:</b> every &beta; was run from several random starts (a few waves of small amplitude
-        plus noise). After the transient the twin interface was switched on: during the first half of
-        the measurement it was renormalised at every frame and the <b>Benettin</b> column is its mean
-        growth rate; during the second half it was seeded again and again from the running state and
-        released, each run stopped 60 time units after the two fronts had completely diverged (or after
-        600 time units if they never did), and the <b>&lambda; free</b> column is the mean of the fitted
-        slopes of ln|&delta;h|(t). Every value is the mean over the starts and the &plusmn; is the spread
-        between them. <b>D<sub>sat</sub></b> is the saturated separation: the time average of |&delta;h|
-        once the free-running twin has stopped growing, i.e. the window of variation the interface has
-        available; a &dagger; marks rows where the separation never saturated in any free run — the
-        number given is then the mean of |&delta;h| over the last third of the run, and when it is of
-        order 10<sup>&minus;7</sup> the two fronts simply never left each other (the seed is &epsilon; = 0.1
-        on the Lyapunov vector, which the dynamics at once contracts to the round-off floor). W is the
-        mean width during the measurement.</p>
-        <p>The D<sub>sat</sub> column is the reason the Lyapunov exponent alone can mislead: a &lambda; of
-        0.01–0.02 with D<sub>sat</sub> &asymp; 10<sup>&minus;4</sup> (the KS rows from &minus;0.4 to
-        &minus;0.1) is a front whose twin stays within a ten-thousandth of it for the whole run — a small
-        positive exponent measured on a separation that never becomes visible, and of no practical
-        consequence. Only where D<sub>sat</sub> is of order one, comparable with W, has the exponent its
-        usual meaning as the rate at which two nearby interfaces become different interfaces. The colours
-        follow &lambda; free alone (red &lambda; &ge; 0.05, blue &lambda; &lt; 0.02); read them together
-        with D<sub>sat</sub>.</p>
+        <h2>Table: Lyapunov exponent against &beta; for the three equations</h2>
+        <p>Measured with this applet's systematic scan (control panel &rarr; <i>Systematic scan</i>, all
+        three linear operators ticked) in 1D with periodic boundaries, for a box of physical length L = 256 resolved with
+        dx = 0.5, i.e. 512 lattice points — twice the box and twice the resolution of the earlier
+        L = 128, dx = 1 scan, which remains available from the download buttons on the right.
+        &alpha; = 0, (&nabla;h)&sup2; on. The three column groups are KS, the &Lambda; equation at
+        &Lambda; = 0.2 — close to its threshold 1/4, the Nikolaevskiy equation near onset — and the
+        +&nabla;&#8308;h + &nabla;&#8310;h equation (&Lambda; = 0).
+        <b>Protocol:</b> every &beta; is run from three random starts (a few waves of small amplitude plus
+        noise); the columns are the means over the three, and the D<sub>sat</sub> range covers the free
+        runs of all three. Each run first integrates a transient of 2000 time units; then the twin
+        interface is switched on, at an rms distance &epsilon; = 10<sup>&minus;6</sup>, for a measurement of
+        another 2000. During its first half (1000 time units) the twin is renormalised at every frame and
+        the <b>Benettin</b> column is its mean growth rate; during the second half it is seeded again and again from the running state and released, each run stopped 60 time units
+        after the two fronts have completely diverged (or after at most 600 time units if they never
+        do), and the <b>&lambda; free</b> column is the mean of the fitted slopes of ln|&delta;h|(t).
+        <b>D<sub>sat</sub></b> is the saturated separation: the time average of |&delta;h| once the
+        free-running twin has stopped growing, i.e. the window of variation the interface has
+        available; the column gives the smallest and the largest value met in the free runs. A
+        &dagger; marks rows where no free run reached that plateau — the numbers are then the mean of
+        |&delta;h| over the last third of each run, and when they are of order 10<sup>&minus;7</sup> the
+        two fronts simply never left each other. W is the mean width during the measurement.</p>
+        <p>The D<sub>sat</sub> column is the reason the Lyapunov exponent alone can mislead: a Benettin
+        &lambda; of 0.015 with a largest D<sub>sat</sub> of 10<sup>&minus;4</sup> (KS at &beta; = &minus;0.3,
+        where W &asymp; 14) is a front whose twin stays within about a hundred-thousandth of the width for
+        the whole run — a small positive exponent measured on a separation that never becomes visible, and
+        of no practical consequence. Only where D<sub>sat</sub> grows to a sizeable fraction of W has the
+        exponent its usual meaning as the rate at which two nearby interfaces become different
+        interfaces. The colours therefore combine both: <span style="color:#b91c1c">red</span> (chaos)
+        where &lambda; free and Benettin are both above 0.005 and the largest D<sub>sat</sub> exceeds
+        0.01&middot;W, <span style="color:#1d4ed8">blue</span> (no chaos) where either exponent is
+        negative or the largest D<sub>sat</sub> stays below 0.001&middot;W, and black — doubtful — in
+        between.</p>
         <div class="lamtabwrap">
           <div class="lamtabcol"><div class="lamtabscroll"><table class="lamtab" id="lamTable"></table></div></div>
           <div class="lamtabside">
             <span class="lamside2" style="margin-top:0">L = 256, dx = 0.5 (above):</span>
-            <button class="tbtn" id="bLam256pTabPng" title="save the table above (L = 256, dx = 0.5, 512 points, periodic boundaries) as a PNG image">table .png</button>
-            <button class="tbtn" id="bLam256pPlotPng" title="save a plot of the long-run &lambda; against &beta; for both equations (the table above) as a PNG image">plot .png</button>
+            <button class="tbtn" id="bLam256pTabPng" title="save the table above (three equations, 1D periodic, L = 256, dx = 0.5, 512 points) as a PNG image">table .png</button>
+            <button class="tbtn" id="bLam256pPlotPng" title="save a plot of the long-run &lambda; (free run and Benettin) against &beta; for the three equations of the table above as a PNG image">plot .png</button>
             <span class="lamside2">L = 128, dx = 1, periodic:</span>
             <button class="tbtn" id="bLamTabPng" title="the earlier scan of the same two equations in a box of 128 with dx = 1 (128 points), the default start, 6000 time units of Benettin averaging (last third) and 2000 time units of free runs — download only">table .png</button>
             <button class="tbtn" id="bLamPlotPng" title="the plot of the long-run &lambda; against &beta; for the earlier L = 128, dx = 1 scan — download only">plot .png</button>
@@ -966,30 +856,45 @@
             <button class="tbtn" id="bLam256PlotPng" title="the same plot for a box of 256 at dx = 1 with open boundaries — download only">plot .png</button>
           </div>
         </div>
-        <p>Two things stand out. For the <b>KS equation</b> the chaos lives in a band from &beta; &asymp; &minus;0.05
-        upwards: &lambda; &asymp; 0.09–0.11 around &beta; = 0 (Benettin and free run agreeing to a few per
-        cent, D<sub>sat</sub> &asymp; 2–3, comparable with W), falling steadily through 0.065 at &beta; = 1
-        and 0.05–0.06 at &beta; = 2 and 3, with D<sub>sat</sub> shrinking along with W to about half a
-        unit. At &beta; = 4 and 5 the front is nearly frozen (&lambda; = 0.02–0.05 with a scatter as large
-        as the value, D<sub>sat</sub> &le; 0.2): the exponent that survives there is an occasional slow
-        rearrangement, not sustained chaos. In the larger box the KS chaos thus extends much further into
-        positive &beta; than the earlier L = 128 scan suggested (there the front was already steady at
-        &beta; = 1): the small box was pinning the pattern. &beta; &le; &minus;1 freezes the cells
-        completely (&lambda; = 0.000, D<sub>sat</sub> &asymp; 10<sup>&minus;7</sup>, W falling from 2.6
-        to 0.7 as &beta; goes to &minus;5). A small negative &beta; (&minus;0.4 … &minus;0.1) lets the few
-        cells that survive grow tall — W of 8 to 48 in a box of 256 — and those giant-cell states are at
-        most weakly unstable: &lambda; = 0.01–0.02, but with D<sub>sat</sub> &le; 10<sup>&minus;4</sup>
-        the two fronts never actually separate, so for every practical purpose the state is frozen. For
-        the <b>&nabla;&#8308;h + &nabla;&#8310;h equation</b> the picture is very different: the chaos survives
-        every positive &beta; in the list, with &lambda; &asymp; 0.09–0.11 and D<sub>sat</sub> = 1.3–2.5 all
-        the way to &beta; = 5, and it is frozen for &beta; &le; &minus;0.4 and at &beta; = &minus;0.1 (giant
-        cells, W &asymp; 11, D<sub>sat</sub> &asymp; 10<sup>&minus;6</sup>) — but chaotic again, with the
-        full &lambda; &asymp; 0.08–0.09 and D<sub>sat</sub> = 5–7, at &beta; = &minus;0.3 and &minus;0.2.
-        The chaos of the higher-order equation is thus far more robust against the slope correction
-        than that of KS — a warning that conclusions drawn from the lowest-order KS form need not
-        carry over to fronts whose linear instability has a different shape.</p>
+        <p>Three things stand out. For the <b>KS equation</b> the chaos lives in a band from
+        &beta; &asymp; &minus;0.05 upwards: &lambda; &asymp; 0.10–0.12 at &beta; = &minus;0.05 and 0
+        (Benettin and free run agreeing to within 15 %, D<sub>sat</sub> reaching 3–4, comparable with W),
+        falling steadily through 0.06 at &beta; = 1 and 0.05 at &beta; = 2 to 0.04–0.05 at &beta; = 3, with
+        the largest D<sub>sat</sub> still about 2 while W shrinks to 1.3–1.4. At &beta; = 4 and 5 the
+        chaos fades: &lambda; free = 0.005 and 0.017, Benettin 0.014 and 0.024, and no free run reaches
+        its plateau (&dagger;) — doubtful at &beta; = 4, weakly chaotic at &beta; = 5. In the larger box the
+        KS chaos thus extends much further into positive &beta; than the earlier L = 128 scan suggested
+        (there the front was already steady at &beta; = 1): the small box was pinning the pattern.
+        &beta; &le; &minus;1 freezes the cells completely (&lambda; &le; 0.003, D<sub>sat</sub> between
+        10<sup>&minus;7</sup> and 10<sup>&minus;4</sup>, W falling from 2.8 to 0.7 as &beta; goes to &minus;5). A small negative
+        &beta; (&minus;0.4 … &minus;0.1) lets the few cells that survive grow tall — W of 9 to 47 in a box of
+        256 — and those giant-cell states are at most weakly unstable and differ from one &beta; to the
+        next: at &minus;0.4 the twins do part (&lambda; &asymp; 0.013, D<sub>sat</sub> up to 0.6), at
+        &minus;0.2 the verdict is doubtful, and at &minus;0.3 and &minus;0.1 the largest D<sub>sat</sub> stays
+        below a thousandth of W, so for every practical purpose the state is frozen.</p>
+        <p>The <b>&Lambda; equation at &Lambda; = 0.2</b> behaves in a third way: it is weakly chaotic for
+        <i>every</i> &beta; from &minus;5 to 5, with &lambda; &asymp; 0.015–0.03 (Benettin and free run
+        agreeing to within 0.005), largest at &beta; = &minus;5 … &minus;3 (0.027–0.030) and almost constant,
+        0.015–0.021, from &beta; = &minus;0.4 upwards. The front stays low (W = 0.5–2.1) and never forms the
+        giant cells or the frozen states of the other two equations — presumably because near onset the
+        band of growing waves is narrow (0.53 &lt; k &lt; 0.85) and the front stays low, so that the slopes
+        on which the &beta; term acts remain gentle. Because the exponent is small, a free run needs some 800 time units to grow from
+        &epsilon; = 10<sup>&minus;6</sup> to full separation — longer than the free runs last — so every
+        D<sub>sat</sub> carries a &dagger; and is a lower bound; still, the largest separation reached
+        (0.006–0.9) exceeds a hundredth of W in every row. This is the soft-mode turbulence of the
+        Nikolaevskiy equation: chaos right above onset, and insensitive to the slope correction of
+        either sign.</p>
+        <p>For the <b>&nabla;&#8308;h + &nabla;&#8310;h equation</b> (&Lambda; = 0) the picture is different
+        again: the chaos survives every positive &beta; in the list, with &lambda; &asymp; 0.08–0.12 and
+        D<sub>sat</sub> reaching 1–7 all the way to &beta; = 5, and it is frozen for &beta; &le; &minus;0.4
+        and at &beta; = &minus;0.1 (giant cells, W &asymp; 11, D<sub>sat</sub> &lt; 10<sup>&minus;6</sup>) —
+        but chaotic again, with the full &lambda; &asymp; 0.08–0.10 and D<sub>sat</sub> up to 10–20, at
+        &beta; = &minus;0.3 and &minus;0.2. The chaos of the two higher-order equations is thus far more
+        robust against the slope correction than that of KS — a warning that conclusions drawn from the
+        lowest-order KS form need not carry over to fronts whose linear instability has a different
+        shape.</p>
         <h3>The window at &beta; &asymp; &minus;0.2: giant cells, a re-entrant window, and several attractors</h3>
-        <p>The higher-order equation is chaotic again at &beta; = &minus;0.3 and &minus;0.2 between two frozen
+        <p>The +&nabla;&#8308;h + &nabla;&#8310;h equation is chaotic again at &beta; = &minus;0.3 and &minus;0.2 between two frozen
         regimes, and in the earlier L = 128, dx = 1 scan (download buttons above) both curves rose around
         &beta; = &minus;0.2 before dropping to zero at &beta; = &minus;0.3, which looked odd. To test whether
         this is a statistical accident, in that box (L = 128, dx = 1, periodic) &beta; = &minus;0.3, &minus;0.25,
@@ -1013,22 +918,23 @@
         &lambda; = 0.08–0.10 and the two fronts diverging completely in every free run — as chaotic
         as at &beta; = 0. On both sides of it the front freezes: at &beta; = &minus;0.15 into 4 giant cells
         (W &asymp; 10–15, &lambda; &asymp; 0.00) and at &beta; = &minus;0.3 into 14 small cells (W = 2.25,
-        &lambda; &asymp; 0.00). So the higher-order equation has a <b>re-entrant</b> chaotic window
+        &lambda; &asymp; 0.00). So the +&nabla;&#8308;h + &nabla;&#8310;h equation has a <b>re-entrant</b> chaotic window
         between two frozen regimes, and the "peak" is that window sampled at one point.</p>
         <p>The fourth start reveals a third attractor for both equations: the pure sine wave keeps its
         exact four-fold symmetry, and from it the front settles into a <b>perfectly periodic</b>
         steady pattern of 16 identical cells (wavelength 8, k = 0.79) with W &asymp; 2–3, which is
         linearly <i>stable</i>: &lambda; = &minus;0.004 for KS and about &minus;0.1 to &minus;0.17 for the
-        higher-order equation (in the latter case the free-run separation decays to the round-off
+        +&nabla;&#8308;h + &nabla;&#8310;h equation (in the latter case the free-run separation decays to the round-off
         floor within a few hundred time units, so the fitted slope reads 0 while the Benettin rate
         gives the true negative value). In this band of negative &beta; the front therefore has at
         least three coexisting long-time states — small periodic cells, giant cells, and (for the
-        higher-order equation) an intermittent chaotic state — and which one a run ends in depends
-        on the initial condition. The L = 256 table above averages over several random starts, and
-        its spread column shows where they disagree (the large &plusmn; of W and D<sub>sat</sub> at
-        &beta; = &minus;0.4 … &minus;0.1 is exactly this coexistence).</p>
+        +&nabla;&#8308;h + &nabla;&#8310;h equation) an intermittent chaotic state — and which one a run ends in depends
+        on the initial condition. In the L = 256 table above this coexistence shows at
+        &beta; = &minus;0.4 … &minus;0.1, where the KS verdict changes from row to row (red, blue, black,
+        blue) and W jumps between 9 and 47: which state a run settles into there depends on its start.</p>
         <h2>Table: the same scan in two dimensions</h2>
-        <p>The two equations in 2+1 dimensions on a periodic 64 &times; 64 box (dx = 1, the size of
+        <p>KS and the +&nabla;&#8308;h + &nabla;&#8310;h equation (the &Lambda; equation was not part of this
+        scan) in 2+1 dimensions on a periodic 64 &times; 64 box (dx = 1, the size of
         the 2D preset), &alpha; = 0, (&nabla;h)&sup2; on, &beta; from &minus;5 to 5. Same protocol, shorter
         runs (a 2D step costs the box side more): transient until the width W has settled, 900 time
         units of Benettin averaging with &lambda; taken over the last third, then repeated free runs
@@ -1072,8 +978,8 @@
         &Lambda; = 1/4 is its onset r = 0, and the +&nabla;&#8308;h + &nabla;&#8310;h equation is r = 1.
         Unlike the Swift–Hohenberg equation, it keeps a neutral long-wave (Goldstone) mode, and the
         coupling to that mode makes every periodic pattern unstable: the front is chaotic right
-        at onset ("soft-mode turbulence") [<a class="cite" href="#ref-13">13</a>,&nbsp;<a class="cite" href="#ref-14">14</a>,&nbsp;<a class="cite" href="#ref-15">15</a>] — in line with the positive exponents the scan
-        finds all the way up to &Lambda; = 0.2.</p>
+        at onset ("soft-mode turbulence") [<a class="cite" href="#ref-13">13</a>,&nbsp;<a class="cite" href="#ref-14">14</a>,&nbsp;<a class="cite" href="#ref-15">15</a>] — in line with the weak but robust chaos of the
+        &Lambda; = 0.2 column of the table above.</p>
         <p><b>The extra nonlinear terms.</b> &alpha;|&nabla;h| and &beta;(&nabla;h)&#8308; are the neighbours
         of (&nabla;h)&sup2; in the expansion of a slope-dependent front speed v(&nabla;h) [<a class="cite" href="#ref-11">11</a>,&nbsp;<a class="cite" href="#ref-16">16</a>].
         |&nabla;h| is the growth term of a front moving at constant normal speed in the
@@ -1086,12 +992,145 @@
         &delta;&nabla;&sup2;h(&nabla;h)&sup2; equals, in one dimension, (&delta;/3)&part;<sub>x</sub>(&part;<sub>x</sub>h)&sup3;:
         the cubic, slope-dependent surface current that selects a slope in epitaxial growth
         (&delta; &gt; 0) [<a class="cite" href="#ref-23">23</a>,&nbsp;<a class="cite" href="#ref-24">24</a>]. Anisotropic, noisy KS equations of the same family describe
-        surfaces eroded by ion beams [<a class="cite" href="#ref-25">25</a>,&nbsp;<a class="cite" href="#ref-26">26</a>].</p>
-        <p><b>Lyapunov exponents.</b> KS is the standard test case for spatiotemporal chaos: its
-        chaos is extensive, the number of positive Lyapunov exponents growing in proportion to
-        the system size [<a class="cite" href="#ref-27">27</a>], and its covariant Lyapunov vectors split into "physical" modes,
-        whose number also grows with the system size, and a remainder of strongly damped modes
-        decoupled from them [<a class="cite" href="#ref-28">28</a>].</p>
+        surfaces eroded by ion beams [<a class="cite" href="#ref-25">25</a>,&nbsp;<a class="cite" href="#ref-26">26</a>].
+        What each variant does to the front in the applet is described below.</p>
+        <details class="more" id="variantDetails">
+        <summary>More details on the variant models</summary>
+        <h3>Higher derivatives</h3>
+        <p>The toggle at the left replaces the two linear terms by
+        +&nabla;&#8308;h + &nabla;&#8310;h. The instability is then carried by the fourth derivative
+        and the cut-off by the sixth; a wave with wavenumber k grows at the rate
+        &omega; = k&#8308; &minus; k&#8310; instead of k&sup2; &minus; k&#8308;. The unstable band
+        0 &lt; k &lt; 1 is the same, but the fastest mode moves from k = 1/&radic;2 to
+        k = &radic;(2/3) and the growth near k = 0 is much weaker. The chaotic cell pattern
+        persists with slightly smaller cells — a first hint that the qualitative picture does
+        not depend on the exact form of the linear terms. (It is the Nikolaevskiy equation of the
+        next paragraph at r = 1 [<a class="cite" href="#ref-12">12</a>].)</p>
+        <p>A third setting of the toggle, <b>&Lambda;&nabla;&sup2;h + &nabla;&#8308;h +
+        &nabla;&#8310;h</b>, keeps all three derivatives: it is the previous equation with an
+        ordinary diffusion &Lambda;&nabla;&sup2;h added, of a strength &Lambda; chosen in the header
+        (0.01 to 0.3; a capital &Lambda;, because &lambda; is the Lyapunov exponent). A wave now grows
+        at the rate &omega; = &minus;&Lambda;k&sup2; + k&#8308; &minus; k&#8310; = &minus;k&sup2;(&Lambda; &minus; k&sup2; + k&#8308;).
+        Unlike KS, the longest waves are damped as well as the shortest, and only a band in
+        between grows, from k&sup2; = (1 &minus; &radic;(1&minus;4&Lambda;))/2 to (1 + &radic;(1&minus;4&Lambda;))/2.
+        As &Lambda; &rarr; 0 this is the band 0 &lt; k &lt; 1 of the +&nabla;&#8308;h + &nabla;&#8310;h
+        equation; as &Lambda; rises the band narrows from below, and at &Lambda; = 1/4 it closes at
+        k = 1/&radic;2: for &Lambda; &ge; 1/4 the flat surface is stable. The fastest growth rate
+        falls from 4/27 &asymp; 0.148 (&Lambda; &rarr; 0) to 0.135 at &Lambda; = 0.02, 0.107 at
+        1/16, 0.084 at 0.1, 0.054 at 0.15, 0.026 at 0.2 and 0 at 1/4. The presets KKS 1D and 2D run
+        &Lambda; = 0.1, where the band is 0.34 &lt; k &lt; 0.94. &Lambda; = 1/16 is
+        exactly the equation +&nabla;&sup2;h + 4&nabla;&#8308;h + &nabla;&#8310;h rescaled (x &rarr; 2x,
+        t &rarr; 64t, h &rarr; h/16), so its Lyapunov exponent is 64 times smaller and its width 16
+        times smaller than in that form.</p>
+        <p><b>From seismic waves.</b> This equation was not invented here: up to a rescaling it is
+        the <b>Nikolaevskiy equation</b>, which Nikolaevskiy derived in 1989 as a model of
+        longitudinal <i>seismic</i> waves — the compression waves by which earthquakes shake the
+        ground — in a viscoelastic medium with internal oscillators, written for the displacement
+        velocity of the medium [<a class="cite" href="#ref-12">12</a>]. There the band of growing waves describes a medium that
+        amplifies seismic waves of intermediate wavelength while it damps longer and shorter ones,
+        and the nonlinear seismic waves of such an unstable medium were analysed by Beresnev and
+        Nikolaevskiy [<a class="cite" href="#ref-29">29</a>]. In its usual form it is an equation for u — the displacement velocity of
+        the seismic model, the slope u = &part;h/&part;x of the front here — with growth rate (r &minus; 1)k&sup2; + 2k&#8308; &minus; k&#8310;; rescaling k&sup2; &rarr; 2k&sup2;
+        and time by 8 turns it into &minus;&Lambda;k&sup2; + k&#8308; &minus; k&#8310; with <b>&Lambda; = (1 &minus; r)/4</b>,
+        so &Lambda; = 1/4 is the onset r = 0 of the seismic model, and &Lambda; = 0.1 is r = 0.6. The
+        equation has since become a standard example of spatiotemporal chaos that sets in right at
+        onset ("soft-mode turbulence") [<a class="cite" href="#ref-13">13</a>,&nbsp;<a class="cite" href="#ref-14">14</a>,&nbsp;<a class="cite" href="#ref-15">15</a>]; the seismic original also carries dispersive
+        terms, which can stabilize travelling waves [<a class="cite" href="#ref-30">30</a>].</p>
+        <h3>The slope expansion: &alpha; and &beta;</h3>
+        <p>A front that advances at a speed depending only on its local tilt, v(&nabla;h), adds
+        a term v(&nabla;h) to &part;h/&part;t [<a class="cite" href="#ref-11">11</a>,&nbsp;<a class="cite" href="#ref-16">16</a>]. Expanding v in the slope gives, by the symmetry
+        x &rarr; &minus;x, only even powers and even functions: |&nabla;h|, (&nabla;h)&sup2;,
+        (&nabla;h)&#8308;, … The KS equation keeps (&nabla;h)&sup2;, the term that lets a tilted
+        piece of front grow faster (a tilted flame front sees more fuel per unit length). The
+        two pull-down menus switch on its neighbours:</p>
+        <p><b>&alpha;|&nabla;h|</b> is the term <i>below</i> (&nabla;h)&sup2; in the expansion — it
+        is not analytic at zero slope and describes a front whose speed changes at first order
+        in the tilt, like a facetted crystal; it is also the growth term of a front that moves at
+        a constant speed along its normal in the level-set description of moving fronts [<a class="cite" href="#ref-17">17</a>]. With &alpha; &gt; 0 tilted parts grow faster
+        still: the cells become flatter and sharper, ridges form facets, the surface width W
+        shrinks (W &asymp; 0.8 at &alpha; = 1 against 2.7 for KS on the default lattice) while
+        the exponent stays chaotic, &lambda; &asymp; 0.09. With &alpha; &lt; 0 tilted parts are
+        <i>slowed</i>: the cells grow taller and rounder (W &asymp; 4.7 at &alpha; = &minus;1),
+        and the dynamics remains chaotic, &lambda; &asymp; 0.08.</p>
+        <p><b>&beta;(&nabla;h)&#8308;</b> is the term <i>above</i> (&nabla;h)&sup2;. It is small where
+        slopes are gentle and takes over where they are steep — precisely the place where the
+        long-wavelength, small-slope expansion behind KS is least trustworthy. For a flame whose
+        front advances at a fixed normal speed the full slope dependence is
+        &radic;(1 + (&nabla;h)&sup2;) = 1 + (&nabla;h)&sup2;/2 &minus; (&nabla;h)&#8308;/8 + …, a negative &beta;;
+        keeping it was proposed for strongly wrinkled flames [<a class="cite" href="#ref-18">18</a>].</p>
+        <h3>The sign of the correction decides</h3>
+        <p>Since (&nabla;h)&sup2; &ge; 0 always adds growth, the <i>sign</i> of the next term
+        decides whether steep slopes are rewarded further or held back, and the two signs give
+        genuinely different worlds (measured on the default lattice, L = 128, periodic, after a
+        long run):</p>
+        <p><b>&beta; &gt; 0</b> rewards steep regions with extra growth. The steep flanks race ahead,
+        the surface flattens (W drops from 2.7 to 1.3 at &beta; = 2) and the mean height climbs
+        faster. At &beta; = 0.5 the front is still clearly chaotic (&lambda; &asymp; 0.07; the shape
+        changes by more than its own width every 20 time units). By &beta; = 2 the chaos is
+        essentially gone: the front settles into a steady cellular pattern that changes by only a
+        tenth of its width in 20 time units, and the measured exponent drops to &lambda; &asymp; 0.02
+        — a growth time of 50 time units, an order of magnitude slower than the cell dynamics
+        of KS. What remains is <i>metastability</i>, not chaos: long steady episodes that are
+        very weakly unstable, ending now and then in a rearrangement of a few cells, after which a
+        new steady front forms. With (&nabla;h)&sup2; switched off and &beta;(&nabla;h)&#8308; as the only
+        nonlinearity the front is steady outright, and the long-time divergence of two nearly
+        identical fronts is nil (free run slope &asymp; 0.00), even though the Benettin average
+        taken over a whole episode may show a small positive number (see <i>Benettin versus free
+        run</i> above).</p>
+        <p><b>&beta; &lt; 0</b> penalizes steep slopes. The cells grow tall and the front
+        <i>freezes</i>: already at &beta; = &minus;0.5 the largest Lyapunov exponent drops to
+        zero (measured &lambda; = &minus;0.001), and at &beta; = &minus;1.5 it is 0.01 — a steady or
+        slowly drifting cellular pattern instead of spatiotemporal chaos. The Lyapunov vector
+        then has a very long wavelength (k&#772; &asymp; 0.16 rather than the cell wavenumber
+        0.7): what remains "unstable" is a slow, large-scale reshuffling of cells, not the
+        splitting and merging that defines KS chaos.</p>
+        <p>The full &lambda;(&beta;) dependence for these equations and the &Lambda; equation, measured after
+        the transient, is tabulated above. This is the sobering lesson of the variant models. The chaos of the KS equation is
+        robust against the |&nabla;h| correction, but a (&nabla;h)&#8308; term of moderate size — of
+        either sign, once |&beta;| is of order one — eliminates it: negative &beta; freezes the
+        cells, positive &beta; flattens them into a steady pattern with only rare rearrangements.
+        And it is not even robust against the form of the linear terms in this respect: with
+        +&nabla;&#8308;h + &nabla;&#8310;h in place of &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h the chaos survives
+        every positive &beta; (table). Whether a real front is chaotic therefore
+        depends on physics that the lowest-order expansion has thrown away — which casts doubt on
+        the range of validity of the long-wavelength, small-slope approximation as a description
+        of real chaotic fronts, and suggests that the universal large-scale (KPZ) behaviour should
+        be looked for only where the slopes stay gentle. The term budget of the Lyapunov section
+        (above) shows the mechanism directly: switch &beta; on and watch the &beta;(&nabla;h)&#8308;
+        strip take away the divergence that (&nabla;h)&sup2; and &minus;&nabla;&sup2;h produce on the
+        steep flanks.</p>
+        <h3>Two more terms with second derivatives: &gamma; and &delta;</h3>
+        <p>The last two menus add terms of the next order in the <i>derivative</i> expansion that
+        are still second order in the slope. <b>&gamma;&nabla;&sup2;(&nabla;h)&sup2;</b> is the
+        conserved counterpart of the KS nonlinearity: being a Laplacian of something, it moves
+        height around without changing the mean — the nonlinearity of conserved growth
+        (conserved KPZ and Villain–Lai–Das Sarma [<a class="cite" href="#ref-19">19</a>,&nbsp;<a class="cite" href="#ref-20">20</a>,&nbsp;<a class="cite" href="#ref-21">21</a>]; KS with this term added is the
+        "minimal deposition equation" of amorphous thin films [<a class="cite" href="#ref-22">22</a>]).
+        <b>&delta;&nabla;&sup2;h&middot;(&nabla;h)&sup2;</b> is a diffusion whose coefficient is the squared
+        slope — in one dimension (&delta;/3)&part;<sub>x</sub>(&part;<sub>x</sub>h)&sup3;, the cubic,
+        slope-selecting surface current of epitaxial growth [<a class="cite" href="#ref-23">23</a>,&nbsp;<a class="cite" href="#ref-24">24</a>]: for &delta; &gt; 0 steep parts of the front are smoothed
+        harder than flat parts, for &delta; &lt; 0 they are sharpened. Both terms carry two more
+        derivatives than (&nabla;h)&sup2;, and that decides their fate: for the "wrong" sign they
+        are not regularized by &minus;&nabla;&#8308;h at all. <b>&gamma; &gt; 0 and &delta; &lt; 0 blow up in
+        finite time</b> — at every time step tried, from 0.02 down to 0.002, so this is the equation
+        and not the integrator — and the run then stops with the "diverged" warning; the &delta; menu therefore offers only
+        &delta; &ge; 0. For
+        &gamma; &lt; 0 and &delta; &gt; 0 the runs are bounded and the integration is converged
+        already at the automatic time step (&gamma;: 0.02, &delta;: 0.01; W agrees with a
+        dt = 0.002 reference to 0.1 % for |&gamma;| &le; 5 and at dt = 0.01 for &delta;). A negative
+        &gamma; flattens the KS pattern strongly (W &asymp; 0.9 at &gamma; = &minus;0.5, 0.6 at
+        &minus;2) while the mean height still climbs; a positive &delta; keeps W near the KS value
+        (1.1–2.2). Both appear in the Lyapunov term budget and in the colour menu like the other
+        terms, so their share of the divergence can be read off directly — at &gamma; = &minus;0.5
+        in 2D, for instance, the &gamma; term <i>adds</i> +0.18 to the instantaneous exponent while at &delta; = 0.5 the
+        &delta; term <i>removes</i> &minus;0.14, in both cases with the total still near the KS value.</p>
+        <p>Practical notes: the (&nabla;h)&sup2; term itself can be crossed out in the header. The
+        equation is then linear and would grow without bound, so &beta; jumps to 1 automatically
+        (and back to 0 when the term returns) — a way to see that &beta;(&nabla;h)&#8308; alone can
+        saturate the instability, giving cells of the same size but a different shape. The time
+        step follows the menus automatically, because the fourth power of the slope needs a
+        finer step than KS.</p>
+        </details>
         <div class="refs">
           <p id="ref-1">[1] Y. Kuramoto &amp; T. Tsuzuki, <i>Persistent propagation of concentration waves in
           dissipative media far from thermal equilibrium</i>,
@@ -5365,39 +5404,34 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     T.innerHTML = h;
   }
   /* ---- the table shown in the text: L = 256 (physical), dx = 0.5, 512 points, 1D periodic, α = 0,
-     both equations, from the applet's systematic scan over several random starts.
-     rows: [β,  KS: λ free, ±, Benettin, ±, D sat, satflag, W, ±,   ∇⁴+∇⁶: the same eight]
-     satflag 1 = the separation never saturated (†); D sat is then the mean of |δh| over the last third.
-     ± = spread between starts (NaN where the scan printed none, i.e. the exponent-form D sat). */
-  const NA = NaN;
-  const LAMTAB256P = [
-    [   -5,  0.000,0.002, -0.004,0.000, 2.3e-7,1,  0.71,0.01,   0.000,0.001, -0.001,0.000, 6.5e-7,1,  0.70,0.00],
-    [   -4, -0.001,0.002, -0.004,0.000, 2.2e-7,1,  0.78,0.02,   0.001,0.002, -0.001,0.000, 5.6e-7,1,  0.77,0.02],
-    [   -3, -0.003,0.001, -0.003,0.000, 2.6e-7,1,  0.88,0.02,   0.000,0.002, -0.002,0.001, 4.9e-7,1,  0.87,0.02],
-    [   -2, -0.001,0.002, -0.001,0.003, 7.9e-7,1,  1.07,0.08,   0.001,0.003, -0.003,0.000, 4.0e-7,1,  1.01,0.01],
-    [   -1,  0.002,0.007, -0.002,0.003, 4.9e-6,1,  2.63,2.22,   0.000,0.002, -0.001,0.003, 6.8e-7,1,  1.39,0.10],
-    [ -0.4,  0.018,0.003,  0.019,0.007, 1.3e-4,1,  7.87,0.92,   0.005,0.010,  0.032,0.032, 1.7e-3,1,  5.18,2.80],
-    [ -0.3,  0.013,0.004,  0.009,0.001, 7.2e-5,1, 11.21,0.90,   0.081,0.007,  0.078,0.007, 5.19,2.44,0,  8.75,2.41],
-    [ -0.2,  0.012,0.001,  0.016,0.011, 1.4e-4,1, 12.74,2.14,   0.091,0.008,  0.098,0.006, 6.84,1.66,1, 14.18,0.16],
-    [ -0.1,  0.002,0.003,  0.004,0.004, 3.6e-6,1, 48.08,24.55, -0.001,0.001,  0.000,0.001, 1.1e-6,1, 11.11,1.87],
-    [-0.05,  0.113,0.016,  0.103,0.006, 3.22,0.13,0,  2.58,0.24,   0.111,0.006,  0.109,0.001, 3.39,0.70,0,  3.50,0.30],
-    [    0,  0.108,0.015,  0.101,0.008, 2.30,0.52,0,  2.36,0.19,   0.115,0.010,  0.104,0.004, 2.37,0.54,0,  2.88,0.16],
-    [  0.1,  0.089,0.008,  0.090,0.008, 2.11,0.09,0,  2.34,0.17,   0.109,0.014,  0.102,0.011, 2.05,0.85,0,  2.31,0.16],
-    [  0.2,  0.089,0.016,  0.086,0.008, 2.11,0.30,0,  1.89,0.27,   0.112,0.015,  0.099,0.009, 2.48,0.70,0,  2.35,0.41],
-    [    1,  0.065,0.014,  0.062,0.011, 1.09,0.19,0,  1.49,0.07,   0.103,0.008,  0.090,0.003, 1.81,0.63,0,  1.81,0.45],
-    [    2,  0.061,0.007,  0.057,0.002, 0.57,0.31,0,  1.18,0.05,   0.094,0.010,  0.094,0.002, 1.48,0.37,0,  1.18,0.10],
-    [    3,  0.051,0.016,  0.054,0.006, 0.46,0.58,0,  1.07,0.10,   0.090,0.025,  0.084,0.002, 1.53,0.35,0,  1.29,0.11],
-    [    4,  0.021,0.026,  0.028,0.022, 0.06,0.10,1,  1.46,0.52,   0.098,0.007,  0.083,0.004, 1.40,0.32,0,  1.08,0.02],
-    [    5,  0.047,0.035,  0.036,0.021, 0.20,0.34,0,  1.13,0.23,   0.092,0.009,  0.088,0.005, 1.25,0.26,0,  1.06,0.10]
-  ].map(r => {
-    /* normalise: the D sat entry is either [value, flag] (exponent form, no spread) or [value, spread, flag] */
-    const side = (o) => { const sat = r[o+4]; let sd, fl, k;
-      if(sat < 0.01){ sd = NA; fl = r[o+5]; k = o+6; } else { sd = r[o+5]; fl = r[o+6]; k = o+7; }
-      return { f: r[o], fs: r[o+1], b: r[o+2], bs: r[o+3], sat, ss: sd, sf: fl, W: r[k], Ws: r[k+1], next: k+2 }; };
-    const ks = side(1), o6 = side(ks.next);
-    return { beta: r[0], ks, o6 };
-  });
-  const pmv = (m, sd, fmt) => fmt(m) + ' ± ' + fmt(Math.abs(sd));
+     three equations — KS, the Λ = 0.2 equation and +∇⁴h + ∇⁶h — from the applet's systematic scan,
+     three random starts per β, transient 2000 then 2000 of measurement (1000 Benettin, 1000 free
+     runs), as the scan printed them (its table .png). Per equation: [λ free, Benettin, smallest D sat, largest
+     D sat, †, W]; † = 1: no free run reached the plateau. −0.0003 stands for a printed −0.000. */
+  const LAMTAB3_EQ = ['∂h/∂t = −∇²h − ∇⁴h + (∇h)² + β(∇h)⁴', '∂h/∂t = 0.2·∇²h + ∇⁴h + ∇⁶h + (∇h)² + β(∇h)⁴', '∂h/∂t = +∇⁴h + ∇⁶h + (∇h)² + β(∇h)⁴'];
+  const LAMTAB3 = [
+    [   -5, [-0.001, -0.002, 1e-7, 2e-7, 1,  0.71], [0.027, 0.024, 8e-3, 0.6,  1, 1.30], [ 0.002, -0.001,  5e-7, 7e-7, 1,  0.69]],
+    [   -4, [-0.0003,-0.002, 1e-7, 2e-7, 1,  0.77], [0.030, 0.027, 4e-3, 0.9,  1, 1.56], [ 0,     -0.001,  4e-7, 5e-7, 1,  0.75]],
+    [   -3, [-0.001, -0.002, 1e-7, 2e-7, 1,  0.87], [0.027, 0.026, 2e-3, 0.8,  1, 1.71], [-0.0003,-0.001,  3e-7, 4e-7, 1,  0.85]],
+    [   -2, [-0.002, -0.002, 1e-7, 1e-6, 1,  1.03], [0.021, 0.024, 8e-4, 0.2,  1, 2.07], [ 0.002, -0.002,  2e-7, 4e-7, 1,  1.00]],
+    [   -1, [ 0.003,  0,     1e-7, 1e-4, 1,  2.83], [0.020, 0.017, 4e-4, 0.05, 1, 0.87], [ 0,     -0.001,  2e-7, 9e-7, 1,  1.38]],
+    [ -0.4, [ 0.014,  0.012, 4e-6, 0.6,  1,  9.35], [0.016, 0.017, 2e-4, 0.02, 1, 0.71], [-0.001, -0.001,  2e-7, 3e-7, 1,  1.97]],
+    [ -0.3, [ 0.003,  0.015, 3e-6, 1e-4, 1, 13.63], [0.017, 0.017, 2e-4, 0.06, 1, 0.93], [ 0.084,  0.081,  0.02, 10,   0, 10.63]],
+    [ -0.2, [ 0.016,  0.010, 2e-6, 0.05, 1, 17.31], [0.015, 0.016, 5e-5, 0.04, 1, 0.68], [ 0.096,  0.095,  8,    20,   0, 19.69]],
+    [ -0.1, [ 0.003,  0.006, 1e-6, 0.03, 1, 46.70], [0.021, 0.016, 2e-3, 0.04, 1, 0.73], [ 0.006, -0.0003, 4e-7, 9e-7, 1, 11.42]],
+    [-0.05, [ 0.120,  0.103, 2e-4, 4,    0,  2.46], [0.019, 0.017, 4e-4, 0.03, 1, 0.94], [ 0.110,  0.115,  2e-4, 7,    0,  3.11]],
+    [    0, [ 0.105,  0.101, 2,    3,    0,  2.42], [0.016, 0.016, 5e-4, 0.02, 1, 0.66], [ 0.109,  0.104,  2e-4, 4,    0,  2.88]],
+    [  0.1, [ 0.089,  0.091, 4e-3, 3,    0,  2.22], [0.017, 0.017, 3e-4, 0.02, 1, 0.79], [ 0.109,  0.105,  0.2,  5,    0,  2.61]],
+    [  0.2, [ 0.084,  0.085, 1e-3, 3,    0,  2.03], [0.017, 0.017, 2e-4, 0.02, 1, 0.70], [ 0.100,  0.103,  4e-4, 3,    0,  2.19]],
+    [    1, [ 0.059,  0.064, 0.9,  2,    0,  1.37], [0.017, 0.017, 5e-5, 0.01, 1, 0.68], [ 0.097,  0.093,  0.01, 4,    0,  1.58]],
+    [    2, [ 0.054,  0.052, 0.02, 2,    0,  1.29], [0.017, 0.017, 6e-5, 0.03, 1, 0.62], [ 0.094,  0.090,  0.2,  2,    0,  1.42]],
+    [    3, [ 0.043,  0.046, 4e-6, 2,    0,  1.42], [0.017, 0.016, 1e-4, 0.01, 1, 0.77], [ 0.089,  0.090,  0.03, 3,    0,  1.30]],
+    [    4, [ 0.005,  0.014, 3e-6, 0.2,  1,  1.81], [0.016, 0.016, 1e-4, 0.01, 1, 0.51], [ 0.083,  0.088,  0.1,  1,    0,  1.06]],
+    [    5, [ 0.017,  0.024, 6e-7, 1,    1,  1.38], [0.015, 0.015, 1e-4, 6e-3, 1, 0.55], [ 0.086,  0.079,  5e-5, 2,    0,  1.12]]
+  ];
+  /* the same rows in the shape of the scan's result rows, one list per equation (for its table code) */
+  const LAMTAB3_SETS = LAMTAB3_EQ.map((eq, j) => ({ eq, rows: LAMTAB3.map(r => { const [free, ben, satMin, satMax, dag, W] = r[j + 1];
+    return { v: r[0], free, ben, satMin, satMax, sat: satMax, satOK: !dag, W }; }) }));
   /* D sat is quoted to two significant digits, its spread to the same number of decimals;
      below 0.01 as a power of ten with a one-digit mantissa (4·10⁻⁷), for HTML or canvas text */
   const SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
@@ -5413,28 +5447,66 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const d = Math.max(0, 1 - Math.floor(Math.log10(Math.max(Math.abs(v), isFinite(sd) ? Math.abs(sd) : 0))));
     return v.toFixed(d) + (isFinite(sd) && sd > 0 ? ' ± ' + Math.abs(sd).toFixed(d) : '');
   }
-  const f2d = v => (v < -0.005 ? '−' : '') + Math.abs(v).toFixed(2);
-  const fmtSatTxt = (s, html) => fmtSig2(s.sat, s.ss, html) + (s.sf ? '†' : '');
-  function buildLamTable256(T, DATA, note){
-    const EQ4 = '∂h/∂t = −∇²h − ∇⁴h + (∇h)² + β(∇h)⁴', EQ6 = '∂h/∂t = +∇⁴h + ∇⁶h + (∇h)² + β(∇h)⁴';
-    let h = '<tr><th></th><th class="grp" colspan="4">' + EQ4 + '</th><th class="grp" colspan="4">' + EQ6 + '</th></tr>';
-    const hd = '<th title="mean of the fitted slopes of ln|δh|(t) over repeated free runs; ± = spread between the random starts">λ free</th><th title="growth rate of the renormalised twin, averaged over the first half of the measurement; ± = spread between starts">Benettin</th><th title="saturated separation: time average of |δh| once the free-running twin has stopped growing (the window of variation available to the interface); †: never saturated, the number is the mean of |δh| over the last third of the run">D sat</th><th title="mean interface width during the measurement; ± = spread between starts">W</th>';
-    h += '<tr><th>β</th>' + hd + hd + '</tr>';
-    const cells = (s, last) => '<td class="' + lamClass(s.f) + '">' + pmv(s.f, s.fs, f3) + '</td>' +
-      '<td class="bn">' + pmv(s.b, s.bs, f3) + '</td>' +
-      '<td class="sat">' + fmtSatTxt(s, true) + '</td>' +
-      '<td' + (last ? '' : ' class="sep"') + '>' + pmv(s.W, s.Ws, f2d) + '</td>';
-    for(const r of DATA) h += '<tr><td class="b">' + (r.beta > 0 ? '+' : '') + r.beta + '</td>' + cells(r.ks, false) + cells(r.o6, true) + '</tr>';
+  /* the three-equation table in the text, coloured like the scan's: λ free, Benettin and D sat in the
+     colour of the row's verdict (scanClass), D sat as the range smallest → largest of the free runs.
+     Called once all of the scan's formatting helpers exist (see the end of the script). */
+  function buildLamTable3(T, sets, note){
+    let h = '<tr><th></th>' + sets.map((s, i) => '<th class="grp' + (i < sets.length - 1 ? ' sep' : '') + '" colspan="4">' + s.eq + '</th>').join('') + '</tr>';
+    const hd = '<th title="mean of the fitted slopes of ln|δh|(t) over repeated free runs">λ free</th><th title="growth rate of the renormalised twin, averaged over the first half of the measurement">Benettin</th><th title="saturated separation of the free runs: the smallest → the largest value met (†: no free run reached the plateau; the numbers are then the mean |δh| over the last third of each run)">D sat</th><th title="mean interface width during the measurement">W</th>';
+    h += '<tr><th>β</th>' + sets.map(() => hd).join('') + '</tr>';
+    sets[0].rows.forEach((r0, i) => {
+      h += '<tr><td class="b">' + (r0.v > 0 ? '+' : '') + r0.v + '</td>';
+      sets.forEach((s, j) => {
+        const r = s.rows[i], k = scanClass(r), last = j === sets.length - 1;
+        h += '<td class="' + k + '">' + f3n(r.free) + '</td><td class="bn ' + k + '">' + f3n(r.ben) + '</td><td class="' + k + '">' + fmtSat(r, true) + '</td>' +
+             '<td' + (last ? '' : ' class="sep"') + '>' + r.W.toFixed(2) + '</td>';
+      });
+      h += '</tr>';
+    });
     T.innerHTML = h;
     /* the footnote sits under the scrolling wrapper, so that it wraps to the visible width on a phone */
     let nd = T.parentElement.nextElementSibling;
     if(!nd || !nd.classList.contains('lamnote')){ nd = document.createElement('div'); nd.className = 'lamnote'; T.parentElement.after(nd); }
     nd.innerHTML = note;
   }
-  buildLamTable256($('lamTable'), LAMTAB256P,
-    'red: chaotic (λ free ≥ 0.05) · blue: steady or frozen (λ free &lt; 0.02) · ± : spread between the random starts · †: the free-run separation never saturated — where D sat is then of order 10⁻⁷…10⁻⁴ the two fronts never parted and λ has no practical meaning');
-  /* the same rows in the layout of the older tables, for the plot routine below */
-  const LAMTAB256P_OLD = LAMTAB256P.map(r => [r.beta, r.ks.f, r.ks.fs, 0, r.ks.b, r.ks.W, 0, r.o6.f, r.o6.fs, 0, r.o6.b, r.o6.W, 0]);
+  /* the figure of that table: long-run λ (free run, solid with dots) and Benettin (dashed) against β
+     for the three equations; β values in menu order, not to scale */
+  function exportLamPlot3Png(sets, name, geo){
+    const k = 2, F = 1.2*1.7, W = 1800, H = 900;
+    const oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
+    const c = oc.getContext('2d'); c.scale(k, k);
+    c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
+    const x0 = 170, x1 = W - 50, y0 = 70, y1 = H - 150, rows0 = sets[0].rows, n = rows0.length;
+    const X = i => x0 + (x1-x0)*(i + 0.5)/n;
+    let top = 0; for(const s of sets) for(const r of s.rows) top = Math.max(top, r.free, r.ben);
+    const lmax = Math.max(0.2, Math.ceil(top/0.05 + 0.2)*0.05), lmin = -0.1*lmax, step = lmax > 0.3 ? 0.1 : 0.05;
+    const Y = v => y1 - (y1-y0)*(Math.max(lmin, Math.min(lmax, v)) - lmin)/(lmax - lmin);
+    const px = s => (s*F).toFixed(1) + 'px', ax = s2 => (s2*1.2).toFixed(1) + 'px';
+    c.font = '600 ' + px(15) + ' system-ui,sans-serif'; c.fillStyle = '#16233b'; c.textAlign = 'left'; c.textBaseline = 'top';
+    c.fillText('Largest Lyapunov exponent λ against β  (' + geo + ')', x0, 14);
+    c.lineWidth = 1.5;
+    for(let v = 0; v <= lmax + 1e-9; v += step){ c.strokeStyle = v === 0 ? '#c3ccdb' : '#e8ecf3'; c.beginPath(); c.moveTo(x0, Y(v)); c.lineTo(x1, Y(v)); c.stroke(); }
+    c.font = ax(24) + ' system-ui,sans-serif'; c.fillStyle = '#000'; c.textAlign = 'right'; c.textBaseline = 'middle';
+    for(let v = 0; v <= lmax + 1e-9; v += step) c.fillText(v.toFixed(2), x0-12, Y(v));
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    rows0.forEach((r, i) => c.fillText((r.v > 0 ? '+' : '') + r.v, X(i), y1+12));
+    c.font = ax(28) + ' system-ui,sans-serif';
+    c.fillText('β   (menu values in order, not to scale)', (x0+x1)/2, y1+52);
+    c.save(); c.translate(48, (y0+y1)/2); c.rotate(-Math.PI/2); c.textBaseline = 'alphabetic'; c.fillText('λ', 0, 0); c.restore();
+    c.strokeStyle = '#000'; c.lineWidth = 2; c.strokeRect(x0+1, y0+1, x1-x0-2, y1-y0-2);
+    const COLS = ['#4338ca', '#0891b2', '#d97706'];
+    sets.forEach((s, j) => {
+      const col = COLS[j % COLS.length];
+      c.strokeStyle = col; c.lineWidth = 2.2; c.setLineDash([6, 6]);
+      c.beginPath(); s.rows.forEach((r, i) => { i ? c.lineTo(X(i), Y(r.ben)) : c.moveTo(X(i), Y(r.ben)); }); c.stroke(); c.setLineDash([]);
+      c.lineWidth = 3.2; c.beginPath(); s.rows.forEach((r, i) => { i ? c.lineTo(X(i), Y(r.free)) : c.moveTo(X(i), Y(r.free)); }); c.stroke();
+      c.fillStyle = col; s.rows.forEach((r, i) => { c.beginPath(); c.arc(X(i), Y(r.free), 5.5, 0, 2*Math.PI); c.fill(); });
+    });
+    c.font = px(12.5) + ' system-ui,sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
+    sets.forEach((s, j) => { const lx = x1 - 980, ly = y0 + 30 + 42*j; c.strokeStyle = COLS[j % COLS.length]; c.lineWidth = 3; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx+44, ly); c.stroke(); c.fillStyle = '#4a5872'; c.fillText(s.eq, lx+54, ly); });
+    c.fillText('solid with dots: λ free run;  dashed: Benettin', x1 - 980 + 54, y0 + 30 + 42*sets.length);
+    savePng(oc, name);
+  }
   function savePng(oc, name){
     const save = url => { const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
     if(oc.toBlob) oc.toBlob(b => { if(!b){ save(oc.toDataURL('image/png')); return; } const u = URL.createObjectURL(b); save(u); setTimeout(()=>URL.revokeObjectURL(u), 8000); }, 'image/png');
@@ -5518,46 +5590,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   $('bLamTabPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamTablePng(); });
   $('bLamPlotPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamPlotPng(); });
-  /* the table shown in the text (L = 256, dx = 0.5): two equations × (λ free ±, Benettin ±, D sat, W ±) */
-  function exportLamTable256Png(DATA = LAMTAB256P, name = 'lambda_vs_beta_table_L256_dx05_periodic.png',
-      sub = '1D, periodic boundaries, L = 256, dx = 0.5 (512 points), α = 0 — systematic scan over several random starts; ± = spread between starts — λ Benettin: renormalised twin, first half of the measurement; λ free: repeated free runs, second half — D sat: saturated separation of the free-running twin (†: never saturated)'){
-    const k = 2, rowH = 18, n = DATA.length, subLines = sub ? sub.split(' — ') : [];
-    const H = rowH*(n + 3) + 24 + 15*subLines.length;
-    const x0 = 20, xb = 58, colw = 114, mid = xb + 8 + 4*colw + 14, W = mid + 8 + 4*colw + 20, cols = [xb];
-    const oc = document.createElement('canvas'); oc.width = W*k; oc.height = H*k;
-    const c = oc.getContext('2d'); c.scale(k, k);
-    c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
-    for(let j = 0; j < 4; j++) cols.push(xb + 8 + colw*(j+1));
-    for(let j = 0; j < 4; j++) cols.push(mid + 8 + colw*(j+1));
-    let y = 8 + rowH/2;
-    c.textBaseline = 'middle';
-    if(sub){ c.font = '11px system-ui,sans-serif'; c.fillStyle = '#4a5872'; c.textAlign = 'left'; subLines.forEach(t => { c.fillText(t, x0, y); y += 15; }); y += 2; }
-    c.font = '600 11px system-ui,sans-serif'; c.fillStyle = '#16233b'; c.textAlign = 'center';
-    c.fillText('∂h/∂t = −∇²h − ∇⁴h + (∇h)² + β(∇h)⁴', xb + 8 + 2*colw + colw/2, y);
-    c.fillText('∂h/∂t = +∇⁴h + ∇⁶h + (∇h)² + β(∇h)⁴', mid + 8 + 2*colw + colw/2, y);
-    c.strokeStyle = '#c3ccdb'; c.lineWidth = 1; c.beginPath(); c.moveTo(xb + 12, y+10.5); c.lineTo(mid - 6, y+10.5); c.moveTo(mid + 12, y+10.5); c.lineTo(W - 20, y+10.5); c.stroke();
-    y += rowH;
-    c.font = '10.5px system-ui,sans-serif'; c.fillStyle = '#4a5872'; c.textAlign = 'right';
-    ['β','λ free','Benettin','D sat','W','λ free','Benettin','D sat','W'].forEach((t, j) => c.fillText(t, cols[j], y));
-    c.strokeStyle = '#dde3ec'; c.beginPath(); c.moveTo(x0, y+rowH/2); c.lineTo(W-20, y+rowH/2); c.stroke();
-    const yTop = y + rowH/2;
-    c.font = '12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';
-    const lc = v => v >= 0.05 ? '#b91c1c' : (v < 0.02 ? '#1d4ed8' : '#16233b');
-    DATA.forEach(r => {
-      y += rowH;
-      const put = (t, x, col) => { c.fillStyle = col || '#16233b'; c.fillText(t, x, y); };
-      put((r.beta > 0 ? '+' : '') + r.beta, cols[0]);
-      [[r.ks, 1], [r.o6, 5]].forEach(([s, j]) => {
-        put(pmv(s.f, s.fs, f3), cols[j], lc(s.f)); put(pmv(s.b, s.bs, f3), cols[j+1]);
-        put(fmtSatTxt(s), cols[j+2], '#4a5872'); put(pmv(s.W, s.Ws, f2d), cols[j+3]);
-      });
-      c.strokeStyle = '#eef1f6'; c.beginPath(); c.moveTo(x0, y+rowH/2); c.lineTo(W-20, y+rowH/2); c.stroke();
-    });
-    c.strokeStyle = '#c3ccdb'; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(mid + 2, yTop - rowH*2); c.lineTo(mid + 2, y+rowH/2); c.stroke(); c.setLineDash([]);
-    savePng(oc, name);
-  }
-  $('bLam256pTabPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamTable256Png(); });
-  $('bLam256pPlotPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamPlotPng(LAMTAB256P_OLD, 'lambda_vs_beta_plot_L256_dx05_periodic.png', '1D, periodic boundaries, L = 256, dx = 0.5 (512 points), α = 0'); });
+  /* the L = 256 table of the text as a picture (the scan's table renderer) and as a figure */
+  $('bLam256pTabPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); tablePng(LAMTAB3_SETS, 'β', 'L = 256, dx = 0.5', false, 'lambda_vs_beta_table_L256_dx05_3eqs.png'); });
+  $('bLam256pPlotPng').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exportLamPlot3Png(LAMTAB3_SETS, 'lambda_vs_beta_plot_L256_dx05_3eqs.png', '1D periodic, L = 256, dx = 0.5 (512 points), α = 0'); });
   /* the same measurements for a box of 256 with open (flat-wall) boundaries: download only.
      Protocol as for the table, with a 3000-t.u. Benettin run (last third) and 1500 t.u. of free runs. */
   const LAMTAB256 = [
@@ -6387,18 +6422,19 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   /* the table as a picture: the sampled equation(s) over the columns they belong to — broken
      onto two or three lines rather than widening the columns —, columns as narrow as their
      contents allow, a dashed rule between neighbouring equations, and L, dx in one small line
-     under the table instead of in the column heads; no caption text */
-  $('scanTabPng').addEventListener('click', ()=>{
-    const rows = SC.rows; if(!rows.length) return;
-    const k = 2, rowH = 18, eqH = 14, dark = SC.dark, GAP = 8, GGAP = 20, M = 12;
+     under the table instead of in the column heads; no caption text. groups: [{ eq, rows }], the
+     first group's rows giving the scanned values v; sym: the scanned symbol; geo: the line under the
+     table. Used by the scan section and by the L = 256 table of the main text. */
+  function tablePng(groups, sym, geo, dark, name){
+    const rows = groups[0].rows;
+    const k = 2, rowH = 18, eqH = 14, GAP = 8, GGAP = 20, M = 12;
     const mono = '11.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace', sans = '10.5px system-ui,sans-serif', eqf = '600 10.5px system-ui,sans-serif';
     const mc = document.createElement('canvas').getContext('2d');
     const wtxt = (t, f) => { mc.font = f; return mc.measureText(t).width; };
     const cellTexts = r => r && !r.dv ? [f3n(r.free), f3n(r.ben), fmtSat(r), r.W.toFixed(2) + (r.dt < r.dt0 ? '*' : '')] : ['', '', '', ''];
     const heads = ['λ free', 'Benettin', 'D sat', 'W'];
-    const groups = (SC.sets || [{ eq: SC.eq, rows }]).map(s => ({ eq: s.eq, rows: s.rows })), two = groups.length > 1;
     /* column widths from the contents */
-    const w0 = Math.max(wtxt(GSYM[SC.par] || SC.par, sans), ...rows.map(r => wtxt((r.v > 0 ? '+' : '') + r.v, mono)));
+    const w0 = Math.max(wtxt(sym, sans), ...rows.map(r => wtxt((r.v > 0 ? '+' : '') + r.v, mono)));
     const gw = groups.map(g => heads.map((h, j) => Math.max(wtxt(h, sans), ...g.rows.map(r => wtxt(cellTexts(r)[j], mono)))));
     /* an equation wider than its columns is broken before a + or − into the fewest lines (at most
        three) that fit, as evenly as possible; only when even three lines do not fit do the columns widen */
@@ -6427,7 +6463,6 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       gw[gi].forEach((wc, j) => { x += (j ? GAP : 0) + wc; xs.push(x); });
       gx.push([l, x]);
     });
-    const geo = SC.geo.trim().replace(/^\(|\)$/g, '');
     const W = x + M, top = 6, yHead = top + nEq*eqH + 4 + rowH/2, H = yHead + rowH*rows.length + rowH/2 + 22;
     const oc = document.createElement('canvas'); oc.width = Math.ceil(W*k); oc.height = Math.ceil(H*k);
     const c = oc.getContext('2d'); c.scale(k, k);
@@ -6439,7 +6474,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     eqs.forEach((ls, gi) => { const [l, r] = gx[gi]; ls.forEach((t, i) => c.fillText(t, (l + r)/2, top + eqH*(nEq - ls.length + i + 0.5))); });
     let y = yHead;
     c.font = sans; c.fillStyle = lab; c.textAlign = 'right';
-    c.fillText(GSYM[SC.par] || SC.par, xs[0], y);
+    c.fillText(sym, xs[0], y);
     groups.forEach((g, gi) => heads.forEach((h, j) => c.fillText(h, xs[1 + gi*4 + j], y)));
     c.strokeStyle = rule; c.lineWidth = 1; c.beginPath(); c.moveTo(M, y + rowH/2); c.lineTo(W - M, y + rowH/2); c.stroke();
     for(const r of rows){
@@ -6464,7 +6499,13 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     /* the box: one small line under the table */
     c.font = '10px system-ui,sans-serif'; c.fillStyle = lab; c.textAlign = 'left'; c.textBaseline = 'middle';
     c.fillText(geo, M, y + rowH/2 + 12);
-    savePng(oc, 'scan_table_' + SC.par + (two ? '_' + (groups.length === 2 ? 'both' : groups.length + 'eqs') : '') + '.png');
+    savePng(oc, name);
+  }
+  $('scanTabPng').addEventListener('click', ()=>{
+    if(!SC.rows.length) return;
+    const groups = (SC.sets || [{ eq: SC.eq, rows: SC.rows }]).map(s => ({ eq: s.eq, rows: s.rows }));
+    tablePng(groups, GSYM[SC.par] || SC.par, SC.geo.trim().replace(/^\(|\)$/g, ''), SC.dark,
+      'scan_table_' + SC.par + (groups.length > 1 ? '_' + (groups.length === 2 ? 'both' : groups.length + 'eqs') : '') + '.png');
   });
 
   /* citations [n] in the pull-down text: a click scrolls to reference n and lights it up, and the
@@ -6483,6 +6524,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       b.textContent = '↩ back'; b.title = 'back to where this reference is cited'; p.appendChild(b);
     });
     box.addEventListener('click', e => {
+      /* the link to the variant-models pull-down at the end: open it and scroll to it */
+      const more = e.target.closest('a.tomore');
+      if(more){ e.preventDefault(); const d = document.getElementById('variantDetails'); if(d){ d.open = true; show(d.querySelector('summary')); } return; }
       const t = e.target.closest('a.cite, button.refback'); if(!t) return;
       e.preventDefault();
       if(t.classList.contains('refback')){
@@ -6497,6 +6541,10 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       show(ref);
     });
   })();
+
+  /* the L = 256 table of the main text (needs the scan's formatting helpers, defined above) */
+  buildLamTable3($('lamTable'), LAMTAB3_SETS,
+    'red: chaotic — λ free and Benettin both &gt; 0.005 and the largest D<sub>sat</sub> &gt; 0.01·W · blue: no chaos — λ free or Benettin negative, or the largest D<sub>sat</sub> &lt; 0.001·W (the twins never parted) · black: doubtful, in between · D<sub>sat</sub>: smallest → largest saturated separation met in the free runs; †: no free run reached the plateau, the numbers are then the mean |δh| over the last third of each run');
 
   /* read-only access to the running model from the console (e.g. for checks) */
   window.ksSim = () => sim;
