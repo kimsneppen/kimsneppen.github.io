@@ -240,7 +240,7 @@
     border:1px solid var(--line);border-radius:8px;padding:4px 11px;backdrop-filter:blur(2px);
   }
   .rdout .lam b{color:var(--accent)}
-  /* W and λ in the read-out are switches: the value now, or its time average ⟨…⟩ */
+  /* W, |∇h|max and λ in the read-out are switches: the value now, or its time average ⟨…⟩ */
   .rdout .rtog{cursor:pointer;border-bottom:1px dotted currentColor;border-radius:2px}
   .rdout .rtog.on{color:var(--accent);border-bottom-style:solid}
   .rdout .rtog:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -1351,6 +1351,7 @@
           <span>t = <b id="rt">0.0</b></span>
           <span>&lang;h&rang; = <b id="rmean">0.00</b></span>
           <span class="rtog" id="rwTog" role="button" tabindex="0" title="surface width W now — click for &lang;W&rang;, its time average over the last half of the time since the last reset or change of the equation"><span id="rwLab">W</span> = <b id="rw">0.000</b></span>
+          <span class="rtog" id="rgTog" role="button" tabindex="0" title="steepest slope of the front now, the maximum of |&nabla;h| over the box (1D: |dh/dx|) — click for its time average over the last half of the time since the last reset or change of the equation"><span id="rgLab">|&nabla;h|<sub>max</sub></span> = <b id="rg">0.000</b></span>
           <span class="lam rtog" id="rlamWrap" style="display:none" role="button" tabindex="0" title="largest Lyapunov exponent (Benettin: averaged over the last two thirds of the time since the last reset or change of the equation; free run: the slope of the current run) — click for &lang;&lambda;&rang;, the average over the last half of that time (free run: the mean slope of the runs started in it)"><span id="rlamLab">&lambda;</span> = <b id="rlam">—</b></span>
           <span class="lam" id="rsatWrap" style="display:none" title="saturated separation of the two interfaces in the free run: the time average of |&delta;h| after they have fully diverged — the window within which the interface varies">D<sub>sat</sub> = <b id="rsat">—</b></span>
         </div>
@@ -1627,7 +1628,7 @@
           <div class="row" id="scLRow" style="display:none"><label>sizes 16, 32, … , 2<sup>n</sup>, n =</label>
             <select id="scNmax" title="the sizes L = 16, 32, 64, … up to 2^n are sampled; each has L/dx lattice points (2D: at most 256 points, L ≤ 256·dx)"></select></div>
           <div class="row" id="scRangeRow"><label>from &middot; to &middot; step</label>
-            <span class="triple"><input type="number" id="scMin" value="-1" step="any" title="first value"><input type="number" id="scMax" value="1" step="any" title="last value"><select id="scStep" title="step of the scanned coefficient; the points −0.4, −0.3, −0.2, −0.1, −0.05, 0, +0.1 and +0.2 are always included"><option>0.05</option><option>0.1</option><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option><option>5</option></select></span></div>
+            <span class="triple"><input type="number" id="scMin" value="-1" step="any" title="first value"><input type="number" id="scMax" value="1" step="any" title="last value"><select id="scStep" title="step of the scanned coefficient; the points −0.4, −0.3, −0.2, −0.15, −0.1, −0.07, −0.05, 0, +0.1 and +0.2 are always included"><option>0.05</option><option>0.1</option><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option><option>5</option></select></span></div>
           <div class="row"><label>dimension</label>
             <div class="seg mini" id="scDim"><button data-v="1" class="on">1D</button><button data-v="2">2D</button></div></div>
           <div class="row"><label>box length L</label>
@@ -1647,7 +1648,7 @@
             <button class="btn" id="scStop" disabled>stop</button>
           </div>
           <div class="hint" id="scStatus">idle</div>
-          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (default 0.1, as KKS). The scanned points are the range in the chosen step plus always &minus;0.1, 0 and +0.1; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient, then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
+          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (default 0.1, as KKS). The scanned points are the range in the chosen step plus always &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.15, &minus;0.1, &minus;0.07, &minus;0.05, 0, +0.1 and +0.2; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient, then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
         </div>
       </details>
 
@@ -1831,13 +1832,16 @@
 
           <h3>Lyapunov section</h3>
           <p>Open the section under the display to start the measurement: a twin surface is
-          integrated alongside the main one and the exponent &lambda; appears after W in the
-          corner readout, averaged over the last two thirds of the time since the last reset or
-          change of the equation (the window is shown in the section head). A click on <b>W</b> or
-          on <b>&lambda;</b> in the readout switches to the time average &lang;W&rang; or
-          &lang;&lambda;&rang; over the last half of that time (in free-run mode &lang;&lambda;&rang; is
-          the mean slope of the free runs started in it, the current one included; &#8635; starts a
-          new run), and a second click back to the value now. The twin doubles the
+          integrated alongside the main one and the exponent &lambda; appears after W and
+          |&nabla;h|<sub>max</sub> in the corner readout, averaged over the last two thirds of the
+          time since the last reset or change of the equation (the window is shown in the section
+          head). |&nabla;h|<sub>max</sub> is the steepest slope of the front, the maximum of
+          |&nabla;h| over the box (1D: |dh/dx|), and is always shown. A click on <b>W</b>,
+          <b>|&nabla;h|<sub>max</sub></b> or <b>&lambda;</b> in the readout switches to the time
+          average &lang;W&rang;, &lang;|&nabla;h|<sub>max</sub>&rang; or &lang;&lambda;&rang; over
+          the last half of that time (in free-run mode &lang;&lambda;&rang; is the mean slope of the
+          free runs started in it, the current one included; &#8635; starts a new run), and a
+          second click back to the value now. The twin doubles the
           work per step and runs only while the section is open. <b>Benettin</b> mode pulls the
           twin back to distance &epsilon; after every frame and shows the Lyapunov vector, the
           most unstable node, &lambda;<sub>loc</sub> and k&#772;; the <b>terms</b> button opens
@@ -1857,7 +1861,7 @@
           text for an equation of your choice: set the linear terms (one of the two operators, or
           <i>both</i>, which runs the two equations and tabulates them side by side like the first
           table of the main text), (&nabla;h)&sup2; and the fixed coefficients, pick the quantity to scan — &alpha;, &beta;, &gamma;, &delta; or the box size
-          L — with its range and step (the values &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.1, &minus;0.05, 0, +0.1 and +0.2
+          L — with its range and step (the values &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.15, &minus;0.1, &minus;0.07, &minus;0.05, 0, +0.1 and +0.2
           are always included; L runs 16, 32, … up to 2<sup>n</sup>), the dimension, the box length L (default 128), the lattice step dx (default 0.5; the lattice has L/dx points) and an upper bound
           on the time step dt (default 0.05; the automatic rule lowers it further for large
           coefficients), the boundary, the transient (the total time
@@ -3241,22 +3245,36 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const fmtLam = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(3);
   const lyapTxt = { lam:'', loc:'', node:'', k:'', d:'', dsat:'', rsat:'', sum:'', win:'' };
   function setTxt(id, key, s){ if(lyapTxt[key] !== s){ lyapTxt[key] = s; $(id).textContent = s; } }
-  /* time averages for the read-out: a click on W or λ switches between the value now and its
+  /* time averages for the read-out: a click on W, |∇h|max or λ switches between the value now and its
      average over the last half of the time since the last reset or change of the equation —
      ⟨W⟩ from the integral of W(t); ⟨λ⟩ in Benettin mode from the accumulated log growth of the
      twin over the last half of its record, in free-run mode as the mean slope of the free runs
      started in that half (↻ starts a new run), the current one included */
-  let showAvgW = false, showAvgL = false;
-  const AV = { sim: null, key: '', t0: 0, T: [], C: [], wPrev: 0, bT: [], bS: [], runs: [], cur: null };
+  let showAvgW = false, showAvgL = false, showAvgG = false;
+  const AV = { sim: null, key: '', t0: 0, T: [], C: [], wPrev: 0, G: [], gPrev: 0, bT: [], bS: [], runs: [], cur: null };
+  /* the steepest slope max|∇h| over the physical box (1D: |dh/dx|), in its own buffer so that the
+     colouring cache is left alone; computed once per change of the surface */
+  let gradBuf = null, gradStamp = -1, gradMax = 0;
+  function maxGrad(){
+    if(gradStamp !== stamp || !gradBuf || gradBuf.length !== sim.M){
+      if(!gradBuf || gradBuf.length !== sim.M) gradBuf = new Float64Array(sim.M);
+      sim.derived('absdx', gradBuf); gradMax = absMax(gradBuf); gradStamp = stamp;
+    }
+    return gradMax;
+  }
   const eqKey = () => [params.order, params.lam, params.nl2, params.alpha, params.beta, params.gamma, params.delta,
                        params.absMode, params.dim, params.L, params.dx, params.bc].join('|');
   function avgTrack(){
     const key = eqKey(), n = AV.T.length;
     if(AV.sim !== sim || AV.key !== key || (n && sim.t < AV.T[n-1] - 1e-9)){
-      Object.assign(AV, { sim, key, t0: sim.t, T: [sim.t], C: [0], wPrev: sim.W, bT: [], bS: [], runs: [], cur: null });
+      Object.assign(AV, { sim, key, t0: sim.t, T: [sim.t], C: [0], wPrev: sim.W, G: [0], gPrev: maxGrad(), bT: [], bS: [], runs: [], cur: null });
       return;
     }
-    if(sim.t > AV.T[n-1] + 1e-12){ AV.C.push(AV.C[n-1] + 0.5*(AV.wPrev + sim.W)*(sim.t - AV.T[n-1])); AV.T.push(sim.t); AV.wPrev = sim.W; }
+    if(sim.t > AV.T[n-1] + 1e-12){
+      const dt = sim.t - AV.T[n-1], g = maxGrad();
+      AV.C.push(AV.C[n-1] + 0.5*(AV.wPrev + sim.W)*dt); AV.G.push(AV.G[n-1] + 0.5*(AV.gPrev + g)*dt);
+      AV.T.push(sim.t); AV.wPrev = sim.W; AV.gPrev = g;
+    }
     const ly = sim.lyap;
     if(!ly.on) return;
     if(ly.mode === 'free'){
@@ -3275,11 +3293,13 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     while(hi - lo > 1){ const mid = (lo + hi) >> 1; if(T[mid] <= x) lo = mid; else hi = mid; }
     return C[lo] + (C[hi] - C[lo])*(x - T[lo])/Math.max(1e-12, T[hi] - T[lo]);
   }
-  function avgW(){
+  /* average over the last half of the record, from a cumulative integral C(T) */
+  function avgHalf(C){
     const n = AV.T.length; if(n < 2) return NaN;
     const t = AV.T[n-1], tm = AV.t0 + (t - AV.t0)/2;
-    return t - tm > 1e-9 ? (AV.C[n-1] - cumAt(AV.T, AV.C, tm))/(t - tm) : NaN;
+    return t - tm > 1e-9 ? (C[n-1] - cumAt(AV.T, C, tm))/(t - tm) : NaN;
   }
+  const avgW = () => avgHalf(AV.C), avgG = () => avgHalf(AV.G);
   function avgLam(){
     const ly = sim.lyap; if(!(ly.on && ly.ready)) return NaN;
     if(ly.mode === 'free'){
@@ -3294,11 +3314,12 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   function setAvgToggle(which, on){
     if(which === 'W'){ showAvgW = on; $('rwTog').classList.toggle('on', on); $('rwLab').textContent = on ? '⟨W⟩' : 'W'; }
+    else if(which === 'G'){ showAvgG = on; $('rgTog').classList.toggle('on', on); $('rgLab').innerHTML = on ? '⟨|∇h|<sub>max</sub>⟩' : '|∇h|<sub>max</sub>'; }
     else { showAvgL = on; $('rlamWrap').classList.toggle('on', on); $('rlamLab').textContent = on ? '⟨λ⟩' : 'λ'; }
     updateReadouts();
   }
-  for(const [id, which] of [['rwTog', 'W'], ['rlamWrap', 'L']]){
-    const el = $(id), flip = () => setAvgToggle(which, which === 'W' ? !showAvgW : !showAvgL);
+  for(const [id, which] of [['rwTog', 'W'], ['rgTog', 'G'], ['rlamWrap', 'L']]){
+    const el = $(id), flip = () => setAvgToggle(which, which === 'W' ? !showAvgW : which === 'G' ? !showAvgG : !showAvgL);
     el.addEventListener('click', flip);
     el.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); flip(); } });
   }
@@ -3307,6 +3328,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     $('rt').textContent = sim.t.toFixed(1);
     $('rmean').textContent = (SG()*sim.meanH).toFixed(2);
     { const aw = showAvgW ? avgW() : sim.W; $('rw').textContent = isFinite(aw) ? aw.toFixed(3) : '—'; }
+    { const ag = showAvgG ? avgG() : maxGrad(); $('rg').textContent = isFinite(ag) ? ag.toFixed(3) : '—'; }
     const ly = sim.lyap, ok = ly.on && ly.ready;
     const lam = ok && isFinite(ly.lam) ? fmtLam(ly.lam) : '—';
     { const al = showAvgL ? avgLam() : NaN; $('rlam').textContent = showAvgL ? (isFinite(al) ? fmtLam(al) : '—') : lam; }
@@ -6063,7 +6085,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       if(c.dim === 2 && c.L/c.dx > 256){ $('scStatus').textContent = '2D: L/dx = ' + Math.round(c.L/c.dx) + ' points per direction is too many — at most 256 (raise dx or lower L)'; return; }
       if(!(v1 >= v0)){ $('scStatus').textContent = 'the range needs from ≤ to'; return; }
       for(let v = v0; v <= v1 + 1e-9; v += st) vals.push(+v.toFixed(6));
-      for(const v of [-0.4, -0.3, -0.2, -0.1, -0.05, 0, 0.1, 0.2]) if(!vals.some(x => Math.abs(x - v) < 1e-9)) vals.push(v);   // always sampled
+      for(const v of [-0.4, -0.3, -0.2, -0.15, -0.1, -0.07, -0.05, 0, 0.1, 0.2]) if(!vals.some(x => Math.abs(x - v) < 1e-9)) vals.push(v);   // always sampled
       vals.sort((a, b) => a - b);
       if(vals.length > 200){ $('scStatus').textContent = 'too many values (' + vals.length + ') — coarsen the step'; return; }
     }
