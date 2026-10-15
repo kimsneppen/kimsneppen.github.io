@@ -240,6 +240,10 @@
     border:1px solid var(--line);border-radius:8px;padding:4px 11px;backdrop-filter:blur(2px);
   }
   .rdout .lam b{color:var(--accent)}
+  /* W and λ in the read-out are switches: the value now, or its time average ⟨…⟩ */
+  .rdout .rtog{cursor:pointer;border-bottom:1px dotted currentColor;border-radius:2px}
+  .rdout .rtog.on{color:var(--accent);border-bottom-style:solid}
+  .rdout .rtog:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   /* the read-out, the view menu and the divergence warning hang just below the display bar,
      however many rows it wraps into (--barB is set by the script; the fixed tops are fallbacks) */
   .canvas-wrap .rdout,.canvas-wrap .wfctl,.canvas-wrap .diverged{top:var(--barB, 48px)}
@@ -1346,8 +1350,8 @@
         <div class="rdout" id="rdout">
           <span>t = <b id="rt">0.0</b></span>
           <span>&lang;h&rang; = <b id="rmean">0.00</b></span>
-          <span>W = <b id="rw">0.000</b></span>
-          <span class="lam" id="rlamWrap" style="display:none" title="largest Lyapunov exponent, averaged over the last two thirds of the time since the last reset or change of the equation (section below)">&lambda; = <b id="rlam">—</b></span>
+          <span class="rtog" id="rwTog" role="button" tabindex="0" title="surface width W now — click for &lang;W&rang;, its time average over the last half of the time since the last reset or change of the equation"><span id="rwLab">W</span> = <b id="rw">0.000</b></span>
+          <span class="lam rtog" id="rlamWrap" style="display:none" role="button" tabindex="0" title="largest Lyapunov exponent (Benettin: averaged over the last two thirds of the time since the last reset or change of the equation; free run: the slope of the current run) — click for &lang;&lambda;&rang;, the average over the last half of that time (free run: the mean slope of the runs started in it)"><span id="rlamLab">&lambda;</span> = <b id="rlam">—</b></span>
           <span class="lam" id="rsatWrap" style="display:none" title="saturated separation of the two interfaces in the free run: the time average of |&delta;h| after they have fully diverged — the window within which the interface varies">D<sub>sat</sub> = <b id="rsat">—</b></span>
         </div>
         <div class="cornerpng">
@@ -1829,7 +1833,11 @@
           <p>Open the section under the display to start the measurement: a twin surface is
           integrated alongside the main one and the exponent &lambda; appears after W in the
           corner readout, averaged over the last two thirds of the time since the last reset or
-          change of the equation (the window is shown in the section head). The twin doubles the
+          change of the equation (the window is shown in the section head). A click on <b>W</b> or
+          on <b>&lambda;</b> in the readout switches to the time average &lang;W&rang; or
+          &lang;&lambda;&rang; over the last half of that time (in free-run mode &lang;&lambda;&rang; is
+          the mean slope of the free runs started in it, the current one included; &#8635; starts a
+          new run), and a second click back to the value now. The twin doubles the
           work per step and runs only while the section is open. <b>Benettin</b> mode pulls the
           twin back to distance &epsilon; after every frame and shows the Lyapunov vector, the
           most unstable node, &lambda;<sub>loc</sub> and k&#772;; the <b>terms</b> button opens
@@ -3233,13 +3241,75 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const fmtLam = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(3);
   const lyapTxt = { lam:'', loc:'', node:'', k:'', d:'', dsat:'', rsat:'', sum:'', win:'' };
   function setTxt(id, key, s){ if(lyapTxt[key] !== s){ lyapTxt[key] = s; $(id).textContent = s; } }
+  /* time averages for the read-out: a click on W or λ switches between the value now and its
+     average over the last half of the time since the last reset or change of the equation —
+     ⟨W⟩ from the integral of W(t); ⟨λ⟩ in Benettin mode from the accumulated log growth of the
+     twin over the last half of its record, in free-run mode as the mean slope of the free runs
+     started in that half (↻ starts a new run), the current one included */
+  let showAvgW = false, showAvgL = false;
+  const AV = { sim: null, key: '', t0: 0, T: [], C: [], wPrev: 0, bT: [], bS: [], runs: [], cur: null };
+  const eqKey = () => [params.order, params.lam, params.nl2, params.alpha, params.beta, params.gamma, params.delta,
+                       params.absMode, params.dim, params.L, params.dx, params.bc].join('|');
+  function avgTrack(){
+    const key = eqKey(), n = AV.T.length;
+    if(AV.sim !== sim || AV.key !== key || (n && sim.t < AV.T[n-1] - 1e-9)){
+      Object.assign(AV, { sim, key, t0: sim.t, T: [sim.t], C: [0], wPrev: sim.W, bT: [], bS: [], runs: [], cur: null });
+      return;
+    }
+    if(sim.t > AV.T[n-1] + 1e-12){ AV.C.push(AV.C[n-1] + 0.5*(AV.wPrev + sim.W)*(sim.t - AV.T[n-1])); AV.T.push(sim.t); AV.wPrev = sim.W; }
+    const ly = sim.lyap;
+    if(!ly.on) return;
+    if(ly.mode === 'free'){
+      if(AV.cur && AV.cur.tStart !== ly.tStart && isFinite(AV.cur.lam)) AV.runs.push(AV.cur);   // a new run began
+      AV.cur = { tStart: ly.tStart, lam: ly.fit.lam };
+    } else {
+      const m = AV.bT.length;
+      if(m && ly.T < AV.bT[m-1] - 1e-9){ AV.bT = []; AV.bS = []; }                            // the twin was restarted
+      if(!AV.bT.length || ly.T > AV.bT[AV.bT.length-1] + 1e-12){ AV.bT.push(ly.T); AV.bS.push(ly.sumLog); }
+    }
+  }
+  /* value of a cumulative record (T ascending) at time x, interpolated linearly */
+  function cumAt(T, C, x){
+    let lo = 0, hi = T.length - 1;
+    if(x <= T[0]) return C[0];
+    while(hi - lo > 1){ const mid = (lo + hi) >> 1; if(T[mid] <= x) lo = mid; else hi = mid; }
+    return C[lo] + (C[hi] - C[lo])*(x - T[lo])/Math.max(1e-12, T[hi] - T[lo]);
+  }
+  function avgW(){
+    const n = AV.T.length; if(n < 2) return NaN;
+    const t = AV.T[n-1], tm = AV.t0 + (t - AV.t0)/2;
+    return t - tm > 1e-9 ? (AV.C[n-1] - cumAt(AV.T, AV.C, tm))/(t - tm) : NaN;
+  }
+  function avgLam(){
+    const ly = sim.lyap; if(!(ly.on && ly.ready)) return NaN;
+    if(ly.mode === 'free'){
+      const tm = AV.t0 + (sim.t - AV.t0)/2;
+      const fits = AV.runs.filter(r => r.tStart >= tm - 1e-9).map(r => r.lam);
+      if(AV.cur && isFinite(AV.cur.lam)) fits.push(AV.cur.lam);
+      return fits.length ? fits.reduce((a, b) => a + b, 0)/fits.length : NaN;
+    }
+    const m = AV.bT.length; if(m < 2) return NaN;
+    const T = AV.bT[m-1], Tm = AV.bT[0] + (T - AV.bT[0])/2;
+    return T - Tm > 1e-9 ? (AV.bS[m-1] - cumAt(AV.bT, AV.bS, Tm))/(T - Tm) : NaN;
+  }
+  function setAvgToggle(which, on){
+    if(which === 'W'){ showAvgW = on; $('rwTog').classList.toggle('on', on); $('rwLab').textContent = on ? '⟨W⟩' : 'W'; }
+    else { showAvgL = on; $('rlamWrap').classList.toggle('on', on); $('rlamLab').textContent = on ? '⟨λ⟩' : 'λ'; }
+    updateReadouts();
+  }
+  for(const [id, which] of [['rwTog', 'W'], ['rlamWrap', 'L']]){
+    const el = $(id), flip = () => setAvgToggle(which, which === 'W' ? !showAvgW : !showAvgL);
+    el.addEventListener('click', flip);
+    el.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); flip(); } });
+  }
   function updateReadouts(){
+    avgTrack();
     $('rt').textContent = sim.t.toFixed(1);
     $('rmean').textContent = (SG()*sim.meanH).toFixed(2);
-    $('rw').textContent = sim.W.toFixed(3);
+    { const aw = showAvgW ? avgW() : sim.W; $('rw').textContent = isFinite(aw) ? aw.toFixed(3) : '—'; }
     const ly = sim.lyap, ok = ly.on && ly.ready;
     const lam = ok && isFinite(ly.lam) ? fmtLam(ly.lam) : '—';
-    $('rlam').textContent = lam;
+    { const al = showAvgL ? avgLam() : NaN; $('rlam').textContent = showAvgL ? (isFinite(al) ? fmtLam(al) : '—') : lam; }
     setTxt('lLam', 'lam', lam);
     const bs = ly.budget.avg.tot;
     setTxt('lSum', 'sum', ok && ly.budget.ready && isFinite(bs) ? fmtLam(bs) : '—');
@@ -4943,7 +5013,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   seg($('segAbs'), ()=>params.absMode, v=>{ params.absMode = v; applyTerms(); if(!running) draw(); });
   /* α and β are chosen from fixed lists (pull-down menus in the header) */
   const ALPHAV = [-5,-4,-3,-2,-1.5,-1,-0.5,-0.2,-0.1,0,0.1,0.2,0.5,1,1.5,2,3,4,5];
-  const BETAV  = [-5,-2,-1,-0.5,-0.25,-0.2,-0.15,-0.12,-0.1,-0.05,-0.02,0,0.2,0.5,1,1.5,2,3,4,5];   // also γ and δ
+  const BETAV  = [-5,-2,-1,-0.5,-0.25,-0.2,-0.15,-0.12,-0.1,-0.07,-0.05,-0.02,-0.01,0,0.2,0.5,1,1.5,2,3,4,5];   // also γ and δ
   const nearest = (list, v) => list.reduce((b, x) => Math.abs(x - v) < Math.abs(b - v) ? x : b, list[0]);
   function fillSel(id, list){
     const el = $(id); el.innerHTML = '';
