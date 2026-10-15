@@ -493,6 +493,15 @@
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;
   }
   .btn.png.busy{opacity:.55}
+  /* film: length, record / stop, download */
+  .filmrow{display:flex;align-items:center;gap:6px;margin:2px 0 2px}
+  .filmrow label{color:var(--ink2);font-weight:600;margin-right:1px}
+  .filmrow select{flex:0 0 auto;padding:6px 4px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;color:var(--ink)}
+  .filmrow .btn{padding:7px 0;font-size:12.5px;white-space:nowrap}
+  .filmrow .btn.rec{color:#b91c1c}
+  .filmrow .btn.rec.on{background:#b91c1c;border-color:#b91c1c;color:#fff}
+  .filmrow .btn:disabled{opacity:.45;cursor:default}
+  #filmStatus:empty{display:none}
   details{border-top:1px solid var(--line)}
   details:first-of-type{margin-top:8px}
   summary{
@@ -583,6 +592,9 @@
     .controls{padding-bottom:8px}
     .btn{padding:13px 0;font-size:15px}
     .btn.png{padding:13px 14px;font-size:13.5px}
+    .filmrow{margin:4px 0 6px}
+    .filmrow select{padding:9px 6px;font-size:14px}
+    .filmrow .btn{padding:11px 0;font-size:14px}
     details:first-of-type{margin-top:0}
   }
 
@@ -1486,6 +1498,13 @@
         <button class="btn" id="bReset">Reset</button>
         <button class="btn png" id="bPng" title="save the display as a PNG image, without the controls, with the equation and parameters stamped in the corner">.png</button>
       </div>
+      <div class="filmrow">
+        <label for="filmDur">film</label>
+        <select id="filmDur" title="length of the film: seconds of real time, played back at the same pace"><option value="5">5 s</option><option value="10" selected>10 s</option><option value="20">20 s</option><option value="30">30 s</option><option value="60">60 s</option><option value="120">2 min</option><option value="300">5 min</option></select>
+        <button class="btn rec" id="bFilm" title="record the display as a film from now on, in the view of the sq button (clean, cut to the drawing, square); a second click stops early. A paused simulation is started">&#9679; record</button>
+        <button class="btn" id="bFilmSave" disabled title="download the last film">&#8615; film</button>
+      </div>
+      <div class="hint" id="filmStatus"></div>
 
       <details open>
         <summary>Model</summary>
@@ -1641,6 +1660,8 @@
             <div class="seg mini" id="scBC"><button data-v="periodic" class="on">periodic</button><button data-v="open">open</button></div></div>
           <div class="row"><label>transient (total = 2&times;)</label>
             <select id="scTrans" title="length of the transient before the twin is switched on; the measurement then lasts as long again"><option>100</option><option selected>200</option><option>500</option><option>1000</option><option>2000</option><option>5000</option></select></div>
+          <div class="row"><label>KS pre-transient t = <span class="vv" id="scPreVal">0</span></label>
+            <input type="range" id="scPre" min="0" max="8" step="1" value="0" title="first run the standard KS equation −∇²h − ∇⁴h + (∇h)² from the usual random start for this time, at its usual time step 0.1; the equation under study then starts from that surface at the time step chosen above. 0: the equation under study starts directly from the random start"></div>
           <div class="row"><label>NMC (initial conditions)</label>
             <select id="scNMC"><option selected>1</option><option>2</option><option>3</option><option>5</option><option>10</option></select></div>
           <div class="scbtns">
@@ -1648,7 +1669,7 @@
             <button class="btn" id="scStop" disabled>stop</button>
           </div>
           <div class="hint" id="scStatus">idle</div>
-          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (default 0.1, as KKS). The scanned points are the range in the chosen step plus always &minus;0.7, &minus;0.5, &minus;0.4, &minus;0.3, &minus;0.2, 0 and +0.5 for &alpha;, and &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.15, &minus;0.1, &minus;0.07, &minus;0.05, 0, +0.1 and +0.2 for &beta;, &gamma; and &delta;; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient, then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
+          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (default 0.1, as KKS). The scanned points are the range in the chosen step plus always &minus;0.7, &minus;0.5, &minus;0.4, &minus;0.3, &minus;0.2, 0 and +0.5 for &alpha;, and &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.15, &minus;0.1, &minus;0.07, &minus;0.05, 0, +0.1 and +0.2 for &beta;, &gamma; and &delta;; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient (with a <b>KS pre-transient</b> t &gt; 0 the start is instead the surface reached by the standard KS equation &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h + (&nabla;h)&sup2; after time t from the usual random start, integrated at its usual step dt = 0.1; the equation under study then runs at the step set by <i>time step dt (at most)</i>), then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
         </div>
       </details>
 
@@ -1829,6 +1850,12 @@
           colour bar or caption (key c), and <b>sq</b> first cuts away the empty margin around the drawing and then compresses what is
           left into a square (key s). In the Lyapunov section and in the scan results each figure and table has its
           own .png button, and the tables of the main text have theirs beside them.</p>
+          <p><b>Film:</b> under Run / Step / Reset, choose the length of the film (5 s to 5 min of real
+          time) and press <b>&#9679; record</b> at the moment it should begin; the display is then recorded in
+          the view of the sq button — clean, cut to the drawing, square — at up to 30 frames per second
+          and played back at the same pace (a paused simulation is started; <b>&#9632; stop</b> ends the
+          film early). When it is done, <b>&#8615; film</b> downloads it, as .mp4 where the browser can
+          write that and as .webm otherwise; the file name carries the parameters and the time span.</p>
 
           <h3>Lyapunov section</h3>
           <p>Open the section under the display to start the measurement: a twin surface is
@@ -2776,7 +2803,7 @@ function buildSim(P){
 /* ---- one sample of the systematic scan --------------------------------
    Shared by the main thread and the scan worker (the worker is built from the
    text of this script).  Protocol: transient c.tTrans from a small random
-   start; then the twin is switched on: the first half of the remaining time
+   start (or from the surface left by an optional KS pre-transient c.tPre); then the twin is switched on: the first half of the remaining time
    gives the Benettin exponent, the second half repeated free runs whose
    fitted slopes give the long-run exponent; W and the power spectrum are
    averaged over the measurement.  report(t) is called every ~30 ms of wall
@@ -2794,9 +2821,26 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const P = { dim: c.dim, L: c.L, bc: c.bc, dt: c.dt, dx: c.dx || 1, nwx: ic.n, nwy: ic.n, amp: ic.amp, eps: 0.1,
               alpha: c.alpha, beta: c.beta, gamma: c.gamma, delta: c.delta, order: c.order, lam: c.lam, nl2: c.nl2, absMode: 'euclid', seed, noise: 0.1 };
   if(c.par === 'L') P.L = value; else P[c.par] = value;
-  const m = buildSim(P); m.lyap.on = false;
+  /* optional pre-transient: the standard KS equation, ∂h/∂t = −∇²h − ∇⁴h + (∇h)², from the same
+     random start and at its own time step c.dtPre, for c.tPre; the equation under study then takes
+     over the KS surface at its own time step c.dt. Times reported count from that switch. */
+  const tPre = c.tPre > 0 ? c.tPre : 0;
+  const m = buildSim(tPre ? Object.assign({}, P, { order: 4, nl2: true, alpha: 0, beta: 0, gamma: 0, delta: 0, dt: c.dtPre || 0.1 }) : P);
+  m.lyap.on = false;
   const spf = 5, fdt = c.dt*spf, bad = () => !isFinite(m.W) || m.W > 1e4;
-  let last = performance.now();
+  let last = performance.now(), tOff = 0;
+  if(tPre){
+    const n0 = Math.max(1, Math.round(tPre/(m.P.dt*spf)));
+    for(let k=0;k<n0;k++){
+      m.frame(spf);
+      if(bad() || stopped()) return null;
+      if(performance.now() - last > 30){ last = performance.now(); report(m.t - tPre); await yieldFn(); }
+    }
+    Object.assign(m.P, { order: P.order, lam: P.lam, nl2: P.nl2, alpha: P.alpha, beta: P.beta, gamma: P.gamma, delta: P.delta });
+    m.setTerms(P.alpha, P.beta, P.nl2, P.absMode, P.gamma, P.delta);
+    m.setOrder(P.order); m.setDt(P.dt);
+    tOff = m.t;
+  }
   /* time-averaged power spectrum over the whole measurement (both halves) */
   const spec = new Float64Array(m.spectrumK.length); let nspec = 0, specOn = false;
   const run = async T => {                         // integrate T time units in UI-friendly chunks
@@ -2805,7 +2849,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       m.frame(spf); if(m.lyap.on) m.lyapRenorm(); wsum += m.W;
       if(specOn){ m.spectrumAccumulate(spec); nspec++; }
       if(bad() || stopped()) return NaN;
-      if(performance.now() - last > 30){ last = performance.now(); report(m.t); await yieldFn(); }
+      if(performance.now() - last > 30){ last = performance.now(); report(m.t - tOff); await yieldFn(); }
     }
     return wsum/n;
   };
@@ -2817,7 +2861,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     m.frame(spf); m.lyapRenorm(); wsum += m.W; nf++; m.spectrumAccumulate(spec); nspec++;
     if(!m.lyap.warm && k > 0){ G += Math.log(m.lyap.norm/m.lyap.eps); T += fdt; }
     if(bad()) return null; if(stopped()) return null;
-    if(performance.now() - last > 30){ last = performance.now(); report(m.t); await yieldFn(); }
+    if(performance.now() - last > 30){ last = performance.now(); report(m.t - tOff); await yieldFn(); }
   }
   const ben = T > 0 ? G/T : NaN, Wm = wsum/nf;
   m.lyap.mode = 'free'; const slopes = [], sats = []; let tWin = 0, nsat = 0; const cap = Math.min(600, half*0.6);
@@ -4679,19 +4723,27 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
            'sq'    — the clean picture compressed into a square (corner button sq) */
   /* the bounding box of everything that differs from the background (the corner pixel),
      plus a small margin — so the square picture holds only the surface itself */
-  function cropToContent(oc, pad){
+  function contentBox(oc, pad){
     const w = oc.width, h = oc.height, c = oc.getContext('2d');
-    let d; try{ d = c.getImageData(0, 0, w, h).data; } catch(e){ return oc; }
+    let d; try{ d = c.getImageData(0, 0, w, h).data; } catch(e){ return null; }
     const br = d[0], bg = d[1], bb = d[2], tol = 18;
     const diff = i => Math.abs(d[i]-br) + Math.abs(d[i+1]-bg) + Math.abs(d[i+2]-bb) > tol;
     let x0 = w, y0 = h, x1 = -1, y1 = -1;
     for(let y=0;y<h;y++){ const row = 4*y*w; for(let x=0;x<w;x++){ if(diff(row + 4*x)){ if(x<x0) x0=x; if(x>x1) x1=x; if(y<y0) y0=y; if(y>y1) y1=y; } } }
-    if(x1 < 0 || (x1-x0) < 8 || (y1-y0) < 8) return oc;
+    if(x1 < 0 || (x1-x0) < 8 || (y1-y0) < 8) return null;
     x0 = Math.max(0, x0-pad); y0 = Math.max(0, y0-pad); x1 = Math.min(w-1, x1+pad); y1 = Math.min(h-1, y1+pad);
-    const out = document.createElement('canvas'); out.width = x1-x0+1; out.height = y1-y0+1;
-    out.getContext('2d').drawImage(oc, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+    return { x: x0, y: y0, w: x1-x0+1, h: y1-y0+1 };
+  }
+  function cropToContent(oc, pad){
+    const b = contentBox(oc, pad); if(!b) return oc;
+    const out = document.createElement('canvas'); out.width = b.w; out.height = b.h;
+    out.getContext('2d').drawImage(oc, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h);
     return out;
   }
+  /* the parameter part of the file names of pictures and films */
+  const fileTag = () => (params.dim === 1 ? 'KS1D' : 'KS2D') + (params.nl2 ? '' : '_nosq') +
+                (params.alpha ? '_a' + fmtTerm(params.alpha) + (params.dim === 2 && params.absMode === 'sum' ? 'sum' : '') : '') +
+                (params.beta  ? '_b' + fmtTerm(params.beta)  : '') + '_L' + params.L + '_dx' + params.dx;
   function exportPNG(kind){
     kind = kind || 'stamp';
     const btn = $(kind === 'stamp' ? 'bPng' : (kind === 'sq' ? 'bPngSq' : 'bPngClean'));
@@ -4713,11 +4765,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       sctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, side, side);
       oc = sq;
     }
-    const tag = (params.dim === 1 ? 'KS1D' : 'KS2D') + (params.nl2 ? '' : '_nosq') +
-                (params.alpha ? '_a' + fmtTerm(params.alpha) + (params.dim === 2 && params.absMode === 'sum' ? 'sum' : '') : '') +
-                (params.beta  ? '_b' + fmtTerm(params.beta)  : '') +
-                '_L' + params.L + '_dx' + params.dx + '_t' + sim.t.toFixed(0) +
-                (kind === 'clean' ? '_clean' : kind === 'sq' ? '_sq' : '');
+    const tag = fileTag() + '_t' + sim.t.toFixed(0) + (kind === 'clean' ? '_clean' : kind === 'sq' ? '_sq' : '');
     if(!btn.dataset.label) btn.dataset.label = btn.textContent;   // survives rapid re-clicks
     const label = btn.dataset.label;
     const done = () => { btn.classList.remove('busy'); btn.textContent = label; };
@@ -4736,6 +4784,110 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       }, 'image/png');
     } else save(oc.toDataURL('image/png'));
   }
+
+  /* ---- film: the view of the sq button recorded as a video ----------------
+     The clean picture, cut to the drawing and compressed into a square, is
+     rendered into a canvas on every display frame (at most 30 per second), and
+     the browser's MediaRecorder records that canvas at the pace of the wall
+     clock: a 10 s film plays back the 10 s that were watched. Like the sq
+     picture, the frame is cut to the drawing; the cut is measured again every
+     few frames (on a reduced copy) and eased towards the new one, so the frame
+     follows a growing surface without jitter. */
+  const FILM_FPS = 30;
+  const FILM = { rec: null, timer: 0, tStop: 0, fctx: null, track: null, chunks: [], url: '', name: '', ext: 'webm', small: null,
+                 w: 0, h: 0, scale: 1, box: null, target: null, n: 0, side: 0, t0: 0, last: 0, dur: 10, tag: '', simT0: 0, simT1: 0, sec: -1 };
+  function filmMeasure(oc){
+    const sw = Math.max(16, Math.round(oc.width/4)), sh = Math.max(16, Math.round(oc.height/4));
+    const s = FILM.small || (FILM.small = document.createElement('canvas'));
+    if(s.width !== sw || s.height !== sh){ s.width = sw; s.height = sh; }
+    s.getContext('2d', { willReadFrequently: true }).drawImage(oc, 0, 0, sw, sh);
+    const b = contentBox(s, 2), fx = oc.width/sw, fy = oc.height/sh;
+    return b ? { x: b.x*fx, y: b.y*fy, w: b.w*fx, h: b.h*fy } : { x: 0, y: 0, w: oc.width, h: oc.height };
+  }
+  function filmMime(){
+    if(!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) return null;
+    for(const t of ['video/mp4;codecs=avc1.42E01F', 'video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'])
+      try{ if(MediaRecorder.isTypeSupported(t)) return t; } catch(e){}
+    return '';
+  }
+  function filmDraw(){
+    const oc = renderTo(FILM.w, FILM.h, FILM.scale, true, false);
+    if(FILM.n++ % 6 === 0) FILM.target = filmMeasure(oc);
+    const t = FILM.target, b = FILM.box = FILM.box ? { x: FILM.box.x + 0.2*(t.x - FILM.box.x), y: FILM.box.y + 0.2*(t.y - FILM.box.y),
+                                                     w: FILM.box.w + 0.2*(t.w - FILM.box.w), h: FILM.box.h + 0.2*(t.h - FILM.box.h) } : t;
+    FILM.fctx.fillStyle = darkBG ? '#0b0d13' : '#fff'; FILM.fctx.fillRect(0, 0, FILM.side, FILM.side);
+    FILM.fctx.drawImage(oc, b.x, b.y, b.w, b.h, 0, 0, FILM.side, FILM.side);
+    if(FILM.track) FILM.track.requestFrame();
+  }
+  function filmUI(){
+    const on = !!FILM.rec;
+    $('bFilm').classList.toggle('on', on); $('bFilm').innerHTML = on ? '&#9632; stop' : '&#9679; record';
+    $('bFilmSave').disabled = on || !FILM.url; $('filmDur').disabled = on;
+  }
+  function filmStart(){
+    const mime = filmMime();
+    if(mime === null){ $('filmStatus').textContent = 'this browser cannot record a film (no MediaRecorder)'; return; }
+    /* the geometry of the sq picture: the display at its size on screen (2D map: the bare square) */
+    const r = cv.getBoundingClientRect();
+    let w = Math.max(120, Math.round(r.width)), h = Math.max(120, Math.round(r.height));
+    if(params.dim === 2 && modeSel[2] === 'map') w = h = Math.min(w, h);
+    const scale = Math.min(2, Math.max(1, 720/Math.min(w, h)));
+    const side = Math.min(1080, 2*Math.floor(Math.min(w, h)*scale/2));
+    const fc = document.createElement('canvas'); fc.width = fc.height = side;
+    const fctx = fc.getContext('2d'); fctx.imageSmoothingEnabled = true; fctx.imageSmoothingQuality = 'high';
+    const req = typeof CanvasCaptureMediaStreamTrack !== 'undefined' && 'requestFrame' in CanvasCaptureMediaStreamTrack.prototype;
+    const stream = fc.captureStream(req ? 0 : FILM_FPS);
+    let rec;
+    try{ rec = new MediaRecorder(stream, Object.assign({ videoBitsPerSecond: 8e6 }, mime ? { mimeType: mime } : {})); }
+    catch(e){ $('filmStatus').textContent = 'the film could not be started: ' + e.message; return; }
+    if(FILM.url){ URL.revokeObjectURL(FILM.url); FILM.url = ''; }
+    Object.assign(FILM, { rec, fctx, track: req ? stream.getVideoTracks()[0] : null, chunks: [], w, h, scale, box: null, target: null, n: 0, side,
+                          dur: +$('filmDur').value, tag: fileTag(), simT0: sim.t, sec: -1 });
+    rec.ondataavailable = e => { if(e.data && e.data.size) FILM.chunks.push(e.data); };
+    rec.onstop = filmDone;
+    rec.start(1000);
+    FILM.t0 = FILM.last = performance.now();
+    filmDraw();
+    FILM.timer = setTimeout(filmStop, FILM.dur*1000 + 40);   // also when the tab is hidden and frames stop
+    if(!running && !diverged) $('bRun').click();               // a film of a running simulation
+    filmUI(); filmTick();
+  }
+  /* called from the animation loop: one film frame, and the countdown */
+  function filmTick(){
+    if(!FILM.rec || FILM.rec.state !== 'recording' || FILM.tStop) return;
+    const now = performance.now(), el = (now - FILM.t0)/1000;
+    if(el >= FILM.dur){ filmStop(); return; }
+    if(now - FILM.last >= 1000/FILM_FPS - 3){ FILM.last = now; filmDraw(); }
+    const s = Math.floor(el);
+    if(s !== FILM.sec){ FILM.sec = s; $('filmStatus').textContent = 'recording ' + s + ' / ' + FILM.dur + ' s  (' + FILM.side + '×' + FILM.side + ' px)'; }
+  }
+  function filmStop(){
+    clearTimeout(FILM.timer);
+    const rec = FILM.rec;
+    if(!rec || rec.state !== 'recording' || FILM.tStop) return;
+    /* a last frame at the end time, given a moment to reach the recorder before it stops */
+    FILM.simT1 = sim.t; FILM.tStop = performance.now(); filmDraw();
+    setTimeout(() => { if(rec.state !== 'inactive') rec.stop(); }, 150);
+  }
+  function filmDone(){
+    const type = (FILM.rec && FILM.rec.mimeType) || 'video/webm', secs = ((FILM.tStop || performance.now()) - FILM.t0)/1000;
+    FILM.tStop = 0;
+    FILM.ext = /mp4/.test(type) ? 'mp4' : 'webm';
+    const blob = new Blob(FILM.chunks, { type: type.split(';')[0] });
+    FILM.url = URL.createObjectURL(blob); FILM.chunks = [];
+    if(FILM.track) FILM.track.stop();
+    FILM.rec = null; FILM.track = null;
+    FILM.name = (FILM.tag + '_t' + FILM.simT0.toFixed(0) + '-' + FILM.simT1.toFixed(0) + '_film').replace(/[^\w.-]/g, '') + '.' + FILM.ext;
+    $('filmStatus').textContent = 'film ready: ' + Math.min(secs, FILM.dur).toFixed(1) + ' s, t = ' + FILM.simT0.toFixed(0) + ' … ' + FILM.simT1.toFixed(0) +
+                                  ', ' + FILM.side + '×' + FILM.side + ' px, ' + (blob.size/1048576).toFixed(1) + ' MB (.' + FILM.ext + ')';
+    filmUI();
+  }
+  $('bFilm').addEventListener('click', () => FILM.rec ? filmStop() : filmStart());
+  $('bFilmSave').addEventListener('click', () => {
+    if(!FILM.url) return;
+    const a = document.createElement('a'); a.href = FILM.url; a.download = FILM.name;
+    document.body.appendChild(a); a.click(); a.remove();
+  });
 
   // ----- animation loop -----
   function advance(nsteps){
@@ -4791,6 +4943,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       draw();
     }
     syncRun2();
+    filmTick();
     requestAnimationFrame(tick);
   }
 
@@ -5972,6 +6125,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   seg($('scDim'), ()=>''+scDim, v=>{ scDim = +v; scFit2D(); });
   $('scDx').addEventListener('change', scFit2D);
   seg($('scBC'), ()=>scBC, v=>{ scBC = v; });
+  /* the KS pre-transient: the slider steps through these times (0 = none) */
+  const SCPRE = [0, 50, 100, 200, 500, 1000, 2000, 5000, 10000];
+  $('scPre').addEventListener('input', e => { $('scPreVal').textContent = SCPRE[+e.target.value]; });
   /* the same time-step rule as the main display */
   function scDt(c){
     const b = Math.abs(c.beta); let dt;
@@ -6068,8 +6224,10 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const par0 = $('scPar').value;
     const orders = par0 === 'lam' ? [246] : scOrdList.filter(o => scOrds.has(o));
     const c = { order: orders[0], lam: +$('scLamFix').value, nl2: scNL2, alpha: +$('scA').value, beta: +$('scB').value, gamma: +$('scG').value, delta: +$('scD').value,
-                par: $('scPar').value, dim: scDim, L: +$('scL').value, dx: +$('scDx').value, dtMax: +$('scDtMax').value, bc: scBC, tTrans: +$('scTrans').value, nmc: +$('scNMC').value };
+                par: $('scPar').value, dim: scDim, L: +$('scL').value, dx: +$('scDx').value, dtMax: +$('scDtMax').value, bc: scBC, tTrans: +$('scTrans').value, nmc: +$('scNMC').value, tPre: SCPRE[+$('scPre').value] || 0 };
     c.tTotal = 2*c.tTrans;
+    /* the KS pre-transient runs at the usual KS step of the main display, not capped by "dt (at most)" */
+    c.dtPre = scDt({ order: 4, alpha: 0, beta: 0, gamma: 0, delta: 0, dim: c.dim, dtMax: 0 });
     const v0 = +$('scMin').value, v1 = +$('scMax').value, st = +$('scStep').value;
     let vals = [], capNote = '';
     if(c.par === 'lam'){                          // Λ = first, first + step, … up to the first value above 1/4
@@ -6102,7 +6260,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     /* the main display pauses: all the time goes into the scan */
     const wasRunning = running; running = false; $('bRun').textContent = 'Run';
     if(scanPanel.classList.contains('closed')) setScanOpen(true);
-    $('scanEq').textContent = SC.sets.map(s => s.eq).join('   and   ') + '   —   ' + (c.dim === 2 ? '2D, ' : '1D, ') + c.bc + ', dx = ' + c.dx + ', dt ≤ ' + c.dtMax + ', transient ' + c.tTrans + ', total ' + c.tTotal + ' per sample' + (c.nmc > 1 ? ', ' + c.nmc + ' initial conditions' : '') + (c.par === 'L' ? '' : ', L = ' + c.L) + capNote;
+    $('scanEq').textContent = SC.sets.map(s => s.eq).join('   and   ') + '   —   ' + (c.dim === 2 ? '2D, ' : '1D, ') + c.bc + ', dx = ' + c.dx + ', dt ≤ ' + c.dtMax + ', transient ' + c.tTrans + ', total ' + c.tTotal + ' per sample' + (c.tPre ? ', after a KS pre-transient t = ' + c.tPre + ' at dt = ' + c.dtPre : '') + (c.nmc > 1 ? ', ' + c.nmc + ' initial conditions' : '') + (c.par === 'L' ? '' : ', L = ' + c.L) + capNote;
     const t0 = performance.now(), total = vals.length*c.nmc*orders.length; let done = 0, nRedo = 0, nDiv = 0;
     for(let i=0;i<vals.length && !SC.stop;i++) for(const ord of orders){
       if(SC.stop) break;
@@ -6115,7 +6273,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         let r = null;
         while(!SC.stop){
           const cr = dtRun === cc.dt ? cc : Object.assign({}, cc, { dt: dtRun }), redo = dtRun < cc.dt ? ' (rerun after divergence at dt = ' + cc.dt + ')' : '';
-          const rep = t => { const el = (performance.now()-t0)/1000, pct = Math.round(100*(done + Math.min(1, t/c.tTotal))/total); $('scStatus').textContent = GSYM[c.par] + ' = ' + v + ' (' + (i+1) + '/' + vals.length + ')' + (orders.length > 1 ? ', ' + LINLAB[ord] : '') + (c.nmc > 1 ? ', start ' + (j+1) + '/' + c.nmc : '') + ', t = ' + t.toFixed(0) + ' / ' + c.tTotal + ', dt = ' + dtRun + redo + '  ·  ' + pct + ' %  ·  ' + fmt(el) + ' s'; document.title = pct + ' % scan · ' + TITLE0; };
+          const rep = t => { const el = (performance.now()-t0)/1000, pct = Math.round(100*(done + Math.min(1, Math.max(0, t + c.tPre)/(c.tPre + c.tTotal)))/total); $('scStatus').textContent = GSYM[c.par] + ' = ' + v + ' (' + (i+1) + '/' + vals.length + ')' + (orders.length > 1 ? ', ' + LINLAB[ord] : '') + (c.nmc > 1 ? ', start ' + (j+1) + '/' + c.nmc : '') + (t < 0 ? ', KS pre-transient t = ' + (c.tPre + t).toFixed(0) + ' / ' + c.tPre + ', dt = ' + c.dtPre : ', t = ' + t.toFixed(0) + ' / ' + c.tTotal + ', dt = ' + dtRun + redo) + '  ·  ' + pct + ' %  ·  ' + fmt(el) + ' s'; document.title = pct + ' % scan · ' + TITLE0; };
           r = await scSampleAny(cr, v, c.nmc > 1 ? j : undefined, rep);
           if(r || SC.stop || dtRun < cc.dt/10) break;
           dtRun = +(dtRun/4).toPrecision(6);
