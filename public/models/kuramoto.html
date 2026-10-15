@@ -493,6 +493,8 @@
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;
   }
   .btn.png.busy{opacity:.55}
+  .dispbar .tbtn.linbtn{font-size:12.5px;padding:6px 9px}
+  .dispbar .tbtn.linbtn.on,.display.darkbg .dispbar .tbtn.linbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
   /* film: length, record / stop, download */
   .filmrow{display:flex;align-items:center;gap:6px;margin:2px 0 2px}
   .filmrow label{color:var(--ink2);font-weight:600;margin-right:1px}
@@ -1310,6 +1312,7 @@
       <div class="dispbar">
         <button class="tbtn viewhead" id="viewHead" title="show / hide the view menu: display mode, plotted variable, spacing, tilt and distance">view <b>&#9662;</b></button>
         <button id="bViewTog" class="tbtn" title="switch between two viewpoints">&#8645;</button>
+        <button id="bLineage" class="tbtn linbtn" hidden title="lineage of a top (2D): switch on, then click a local maximum on the map — it is marked (yellow), and every time a marked top divides both daughters are marked, with a thin dashed line between the sisters. The marks stay when switching between map and surface. Click again to switch off and remove all marks">lineage</button>
         <span class="cbar cbtop" id="cbTop" title="colour scale of the display: extreme values of the coloured quantity">
           <b class="cbmin" id="cbTopMin">−1</b><canvas class="cbcan" id="cbTopCan" width="90" height="10"></canvas><b class="cbmax" id="cbTopMax">+1</b>
         </span>
@@ -1364,6 +1367,7 @@
           <span>&lang;h&rang; = <b id="rmean">0.00</b></span>
           <span class="rtog" id="rwTog" role="button" tabindex="0" title="surface width W now — click for &lang;W&rang;, its time average over the last half of the time since the last reset or change of the equation"><span id="rwLab">W</span> = <b id="rw">0.000</b></span>
           <span class="rtog" id="rgTog" role="button" tabindex="0" title="steepest slope of the front now, the maximum of |&nabla;h| over the box (1D: |dh/dx|) — click for its time average over the last half of the time since the last reset or change of the equation"><span id="rgLab">|&nabla;h|<sub>max</sub></span> = <b id="rg">0.000</b></span>
+          <span id="rlinWrap" style="display:none" title="lineage: the marked tops alive now, and the largest generation reached">tops = <b id="rlin">—</b></span>
           <span class="lam rtog" id="rlamWrap" style="display:none" role="button" tabindex="0" title="largest Lyapunov exponent (Benettin: averaged over the last two thirds of the time since the last reset or change of the equation; free run: the slope of the current run) — click for &lang;&lambda;&rang;, the average over the last half of that time (free run: the mean slope of the runs started in it)"><span id="rlamLab">&lambda;</span> = <b id="rlam">—</b></span>
           <span class="lam" id="rsatWrap" style="display:none" title="saturated separation of the two interfaces in the free run: the time average of |&delta;h| after they have fully diverged — the window within which the interface varies">D<sub>sat</sub> = <b id="rsat">—</b></span>
         </div>
@@ -1793,6 +1797,16 @@
           <b>map</b> — a colour map of the box; <b>surface</b> — a rotatable 3D view (drag to
           rotate, or use the tilt / rot / dist sliders of the view menu; a short distance adds
           perspective).</p>
+          <p><b>Lineage</b> (2D, button in the display bar): switch it on and click a top on the
+          map — the nearest local maximum of h is marked (yellow). All local maxima are then
+          followed from frame to frame; when a new maximum appears next to a marked one and
+          survives for two time units, the marked top has divided: both daughters are marked
+          (white), one generation on, and a thin dashed line joins the two sisters. A small
+          black dot is left where a top divided, a small ring where one vanished. Several tops
+          can be clicked, each starting its own lineage; the read-out counts the marked tops
+          alive and the largest generation reached. The marks stay when switching to the surface
+          view, where they lie on the relief, and appear in the pictures and films; a second
+          click on the button removes them all, as does a reset.</p>
           <h4>Presets</h4>
           <p>The box in the lower left corner holds the one-click runs: KS 1D / 2D, the same with
           &alpha; = 1 (1.5 in 2D), with &beta; = &minus;0.5 (<i>nnl</i>), and the Art 2D toggle. Its title line
@@ -3373,6 +3387,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     $('rmean').textContent = (SG()*sim.meanH).toFixed(2);
     { const aw = showAvgW ? avgW() : sim.W; $('rw').textContent = isFinite(aw) ? aw.toFixed(3) : '—'; }
     { const ag = showAvgG ? avgG() : maxGrad(); $('rg').textContent = isFinite(ag) ? ag.toFixed(3) : '—'; }
+    { const show = LIN.on && params.dim === 2; $('rlinWrap').style.display = show ? '' : 'none';
+      if(show){ let alive = 0, gen = 0; for(const nd of LIN.nodes){ if(nd.state === 'alive') alive++; if(nd.gen > gen) gen = nd.gen; }
+                $('rlin').textContent = LIN.nodes.length ? alive + ' · gen ' + gen : 'click one on the map'; } }
     const ly = sim.lyap, ok = ly.on && ly.ready;
     const lam = ok && isFinite(ly.lam) ? fmtLam(ly.lam) : '—';
     { const al = showAvgL ? avgLam() : NaN; $('rlam').textContent = showAvgL ? (isFinite(al) ? fmtLam(al) : '—') : lam; }
@@ -3858,6 +3875,13 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     /* row j = 0 at the bottom, so y increases upward as the axis says */
     ctx.save(); ctx.translate(px, py+side); ctx.scale(1,-1);
     ctx.drawImage(fldC, 0, 0, side, side); ctx.restore();
+    if(onScreen) LIN.geo = { px, py, side };
+    if(LIN.on && LIN.nodes.length){
+      const k = side/n;
+      ctx.save(); ctx.beginPath(); ctx.rect(px, py, side, side); ctx.clip();
+      linDraw((x, y) => [px + (x + 0.5)*k, py + side - (y + 0.5)*k], 1, Math.max(3, Math.min(6, side/110)));
+      ctx.restore();
+    }
     if(clean) return;
     ctx.strokeStyle = params.bc==='open' ? TH.wall : TH.frame;
     ctx.lineWidth = params.bc==='open' ? 2 : 1;
@@ -3875,6 +3899,147 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     rightInset = Math.max(0, w - (px+side) - 4);
   }
 
+  /* ---- lineage of a top (2D) ------------------------------------------------
+     With the lineage button on, a click on the map marks the local maximum of h
+     nearest to the click. From then on all local maxima of h are followed from
+     frame to frame (mutual nearest neighbours). A new maximum that appears next
+     to a marked one and survives LIN_CONFIRM time units counts as a division:
+     the marked top ends there, both daughters are marked one generation on, and
+     a thin dashed line joins the two sisters (each end follows its top, and stays
+     where that top divided or vanished). A marked maximum that disappears while
+     new ones were born from it hands over to them (one: it lives on in it; two or
+     more: it divides). The marks live in lattice coordinates, so the map and the
+     surface view show the same lineage. */
+  const LIN_CONFIRM = 2, LIN_RMOVE = 2, LIN_RBIRTH = 6, LIN_RCLICK = 8;   // a time and three lengths
+  const LIN = { on: false, sim: null, sign: 1, per: true, stamp: -1, maxima: [], nextId: 1, nodes: [], pairs: [], byMax: new Map(), geo: null };
+  function linClear(){ LIN.maxima = []; LIN.nodes = []; LIN.pairs = []; LIN.byMax.clear(); LIN.stamp = -1; LIN.sim = sim; }
+  /* the local maxima of ±h: larger than every lattice point within about one length unit,
+     placed between the lattice points by a parabola through the neighbours */
+  function linFindMaxima(){
+    const n = sim.physNx, nx = sim.nx, H = sim.h, s = LIN.sign, per = LIN.per, r = Math.max(1, Math.round(1/sim.dx));
+    const at = (i, j) => {
+      if(per){ i = (i + n) % n; j = (j + n) % n; } else if(i < 0 || j < 0 || i >= n || j >= n) return -Infinity;
+      return s*H[j*nx + i];
+    };
+    const out = [];
+    for(let j=0;j<n;j++) for(let i=0;i<n;i++){
+      const v = s*H[j*nx + i];
+      const xm = at(i-1, j), xp = at(i+1, j), ym = at(i, j-1), yp = at(i, j+1);
+      if(xm >= v || xp > v || ym >= v || yp > v) continue;
+      let ok = true;
+      for(let dj=-r; dj<=r && ok; dj++) for(let di=-r; di<=r; di++){
+        if(!di && !dj) continue;
+        const u = at(i+di, j+dj);
+        if(u > v || (u === v && (dj < 0 || (dj === 0 && di < 0)))){ ok = false; break; }
+      }
+      if(!ok) continue;
+      const cx = xm - 2*v + xp, cy = ym - 2*v + yp;
+      out.push({ x: i + (cx < 0 && isFinite(cx) ? 0.5*(xm - xp)/cx : 0), y: j + (cy < 0 && isFinite(cy) ? 0.5*(ym - yp)/cy : 0), id: 0, born: sim.t, par: 0 });
+    }
+    return out;
+  }
+  /* b − a the shortest way round a periodic box (lattice units) */
+  function linDX(a, b){ let d = b - a; if(LIN.per){ const n = sim.physNx; d -= n*Math.round(d/n); } return d; }
+  function linNearest(list, x, y){
+    let best = -1, bd = Infinity;
+    for(let k=0;k<list.length;k++){ const dx = linDX(x, list[k].x), dy = linDX(y, list[k].y), d = dx*dx + dy*dy; if(d < bd){ bd = d; best = k; } }
+    return { k: best, d: Math.sqrt(bd) };
+  }
+  function linDivide(nd, tops){
+    nd.state = 'split'; LIN.byMax.delete(nd.maxId);
+    const kids = tops.map(c => { const k = { maxId: c.id, x: c.x, y: c.y, gen: nd.gen + 1, state: 'alive', root: false }; LIN.nodes.push(k); LIN.byMax.set(c.id, k); return k; });
+    for(let a=0;a<kids.length-1;a++) LIN.pairs.push([kids[a], kids[a+1]]);
+  }
+  function linUpdate(){
+    const C = linFindMaxima(), P = LIN.maxima, rMove = LIN_RMOVE/sim.dx, rBirth = LIN_RBIRTH/sim.dx;
+    const nP = C.map(c => linNearest(P, c.x, c.y)), nC = P.map(p => linNearest(C, p.x, p.y));
+    C.forEach((c, k) => {
+      const j = nP[k].k;
+      if(j >= 0 && nP[k].d < rMove && nC[j].k === k){ const p = P[j]; c.id = p.id; c.born = p.born; c.par = p.par; }
+      else { c.id = LIN.nextId++; c.born = sim.t; c.par = j >= 0 && nP[k].d < rBirth ? P[j].id : 0; }
+    });
+    LIN.maxima = C;
+    const byId = new Map(C.map(c => [c.id, c]));
+    for(const nd of LIN.nodes.slice()){
+      if(nd.state !== 'alive') continue;
+      const c = byId.get(nd.maxId);
+      if(c){ nd.x = c.x; nd.y = c.y; continue; }
+      const kids = C.filter(q => q.par === nd.maxId && !LIN.byMax.has(q.id));
+      if(kids.length === 1){ LIN.byMax.delete(nd.maxId); nd.maxId = kids[0].id; nd.x = kids[0].x; nd.y = kids[0].y; LIN.byMax.set(nd.maxId, nd); }
+      else if(kids.length > 1) linDivide(nd, kids);
+      else { nd.state = 'end'; LIN.byMax.delete(nd.maxId); }
+    }
+    for(const c of C){
+      if(!c.par || LIN.byMax.has(c.id) || sim.t - c.born < LIN_CONFIRM) continue;
+      const nd = LIN.byMax.get(c.par), mother = nd && byId.get(nd.maxId);
+      if(mother) linDivide(nd, [mother, c]);
+    }
+  }
+  /* once per new frame, from whichever view is drawn (and only while something is marked) */
+  function linSync(){
+    if(!LIN.on || params.dim !== 2) return;
+    if(LIN.sim !== sim){ linClear(); return; }
+    if(!LIN.nodes.length || LIN.stamp === stamp) return;
+    LIN.stamp = stamp; linUpdate();
+  }
+  /* a click on the map (CSS px in the canvas): mark the nearest top */
+  function linClick(cxp, cyp){
+    const g = LIN.geo; if(!g) return false;
+    const n = sim.physNx, gx = (cxp - g.px)/g.side*n - 0.5, gy = (g.py + g.side - cyp)/g.side*n - 0.5;
+    if(gx < -0.5 || gy < -0.5 || gx > n - 0.5 || gy > n - 0.5) return false;
+    if(LIN.sim !== sim) linClear();
+    if(!LIN.nodes.length){
+      LIN.sign = SG(); LIN.per = params.bc === 'periodic';
+      LIN.maxima = linFindMaxima(); for(const c of LIN.maxima) c.id = LIN.nextId++;
+      LIN.stamp = stamp;
+    } else if(LIN.stamp !== stamp){ LIN.stamp = stamp; linUpdate(); }
+    const nb = linNearest(LIN.maxima, gx, gy);
+    if(nb.k < 0 || nb.d > LIN_RCLICK/sim.dx) return false;
+    const c = LIN.maxima[nb.k];
+    if(LIN.byMax.has(c.id)) return false;
+    const nd = { maxId: c.id, x: c.x, y: c.y, gen: 0, state: 'alive', root: true };
+    LIN.nodes.push(nd); LIN.byMax.set(c.id, nd);
+    return true;
+  }
+  /* the marks, through toXY(x, y) → [X, Y] or null (outside); lines are sampled at ns points
+     so that on the surface they follow the relief; across a periodic edge a line is drawn
+     from both ends towards the other's image */
+  function linDraw(toXY, ns, rad){
+    if(!LIN.on || !LIN.nodes.length) return;
+    const lw = Math.max(1, rad/4);
+    const seg = (ax, ay, dx, dy) => {
+      let open = false;
+      for(let k=0;k<=ns;k++){
+        const p = toXY(ax + dx*k/ns, ay + dy*k/ns);
+        if(!p){ open = false; continue; }
+        if(open) ctx.lineTo(p[0], p[1]); else { ctx.moveTo(p[0], p[1]); open = true; }
+      }
+    };
+    ctx.beginPath();
+    for(const [a, b] of LIN.pairs){
+      const dx = linDX(a.x, b.x), dy = linDX(a.y, b.y);
+      seg(a.x, a.y, dx, dy);
+      if(Math.abs(b.x - a.x - dx) > 1e-6 || Math.abs(b.y - a.y - dy) > 1e-6) seg(b.x - dx, b.y - dy, dx, dy);
+    }
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.setLineDash([5*lw, 4*lw]);
+    ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 2.6*lw; ctx.stroke();
+    ctx.strokeStyle = 'rgba(0,0,0,.9)'; ctx.lineWidth = 1.1*lw; ctx.stroke();
+    ctx.setLineDash([]);
+    for(const nd of LIN.nodes){
+      const p = toXY(nd.x, nd.y); if(!p) continue;
+      ctx.beginPath();
+      if(nd.state === 'alive'){
+        ctx.arc(p[0], p[1], nd.root ? 1.35*rad : rad, 0, 2*Math.PI);
+        ctx.fillStyle = nd.root ? '#facc15' : '#fff'; ctx.fill();
+        ctx.lineWidth = 1.5*lw; ctx.strokeStyle = '#000'; ctx.stroke();
+      } else if(nd.state === 'split'){
+        ctx.arc(p[0], p[1], 0.45*rad, 0, 2*Math.PI); ctx.fillStyle = '#000'; ctx.fill();
+      } else {
+        ctx.arc(p[0], p[1], 0.55*rad, 0, 2*Math.PI); ctx.lineWidth = lw; ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.stroke();
+      }
+    }
+  }
   // ----- 2D: 3D surface, auto-fitted, stable z-scale -----
   const surf = { m:0, px:null, py:null, dep:null, zw:null, order:null };
   function drawSurface(w, h){
@@ -3973,6 +4138,18 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       }
       ctx.closePath(); ctx.fill();
     }}
+    if(LIN.on && LIN.nodes.length){                // the lineage marks, lying on the relief
+      const nxs = sim.nx, G = (i, j) => GEO[Math.min(Lp-1, Math.max(0, j))*nxs + Math.min(Lp-1, Math.max(0, i))];
+      linDraw((gx, gy) => {
+        if(gx < -0.5 || gy < -0.5 || gx > Lp - 0.5 || gy > Lp - 0.5) return null;
+        const i0 = Math.floor(gx), j0 = Math.floor(gy), fx = gx - i0, fy = gy - j0;
+        let Z = ((1-fx)*(1-fy)*G(i0, j0) + fx*(1-fy)*G(i0+1, j0) + (1-fx)*fy*G(i0, j0+1) + fx*fy*G(i0+1, j0+1) + zOff)*zAmp;
+        if(Z > zClamp) Z = zClamp; else if(Z < -zClamp) Z = -zClamp;
+        const Xw = gx - (Lp-1)/2, Yw = gy - (Lp-1)/2, xr = cA*Xw + sA*Yw, yr = -sA*Xw + cA*Yw;
+        const v = yr*cT + Z*sT, dp = -yr*sT + Z*cT, pf = dcam/Math.max(dcam - dp, 0.1*Lp);
+        return [cx + S0*pf*xr, cy - S0*pf*v];
+      }, 24, Math.max(3, Math.min(6, S0*Lp/110)));
+    }
     if(!clean){
       axisFont(); ctx.fillStyle = TH.label; ctx.textBaseline='alphabetic';
       /* which field is the height — only in the saved picture (on screen the
@@ -4001,6 +4178,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       else if(is3dMode(mode)) drawWaterfall3D(w, h, isSweep(mode), mode === 'wf3dsc');
       else drawProfile(w, h);
     } else {
+      linSync();
       if(mode === 'surface') drawSurface(w, h);
       else drawField2D(w, h);
     }
@@ -5030,6 +5208,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     document.querySelectorAll('.wfrow3d').forEach(el =>
       el.style.display = (wfMode && is3dMode(modeSel[1])) ? 'flex' : 'none');
     $('v3Ctl').style.display = (params.dim===2 && modeSel[2]==='surface') ? 'flex' : 'none';
+    $('bLineage').hidden = params.dim !== 2;
+    if(params.dim !== 2 && LIN.on) linToggle(false);
+    cv.style.cursor = LIN.on && params.dim === 2 && modeSel[2] === 'map' ? 'crosshair' : '';
     cv.style.touchAction = (params.dim===2 && modeSel[2]==='surface') ? 'none' : 'auto';
     if(wfMode){
       if(is3dMode(modeSel[1])){
@@ -5481,6 +5662,20 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const b = $('bRun2'); b.innerHTML = r ? '&#10074;&#10074;' : '&#9654;'; b.classList.toggle('paused', !r);
     b.title = r ? 'pause (space)' : 'run (space)';
   }
+
+  /* lineage: the toggle switches the marking on; off removes every mark and line */
+  function linToggle(on){
+    LIN.on = on; linClear();
+    $('bLineage').classList.toggle('on', on);
+    cv.style.cursor = on && params.dim === 2 && modeSel[2] === 'map' ? 'crosshair' : '';
+    updateReadouts(); if(!running) draw();
+  }
+  $('bLineage').addEventListener('click', () => linToggle(!LIN.on));
+  cv.addEventListener('click', e => {
+    if(!LIN.on || params.dim !== 2 || modeSel[2] !== 'map') return;
+    const r = cv.getBoundingClientRect();
+    if(linClick(e.clientX - r.left, e.clientY - r.top)){ updateReadouts(); if(!running) draw(); }
+  });
 
   // drag to rotate the 3D surface (sliders follow)
   let dragging = false, dragX = 0, dragY = 0;
