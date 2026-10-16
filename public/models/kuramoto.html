@@ -5368,7 +5368,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   seg($('segAbs'), ()=>params.absMode, v=>{ params.absMode = v; applyTerms(); if(!running) draw(); });
   /* α and β are chosen from fixed lists (pull-down menus in the header) */
-  const ALPHAV = [-5,-4,-3,-2,-1.5,-1.2,-1,-0.9,-0.7,-0.5,-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.5,1,1.5,2,3,4,5];
+  const ALPHAV = [-5,-4,-3,-2,-1.5,-1.2,-1,-0.9,-0.7,-0.5,-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.5,1,1.5,1.7,1.8,1.9,2,2.5,3,4,5];
   const BETAV  = [-5,-2,-1,-0.5,-0.25,-0.2,-0.15,-0.12,-0.1,-0.07,-0.05,-0.02,-0.01,0,0.2,0.5,1,1.5,2,3,4,5];   // also γ and δ
   const nearest = (list, v) => list.reduce((b, x) => Math.abs(x - v) < Math.abs(b - v) ? x : b, list[0]);
   function fillSel(id, list){
