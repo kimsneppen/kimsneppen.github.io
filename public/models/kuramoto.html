@@ -1862,7 +1862,13 @@
           in the upper right corner (key p). The two small buttons in the lower right corner
           save <i>clean</i> pictures: <b>.png</b> keeps only the surface, without axes, frame,
           colour bar or caption (key c), and <b>sq</b> first cuts away the empty margin around the drawing and then compresses what is
-          left into a square (key s). In the Lyapunov section and in the scan results each figure and table has its
+          left into a square (key s). Both clean pictures carry a height scale bar in the upper right
+          corner: a bold vertical line whose length is a round number (1, 2, 5, 10, … or 0.5, 0.2,
+          0.1, …) close to the largest height difference in the system, labelled with that number —
+          white on a black background, black on a white one. In the 3D profile views it holds for the
+          newest profile, at the top, and on the 2D surface at the middle of the depth (perspective
+          makes nearer features look taller); colour maps, which do not draw the height vertically,
+          have no bar. In the Lyapunov section and in the scan results each figure and table has its
           own .png button, and the tables of the main text have theirs beside them.</p>
           <p><b>Film:</b> under Run / Step / Reset, choose the length of the film (5 s to 5 min of real
           time) and press <b>&#9679; record</b> at the moment it should begin; the display is then recorded in
@@ -3531,6 +3537,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     }
     const X = i => x0 + pw*i/(n-1);
     const Y = v => y0 + ph*(1 - (v/S + 1)/2);
+    if(yvar !== 'dx') hbarPx = ph/(2*S);
     ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
     if(!colored){
       ctx.beginPath();
@@ -3648,6 +3655,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const qc = KCODE[qkind]|0, lyo = lyPackOff(n), lys = lyPackSg();
     const X = c => x0 + pw*c/(ncols-1);
     const Y = v => y0 + ph*(1 - (v-lo)/(hi-lo));
+    if(!isU) hbarPx = ph/(hi-lo);
     ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
     ctx.lineJoin='round'; ctx.lineCap='round';
     for(let k=k0;k<nc;k++){
@@ -3761,6 +3769,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       zs = Math.max(0, 0.95*ph - D - 4)/maxZ;       // fill until ~5% of the top is left
     }
     const nl = rows.length;
+    if(!isU) hbarPx = zs*dv/(dv + rows[nl-1].pos);   // height scale at the newest row, at the top
     const sil = silBuf(Math.max(2, w|0));
     const istep = Math.max(1, Math.ceil(nl*n/(colored?70000:300000)));
     const Sq = colored ? (ensureScale(qkind), scaleFor(qkind)) : 1;
@@ -4078,6 +4087,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       if(u<umin)umin=u; if(u>umax)umax=u; if(v2<vmin)vmin=v2; if(v2>vmax)vmax=v2;
     }
     const S0 = 1.10*Math.min((x1-x0)/Math.max(umax-umin,1e-6), (y1-y0)/Math.max(vmax-vmin,1e-6));
+    if(geoKind === 'h') hbarPx = S0*sT*zAmp;
     const cx = (x0+x1)/2 - S0*(umin+umax)/2;
     const cy = (y0+y1)/2 + S0*(vmin+vmax)/2;
     for(let gj=0;gj<m;gj++){
@@ -4164,12 +4174,15 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   /* width of the right-hand margin occupied by a colour bar, so the PNG stamp
      can keep clear of it */
   let rightInset = 0;
+  /* pixels (CSS) per unit of height in the last drawing, at the top of the view; 0 when the
+     height is not drawn vertically (colour maps, slope plots) — for the scale bar of the clean pictures */
+  let hbarPx = 0;
   /* horizontal extent of the x axis of the main 1D display on screen, so the
      δh(x) plot in the Lyapunov panel can put its x axis exactly underneath */
   const mainXr = { x0:46, x1:-14, w:0 };
   function noteX(x0, x1, w){ if(onScreen && !clean){ mainXr.x0 = x0; mainXr.x1 = x1; mainXr.w = w; } }
   function drawContent(w, h){
-    rightInset = 0;
+    rightInset = 0; hbarPx = 0;
     ctx.fillStyle = TH.bg; ctx.fillRect(0,0,w,h);
     const mode = modeSel[params.dim];
     if(params.dim === 1){
@@ -4922,6 +4935,34 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const fileTag = () => (params.dim === 1 ? 'KS1D' : 'KS2D') + (params.nl2 ? '' : '_nosq') +
                 (params.alpha ? '_a' + fmtTerm(params.alpha) + (params.dim === 2 && params.absMode === 'sum' ? 'sum' : '') : '') +
                 (params.beta  ? '_b' + fmtTerm(params.beta)  : '') + '_L' + params.L + '_dx' + params.dx;
+  /* height scale bar for the clean pictures: a bold vertical line in the upper right corner whose
+     length is a round number (1, 2, 5 × 10^k) near the largest height difference in the system, with
+     that number beside it; white on a black background, black on a white one. px = pixels per unit
+     height in the finished picture (0: the height is not drawn vertically — no bar). */
+  function heightBar(oc, px){
+    if(!(px > 0)) return;
+    const H = hDisp(), n = sim.physNx, ny = params.dim === 2 ? sim.physNy : 1;
+    let lo = Infinity, hi = -Infinity;
+    for(let j=0;j<ny;j++) for(let i=0;i<n;i++){ const v = H[j*sim.nx + i]; if(v < lo) lo = v; if(v > hi) hi = v; }
+    const R = hi - lo; if(!(R > 0)) return;
+    const nice = [];
+    for(let e = Math.floor(Math.log10(R)) - 1; e <= Math.floor(Math.log10(R)) + 1; e++) for(const m of [1, 2, 5]) nice.push(+(m*Math.pow(10, e)).toPrecision(1));
+    nice.sort((a, b) => a - b);
+    let k = 0; for(let q=1;q<nice.length;q++) if(Math.abs(nice[q] - R) < Math.abs(nice[k] - R)) k = q;
+    while(k > 0 && nice[k]*px > 0.8*oc.height) k--;   // never taller than most of the picture
+    const val = nice[k], len = val*px, W = oc.width, c = oc.getContext('2d');
+    const u = Math.max(1, Math.min(W, oc.height)/600);   // size unit: 1 at 600 px
+    const lw = Math.max(3, Math.round(5*u)), m = Math.round(22*u), fs = Math.round(26*u);
+    const x = W - m - lw/2, y0 = m;
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
+    c.strokeStyle = c.fillStyle = darkBG ? '#fff' : '#000';
+    c.lineWidth = lw; c.lineCap = 'butt';
+    c.beginPath(); c.moveTo(x, y0); c.lineTo(x, y0 + len); c.stroke();
+    c.font = '700 ' + fs + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+    c.textAlign = 'right'; c.textBaseline = 'middle';
+    c.fillText(String(val), x - lw/2 - Math.round(8*u), y0 + len/2);
+    c.restore();
+  }
   function exportPNG(kind){
     kind = kind || 'stamp';
     const btn = $(kind === 'stamp' ? 'bPng' : (kind === 'sq' ? 'bPngSq' : 'bPngClean'));
@@ -4934,8 +4975,10 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     if(kind !== 'stamp' && isMap){ w = h = Math.min(w, h); }   // the bare square field
     let oc = renderTo(w, h, scale, kind !== 'stamp', kind === 'stamp');
     if(kind === 'sq') oc = cropToContent(oc, 6*scale);   // cut away the empty margin around the drawing
+    let vfac = 1;                                       // vertical squeeze of the sq picture
     if(kind === 'sq' && oc.width !== oc.height){
       const side = Math.min(oc.width, oc.height);      // compress the long side
+      vfac = side/oc.height;
       const sq = document.createElement('canvas');
       sq.width = side; sq.height = side;
       const sctx = sq.getContext('2d');
@@ -4943,6 +4986,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       sctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, side, side);
       oc = sq;
     }
+    if(kind !== 'stamp') heightBar(oc, hbarPx*scale*vfac);
     const tag = fileTag() + '_t' + sim.t.toFixed(0) + (kind === 'clean' ? '_clean' : kind === 'sq' ? '_sq' : '');
     if(!btn.dataset.label) btn.dataset.label = btn.textContent;   // survives rapid re-clicks
     const label = btn.dataset.label;
