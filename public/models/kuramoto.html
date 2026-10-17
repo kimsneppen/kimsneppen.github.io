@@ -317,6 +317,8 @@
   .scan input.num{width:80px}
   .scan select.scsel{min-width:70px}
   .scan .row select{min-width:70px}
+  /* the three-way KS-term switch of the scan: sized to its labels, which must not wrap */
+  #scNL2{min-width:0} #scNL2 button{flex:0 0 auto;white-space:nowrap;padding:7px 7px}
   /* the linear terms of a scan: three lines — which equations (any combination, ticked, in the
      order of the column groups; ▲ moves one up), the Λ scan, and Λ held fixed; the Λ line that
      does not apply is greyed */
@@ -1155,8 +1157,9 @@
         terms, so their share of the divergence can be read off directly — at &gamma; = &minus;0.5
         in 2D, for instance, the &gamma; term <i>adds</i> +0.18 to the instantaneous exponent while at &delta; = 0.5 the
         &delta; term <i>removes</i> &minus;0.14, in both cases with the total still near the KS value.</p>
-        <p>Practical notes: the (&nabla;h)&sup2; term itself can be crossed out in the header. The
-        equation is then linear and would grow without bound, so &beta; jumps to 1 automatically
+        <p>Practical notes: the (&nabla;h)&sup2; term itself is a three-way switch in the header: the
+        standard (&nabla;h)&sup2;, the exact growth along the normal 2(&radic;(1+(&nabla;h)&sup2;) &minus; 1), or
+        crossed out. Crossed out, the equation is linear and would grow without bound, so &beta; jumps to 1 automatically
         (and back to 0 when the term returns) — a way to see that &beta;(&nabla;h)&#8308; alone can
         saturate the instability, giving cells of the same size but a different shape. The time
         step follows the menus automatically, because the fourth power of the slope needs a
@@ -1280,7 +1283,7 @@
         <button data-v="246">&Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h</button>
       </span>
       <span class="eq eqterms"><span class="term on nl2" id="termNL2" role="button" tabindex="0"
-              title="the KS nonlinearity (&nabla;h)&sup2; — click to switch it off (crossed out) or on. Without it the equation is linear and blows up, so &beta; is set to 1 automatically when no other nonlinear term is on (and back to 0 when (&nabla;h)&sup2; returns)">+ (&nabla;h)&sup2;</span>
+              title="the KS nonlinearity — a click steps through its three forms: the standard (&nabla;h)&sup2;; the exact growth along the normal, 2(&radic;(1+(&nabla;h)&sup2;) &minus; 1) = (&nabla;h)&sup2; &minus; &frac14;(&nabla;h)&#8308; + …; and off (crossed out). Without any nonlinear term the equation is linear and blows up, so &beta; is set to 1 automatically when the term is switched off and nothing else is on (and back to 0 when it returns)">+ (&nabla;h)&sup2;</span>
         <span class="term" id="termA">+ &alpha;|&nabla;h|</span>
         <span class="seg ordseg absseg" id="segAbs" hidden
               title="|&nabla;h| in 2D: the Euclidean norm &radic;((&nabla;h)&sup2;) = &radic;((&part;h/&part;x)&sup2;+(&part;h/&part;y)&sup2;)">
@@ -1640,8 +1643,8 @@
             <span class="triple"><select id="scLamMin" title="first value of &Lambda;"><option>0.01</option><option>0.02</option><option selected>0.05</option></select><select id="scLamStep" title="step of &Lambda;; the scan stops at the first value above 0.25, where the flat surface is stable"><option>0.01</option><option>0.02</option><option selected>0.05</option></select></span></div>
           <div class="row scgroup" id="scLamFixRow"><label>&Lambda; fixed at <i class="sub">when another coefficient is scanned</i></label>
             <select id="scLamFix" title="the value of &Lambda; while &beta; (or another coefficient, or L) is scanned"></select></div>
-          <div class="row"><label>(&nabla;h)&sup2;</label>
-            <div class="seg mini" id="scNL2"><button data-v="1" class="on">on</button><button data-v="0">off</button></div></div>
+          <div class="row"><label>KS term</label>
+            <div class="seg mini" id="scNL2" title="the KS nonlinearity: the standard (&nabla;h)&sup2;, the exact growth along the normal 2(&radic;(1+(&nabla;h)&sup2;) &minus; 1), or none"><button data-v="1" class="on">(&nabla;h)&sup2;</button><button data-v="2" title="2(&radic;(1+(&nabla;h)&sup2;) &minus; 1)">&radic;(1+(&nabla;h)&sup2;)</button><button data-v="0">off</button></div></div>
           <div class="row"><label>&alpha;|&nabla;h|</label><select id="scA" class="scsel"></select></div>
           <div class="row"><label>&beta;(&nabla;h)&#8308;</label><select id="scB" class="scsel"></select></div>
           <div class="row"><label>&gamma;&nabla;&sup2;(&nabla;h)&sup2;</label><select id="scG" class="scsel"></select></div>
@@ -1701,9 +1704,12 @@
           below 1/4, KKS at 0.1) appears after &delta;; like the other coefficients it acts
           on the running surface. On a wide window the
           equation sits on the title line, so that the display can have the rest of the height. The
-          <b>(&nabla;h)&sup2;</b> term is a switch: click it and it is crossed out and dropped. The
+          <b>(&nabla;h)&sup2;</b> term is a three-way switch: a click steps from the standard
+          (&nabla;h)&sup2; to the exact growth along the normal, 2(&radic;(1+(&nabla;h)&sup2;) &minus; 1)
+          = (&nabla;h)&sup2; &minus; &frac14;(&nabla;h)&#8308; + …, whose small-slope limit is the standard
+          term, and then to crossed out and dropped; the label always shows the form in use. The
           switch acts on the running surface, so you can watch one equation's pattern turn into
-          the other's without a reset. Without (&nabla;h)&sup2; nothing stops the growth of the
+          the other's without a reset. Without a KS term nothing stops the growth of the
           unstable waves, so when you switch it off &beta; is set to 1 automatically (and back to
           0 when the term returns, unless you moved &beta; yourself in between).</p>
 
@@ -2124,6 +2130,10 @@ function cdivRe(ar, ai, br, bi){ return (ar*br + ai*bi)/(br*br + bi*bi); }
    L is the physical length of the box and dx the lattice spacing: the box is
    resolved with N = L/dx points per direction (N must be even; a power of two
    times 5 is fine, see fftMixed). P.N, when given, overrides L/dx. */
+/* the KS nonlinearity switch: 1 = (∇h)², 2 = 2(√(1+(∇h)²) − 1) (the exact growth along the normal),
+   0 = off; true and undefined count as 1 */
+const nl2Code = v => v === 2 ? 2 : (v === undefined || v) ? 1 : 0;
+
 function buildSim(P){
   const mirror = P.bc === 'open';
   const dxp = P.dx || 1;                    // lattice spacing: physical length = N*dx
@@ -2213,13 +2223,13 @@ function buildSim(P){
 
   const FT = (re,im,inv) => { if(ny===1) fftCore(re,im,inv); else fft2(re,im,nx,ny,inv,csr,csi); };
 
-  /* nonlinearity: N = NL2*(grad h)^2 + ALPHA*|grad h| + BETA*(grad h)^4.
-     NL2 is 1 or 0 (the (∇h)² term can be switched off in the header — then α or β
-     must supply the saturation).  In 2D |grad h| is either the Euclidean norm
-     sqrt(hx²+hy²) (absMode 'euclid', the standard) or the taxicab sum
-     |hx|+|hy| (absMode 'sum'); in 1D both are |dh/dx|. */
+  /* nonlinearity: N = NL(grad h) + ALPHA*|grad h| + BETA*(grad h)^4, where the KS term NL is
+     chosen in the header: NL2 = 1 the standard (∇h)², NL2 = 2 the exact growth along the normal
+     2(√(1+(∇h)²) − 1) = (∇h)² − ¼(∇h)⁴ + …, NL2 = 0 none (then α or β must supply the
+     saturation).  In 2D |grad h| is either the Euclidean norm sqrt(hx²+hy²) (absMode 'euclid',
+     the standard) or the taxicab sum |hx|+|hy| (absMode 'sum'); in 1D both are |dh/dx|. */
   let ALPHA = P.alpha || 0, BETA = P.beta || 0, GAMMA = P.gamma || 0, DELTA = P.delta || 0;
-  let NL2 = (P.nl2 === undefined) ? 1 : (P.nl2 ? 1 : 0);
+  let NL2 = nl2Code(P.nl2);
   let ABS_SUM = P.absMode === 'sum';
 
   /* partner index q(p) = (-kx,-ky): Hermitian projection and the unpacking of two
@@ -2266,7 +2276,7 @@ function buildSim(P){
     } else {
       for(let p=0;p<M;p++){
         const a = g1r[p], b = two ? g1i[p] : 0, g = a*a + b*b;
-        let n = NL2*g + BETA*g*g;
+        let n = (NL2 === 1 ? g : NL2 === 2 ? 2*(Math.sqrt(1 + g) - 1) : 0) + BETA*g*g;
         if(ALPHA !== 0) n += ALPHA*((two && ABS_SUM) ? ((a<0?-a:a) + (b<0?-b:b)) : Math.sqrt(g));
         if(dOn) n += DELTA*lap[p]*g;
         tr[p] = n; ti[p] = gOn ? g : 0;                  // g packed into the imaginary part
@@ -2427,7 +2437,7 @@ function buildSim(P){
     FT(t1r, t1i, true);
     gradOf(vr, vi, t2r, t2i);                    // ∇h
     gradOf(wr, wi, t3r, t3i);                    // ∇w
-    const aOn = ALPHA !== 0, bOn = BETA !== 0, gOn = GAMMA !== 0, dOn = DELTA !== 0, nOn = NL2 === 1, two = ny > 1;
+    const aOn = ALPHA !== 0, bOn = BETA !== 0, gOn = GAMMA !== 0, dOn = DELTA !== 0, nOn = NL2 !== 0, huy = NL2 === 2, two = ny > 1;
     if(dOn){                                     // ∇²h in the real, ∇²w in the imaginary part
       for(let p=0;p<M;p++){ const k2=K2[p]; t6r[p] = -k2*(vr[p] - wi[p]); t6i[p] = -k2*(vi[p] + wr[p]); }
       FT(t6r, t6i, true);
@@ -2435,7 +2445,7 @@ function buildSim(P){
     for(let p=0;p<M;p++){
       const hx=t2r[p], hy = two ? t2i[p] : 0, wx=t3r[p], wy = two ? t3i[p] : 0;
       const gh = hx*hx+hy*hy, gw = wx*wx+wy*wy;
-      t4r[p] = nOn ? gw - gh : 0;
+      t4r[p] = !nOn ? 0 : huy ? 2*(Math.sqrt(1 + gw) - Math.sqrt(1 + gh)) : gw - gh;
       let da = 0;
       if(aOn){
         da = (two && ABS_SUM) ? (Math.abs(wx)+Math.abs(wy)) - (Math.abs(hx)+Math.abs(hy))
@@ -2727,7 +2737,7 @@ function buildSim(P){
     ALPHA = a; BETA = b;
     if(g !== undefined) GAMMA = g;
     if(d !== undefined) DELTA = d;
-    if(nl2 !== undefined) NL2 = nl2 ? 1 : 0;
+    if(nl2 !== undefined) NL2 = nl2Code(nl2);
     if(absMode !== undefined) ABS_SUM = absMode === 'sum';
   };
   s.setOrder = function(o){ s.P.order = o; fillLin(o, lamOf(s.P)); computeCoeffs(s.P.dt); };
@@ -2982,7 +2992,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function termLabel(k){
     const o6 = params.order === 6, o246 = params.order === 246;
     return { lyLin1: o246 ? 'Λ∇²h+∇⁶h' : o6 ? '+∇⁴h' : '−∇²h', lyLin2: o246 ? '+∇⁴h' : o6 ? '+∇⁶h' : '−∇⁴h',
-             lyNL2: '(∇h)²', lyA: 'α|∇h|', lyB: 'β(∇h)⁴', lyG: 'γ∇²(∇h)²', lyD: 'δ∇²h(∇h)²' }[k] || k;
+             lyNL2: params.nl2 === 2 ? '2(√(1+(∇h)²)−1)' : '(∇h)²', lyA: 'α|∇h|', lyB: 'β(∇h)⁴', lyG: 'γ∇²(∇h)²', lyD: 'δ∇²h(∇h)²' }[k] || k;
   }
   const qscalesP = {}, qscalesN = {};          // extremes of λ>0 and λ<0 (split mode)
   /* 'grey λ<0' mode: colours only where λ > 0, grey→black where λ < 0 */
@@ -4870,7 +4880,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      actually being integrated and its parameters stamped in blue in the corner */
   function eqLines(){
     const lin = params.order === 6 ? '+∇⁴h + ∇⁶h' : params.order === 246 ? params.lam + '·∇²h + ∇⁴h + ∇⁶h' : '−∇²h − ∇⁴h';
-    let eq = '∂h/∂t = ' + lin + (params.nl2 ? ' + (∇h)²' : '');
+    let eq = '∂h/∂t = ' + lin + (params.nl2 === 2 ? ' + 2(√(1+(∇h)²)−1)' : params.nl2 ? ' + (∇h)²' : '');
     const absTxt = params.dim === 2 ? (params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·√((∇h)²)') : '·|∇h|';
     if(params.alpha !== 0) eq += (params.alpha > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.alpha)) + absTxt;
     if(params.beta  !== 0) eq += (params.beta  > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.beta))  + '·(∇h)⁴';
@@ -4954,7 +4964,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     return out;
   }
   /* the parameter part of the file names of pictures and films */
-  const fileTag = () => (params.dim === 1 ? 'KS1D' : 'KS2D') + (params.nl2 ? '' : '_nosq') +
+  const fileTag = () => (params.dim === 1 ? 'KS1D' : 'KS2D') + (params.nl2 === 2 ? '_huy' : params.nl2 ? '' : '_nosq') +
                 (params.alpha ? '_a' + fmtTerm(params.alpha) + (params.dim === 2 && params.absMode === 'sum' ? 'sum' : '') : '') +
                 (params.beta  ? '_b' + fmtTerm(params.beta)  : '') + '_L' + params.L + '_dx' + params.dx;
   /* height scale bar for the clean pictures: a thin vertical line in the lower right corner whose
@@ -5456,9 +5466,11 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     $('termG').classList.toggle('on', params.gamma !== 0);
     $('termD').classList.toggle('on', params.delta !== 0);
     setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta);
-    $('termNL2').classList.toggle('on', params.nl2);
-    $('termNL2').classList.toggle('off', !params.nl2);
-    $('termNL2').setAttribute('aria-pressed', params.nl2 ? 'true' : 'false');
+    { const nl = $('termNL2'), huy = params.nl2 === 2;
+      nl.classList.toggle('on', !!params.nl2); nl.classList.toggle('off', !params.nl2); nl.classList.toggle('huy', huy);
+      nl.innerHTML = huy ? '+ 2(&radic;(1+(&nabla;h)&sup2;) &minus; 1)' : '+ (&nabla;h)&sup2;';   // the label names the form in use
+      nl.setAttribute('aria-pressed', params.nl2 ? 'true' : 'false');
+      nl.setAttribute('aria-label', 'KS nonlinearity: ' + (huy ? '2(√(1+(∇h)²) − 1), growth along the normal' : params.nl2 ? '(∇h)²' : 'off') + ' — click for the next form'); }
     $('termA').hidden = is2;                     // 1D: the plain α|∇h| term
     $('segAbs').hidden = !is2;                   // 2D: the switch between the two norms
     $('segAbs').classList.toggle('zero', !aOn);
@@ -5471,11 +5483,13 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      nonlinearity saturates it — so β jumps to 1 when nothing else is on, and
      back to 0 when (∇h)² returns (unless β was moved by hand in between) */
   let betaAuto = false;
+  /* the switch cycles (∇h)² → 2(√(1+(∇h)²) − 1) → off → (∇h)² */
   function toggleNL2(){
-    params.nl2 = !params.nl2;
+    const was = params.nl2;
+    params.nl2 = was === 2 ? 0 : was ? 2 : 1;
     if(!params.nl2 && params.alpha === 0 && params.beta === 0 && params.gamma === 0 && params.delta === 0){
       params.beta = 1; betaAuto = true;
-    } else if(params.nl2 && betaAuto && params.beta === 1){
+    } else if(params.nl2 && !was && betaAuto && params.beta === 1){
       params.beta = 0; betaAuto = false;
     }
     applyTerms(); autoDt(); if(!running) draw();
@@ -6387,7 +6401,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const GLAB = { alpha: 'α|∇h|', beta: 'β(∇h)⁴', gamma: 'γ∇²(∇h)²', delta: 'δ∇²h(∇h)²' };
   fillSel('scA', ALPHAV); fillSel('scB', BETAV); fillSel('scG', BETAV); fillSel('scD', DELTAV);
   ['scA','scB','scG','scD'].forEach(id => { $(id).value = '0'; });
-  let scNL2 = true, scDim = 1, scBC = 'periodic';
+  let scNL2 = 1, scDim = 1, scBC = 'periodic';   // the KS term: 1 = (∇h)², 2 = 2(√(1+(∇h)²) − 1), 0 = off
   const scOrds = new Set([4]);                     // the equations included in the scan
   const scOrdList = [4, 6, 246];                   // their order: column groups left to right, colours in turn
   (function(){
@@ -6428,7 +6442,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   });
   $('scLamScan').addEventListener('click', () => { $('scPar').value = $('scPar').value === 'lam' ? 'beta' : 'lam'; scRows(); });
   scRows();
-  seg($('scNL2'), ()=>(scNL2?'1':'0'), v=>{ scNL2 = v === '1'; });
+  seg($('scNL2'), ()=>''+scNL2, v=>{ scNL2 = +v; });
   /* 2D scans are capped at 256 lattice points per direction (L/dx ≤ 256): the box is halved until it fits */
   function scFit2D(){ if(scDim !== 2) return; const dx = +$('scDx').value; let L = +$('scL').value; while(L/dx > 256 && L > 32) L /= 2; $('scL').value = ''+L; }
   seg($('scDim'), ()=>''+scDim, v=>{ scDim = +v; scFit2D(); });
@@ -6449,7 +6463,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   function scEquation(c, par){
     const lin = c.order === 6 ? '+∇⁴h + ∇⁶h' : c.order === 246 ? (par === 'lam' ? 'Λ∇²h + ∇⁴h + ∇⁶h' : c.lam + '·∇²h + ∇⁴h + ∇⁶h') : '−∇²h − ∇⁴h';
-    let eq = '∂h/∂t = ' + lin + (c.nl2 ? ' + (∇h)²' : '');
+    let eq = '∂h/∂t = ' + lin + (c.nl2 === 2 ? ' + 2(√(1+(∇h)²)−1)' : c.nl2 ? ' + (∇h)²' : '');
     for(const k of ['alpha','beta','gamma','delta']){
       if(k === par) eq += ' + ' + GLAB[k];
       else if(par === 'L' && c[k] !== 0) eq += (c[k] > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(c[k])) + '·' + GLAB[k].slice(1);
