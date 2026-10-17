@@ -1277,13 +1277,14 @@
     </details>
     <div class="eqrow">
       <span class="eq">&part;h/&part;t =</span>
-      <span class="seg ordseg ordtog" id="segOrd" title="the linear terms in use — click to step to the next set: &minus;&nabla;&sup2;h &minus;&nabla;&#8308;h &rarr; +&nabla;&#8308;h +&nabla;&#8310;h &rarr; &Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h">
+      <span class="seg ordseg ordtog" id="segOrd" title="the linear terms in use — click to step to the next set: &minus;&nabla;&sup2;h &minus;&nabla;&#8308;h (KS) &rarr; &minus;&nabla;&middot;(&nabla;h/&radic;(1+(&nabla;h)&sup2;)) &minus;&nabla;&#8308;h (the mean-curvature form of the KS instability; not linear, but it equals the KS operator for gentle slopes) &rarr; +&nabla;&#8308;h +&nabla;&#8310;h &rarr; &Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h">
         <button data-v="4" class="on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button>
+        <button data-v="40">&minus;&nabla;&middot;(&nabla;h/&radic;(1+(&nabla;h)&sup2;)) &minus;&nabla;&#8308;h</button>
         <button data-v="6">+&nabla;&#8308;h +&nabla;&#8310;h</button>
         <button data-v="246">&Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h</button>
       </span>
       <span class="eq eqterms"><span class="term on nl2" id="termNL2" role="button" tabindex="0"
-              title="the KS nonlinearity — a click steps through its three forms: the standard (&nabla;h)&sup2;; the exact growth along the normal, 2(&radic;(1+(&nabla;h)&sup2;) &minus; 1) = (&nabla;h)&sup2; &minus; &frac14;(&nabla;h)&#8308; + …; and off (crossed out). Without any nonlinear term the equation is linear and blows up, so &beta; is set to 1 automatically when the term is switched off and nothing else is on (and back to 0 when it returns)">+ (&nabla;h)&sup2;</span>
+              title="the KS nonlinearity — a click steps through its three forms: the standard (&nabla;h)&sup2;; the exact growth along the normal, 2(&radic;(1+(&nabla;h)&sup2;) &minus; 1) = (&nabla;h)&sup2; &minus; &frac14;(&nabla;h)&#8308; + …; and off (crossed out). The exact form saturates only like 2|&nabla;h| on steep flanks, so with the standard linear terms the front runs away (in 2D within t &asymp; 100–200, in 1D after a long time); paired with the mean-curvature form of the linear terms (second choice of the linear-terms toggle) it stays bounded. Without any nonlinear term the equation is linear and blows up, so &beta; is set to 1 automatically when the term is switched off and nothing else is on (and back to 0 when it returns)">+ (&nabla;h)&sup2;</span>
         <span class="term" id="termA">+ &alpha;|&nabla;h|</span>
         <span class="seg ordseg absseg" id="segAbs" hidden
               title="|&nabla;h| in 2D: the Euclidean norm &radic;((&nabla;h)&sup2;) = &radic;((&part;h/&part;x)&sup2;+(&part;h/&part;y)&sup2;)">
@@ -1638,7 +1639,7 @@
           <div class="hint" style="margin-bottom:6px">Scan one coefficient of the equation and tabulate the largest Lyapunov exponent (Benettin and free run) and the mean width W. Runs in a background worker without drawing, so it keeps its full speed when the tab is hidden or the screen is locked (the screen is kept awake while the tab is in front); the results appear in the section under the Lyapunov panel. Keep the browser open: a closed tab, sleep or hibernation ends the scan.</div>
           <div class="row scordrow"><label>linear terms <i class="sub">click to include &middot; &#9650; moves up — top to bottom is the order of the columns</i></label>
             <div class="seg ordseg scmulti" id="scOrd" title="click an equation to include it in the scan or leave it out — any combination; two or three are run with the same settings and tabulated side by side, in the order of this list (&#9650; moves an equation up)">
-              <div class="scoitem" data-v="4"><button class="scotog on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="6"><button class="scotog">+&nabla;&#8308;h +&nabla;&#8310;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="246"><button class="scotog">&Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div></div></div>
+              <div class="scoitem" data-v="4"><button class="scotog on">&minus;&nabla;&sup2;h &minus;&nabla;&#8308;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="40"><button class="scotog" title="the mean-curvature form of the KS instability">&minus;&nabla;&middot;(&nabla;h/&radic;(1+(&nabla;h)&sup2;)) &minus;&nabla;&#8308;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="6"><button class="scotog">+&nabla;&#8308;h +&nabla;&#8310;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div><div class="scoitem" data-v="246"><button class="scotog">&Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h</button><button class="scoup" title="move up: one column group further left in the table and one colour earlier in the figure">&#9650;</button></div></div></div>
           <div class="row scgroup" id="scLamScanRow"><label><button class="tbtn sclamtog" id="scLamScan" title="scan &Lambda; itself (only the &Lambda; equation depends on it, so it alone is run)">scan &Lambda;</button> from &middot; step <i class="sub">up to the first value above 1/4</i></label>
             <span class="triple"><select id="scLamMin" title="first value of &Lambda;"><option>0.01</option><option>0.02</option><option selected>0.05</option></select><select id="scLamStep" title="step of &Lambda;; the scan stops at the first value above 0.25, where the flat surface is stable"><option>0.01</option><option>0.02</option><option selected>0.05</option></select></span></div>
           <div class="row scgroup" id="scLamFixRow"><label>&Lambda; fixed at <i class="sub">when another coefficient is scanned</i></label>
@@ -1676,7 +1677,7 @@
             <button class="btn" id="scStop" disabled>stop</button>
           </div>
           <div class="hint" id="scStatus">idle</div>
-          <div class="hint"><b>Linear terms:</b> tick any of the three equations; two or three are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (default 0.1, as KKS). The scanned points are the range in the chosen step plus always &minus;1.5, &minus;1.2, &minus;0.9, &minus;0.7, &minus;0.5, &minus;0.4, &minus;0.3, &minus;0.2, 0 and +0.5 for &alpha;, and &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.15, &minus;0.1, &minus;0.07, &minus;0.05, 0, +0.1 and +0.2 for &beta;, &gamma; and &delta;; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient (with a <b>KS pre-transient</b> t &gt; 0 the start is instead the surface reached by the standard KS equation &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h + (&nabla;h)&sup2; after time t from the usual random start, integrated at its usual step dt = 0.1; the equation under study then runs at the step set by <i>time step dt (at most)</i>), then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
+          <div class="hint"><b>Linear terms:</b> tick any of the four equations (the second is the mean-curvature form of the KS instability, −∇·(∇h/√(1+(∇h)²)) − ∇⁴h, linear only for gentle slopes); several are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (default 0.1, as KKS). The scanned points are the range in the chosen step plus always &minus;1.5, &minus;1.2, &minus;0.9, &minus;0.7, &minus;0.5, &minus;0.4, &minus;0.3, &minus;0.2, 0 and +0.5 for &alpha;, and &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.15, &minus;0.1, &minus;0.07, &minus;0.05, 0, +0.1 and +0.2 for &beta;, &gamma; and &delta;; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient (with a <b>KS pre-transient</b> t &gt; 0 the start is instead the surface reached by the standard KS equation &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h + (&nabla;h)&sup2; after time t from the usual random start, integrated at its usual step dt = 0.1; the equation under study then runs at the step set by <i>time step dt (at most)</i>), then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
         </div>
       </details>
 
@@ -1698,9 +1699,12 @@
           <h3>The equation in the header</h3>
           <p>The header shows the equation that is being integrated right now. Three parts of it
           are clickable. The <b>linear terms</b> are a toggle button that shows only the set in
-          use — &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h (KS), +&nabla;&#8308;h + &nabla;&#8310;h (one order
-          higher in derivatives) or &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h — and a click
-          steps to the next one. With the last one a <b>&Lambda;</b> menu (0.01 to 0.3; unstable
+          use — &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h (KS); &minus;&nabla;&middot;(&nabla;h/&radic;(1+(&nabla;h)&sup2;)) &minus; &nabla;&#8308;h, the
+          KS instability in its geometric (mean-curvature) form, which equals &minus;&nabla;&sup2;h for gentle
+          slopes but loses its strength on steep flanks, so it is the consistent partner of the exact
+          growth term 2(&radic;(1+(&nabla;h)&sup2;) &minus; 1) (not a linear term, strictly: it is integrated with
+          the nonlinearity); +&nabla;&#8308;h + &nabla;&#8310;h (one order higher in derivatives); or
+          &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h — and a click steps to the next one. With the last one a <b>&Lambda;</b> menu (0.01 to 0.3; unstable
           below 1/4, KKS at 0.1) appears after &delta;; like the other coefficients it acts
           on the running surface. On a wide window the
           equation sits on the title line, so that the display can have the rest of the height. The
@@ -1708,6 +1712,11 @@
           (&nabla;h)&sup2; to the exact growth along the normal, 2(&radic;(1+(&nabla;h)&sup2;) &minus; 1)
           = (&nabla;h)&sup2; &minus; &frac14;(&nabla;h)&#8308; + …, whose small-slope limit is the standard
           term, and then to crossed out and dropped; the label always shows the form in use. The
+          exact form grows only like 2|&nabla;h| on steep flanks and cannot saturate the linear
+          instability there: with the standard linear terms the front runs away, in 2D within
+          t &asymp; 100–200, in 1D after a long time, whereas with the mean-curvature form of the
+          linear terms, whose instability weakens on steep flanks in the same way, it stays bounded
+          (W &asymp; 2 in both dimensions). The
           switch acts on the running surface, so you can watch one equation's pattern turn into
           the other's without a reset. Without a KS term nothing stops the growth of the
           unstable waves, so when you switch it off &beta; is set to 1 automatically (and back to
@@ -2230,6 +2239,7 @@ function buildSim(P){
      the standard) or the taxicab sum |hx|+|hy| (absMode 'sum'); in 1D both are |dh/dx|. */
   let ALPHA = P.alpha || 0, BETA = P.beta || 0, GAMMA = P.gamma || 0, DELTA = P.delta || 0;
   let NL2 = nl2Code(P.nl2);
+  let GEO = P.order === 40;   // order 40: the mean-curvature form of the KS instability (see geoCorrection)
   let ABS_SUM = P.absMode === 'sum';
 
   /* partner index q(p) = (-kx,-ky): Hermitian projection and the unpacking of two
@@ -2240,6 +2250,7 @@ function buildSim(P){
     for(let i=0;i<nx;i++) PART[j*nx+i] = jc*nx + ((nx-i)%nx);
   }
   const lpr=A(), lpi=A(), zr=A(), zi=A();          // Laplacian; packed transform for the γ term
+  const fxr=A(), fxi=A();                          // the curvature-correction flux of order 40
 
   /* Nonlinearity N = NL2·(∇h)² + α|∇h| + β(∇h)⁴ + δ∇²h·(∇h)² + γ∇²[(∇h)²].
      Both gradient components come out of ONE inverse transform: the spectra of
@@ -2293,6 +2304,27 @@ function buildSim(P){
       }
     } else {
       for(let p=0;p<M;p++){ outr[p]*=mask[p]; outi[p]*=mask[p]; }
+    }
+    if(GEO) geoCorrection(g1r, g1i, outr, outi);
+  }
+  /* order 40, the mean-curvature form −∇·(∇h/√(1+|∇h|²)) − ∇⁴h of the KS operator: the exactly
+     integrated linear part keeps −∇²h, and the difference ∇·(∇h·w), w = 1 − 1/√(1+|∇h|²), is added
+     to N here — of order |∇h|³ on gentle slopes, and cancelling the instability on steep ones. In 2D
+     the flux (Fx, Fy) rides in one complex transform and is unpacked with the Hermitian symmetry;
+     the divergence is taken spectrally and dealiased. hx, hy: ∇h in x-space. */
+  function geoCorrection(hx, hy, outr, outi){
+    const two = ny > 1;
+    for(let p=0;p<M;p++){ const a = hx[p], b = two ? hy[p] : 0, w = 1 - 1/Math.sqrt(1 + a*a + b*b); fxr[p] = a*w; fxi[p] = two ? b*w : 0; }
+    FT(fxr, fxi, false);
+    if(two){
+      for(let p=0;p<M;p++){
+        const q = PART[p], zrp = fxr[p], zip = fxi[p], zrq = fxr[q], ziq = fxi[q];
+        const ar = 0.5*(zrp + zrq), ai = 0.5*(zip - ziq), br = 0.5*(zip + ziq), bi = 0.5*(zrq - zrp);
+        const kx = KX[p], ky = KY[p], m = mask[p];
+        outr[p] += (-kx*ai - ky*bi)*m; outi[p] += (kx*ar + ky*br)*m;
+      }
+    } else {
+      for(let p=0;p<M;p++){ const kx = KX[p], m = mask[p]; outr[p] += -kx*fxi[p]*m; outi[p] += kx*fxr[p]*m; }
     }
   }
 
@@ -2407,7 +2439,7 @@ function buildSim(P){
   }
   s.lyapWindow = () => WA.t.length ? { from: WA.t[0] + (WA.t[WA.t.length-1] - WA.t[0])/3, to: WA.t[WA.t.length-1] } : null;
   function budgetResetAvg(){ budget.T = 0; for(const k in budget.sum){ budget.sum[k]=0; budget.avg[k]=NaN; } waReset(s.t); }
-  const t1r=A(), t1i=A(), t2r=A(), t2i=A(), t3r=A(), t3i=A(), t4r=A(), t4i=A(), t5r=A(), t5i=A(), t6r=A(), t6i=A();
+  const t1r=A(), t1i=A(), t2r=A(), t2i=A(), t3r=A(), t3i=A(), t4r=A(), t4i=A(), t5r=A(), t5i=A(), t6r=A(), t6i=A(), t7r=A(), t7i=A(), t8r=A(), t8i=A();
   function gradOf(inr, ini, outr, outi){         // ∇ of a spectral field: outr = ∂x, outi = ∂y
     if(ny > 1){
       for(let p=0;p<M;p++){ const kx=KX[p], ky=KY[p], r=inr[p], i=ini[p]; outr[p] = -kx*i - ky*r; outi[p] = kx*r - ky*i; }
@@ -2438,6 +2470,23 @@ function buildSim(P){
     gradOf(vr, vi, t2r, t2i);                    // ∇h
     gradOf(wr, wi, t3r, t3i);                    // ∇w
     const aOn = ALPHA !== 0, bOn = BETA !== 0, gOn = GAMMA !== 0, dOn = DELTA !== 0, nOn = NL2 !== 0, huy = NL2 === 2, two = ny > 1;
+    if(GEO){                                     // order 40: slot 1 also carries the curvature correction, twin minus surface
+      for(let p=0;p<M;p++){
+        const hx=t2r[p], hy = two ? t2i[p] : 0, wx=t3r[p], wy = two ? t3i[p] : 0;
+        const ch = 1 - 1/Math.sqrt(1 + hx*hx + hy*hy), cw = 1 - 1/Math.sqrt(1 + wx*wx + wy*wy);
+        t7r[p] = wx*cw - hx*ch; t7i[p] = two ? wy*cw - hy*ch : 0;
+      }
+      FT(t7r, t7i, false);
+      if(two){
+        for(let p=0;p<M;p++){
+          const q = PART[p], zrp = t7r[p], zip = t7i[p], zrq = t7r[q], ziq = t7i[q];
+          const ar = 0.5*(zrp + zrq), ai = 0.5*(zip - ziq), br = 0.5*(zip + ziq), bi = 0.5*(zrq - zrp), kx = KX[p], ky = KY[p], m = mask[p];
+          t8r[p] = (-kx*ai - ky*bi)*m; t8i[p] = (kx*ar + ky*br)*m;
+        }
+      } else for(let p=0;p<M;p++){ const kx = KX[p], m = mask[p]; t8r[p] = -kx*t7i[p]*m; t8i[p] = kx*t7r[p]*m; }
+      FT(t8r, t8i, true);
+      for(let p=0;p<M;p++) t1r[p] += t8r[p];
+    }
     if(dOn){                                     // ∇²h in the real, ∇²w in the imaginary part
       for(let p=0;p<M;p++){ const k2=K2[p]; t6r[p] = -k2*(vr[p] - wi[p]); t6i[p] = -k2*(vi[p] + wr[p]); }
       FT(t6r, t6i, true);
@@ -2740,7 +2789,7 @@ function buildSim(P){
     if(nl2 !== undefined) NL2 = nl2Code(nl2);
     if(absMode !== undefined) ABS_SUM = absMode === 'sum';
   };
-  s.setOrder = function(o){ s.P.order = o; fillLin(o, lamOf(s.P)); computeCoeffs(s.P.dt); };
+  s.setOrder = function(o){ s.P.order = o; GEO = o === 40; fillLin(o, lamOf(s.P)); computeCoeffs(s.P.dt); };
   s.setLam = function(l){ s.P.lam = l; fillLin(s.P.order, l); computeCoeffs(s.P.dt); };
 
   /* derived fields for colouring, computed spectrally:
@@ -2990,8 +3039,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
                         : k === 'lyD' ? params.delta !== 0 : false;
   const activeTermKeys = () => TERMKEYS.filter(termActive);
   function termLabel(k){
-    const o6 = params.order === 6, o246 = params.order === 246;
-    return { lyLin1: o246 ? 'Λ∇²h+∇⁶h' : o6 ? '+∇⁴h' : '−∇²h', lyLin2: o246 ? '+∇⁴h' : o6 ? '+∇⁶h' : '−∇⁴h',
+    const o6 = params.order === 6, o246 = params.order === 246, geo = params.order === 40;
+    return { lyLin1: o246 ? 'Λ∇²h+∇⁶h' : o6 ? '+∇⁴h' : geo ? '−∇·(∇h/√(1+(∇h)²))' : '−∇²h', lyLin2: o246 ? '+∇⁴h' : o6 ? '+∇⁶h' : '−∇⁴h',
              lyNL2: params.nl2 === 2 ? '2(√(1+(∇h)²)−1)' : '(∇h)²', lyA: 'α|∇h|', lyB: 'β(∇h)⁴', lyG: 'γ∇²(∇h)²', lyD: 'δ∇²h(∇h)²' }[k] || k;
   }
   const qscalesP = {}, qscalesN = {};          // extremes of λ>0 and λ<0 (split mode)
@@ -4879,7 +4928,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      the plain display, no overlays, at 2x resolution, with the equation that is
      actually being integrated and its parameters stamped in blue in the corner */
   function eqLines(){
-    const lin = params.order === 6 ? '+∇⁴h + ∇⁶h' : params.order === 246 ? params.lam + '·∇²h + ∇⁴h + ∇⁶h' : '−∇²h − ∇⁴h';
+    const lin = params.order === 6 ? '+∇⁴h + ∇⁶h' : params.order === 246 ? params.lam + '·∇²h + ∇⁴h + ∇⁶h' : params.order === 40 ? '−∇·(∇h/√(1+(∇h)²)) − ∇⁴h' : '−∇²h − ∇⁴h';
     let eq = '∂h/∂t = ' + lin + (params.nl2 === 2 ? ' + 2(√(1+(∇h)²)−1)' : params.nl2 ? ' + (∇h)²' : '');
     const absTxt = params.dim === 2 ? (params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·√((∇h)²)') : '·|∇h|';
     if(params.alpha !== 0) eq += (params.alpha > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.alpha)) + absTxt;
@@ -5293,7 +5342,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     setYvar(YCYCLE[(i < 0 ? 0 : i + 1) % YCYCLE.length]);
   });
   /* the header toggle shows only the linear terms in use; a click steps to the next set */
-  const ORDERS = [4, 6, 246];
+  const ORDERS = [4, 40, 6, 246];
   $('segOrd').querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
     const next = ORDERS[(ORDERS.indexOf(params.order) + 1) % ORDERS.length];
     setOrder(next);
@@ -6123,7 +6172,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     c.fillText('β   (menu values in order, not to scale)', (x0+x1)/2, y1+52);
     c.save(); c.translate(48, (y0+y1)/2); c.rotate(-Math.PI/2); c.textBaseline = 'alphabetic'; c.fillText('λ', 0, 0); c.restore();
     c.strokeStyle = '#000'; c.lineWidth = 2; c.strokeRect(x0+1, y0+1, x1-x0-2, y1-y0-2);
-    const COLS = ['#4338ca', '#0891b2', '#d97706'];
+    const COLS = ['#4338ca', '#0891b2', '#d97706', '#7c3aed'];
     sets.forEach((s, j) => {
       const col = COLS[j % COLS.length];
       c.strokeStyle = col; c.lineWidth = 2.2; c.setLineDash([6, 6]);
@@ -6397,13 +6446,13 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      first half of (T_tot − T_tr): Benettin; second half: free runs.        */
   const SC = { rows: [], running: false, stop: false, dark: false, eq: '', par: 'beta', cfg: null };
   const GSYM = { alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', L: 'L', lam: 'Λ' };
-  const LINLAB = { 4: '−∇²h − ∇⁴h', 6: '+∇⁴h + ∇⁶h', 246: 'Λ∇²h + ∇⁴h + ∇⁶h' };
+  const LINLAB = { 4: '−∇²h − ∇⁴h', 40: '−∇·(∇h/√(1+(∇h)²)) − ∇⁴h', 6: '+∇⁴h + ∇⁶h', 246: 'Λ∇²h + ∇⁴h + ∇⁶h' };
   const GLAB = { alpha: 'α|∇h|', beta: 'β(∇h)⁴', gamma: 'γ∇²(∇h)²', delta: 'δ∇²h(∇h)²' };
   fillSel('scA', ALPHAV); fillSel('scB', BETAV); fillSel('scG', BETAV); fillSel('scD', DELTAV);
   ['scA','scB','scG','scD'].forEach(id => { $(id).value = '0'; });
   let scNL2 = 1, scDim = 1, scBC = 'periodic';   // the KS term: 1 = (∇h)², 2 = 2(√(1+(∇h)²) − 1), 0 = off
   const scOrds = new Set([4]);                     // the equations included in the scan
-  const scOrdList = [4, 6, 246];                   // their order: column groups left to right, colours in turn
+  const scOrdList = [4, 40, 6, 246];               // their order: column groups left to right, colours in turn
   (function(){
     const fx = $('scLamFix');
     for(const v of LAMV){ const o = document.createElement('option'); o.value = ''+v; o.textContent = ''+v; fx.appendChild(o); }
@@ -6462,7 +6511,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     return dt;
   }
   function scEquation(c, par){
-    const lin = c.order === 6 ? '+∇⁴h + ∇⁶h' : c.order === 246 ? (par === 'lam' ? 'Λ∇²h + ∇⁴h + ∇⁶h' : c.lam + '·∇²h + ∇⁴h + ∇⁶h') : '−∇²h − ∇⁴h';
+    const lin = c.order === 6 ? '+∇⁴h + ∇⁶h' : c.order === 246 ? (par === 'lam' ? 'Λ∇²h + ∇⁴h + ∇⁶h' : c.lam + '·∇²h + ∇⁴h + ∇⁶h') : c.order === 40 ? '−∇·(∇h/√(1+(∇h)²)) − ∇⁴h' : '−∇²h − ∇⁴h';
     let eq = '∂h/∂t = ' + lin + (c.nl2 === 2 ? ' + 2(√(1+(∇h)²)−1)' : c.nl2 ? ' + (∇h)²' : '');
     for(const k of ['alpha','beta','gamma','delta']){
       if(k === par) eq += ' + ' + GLAB[k];
@@ -6720,9 +6769,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     if(w === null){ const r = scv.parentElement.getBoundingClientRect(); w = r.width; h = r.height; }
     const bg = dark ? '#0b0d13' : '#fff', ink = dark ? '#e8ecf5' : '#000', grid = dark ? '#20242f' : '#e8ecf3', zero = dark ? '#3a4152' : '#c3ccdb', lab = dark ? '#aab3c7' : '#4a5872';
     const col1 = dark ? '#94a6ff' : '#4338ca', col2 = dark ? '#f6b26b' : '#d97706', colW = dark ? '#6ee7b7' : '#0f766e', col3 = dark ? '#f9a8d4' : '#be185d';
-    const colE = dark ? '#67e8f9' : '#0891b2', colF = dark ? '#bef264' : '#65a30d';   // the second and the third equation
+    const colE = dark ? '#67e8f9' : '#0891b2', colF = dark ? '#bef264' : '#65a30d', colG = dark ? '#c4b5fd' : '#7c3aed';   // the second, third and fourth equation
     const sets = S.sets || [{ rows: S.rows, lab: '' }];
-    const extra = sets.slice(1).map((st, i) => ({ rows: st.rows.filter(r => !r.dv), col: i ? colF : colE, lab: st.lab }));
+    const extra = sets.slice(1).map((st, i) => ({ rows: st.rows.filter(r => !r.dv), col: [colE, colF, colG][i] || colG, lab: st.lab }));
     const rows2 = extra.length ? extra[0].rows : null, lab0 = sets[0].lab;
     c.fillStyle = bg; c.fillRect(0, 0, w, h);
     const rows = S.rows.filter(r => !r.dv), sym = GSYM[S.par] || S.par;
