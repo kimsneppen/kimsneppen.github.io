@@ -1868,7 +1868,12 @@
           white on a black background, black on a white one. In the 3D profile views it holds for the
           newest profile, at the top, and on the 2D surface at the middle of the depth (perspective
           makes nearer features look taller); colour maps, which do not draw the height vertically,
-          have no bar. In the Lyapunov section and in the scan results each figure and table has its
+          have no height bar. A second, horizontal bar in the lower left corner gives the length scale
+          along x: a round length (1, 2, 2.5, 5, 10, …) between one and two typical cell wavelengths,
+          where the cell wavelength is the box length over the number of local maxima of h
+          (L/n in 1D, L/√n in 2D). It appears in every view, the colour maps included; in the 3D
+          profile views it holds for the nearest profile and on the 2D surface at the middle of the
+          depth. In the Lyapunov section and in the scan results each figure and table has its
           own .png button, and the tables of the main text have theirs beside them.</p>
           <p><b>Film:</b> under Run / Step / Reset, choose the length of the film (5 s to 5 min of real
           time) and press <b>&#9679; record</b> at the moment it should begin; the display is then recorded in
@@ -3538,6 +3543,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const X = i => x0 + pw*i/(n-1);
     const Y = v => y0 + ph*(1 - (v/S + 1)/2);
     if(yvar !== 'dx') hbarPx = ph/(2*S);
+    xbarPx = pw/((n-1)*sim.dx);
     ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
     if(!colored){
       ctx.beginPath();
@@ -3656,6 +3662,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const X = c => x0 + pw*c/(ncols-1);
     const Y = v => y0 + ph*(1 - (v-lo)/(hi-lo));
     if(!isU) hbarPx = ph/(hi-lo);
+    xbarPx = pw/((n-1)*sim.dx);
     ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, pw, ph); ctx.clip();
     ctx.lineJoin='round'; ctx.lineCap='round';
     for(let k=k0;k<nc;k++){
@@ -3724,7 +3731,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     } else swPos += 1/swRowsPerPage();
     swNextT = sim.t + wfDt;
   }
-  function swReset(){ swList = []; swPos = 0; swNextT = 0; }
+  let swH = 0;                           // eased relief scale of the 3D sweep views (0: not yet set)
+  function swReset(){ swList = []; swPos = 0; swNextT = 0; swH = 0; }
 
   function drawWaterfall3D(w, h, sweep, scroll){
     const colored = qkind !== 'plain';
@@ -3748,7 +3756,12 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       if(!rows.length) return;
       D = 0.86*ph;                                  // the page spans nearly the full display
       ensureScale(isU ? 'dx' : 'h');                // relief auto-normalized to the windowed
-      const Hwin = qscales[isU ? 'dx' : 'h'];       // scale of what is currently on screen —
+      /* scale of what is currently on screen, eased rather than stepped: the windowed maximum
+         jumps every 180 frames, which made the whole relief jump in height. The eased scale
+         follows growth within a few frames and decay slowly; exports use it as it stands. */
+      const target = Math.max(qscales[isU ? 'dx' : 'h'], 1e-9);
+      if(onScreen) swH = !(swH > 0) ? target : swH + (target > swH ? 0.25 : 0.02)*(target - swH);
+      const Hwin = swH > 0 ? swH : target;
       zs = 0.5*ph*Math.sin(th)/Math.max(Hwin,1e-9); // real unclamped shape, never off-scale
     } else {
       if(snapshots.length < 2){ drawWaterfall(w, h); return; }
@@ -3770,8 +3783,12 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     }
     const nl = rows.length;
     if(!isU) hbarPx = zs*dv/(dv + rows[nl-1].pos);   // height scale at the newest row, at the top
+    xbarPx = pw*0.98/((n-1)*sim.dx);                  // length scale at the nearest row, at the bottom
     const sil = silBuf(Math.max(2, w|0));
-    const istep = Math.max(1, Math.ceil(nl*n/(colored?70000:300000)));
+    /* horizontal sampling: one step for the whole page — from what a full page holds, not from the
+       rows drawn so far — so the picture does not coarsen part-way up the page */
+    const cap = sweep ? (scroll ? Math.ceil(SW_TOP*swRowsPerPage()) + 1 : swRowsPerPage() + 1) : nl;
+    const istep = Math.max(1, Math.ceil(cap*n/(colored ? 160000 : 600000)));
     const Sq = colored ? (ensureScale(qkind), scaleFor(qkind)) : 1;
     const per = params.bc === 'periodic', dxp = params.dx;
     const qc = KCODE[qkind]|0, lyo = lyPackOff(n), lys = lyPackSg();
@@ -3843,6 +3860,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     ctx.imageSmoothingEnabled = true;
     const rows = Math.max(1, stRows);
     ctx.drawImage(stC, 0, stH-rows, stC.width, rows, x0, y0, x1-x0, y1-y0);
+    xbarPx = (x1-x0)/(sim.physNx*sim.dx);
     if(clean) return;
     ctx.strokeStyle = TH.frame; ctx.lineWidth=1; ctx.strokeRect(x0+0.5,y0+0.5,x1-x0,y1-y0);
     axisFont();
@@ -3880,6 +3898,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const availW = clean ? w : w - x0 - 56;
     const side = Math.min(y1-y0, availW);
     const px = x0 + Math.max(0,(availW-side)/2), py = y0 + (y1-y0-side)/2;
+    xbarPx = side/(n*sim.dx);
     ctx.imageSmoothingEnabled = true;
     /* row j = 0 at the bottom, so y increases upward as the axis says */
     ctx.save(); ctx.translate(px, py+side); ctx.scale(1,-1);
@@ -4088,6 +4107,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     }
     const S0 = 1.10*Math.min((x1-x0)/Math.max(umax-umin,1e-6), (y1-y0)/Math.max(vmax-vmin,1e-6));
     if(geoKind === 'h') hbarPx = S0*sT*zAmp;
+    xbarPx = S0/sim.dx;
     const cx = (x0+x1)/2 - S0*(umin+umax)/2;
     const cy = (y0+y1)/2 + S0*(vmin+vmax)/2;
     for(let gj=0;gj<m;gj++){
@@ -4177,12 +4197,14 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   /* pixels (CSS) per unit of height in the last drawing, at the top of the view; 0 when the
      height is not drawn vertically (colour maps, slope plots) — for the scale bar of the clean pictures */
   let hbarPx = 0;
+  /* the same for length along x, measured horizontally (for the x scale bar); 0 = not drawn */
+  let xbarPx = 0;
   /* horizontal extent of the x axis of the main 1D display on screen, so the
      δh(x) plot in the Lyapunov panel can put its x axis exactly underneath */
   const mainXr = { x0:46, x1:-14, w:0 };
   function noteX(x0, x1, w){ if(onScreen && !clean){ mainXr.x0 = x0; mainXr.x1 = x1; mainXr.w = w; } }
   function drawContent(w, h){
-    rightInset = 0; hbarPx = 0;
+    rightInset = 0; hbarPx = 0; xbarPx = 0;
     ctx.fillStyle = TH.bg; ctx.fillRect(0,0,w,h);
     const mode = modeSel[params.dim];
     if(params.dim === 1){
@@ -4963,6 +4985,54 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     c.fillText(String(val), x - lw/2 - Math.round(6*u), y0 + len/2);
     c.restore();
   }
+  /* typical cell wavelength: the box length over the number of local maxima of the displayed h
+     (larger than everything within one length unit) — L/n in 1D, L/√n in 2D */
+  function cellLength(){
+    const H = hDisp(), n = sim.physNx, d2 = params.dim === 2, ny = d2 ? sim.physNy : 1, nx = sim.nx;
+    const per = params.bc === 'periodic', r = Math.max(1, Math.round(1/sim.dx));
+    const at = (i, j) => { if(per){ i = (i + n) % n; j = (j + ny) % ny; } else if(i < 0 || j < 0 || i >= n || j >= ny) return -Infinity; return H[j*nx + i]; };
+    let cnt = 0;
+    for(let j=0;j<ny;j++) for(let i=0;i<n;i++){
+      const v = H[j*nx + i]; let ok = true;
+      for(let dj = d2 ? -r : 0; dj <= (d2 ? r : 0) && ok; dj++) for(let di=-r; di<=r; di++){
+        if(!di && !dj) continue;
+        const u = at(i+di, j+dj);
+        if(u > v || (u === v && (dj < 0 || (dj === 0 && di < 0)))){ ok = false; break; }
+      }
+      if(ok) cnt++;
+    }
+    const Lb = n*sim.dx;
+    return cnt ? (d2 ? Lb/Math.sqrt(cnt) : Lb/cnt) : NaN;
+  }
+  /* x scale bar for the clean pictures: a thin horizontal line in the lower left corner, a round
+     length (1, 2, 2.5, 5 × 10^k — one of them lies in every factor-of-two range) between one and two
+     typical cell wavelengths, the one nearest to 1.5 of them, with its number above it. px = pixels
+     per unit length along the horizontal in the finished picture. */
+  function xBar(oc, px){
+    if(!(px > 0)) return;
+    const lam = cellLength(); if(!(lam > 0)) return;
+    const cands = [];
+    for(let e = Math.floor(Math.log10(lam)) - 1; e <= Math.floor(Math.log10(lam)) + 2; e++) for(const m of [1, 2, 2.5, 5]) cands.push(+(m*Math.pow(10, e)).toPrecision(2));
+    let val = NaN, bd = Infinity;
+    for(const v of cands){
+      if(v < lam*(1 - 1e-9) || v > 2*lam*(1 + 1e-9)) continue;
+      const dd = Math.abs(Math.log(v/(1.5*lam))); if(dd < bd){ bd = dd; val = v; }
+    }
+    if(!isFinite(val)) return;
+    while(val*px > 0.45*oc.width){ const sm = cands.filter(v => v < val); if(!sm.length) return; val = sm[sm.length-1]; }   // keep clear of the height bar
+    const len = val*px, W = oc.width, Hh = oc.height, c = oc.getContext('2d');
+    const u = Math.max(1, Math.min(W, Hh)/600);
+    const lw = Math.max(2, Math.round(2.5*u)), m = Math.round(20*u), fs = Math.round(17*u);
+    const x0 = m, y = Hh - m - lw/2;
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
+    c.strokeStyle = c.fillStyle = darkBG ? '#fff' : '#000';
+    c.lineWidth = lw; c.lineCap = 'butt';
+    c.beginPath(); c.moveTo(x0, y); c.lineTo(x0 + len, y); c.stroke();
+    c.font = '600 ' + fs + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+    c.textAlign = 'center'; c.textBaseline = 'bottom';
+    c.fillText(String(val), x0 + len/2, y - lw/2 - Math.round(4*u));
+    c.restore();
+  }
   function exportPNG(kind){
     kind = kind || 'stamp';
     const btn = $(kind === 'stamp' ? 'bPng' : (kind === 'sq' ? 'bPngSq' : 'bPngClean'));
@@ -4975,10 +5045,10 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     if(kind !== 'stamp' && isMap){ w = h = Math.min(w, h); }   // the bare square field
     let oc = renderTo(w, h, scale, kind !== 'stamp', kind === 'stamp');
     if(kind === 'sq') oc = cropToContent(oc, 6*scale);   // cut away the empty margin around the drawing
-    let vfac = 1;                                       // vertical squeeze of the sq picture
+    let vfac = 1, hfac = 1;                             // vertical and horizontal squeeze of the sq picture
     if(kind === 'sq' && oc.width !== oc.height){
       const side = Math.min(oc.width, oc.height);      // compress the long side
-      vfac = side/oc.height;
+      vfac = side/oc.height; hfac = side/oc.width;
       const sq = document.createElement('canvas');
       sq.width = side; sq.height = side;
       const sctx = sq.getContext('2d');
@@ -4986,7 +5056,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       sctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, side, side);
       oc = sq;
     }
-    if(kind !== 'stamp') heightBar(oc, hbarPx*scale*vfac);
+    if(kind !== 'stamp'){ heightBar(oc, hbarPx*scale*vfac); xBar(oc, xbarPx*scale*hfac); }
     const tag = fileTag() + '_t' + sim.t.toFixed(0) + (kind === 'clean' ? '_clean' : kind === 'sq' ? '_sq' : '');
     if(!btn.dataset.label) btn.dataset.label = btn.textContent;   // survives rapid re-clicks
     const label = btn.dataset.label;
