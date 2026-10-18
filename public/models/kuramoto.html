@@ -5027,7 +5027,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      the bar numbers. hpx, xpx: pixels per unit height / length in the finished picture. */
   function cleanOverlay(oc, hpx, xpx){
     const W = oc.width, H = oc.height, c = oc.getContext('2d');
-    const u = Math.max(1, Math.min(W, H)/600), m = Math.round(20*u), fs = Math.round(17*u);
+    const u = Math.max(1, Math.min(W, H)/600), m = Math.round(20*u), fs = Math.round(21*u);
     const hb = heightBar(oc, hpx) || { top: H, right: 0 };
     const xEnd = xBar(oc, xpx) || 0;
     const font = sz => '600 ' + sz + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
@@ -5073,19 +5073,18 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     while(k > 0 && nice[k]*px > 0.8*oc.height) k--;   // never taller than most of the picture
     const val = nice[k], len = val*px, W = oc.width, c = oc.getContext('2d');
     const u = Math.max(1, Math.min(W, oc.height)/600);   // size unit: 1 at 600 px
-    const lw = Math.max(2, Math.round(2.5*u)), m = Math.round(20*u), fs = Math.round(17*u);
+    const lw = Math.max(2, Math.round(2.5*u)), m = Math.round(20*u), fs = Math.round(21*u);
     const x = m + lw/2, y0 = oc.height - m - len;          // lower left corner, its foot at the x bar
     c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
     c.strokeStyle = c.fillStyle = '#fff';
     c.lineWidth = lw; c.lineCap = 'butt';
     c.beginPath(); c.moveTo(x, y0); c.lineTo(x, y0 + len); c.stroke();
     c.font = '600 ' + fs + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
-    c.textAlign = 'left'; c.textBaseline = 'middle';
-    const tx = x + lw/2 + Math.round(6*u);
-    ovText(c, String(val), tx, y0 + len/2, fs);
-    const right = tx + c.measureText(String(val)).width;
+    c.textAlign = 'center'; c.textBaseline = 'bottom';      // the number above the bar, clear of the x bar's number
+    ovText(c, String(val), x, y0 - Math.round(5*u), fs);
+    const right = x + c.measureText(String(val)).width/2;
     c.restore();
-    return { top: y0, right };
+    return { top: y0 - Math.round(5*u) - fs, right };
   }
   /* typical cell wavelength: the box length over the number of local maxima of the displayed h
      (larger than everything within one length unit) — L/n in 1D, L/√n in 2D */
@@ -5124,7 +5123,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     while(val*px > 0.45*oc.width){ const sm = cands.filter(v => v < val); if(!sm.length) return; val = sm[sm.length-1]; }   // leave room for the equation
     const len = val*px, W = oc.width, Hh = oc.height, c = oc.getContext('2d');
     const u = Math.max(1, Math.min(W, Hh)/600);
-    const lw = Math.max(2, Math.round(2.5*u)), m = Math.round(20*u), fs = Math.round(17*u);
+    const lw = Math.max(2, Math.round(2.5*u)), m = Math.round(20*u), fs = Math.round(21*u);
     const x0 = m, y = Hh - m - lw/2;
     c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
     c.strokeStyle = c.fillStyle = '#fff';
