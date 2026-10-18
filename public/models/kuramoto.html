@@ -1877,18 +1877,18 @@
           in the upper right corner (key p). The two small buttons in the lower right corner
           save <i>clean</i> pictures: <b>.png</b> keeps only the surface, without axes, frame,
           colour bar or caption (key c), and <b>sq</b> first cuts away the empty margin around the drawing and then compresses what is
-          left into a square (key s). Both clean pictures carry a height scale bar in the lower right
-          corner: a thin vertical line whose length is a round number (1, 2, 5, 10, … or 0.5, 0.2,
-          0.1, …) close to half the largest height difference in the system, labelled with that number —
-          white on a black background, black on a white one. In the 3D profile views it holds for the
-          newest profile, at the top, and on the 2D surface at the middle of the depth (perspective
-          makes nearer features look taller); colour maps, which do not draw the height vertically,
-          have no height bar. A second, horizontal bar in the lower left corner gives the length scale
-          along x: a round length (1, 2, 2.5, 5, 10, …) between one and two typical cell wavelengths,
-          where the cell wavelength is the box length over the number of local maxima of h
-          (L/n in 1D, L/√n in 2D). It appears in every view, the colour maps included; in the 3D
-          profile views it holds for the nearest profile and on the 2D surface at the middle of the
-          depth. In the Lyapunov section and in the scan results each figure and table has its
+          left into a square (key s). Both clean pictures carry white markings. In the lower left corner
+          two scale bars meet: a vertical height bar whose length is a round number (1, 2, 5, 10, … or
+          0.5, 0.2, 0.1, …) close to half the largest height difference in the system, and a horizontal
+          bar giving the length scale along x, a round length (1, 2, 2.5, 5, 10, …) between one and two
+          typical cell wavelengths (the box length over the number of local maxima of h: L/n in 1D,
+          L/√n in 2D); each is labelled with its number. In the 3D profile views the height bar holds
+          for the newest profile and the x bar for the nearest one; on the 2D surface both hold at the
+          middle of the depth (perspective makes nearer features look taller); colour maps, which do not
+          draw the height vertically, have no height bar. The lower right corner carries the equation
+          being integrated, and the upper right corner a short colour bar with its two ends and its
+          middle numbered and the coloured quantity (h−⟨h⟩, ∇²h, λ(x), …) written below it; a plain
+          1D curve has no colour bar. In the Lyapunov section and in the scan results each figure and table has its
           own .png button, and the tables of the main text have theirs beside them.</p>
           <p><b>Film:</b> under Run / Step / Reset, choose the length of the film (5 s to 5 min of real
           time) and press <b>&#9679; record</b> at the moment it should begin; the display is then recorded in
@@ -5016,9 +5016,49 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const fileTag = () => (params.dim === 1 ? 'KS1D' : 'KS2D') + (params.nl2 === 2 ? '_huy' : params.nl2 ? '' : '_nosq') +
                 (params.alpha ? '_a' + fmtTerm(params.alpha) + (params.dim === 2 && params.absMode === 'sum' ? 'sum' : '') : '') +
                 (params.beta  ? '_b' + fmtTerm(params.beta)  : '') + '_L' + params.L + '_dx' + params.dx;
-  /* height scale bar for the clean pictures: a thin vertical line in the lower right corner whose
+  /* white text with a faint dark halo: readable on the black background and still on a light one */
+  function ovText(c, str, x, y, fs){
+    c.lineJoin = 'round'; c.lineWidth = Math.max(2, Math.round(fs/5)); c.strokeStyle = 'rgba(0,0,0,.6)';
+    c.strokeText(str, x, y); c.fillStyle = '#fff'; c.fillText(str, x, y);
+  }
+  /* the markings of the clean and sq pictures: the height bar and the x bar in the lower left corner,
+     the equation being integrated in the lower right, and in the upper right a short colour bar with its
+     two ends and its middle numbered and the coloured quantity named below — all in white, at the size of
+     the bar numbers. hpx, xpx: pixels per unit height / length in the finished picture. */
+  function cleanOverlay(oc, hpx, xpx){
+    const W = oc.width, H = oc.height, c = oc.getContext('2d');
+    const u = Math.max(1, Math.min(W, H)/600), m = Math.round(20*u), fs = Math.round(17*u);
+    const hb = heightBar(oc, hpx) || { top: H, right: 0 };
+    const xEnd = xBar(oc, xpx) || 0;
+    const font = sz => '600 ' + sz + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
+    /* the equation, lower right, shrunk if it would run into the bars */
+    const eq = eqLines()[0]; let efs = fs; c.font = font(efs);
+    const left = Math.max(xEnd, hb.right) + Math.round(12*u);
+    while(c.measureText(eq).width > W - m - left && efs > Math.round(9*u)){ efs -= 1; c.font = font(efs); }
+    c.textAlign = 'right'; c.textBaseline = 'alphabetic';
+    ovText(c, eq, W - m, H - m, efs);
+    /* the colour bar, upper right: left end, middle, right end, and the quantity */
+    if(qkind !== 'plain' || params.dim === 2 || modeSel[1] === 'spacetime'){
+      const kind = effKind(); ensureScale(kind);
+      const bw = Math.round(0.26*W), bh = Math.round(8*u), x1 = W - m, x0 = x1 - bw, y0 = m;
+      for(let i=0;i<bw;i++){ c.fillStyle = CSS[barIdx(kind, i/(bw-1))]; c.fillRect(x0 + i, y0, 1.5, bh); }
+      c.strokeStyle = '#fff'; c.lineWidth = Math.max(1, Math.round(u)); c.strokeRect(x0 + 0.5, y0 + 0.5, bw, bh);
+      const sp = splitOn(kind), S = scaleFor(kind), signed = kind !== 'absdx';
+      const lo = sp ? '−' + fmt(splitS(kind, 0)) : (signed ? '−' + fmt(S) : '0');
+      const mid = (sp || signed) ? '0' : fmt(S/2);
+      const hi = sp ? '+' + fmt(splitS(kind, 1)) : ((signed ? '+' : '') + fmt(S));
+      c.font = font(fs); c.textBaseline = 'top'; const ty = y0 + bh + Math.round(4*u);
+      c.textAlign = 'left';   ovText(c, lo,  x0, ty, fs);
+      c.textAlign = 'center'; ovText(c, mid, (x0 + x1)/2, ty, fs);
+      c.textAlign = 'right';  ovText(c, hi,  x1, ty, fs);
+      c.textAlign = 'center'; ovText(c, kindLabel(kind), (x0 + x1)/2, ty + Math.round(1.3*fs), fs);
+    }
+    c.restore();
+  }
+  /* height scale bar for the clean pictures: a thin vertical line in the lower left corner whose
      length is a round number (1, 2, 5 × 10^k) near half the largest height difference in the system,
-     with that number beside it at the size of an axis label; white on a black background, black on a white one. px = pixels per unit
+     with that number beside it at the size of an axis label, in white. px = pixels per unit
      height in the finished picture (0: the height is not drawn vertically — no bar). */
   function heightBar(oc, px){
     if(!(px > 0)) return;
@@ -5034,15 +5074,18 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const val = nice[k], len = val*px, W = oc.width, c = oc.getContext('2d');
     const u = Math.max(1, Math.min(W, oc.height)/600);   // size unit: 1 at 600 px
     const lw = Math.max(2, Math.round(2.5*u)), m = Math.round(20*u), fs = Math.round(17*u);
-    const x = W - m - lw/2, y0 = oc.height - m - len;     // lower right corner
+    const x = m + lw/2, y0 = oc.height - m - len;          // lower left corner, its foot at the x bar
     c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
-    c.strokeStyle = c.fillStyle = darkBG ? '#fff' : '#000';
+    c.strokeStyle = c.fillStyle = '#fff';
     c.lineWidth = lw; c.lineCap = 'butt';
     c.beginPath(); c.moveTo(x, y0); c.lineTo(x, y0 + len); c.stroke();
     c.font = '600 ' + fs + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
-    c.textAlign = 'right'; c.textBaseline = 'middle';
-    c.fillText(String(val), x - lw/2 - Math.round(6*u), y0 + len/2);
+    c.textAlign = 'left'; c.textBaseline = 'middle';
+    const tx = x + lw/2 + Math.round(6*u);
+    ovText(c, String(val), tx, y0 + len/2, fs);
+    const right = tx + c.measureText(String(val)).width;
     c.restore();
+    return { top: y0, right };
   }
   /* typical cell wavelength: the box length over the number of local maxima of the displayed h
      (larger than everything within one length unit) — L/n in 1D, L/√n in 2D */
@@ -5078,19 +5121,20 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       const dd = Math.abs(Math.log(v/(1.5*lam))); if(dd < bd){ bd = dd; val = v; }
     }
     if(!isFinite(val)) return;
-    while(val*px > 0.45*oc.width){ const sm = cands.filter(v => v < val); if(!sm.length) return; val = sm[sm.length-1]; }   // keep clear of the height bar
+    while(val*px > 0.45*oc.width){ const sm = cands.filter(v => v < val); if(!sm.length) return; val = sm[sm.length-1]; }   // leave room for the equation
     const len = val*px, W = oc.width, Hh = oc.height, c = oc.getContext('2d');
     const u = Math.max(1, Math.min(W, Hh)/600);
     const lw = Math.max(2, Math.round(2.5*u)), m = Math.round(20*u), fs = Math.round(17*u);
     const x0 = m, y = Hh - m - lw/2;
     c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
-    c.strokeStyle = c.fillStyle = darkBG ? '#fff' : '#000';
+    c.strokeStyle = c.fillStyle = '#fff';
     c.lineWidth = lw; c.lineCap = 'butt';
     c.beginPath(); c.moveTo(x0, y); c.lineTo(x0 + len, y); c.stroke();
     c.font = '600 ' + fs + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
     c.textAlign = 'center'; c.textBaseline = 'bottom';
-    c.fillText(String(val), x0 + len/2, y - lw/2 - Math.round(4*u));
+    ovText(c, String(val), x0 + len/2, y - lw/2 - Math.round(4*u), fs);
     c.restore();
+    return x0 + len;
   }
   function exportPNG(kind){
     kind = kind || 'stamp';
@@ -5115,7 +5159,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       sctx.drawImage(oc, 0, 0, oc.width, oc.height, 0, 0, side, side);
       oc = sq;
     }
-    if(kind !== 'stamp'){ heightBar(oc, hbarPx*scale*vfac); xBar(oc, xbarPx*scale*hfac); }
+    if(kind !== 'stamp') cleanOverlay(oc, hbarPx*scale*vfac, xbarPx*scale*hfac);
     const tag = fileTag() + '_t' + sim.t.toFixed(0) + (kind === 'clean' ? '_clean' : kind === 'sq' ? '_sq' : '');
     if(!btn.dataset.label) btn.dataset.label = btn.textContent;   // survives rapid re-clicks
     const label = btn.dataset.label;
