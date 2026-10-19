@@ -4931,7 +4931,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function eqLines(){
     const lin = params.order === 6 ? '+∇⁴h + ∇⁶h' : params.order === 246 ? params.lam + '·∇²h + ∇⁴h + ∇⁶h' : params.order === 40 ? '−∇·(∇h/√(1+(∇h)²)) − ∇⁴h' : '−∇²h − ∇⁴h';
     let eq = '∂h/∂t = ' + lin + (params.nl2 === 2 ? ' + 2(√(1+(∇h)²)−1)' : params.nl2 ? ' + (∇h)²' : '');
-    const absTxt = params.dim === 2 ? (params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·√((∇h)²)') : '·|∇h|';
+    const absTxt = params.dim === 2 && params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·|∇h|';
     if(params.alpha !== 0) eq += (params.alpha > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.alpha)) + absTxt;
     if(params.beta  !== 0) eq += (params.beta  > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.beta))  + '·(∇h)⁴';
     if(params.gamma !== 0) eq += (params.gamma > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.gamma)) + '·∇²(∇h)²';
