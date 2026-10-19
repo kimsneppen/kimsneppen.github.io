@@ -1436,6 +1436,7 @@
           </div>
           <div class="prow">
             <button id="bPreBeauty" data-pre="beauty" title="Beauty — Art 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 62&deg;, rot 0&deg;, dist 5&middot;L)">Art 2D</button>
+            <button id="bPreBubble" data-pre="bubble" title="Bubble life — the gliders and replicators: KS 2D with &alpha; = 1.7, L = 128, open (flat-wall) boundaries, surface coloured by h&minus;&lang;h&rang; in jet">Bubble life</button>
           </div>
           <button class="phead" id="presetHead" title="the one-click runs — click to fold / unfold">presets <b>&#9652;</b></button>
         </div>
@@ -5048,11 +5049,14 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       const lo = sp ? '−' + fmt(splitS(kind, 0)) : (signed ? '−' + fmt(S) : '0');
       const mid = (sp || signed) ? '0' : fmt(S/2);
       const hi = sp ? '+' + fmt(splitS(kind, 1)) : ((signed ? '+' : '') + fmt(S));
-      c.font = font(fs); c.textBaseline = 'top'; const ty = y0 + bh + Math.round(4*u);
-      c.textAlign = 'left';   ovText(c, lo,  x0, ty, fs);
-      c.textAlign = 'center'; ovText(c, mid, (x0 + x1)/2, ty, fs);
-      c.textAlign = 'right';  ovText(c, hi,  x1, ty, fs);
-      c.textAlign = 'center'; ovText(c, kindLabel(kind), (x0 + x1)/2, ty + Math.round(1.3*fs), fs);
+      /* the three numbers shrink until they fit under the bar with a gap between them */
+      let nfs = fs; c.font = font(nfs);
+      while(nfs > Math.round(9*u) && c.measureText(lo).width + c.measureText(mid).width + c.measureText(hi).width + 2*Math.round(8*u) > bw){ nfs -= 1; c.font = font(nfs); }
+      c.textBaseline = 'top'; const ty = y0 + bh + Math.round(4*u);
+      c.textAlign = 'left';   ovText(c, lo,  x0, ty, nfs);
+      c.textAlign = 'center'; ovText(c, mid, (x0 + x1)/2, ty, nfs);
+      c.textAlign = 'right';  ovText(c, hi,  x1, ty, nfs);
+      c.font = font(fs); c.textAlign = 'center'; ovText(c, kindLabel(kind), (x0 + x1)/2, ty + Math.round(1.3*fs), fs);
     }
     c.restore();
   }
@@ -5079,6 +5083,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     c.strokeStyle = c.fillStyle = '#fff';
     c.lineWidth = lw; c.lineCap = 'butt';
     c.beginPath(); c.moveTo(x, y0); c.lineTo(x, y0 + len); c.stroke();
+    /* arrowhead at the end pointing the way the plotted height increases: up for h, down for −h (± button) */
+    const ah = Math.round(7*u), aw = Math.round(5*u), tipY = flipSign ? y0 + len : y0, dir = flipSign ? -1 : 1;
+    c.beginPath(); c.moveTo(x, tipY); c.lineTo(x - aw, tipY + dir*ah); c.lineTo(x + aw, tipY + dir*ah); c.closePath(); c.fill();
     c.font = '600 ' + fs + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
     c.textAlign = 'center'; c.textBaseline = 'bottom';      // the number above the bar, clear of the x bar's number
     ovText(c, String(val), x, y0 - Math.round(5*u), fs);
@@ -5936,7 +5943,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta);
   }
   /* the presets box: folds to its title line, which names the preset that is running */
-  const PRESET_NAME = { bPre1:'KS 1D', bPre2:'KS 2D', bPre1a:'KS 1D abs1', bPre2a:'KS 2D abs1', bPre1n:'KS 1D nnl', bPre2n:'KS 2D nnl', bPreK1:'KKS 1D', bPreK2:'KKS 2D' };
+  const PRESET_NAME = { bPre1:'KS 1D', bPre2:'KS 2D', bPre1a:'KS 1D abs1', bPre2a:'KS 2D abs1', bPre1n:'KS 1D nnl', bPre2n:'KS 2D nnl', bPreK1:'KKS 1D', bPreK2:'KKS 2D', bPreBubble:'Bubble life' };
   let curPreset = null;
   function setPresetLabel(id, text){
     curPreset = id;
@@ -6071,6 +6078,16 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     setBeauty(v); setPresetLabel(null, BEAUTY_LABEL[v]);
   }
   $('bPreBeauty').addEventListener('click', ()=>startBeauty(beauty === 'off' ? 'abs2dp' : beauty === 'abs2dp' ? 'abs2dm' : 'off'));
+  /* Bubble life: the life-like gliders and replicators of the Letter — KS 2D with α = 1.7, open walls,
+     the surface coloured by h − ⟨h⟩ in jet */
+  $('bPreBubble').addEventListener('click', ()=>runPreset(()=>{
+    base2D();
+    params.L=128; params.bc='open'; params.alpha=1.7; params.absMode='euclid';
+    params.dt=0.1; $('selDt').value='0.1';
+    qkind='h'; yvar='h';
+    setLUT('jet'); $('cmap').value='jet';
+    setFlip(false);
+  }, 'bPreBubble'));
 
   new ResizeObserver(()=>draw()).observe(cv.parentElement);
   const reflow = ()=>{ fitDue = true; lyapHeight(); fitHeight(); draw(); };
