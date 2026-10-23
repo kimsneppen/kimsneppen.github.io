@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Globalization in a nutshell — 2D</title>
+<style>
+  :root{
+    --bg:#eef1f6; --panel:#ffffff; --line:#dde3ec; --ink:#16233b; --ink2:#4a5872;
+    --muted:#8391ab; --accent:#4338ca; --accent-soft:rgba(67,56,202,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;overflow-x:hidden}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* the applet spans the whole window; the control panel is a drawer that slides in from the right
+     (the "controls" tab at the right edge, or the key k). On wide windows an open drawer pushes the
+     display aside, on narrow ones it overlays it. */
+  :root{--ctlw:318px}
+  .app{max-width:none;margin:0;padding:2px 12px 18px;transition:padding-right .22s ease}
+  @media (min-width:1000px){ body.ctl-open .app{padding-right:calc(var(--ctlw) + 18px)} }
+  header{padding:2px 2px 6px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 16px}
+  header h1{font-size:20px;margin:0;letter-spacing:-.01em}
+  .eq{font-size:13.5px;color:var(--ink2);font-family:Georgia,"Times New Roman",serif;font-style:italic;min-width:0}
+  .eq b{color:var(--accent);font-weight:600}
+
+  /* title pull-down with the rules of the model, opening over the display */
+  .titledrop{position:relative;flex:0 0 auto}
+  .titledrop > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:2px 0 4px;user-select:none}
+  .titledrop > summary::-webkit-details-marker{display:none}
+  .titledrop > summary::after{content:"";width:7px;height:7px;border-right:1.8px solid var(--muted);border-bottom:1.8px solid var(--muted);
+    transform:rotate(-45deg);transition:transform .15s;margin-left:2px}
+  .titledrop[open] > summary::after{transform:rotate(45deg)}
+  .dropbox{
+    position:absolute;top:calc(100% + 6px);left:0;z-index:80;
+    width:min(900px, calc(100vw - 24px));
+    max-height:min(74vh, 680px);overflow-y:auto;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px 16px;font-size:13px;color:var(--ink2);line-height:1.55;
+    box-shadow:0 10px 30px rgba(22,35,59,.22);
+  }
+  .dropbox p{margin:6px 0}
+  .dropbox b{color:var(--ink)}
+  .dropbox ol{margin:4px 0;padding-left:22px}
+  .dropbox li{margin:3px 0}
+  .dropbox h2{font-size:14px;color:var(--ink);margin:14px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
+  .dropbox .eqc{font-family:Georgia,"Times New Roman",serif;font-style:italic;text-align:center;color:var(--ink);font-size:14.5px;margin:8px 0}
+  .dropbox a{color:var(--accent);text-decoration:none}
+  .dropbox a:hover{text-decoration:underline}
+  .dropbox .refs{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px}
+
+  /* ---------- display panel ---------- */
+  .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+  .layout > *{min-width:0}
+  .display{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:10px 12px 12px;box-shadow:0 1px 3px rgba(22,35,59,.06);
+  }
+  .dispbar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12.5px;color:var(--ink2);margin-bottom:8px}
+  .dispbar .spacer{flex:1}
+  .dispbar .stat b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:600;color:var(--ink);font-size:12.5px}
+  .seg{display:inline-flex;flex:0 0 auto;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+  .seg button{border:0;background:#fff;padding:5px 10px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit}
+  .seg button + button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--accent);color:#fff}
+  .ptabs{display:inline-flex;gap:4px;flex-wrap:wrap}
+  .ptabs button{width:27px;height:25px;border-radius:7px;border:2px solid transparent;cursor:pointer;color:#fff;
+    font-weight:700;font-size:12px;font-family:inherit;opacity:.45}
+  .ptabs button.on{opacity:1;border-color:var(--ink)}
+  .ptabs.dis{display:none}
+  .tbtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 9px;cursor:pointer;font-size:13px;color:var(--ink2);line-height:1;font-family:inherit}
+  .tbtn.run{background:var(--accent);border-color:var(--accent);color:#fff;min-width:34px}
+  .canvas-wrap{position:relative;width:100%;height:min(calc(100vh - 150px), 100vw - 50px);min-height:280px}
+  @media (min-width:1000px){ body.ctl-open .canvas-wrap{height:min(calc(100vh - 150px), 100vw - var(--ctlw) - 70px)} }
+  canvas#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+  .legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--ink2);align-items:center;margin-top:8px}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+  .legend .bar{width:110px;height:10px;border-radius:3px;display:inline-block;vertical-align:-1px;margin:0 4px}
+  .readout{font-size:12.5px;color:var(--ink2);min-height:2.9em;line-height:1.45;font-variant-numeric:tabular-nums;margin-top:4px;overflow-wrap:anywhere}
+  .readout b{color:var(--ink)}
+  .chartbar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:4px}
+  .chartbar select{padding:4px 5px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:12.5px;color:var(--ink);max-width:100%}
+  .chartnote{font-size:11.5px;color:var(--muted)}
+  .chartbox{position:relative;width:100%;height:200px}
+  .chartbox canvas{position:absolute;inset:0;width:100%;height:100%}
+
+  /* ---------- control panel: a drawer at the right edge ---------- */
+  .controls{
+    position:fixed;top:0;right:0;bottom:0;width:var(--ctlw);max-width:94vw;z-index:150;
+    background:var(--panel);border-left:1px solid var(--line);
+    padding:10px 14px 14px;box-shadow:-8px 0 28px rgba(22,35,59,.16);
+    font-size:13px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    transform:translateX(calc(100% + 30px));transition:transform .22s ease;visibility:hidden;
+  }
+  body.ctl-open .controls{transform:none;visibility:visible}
+  .ctlhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;font-weight:650;color:var(--ink)}
+  .ctlhead .tbtn{font-size:16px;padding:3px 9px}
+  .ctltab{
+    position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:149;
+    writing-mode:vertical-rl;text-orientation:mixed;
+    padding:12px 5px;border:1px solid var(--line);border-right:0;border-radius:9px 0 0 9px;
+    background:rgba(255,255,255,.92);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;
+    box-shadow:-2px 0 10px rgba(22,35,59,.12);letter-spacing:.02em;user-select:none;font-family:inherit;
+  }
+  .ctltab:hover{background:var(--accent-soft)}
+  body.ctl-open .ctltab{display:none}
+  @media (prefers-reduced-motion:reduce){ .controls,.app{transition:none} }
+  .btnrow{display:flex;gap:7px;margin-bottom:6px}
+  .btn{flex:1;padding:9px 0;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.sm{flex:0 0 auto;padding:5px 10px;font-size:12.5px}
+  .btn:disabled{opacity:.45;cursor:default}
+  .controls details{border-top:1px solid var(--line)}
+  .controls details:first-of-type{margin-top:8px}
+  .controls summary{cursor:pointer;font-weight:650;padding:10px 2px;font-size:13px;color:var(--ink);list-style:none;display:flex;align-items:center;user-select:none}
+  .controls summary::-webkit-details-marker{display:none}
+  .controls summary::after{content:"";margin-left:auto;width:7px;height:7px;border-right:1.8px solid var(--muted);border-bottom:1.8px solid var(--muted);
+    transform:rotate(-45deg);transition:transform .15s}
+  .controls details[open] summary::after{transform:rotate(45deg)}
+  .sect{padding:2px 2px 12px}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:9px 0}
+  .row label{color:var(--ink2)}
+  .row select{min-width:118px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px;color:var(--ink);font-family:inherit}
+  .row input[type=range]{flex:0 0 auto;width:118px;accent-color:var(--accent)}
+  .vv{color:var(--muted);font-weight:400;font-size:12px;font-variant-numeric:tabular-nums}
+  .hint{font-size:11.5px;color:var(--muted);margin:2px 0 0;line-height:1.4}
+  .stat2{font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums;line-height:1.5;margin:4px 0 2px}
+  .stat2 b{color:var(--ink)}
+  table.prod{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.prod th{font-weight:600;color:var(--muted);text-align:left;padding:2px 3px;font-size:11.5px}
+  table.prod td{padding:2px 3px}
+  table.prod input{width:100%;min-width:0;font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:7px;padding:4px 5px;
+    font-variant-numeric:tabular-nums;color:var(--ink)}
+  table.prod .sw{width:24px;height:22px;border-radius:6px;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+  .chk{display:flex;align-items:center;gap:6px;color:var(--ink2)}
+  .chk input{accent-color:var(--accent)}
+  .presets{display:flex;flex-wrap:wrap;gap:6px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <details class="titledrop" id="titleDrop">
+    <summary><h1>Globalization in a nutshell — 2D</h1></summary>
+    <div class="dropbox">
+      <p>A two-dimensional, many-product version of the model of Sneppen and Bornholdt [1]. <b>L × L agents</b> sit on a square
+        lattice with periodic boundaries. There are <b>N products</b>, each with three parameters: a start cost <b>Start(i)</b>,
+        an economy-of-scale exponent <b>γ(i)</b> and a transport cost <b>β(i)</b>. Each agent at <b>r</b> owns money and a list
+        <b>F(r,i)</b> = 1 or 0 of the products it can produce.</p>
+      <p>The price at which agent r₁ delivers one unit of product i to agent r₂ is</p>
+      <p class="eqc">C(r₁,r₂,i) = F(r₁,i) · s(r₁,i)<sup>γ(i)</sup> + β(i) · |r₁ − r₂| &nbsp; ( + τ across a border )</p>
+      <p>Only agents with F(r₁,i) = 1 can deliver, and an agent does not buy from itself. s(r₁,i) = 1 + the number of units of i
+        that r₁ sold in the previous round: a new factory has s = 1 and price 1, and with γ &lt; 0 a large producer sells cheaper
+        (economy of scale). |r₁ − r₂| is the shortest distance on the torus, Euclidean or Manhattan.</p>
+      <h2>One round (length T)</h2>
+      <ol>
+        <li><b>Orders.</b> Each product gets n·L² orders. The ordering agent is drawn with probability proportional to
+          <b>w₀ + the money it earned in the previous round</b>: rich agents place more orders, which enriches their surroundings.
+          The base demand w₀ lets agents without income consume as well.</li>
+        <li><b>Sales.</b> An order goes to the agent that delivers at the lowest price C (ties at random); the seller earns one unit
+          of money. Prices are fixed during the round, so every agent buys each product from the same seller all round.</li>
+        <li><b>Decisions.</b> After the round each agent compares its income with that of the round before. If it went up or stayed
+          the same, the agent goes on producing what it did. If it <b>declined</b> (or is zero), the agent picks at random one product
+          it does not make yet and has money enough to start, pays Start(i) and opens that factory (s = 1).</li>
+        <li><b>add</b> mode: the agent keeps its other factories, and a factory that sold nothing in the round closes.
+          <b>switch</b> mode: the agent closes its weakest factory when it opens the new one, so it changes product.</li>
+      </ol>
+      <p>Initially every agent makes one random product and owns money M₀.</p>
+      <h2>What to look for</h2>
+      <p>Lowering the transport costs (the <i>transport factor</i> multiplies every β, and <i>lower gradually</i> decreases it each
+        round, as in Fig. 2 of [1]) turns many local producers into a few large companies with long deliveries. Products with a
+        strong economy of scale (γ near −1) and cheap transport go global first; products that are costly to ship stay local.
+        Countries with a tariff τ on crossing a border (only one border counts) split the markets into national champions.</p>
+      <h2>Views</h2>
+      <p><i>Agents</i>: every agent with income is a pie, area ∝ income, with a slice for the sales of each product it makes;
+        the pale background shows the factories that sold nothing.
+        <i>Market</i>: for the selected product, each agent in the colour of the factory it buys from; dots are the factories,
+        size ∝ sales. <i>Sales</i> and <i>Money</i>: log-scale heat maps in the gnuplot palette of the paper's figures.
+        Hover over or tap an agent for its numbers. Below the grid: time series of the number of producers, the largest market
+        share, the mean shipping distance and the fraction of agents with income.</p>
+      <div class="refs">
+        <p>[1] K. Sneppen and S. Bornholdt, <i>Globalization in a nutshell</i>, Phys. Rev. E <b>98</b>, 042314 (2018).
+          <a href="https://doi.org/10.1103/PhysRevE.98.042314" target="_blank" rel="noopener">doi:10.1103/PhysRevE.98.042314</a></p>
+      </div>
+    </div>
+  </details>
+  <div class="eq">C(r₁,r₂,i) = F(r₁,i)·s(r₁,i)<sup><b>γ<sub>i</sub></b></sup> + <b>β<sub>i</sub></b>|r₁−r₂| · start cost <b>Start<sub>i</sub></b></div>
+</header>
+
+<div class="layout">
+  <section class="display">
+    <div class="dispbar">
+      <div class="seg" id="viewSeg">
+        <button data-v="agents" class="on">Agents</button><button data-v="market">Market</button><button data-v="sales">Sales</button><button data-v="money">Money</button>
+      </div>
+      <div class="ptabs" id="ptabs"></div>
+      <span class="spacer"></span>
+      <span class="stat">round <b id="tRound">0</b></span>
+      <button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
+      <button class="tbtn" id="bReset2" title="reset">↺</button>
+    </div>
+    <div class="canvas-wrap"><canvas id="cv"></canvas></div>
+    <div class="legend" id="legend"></div>
+    <div class="readout" id="readout">Hover over or tap an agent.</div>
+  </section>
+  <section class="display">
+    <div class="chartbar">
+      <select id="metric">
+        <option value="prod">Producers of each product</option>
+        <option value="share">Largest company's market share</option>
+        <option value="dist">Mean shipping distance</option>
+        <option value="active">Agents with income · starts per round</option>
+      </select>
+      <span class="chartnote" id="chartNote"></span>
+    </div>
+    <div class="chartbox"><canvas id="chart"></canvas></div>
+  </section>
+</div>
+
+<!-- =============== control panel (drawer) =============== -->
+<button class="ctltab" id="ctlTab" title="open the control panel (key k)">controls &#9666;</button>
+<aside class="controls" id="ctlPanel">
+  <div class="ctlhead"><span>Controls</span><button class="tbtn" id="ctlClose" title="close the control panel (key k or Esc)">&times;</button></div>
+  <div class="btnrow">
+    <button class="btn primary" id="bRun">Run</button>
+    <button class="btn" id="bStep">Step</button>
+    <button class="btn" id="bReset">Reset</button>
+  </div>
+  <div class="row"><label>Rounds per frame <span class="vv" id="speedV">2</span></label><input type="range" id="speed" min="1" max="20" step="1" value="2"></div>
+  <div class="stat2" id="stat"></div>
+
+  <details open>
+    <summary>Products</summary>
+    <div class="sect">
+      <table class="prod">
+        <thead><tr><th></th><th>Start</th><th>γ</th><th>β</th></tr></thead>
+        <tbody id="ptbody"></tbody>
+      </table>
+      <div class="presets" style="margin-top:8px">
+        <button class="btn sm" id="pAdd">+ product</button><button class="btn sm" id="pDel">− product</button>
+      </div>
+      <p class="hint">Start, γ and β act at once; changing the number of products restarts.</p>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Economy</summary>
+    <div class="sect">
+      <div class="row"><label>Lattice L</label>
+        <select id="Lsel"><option>32</option><option>48</option><option selected>64</option><option>96</option><option>128</option></select></div>
+      <div class="row"><label title="orders per agent per product per round">Orders n <span class="vv" id="nV"></span></label><input type="range" id="nR" min="-2" max="3" step="0.25" value="0"></div>
+      <div class="row"><label title="base demand of every agent">Base demand w₀ <span class="vv" id="w0V"></span></label><input type="range" id="w0R" min="0" max="10" step="0.5" value="1"></div>
+      <div class="row"><label title="money of every agent at the start">Initial money M₀ <span class="vv" id="M0V"></span></label><input type="range" id="M0R" min="0" max="50" step="1" value="5"></div>
+      <div class="row"><label>Income declines</label>
+        <select id="mode"><option value="add">add a product</option><option value="switch">switch product</option></select></div>
+      <p class="hint">n, w₀ and the mode act at once; L and M₀ on Reset.</p>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Transport and borders</summary>
+    <div class="sect">
+      <div class="row"><label title="multiplies every β(i)">Transport factor <span class="vv" id="tmV"></span></label><input type="range" id="tmR" min="-2" max="1" step="0.01" value="0"></div>
+      <div class="row"><label class="chk"><input type="checkbox" id="anneal">lower gradually</label>
+        <select id="aRate" title="the transport factor is multiplied by exp(−rate) every round">
+          <option value="0.001">e^−0.001 / round</option><option value="0.002" selected>e^−0.002 / round</option><option value="0.005">e^−0.005 / round</option><option value="0.01">e^−0.01 / round</option></select></div>
+      <div class="row"><label>Distance</label>
+        <select id="metricSel"><option value="euclid">Euclidean</option><option value="manhattan">Manhattan</option></select></div>
+      <div class="row"><label>Countries</label>
+        <select id="ctry"><option value="1">1</option><option value="2">2 × 2</option><option value="3">3 × 3</option><option value="4">4 × 4</option></select></div>
+      <div class="row"><label>Tariff τ <span class="vv" id="tauV"></span></label><input type="range" id="tauR" min="0" max="1" step="0.01" value="0.2"></div>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Presets</summary>
+    <div class="sect">
+      <div class="presets" id="presets"></div>
+      <p class="hint" id="presetNote"></p>
+    </div>
+  </details>
+  <p class="hint">Keys: space run / pause, s step, r reset, k controls.</p>
+</aside>
+</div>
+
+<script id="coreScript">
+// ---------- model core (no DOM; runs in Node as well) ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+// P = {L, products:[{start,gamma,beta}], n, w0, M0, mode:'add'|'switch', metric:'euclid'|'manhattan',
+//      countries (k → k×k blocks), tariff, tmul (transport factor), seed}
+function buildEcon(P){
+  const L=P.L, LL=L*L, N=P.products.length;
+  const rng=mulberry32(P.seed||1);
+  const E={P,L,N,t:0,hist:[]};
+
+  // lattice offsets sorted by distance (random order within a shell), rebuilt when the metric changes
+  let offs=null, offD=null, offMetric=null;
+  function buildOffsets(){
+    offMetric=P.metric;
+    const h=L>>1, arr=[];
+    for(let dy=-h;dy<L-h;dy++)for(let dx=-h;dx<L-h;dx++){
+      const d=P.metric==='manhattan'?Math.abs(dx)+Math.abs(dy):Math.sqrt(dx*dx+dy*dy);
+      arr.push([dx,dy,d,rng()]);
+    }
+    arr.sort((a,b)=>a[2]-b[2]||a[3]-b[3]);
+    offs=new Int32Array(2*arr.length); offD=new Float64Array(arr.length);
+    arr.forEach((o,k)=>{offs[2*k]=o[0];offs[2*k+1]=o[1];offD[k]=o[2]});
+  }
+  function countWithin(R){let lo=0,hi=offD.length;while(lo<hi){const m=(lo+hi)>>1;if(offD[m]<=R)lo=m+1;else hi=m}return lo}
+  function pdist(a,b){
+    let dx=Math.abs(a%L-b%L), dy=Math.abs(((a/L)|0)-((b/L)|0));
+    if(dx>L-dx)dx=L-dx; if(dy>L-dy)dy=L-dy;
+    return P.metric==='manhattan'?dx+dy:Math.sqrt(dx*dx+dy*dy);
+  }
+  const cid=new Int32Array(LL); let cidK=0;
+  function buildCountries(){
+    cidK=P.countries|0||1;
+    for(let y=0;y<L;y++)for(let x=0;x<L;x++)cid[y*L+x]=Math.floor(x*cidK/L)+cidK*Math.floor(y*cidK/L);
+  }
+
+  E.money=new Float64Array(LL); E.inc=new Float64Array(LL); E.prevInc=new Float64Array(LL);
+  E.started=new Int32Array(LL);              // round at which the agent last opened a factory (−1: never)
+  E.F=[];E.sales=[];E.sup=[];E.dist=[];E.u=[];E.area=[];
+  for(let i=0;i<N;i++){
+    E.F.push(new Uint8Array(LL)); E.sales.push(new Int32Array(LL)); E.sup.push(new Int32Array(LL));
+    E.dist.push(new Float32Array(LL)); E.u.push(new Float64Array(LL)); E.area.push(new Int32Array(LL));
+  }
+  const cum=new Float64Array(LL), inList=new Uint8Array(LL), newSales=[]; for(let i=0;i<N;i++)newSales.push(new Int32Array(LL));
+  E.cid=cid;
+
+  E.reset=function(){
+    E.t=0;E.hist=[];
+    for(let r=0;r<LL;r++){E.money[r]=P.M0;E.inc[r]=0;E.prevInc[r]=0;E.started[r]=-1}
+    for(let i=0;i<N;i++){E.F[i].fill(0);E.sales[i].fill(0)}
+    for(let r=0;r<LL;r++)E.F[(rng()*N)|0][r]=1;
+    E.computeMarkets();
+  };
+
+  // cheapest supplier of product i for every agent, at the current sizes
+  function market(i){
+    const pr=P.products[i], F=E.F[i], S=E.sales[i], u=E.u[i], sup=E.sup[i], dist=E.dist[i], area=E.area[i];
+    const beta=Math.max(0,pr.beta*P.tmul), g=pr.gamma, tau=cidK>1?P.tariff:0;
+    const fac=[]; let umin=Infinity, umax=-Infinity;
+    for(let r=0;r<LL;r++){
+      if(F[r]){const v=Math.pow(1+S[r],g);u[r]=v;fac.push(r);if(v<umin)umin=v;if(v>umax)umax=v}
+      else u[r]=Infinity;
+    }
+    area.fill(0);
+    const nF=fac.length;
+    if(!nF){sup.fill(-1);dist.fill(0);return}
+    // The K cheapest factories are checked from a list; the others (unit price ≥ uK) by scanning the lattice
+    // outward from the buyer, stopping once uK + β·d exceeds the best price found. K is chosen to minimise the work.
+    fac.sort((a,b)=>u[a]-u[b]);
+    let K=nF, uK=Infinity;
+    if(beta>0){
+      const Rn=1.5*Math.sqrt(LL/(Math.PI*nF))+tau/beta;
+      let bestCost=nF;
+      for(let k=0;k<nF;k=k?2*k:8){
+        const cost=k+countWithin(Rn+(umax-u[fac[k]])/beta);
+        if(cost<bestCost){bestCost=cost;K=k}
+      }
+      if(K<nF)uK=u[fac[K]];
+    }
+    inList.fill(0); for(let k=0;k<K;k++)inList[fac[k]]=1;
+    const EPS=1e-12;
+    for(let r2=0;r2<LL;r2++){
+      const x2=r2%L, y2=(r2/L)|0, c2=cid[r2];
+      let best=Infinity, bs=-1, bd=0, nt=0;      // an agent does not buy from itself
+      for(let k=0;k<K;k++){
+        const r1=fac[k]; if(r1===r2)continue;
+        const d=pdist(r1,r2);
+        let c=u[r1]+beta*d; if(tau&&cid[r1]!==c2)c+=tau;
+        if(c<best-EPS){best=c;bs=r1;bd=d;nt=1}
+        else if(c<=best+EPS){nt++;if(rng()*nt<1){bs=r1;bd=d}}
+      }
+      if(K<nF){
+        for(let k=1,KO=offD.length;k<KO;k++){
+          const d=offD[k];
+          if(uK+beta*d>best+EPS)break;
+          let x=x2+offs[2*k], y=y2+offs[2*k+1];
+          if(x<0)x+=L;else if(x>=L)x-=L;
+          if(y<0)y+=L;else if(y>=L)y-=L;
+          const r1=y*L+x, v=u[r1];
+          if(v===Infinity||inList[r1])continue;
+          let c=v+beta*d; if(tau&&cid[r1]!==c2)c+=tau;
+          if(c<best-EPS){best=c;bs=r1;bd=d;nt=1}
+          else if(c<=best+EPS){nt++;if(rng()*nt<1){bs=r1;bd=d}}
+        }
+      }
+      sup[r2]=bs;dist[r2]=bs<0?0:bd;if(bs>=0)area[bs]++;
+    }
+  }
+  E.computeMarkets=function(){
+    if(offMetric!==P.metric||!offs)buildOffsets();
+    if(cidK!==(P.countries|0||1))buildCountries();
+    for(let i=0;i<N;i++)market(i);
+  };
+
+  function pick(W){
+    const v=rng()*W; let lo=0,hi=LL-1;
+    while(lo<hi){const m=(lo+hi)>>1;if(cum[m]>v)hi=m;else lo=m+1}
+    return lo;
+  }
+
+  E.step=function(){
+    E.computeMarkets();
+    // orders: buyer ∝ w0 + income of the previous round
+    let W=0; for(let r=0;r<LL;r++){W+=P.w0+E.inc[r];cum[r]=W}
+    const uniform=!(W>0);
+    const T=Math.max(1,Math.round(P.n*LL));
+    const H={t:E.t+1,prod:[],share:[],dist:[],unmet:[],active:0,starts:0};
+    for(let i=0;i<N;i++){
+      const ns=newSales[i], sup=E.sup[i], dist=E.dist[i]; ns.fill(0);
+      let dsum=0,sold=0;
+      for(let k=0;k<T;k++){
+        const r2=uniform?(rng()*LL)|0:pick(W), s=sup[r2];
+        if(s<0)continue;
+        ns[s]++;dsum+=dist[r2];sold++;
+      }
+      let np=0,mx=0; const F=E.F[i];
+      for(let r=0;r<LL;r++){if(F[r])np++;if(ns[r]>mx)mx=ns[r]}
+      H.prod.push(np);H.share.push(sold?mx/sold:0);H.dist.push(sold?dsum/sold:0);H.unmet.push(1-sold/T);
+    }
+    // income, money and the decisions of every agent
+    const add=P.mode!=='switch', cand=new Int32Array(N);
+    for(let r=0;r<LL;r++){
+      let inc=0; for(let i=0;i<N;i++)inc+=newSales[i][r];
+      E.prevInc[r]=E.inc[r]; E.inc[r]=inc; E.money[r]+=inc;
+      if(inc>0)H.active++;
+      if(add)for(let i=0;i<N;i++)if(E.F[i][r]&&newSales[i][r]===0)E.F[i][r]=0;
+      if(inc<E.prevInc[r]||inc===0){
+        let nc=0;
+        for(let i=0;i<N;i++)if(!E.F[i][r]&&P.products[i].start<=E.money[r])cand[nc++]=i;
+        if(nc){
+          const j=cand[(rng()*nc)|0];
+          if(!add){ // close the weakest factory (ties at random)
+            let w=-1,wv=Infinity,nt=0;
+            for(let i=0;i<N;i++)if(E.F[i][r]){const v=newSales[i][r];
+              if(v<wv){wv=v;w=i;nt=1}else if(v===wv){nt++;if(rng()*nt<1)w=i}}
+            if(w>=0)E.F[w][r]=0;
+          }
+          E.money[r]-=P.products[j].start; E.F[j][r]=1; newSales[j][r]=0;
+          E.started[r]=E.t+1; H.starts++;
+        }
+      }
+    }
+    for(let i=0;i<N;i++){E.sales[i].set(newSales[i]);const F=E.F[i],S=E.sales[i];for(let r=0;r<LL;r++)if(!F[r])S[r]=0}
+    H.active/=LL; H.starts/=LL;
+    E.t++; E.hist.push(H); if(E.hist.length>6000)E.hist.splice(0,1000);
+    E.computeMarkets();
+    return H;
+  };
+
+  buildOffsets(); buildCountries();
+  E.reset();
+  return E;
+}
+</script>
+
+<script>
+// ---------- UI ----------
+const PCOL=['#4338ca','#0f766e','#c2410c','#be123c','#0369a1','#65a30d','#7c3aed','#a16207'];
+const PNAME='ABCDEFGH';
+const $=id=>document.getElementById(id);
+
+const P={L:64,products:[],n:1,w0:1,M0:5,mode:'add',metric:'euclid',countries:1,tariff:0.2,tmul:1,seed:1};
+const THREE=[{start:5,gamma:-0.5,beta:0.05},{start:20,gamma:-0.9,beta:0.02},{start:2,gamma:-0.2,beta:0.2}];
+const PRESETS={
+  three:{label:'Three industries',note:'A: ordinary industry. B: strong economy of scale, cheap to ship but expensive to start (high tech). C: little economy of scale and costly to ship (food).',
+    products:THREE,tmul:1,countries:1,anneal:false},
+  one:{label:'One product',note:'The original model in 2D: one product with γ = −0.5 and β = 0.05.',
+    products:[{start:5,gamma:-0.5,beta:0.05}],tmul:1,countries:1,anneal:false},
+  glob:{label:'Globalization',note:'Transport starts 3× dearer and is lowered by e^−0.002 per round: local producers coarsen into a few big companies.',
+    products:THREE,tmul:3,countries:1,anneal:true},
+  borders:{label:'Borders',note:'Cheap transport (factor 0.2), but 3 × 3 countries with a tariff τ = 0.2 on crossing a border.',
+    products:THREE,tmul:0.2,countries:3,tariff:0.2,anneal:false},
+};
+let E=null, running=false, view='agents', psel=0, hoverR=-1;
+
+function applyPreset(k){
+  const pr=PRESETS[k];
+  P.products=pr.products.map(o=>({...o}));
+  P.tmul=pr.tmul; P.countries=pr.countries; if(pr.tariff!=null)P.tariff=pr.tariff;
+  $('anneal').checked=!!pr.anneal;
+  $('presetNote').textContent=pr.note;
+  syncControls(); restart();
+}
+function restart(){
+  P.L=+$('Lsel').value; P.seed=(Math.random()*2**31)|0;
+  E=buildEcon(P);
+  if(psel>=P.products.length)psel=0;
+  buildProductUI(); refresh();
+}
+function refresh(){draw();drawChart();updStat()}
+
+// ---------- controls ----------
+const fmt=(v,d=2)=>Math.abs(v)>=100?v.toFixed(0):Math.abs(v)>=10?v.toFixed(1):v.toFixed(d);
+function syncControls(){
+  $('nR').value=Math.log2(P.n); $('nV').textContent=fmt(P.n);
+  $('w0R').value=P.w0; $('w0V').textContent=fmt(P.w0,1);
+  $('M0R').value=P.M0; $('M0V').textContent=P.M0;
+  $('tmR').value=Math.log10(P.tmul); $('tmV').textContent=fmt(P.tmul);
+  $('tauR').value=P.tariff; $('tauV').textContent=P.tariff.toFixed(2);
+  $('ctry').value=String(P.countries); $('mode').value=P.mode; $('metricSel').value=P.metric;
+}
+function buildProductUI(){
+  const tb=$('ptbody'); tb.innerHTML='';
+  P.products.forEach((pr,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><div class="sw" style="background:${PCOL[i]}">${PNAME[i]}</div></td>
+      <td><input type="number" inputmode="decimal" step="1" min="0" data-k="start" value="${pr.start}" title="start cost of product ${PNAME[i]}"></td>
+      <td><input type="number" inputmode="decimal" step="0.05" min="-2" max="1" data-k="gamma" value="${pr.gamma}" title="economy-of-scale exponent of ${PNAME[i]}"></td>
+      <td><input type="number" inputmode="decimal" step="0.01" min="0" data-k="beta" value="${pr.beta}" title="transport cost of ${PNAME[i]} per unit distance"></td>`;
+    tr.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{
+      const v=parseFloat(inp.value); if(!isFinite(v))return;
+      pr[inp.dataset.k]=inp.dataset.k==='gamma'?v:Math.max(0,v); E.computeMarkets(); draw();
+    }));
+    tb.appendChild(tr);
+  });
+  const pt=$('ptabs'); pt.innerHTML='';
+  P.products.forEach((pr,i)=>{
+    const b=document.createElement('button'); b.textContent=PNAME[i]; b.style.background=PCOL[i];
+    b.className=i===psel?'on':''; b.title='show product '+PNAME[i];
+    b.onclick=()=>{psel=i;buildProductUI();draw()}; pt.appendChild(b);
+  });
+  pt.classList.toggle('dis',view==='agents'||view==='money'||P.products.length<2);
+  $('pAdd').disabled=P.products.length>=PCOL.length; $('pDel').disabled=P.products.length<=1;
+}
+$('pAdd').onclick=()=>{const k=P.products.length;
+  P.products.push({start:[5,20,2,10,8,3,15,6][k],gamma:[-0.5,-0.9,-0.2,-0.6,-0.4,-0.3,-0.7,-0.5][k],beta:[0.05,0.02,0.2,0.08,0.1,0.15,0.04,0.06][k]});restart()};
+$('pDel').onclick=()=>{P.products.pop();restart()};
+$('nR').oninput=e=>{P.n=Math.pow(2,+e.target.value);$('nV').textContent=fmt(P.n)};
+$('w0R').oninput=e=>{P.w0=+e.target.value;$('w0V').textContent=fmt(P.w0,1)};
+$('M0R').oninput=e=>{P.M0=+e.target.value;$('M0V').textContent=P.M0};
+$('tmR').oninput=e=>{P.tmul=Math.pow(10,+e.target.value);$('tmV').textContent=fmt(P.tmul);E.computeMarkets();draw();updStat()};
+$('tauR').oninput=e=>{P.tariff=+e.target.value;$('tauV').textContent=P.tariff.toFixed(2);E.computeMarkets();draw()};
+$('ctry').onchange=e=>{P.countries=+e.target.value;E.computeMarkets();draw()};
+$('metricSel').onchange=e=>{P.metric=e.target.value;E.computeMarkets();draw()};
+$('mode').onchange=e=>{P.mode=e.target.value};
+$('Lsel').onchange=restart;
+$('speed').oninput=e=>{$('speedV').textContent=e.target.value};
+function setRun(on){
+  running=on; $('bRun').textContent=on?'Pause':'Run'; $('bRun2').textContent=on?'❚❚':'▶';
+  if(on)requestAnimationFrame(loop);
+}
+$('bRun').onclick=$('bRun2').onclick=()=>setRun(!running);
+$('bStep').onclick=()=>{doStep();refresh()};
+$('bReset').onclick=$('bReset2').onclick=restart;
+$('metric').onchange=drawChart;
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{
+  view=b.dataset.v; document.querySelectorAll('#viewSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  buildProductUI(); draw();
+});
+Object.entries(PRESETS).forEach(([k,pr])=>{const b=document.createElement('button');b.className='btn sm';b.textContent=pr.label;b.onclick=()=>applyPreset(k);$('presets').appendChild(b)});
+
+// the control drawer: open by default on wide windows, the choice is remembered
+function setCtlOpen(open){
+  document.body.classList.toggle('ctl-open',open);
+  try{localStorage.setItem('glob-ctl-open',open?'1':'0')}catch(e){}
+  setTimeout(refresh,240);
+}
+$('ctlTab').onclick=()=>setCtlOpen(true);
+$('ctlClose').onclick=()=>setCtlOpen(false);
+{let s=null;try{s=localStorage.getItem('glob-ctl-open')}catch(e){}
+ if(s==='1'||(s==null&&window.innerWidth>=1000))document.body.classList.add('ctl-open')}
+document.addEventListener('keydown',e=>{
+  if(e.target.closest('input,select,textarea')||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key===' '){e.preventDefault();setRun(!running)}
+  else if(e.key==='s'||e.key==='S'){e.preventDefault();doStep();refresh()}
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();restart()}
+  else if(e.key==='k'||e.key==='K'){e.preventDefault();setCtlOpen(!document.body.classList.contains('ctl-open'))}
+  else if(e.key==='Escape'){if($('titleDrop').open)$('titleDrop').open=false;else if(document.body.classList.contains('ctl-open'))setCtlOpen(false)}
+});
+// a click outside the open title pull-down closes it
+document.addEventListener('pointerdown',e=>{const d=$('titleDrop');if(d.open&&!d.contains(e.target))d.open=false});
+
+function doStep(){
+  if($('anneal').checked){
+    P.tmul=Math.max(0.01,P.tmul*Math.exp(-parseFloat($('aRate').value)));
+    $('tmR').value=Math.log10(P.tmul);$('tmV').textContent=fmt(P.tmul);
+  }
+  E.step();
+}
+function loop(){
+  if(!running)return;
+  const k=+$('speed').value, t0=performance.now();
+  for(let j=0;j<k;j++){doStep();if(performance.now()-t0>50)break}
+  refresh();
+  requestAnimationFrame(loop);
+}
+function updStat(){
+  const H=E.hist[E.hist.length-1];
+  $('tRound').textContent=E.t;
+  let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b>`;
+  if(H)s+=`<br>agents with income <b>${(100*H.active).toFixed(1)}%</b> · starts <b>${(100*H.starts).toFixed(1)}%</b> per round`;
+  $('stat').innerHTML=s;
+}
+
+// ---------- drawing ----------
+const cv=$('cv'), ctx=cv.getContext('2d');
+const off=document.createElement('canvas'), octx=off.getContext('2d');
+function gnu(x){ // gnuplot's default pm3d palette (as in the figures of the paper)
+  x=Math.min(1,Math.max(0,x));
+  return [Math.sqrt(x)*255, x*x*x*255, Math.max(0,Math.sin(2*Math.PI*x))*255];
+}
+const PRGB=PCOL.map(h=>[1,3,5].map(k=>parseInt(h.slice(k,k+2),16)));
+function hsl(h,s,l){h/=360;const a=s*Math.min(l,1-l),f=n=>{const k=(n+h*12)%12;return 255*(l-a*Math.max(-1,Math.min(k-3,9-k,1)))};return [f(0),f(8),f(4)]}
+function supColor(idx){return hsl((idx*137.508)%360,0.6,0.68+0.06*(idx%3))}
+const GRAD=`linear-gradient(90deg,${[0.08,0.3,0.5,0.7,0.9,1].map(x=>`rgb(${gnu(x).map(Math.round).join(',')})`).join(',')})`;
+
+function fitCanvas(c){
+  const dpr=window.devicePixelRatio||1, w=Math.round(c.clientWidth*dpr), h=Math.round(c.clientHeight*dpr);
+  if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+  return dpr;
+}
+let geo={x0:0,y0:0,side:1};
+function draw(){
+  if(!E)return;
+  const L=E.L, LL=L*L, N=E.N;
+  if(off.width!==L){off.width=L;off.height=L}
+  const img=octx.createImageData(L,L), d=img.data;
+  const put=(r,c)=>{d[4*r]=c[0];d[4*r+1]=c[1];d[4*r+2]=c[2];d[4*r+3]=255};
+  let legend='';
+  if(view==='agents'){
+    // background: each agent tinted by the products it can make; the producers with income are drawn on top as pies
+    for(let r=0;r<LL;r++){
+      let c=[244,246,250], k=0;
+      for(let i=0;i<N;i++)if(E.F[i][r]){const p=PRGB[i];c=k?[(c[0]+p[0])/2,(c[1]+p[1])/2,(c[2]+p[2])/2]:p;k++}
+      put(r,k?[255+(c[0]-255)*0.3,255+(c[1]-255)*0.3,255+(c[2]-255)*0.3]:c);
+    }
+    legend=P.products.map((pr,i)=>`<span><i style="background:${PCOL[i]}"></i>${PNAME[i]}</span>`).join('')+
+      '<span>● producer, area ∝ income, slices = sales of each product</span><span>pale: factory without sales</span>';
+  }else if(view==='market'){
+    const sup=E.sup[psel];
+    for(let r=0;r<LL;r++){const s=sup[r];put(r,s<0?[255,255,255]:supColor(s))}
+    legend=`<span>product <b style="color:${PCOL[psel]}">${PNAME[psel]}</b>: colour = the factory an agent buys from</span><span>● factory, size ∝ sales</span>`;
+  }else{
+    const A=view==='sales'?E.sales[psel]:E.money;
+    let mx=1; for(let r=0;r<LL;r++)if(A[r]>mx)mx=A[r];
+    const lm=Math.log(1+mx);
+    for(let r=0;r<LL;r++)put(r,view==='sales'&&!E.F[psel][r]?[0,0,0]:gnu(0.08+0.92*Math.log(1+Math.max(0,A[r]))/lm));
+    legend=(view==='sales'?`<span>units of <b style="color:${PCOL[psel]}">${PNAME[psel]}</b> sold last round (black: no factory)</span>`:'<span>money</span>')+
+      `<span>0<span class="bar" style="background:${GRAD}"></span>${Math.round(mx)} (log)</span>`;
+  }
+  octx.putImageData(img,0,0);
+  const dpr=fitCanvas(cv), W=cv.width, Hh=cv.height, side=Math.min(W,Hh), x0=Math.round((W-side)/2), y0=0, cell=side/L;
+  geo={x0:x0/dpr,y0:y0/dpr,side:side/dpr};
+  ctx.clearRect(0,0,W,Hh);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(off,x0,y0,side,side);
+  const cx=r=>x0+((r%L)+0.5)*cell, cy=r=>y0+(((r/L)|0)+0.5)*cell;
+  if(view==='agents'){
+    let mx=1; for(let r=0;r<LL;r++)if(E.inc[r]>mx)mx=E.inc[r];
+    ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=Math.max(1,0.8*dpr);
+    const order=[]; for(let r=0;r<LL;r++)if(E.inc[r]>0)order.push(r);
+    order.sort((a,b)=>E.inc[b]-E.inc[a]);          // the small ones on top
+    for(const r of order){
+      const inc=E.inc[r];
+      const rad=Math.max(1.3*dpr,Math.min(cell*2.6,cell*0.3+cell*1.9*Math.sqrt(inc/mx))), X=cx(r), Y=cy(r);
+      let a0=-Math.PI/2;
+      for(let i=0;i<N;i++){
+        const v=E.F[i][r]?E.sales[i][r]:0; if(!v)continue;
+        const a1=a0+2*Math.PI*v/inc;
+        ctx.fillStyle=PCOL[i];ctx.beginPath();ctx.moveTo(X,Y);ctx.arc(X,Y,rad,a0,a1);ctx.closePath();ctx.fill();a0=a1;
+      }
+      ctx.beginPath();ctx.arc(X,Y,rad,0,2*Math.PI);ctx.stroke();
+    }
+  }
+  if(view==='market'){
+    const S=E.sales[psel], F=E.F[psel]; let mx=1;
+    for(let r=0;r<LL;r++)if(F[r]&&S[r]>mx)mx=S[r];
+    ctx.fillStyle='#16233b';ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=Math.max(1,0.8*dpr);
+    for(let r=0;r<LL;r++){
+      if(!F[r]||!E.area[psel][r])continue;
+      const rad=Math.max(1.3*dpr,Math.min(cell*3.5,cell*0.3+cell*2.4*Math.sqrt(S[r]/mx)));
+      ctx.beginPath();ctx.arc(cx(r),cy(r),rad,0,2*Math.PI);ctx.fill();ctx.stroke();
+    }
+  }
+  const k=P.countries|0;
+  if(k>1){
+    ctx.strokeStyle=view==='money'||view==='sales'?'rgba(255,255,255,.8)':'rgba(22,35,59,.6)';
+    ctx.lineWidth=1.5*dpr;ctx.setLineDash([6*dpr,4*dpr]);ctx.beginPath();
+    for(let j=1;j<k;j++){const p=Math.floor(j*L/k)*cell;ctx.moveTo(x0+p,y0);ctx.lineTo(x0+p,y0+side);ctx.moveTo(x0,y0+p);ctx.lineTo(x0+side,y0+p)}
+    ctx.stroke();ctx.setLineDash([]);
+  }
+  if(hoverR>=0&&hoverR<LL){
+    ctx.strokeStyle=view==='money'||view==='sales'?'#fff':'#16233b';ctx.lineWidth=2*dpr;
+    ctx.strokeRect(x0+(hoverR%L)*cell,y0+((hoverR/L)|0)*cell,cell,cell);
+    const s=E.sup[psel][hoverR];
+    if(view==='market'&&s>=0){ctx.beginPath();ctx.moveTo(cx(hoverR),cy(hoverR));ctx.lineTo(cx(s),cy(s));ctx.stroke()}
+    readout(hoverR);
+  }
+  $('legend').innerHTML=legend;
+}
+function readout(r){
+  const L=E.L, N=E.N;
+  const made=[], buys=[];
+  for(let i=0;i<N;i++){
+    if(E.F[i][r])made.push(`<b style="color:${PCOL[i]}">${PNAME[i]}</b> sold ${E.sales[i][r]}`);
+    const s=E.sup[i][r];
+    buys.push(s<0?`${PNAME[i]} nowhere`:`${PNAME[i]} from (${s%L},${(s/L)|0}) at d = ${E.dist[i][r].toFixed(1)}`);
+  }
+  $('readout').innerHTML=`agent <b>(${r%L},${(r/L)|0})</b> · money <b>${Math.round(E.money[r])}</b> · income <b>${E.inc[r]}</b> (round before ${E.prevInc[r]})<br>`+
+    `makes ${made.length?made.join(', '):'nothing'} · buys ${buys.join(' · ')}`;
+}
+function evR(ev){
+  const b=cv.getBoundingClientRect(), L=E.L;
+  const x=Math.floor((ev.clientX-b.left-geo.x0)/geo.side*L), y=Math.floor((ev.clientY-b.top-geo.y0)/geo.side*L);
+  return x<0||y<0||x>=L||y>=L?-1:y*L+x;
+}
+cv.addEventListener('pointermove',ev=>{hoverR=evR(ev);if(!running)draw()});
+cv.addEventListener('pointerdown',ev=>{hoverR=evR(ev);draw()});
+cv.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse'){hoverR=-1;$('readout').textContent='Hover over or tap an agent.';if(!running)draw()}});
+
+// ---------- chart ----------
+const ch=$('chart'), cctx=ch.getContext('2d');
+function drawChart(){
+  if(!E)return;
+  const dpr=fitCanvas(ch), W=ch.width, H=ch.height, m=$('metric').value, hist=E.hist, N=E.N;
+  cctx.clearRect(0,0,W,H);
+  const pl=44*dpr, pr=10*dpr, pt=8*dpr, pb=20*dpr, w=W-pl-pr, h=H-pt-pb;
+  cctx.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+  cctx.fillStyle='#8391ab';cctx.strokeStyle='#dde3ec';cctx.lineWidth=dpr;
+  $('chartNote').textContent=m==='prod'?'log scale':m==='active'?'black: agents with income, orange: starts':'';
+  if(hist.length<2){cctx.textBaseline='middle';cctx.fillText('Run the model to see the time series.',pl,pt+h/2);return}
+  const series=[];
+  if(m==='active'){series.push({c:'#16233b',v:hist.map(q=>q.active)});series.push({c:'#c2410c',v:hist.map(q=>q.starts)})}
+  else for(let i=0;i<N;i++)series.push({c:PCOL[i],v:hist.map(q=>q[m][i])});
+  const logy=m==='prod', tz=v=>logy?Math.log10(Math.max(1,v)):v;
+  let lo=Infinity,hi=-Infinity;
+  series.forEach(s=>s.v.forEach(v=>{const z=tz(v);if(z<lo)lo=z;if(z>hi)hi=z}));
+  if(m!=='prod'){lo=0;hi=Math.max(hi*1.05,m==='dist'?1:0.05)}
+  else{lo=Math.floor(lo);hi=Math.max(lo+1,Math.ceil(hi))}
+  const t0=hist[0].t, t1=hist[hist.length-1].t;
+  const X=t=>pl+(t-t0)/Math.max(1,t1-t0)*w, Y=v=>pt+h-(tz(v)-lo)/(hi-lo)*h;
+  cctx.textAlign='right';cctx.textBaseline='middle';
+  const yt=logy?Array.from({length:hi-lo+1},(_,k)=>lo+k):niceTicks(lo,hi,4);
+  yt.forEach(z=>{const y=pt+h-(z-lo)/(hi-lo)*h;cctx.fillText(logy?String(Math.round(Math.pow(10,z))):fmtTick(z),pl-5*dpr,y);
+    cctx.beginPath();cctx.moveTo(pl,y);cctx.lineTo(pl+w,y);cctx.stroke()});
+  cctx.strokeStyle='#b7bfd0';cctx.beginPath();cctx.moveTo(pl,pt);cctx.lineTo(pl,pt+h);cctx.lineTo(pl+w,pt+h);cctx.stroke();
+  cctx.textAlign='center';cctx.textBaseline='top';
+  niceTicks(t0,t1,5).forEach(t=>{if(t>=t0&&t<=t1)cctx.fillText(String(Math.round(t)),X(t),pt+h+4*dpr)});
+  const step=Math.max(1,Math.floor(hist.length/(w/dpr)));
+  cctx.lineWidth=1.6*dpr;cctx.lineJoin='round';
+  series.forEach(s=>{cctx.strokeStyle=s.c;cctx.beginPath();
+    for(let k=0;k<hist.length;k+=step){const x=X(hist[k].t),y=Y(s.v[k]);k?cctx.lineTo(x,y):cctx.moveTo(x,y)}
+    cctx.stroke()});
+}
+function niceTicks(a,b,n){const span=b-a||1, st=Math.pow(10,Math.floor(Math.log10(span/n))), e=span/n/st, k=e>5?10:e>2?5:e>1?2:1, s=k*st;
+  const out=[];for(let v=Math.ceil(a/s-1e-9)*s;v<=b+1e-9;v+=s)out.push(v);return out}
+function fmtTick(v){return Math.abs(v)<1e-9?'0':Math.abs(v)>=10?v.toFixed(0):Math.abs(v)>=1?v.toFixed(1):v.toFixed(2)}
+
+new ResizeObserver(()=>{draw();drawChart()}).observe(document.querySelector('.layout'));
+syncControls();
+applyPreset('three');
+</script>
+</body>
+</html>

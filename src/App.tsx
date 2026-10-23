@@ -171,6 +171,14 @@ const MODELS: Model[] = [
     file: "/models/trimurti-aug.html",
     thumbnail: "/thumbnails/trimurti.png",
   },
+  {
+    id: "globalization",
+    title: "Globalization in a nutshell",
+    description:
+      "Agents on a 2D lattice produce and trade many products: transport cost versus economy of scale",
+    file: "/models/globalization.html",
+    thumbnail: "/thumbnails/globalization.png",
+  },
 ];
 
 
