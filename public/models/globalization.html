@@ -76,6 +76,22 @@
   .canvas-wrap{position:relative;width:100%;height:min(calc(100vh - 150px), 100vw - 50px);min-height:280px}
   @media (min-width:1000px){ body.ctl-open .canvas-wrap{height:min(calc(100vh - 150px), 100vw - var(--ctlw) - 70px)} }
   canvas#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+  /* lower right corner of the display: background, picture with parameters, compact picture */
+  .cornerbtns{position:absolute;right:6px;bottom:6px;display:flex;gap:5px;z-index:3}
+  .cornerbtns button{height:28px;min-width:30px;padding:0 9px;font-size:11.5px;border-radius:8px;border:1px solid var(--line);
+    background:rgba(255,255,255,.88);color:var(--accent);font-weight:700;cursor:pointer;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:26px}
+  .cornerbtns button.busy{opacity:.55}
+  .bwcirc{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-3px;
+    background:linear-gradient(90deg,#16233b 0 50%,#fff 50% 100%);border:1.5px solid #6b7690}
+  .display.darkbg{background:#0b0d13;border-color:#1f2533}
+  .display.darkbg .dispbar,.display.darkbg .legend,.display.darkbg .readout{color:#aeb8cc}
+  .display.darkbg .dispbar .stat b,.display.darkbg .readout b{color:#e8ecf5}
+  .display.darkbg .seg,.display.darkbg .seg button,.display.darkbg .tbtn:not(.run),.display.darkbg .dispbar select{background:#16233b;border-color:#2a3140;color:#c7d2fe}
+  .display.darkbg .seg button.on{background:var(--accent);color:#fff}
+  .display.darkbg .cornerbtns button{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
+  .dispbar select{padding:4px 5px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:12.5px;color:var(--ink)}
+  table.prod input.bad{border-color:#dc2626;background:#fef2f2}
   .legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--ink2);align-items:center;margin-top:8px}
   .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
   .legend .bar{width:110px;height:10px;border-radius:3px;display:inline-block;vertical-align:-1px;margin:0 4px}
@@ -149,8 +165,10 @@
     <div class="dropbox">
       <p>A two-dimensional, many-product version of the model of Sneppen and Bornholdt [1]. <b>L × L agents</b> sit on a square
         lattice with periodic boundaries. There are <b>N products</b>, each with three parameters: a start cost <b>Start(i)</b>,
-        an economy-of-scale exponent <b>γ(i)</b> and a transport cost <b>β(i)</b>. Each agent at <b>r</b> owns money and a list
-        <b>F(r,i)</b> = 1 or 0 of the products it can produce.</p>
+        an economy-of-scale exponent <b>γ(i)</b> and a transport cost <b>β(i)</b>. A more scalable product (lower γ) always costs
+        more to start; the first product A is the basic one, cheap to start (Start = 2), with γ = −0.3 only moderately below zero
+        and a high transport cost β = 0.1. Each agent at <b>r</b> owns money and a list <b>F(r,i)</b> = 1 or 0 of the products it
+        can produce.</p>
       <p>The price at which agent r₁ delivers one unit of product i to agent r₂ is</p>
       <p class="eqc">C(r₁,r₂,i) = F(r₁,i) · s(r₁,i)<sup>γ(i)</sup> + β(i) · |r₁ − r₂| &nbsp; ( + τ across a border )</p>
       <p>Only agents with F(r₁,i) = 1 can deliver, and an agent does not buy from itself. s(r₁,i) = 1 + the number of units of i
@@ -185,13 +203,17 @@
         Countries with a tariff τ on crossing a border (only one border counts) split the markets into national champions.</p>
       <h2>Views</h2>
       <p><i>3D</i>: the lattice seen from the side, as in the figures of [1]; every factory is a tower as high as the units it sold
-        in the last round, stacked by product (linear or log heights). Drag to turn and tilt.
+        in the last round; an agent with several products has its factories stacked, the largest at the bottom (linear or log
+        heights). The agents' money can be shown in the same view as golden, semi-transparent towers, either around the
+        factories or hanging below the plane. Drag to turn and tilt.
         <i>Agents</i>: every agent with sales is a pie, area ∝ sales, with a slice for each product it makes;
         the pale background shows the factories that sold nothing.
         <i>Market</i>: for the selected product, each agent in the colour of the factory it buys from; dots are the factories,
         size ∝ sales. <i>Sales</i> and <i>Money</i>: log-scale heat maps in the gnuplot palette of the paper's figures.
         Hover over or tap an agent for its numbers. Below the grid: time series of the number of factories, the largest market
-        share, the mean shipping distance, the agents with sales, starts and bankruptcies, and the mean money.</p>
+        share, the mean shipping distance, the agents with sales, starts and bankruptcies, and the mean money.
+        The buttons in the lower right corner of the display switch between a white and a black background and save the display
+        as a picture: <i>.png</i> with the parameters in the lower left corner, <i>sq</i> cut tightly around what is drawn.</p>
       <div class="refs">
         <p>[1] K. Sneppen and S. Bornholdt, <i>Globalization in a nutshell</i>, Phys. Rev. E <b>98</b>, 042314 (2018).
           <a href="https://doi.org/10.1103/PhysRevE.98.042314" target="_blank" rel="noopener">doi:10.1103/PhysRevE.98.042314</a></p>
@@ -209,12 +231,20 @@
       </div>
       <div class="ptabs" id="ptabs"></div>
       <div class="seg" id="hSeg" title="height of the towers: units sold last round, linear or logarithmic"><button data-h="lin" class="on">lin</button><button data-h="log">log</button></div>
+      <select id="moneySel" title="money of the agents as golden, semi-transparent towers in the same view">
+        <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down">money ↓ below the plane</option></select>
       <span class="spacer"></span>
       <span class="stat">round <b id="tRound">0</b></span>
       <button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
       <button class="tbtn" id="bReset2" title="reset">↺</button>
     </div>
-    <div class="canvas-wrap"><canvas id="cv"></canvas></div>
+    <div class="canvas-wrap"><canvas id="cv"></canvas>
+      <div class="cornerbtns">
+        <button id="bBg" title="black / white background"><span class="bwcirc"></span></button>
+        <button id="bPng" title="save the display as a PNG picture, with the parameters in the lower left corner">.png</button>
+        <button id="bSq" title="save only what is drawn, cut as tightly as possible, as a PNG picture">sq</button>
+      </div>
+    </div>
     <div class="legend" id="legend"></div>
     <div class="readout" id="readout">Hover over or tap an agent.</div>
   </section>
@@ -243,6 +273,8 @@
     <button class="btn" id="bReset">Reset</button>
   </div>
   <div class="row"><label>Rounds per frame <span class="vv" id="speedV">2</span></label><input type="range" id="speed" min="1" max="20" step="1" value="2"></div>
+  <div class="row"><label title="pause between frames, to follow small systems round by round">Delay per frame</label>
+    <select id="delaySel"><option value="0">none</option><option value="50">50 ms</option><option value="100">0.1 s</option><option value="250">0.25 s</option><option value="500">0.5 s</option><option value="1000">1 s</option><option value="2000">2 s</option></select></div>
   <div class="stat2" id="stat"></div>
 
   <details open>
@@ -255,7 +287,10 @@
       <div class="presets" style="margin-top:8px">
         <button class="btn sm" id="pAdd">+ product</button><button class="btn sm" id="pDel">− product</button>
       </div>
-      <p class="hint">Start, γ and β act at once; changing the number of products restarts.</p>
+      <div class="row"><label>Factory colours</label>
+        <select id="palSel"><option value="jet">jet</option><option value="spectral">spectral</option></select></div>
+      <p class="hint" id="monoHint">A more scalable product (lower γ) must cost more to start: Start increases as γ decreases.
+        A new product is added as the most scalable one. Start, γ and β act at once; changing the number of products restarts.</p>
     </div>
   </details>
 
@@ -494,14 +529,29 @@ function buildEcon(P){
 
 <script>
 // ---------- UI ----------
-const PCOL=['#4338ca','#0f766e','#c2410c','#be123c','#0369a1','#65a30d','#7c3aed','#a16207'];
 const PNAME='ABCDEFGH';
 const $=id=>document.getElementById(id);
+// factory colours: N colours sampled from the jet or the spectral colour map, the basic product A at the cool end
+const SPECTRAL=['5e4fa2','3288bd','66c2a5','abdda4','e6f598','fee08b','fdae61','f46d43','d53e4f','9e0142'].map(h=>[0,2,4].map(k=>parseInt(h.slice(k,k+2),16)));
+const PAL={
+  jet:x=>[4*x-3,4*x-2,4*x-1].map(v=>Math.round(255*Math.min(1,Math.max(0,1.5-Math.abs(v))))),
+  spectral:x=>{const u=Math.min(1,Math.max(0,x))*(SPECTRAL.length-1), k=Math.min(SPECTRAL.length-2,Math.floor(u)), f=u-k;
+    return SPECTRAL[k].map((c,j)=>Math.round(c+(SPECTRAL[k+1][j]-c)*f))},
+};
+let palName='jet', PCOL=[], PRGB=[], PSH=[], PTXT=[];
+function setPalette(){
+  const N=P.products.length;
+  PRGB=Array.from({length:N},(_,i)=>PAL[palName](N===1?0.15:0.08+0.84*i/(N-1)));
+  PCOL=PRGB.map(c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join(''));
+  PTXT=PRGB.map(c=>0.299*c[0]+0.587*c[1]+0.114*c[2]>150?'#16233b':'#fff');
+  PSH=PRGB.map(c=>({top:shade(c.map(v=>v+(255-v)*0.18),1),a:shade(c,0.8),b:shade(c,0.6)}));
+}
 
 const P={L:64,products:[],n:0.2,lim:1,wage:0.05,upkeep:0.02,kappa:1,M0:5,metric:'euclid',countries:1,tariff:0.2,tmul:1,seed:1};
-const THREE=[{start:5,gamma:-0.5,beta:0.05},{start:20,gamma:-0.9,beta:0.02},{start:2,gamma:-0.2,beta:0.2}];
+// a more scalable product (lower γ) always costs more to start; A is the basic product
+const THREE=[{start:2,gamma:-0.3,beta:0.1},{start:8,gamma:-0.6,beta:0.05},{start:20,gamma:-0.9,beta:0.02}];
 const PRESETS={
-  three:{label:'Three industries',note:'A: ordinary industry. B: strong economy of scale, cheap to ship but expensive to start (high tech). C: little economy of scale and costly to ship (food).',
+  three:{label:'Three industries',note:'A: basic product, cheap to start, weak economy of scale, costly to ship. B: ordinary industry. C: high tech, strong economy of scale and cheap to ship, but expensive to start.',
     products:THREE,tmul:1,countries:1,anneal:false},
   one:{label:'One product',note:'The original model in 2D: one product with γ = −0.5 and β = 0.05.',
     products:[{start:5,gamma:-0.5,beta:0.05}],tmul:1,countries:1,anneal:false},
@@ -510,7 +560,7 @@ const PRESETS={
   borders:{label:'Borders',note:'Cheap transport (factor 0.2), but 3 × 3 countries with a tariff τ = 0.2 on crossing a border.',
     products:THREE,tmul:0.2,countries:3,tariff:0.2,anneal:false},
 };
-let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false;
+let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='off', dark=false, loopTok=0;
 
 function applyPreset(k){
   const pr=PRESETS[k];
@@ -539,35 +589,53 @@ function syncControls(){
   $('tauR').value=P.tariff; $('tauV').textContent=P.tariff.toFixed(2);
   $('ctry').value=String(P.countries); $('metricSel').value=P.metric;
 }
+// a product with lower γ (more scalable) must have the higher start cost: mark the pairs that break this
+function checkMono(){
+  const pr=P.products, bad=new Set();
+  for(let i=0;i<pr.length;i++)for(let j=0;j<pr.length;j++)
+    if(pr[i].gamma<pr[j].gamma&&pr[i].start<=pr[j].start){bad.add(i);bad.add(j)}
+  document.querySelectorAll('#ptbody tr').forEach((tr,i)=>tr.querySelectorAll('input[data-k=start],input[data-k=gamma]').forEach(inp=>{
+    inp.classList.toggle('bad',bad.has(i)); inp.title=bad.has(i)?'Start should increase as γ decreases':inp.dataset.t}));
+  $('monoHint').style.color=bad.size?'#dc2626':'';
+}
 function buildProductUI(){
+  setPalette();
   const tb=$('ptbody'); tb.innerHTML='';
   P.products.forEach((pr,i)=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><div class="sw" style="background:${PCOL[i]}">${PNAME[i]}</div></td>
+    tr.innerHTML=`<td><div class="sw" style="background:${PCOL[i]};color:${PTXT[i]}">${PNAME[i]}</div></td>
       <td><input type="number" inputmode="decimal" step="1" min="0" data-k="start" value="${pr.start}" title="start cost of product ${PNAME[i]}"></td>
       <td><input type="number" inputmode="decimal" step="0.05" min="-2" max="1" data-k="gamma" value="${pr.gamma}" title="economy-of-scale exponent of ${PNAME[i]}"></td>
       <td><input type="number" inputmode="decimal" step="0.01" min="0" data-k="beta" value="${pr.beta}" title="transport cost of ${PNAME[i]} per unit distance"></td>`;
-    tr.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{
+    tr.querySelectorAll('input').forEach(inp=>{inp.dataset.t=inp.title;inp.addEventListener('input',()=>{
       const v=parseFloat(inp.value); if(!isFinite(v))return;
-      pr[inp.dataset.k]=inp.dataset.k==='gamma'?v:Math.max(0,v); E.computeMarkets(); draw();
-    }));
+      pr[inp.dataset.k]=inp.dataset.k==='gamma'?v:Math.max(0,v); checkMono(); E.computeMarkets(); draw();
+    })});
     tb.appendChild(tr);
   });
+  checkMono();
   const pt=$('ptabs'); pt.innerHTML='';
   P.products.forEach((pr,i)=>{
-    const b=document.createElement('button'); b.textContent=PNAME[i]; b.style.background=PCOL[i];
+    const b=document.createElement('button'); b.textContent=PNAME[i]; b.style.background=PCOL[i]; b.style.color=PTXT[i];
     b.className=i===psel?'on':''; b.title='show product '+PNAME[i];
     b.onclick=()=>{psel=i;buildProductUI();draw()}; pt.appendChild(b);
   });
   pt.classList.toggle('dis',view==='3d'||view==='agents'||view==='money'||P.products.length<2);
-  $('hSeg').style.display=view==='3d'?'':'none';
-  $('pAdd').disabled=P.products.length>=PCOL.length; $('pDel').disabled=P.products.length<=1;
+  $('hSeg').style.display=$('moneySel').style.display=view==='3d'?'':'none';
+  $('pAdd').disabled=P.products.length>=PNAME.length; $('pDel').disabled=P.products.length<=1;
   const ls=$('limSel'); P.lim=Math.max(1,Math.min(P.products.length,P.lim));
   ls.innerHTML=P.products.map((_,k)=>`<option value="${k+1}">${k+1}${k+1===P.products.length?' (all)':''}</option>`).join('');
   ls.value=String(P.lim);
 }
-$('pAdd').onclick=()=>{const k=P.products.length;
-  P.products.push({start:[5,20,2,10,8,3,15,6][k],gamma:[-0.5,-0.9,-0.2,-0.6,-0.4,-0.3,-0.7,-0.5][k],beta:[0.05,0.02,0.2,0.08,0.1,0.15,0.04,0.06][k]});restart()};
+// a new product is the most scalable one: lower γ, higher start cost, cheaper transport than all the others
+$('pAdd').onclick=()=>{const pr=P.products;
+  pr.push({start:Math.round(1.6*Math.max(...pr.map(p=>p.start))),gamma:Math.round(100*(Math.min(...pr.map(p=>p.gamma))-0.15))/100,
+    beta:Math.round(1000*0.75*Math.min(...pr.map(p=>p.beta)))/1000});restart()};
+$('palSel').onchange=e=>{palName=e.target.value;buildProductUI();refresh()};
+$('moneySel').onchange=e=>{money3=e.target.value;draw()};
+$('bBg').onclick=()=>{dark=!dark;document.querySelector('.display').classList.toggle('darkbg',dark);draw()};
+$('bPng').onclick=()=>exportPNG('png');
+$('bSq').onclick=()=>exportPNG('sq');
 $('pDel').onclick=()=>{P.products.pop();restart()};
 $('nSel').onchange=e=>{P.n=+e.target.value};
 $('limSel').onchange=e=>{P.lim=+e.target.value};
@@ -586,7 +654,7 @@ $('Lsel').onchange=restart;
 $('speed').oninput=e=>{$('speedV').textContent=e.target.value};
 function setRun(on){
   running=on; $('bRun').textContent=on?'Pause':'Run'; $('bRun2').textContent=on?'❚❚':'▶';
-  if(on)requestAnimationFrame(loop);
+  if(on){const t=++loopTok;requestAnimationFrame(()=>loop(t))}
 }
 $('bRun').onclick=$('bRun2').onclick=()=>setRun(!running);
 $('bStep').onclick=()=>{doStep();refresh()};
@@ -626,12 +694,14 @@ function doStep(){
   }
   E.step();
 }
-function loop(){
-  if(!running)return;
+function loop(tok){
+  if(!running||tok!==loopTok)return;
   const k=+$('speed').value, t0=performance.now();
   for(let j=0;j<k;j++){doStep();if(performance.now()-t0>50)break}
   refresh();
-  requestAnimationFrame(loop);
+  const d=+$('delaySel').value;          // a pause between frames, to follow small systems round by round
+  if(d>0)setTimeout(()=>requestAnimationFrame(()=>loop(tok)),d);
+  else requestAnimationFrame(()=>loop(tok));
 }
 function updStat(){
   const H=E.hist[E.hist.length-1];
@@ -648,13 +718,13 @@ function gnu(x){ // gnuplot's default pm3d palette (as in the figures of the pap
   x=Math.min(1,Math.max(0,x));
   return [Math.sqrt(x)*255, x*x*x*255, Math.max(0,Math.sin(2*Math.PI*x))*255];
 }
-const PRGB=PCOL.map(h=>[1,3,5].map(k=>parseInt(h.slice(k,k+2),16)));
 function hsl(h,s,l){h/=360;const a=s*Math.min(l,1-l),f=n=>{const k=(n+h*12)%12;return 255*(l-a*Math.max(-1,Math.min(k-3,9-k,1)))};return [f(0),f(8),f(4)]}
 function supColor(idx){return hsl((idx*137.508)%360,0.6,0.68+0.06*(idx%3))}
 const GRAD=`linear-gradient(90deg,${[0.08,0.3,0.5,0.7,0.9,1].map(x=>`rgb(${gnu(x).map(Math.round).join(',')})`).join(',')})`;
 
+let EXPORT_DPR=0;            // set while a picture is rendered at a higher resolution
 function fitCanvas(c){
-  const dpr=window.devicePixelRatio||1, w=Math.round(c.clientWidth*dpr), h=Math.round(c.clientHeight*dpr);
+  const dpr=(c===cv&&EXPORT_DPR)||window.devicePixelRatio||1, w=Math.round(c.clientWidth*dpr), h=Math.round(c.clientHeight*dpr);
   if(c.width!==w||c.height!==h){c.width=w;c.height=h}
   return dpr;
 }
@@ -662,12 +732,13 @@ let geo={x0:0,y0:0,side:1};
 // ---------- 3D view: the lattice seen obliquely from the side, every factory a tower as high as its sales ----------
 const V3={az:-0.62, el:0.62, hmax:1, order:null, key:'', fit:null};
 const shade=(rgb,f)=>`rgb(${rgb.map(c=>Math.round(Math.min(255,c*f))).join(',')})`;
-const PSH=PRGB.map(c=>({top:shade(c.map(v=>v+(255-v)*0.18),1),a:shade(c,0.78),b:shade(c,0.58)}));
+const GOLD={a:'rgba(222,176,46,.40)',b:'rgba(176,132,24,.42)',top:'rgba(246,210,92,.48)',line:'rgba(150,108,16,.55)'};
 function draw3D(){
   const L=E.L, LL=L*L, N=E.N;
   const dpr=fitCanvas(cv), W=cv.width, H=cv.height;
   ctx.clearRect(0,0,W,H);
   const ca=Math.cos(V3.az), sa=Math.sin(V3.az), se=Math.sin(V3.el), ce=Math.cos(V3.el), HW=0.42*L;
+  const mUp=money3==='up', mDown=money3==='down';
   // painter's order (far to near), recomputed when the azimuth or the lattice changes
   const key=L+':'+V3.az.toFixed(4);
   if(V3.key!==key){
@@ -675,55 +746,68 @@ function draw3D(){
     for(let r=0;r<LL;r++){const x=(r%L)+0.5-L/2, y=((r/L)|0)+0.5-L/2; dep[r]=x*sa+y*ca}
     V3.order=Int32Array.from({length:LL},(_,r)=>r).sort((a,b)=>dep[a]-dep[b]);
   }
-  // fit the ground and the tallest possible tower into the canvas
+  // fit the ground, the tallest possible tower and (money below) the deepest hanging tower into the canvas
   const C=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v])=>{const x=u*L/2,y=v*L/2;return [x*ca-y*sa,(x*sa+y*ca)*se]});
   const minX=Math.min(...C.map(c=>c[0])), maxX=Math.max(...C.map(c=>c[0]));
-  const top=Math.min(...C.map(c=>c[1]))-HW*ce, bot=Math.max(...C.map(c=>c[1]));
+  const top=Math.min(...C.map(c=>c[1]))-HW*ce, bot=Math.max(...C.map(c=>c[1]))+(mDown?HW*ce:0);
   const s=Math.min(W*0.97/(maxX-minX), H*0.96/(bot-top));
   const ox=W/2-s*(minX+maxX)/2, oy=H/2-s*(top+bot)/2;
   V3.fit={s,ox,oy,ca,sa,se,dpr};
   const P2=(x,y,z)=>[ox+s*(x*ca-y*sa), oy+s*((x*sa+y*ca)*se-z*ce)];
+  // heights: sales and money each follow their largest value slowly, so the towers do not jump
+  let mx=1, mm=1; const tot=new Float64Array(LL);
+  for(let r=0;r<LL;r++){let t=0;for(let i=0;i<N;i++)if(E.F[i][r])t+=E.sales[i][r];tot[r]=t;if(t>mx)mx=t;if(E.money[r]>mm)mm=E.money[r]}
+  V3.hmax=Math.max(mx,V3.hmax*0.97); V3.mmax=Math.max(mm,(V3.mmax||1)*0.97);
+  const f=hlog?v=>HW*Math.log(1+v)/Math.log(1+V3.hmax):v=>HW*v/V3.hmax;
+  const fm=v=>HW*Math.max(0,v)/V3.mmax;       // money always linear: on a log scale everybody's savings would form a carpet
+  const zmin=0.6/(s*ce);                       // towers lower than ~half a pixel are not drawn
+  const quad=(pts,fill,stroke)=>{ctx.beginPath();ctx.moveTo(...pts[0]);for(let k=1;k<4;k++)ctx.lineTo(...pts[k]);ctx.closePath();
+    ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.stroke()}};
+  // the two side faces that look toward the viewer, and the top, of a box over one lattice cell
+  const box=(r,g,z0,z1,c,stroke,withTop)=>{
+    const x0=(r%L)-L/2+g, y0=((r/L)|0)-L/2+g, x1=x0+1-2*g, y1=y0+1-2*g, xf=sa>0?x1:x0, yf=ca>0?y1:y0;
+    quad([P2(xf,y0,z0),P2(xf,y1,z0),P2(xf,y1,z1),P2(xf,y0,z1)],c.a,stroke);
+    quad([P2(x0,yf,z0),P2(x1,yf,z0),P2(x1,yf,z1),P2(x0,yf,z1)],c.b,stroke);
+    if(withTop)quad([P2(x0,y0,z1),P2(x1,y0,z1),P2(x1,y1,z1),P2(x0,y1,z1)],c.top,stroke);
+  };
+  ctx.lineWidth=Math.max(0.5,0.35*dpr);
+  // money below the plane: golden towers hanging down, seen through the semi-transparent ground
+  if(mDown)for(const r of V3.order){const h=fm(E.money[r]);if(h>zmin)box(r,0.06,-h,0,GOLD,GOLD.line,false)}
   // ground, grid and borders
   ctx.beginPath(); C.forEach(([X,Y],k)=>{const px=ox+s*X, py=oy+s*Y; k?ctx.lineTo(px,py):ctx.moveTo(px,py)}); ctx.closePath();
-  ctx.fillStyle='#e6eaf2'; ctx.fill(); ctx.strokeStyle='#c3cbdb'; ctx.lineWidth=dpr; ctx.stroke();
-  ctx.strokeStyle='rgba(131,145,171,.25)'; ctx.beginPath();
+  ctx.globalAlpha=mDown?0.62:1; ctx.fillStyle=dark?'#1a2131':'#e6eaf2'; ctx.fill(); ctx.globalAlpha=1;
+  ctx.strokeStyle=dark?'#3a4459':'#c3cbdb'; ctx.lineWidth=dpr; ctx.stroke();
+  ctx.strokeStyle=dark?'rgba(200,210,230,.12)':'rgba(131,145,171,.25)'; ctx.beginPath();
   for(let j=1;j<8;j++){const g=-L/2+j*L/8; let a=P2(g,-L/2,0),b=P2(g,L/2,0); ctx.moveTo(...a);ctx.lineTo(...b); a=P2(-L/2,g,0);b=P2(L/2,g,0);ctx.moveTo(...a);ctx.lineTo(...b)}
   ctx.stroke();
   const kc=P.countries|0;
   if(kc>1){
-    ctx.strokeStyle='rgba(22,35,59,.55)'; ctx.lineWidth=1.5*dpr; ctx.setLineDash([6*dpr,4*dpr]); ctx.beginPath();
+    ctx.strokeStyle=dark?'rgba(230,236,245,.6)':'rgba(22,35,59,.55)'; ctx.lineWidth=1.5*dpr; ctx.setLineDash([6*dpr,4*dpr]); ctx.beginPath();
     for(let j=1;j<kc;j++){const g=Math.floor(j*L/kc)-L/2; let a=P2(g,-L/2,0),b=P2(g,L/2,0); ctx.moveTo(...a);ctx.lineTo(...b); a=P2(-L/2,g,0);b=P2(L/2,g,0);ctx.moveTo(...a);ctx.lineTo(...b)}
     ctx.stroke(); ctx.setLineDash([]);
   }
-  // height scale follows the largest sales slowly, so the towers do not jump
-  let mx=1; const tot=new Float64Array(LL);
-  for(let r=0;r<LL;r++){let t=0;for(let i=0;i<N;i++)if(E.F[i][r])t+=E.sales[i][r];tot[r]=t;if(t>mx)mx=t}
-  V3.hmax=Math.max(mx,V3.hmax*0.97);
-  const f=hlog?v=>HW*Math.log(1+v)/Math.log(1+V3.hmax):v=>HW*v/V3.hmax;
   if(hoverR>=0&&hoverR<LL){
     const x=(hoverR%L)-L/2, y=((hoverR/L)|0)-L/2;
-    ctx.strokeStyle='#16233b'; ctx.lineWidth=2*dpr; ctx.beginPath();
+    ctx.strokeStyle=dark?'#fff':'#16233b'; ctx.lineWidth=2*dpr; ctx.beginPath();
     [[x,y],[x+1,y],[x+1,y+1],[x,y+1]].forEach((q,k)=>{const p=P2(q[0],q[1],0);k?ctx.lineTo(...p):ctx.moveTo(...p)}); ctx.closePath(); ctx.stroke();
   }
-  // towers: per product a segment, the side faces toward the viewer and the top
-  const g=0.08, fx=sa>0?1-g:g, fy=ca>0?1-g:g;
-  ctx.lineWidth=Math.max(0.5,0.35*dpr); ctx.strokeStyle='rgba(22,35,59,.35)';
-  const quad=(pts,fill)=>{ctx.beginPath();ctx.moveTo(...pts[0]);for(let k=1;k<4;k++)ctx.lineTo(...pts[k]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.stroke()};
+  // factory towers: one segment per product, the largest company at the bottom; with money ↑ a golden glass tower around them
+  ctx.lineWidth=Math.max(0.5,0.35*dpr);
+  const edge=dark?'rgba(0,0,0,.55)':'rgba(22,35,59,.35)', seg=[];
   for(const r of V3.order){
-    if(!(tot[r]>0))continue;
-    const x0=(r%L)-L/2+g, y0=((r/L)|0)-L/2+g, x1=x0+1-2*g, y1=y0+1-2*g, xf=(r%L)-L/2+fx, yf=((r/L)|0)-L/2+fy;
-    let cum=0, z0=0, last=-1;
-    for(let i=0;i<N;i++){
-      const v=E.F[i][r]?E.sales[i][r]:0; if(!v)continue;
-      cum+=v; const z1=f(cum), sh=PSH[i];
-      quad([P2(xf,y0,z0),P2(xf,y1,z0),P2(xf,y1,z1),P2(xf,y0,z1)],sh.a);    // face of constant x toward the viewer
-      quad([P2(x0,yf,z0),P2(x1,yf,z0),P2(x1,yf,z1),P2(x0,yf,z1)],sh.b);    // face of constant y toward the viewer
-      z0=z1; last=i;
+    const hm=mUp?fm(E.money[r]):0;
+    if(tot[r]>0){
+      seg.length=0; for(let i=0;i<N;i++)if(E.F[i][r]&&E.sales[i][r]>0)seg.push(i);
+      seg.sort((a,b)=>E.sales[b][r]-E.sales[a][r]);
+      let cum=0, z0=0;
+      seg.forEach((i,k)=>{cum+=E.sales[i][r]; const z1=f(cum); box(r,0.1,z0,z1,PSH[i],edge,k===seg.length-1); z0=z1});
     }
-    quad([P2(x0,y0,z0),P2(x1,y0,z0),P2(x1,y1,z0),P2(x0,y1,z0)],PSH[last].top);
+    if(hm>zmin)box(r,0.03,0,hm,GOLD,GOLD.line,true);
   }
   $('legend').innerHTML=P.products.map((pr,i)=>`<span><i style="background:${PCOL[i]}"></i>${PNAME[i]}</span>`).join('')+
-    `<span>tower height = units sold last round (${hlog?'log':'linear'}, top ≈ ${Math.round(V3.hmax)})</span><span>drag to turn and tilt</span>`;
+    `<span>tower height = units sold last round, largest company lowest (${hlog?'log':'linear'}, top ≈ ${Math.round(V3.hmax)})</span>`+
+    (money3!=='off'?`<span><i style="background:rgba(222,176,46,.6)"></i>money${mDown?', hanging below the plane':''} (top ≈ ${Math.round(V3.mmax)})</span>`:'')+
+    '<span>drag to turn and tilt</span>';
   if(hoverR>=0&&hoverR<LL)readout(hoverR);
 }
 function evR3(ev){
@@ -743,15 +827,15 @@ function draw(){
   if(view==='agents'){
     // background: each agent tinted by the products it can make; the producers with income are drawn on top as pies
     for(let r=0;r<LL;r++){
-      let c=[244,246,250], k=0;
+      const bg=dark?[22,27,38]:[244,246,250]; let c=bg, k=0;
       for(let i=0;i<N;i++)if(E.F[i][r]){const p=PRGB[i];c=k?[(c[0]+p[0])/2,(c[1]+p[1])/2,(c[2]+p[2])/2]:p;k++}
-      put(r,k?[255+(c[0]-255)*0.3,255+(c[1]-255)*0.3,255+(c[2]-255)*0.3]:c);
+      put(r,k?bg.map((b,j)=>b+(c[j]-b)*0.3):c);
     }
     legend=P.products.map((pr,i)=>`<span><i style="background:${PCOL[i]}"></i>${PNAME[i]}</span>`).join('')+
       '<span>● producer, area ∝ income, slices = sales of each product</span><span>pale: factory without sales</span>';
   }else if(view==='market'){
     const sup=E.sup[psel];
-    for(let r=0;r<LL;r++){const s=sup[r];put(r,s<0?[255,255,255]:supColor(s))}
+    for(let r=0;r<LL;r++){const s=sup[r];put(r,s<0?(dark?[0,0,0]:[255,255,255]):supColor(s))}
     legend=`<span>product <b style="color:${PCOL[psel]}">${PNAME[psel]}</b>: colour = the factory an agent buys from</span><span>● factory, size ∝ sales</span>`;
   }else{
     const A=view==='sales'?E.sales[psel]:E.money;
@@ -798,13 +882,13 @@ function draw(){
   }
   const k=P.countries|0;
   if(k>1){
-    ctx.strokeStyle=view==='money'||view==='sales'?'rgba(255,255,255,.8)':'rgba(22,35,59,.6)';
+    ctx.strokeStyle=view==='money'||view==='sales'||dark?'rgba(255,255,255,.8)':'rgba(22,35,59,.6)';
     ctx.lineWidth=1.5*dpr;ctx.setLineDash([6*dpr,4*dpr]);ctx.beginPath();
     for(let j=1;j<k;j++){const p=Math.floor(j*L/k)*cell;ctx.moveTo(x0+p,y0);ctx.lineTo(x0+p,y0+side);ctx.moveTo(x0,y0+p);ctx.lineTo(x0+side,y0+p)}
     ctx.stroke();ctx.setLineDash([]);
   }
   if(hoverR>=0&&hoverR<LL){
-    ctx.strokeStyle=view==='money'||view==='sales'?'#fff':'#16233b';ctx.lineWidth=2*dpr;
+    ctx.strokeStyle=view==='money'||view==='sales'||dark?'#fff':'#16233b';ctx.lineWidth=2*dpr;
     ctx.strokeRect(x0+(hoverR%L)*cell,y0+((hoverR/L)|0)*cell,cell,cell);
     const s=E.sup[psel][hoverR];
     if(view==='market'&&s>=0){ctx.beginPath();ctx.moveTo(cx(hoverR),cy(hoverR));ctx.lineTo(cx(s),cy(s));ctx.stroke()}
@@ -846,6 +930,65 @@ cv.addEventListener('pointermove',ev=>{
 cv.addEventListener('pointerup',()=>{drag=null});
 cv.addEventListener('pointercancel',()=>{drag=null});
 cv.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse'){hoverR=-1;$('readout').textContent='Hover over or tap an agent.';if(!running)draw()}});
+
+// ---------- pictures: .png = the display with the parameters in the lower left corner; sq = only what is drawn ----------
+function renderPicture(scale){
+  const hv=hoverR; hoverR=-1; EXPORT_DPR=scale; draw();
+  const oc=document.createElement('canvas'); oc.width=cv.width; oc.height=cv.height;
+  const o=oc.getContext('2d'); o.fillStyle=dark?'#0b0d13':'#ffffff'; o.fillRect(0,0,oc.width,oc.height); o.drawImage(cv,0,0);
+  EXPORT_DPR=0; hoverR=hv; draw();
+  return oc;
+}
+function contentBox(){          // bounding box of everything drawn on the (transparent) display canvas
+  const w=cv.width, h=cv.height, d=ctx.getImageData(0,0,w,h).data;
+  let x0=w,y0=h,x1=-1,y1=-1;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(d[4*(y*w+x)+3]>8){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  return x1<0?{x:0,y:0,w,h}:{x:x0,y:y0,w:x1-x0+1,h:y1-y0+1};
+}
+function stampParams(oc,scale){
+  const o=oc.getContext('2d'), fs=12*scale, lh=1.45*fs, pad=8*scale;
+  const viewName={'3d':'3D, height = units sold'+(hlog?' (log)':''),agents:'agents',market:'market of '+PNAME[psel],sales:'sales of '+PNAME[psel],money:'money'}[view]+
+    (view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
+  const lines=[
+    {t:`Globalization in a nutshell — 2D · round ${E.t} · ${viewName}`,b:true},
+    {t:`L = ${E.L}, n = ${P.n}, lim = ${P.lim}, wage w = ${P.wage}, upkeep μ = ${P.upkeep}, κ = ${P.kappa}, transport ×${fmt(P.tmul)}`+
+      (P.countries>1?`, ${P.countries}×${P.countries} countries, τ = ${P.tariff}`:'')},
+    ...P.products.map((pr,i)=>({t:`${PNAME[i]}:  Start ${pr.start},  γ ${String(pr.gamma).replace('-','−')},  β ${pr.beta}`,c:PCOL[i]})),
+  ];
+  o.font=`${fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`;
+  const sw=fs*0.9, tw=Math.max(...lines.map(l=>{o.font=`${l.b?'600 ':''}${fs}px -apple-system,Segoe UI,Roboto,sans-serif`;return o.measureText(l.t).width+(l.c?sw+5*scale:0)}));
+  // the parameters go in a strip under the picture, at its lower left corner, so they never cover what is drawn
+  const bh=lines.length*lh+2*pad-0.45*fs, bx=6*scale;
+  const out=document.createElement('canvas'); out.width=Math.max(oc.width,Math.ceil(tw+2*pad+2*bx)); out.height=oc.height+Math.ceil(bh);
+  const q=out.getContext('2d'), by=out.height-bh;
+  q.fillStyle=dark?'#0b0d13':'#ffffff'; q.fillRect(0,0,out.width,out.height); q.drawImage(oc,0,0);
+  q.textBaseline='top';
+  lines.forEach((l,k)=>{
+    const y=by+pad+k*lh; let x=bx+pad;
+    if(l.c){q.fillStyle=l.c;q.fillRect(x,y+0.05*fs,sw,sw);x+=sw+5*scale}
+    q.font=`${l.b?'600 ':''}${fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`;
+    q.fillStyle=dark?'#e8ecf5':'#16233b'; q.fillText(l.t,x,y);
+  });
+  return out;
+}
+function exportPNG(kind){
+  const btn=$(kind==='sq'?'bSq':'bPng'), label=btn.dataset.label||(btn.dataset.label=btn.textContent);
+  const scale=Math.max(2,window.devicePixelRatio||1);
+  let oc=renderPicture(scale);
+  if(kind==='sq'){
+    EXPORT_DPR=scale; const hv=hoverR; hoverR=-1; draw(); const b=contentBox(); EXPORT_DPR=0; hoverR=hv; draw();
+    const m=Math.round(4*scale), c=document.createElement('canvas');
+    c.width=b.w+2*m; c.height=b.h+2*m;
+    const o=c.getContext('2d'); o.fillStyle=dark?'#0b0d13':'#ffffff'; o.fillRect(0,0,c.width,c.height);
+    o.drawImage(oc,b.x,b.y,b.w,b.h,m,m,b.w,b.h); oc=c;
+  }else oc=stampParams(oc,scale);
+  const name=`globalization_${view}_t${E.t}${kind==='sq'?'_sq':''}.png`;
+  btn.classList.add('busy'); btn.textContent='…';
+  const save=url=>{const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>{btn.classList.remove('busy');btn.textContent=label},400)};
+  if(oc.toBlob)oc.toBlob(b=>{if(!b){save(oc.toDataURL('image/png'));return}const u=URL.createObjectURL(b);save(u);setTimeout(()=>URL.revokeObjectURL(u),8000)},'image/png');
+  else save(oc.toDataURL('image/png'));
+}
 
 // ---------- chart ----------
 const ch=$('chart'), cctx=ch.getContext('2d');
