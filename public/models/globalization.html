@@ -277,12 +277,17 @@
           sold brings in the price <b>p</b>. And every factory costs a little upkeep each round, a fraction <b>μ</b> of what it
           cost to build: machines wear out, so a factory must keep selling to pay for itself.
           <br>What is the price p? In the <b>self-organized</b> economy (the default; the button in the upper right corner
-          cycles through self-organized with n = 0.2 orders per agent and product, self-organized with n = 5, and the fixed
-          price) it adjusts itself, so that everything sold is worth exactly what everybody earned in wages:
+          cycles through self-organized with n = 0.2 orders per agent and product, self-organized with n = 5, self-organized
+          with buyers paying, and the fixed price) it adjusts itself, so that everything sold is worth exactly what everybody
+          earned in wages:
           <span class="eqc" style="display:block">p(next round) = Σ wages / Σ units sold (this round)</span>
           If the world makes twice as much, each unit is worth half as much. That is why money cannot pile up without end.
-          With the <b>fixed price</b> (button off) every unit earns 1, as in the original model, and a successful company
-          grows rich without limit.
+          With the <b>fixed price</b> every unit earns 1, as in the original model, and a successful company grows rich
+          without limit.
+          <br>In these two economies, as in the original model, nobody pays for what they buy: the goods are delivered free.
+          In the economy <b>buyers pay</b> (self-organized price as above), every buyer also pays p for each unit it buys:
+          <span class="eqc" style="display:block">ΔM = w + p · (units sold) − p · (units bought) − μ · Σ<sub>its factories</sub> Start</span>
+          Then the purchases are exactly the sales, and the wages are the only money that enters (see below).
           <br>An agent whose money falls below zero is <b>bankrupt</b>: its least profitable factory closes, the debt is
           forgiven, and it starts again from money w (from 0 with the fixed price).</li>
         <li><b>Deciding.</b> Each agent compares this round's profit (p · units sold − upkeep) with last round's. Things going
@@ -293,6 +298,41 @@
           weakest factory to make room, so with lim = 1 it changes trade.</li>
       </ol>
       <p>At the start, every agent makes one product picked at random and has money M₀. That is all there is to the model.</p>
+
+      <h2>Where does the money come from, and where does it go?</h2>
+      <p>Money is not conserved. In the self-organized economy, each round brings in the wages, w·L², and the sales, which
+        the price makes worth exactly the same again — but nobody pays for the purchases. So twice the wage bill enters every
+        round. Is that cheating? Look at it this way. The price makes the value of all sales equal to all wages, which is just
+        what happens in a closed economy where people spend their wages on goods and the shops' takings are that spending. So
+        in total the buyers <i>do</i> pay; only the debit on each buyer's own account is left out. It is as if every agent
+        earned 2w, spent w on goods and saved w. The model hands out one extra wage bill per round, as savings.</p>
+      <p>What can the savings be used for? Only two things: to build a factory (Start) and to keep one running (upkeep). Both
+        leave the model — paid to builders, to nature, to the world outside. So in a steady state, what is saved must be what
+        is invested and worn out: the old rule of economics, savings = investment. Measured on a 64 × 64 town, per round:
+        about 410 enters (205 wages, 205 sales), and 248 is spent on starting factories and 162 on upkeep. Only 0.1 % of what
+        enters stays.</p>
+      <p>Why does this settle down so nicely? For two reasons. First, the money an agent holds hardly matters to what it does:
+        its decisions compare profits (flows of money), and its orders follow its income (also a flow). Its savings only
+        matter at two thresholds — can it afford to start a factory, and is it below zero? Second, the economy has a
+        thermostat: whoever is doing badly and has money enough starts a new factory, and most of these start-ups fail and
+        pay upkeep until they go bankrupt. The more money is around, the more start-ups there are, and the more money is
+        burned — until the outflow matches the inflow. The self-organized price also caps the inflow at two wage bills per
+        round, however much is produced. With the fixed price the sales grow with production (here 12 times the wage bill),
+        the thermostat cannot keep up, and money piles up: the mean holding keeps growing, and the richest 1 % own about
+        half of all money. (The thermostat controls the total, not the spread: also in the self-organized economy the
+        successful companies slowly grow richer.)</p>
+      <p>What changes when the buyers pay? Then the wages are the only money that enters, and every agent spends on goods
+        part of what it earns. Measured (64 × 64, three runs): the mean money falls from 4.7 to 1.5 and the richest agent
+        from about 3500 to 1300; there are more start-ups (54 instead of 36 per round) and many more bankruptcies (55
+        instead of 6), because the spending drains what a new company has left after paying its start cost (four in five of
+        the bankrupt opened their factory less than 10 rounds before) and pushes some agents without any factory below zero
+        (one in five); and the markets grow a little more concentrated (the
+        largest share of the high-tech product C rises from 0.51 to 0.77). But the picture is the same: local producers of
+        the basic product, a few big companies of the scalable ones, and the same steady churn. Leaving the buyers' payments
+        out changes how much money there is, not how the economy organizes itself.</p>
+      <p>One more thing is free in every version: the production and transport costs in C are never paid by anyone; they
+        only decide where people shop. Being big wins a company more customers, not a bigger margin — every unit sells at
+        the same price p.</p>
 
       <h2>What to look for</h2>
       <p>The key question is: can a newcomer ever beat a giant? The newcomer sells at price 1, the giant at s<sup>γ</sup>,
@@ -356,7 +396,7 @@
       <select id="moneySel" title="money of the agents as golden, semi-transparent towers in the same view">
         <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down" selected>money ↓ below the plane</option></select>
       <span class="spacer"></span>
-      <button class="tbtn sobtn on" id="bSO2" title="click to cycle: self-organized price with n = 0.2 orders per agent and product → self-organized with n = 5 → fixed price 1. Self-organized: the value of all units sold equals the total wages, so money does not pile up">self-organized · n 0.2</button>
+      <button class="tbtn sobtn on" id="bSO2" title="click to cycle: self-organized price with n = 0.2 orders per agent and product → self-organized with n = 5 → self-organized with buyers paying for what they buy → fixed price 1. Self-organized: the value of all units sold equals the total wages, so money does not pile up">self-organized · n 0.2</button>
       <span class="stat">round <b id="tRound">0</b></span>
       <button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
       <button class="tbtn" id="bReset2" title="reset">↺</button>
@@ -482,7 +522,7 @@
     <summary>Economy</summary>
     <div class="sect">
       <div class="row"><label title="self-organized: a unit sells at p = Σ wages / Σ units sold in the round before, so the value of all production equals the total wages and money does not pile up. Fixed: every unit sells at 1">Price per unit</label>
-        <select id="econSel"><option value="so">self-organized</option><option value="fixed">fixed = 1</option></select></div>
+        <select id="econSel"><option value="so">self-organized</option><option value="pay">self-organized, buyers pay</option><option value="fixed">fixed = 1</option></select></div>
       <div class="row"><label>Lattice L</label>
         <select id="Lsel"><option>32</option><option>64</option><option>96</option><option selected>125</option><option>192</option><option>256</option></select></div>
       <div class="row"><label title="orders per agent per product per round: small n = few, noisy sales">Orders n</label>
@@ -533,9 +573,10 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 //      roads:[{pts:[[x,y],…],f}] (transport cost ×f along the road), borders:[{pts,tax,oneway}] (tax = fraction
 //      of the goods' value charged on crossing; one-way: only when crossing toward (dy, −dx) for the drawn direction (dx, dy), which on the screen (y downward)
 //      is to the left of the drawing direction),
-//      econ:'so'|'fixed', seed}
+//      econ:'so'|'pay'|'fixed', seed}
 // econ 'so' (self-organized price): a unit sells at p = Σ wages / Σ units sold in the previous round, so the value of all
-// production equals the total wages; a bankrupt agent starts again from money w. econ 'fixed': a unit sells at p = 1.
+// production equals the total wages; a bankrupt agent starts again from money w. econ 'pay': the same price, and every
+// buyer also pays p for each unit it buys, so wages are the only money that enters. econ 'fixed': a unit sells at p = 1.
 function buildEcon(P){
   const L=P.L, LL=L*L, N=P.products.length;
   const rng=mulberry32(P.seed||1);
@@ -656,13 +697,13 @@ function buildEcon(P){
     E.F.push(new Uint8Array(LL)); E.sales.push(new Int32Array(LL)); E.sup.push(new Int32Array(LL));
     E.dist.push(new Float32Array(LL)); E.u.push(new Float64Array(LL)); E.area.push(new Int32Array(LL)); E.cost.push(new Float64Array(LL));
   }
-  const cum=new Float64Array(LL), inList=new Uint8Array(LL), newSales=[]; for(let i=0;i<N;i++)newSales.push(new Int32Array(LL));
+  const cum=new Float64Array(LL), inList=new Uint8Array(LL), paid=new Float64Array(LL), newSales=[]; for(let i=0;i<N;i++)newSales.push(new Int32Array(LL));
 
   E.reset=function(){
     E.t=0;E.hist=[];
     for(let r=0;r<LL;r++){E.money[r]=P.M0;E.inc[r]=0;E.prevInc[r]=0;E.profit[r]=0;E.prevProfit[r]=0;E.units[r]=0;E.prevUnits[r]=0;E.started[r]=-1}
     // first round: all n·L²·N orders are expected to be served
-    E.price=P.econ==='so'&&P.wage>0?P.wage/(P.n*N):1;
+    E.price=P.econ!=='fixed'&&P.wage>0?P.wage/(P.n*N):1;
     for(let i=0;i<N;i++){E.F[i].fill(0);E.sales[i].fill(0)}
     for(let r=0;r<LL;r++)E.F[(rng()*N)|0][r]=1;
     E.computeMarkets();
@@ -745,13 +786,14 @@ function buildEcon(P){
     const uniform=!(W>0);
     const T=Math.max(1,Math.round(P.n*LL));
     const H={t:E.t+1,prod:[],share:[],dist:[],unmet:[],active:0,starts:0,bankrupt:0,money:0,maxUnits:0,maxMoney:0};
+    const pays=P.econ==='pay'; if(pays)paid.fill(0);   // units each agent bought this round (buyers pay)
     for(let i=0;i<N;i++){
       const ns=newSales[i], sup=E.sup[i], dist=E.dist[i]; ns.fill(0);
       let dsum=0,sold=0;
       for(let k=0;k<T;k++){
         const r2=uniform?(rng()*LL)|0:pick(W), s=sup[r2];
         if(s<0)continue;
-        ns[s]++;dsum+=dist[r2];sold++;
+        ns[s]++;dsum+=dist[r2];sold++;if(pays)paid[r2]++;
       }
       let np=0,mx=0; const F=E.F[i];
       for(let r=0;r<LL;r++){if(F[r])np++;if(ns[r]>mx)mx=ns[r]}
@@ -762,7 +804,7 @@ function buildEcon(P){
     //   profitable factory closes and the debt is written off (self-organized price: the agent starts again from w).
     //   A significant decline of profit, or having no factory, makes the agent explore: it opens a product it can
     //   afford (paying Start), closing its weakest factory if it is at lim.
-    const cand=new Int32Array(N), mu=P.upkeep, lim=Math.max(1,Math.min(N,P.lim|0||N)), p=E.price, so=P.econ==='so';
+    const cand=new Int32Array(N), mu=P.upkeep, lim=Math.max(1,Math.min(N,P.lim|0||N)), p=E.price, so=P.econ!=='fixed';
     const weakest=r=>{let w=-1,wv=Infinity,nt=0;
       for(let i=0;i<N;i++)if(E.F[i][r]){const v=p*newSales[i][r]-mu*P.products[i].start;
         if(v<wv){wv=v;w=i;nt=1}else if(v===wv){nt++;if(rng()*nt<1)w=i}}
@@ -776,7 +818,7 @@ function buildEcon(P){
       E.prevInc[r]=E.inc[r]; E.inc[r]=P.wage+p*units;
       E.prevProfit[r]=E.profit[r]; E.profit[r]=p*units-up;
       const m0=Math.max(0,E.money[r]);      // the fortune before this round, recorded with a crash for the display
-      E.money[r]+=P.wage+p*units-up;
+      E.money[r]+=P.wage+p*units-up-(pays?p*paid[r]:0);   // buyers pay: what the agent bought this round
       if(units>0)H.active++; if(units>H.maxUnits)H.maxUnits=units;
       if(E.money[r]<0){
         // the bankrupt company: its size (units sold this or last round) and its biggest product, for the display
@@ -932,16 +974,18 @@ $('palSel').onchange=e=>{palName=e.target.value;buildProductUI();refresh()};
 function setEcon(v){
   P.econ=v; $('econSel').value=v; syncSO();
   if(E){let U=0;for(let r=0;r<E.L*E.L;r++)U+=E.units[r];
-    E.price=v==='so'&&P.wage>0?(U>0?P.wage*E.L*E.L/U:P.wage/(P.n*E.N)):1}
+    E.price=v!=='fixed'&&P.wage>0?(U>0?P.wage*E.L*E.L/U:P.wage/(P.n*E.N)):1}
   updStat();
 }
-// The economy button in the upper right corner cycles through three settings: self-organized price with n = 0.2 orders
-// per agent and product, self-organized with n = 5, and the fixed price (n = 0.2). Its label shows the setting in use.
-const ECON_STATES=[{econ:'so',n:0.2},{econ:'so',n:5},{econ:'fixed',n:0.2}];
-function syncSO(){const b=$('bSO2'); b.classList.toggle('on',P.econ==='so');
-  b.textContent=(P.econ==='so'?'self-organized':'fixed price')+' · n '+P.n}
+// The economy button in the upper right corner cycles through four settings: self-organized price with n = 0.2 orders
+// per agent and product, self-organized with n = 5, self-organized with buyers paying for what they buy (n = 0.2), and the
+// fixed price (n = 0.2). Its label shows the setting in use.
+const ECON_STATES=[{econ:'so',n:0.2},{econ:'so',n:5},{econ:'pay',n:0.2},{econ:'fixed',n:0.2}];
+const ECON_LABEL={so:'self-organized',pay:'buyers pay',fixed:'fixed price'};
+function syncSO(){const b=$('bSO2'); b.classList.toggle('on',P.econ!=='fixed');
+  b.textContent=ECON_LABEL[P.econ]+' · n '+P.n}
 $('econSel').onchange=e=>setEcon(e.target.value);
-$('bSO2').onclick=()=>{const k=P.econ==='fixed'?2:P.n>=5?1:0, s=ECON_STATES[(k+1)%3];
+$('bSO2').onclick=()=>{const k=P.econ==='fixed'?3:P.econ==='pay'?2:P.n>=5?1:0, s=ECON_STATES[(k+1)%4];
   P.n=s.n; $('nSel').value=String(s.n); setEcon(s.econ)};
 $('ctlPull').onclick=()=>setCtlOpen(false);
 // view menu of the 3D view (upper left corner): turn, tilt and perspective; dragging the view moves the sliders along
@@ -1158,7 +1202,7 @@ function loop(tok){
 function updStat(){
   const H=E.hist[E.hist.length-1];
   $('tRound').textContent=E.t;
-  let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit <b>${E.price<0.1?E.price.toFixed(4):fmt(E.price,3)}</b>${P.econ==='so'?' (self-organized)':''}`;
+  let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit <b>${E.price<0.1?E.price.toFixed(4):fmt(E.price,3)}</b>${P.econ==='so'?' (self-organized)':P.econ==='pay'?' (self-organized, buyers pay)':''}`;
   if(H)s+=`<br>agents with sales <b>${(100*H.active).toFixed(1)}%</b> · per round: starts <b>${(100*H.starts).toFixed(1)}%</b>, bankruptcies <b>${(100*H.bankrupt).toFixed(2)}%</b>`;
   $('stat').innerHTML=s;
 }
@@ -1530,7 +1574,7 @@ function stampParams(oc,scale){
   const lines=[
     {t:`Globalization in a nutshell — 2D · round ${E.t} · ${viewName}`,b:true},
     {t:`L = ${E.L}, n = ${P.n}, lim = ${P.lim}, wage w = ${P.wage}, upkeep μ = ${P.upkeep}, κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
-      (P.econ==='so'?`self-organized price p = ${E.price.toPrecision(3)}`:'fixed price p = 1')},
+      (P.econ==='fixed'?'fixed price p = 1':`self-organized price p = ${E.price.toPrecision(3)}${P.econ==='pay'?', buyers pay':''}`)},
     {t:`${P.bc} boundaries`+(P.roads.length?`, ${P.roads.length} road${P.roads.length>1?'s':''}`:'')+
       (P.borders.length?`, ${P.borders.length} border${P.borders.length>1?'s':''}`:'')},
     ...P.products.map((pr,i)=>({t:`${PNAME[i]}:  Start ${pr.start},  γ ${String(pr.gamma).replace('-','−')},  β ${pr.beta}`,c:PCOL[i]})),
