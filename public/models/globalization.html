@@ -246,7 +246,9 @@
       <p>You can change the geography. A <b>road</b> makes travel along it cheaper: the transport cost there is multiplied by
         a factor you choose, say 0.2. A <b>border</b> charges a tax on goods that cross it, a percentage of what they are
         worth at that point (their price plus the transport so far); a one-way border taxes only goods crossing in the
-        direction of its arrows. With roads or borders the cheapest offer is no longer the one on the straight line, so the
+        direction of its arrows. Goods always take the cheapest way: they may follow a road for part of the way and then
+        leave it, and if a border cuts only across a road, they may leave the road and walk around the border's end rather
+        than pay the tax. With roads or borders the cheapest offer is no longer the one on the straight line, so the
         applet finds it the way water finds its way downhill: it spreads every factory's offer step by step over the grid
         (along 16 directions), always keeping the cheapest offer that has reached each place. (For speed it also works this
         way when a product has very many factories; the distances then differ from straight lines by at most about 3 %.)</p>
@@ -303,14 +305,15 @@
         log scale), and money. The agents' money can be shown as golden glass towers, either around the factories or hanging
         below the ground. The height scales are the average size of the biggest company over the last two thirds of the
         run, and they are renewed only each time the run has grown by half, so the picture keeps still. Drag to turn and
-        tilt, or use the <i>view</i> menu in the upper left corner, which also sets the perspective.</p>
+        tilt, turn the mouse wheel to zoom, or use the <i>view</i> menu in the upper left corner, which also sets the
+        perspective and the zoom. When a big company goes bankrupt, its whole column flashes.</p>
       <p><i>Agents</i>: everyone who sold something is a pie, its area the units sold, a slice per product. <i>Market</i>: for
         one product, everybody in the colour of the factory they buy from; the dots are the factories. <i>Sales</i> and
         <i>Money</i>: heat maps on a log scale, in the colours of the paper's figures. Hover over or tap an agent to see its
         numbers.</p>
       <p>The buttons in the upper left corner draw the geography: <i>+ road</i> (its ▾ sets the transport factor on the road)
-        and <i>+ border</i> (its ▾ sets the tax and whether it is one-way): choose one, then press, drag and release on the
-        lattice. <i>− road</i> and <i>− border</i>: choose one, then tap a road or border to remove it. Tap the chosen button
+        and <i>+ border</i> (its ▾ sets the tax and whether it is one-way): choose one, then press and drag on the lattice —
+        the road or border follows your finger, so it can bend and curve — and release. <i>− road</i> and <i>− border</i>: choose one, then tap a road or border to remove it. Tap the chosen button
         again to go back to turning the view.</p>
       <p>The buttons in the lower right corner: the lightning bolt makes a small explosion wherever a company goes bankrupt,
         the bigger the company the bigger the bang — off (black), yellow, or in the company's colour (multicoloured bolt);
@@ -354,6 +357,7 @@
           <div class="row"><label>Tilt <span class="vv" id="elV"></span></label><input type="range" id="elR" min="5" max="88" step="1"></div>
           <div class="row"><label title="distance of the camera in units of the lattice size L; ∞ = no perspective">Perspective</label>
             <select id="distSel"><option value="0">none (∞ far)</option><option value="4">distant (4 L)</option><option value="2.5">medium (2.5 L)</option><option value="1.8">close (1.8 L)</option><option value="1.4">very close (1.4 L)</option></select></div>
+          <div class="row"><label title="enlarge the 3D view (also with the mouse wheel over the display)">Zoom <span class="vv" id="zoomV"></span></label><input type="range" id="zoomR" min="-0.7" max="1.4" step="0.01" value="0"></div>
           <button class="btn sm" id="viewReset">reset view</button>
         </div>
       </details>
@@ -508,7 +512,7 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 // P = {L, products:[{start,gamma,beta}], n (orders per agent per product per round), lim (max factories per agent),
 //      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (a decline counts
 //      when profit < previous − κ·p·√(previous units sold)), M0, bc:'periodic'|'closed', tmul (transport factor),
-//      roads:[{x0,y0,x1,y1,f}] (transport cost ×f along the road), borders:[{x0,y0,x1,y1,tax,oneway}] (tax = fraction
+//      roads:[{pts:[[x,y],…],f}] (transport cost ×f along the road), borders:[{pts,tax,oneway}] (tax = fraction
 //      of the goods' value charged on crossing; one-way: only when crossing toward the right of the drawn direction),
 //      econ:'so'|'fixed', seed}
 // econ 'so' (self-organized price): a unit sells at p = Σ wages / Σ units sold in the previous round, so the value of all
@@ -547,29 +551,35 @@ function buildEcon(P){
   function buildNet(){
     const key=JSON.stringify([P.roads,P.borders,P.bc]); if(key===netKey)return; netKey=key;
     roadF.fill(1); taxM.fill(1);
-    for(const rd of P.roads||[]){                       // cells along the road, sampled every quarter cell
-      const len=Math.hypot(rd.x1-rd.x0,rd.y1-rd.y0), n=Math.max(1,Math.ceil(4*len));
-      for(let k=0;k<=n;k++){const x=Math.floor(rd.x0+(rd.x1-rd.x0)*k/n), y=Math.floor(rd.y0+(rd.y1-rd.y0)*k/n);
+    // roads and borders are polylines (curved by the drag that drew them): pts = [[x,y], …]
+    for(const rd of P.roads||[])for(let j=1;j<rd.pts.length;j++){   // cells along the road, sampled every quarter cell
+      const [x0,y0]=rd.pts[j-1], [x1,y1]=rd.pts[j], n=Math.max(1,Math.ceil(4*Math.hypot(x1-x0,y1-y0)));
+      for(let k=0;k<=n;k++){const x=Math.floor(x0+(x1-x0)*k/n), y=Math.floor(y0+(y1-y0)*k/n);
         if(x>=0&&y>=0&&x<L&&y<L){const r=y*L+x; roadF[r]=Math.min(roadF[r],rd.f)}}
     }
     const cross=(ax,ay,bx,by,cx,cy,dx,dy)=>{       // do segments a–b and c–d intersect?
       const o=(px,py,qx,qy,rx,ry)=>(qx-px)*(ry-py)-(qy-py)*(rx-px);
       const d1=o(cx,cy,dx,dy,ax,ay), d2=o(cx,cy,dx,dy,bx,by), d3=o(ax,ay,bx,by,cx,cy), d4=o(ax,ay,bx,by,dx,dy);
       return d1*d2<0&&d3*d4<0};
-    // with periodic boundaries a move can wrap around the edge, so each border is also tested shifted by ±L
+    // A move is taxed once by a border it crosses (even where it cuts through a bend). With periodic boundaries a move
+    // can wrap around the edge, so each border is also tested shifted by ±L.
     const shifts=closed()?[[0,0]]:[[0,0],[L,0],[-L,0],[0,L],[0,-L]];
-    for(const bd0 of P.borders||[])for(const [sx,sy] of shifts){
-      const bd={x0:bd0.x0+sx,y0:bd0.y0+sy,x1:bd0.x1+sx,y1:bd0.y1+sy};
-      const nx=bd.y1-bd.y0, ny=-(bd.x1-bd.x0);           // the taxed direction of a one-way border: to the right
-      const xmin=Math.min(bd.x0,bd.x1)-3, xmax=Math.max(bd.x0,bd.x1)+3, ymin=Math.min(bd.y0,bd.y1)-3, ymax=Math.max(bd.y0,bd.y1)+3;
-      for(let y=Math.max(0,Math.floor(ymin));y<=Math.min(L-1,Math.ceil(ymax));y++)
-        for(let x=Math.max(0,Math.floor(xmin));x<=Math.min(L-1,Math.ceil(xmax));x++)
-          for(let d=0;d<16;d++){
-            const ax=x+0.5, ay=y+0.5, bx=ax+NB[d][0], by=ay+NB[d][1];
-            if(!cross(ax,ay,bx,by,bd.x0,bd.y0,bd.x1,bd.y1))continue;
-            if(bd0.oneway&&NB[d][0]*nx+NB[d][1]*ny<=0)continue;
-            taxM[(y*L+x)*16+d]*=1+bd0.tax;
-          }
+    const hit=new Uint8Array(LL*16);
+    for(const bd of P.borders||[]){
+      hit.fill(0);
+      for(const [sx,sy] of shifts)for(let j=1;j<bd.pts.length;j++){
+        const x0=bd.pts[j-1][0]+sx, y0=bd.pts[j-1][1]+sy, x1=bd.pts[j][0]+sx, y1=bd.pts[j][1]+sy;
+        const nx=y1-y0, ny=-(x1-x0);                         // the taxed direction of a one-way border: to the right
+        for(let y=Math.max(0,Math.floor(Math.min(y0,y1)-3));y<=Math.min(L-1,Math.ceil(Math.max(y0,y1)+3));y++)
+          for(let x=Math.max(0,Math.floor(Math.min(x0,x1)-3));x<=Math.min(L-1,Math.ceil(Math.max(x0,x1)+3));x++)
+            for(let d=0;d<16;d++){
+              const m=(y*L+x)*16+d; if(hit[m])continue;
+              const ax=x+0.5, ay=y+0.5;
+              if(!cross(ax,ay,ax+NB[d][0],ay+NB[d][1],x0,y0,x1,y1))continue;
+              if(bd.oneway&&NB[d][0]*nx+NB[d][1]*ny<=0)continue;
+              hit[m]=1; taxM[m]*=1+bd.tax;
+            }
+      }
     }
   }
   // Dijkstra from all factories at once. Each cell keeps the two cheapest offers from different factories, because
@@ -613,7 +623,7 @@ function buildEcon(P){
     }
     for(let r=0;r<LL;r++){
       const b=sA[r]===r?sB[r]:sA[r];                     // nobody buys from itself
-      sup[r]=b; dist[r]=b<0?0:pdist(b,r); if(b>=0)area[b]++;
+      sup[r]=b; dist[r]=b<0?0:pdist(b,r); E.cost[i][r]=b<0?Infinity:(b===sA[r]?cA[r]:cB[r]); if(b>=0)area[b]++;
     }
   }
 
@@ -622,10 +632,10 @@ function buildEcon(P){
   E.profit=new Float64Array(LL); E.prevProfit=new Float64Array(LL);
   E.units=new Float64Array(LL); E.prevUnits=new Float64Array(LL); E.price=1; E.bankruptList=[];
   E.started=new Int32Array(LL);              // round at which the agent last opened a factory (−1: never)
-  E.F=[];E.sales=[];E.sup=[];E.dist=[];E.u=[];E.area=[];
+  E.F=[];E.sales=[];E.sup=[];E.dist=[];E.u=[];E.area=[];E.cost=[];      // cost: the delivered price each agent pays
   for(let i=0;i<N;i++){
     E.F.push(new Uint8Array(LL)); E.sales.push(new Int32Array(LL)); E.sup.push(new Int32Array(LL));
-    E.dist.push(new Float32Array(LL)); E.u.push(new Float64Array(LL)); E.area.push(new Int32Array(LL));
+    E.dist.push(new Float32Array(LL)); E.u.push(new Float64Array(LL)); E.area.push(new Int32Array(LL)); E.cost.push(new Float64Array(LL));
   }
   const cum=new Float64Array(LL), inList=new Uint8Array(LL), newSales=[]; for(let i=0;i<N;i++)newSales.push(new Int32Array(LL));
 
@@ -650,7 +660,7 @@ function buildEcon(P){
     }
     area.fill(0);
     const nF=fac.length;
-    if(!nF){sup.fill(-1);dist.fill(0);return}
+    if(!nF){sup.fill(-1);dist.fill(0);E.cost[i].fill(Infinity);return}
     if(E.useGraph()){marketGraph(i,fac,u,beta,sup,dist,area);return}
     // The K cheapest factories are checked from a list; the others (unit price ≥ uK) by scanning the lattice
     // outward from the buyer, stopping once uK + β·d exceeds the best price found. K is chosen to minimise the work;
@@ -691,7 +701,7 @@ function buildEcon(P){
           else if(c<=best+EPS){nt++;if(rng()*nt<1){bs=r1;bd=d}}
         }
       }
-      sup[r2]=bs;dist[r2]=bs<0?0:bd;if(bs>=0)area[bs]++;
+      sup[r2]=bs;dist[r2]=bs<0?0:bd;E.cost[i][r2]=bs<0?Infinity:best;if(bs>=0)area[bs]++;
     }
   }
   // the markets are recomputed after every round and after every change of a parameter; E.stale marks a change
@@ -806,7 +816,7 @@ function setPalette(){
 const P={L:125,products:[],n:0.2,lim:1,wage:0.05,upkeep:0.02,kappa:1,M0:5,bc:'periodic',tmul:1,roads:[],borders:[],econ:'so',seed:1};
 // a 3 × 3 grid of two-way borders with 20 % tax, for the Borders preset
 const gridBorders=(L,k,tax)=>{const b=[];for(let j=0;j<k;j++){const g=j*L/k;
-  b.push({x0:g,y0:0,x1:g,y1:L,tax,oneway:false},{x0:0,y0:g,x1:L,y1:g,tax,oneway:false})}return b};
+  b.push({pts:[[g,0],[g,L]],tax,oneway:false},{pts:[[0,g],[L,g]],tax,oneway:false})}return b};
 // a more scalable product (lower γ) always costs more to start; A is the basic product
 const THREE=[{start:2,gamma:-0.3,beta:0.1},{start:8,gamma:-0.6,beta:0.05},{start:20,gamma:-0.9,beta:0.02}];
 const PRESETS={
@@ -832,7 +842,7 @@ function applyPreset(k){
 function restart(){
   // a new lattice size: roads and borders keep their place relative to the lattice
   const L1=+$('Lsel').value, f=L1/P.L;
-  if(f!==1)for(const s of [...P.roads,...P.borders]){s.x0*=f;s.y0*=f;s.x1*=f;s.y1*=f}
+  if(f!==1)for(const s of [...P.roads,...P.borders])s.pts=s.pts.map(([x,y])=>[x*f,y*f]);
   P.L=L1; P.seed=(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.scaleT=-1;
   E=buildEcon(P); flashes=[];
   distReset();
@@ -908,15 +918,17 @@ $('econSel').onchange=e=>setEcon(e.target.value);
 $('bSO2').onclick=()=>setEcon(P.econ==='so'?'fixed':'so');
 $('ctlPull').onclick=()=>setCtlOpen(false);
 // view menu of the 3D view (upper left corner): turn, tilt and perspective; dragging the view moves the sliders along
-const VIEW0={az:-0.62,el:0.62,dist:4};
+const VIEW0={az:-0.62,el:0.62,dist:4,zoom:1};
 function syncView(){
   const az=Math.round(V3.az*180/Math.PI), el=Math.round(V3.el*180/Math.PI);
   $('azR').value=az; $('azV').textContent=az+'°'; $('elR').value=el; $('elV').textContent=el+'°'; $('distSel').value=String(V3.dist);
+  $('zoomR').value=Math.log(V3.zoom); $('zoomV').textContent=Math.round(100*V3.zoom)+' %';
 }
 $('azR').oninput=e=>{V3.az=+e.target.value*Math.PI/180;syncView();draw()};
 $('elR').oninput=e=>{V3.el=+e.target.value*Math.PI/180;syncView();draw()};
 $('distSel').onchange=e=>{V3.dist=+e.target.value;draw()};
 $('viewReset').onclick=()=>{Object.assign(V3,VIEW0);syncView();draw()};
+$('zoomR').oninput=e=>{V3.zoom=Math.exp(+e.target.value);syncView();draw()};
 // flashes where companies go bankrupt
 // bankruptcy explosions: off → yellow → in the colour of the company → off; the lightning icon shows the state
 function setFlashMode(m){
@@ -958,7 +970,12 @@ function syncTools(){
   document.querySelectorAll('.tools [data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool));
   cv.style.cursor=tool?(tool.startsWith('rm')?'pointer':'crosshair'):'crosshair';
 }
-document.querySelectorAll('.tools [data-tool]').forEach(b=>b.onclick=()=>{tool=tool===b.dataset.tool?null:b.dataset.tool;syncTools()});
+document.querySelectorAll('.tools [data-tool]').forEach(b=>b.onclick=()=>{
+  tool=tool===b.dataset.tool?null:b.dataset.tool; closeMenus(); syncTools()});
+// the menus of the tool bar (view, road, border): opening one, or choosing a tool, closes the others
+function closeMenus(except){document.querySelectorAll('.tools details').forEach(d=>{if(d!==except)d.open=false})}
+document.querySelectorAll('.tools details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)closeMenus(d)}));
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.tools'))closeMenus()});
 $('roadF').oninput=e=>{$('roadFV').textContent=(+e.target.value).toFixed(2)};
 function netChanged(){
   E.computeMarkets(); distMark();
@@ -977,43 +994,60 @@ function gridPos(ev){
   }else{x=(ev.clientX-b.left-geo.x0)/geo.side*L; y=(ev.clientY-b.top-geo.y0)/geo.side*L}
   return x<-1||y<-1||x>L+1||y>L+1?null:[Math.min(L,Math.max(0,x)),Math.min(L,Math.max(0,y))];
 }
-function segDist(px,py,s){const dx=s.x1-s.x0,dy=s.y1-s.y0,l2=dx*dx+dy*dy;
-  const t=l2?Math.max(0,Math.min(1,((px-s.x0)*dx+(py-s.y0)*dy)/l2)):0; return Math.hypot(px-s.x0-t*dx,py-s.y0-t*dy)}
+// distance from a point to a polyline [[x,y], …]
+function polyDist(px,py,pts){let best=Infinity;
+  for(let j=1;j<pts.length;j++){const [x0,y0]=pts[j-1],[x1,y1]=pts[j],dx=x1-x0,dy=y1-y0,l2=dx*dx+dy*dy;
+    const t=l2?Math.max(0,Math.min(1,((px-x0)*dx+(py-y0)*dy)/l2)):0; best=Math.min(best,Math.hypot(px-x0-t*dx,py-y0-t*dy))}
+  return best}
+const polyLen=pts=>{let s=0;for(let j=1;j<pts.length;j++)s+=Math.hypot(pts[j][0]-pts[j-1][0],pts[j][1]-pts[j-1][1]);return s};
+// the point, and the direction of the segment, at a fraction f of the length of a polyline
+function polyAt(pts,f){const tot=polyLen(pts)*f;let s=0;
+  for(let j=1;j<pts.length;j++){const [x0,y0]=pts[j-1],[x1,y1]=pts[j],l=Math.hypot(x1-x0,y1-y0);
+    if(s+l>=tot||j===pts.length-1){const t=l?Math.min(1,(tot-s)/l):0;return [x0+(x1-x0)*t,y0+(y1-y0)*t,(x1-x0)/(l||1),(y1-y0)/(l||1)]}
+    s+=l}
+  return [pts[0][0],pts[0][1],1,0]}
+// a road or border follows the drag: a new corner is set each time the pointer has moved a little way on
 function toolDown(ev){
   const g=gridPos(ev); if(!g)return;
-  if(tool==='addRoad'||tool==='addBorder'){toolDrag={x0:g[0],y0:g[1],x1:g[0],y1:g[1]};cv.setPointerCapture(ev.pointerId);draw();return}
+  if(tool==='addRoad'||tool==='addBorder'){toolDrag={pts:[g],cur:g};cv.setPointerCapture(ev.pointerId);draw();return}
   const list=tool==='rmRoad'?P.roads:P.borders; let k=-1,best=Math.max(1.5,E.L/60);
-  list.forEach((s,j)=>{const d=segDist(g[0],g[1],s);if(d<best){best=d;k=j}});
+  list.forEach((s,j)=>{const d=polyDist(g[0],g[1],s.pts);if(d<best){best=d;k=j}});
   if(k>=0){list.splice(k,1);netChanged()}
+}
+function toolMove(g){
+  const d=toolDrag, last=d.pts[d.pts.length-1]; d.cur=g;
+  if(Math.hypot(g[0]-last[0],g[1]-last[1])>=Math.max(1.5,E.L/40))d.pts.push(g);
+  draw();
 }
 function toolUp(){
   const d=toolDrag; toolDrag=null; if(!d)return;
-  if(Math.hypot(d.x1-d.x0,d.y1-d.y0)<1){draw();return}
-  if(tool==='addRoad')P.roads.push({x0:d.x0,y0:d.y0,x1:d.x1,y1:d.y1,f:+$('roadF').value});
-  else P.borders.push({x0:d.x0,y0:d.y0,x1:d.x1,y1:d.y1,tax:+$('taxSel').value,oneway:$('dirSel').value==='one'});
+  const pts=d.pts.slice(), last=pts[pts.length-1];
+  if(Math.hypot(d.cur[0]-last[0],d.cur[1]-last[1])>0.3)pts.push(d.cur);
+  if(pts.length<2||polyLen(pts)<1){draw();return}
+  if(tool==='addRoad')P.roads.push({pts,f:+$('roadF').value});
+  else P.borders.push({pts,tax:+$('taxSel').value,oneway:$('dirSel').value==='one'});
   netChanged();
 }
 // roads (asphalt with a dashed yellow middle line) and borders (dashed red, with the tax, and arrows when one-way),
 // drawn with a function that maps lattice positions to the canvas
 function drawNet(at,cell,dpr){
-  const seg=(s,col,w,dash)=>{const a=at(s.x0,s.y0),b=at(s.x1,s.y1);ctx.setLineDash(dash||[]);ctx.strokeStyle=col;ctx.lineWidth=w;
-    ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.setLineDash([])};
-  const road=(s,alpha)=>{ctx.globalAlpha=alpha;ctx.lineCap='round';
-    seg(s,dark?'#7d869b':'#596072',Math.max(3*dpr,0.9*cell));seg(s,'#facc15',Math.max(1,0.9*dpr),[5*dpr,5*dpr]);ctx.lineCap='butt';ctx.globalAlpha=1};
-  const border=(s,alpha)=>{ctx.globalAlpha=alpha; seg(s,'#f43f5e',2.6*dpr,[8*dpr,5*dpr]);
-    const len=Math.hypot(s.x1-s.x0,s.y1-s.y0)||1,nx=(s.y1-s.y0)/len,ny=-(s.x1-s.x0)/len;
-    if(s.oneway)for(const f of [0.2,0.5,0.8]){              // arrows across the border, in the taxed direction
-      const px=s.x0+(s.x1-s.x0)*f,py=s.y0+(s.y1-s.y0)*f,o=at(px,py),q=at(px+nx,py+ny);
+  const line=(pts,col,w,dash)=>{ctx.setLineDash(dash||[]);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineJoin='round';ctx.beginPath();
+    pts.forEach((p,k)=>{const q=at(p[0],p[1]);k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});ctx.stroke();ctx.setLineDash([])};
+  const road=(pts,alpha)=>{ctx.globalAlpha=alpha;ctx.lineCap='round';
+    line(pts,dark?'#7d869b':'#596072',Math.max(3*dpr,0.9*cell));line(pts,'#facc15',Math.max(1,0.9*dpr),[5*dpr,5*dpr]);ctx.lineCap='butt';ctx.globalAlpha=1};
+  const border=(s,alpha)=>{ctx.globalAlpha=alpha; line(s.pts,'#f43f5e',2.6*dpr,[8*dpr,5*dpr]);
+    if(s.oneway)for(const f of [0.2,0.5,0.8]){              // arrows across the border, in the taxed direction (right of the drawing)
+      const [px,py,tx,ty]=polyAt(s.pts,f),o=at(px,py),q=at(px+ty,py-tx);
       const ang=Math.atan2(q[1]-o[1],q[0]-o[0]),la=9*dpr,lb=16*dpr,h=7*dpr;
       const a=[o[0]-la*Math.cos(ang),o[1]-la*Math.sin(ang)],b=[o[0]+lb*Math.cos(ang),o[1]+lb*Math.sin(ang)];
       ctx.strokeStyle='#f43f5e';ctx.fillStyle='#f43f5e';ctx.lineWidth=2.2*dpr;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
       ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.lineTo(b[0]-h*Math.cos(ang-0.45),b[1]-h*Math.sin(ang-0.45));ctx.lineTo(b[0]-h*Math.cos(ang+0.45),b[1]-h*Math.sin(ang+0.45));ctx.fill()}
-    if(s.tax!=null){const lx=s.x0+(s.x1-s.x0)*0.3,ly=s.y0+(s.y1-s.y0)*0.3,o=at(lx,ly),q=at(lx-nx,ly-ny),
+    if(s.tax!=null){const [lx,ly,tx,ty]=polyAt(s.pts,0.3),o=at(lx,ly),q=at(lx-ty,ly+tx),
       dl=Math.hypot(q[0]-o[0],q[1]-o[1])||1,p=[o[0]+(q[0]-o[0])/dl*14*dpr,o[1]+(q[1]-o[1])/dl*14*dpr];ctx.font=`700 ${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.fillStyle=dark?'#fecdd3':'#be123c';ctx.fillText(Math.round(100*s.tax)+' %',p[0],p[1])}
     ctx.globalAlpha=1};
-  P.roads.forEach(s=>road(s,1)); P.borders.forEach(s=>border(s,1));
-  if(toolDrag){const s={...toolDrag}; if(tool==='addRoad')road(s,0.6); else border({...s,tax:+$('taxSel').value,oneway:$('dirSel').value==='one'},0.6)}
+  P.roads.forEach(s=>road(s.pts,1)); P.borders.forEach(s=>border(s,1));
+  if(toolDrag){const pts=[...toolDrag.pts,toolDrag.cur]; if(tool==='addRoad')road(pts,0.6); else border({pts,tax:+$('taxSel').value,oneway:$('dirSel').value==='one'},0.6)}
 }
 $('Lsel').onchange=restart;
 $('speed').oninput=e=>{$('speedV').textContent=e.target.value};
@@ -1064,7 +1098,7 @@ function doStep(){
     const now=performance.now();
     for(const b of E.bankruptList){
       // a few sparks thrown up and out; they fall back under gravity, which gives the burst its depth
-      const parts=[]; for(let k=0;k<9;k++){const a=-Math.PI*(0.08+0.84*Math.random()), v=0.6+0.7*Math.random(); parts.push([v*Math.cos(a),v*Math.sin(a)])}
+      const parts=[]; for(let k=0;k<9;k++){const a=-Math.PI*(0.08+0.84*Math.random()), v=0.6+0.7*Math.random(); parts.push([v*Math.cos(a),v*Math.sin(a),Math.random()])}
       flashes.push({r:b.r,t:now,size:b.size,prod:b.prod,parts});
     }
     if(flashes.length>400)flashes.splice(0,flashes.length-400);
@@ -1108,7 +1142,7 @@ function fitCanvas(c){
 let geo={x0:0,y0:0,side:1};
 // ---------- 3D view: the lattice seen from the side, every factory a tower as high as its sales ----------
 // camera: azimuth az, tilt el above the plane, distance dist (in units of L; 0 = infinitely far, no perspective)
-const V3={az:-0.62, el:0.62, dist:4, hmax:1, mmax:1, scaleT:-1, order:null, key:'', fit:null};
+const V3={az:-0.62, el:0.62, dist:4, zoom:1, hmax:1, mmax:1, scaleT:-1, order:null, key:'', fit:null};
 // Renew the height scales only when the number of rounds has grown by half since the last renewal: the average, over
 // the last two thirds of the run, of the size of the biggest company and of the largest money.
 function updateScales(){
@@ -1128,7 +1162,7 @@ function draw3D(){
   const L=E.L, LL=L*L, N=E.N;
   const dpr=fitCanvas(cv), W=cv.width, H=cv.height;
   ctx.clearRect(0,0,W,H);
-  const ca=Math.cos(V3.az), sa=Math.sin(V3.az), se=Math.sin(V3.el), ce=Math.cos(V3.el), HW=0.42*L;
+  const ca=Math.cos(V3.az), sa=Math.sin(V3.az), se=Math.sin(V3.el), ce=Math.cos(V3.el), HW=0.34*L, HM=0.24*L;   // height of the biggest company and of the largest money
   const D=V3.dist>0?V3.dist*L:0, Dc=D||1e7;
   const xc=Dc*sa*ce, yc=Dc*ca*ce, zc=Dc*se;            // camera position (far away along the view direction when D = 0)
   const mUp=money3==='up', mDown=money3==='down';
@@ -1147,7 +1181,7 @@ function draw3D(){
   for(let r=0;r<LL;r++){let t=0;for(let i=0;i<N;i++)if(E.F[i][r])t+=E.sales[i][r];tot[r]=t}
   if(!EXPORT_DPR)updateScales();
   const f=hlog?v=>HW*Math.log(1+v)/Math.log(1+V3.hmax):v=>HW*v/V3.hmax;
-  const fm=hlog?v=>HW*Math.log(1+Math.max(0,v))/Math.log(1+V3.mmax):v=>HW*Math.max(0,v)/V3.mmax;
+  const fm=hlog?v=>HM*Math.log(1+Math.max(0,v))/Math.log(1+V3.mmax):v=>HM*Math.max(0,v)/V3.mmax;
   // scale bars at the left corner of the lattice: companies upward, money (if shown) upward or downward like the towers
   const corners=[[-L/2,-L/2],[L/2,-L/2],[L/2,L/2],[-L/2,L/2]];
   const cl=corners.reduce((a,c)=>proj(c[0],c[1],0)[0]<proj(a[0],a[1],0)[0]?c:a);
@@ -1162,16 +1196,16 @@ function draw3D(){
       if(ticks.length)bars.push({h:sg*fm(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,h:sg*fm(v)})),label:'money',gold:true})}
     else{const v=niceNum(0.5*V3.mmax), h=sg*fm(v); bars.push({h,ticks:[{v,h}],label:'money',gold:true})}
   }
-  // framing: the lattice with room for towers 1.25 times the height scale (and, with money below the plane, as deep), seen
+  // framing: the lattice with room for towers 1.15 times the height scale (and, with money below the plane, as deep), seen
   // from the camera. It does not depend on the towers of the moment, so it changes only when the scales are renewed or the
   // view is turned
-  const zUp=Math.max(f(1.25*V3.hmax),mUp?fm(1.25*V3.mmax):0), zDn=mDown?fm(1.25*V3.mmax):0;
+  const zUp=Math.max(f(1.15*V3.hmax),mUp?fm(1.15*V3.mmax):0), zDn=mDown?fm(1.15*V3.mmax):0;
   let X0=Infinity,X1=-Infinity,Y0=Infinity,Y1=-Infinity;
   for(const c of corners)for(const z of [0,zUp,-zDn]){const p=proj(c[0],c[1],z);
     X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Y0=Math.min(Y0,p[1]);Y1=Math.max(Y1,p[1])}
   X0-=0.5; X1+=0.5;
   const LM=78*dpr;                                   // room on the left for the numbers of the scale bars
-  const s=Math.min((W-LM)*0.985/(X1-X0), H*0.985/(Y1-Y0));
+  const s=V3.zoom*Math.min((W-LM)*0.985/(X1-X0), H*0.985/(Y1-Y0));   // zoom: the view menu or the mouse wheel
   const ox=LM+(W-LM)/2-s*(X0+X1)/2, oy=H/2-s*(Y0+Y1)/2;
   V3.fit={s,ox,oy,ca,sa,se,ce,D,dpr};
   const P2=(x,y,z)=>{const p=proj(x,y,z);return [ox+s*p[0],oy+s*p[1]]};
@@ -1246,7 +1280,7 @@ function draw3D(){
     ctx.textBaseline=b.h<0?'top':'bottom'; ctx.textAlign='center';
     ctx.fillText(b.label+(hlog&&!b.gold?' (log)':''),x,y1+(b.h<0?6:-6)*dpr); ctx.textAlign='right';
   });
-  drawFlashes((r)=>{const p=P2((r%L)+0.5-L/2,((r/L)|0)+0.5-L/2,0);return [p[0],p[1],s,se]});
+  drawFlashes(r=>{const x=(r%L)+0.5-L/2,y=((r/L)|0)+0.5-L/2,p=P2(x,y,0);return [p[0],p[1],s,se,size=>P2(x,y,f(size))[1]]});
   $('legend').innerHTML=P.products.map((pr,i)=>`<span><i style="background:${PCOL[i]}"></i>${PNAME[i]}</span>`).join('')+
     `<span>tower height = units sold last round, largest company lowest (${hlog?'log':'linear'})</span>`+
     (money3!=='off'?`<span><i style="background:rgba(222,176,46,.6)"></i>money${mDown?', hanging below the plane':''}</span>`:'')+
@@ -1272,7 +1306,7 @@ function drawFlashes(pos){
   const now=performance.now(), dpr=EXPORT_DPR||window.devicePixelRatio||1;
   flashes=flashes.filter(fl=>now-fl.t<FLASH_MS);
   for(const fl of flashes){
-    const a=(now-fl.t)/FLASH_MS, b=1-a, [x,y,cell,flat]=pos(fl.r);
+    const a=(now-fl.t)/FLASH_MS, b=1-a, [x,y,cell,flat,topOf]=pos(fl.r);
     const R=Math.max(3*dpr,cell*Math.min(7,0.9+0.55*Math.sqrt(fl.size)));
     const c=flashMode==='colour'&&fl.prod>=0&&PRGB[fl.prod]?PRGB[fl.prod].join(','):'255,200,40';
     // shock ring on the ground
@@ -1282,10 +1316,21 @@ function drawFlashes(pos){
     const fy=y-R*0.45*a, fr=R*(0.35+0.55*a), g=ctx.createRadialGradient(x,fy,0,x,fy,fr);
     g.addColorStop(0,`rgba(255,255,235,${0.95*b*b})`); g.addColorStop(0.35,`rgba(${c},${0.85*b})`); g.addColorStop(1,`rgba(${c},0)`);
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,fy,fr,0,2*Math.PI); ctx.fill();
-    // sparks thrown up and out, falling back under gravity
+    // a big company: its whole column lights up and bursts along its height (3D only)
+    const yt=topOf&&fl.size>0?topOf(fl.size):y, colH=y-yt>8*dpr?y-yt:0;
+    if(colH){
+      const wc=Math.max(3*dpr,cell*0.9)*(1+0.6*a), gc=ctx.createLinearGradient(x-wc/2,0,x+wc/2,0);
+      gc.addColorStop(0,`rgba(${c},0)`); gc.addColorStop(0.5,`rgba(255,255,235,${0.9*b})`); gc.addColorStop(1,`rgba(${c},0)`);
+      ctx.fillStyle=gc; ctx.fillRect(x-wc/2,yt,wc,colH);
+      const nb=Math.min(8,Math.max(2,Math.round(colH/(1.5*R))));
+      for(let k=0;k<nb;k++){const by=y-(k+0.5)/nb*colH, br=R*(0.3+0.5*a), gb=ctx.createRadialGradient(x,by,0,x,by,br);
+        gb.addColorStop(0,`rgba(255,255,235,${0.8*b*b})`); gb.addColorStop(0.4,`rgba(${c},${0.7*b})`); gb.addColorStop(1,`rgba(${c},0)`);
+        ctx.fillStyle=gb; ctx.beginPath(); ctx.arc(x,by,br,0,2*Math.PI); ctx.fill()}
+    }
+    // sparks thrown up and out (from all along the column of a big company), falling back under gravity
     ctx.fillStyle=`rgba(${c},${b})`;
-    for(const [vx,vy] of fl.parts){
-      const px=x+vx*R*1.6*a, py=y+vy*R*1.6*a+R*1.4*a*a;
+    for(const [vx,vy,hf] of fl.parts){
+      const px=x+vx*R*1.6*a, py=y-hf*colH+vy*R*1.6*a+R*1.4*a*a;
       ctx.beginPath(); ctx.arc(px,py,Math.max(0.8*dpr,0.11*R*b),0,2*Math.PI); ctx.fill();
     }
   }
@@ -1388,13 +1433,16 @@ function evR(ev){
 }
 // in 3D a drag turns (sideways) and tilts (up and down) the lattice; a tap or hover picks an agent on the ground
 let drag=null;
+// the mouse wheel over the 3D view zooms in and out
+cv.addEventListener('wheel',e=>{if(view!=='3d')return; e.preventDefault();
+  V3.zoom=Math.min(Math.exp(1.4),Math.max(Math.exp(-0.7),V3.zoom*Math.exp(-e.deltaY*0.0012))); syncView(); if(!running)draw()},{passive:false});
 cv.addEventListener('pointerdown',ev=>{
   if(tool){toolDown(ev);return}                   // a road or border tool is chosen: draw or remove instead
   if(view==='3d'){drag={x:ev.clientX,y:ev.clientY,az:V3.az,el:V3.el,moved:false};cv.setPointerCapture(ev.pointerId)}
   hoverR=view==='3d'?evR3(ev):evR(ev);draw();
 });
 cv.addEventListener('pointermove',ev=>{
-  if(toolDrag){const g=gridPos(ev);if(g){toolDrag.x1=g[0];toolDrag.y1=g[1];draw()}return}
+  if(toolDrag){const g=gridPos(ev);if(g)toolMove(g);return}
   if(drag&&view==='3d'){
     const dx=ev.clientX-drag.x, dy=ev.clientY-drag.y;
     if(Math.abs(dx)+Math.abs(dy)>4)drag.moved=true;
