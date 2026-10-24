@@ -120,7 +120,20 @@
   @media (min-width:700px){ .distgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
   .chartbox.dist{height:250px}
   /* view menu of the 3D view: upper left corner of the display */
-  .viewmenu{position:absolute;left:6px;top:6px;z-index:4;font-size:12.5px}
+  /* tool bar in the upper left corner of the display: view menu (3D), roads and borders */
+  .tools{position:absolute;left:6px;top:6px;z-index:4;display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start;max-width:calc(100% - 12px)}
+  .tools .tb,.tools .tmenu > summary{height:27px;padding:0 9px;border:1px solid var(--line);background:rgba(255,255,255,.9);color:var(--accent);
+    font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;line-height:25px}
+  .tools .tb{border-radius:8px}
+  .tools .tool{display:inline-flex}               /* their menus open under the tool bar, from its left edge */
+  .tools .tool .tb{border-radius:8px 0 0 8px}
+  .tools .tmenu > summary{list-style:none;border-left:0;border-radius:0 8px 8px 0;padding:0 6px;display:block}
+  .tools .tmenu > summary::-webkit-details-marker{display:none}
+  .tools .tmenu .vmbox{position:absolute;left:0;top:100%}
+  .tools .tb.on{background:#b7791f;border-color:#b7791f;color:#fff}
+  .display.darkbg .tools .tb:not(.on),.display.darkbg .tools .tmenu > summary{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
+  .viewmenu{font-size:12.5px;position:relative}
+  .viewmenu .vmbox{position:absolute;left:0;top:100%}
   .viewmenu > summary{list-style:none;cursor:pointer;display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:8px;
     background:rgba(255,255,255,.9);color:var(--accent);font-weight:700;user-select:none}
   .viewmenu > summary::-webkit-details-marker{display:none}
@@ -206,27 +219,37 @@
     <summary><h1>Globalization in a nutshell — 2D</h1></summary>
     <div class="dropbox">
       <p>Why is bread still baked around the corner, while almost every computer chip in the world comes from a handful of
-        factories? This applet is a toy world for thinking about that question. It is a two-dimensional version, with many
-        products, of the model of Sneppen and Bornholdt [1].</p>
+        factories? This applet is a toy world for thinking about that question. It is the model of Sneppen and Bornholdt [1],
+        made two-dimensional and — the real change — extended from one product to many. With many products, agents choose
+        what to make, and that needs a careful account of what holds back a big economy of scale: it costs money to start a
+        factory, and money every round to keep one running. Without those costs, the products that scale best would simply
+        take over everything.</p>
 
       <h2>The world</h2>
-      <p>Picture a square town of <b>L × L</b> people, the <i>agents</i>, one on each square of a grid. The grid is wrapped
-        around like a doughnut, so there is no edge: walk off the right side and you come back on the left. Everybody needs
+      <p>Picture a square town of <b>L × L</b> people, the <i>agents</i>, one on each square of a grid. Normally the grid is
+        wrapped around like a doughnut, so there is no edge: walk off the right side and you come back on the left (with
+        <i>closed</i> boundaries it has edges instead, like an island). Everybody needs
         <b>N</b> kinds of goods, called A, B, C, … Some agents also own a factory that makes one of them. An agent has money,
         and a list of the products it can make: F(r,i) = 1 if the agent at r makes product i, otherwise 0.</p>
 
       <h2>What a thing costs</h2>
       <p>Suppose you live at r₂ and want one unit of product i. Each factory offers it to you at a price, and you simply take
         the cheapest offer. The factory at r₁ asks</p>
-      <p class="eqc">C = s(r₁,i)<sup>γ(i)</sup> + β(i) · |r₁ − r₂| &nbsp; ( + τ if you live in another country )</p>
+      <p class="eqc">C = s(r₁,i)<sup>γ(i)</sup> + β(i) · |r₁ − r₂| &nbsp; ( with roads and borders: see below )</p>
       <p>The first term is what it costs to make the thing. Here <b>s</b> is the size of the factory: one plus the number of
         units it sold last round. A brand-new factory has s = 1, so its price is 1. The exponent <b>γ</b> is negative, and it
         says how much being big helps. With γ = −0.3 a factory a hundred times bigger makes each unit only about four times as
         cheaply — that is bread. With γ = −0.9 it makes each unit sixty times as cheaply — that is a computer chip.
         This is the <i>economy of scale</i>.</p>
-      <p>The second term is the cost of transport: every step between factory and customer adds <b>β</b>. Distance is measured
-        the short way round the doughnut, straight across (Euclidean) or along the streets (Manhattan). Nobody buys from
-        themselves: you shop at somebody else's factory.</p>
+      <p>The second term is the cost of transport: every step between factory and customer adds <b>β</b>, and distance is
+        measured in a straight line, the short way round. Nobody buys from themselves: you shop at somebody else's factory.</p>
+      <p>You can change the geography. A <b>road</b> makes travel along it cheaper: the transport cost there is multiplied by
+        a factor you choose, say 0.2. A <b>border</b> charges a tax on goods that cross it, a percentage of what they are
+        worth at that point (their price plus the transport so far); a one-way border taxes only goods crossing in the
+        direction of its arrows. With roads or borders the cheapest offer is no longer the one on the straight line, so the
+        applet finds it the way water finds its way downhill: it spreads every factory's offer step by step over the grid
+        (along 16 directions), always keeping the cheapest offer that has reached each place. (For speed it also works this
+        way when a product has very many factories; the distances then differ from straight lines by at most about 3 %.)</p>
       <p>So each product has just three numbers: <b>Start</b>, the price of building a factory for it; <b>γ</b>; and
         <b>β</b>. It is natural that the products that profit most from being big are also the ones that cost most to start:
         the applet insists on that ordering. Product A is the basic one — cheap to start (2), helped only a little by size
@@ -269,8 +292,9 @@
       <p>Now you can see what globalization does. Make transport cheaper (the <i>transport factor</i> multiplies every β;
         <i>lower gradually</i> keeps reducing it, as in Fig. 2 of [1]) and R grows: many small local producers merge into a
         few big ones that ship far. Products with a strong economy of scale and cheap transport go global first; bread stays
-        local. Countries with a tariff τ on crossing a border (only one border counts) cut R down again, and each country gets
-        its own champion.</p>
+        local. A road stretches R along itself, so companies grow along roads; a border with a tax cuts R down again, and each
+        country gets its own champion — unless the economy of scale is so strong that the giant across the border is still
+        cheaper after the tax.</p>
 
       <h2>How to read the pictures</h2>
       <p><i>3D</i>: the town seen from the side, as in the figures of [1]. Every factory is a tower as tall as the units it sold
@@ -284,6 +308,10 @@
         one product, everybody in the colour of the factory they buy from; the dots are the factories. <i>Sales</i> and
         <i>Money</i>: heat maps on a log scale, in the colours of the paper's figures. Hover over or tap an agent to see its
         numbers.</p>
+      <p>The buttons in the upper left corner draw the geography: <i>+ road</i> (its ▾ sets the transport factor on the road)
+        and <i>+ border</i> (its ▾ sets the tax and whether it is one-way): choose one, then press, drag and release on the
+        lattice. <i>− road</i> and <i>− border</i>: choose one, then tap a road or border to remove it. Tap the chosen button
+        again to go back to turning the view.</p>
       <p>The buttons in the lower right corner: the lightning bolt makes a small explosion wherever a company goes bankrupt,
         the bigger the company the bigger the bang — off (black), yellow, or in the company's colour (multicoloured bolt);
         the half-black circle switches the background; <i>.png</i> saves the picture with the parameters written in the lower
@@ -302,7 +330,7 @@
 </header>
 
 <div class="layout">
-  <section class="display">
+  <section class="display darkbg">
     <div class="dispbar">
       <div class="seg" id="viewSeg">
         <button data-v="3d" class="on">3D</button><button data-v="agents">Agents</button><button data-v="market">Market</button><button data-v="sales">Sales</button><button data-v="money">Money</button>
@@ -310,7 +338,7 @@
       <div class="ptabs" id="ptabs"></div>
       <div class="seg" id="hSeg" title="height of the towers: units sold last round, linear or logarithmic"><button data-h="lin" class="on">lin</button><button data-h="log">log</button></div>
       <select id="moneySel" title="money of the agents as golden, semi-transparent towers in the same view">
-        <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down">money ↓ below the plane</option></select>
+        <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down" selected>money ↓ below the plane</option></select>
       <span class="spacer"></span>
       <button class="tbtn sobtn on" id="bSO2" title="self-organized price: the value of all units sold equals the total wages, so money does not pile up (off: every unit sells at price 1)">self-organized</button>
       <span class="stat">round <b id="tRound">0</b></span>
@@ -318,6 +346,7 @@
       <button class="tbtn" id="bReset2" title="reset">↺</button>
     </div>
     <div class="canvas-wrap"><canvas id="cv"></canvas>
+      <div class="tools">
       <details class="viewmenu" id="viewMenu">
         <summary title="viewing angles and perspective of the 3D view">view ▾</summary>
         <div class="vmbox">
@@ -328,6 +357,30 @@
           <button class="btn sm" id="viewReset">reset view</button>
         </div>
       </details>
+      <!-- roads and borders: choose a tool, then press, drag and release on the lattice (or tap a road or border to remove it) -->
+      <div class="tool">
+        <button class="tb" data-tool="addRoad" title="add a road: press, drag and release on the lattice">+ road</button>
+        <details class="tmenu"><summary title="transport cost on the road">▾</summary>
+          <div class="vmbox"><div class="row"><label>transport on the road ×<span class="vv" id="roadFV">0.20</span></label>
+            <input type="range" id="roadF" min="0.05" max="1" step="0.05" value="0.2"></div>
+            <p class="hint">Moving along the road costs this fraction of the normal transport cost β.</p></div>
+        </details>
+      </div>
+      <button class="tb" data-tool="rmRoad" title="remove a road: tap on it">− road</button>
+      <div class="tool">
+        <button class="tb" data-tool="addBorder" title="add a border: press, drag and release on the lattice">+ border</button>
+        <details class="tmenu"><summary title="tax and direction of the border">▾</summary>
+          <div class="vmbox">
+            <div class="row"><label>tax on crossing</label>
+              <select id="taxSel"><option value="0.05">5 %</option><option value="0.1">10 %</option><option value="0.2" selected>20 %</option><option value="0.3">30 %</option><option value="0.5">50 %</option><option value="1">100 %</option><option value="2">200 %</option></select></div>
+            <div class="row"><label>direction</label>
+              <select id="dirSel"><option value="two">both ways</option><option value="one">one way (arrow)</option></select></div>
+            <p class="hint">The tax is a percentage of the value of the goods where they cross. A one-way border taxes only goods crossing
+              in the direction of its arrows: to the right of the direction in which you drew it.</p></div>
+        </details>
+      </div>
+      <button class="tb" data-tool="rmBorder" title="remove a border: tap on it">− border</button>
+      </div>
       <div class="cornerbtns">
         <button id="bFlash" title="explosions where companies go bankrupt: off — click for yellow, click again for the company's colour">
           <svg viewBox="0 0 16 16" width="15" height="15" style="vertical-align:-3px"><defs><linearGradient id="flashGrad" x1="0" y1="0" x2="1" y2="1">
@@ -409,7 +462,7 @@
       <div class="row"><label title="self-organized: a unit sells at p = Σ wages / Σ units sold in the round before, so the value of all production equals the total wages and money does not pile up. Fixed: every unit sells at 1">Price per unit</label>
         <select id="econSel"><option value="so">self-organized</option><option value="fixed">fixed = 1</option></select></div>
       <div class="row"><label>Lattice L</label>
-        <select id="Lsel"><option>32</option><option>48</option><option selected>64</option><option>96</option><option>128</option></select></div>
+        <select id="Lsel"><option>32</option><option>64</option><option>96</option><option selected>125</option><option>192</option><option>256</option></select></div>
       <div class="row"><label title="orders per agent per product per round: small n = few, noisy sales">Orders n</label>
         <select id="nSel"><option>0.05</option><option>0.1</option><option>0.2</option><option>0.5</option><option>1</option><option>2</option><option>5</option></select></div>
       <div class="row"><label title="the largest number of different products one agent may produce">Products per agent, lim</label><select id="limSel"></select></div>
@@ -429,11 +482,11 @@
       <div class="row"><label class="chk"><input type="checkbox" id="anneal">lower gradually</label>
         <select id="aRate" title="the transport factor is multiplied by exp(−rate) every round">
           <option value="0.001">e^−0.001 / round</option><option value="0.002" selected>e^−0.002 / round</option><option value="0.005">e^−0.005 / round</option><option value="0.01">e^−0.01 / round</option></select></div>
-      <div class="row"><label>Distance</label>
-        <select id="metricSel"><option value="euclid">Euclidean</option><option value="manhattan">Manhattan</option></select></div>
-      <div class="row"><label>Countries</label>
-        <select id="ctry"><option value="1">1</option><option value="2">2 × 2</option><option value="3">3 × 3</option><option value="4">4 × 4</option></select></div>
-      <div class="row"><label>Tariff τ <span class="vv" id="tauV"></span></label><input type="range" id="tauR" min="0" max="1" step="0.01" value="0.2"></div>
+      <div class="row"><label title="periodic: the lattice wraps around like a doughnut; closed: it has edges">Boundaries</label>
+        <select id="bcSel"><option value="periodic">periodic</option><option value="closed">closed</option></select></div>
+      <div class="row"><label>Roads <span class="vv" id="nRoads">0</span> · borders <span class="vv" id="nBorders">0</span></label>
+        <button class="btn sm" id="clearNet" title="remove all roads and borders">clear all</button></div>
+      <p class="hint">Draw roads and borders on the display with the buttons in its upper left corner: press, drag, release.</p>
     </div>
   </details>
 
@@ -454,24 +507,24 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 
 // P = {L, products:[{start,gamma,beta}], n (orders per agent per product per round), lim (max factories per agent),
 //      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (a decline counts
-//      when profit < previous − κ·p·√(previous units sold)), M0, metric:'euclid'|'manhattan', countries (k → k×k blocks),
-//      tariff, tmul (transport factor), econ:'so'|'fixed', seed}
+//      when profit < previous − κ·p·√(previous units sold)), M0, bc:'periodic'|'closed', tmul (transport factor),
+//      roads:[{x0,y0,x1,y1,f}] (transport cost ×f along the road), borders:[{x0,y0,x1,y1,tax,oneway}] (tax = fraction
+//      of the goods' value charged on crossing; one-way: only when crossing toward the right of the drawn direction),
+//      econ:'so'|'fixed', seed}
 // econ 'so' (self-organized price): a unit sells at p = Σ wages / Σ units sold in the previous round, so the value of all
 // production equals the total wages; a bankrupt agent starts again from money w. econ 'fixed': a unit sells at p = 1.
 function buildEcon(P){
   const L=P.L, LL=L*L, N=P.products.length;
   const rng=mulberry32(P.seed||1);
   const E={P,L,N,t:0,hist:[]};
+  const closed=()=>P.bc==='closed';
 
-  // lattice offsets sorted by distance (random order within a shell), rebuilt when the metric changes
-  let offs=null, offD=null, offMetric=null;
+  // lattice offsets sorted by distance (random order within a shell), rebuilt when the boundary condition changes;
+  // with closed boundaries they reach across the whole lattice
+  let offs=null, offD=null, offBC=null;
   function buildOffsets(){
-    offMetric=P.metric;
-    const h=L>>1, arr=[];
-    for(let dy=-h;dy<L-h;dy++)for(let dx=-h;dx<L-h;dx++){
-      const d=P.metric==='manhattan'?Math.abs(dx)+Math.abs(dy):Math.sqrt(dx*dx+dy*dy);
-      arr.push([dx,dy,d,rng()]);
-    }
+    offBC=P.bc; const arr=[], lo=closed()?-(L-1):-(L>>1), hi=closed()?L-1:L-(L>>1)-1;
+    for(let dy=lo;dy<=hi;dy++)for(let dx=lo;dx<=hi;dx++)arr.push([dx,dy,Math.sqrt(dx*dx+dy*dy),rng()]);
     arr.sort((a,b)=>a[2]-b[2]||a[3]-b[3]);
     offs=new Int32Array(2*arr.length); offD=new Float64Array(arr.length);
     arr.forEach((o,k)=>{offs[2*k]=o[0];offs[2*k+1]=o[1];offD[k]=o[2]});
@@ -479,13 +532,89 @@ function buildEcon(P){
   function countWithin(R){let lo=0,hi=offD.length;while(lo<hi){const m=(lo+hi)>>1;if(offD[m]<=R)lo=m+1;else hi=m}return lo}
   function pdist(a,b){
     let dx=Math.abs(a%L-b%L), dy=Math.abs(((a/L)|0)-((b/L)|0));
-    if(dx>L-dx)dx=L-dx; if(dy>L-dy)dy=L-dy;
-    return P.metric==='manhattan'?dx+dy:Math.sqrt(dx*dx+dy*dy);
+    if(!closed()){if(dx>L-dx)dx=L-dx; if(dy>L-dy)dy=L-dy}
+    return Math.sqrt(dx*dx+dy*dy);
   }
-  const cid=new Int32Array(LL); let cidK=0;
-  function buildCountries(){
-    cidK=P.countries|0||1;
-    for(let y=0;y<L;y++)for(let x=0;x<L;x++)cid[y*L+x]=Math.floor(x*cidK/L)+cidK*Math.floor(y*cidK/L);
+  E.pdist=pdist;
+
+  // ---- transport network: roads and borders. With any of them the cheapest supplier is found by a shortest-path
+  // search on the lattice (16 neighbour moves: steps 1, √2 and √5, so distances are within ~3 % of straight lines) ----
+  const NB=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1],[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
+  const NBL=NB.map(([dx,dy])=>Math.sqrt(dx*dx+dy*dy));
+  const roadF=new Float32Array(LL), taxM=new Float32Array(LL*16);   // road factor of a cell; tax multiplier of a move
+  let netKey='';
+  E.useGraph=()=>(P.roads&&P.roads.length)||(P.borders&&P.borders.length);
+  function buildNet(){
+    const key=JSON.stringify([P.roads,P.borders,P.bc]); if(key===netKey)return; netKey=key;
+    roadF.fill(1); taxM.fill(1);
+    for(const rd of P.roads||[]){                       // cells along the road, sampled every quarter cell
+      const len=Math.hypot(rd.x1-rd.x0,rd.y1-rd.y0), n=Math.max(1,Math.ceil(4*len));
+      for(let k=0;k<=n;k++){const x=Math.floor(rd.x0+(rd.x1-rd.x0)*k/n), y=Math.floor(rd.y0+(rd.y1-rd.y0)*k/n);
+        if(x>=0&&y>=0&&x<L&&y<L){const r=y*L+x; roadF[r]=Math.min(roadF[r],rd.f)}}
+    }
+    const cross=(ax,ay,bx,by,cx,cy,dx,dy)=>{       // do segments a–b and c–d intersect?
+      const o=(px,py,qx,qy,rx,ry)=>(qx-px)*(ry-py)-(qy-py)*(rx-px);
+      const d1=o(cx,cy,dx,dy,ax,ay), d2=o(cx,cy,dx,dy,bx,by), d3=o(ax,ay,bx,by,cx,cy), d4=o(ax,ay,bx,by,dx,dy);
+      return d1*d2<0&&d3*d4<0};
+    // with periodic boundaries a move can wrap around the edge, so each border is also tested shifted by ±L
+    const shifts=closed()?[[0,0]]:[[0,0],[L,0],[-L,0],[0,L],[0,-L]];
+    for(const bd0 of P.borders||[])for(const [sx,sy] of shifts){
+      const bd={x0:bd0.x0+sx,y0:bd0.y0+sy,x1:bd0.x1+sx,y1:bd0.y1+sy};
+      const nx=bd.y1-bd.y0, ny=-(bd.x1-bd.x0);           // the taxed direction of a one-way border: to the right
+      const xmin=Math.min(bd.x0,bd.x1)-3, xmax=Math.max(bd.x0,bd.x1)+3, ymin=Math.min(bd.y0,bd.y1)-3, ymax=Math.max(bd.y0,bd.y1)+3;
+      for(let y=Math.max(0,Math.floor(ymin));y<=Math.min(L-1,Math.ceil(ymax));y++)
+        for(let x=Math.max(0,Math.floor(xmin));x<=Math.min(L-1,Math.ceil(xmax));x++)
+          for(let d=0;d<16;d++){
+            const ax=x+0.5, ay=y+0.5, bx=ax+NB[d][0], by=ay+NB[d][1];
+            if(!cross(ax,ay,bx,by,bd.x0,bd.y0,bd.x1,bd.y1))continue;
+            if(bd0.oneway&&NB[d][0]*nx+NB[d][1]*ny<=0)continue;
+            taxM[(y*L+x)*16+d]*=1+bd0.tax;
+          }
+    }
+  }
+  // Dijkstra from all factories at once. Each cell keeps the two cheapest offers from different factories, because
+  // a factory cell must buy from somebody else. A move multiplies the cost so far by the border tax (a percentage of the
+  // goods' value) and adds β·(length)·(road factor); both keep the costs ordered, so Dijkstra stays exact.
+  let hc=new Float64Array(1<<16), hn=new Int32Array(1<<16), hs=new Int32Array(1<<16), hl=0;
+  const push=(c,n,s)=>{if(hl===hc.length){const g=hc.length*2,a=new Float64Array(g),b=new Int32Array(g),d=new Int32Array(g);a.set(hc);b.set(hn);d.set(hs);hc=a;hn=b;hs=d}
+    let i=hl++; while(i>0){const p=(i-1)>>1;if(hc[p]<=c)break;hc[i]=hc[p];hn[i]=hn[p];hs[i]=hs[p];i=p} hc[i]=c;hn[i]=n;hs[i]=s};
+  const pop=()=>{const c=hc[0],n=hn[0],s=hs[0];hl--;if(hl>0){const lc=hc[hl],ln=hn[hl],ls=hs[hl];let i=0;
+      for(;;){let j=2*i+1;if(j>=hl)break;if(j+1<hl&&hc[j+1]<hc[j])j++;if(hc[j]>=lc)break;hc[i]=hc[j];hn[i]=hn[j];hs[i]=hs[j];i=j}
+      hc[i]=lc;hn[i]=ln;hs[i]=ls}
+    popC=c;popN=n;popS=s};
+  let popC=0,popN=0,popS=0;
+  const cA=new Float64Array(LL), sA=new Int32Array(LL), cB=new Float64Array(LL), sB=new Int32Array(LL), done=new Uint8Array(LL);
+  function marketGraph(i,fac,u,beta,sup,dist,area){
+    cA.fill(Infinity); cB.fill(Infinity); sA.fill(-1); sB.fill(-1); done.fill(0); hl=0;
+    for(const f of fac){cA[f]=u[f];sA[f]=f;push(u[f],f,f)}
+    const cl=closed();
+    // pass the offer (cost c, from factory s) on from cell v to its neighbours
+    const relax=(v,c,s)=>{
+      const x=v%L, y=(v/L)|0, base=v*16;
+      for(let d=0;d<16;d++){
+        let wx=x+NB[d][0], wy=y+NB[d][1];
+        if(cl){if(wx<0||wy<0||wx>=L||wy>=L)continue}
+        else{if(wx<0)wx+=L;else if(wx>=L)wx-=L; if(wy<0)wy+=L;else if(wy>=L)wy-=L}
+        const w=wy*L+wx, dw=done[w]; if(dw===2)continue;
+        const rf=roadF[v]<1&&roadF[w]<1?Math.max(roadF[v],roadF[w]):1;
+        const c2=c*taxM[base+d]+beta*NBL[d]*rf;
+        if(dw===1){if(s!==sA[w]&&c2<cB[w]){cB[w]=c2;sB[w]=s;push(c2,w,s)}}       // the best is final: only the second
+        else if(s===sA[w]){if(c2<cA[w]){cA[w]=c2;push(c2,w,s)}}
+        else if(c2<cA[w]){cB[w]=cA[w];sB[w]=sA[w];cA[w]=c2;sA[w]=s;push(c2,w,s)}   // the old best becomes the second
+        else if(c2<cB[w]){cB[w]=c2;sB[w]=s;push(c2,w,s)}
+      }
+    };
+    while(hl>0){
+      pop(); const c=popC, v=popN, s=popS;
+      if(done[v]===0){
+        if(s===sA[v]&&c===cA[v]){done[v]=1;relax(v,c,s)}
+        else if(s===sB[v]&&c===cB[v]){done[v]=1;relax(v,cA[v],sA[v]);done[v]=2;relax(v,c,s)}   // a tie: settle both
+      }else if(done[v]===1&&s===sB[v]&&c===cB[v]){done[v]=2;relax(v,c,s)}
+    }
+    for(let r=0;r<LL;r++){
+      const b=sA[r]===r?sB[r]:sA[r];                     // nobody buys from itself
+      sup[r]=b; dist[r]=b<0?0:pdist(b,r); if(b>=0)area[b]++;
+    }
   }
 
   // inc: money acquired in the last round (wage + sales); profit: sales − upkeep of the factories
@@ -499,7 +628,6 @@ function buildEcon(P){
     E.dist.push(new Float32Array(LL)); E.u.push(new Float64Array(LL)); E.area.push(new Int32Array(LL));
   }
   const cum=new Float64Array(LL), inList=new Uint8Array(LL), newSales=[]; for(let i=0;i<N;i++)newSales.push(new Int32Array(LL));
-  E.cid=cid;
 
   E.reset=function(){
     E.t=0;E.hist=[];
@@ -514,7 +642,7 @@ function buildEcon(P){
   // cheapest supplier of product i for every agent, at the current sizes
   function market(i){
     const pr=P.products[i], F=E.F[i], S=E.sales[i], u=E.u[i], sup=E.sup[i], dist=E.dist[i], area=E.area[i];
-    const beta=Math.max(0,pr.beta*P.tmul), g=pr.gamma, tau=cidK>1?P.tariff:0;
+    const beta=Math.max(0,pr.beta*P.tmul), g=pr.gamma, cl=closed();
     const fac=[]; let umin=Infinity, umax=-Infinity;
     for(let r=0;r<LL;r++){
       if(F[r]){const v=Math.pow(1+S[r],g);u[r]=v;fac.push(r);if(v<umin)umin=v;if(v>umax)umax=v}
@@ -523,28 +651,29 @@ function buildEcon(P){
     area.fill(0);
     const nF=fac.length;
     if(!nF){sup.fill(-1);dist.fill(0);return}
+    if(E.useGraph()){marketGraph(i,fac,u,beta,sup,dist,area);return}
     // The K cheapest factories are checked from a list; the others (unit price ≥ uK) by scanning the lattice
-    // outward from the buyer, stopping once uK + β·d exceeds the best price found. K is chosen to minimise the work.
+    // outward from the buyer, stopping once uK + β·d exceeds the best price found. K is chosen to minimise the work;
+    // when even that is more than some 120 checks per buyer, the shortest-path search is faster.
     fac.sort((a,b)=>u[a]-u[b]);
-    let K=nF, uK=Infinity;
+    let K=nF, uK=Infinity, bestCost=nF;
     if(beta>0){
-      const Rn=1.5*Math.sqrt(LL/(Math.PI*nF))+tau/beta;
-      let bestCost=nF;
+      const Rn=1.5*Math.sqrt(LL/(Math.PI*nF));
       for(let k=0;k<nF;k=k?2*k:8){
         const cost=k+countWithin(Rn+(umax-u[fac[k]])/beta);
         if(cost<bestCost){bestCost=cost;K=k}
       }
       if(K<nF)uK=u[fac[K]];
     }
+    if(bestCost>120){marketGraph(i,fac,u,beta,sup,dist,area);return}
     inList.fill(0); for(let k=0;k<K;k++)inList[fac[k]]=1;
     const EPS=1e-12;
     for(let r2=0;r2<LL;r2++){
-      const x2=r2%L, y2=(r2/L)|0, c2=cid[r2];
+      const x2=r2%L, y2=(r2/L)|0;
       let best=Infinity, bs=-1, bd=0, nt=0;      // an agent does not buy from itself
       for(let k=0;k<K;k++){
         const r1=fac[k]; if(r1===r2)continue;
-        const d=pdist(r1,r2);
-        let c=u[r1]+beta*d; if(tau&&cid[r1]!==c2)c+=tau;
+        const d=pdist(r1,r2), c=u[r1]+beta*d;
         if(c<best-EPS){best=c;bs=r1;bd=d;nt=1}
         else if(c<=best+EPS){nt++;if(rng()*nt<1){bs=r1;bd=d}}
       }
@@ -553,11 +682,11 @@ function buildEcon(P){
           const d=offD[k];
           if(uK+beta*d>best+EPS)break;
           let x=x2+offs[2*k], y=y2+offs[2*k+1];
-          if(x<0)x+=L;else if(x>=L)x-=L;
-          if(y<0)y+=L;else if(y>=L)y-=L;
+          if(cl){if(x<0||y<0||x>=L||y>=L)continue}
+          else{if(x<0)x+=L;else if(x>=L)x-=L; if(y<0)y+=L;else if(y>=L)y-=L}
           const r1=y*L+x, v=u[r1];
           if(v===Infinity||inList[r1])continue;
-          let c=v+beta*d; if(tau&&cid[r1]!==c2)c+=tau;
+          const c=v+beta*d;
           if(c<best-EPS){best=c;bs=r1;bd=d;nt=1}
           else if(c<=best+EPS){nt++;if(rng()*nt<1){bs=r1;bd=d}}
         }
@@ -565,10 +694,13 @@ function buildEcon(P){
       sup[r2]=bs;dist[r2]=bs<0?0:bd;if(bs>=0)area[bs]++;
     }
   }
+  // the markets are recomputed after every round and after every change of a parameter; E.stale marks a change
+  // (such as the transport factor lowered between rounds) that the next round must pick up first
   E.computeMarkets=function(){
-    if(offMetric!==P.metric||!offs)buildOffsets();
-    if(cidK!==(P.countries|0||1))buildCountries();
+    if(offBC!==P.bc||!offs)buildOffsets();
+    buildNet();
     for(let i=0;i<N;i++)market(i);
+    E.stale=false;
   };
 
   function pick(W){
@@ -578,7 +710,7 @@ function buildEcon(P){
   }
 
   E.step=function(){
-    E.computeMarkets();
+    if(E.stale!==false)E.computeMarkets();       // fresh from the end of the last round unless a parameter changed
     // orders: buyer ∝ the money it acquired in the previous round (wage + sales)
     let W=0; for(let r=0;r<LL;r++){W+=E.t?E.inc[r]:1;cum[r]=W}
     const uniform=!(W>0);
@@ -645,7 +777,7 @@ function buildEcon(P){
     return H;
   };
 
-  buildOffsets(); buildCountries();
+  buildOffsets();
   E.reset();
   return E;
 }
@@ -671,31 +803,37 @@ function setPalette(){
   PSH=PRGB.map(c=>({top:shade(c.map(v=>v+(255-v)*0.18),1),a:shade(c,0.8),b:shade(c,0.6)}));
 }
 
-const P={L:64,products:[],n:0.2,lim:1,wage:0.05,upkeep:0.02,kappa:1,M0:5,metric:'euclid',countries:1,tariff:0.2,tmul:1,econ:'so',seed:1};
+const P={L:125,products:[],n:0.2,lim:1,wage:0.05,upkeep:0.02,kappa:1,M0:5,bc:'periodic',tmul:1,roads:[],borders:[],econ:'so',seed:1};
+// a 3 × 3 grid of two-way borders with 20 % tax, for the Borders preset
+const gridBorders=(L,k,tax)=>{const b=[];for(let j=0;j<k;j++){const g=j*L/k;
+  b.push({x0:g,y0:0,x1:g,y1:L,tax,oneway:false},{x0:0,y0:g,x1:L,y1:g,tax,oneway:false})}return b};
 // a more scalable product (lower γ) always costs more to start; A is the basic product
 const THREE=[{start:2,gamma:-0.3,beta:0.1},{start:8,gamma:-0.6,beta:0.05},{start:20,gamma:-0.9,beta:0.02}];
 const PRESETS={
   three:{label:'Three industries',note:'A: basic product, cheap to start, weak economy of scale, costly to ship. B: ordinary industry. C: high tech, strong economy of scale and cheap to ship, but expensive to start.',
-    products:THREE,tmul:1,countries:1,anneal:false},
+    products:THREE,tmul:1,anneal:false},
   one:{label:'One product',note:'The original model in 2D: one product with γ = −0.5 and β = 0.05.',
-    products:[{start:5,gamma:-0.5,beta:0.05}],tmul:1,countries:1,anneal:false},
+    products:[{start:5,gamma:-0.5,beta:0.05}],tmul:1,anneal:false},
   glob:{label:'Globalization',note:'Transport starts 3× dearer and is lowered by e^−0.002 per round: local producers coarsen into a few big companies.',
-    products:THREE,tmul:3,countries:1,anneal:true},
-  borders:{label:'Borders',note:'Cheap transport (factor 0.2), but 3 × 3 countries with a tariff τ = 0.2 on crossing a border.',
-    products:THREE,tmul:0.2,countries:3,tariff:0.2,anneal:false},
+    products:THREE,tmul:3,anneal:true},
+  borders:{label:'Borders',note:'Cheap transport (factor 0.2), but 3 × 3 countries: crossing a border costs 20 % of the value of the goods.',
+    products:THREE,tmul:0.2,anneal:false,borders:L=>gridBorders(L,3,0.2)},
 };
-let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='off', dark=false, loopTok=0;
+let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=true, loopTok=0;
 
 function applyPreset(k){
   const pr=PRESETS[k];
   P.products=pr.products.map(o=>({...o}));
-  P.tmul=pr.tmul; P.countries=pr.countries; if(pr.tariff!=null)P.tariff=pr.tariff;
+  P.tmul=pr.tmul; P.roads=[]; P.borders=pr.borders?pr.borders(+$('Lsel').value):[];
   $('anneal').checked=!!pr.anneal;
   $('presetNote').textContent=pr.note;
   syncControls(); restart();
 }
 function restart(){
-  P.L=+$('Lsel').value; P.seed=(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.scaleT=-1; V3.ext=null;
+  // a new lattice size: roads and borders keep their place relative to the lattice
+  const L1=+$('Lsel').value, f=L1/P.L;
+  if(f!==1)for(const s of [...P.roads,...P.borders]){s.x0*=f;s.y0*=f;s.x1*=f;s.y1*=f}
+  P.L=L1; P.seed=(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.scaleT=-1;
   E=buildEcon(P); flashes=[];
   distReset();
   if(psel>=P.products.length)psel=0;
@@ -713,8 +851,7 @@ function syncControls(){
   $('upR').value=P.upkeep; $('upV').textContent=P.upkeep.toFixed(3);
   $('M0R').value=P.M0; $('M0V').textContent=P.M0;
   $('tmR').value=Math.log10(P.tmul); $('tmV').textContent=fmt(P.tmul);
-  $('tauR').value=P.tariff; $('tauV').textContent=P.tariff.toFixed(2);
-  $('ctry').value=String(P.countries); $('metricSel').value=P.metric;
+  $('bcSel').value=P.bc; $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
   $('econSel').value=P.econ; $('bSO2').classList.toggle('on',P.econ==='so');
 }
 // a product with lower γ (more scalable) must have the higher start cost: mark the pairs that break this
@@ -771,7 +908,7 @@ $('econSel').onchange=e=>setEcon(e.target.value);
 $('bSO2').onclick=()=>setEcon(P.econ==='so'?'fixed':'so');
 $('ctlPull').onclick=()=>setCtlOpen(false);
 // view menu of the 3D view (upper left corner): turn, tilt and perspective; dragging the view moves the sliders along
-const VIEW0={az:-0.62,el:0.62,dist:0};
+const VIEW0={az:-0.62,el:0.62,dist:4};
 function syncView(){
   const az=Math.round(V3.az*180/Math.PI), el=Math.round(V3.el*180/Math.PI);
   $('azR').value=az; $('azV').textContent=az+'°'; $('elR').value=el; $('elV').textContent=el+'°'; $('distSel').value=String(V3.dist);
@@ -813,9 +950,71 @@ document.querySelectorAll('#hSeg button').forEach(b=>b.onclick=()=>{
 });
 $('M0R').oninput=e=>{P.M0=+e.target.value;$('M0V').textContent=P.M0};
 $('tmR').oninput=e=>{P.tmul=Math.pow(10,+e.target.value);$('tmV').textContent=fmt(P.tmul);E.computeMarkets();draw();updStat()};
-$('tauR').oninput=e=>{P.tariff=+e.target.value;$('tauV').textContent=P.tariff.toFixed(2);E.computeMarkets();draw()};
-$('ctry').onchange=e=>{P.countries=+e.target.value;E.computeMarkets();draw()};
-$('metricSel').onchange=e=>{P.metric=e.target.value;E.computeMarkets();draw()};
+$('bcSel').onchange=e=>{P.bc=e.target.value;E.computeMarkets();draw()};
+$('clearNet').onclick=()=>{P.roads=[];P.borders=[];netChanged()};
+// ---- roads and borders, drawn on the display: choose a tool, then press, drag and release (or tap to remove) ----
+let tool=null, toolDrag=null;
+function syncTools(){
+  document.querySelectorAll('.tools [data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool));
+  cv.style.cursor=tool?(tool.startsWith('rm')?'pointer':'crosshair'):'crosshair';
+}
+document.querySelectorAll('.tools [data-tool]').forEach(b=>b.onclick=()=>{tool=tool===b.dataset.tool?null:b.dataset.tool;syncTools()});
+$('roadF').oninput=e=>{$('roadFV').textContent=(+e.target.value).toFixed(2)};
+function netChanged(){
+  E.computeMarkets(); distMark();
+  $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
+  draw(); updStat();
+}
+// the position on the lattice (continuous, 0 … L) under the pointer, in the 2D views or on the ground of the 3D view
+function gridPos(ev){
+  const b=cv.getBoundingClientRect(), L=E.L;
+  let x,y;
+  if(view==='3d'){
+    const F=V3.fit; if(!F)return null;
+    const u=((ev.clientX-b.left)*F.dpr-F.ox)/F.s, v=((ev.clientY-b.top)*F.dpr-F.oy)/F.s;
+    let X,Y; if(F.D){Y=v*F.D/(F.se*F.D+v*F.ce);X=u*(F.D-Y*F.ce)/F.D}else{Y=v/F.se;X=u}
+    x=X*F.ca+Y*F.sa+L/2; y=-X*F.sa+Y*F.ca+L/2;
+  }else{x=(ev.clientX-b.left-geo.x0)/geo.side*L; y=(ev.clientY-b.top-geo.y0)/geo.side*L}
+  return x<-1||y<-1||x>L+1||y>L+1?null:[Math.min(L,Math.max(0,x)),Math.min(L,Math.max(0,y))];
+}
+function segDist(px,py,s){const dx=s.x1-s.x0,dy=s.y1-s.y0,l2=dx*dx+dy*dy;
+  const t=l2?Math.max(0,Math.min(1,((px-s.x0)*dx+(py-s.y0)*dy)/l2)):0; return Math.hypot(px-s.x0-t*dx,py-s.y0-t*dy)}
+function toolDown(ev){
+  const g=gridPos(ev); if(!g)return;
+  if(tool==='addRoad'||tool==='addBorder'){toolDrag={x0:g[0],y0:g[1],x1:g[0],y1:g[1]};cv.setPointerCapture(ev.pointerId);draw();return}
+  const list=tool==='rmRoad'?P.roads:P.borders; let k=-1,best=Math.max(1.5,E.L/60);
+  list.forEach((s,j)=>{const d=segDist(g[0],g[1],s);if(d<best){best=d;k=j}});
+  if(k>=0){list.splice(k,1);netChanged()}
+}
+function toolUp(){
+  const d=toolDrag; toolDrag=null; if(!d)return;
+  if(Math.hypot(d.x1-d.x0,d.y1-d.y0)<1){draw();return}
+  if(tool==='addRoad')P.roads.push({x0:d.x0,y0:d.y0,x1:d.x1,y1:d.y1,f:+$('roadF').value});
+  else P.borders.push({x0:d.x0,y0:d.y0,x1:d.x1,y1:d.y1,tax:+$('taxSel').value,oneway:$('dirSel').value==='one'});
+  netChanged();
+}
+// roads (asphalt with a dashed yellow middle line) and borders (dashed red, with the tax, and arrows when one-way),
+// drawn with a function that maps lattice positions to the canvas
+function drawNet(at,cell,dpr){
+  const seg=(s,col,w,dash)=>{const a=at(s.x0,s.y0),b=at(s.x1,s.y1);ctx.setLineDash(dash||[]);ctx.strokeStyle=col;ctx.lineWidth=w;
+    ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.setLineDash([])};
+  const road=(s,alpha)=>{ctx.globalAlpha=alpha;ctx.lineCap='round';
+    seg(s,dark?'#7d869b':'#596072',Math.max(3*dpr,0.9*cell));seg(s,'#facc15',Math.max(1,0.9*dpr),[5*dpr,5*dpr]);ctx.lineCap='butt';ctx.globalAlpha=1};
+  const border=(s,alpha)=>{ctx.globalAlpha=alpha; seg(s,'#f43f5e',2.6*dpr,[8*dpr,5*dpr]);
+    const len=Math.hypot(s.x1-s.x0,s.y1-s.y0)||1,nx=(s.y1-s.y0)/len,ny=-(s.x1-s.x0)/len;
+    if(s.oneway)for(const f of [0.2,0.5,0.8]){              // arrows across the border, in the taxed direction
+      const px=s.x0+(s.x1-s.x0)*f,py=s.y0+(s.y1-s.y0)*f,o=at(px,py),q=at(px+nx,py+ny);
+      const ang=Math.atan2(q[1]-o[1],q[0]-o[0]),la=9*dpr,lb=16*dpr,h=7*dpr;
+      const a=[o[0]-la*Math.cos(ang),o[1]-la*Math.sin(ang)],b=[o[0]+lb*Math.cos(ang),o[1]+lb*Math.sin(ang)];
+      ctx.strokeStyle='#f43f5e';ctx.fillStyle='#f43f5e';ctx.lineWidth=2.2*dpr;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.lineTo(b[0]-h*Math.cos(ang-0.45),b[1]-h*Math.sin(ang-0.45));ctx.lineTo(b[0]-h*Math.cos(ang+0.45),b[1]-h*Math.sin(ang+0.45));ctx.fill()}
+    if(s.tax!=null){const lx=s.x0+(s.x1-s.x0)*0.3,ly=s.y0+(s.y1-s.y0)*0.3,o=at(lx,ly),q=at(lx-nx,ly-ny),
+      dl=Math.hypot(q[0]-o[0],q[1]-o[1])||1,p=[o[0]+(q[0]-o[0])/dl*14*dpr,o[1]+(q[1]-o[1])/dl*14*dpr];ctx.font=`700 ${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle=dark?'#fecdd3':'#be123c';ctx.fillText(Math.round(100*s.tax)+' %',p[0],p[1])}
+    ctx.globalAlpha=1};
+  P.roads.forEach(s=>road(s,1)); P.borders.forEach(s=>border(s,1));
+  if(toolDrag){const s={...toolDrag}; if(tool==='addRoad')road(s,0.6); else border({...s,tax:+$('taxSel').value,oneway:$('dirSel').value==='one'},0.6)}
+}
 $('Lsel').onchange=restart;
 $('speed').oninput=e=>{$('speedV').textContent=e.target.value};
 function setRun(on){
@@ -857,6 +1056,7 @@ function doStep(){
   if($('anneal').checked){
     P.tmul=Math.max(0.01,P.tmul*Math.exp(-parseFloat($('aRate').value)));
     $('tmR').value=Math.log10(P.tmul);$('tmV').textContent=fmt(P.tmul);
+    E.stale=true;                         // the markets must be recomputed with the new transport costs
   }
   E.step();
   distRecord();
@@ -908,17 +1108,17 @@ function fitCanvas(c){
 let geo={x0:0,y0:0,side:1};
 // ---------- 3D view: the lattice seen from the side, every factory a tower as high as its sales ----------
 // camera: azimuth az, tilt el above the plane, distance dist (in units of L; 0 = infinitely far, no perspective)
-const V3={az:-0.62, el:0.62, dist:0, hmax:1, mmax:1, scaleT:-1, ext:null, extKey:'', order:null, key:'', fit:null};
-// Renew the height scales when the run (since the last change of a parameter) has grown by half since the last renewal:
-// the average, over the last two thirds of that run, of the size of the biggest company and of the largest money.
+const V3={az:-0.62, el:0.62, dist:4, hmax:1, mmax:1, scaleT:-1, order:null, key:'', fit:null};
+// Renew the height scales only when the number of rounds has grown by half since the last renewal: the average, over
+// the last two thirds of the run, of the size of the biggest company and of the largest money.
 function updateScales(){
-  const t0=DH?DH.t0:0, el=E.t-t0, last=V3.scaleT>=t0?V3.scaleT-t0:0;
-  if(V3.scaleT>=0&&el<Math.max(1.5*last,last+5))return;
+  const t=E.t, last=Math.max(0,V3.scaleT);
+  if(V3.scaleT>=0&&t<Math.max(1.5*last,last+5))return;
   let su=0,sm=0,n=0;
-  for(let k=E.hist.length-1;k>=0&&E.hist[k].t>t0+el/3;k--){su+=E.hist[k].maxUnits||0;sm+=E.hist[k].maxMoney||0;n++}
+  for(let k=E.hist.length-1;k>=0&&E.hist[k].t>t/3;k--){su+=E.hist[k].maxUnits||0;sm+=E.hist[k].maxMoney||0;n++}
   if(n){V3.hmax=Math.max(1,su/n);V3.mmax=Math.max(1e-6,sm/n)}
   else if(V3.scaleT<0){V3.hmax=1;V3.mmax=Math.max(1e-6,P.M0)}
-  V3.scaleT=E.t; V3.extKey='';
+  V3.scaleT=t;
 }
 const shade=(rgb,f)=>`rgb(${rgb.map(c=>Math.round(Math.min(255,c*f))).join(',')})`;
 const GOLD={a:'rgba(222,176,46,.40)',b:'rgba(176,132,24,.42)',top:'rgba(246,210,92,.48)',line:'rgba(150,108,16,.55)'};
@@ -947,7 +1147,7 @@ function draw3D(){
   for(let r=0;r<LL;r++){let t=0;for(let i=0;i<N;i++)if(E.F[i][r])t+=E.sales[i][r];tot[r]=t}
   if(!EXPORT_DPR)updateScales();
   const f=hlog?v=>HW*Math.log(1+v)/Math.log(1+V3.hmax):v=>HW*v/V3.hmax;
-  const fm=v=>HW*Math.max(0,v)/V3.mmax;       // money always linear: on a log scale everybody's savings would form a carpet
+  const fm=hlog?v=>HW*Math.log(1+Math.max(0,v))/Math.log(1+V3.mmax):v=>HW*Math.max(0,v)/V3.mmax;
   // scale bars at the left corner of the lattice: companies upward, money (if shown) upward or downward like the towers
   const corners=[[-L/2,-L/2],[L/2,-L/2],[L/2,L/2],[-L/2,L/2]];
   const cl=corners.reduce((a,c)=>proj(c[0],c[1],0)[0]<proj(a[0],a[1],0)[0]?c:a);
@@ -956,36 +1156,30 @@ function draw3D(){
     const ticks=[]; for(let v=1;v<=V3.hmax;v*=10)ticks.push(v);
     bars.push({h:f(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,h:f(v)})),label:'units'});
   }else{const v=niceNum(0.5*V3.hmax); bars.push({h:f(v),ticks:[{v,h:f(v)}],label:'units'})}
-  if(money3!=='off'){const v=niceNum(0.5*V3.mmax), h=fm(v); bars.push({h:mDown?-h:h,ticks:[{v,h:mDown?-h:h}],label:'money',gold:true})}
-  // framing: fitted to what is drawn, with room above, whenever the scales are renewed or the view changes; in between it
-  // only grows, and only if something would stick out
-  const C=corners.map(c=>proj(c[0],c[1],0));
-  let minX=Math.min(...C.map(c=>c[0]))-0.5, maxX=Math.max(...C.map(c=>c[0]))+0.5;
-  let top=Math.min(...C.map(c=>c[1])), bot=Math.max(...C.map(c=>c[1]));
-  for(let r=0;r<LL;r++){
-    const up=Math.max(tot[r]>0?f(tot[r]):0, mUp?fm(E.money[r]):0), dn=mDown?fm(E.money[r]):0;
-    if(!(up>0)&&!(dn>0))continue;
-    const x=(r%L)+0.5-L/2, y=((r/L)|0)+0.5-L/2;
-    if(up>0){const p=proj(x,y,up);if(p[1]-0.6<top)top=p[1]-0.6}
-    if(dn>0){const p=proj(x,y,-dn);if(p[1]+0.6>bot)bot=p[1]+0.6}
+  if(money3!=='off'){
+    const sg=mDown?-1:1;
+    if(hlog){const ticks=[]; for(let v=1;v<=V3.mmax;v*=10)ticks.push(v);
+      if(ticks.length)bars.push({h:sg*fm(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,h:sg*fm(v)})),label:'money',gold:true})}
+    else{const v=niceNum(0.5*V3.mmax), h=sg*fm(v); bars.push({h,ticks:[{v,h}],label:'money',gold:true})}
   }
-  bars.forEach(b=>{const p=proj(cl[0],cl[1],b.h);top=Math.min(top,p[1]-1.5);bot=Math.max(bot,p[1]+1.5)});
-  const ekey=key+':'+money3+':'+hlog+':'+W+'x'+H;
-  if(!EXPORT_DPR){
-    const e=V3.ext;
-    V3.ext=(!e||V3.extKey!==ekey)?{minX,maxX,top:top-0.15*(bot-top),bot}:{
-      minX:Math.min(minX,e.minX), maxX:Math.max(maxX,e.maxX), top:Math.min(top,e.top), bot:Math.max(bot,e.bot)};
-    V3.extKey=ekey;
-  }
-  const X0=V3.ext?Math.min(minX,V3.ext.minX):minX, X1=V3.ext?Math.max(maxX,V3.ext.maxX):maxX;
-  const Y0=V3.ext?Math.min(top,V3.ext.top):top, Y1=V3.ext?Math.max(bot,V3.ext.bot):bot;
+  // framing: the lattice with room for towers 1.25 times the height scale (and, with money below the plane, as deep), seen
+  // from the camera. It does not depend on the towers of the moment, so it changes only when the scales are renewed or the
+  // view is turned
+  const zUp=Math.max(f(1.25*V3.hmax),mUp?fm(1.25*V3.mmax):0), zDn=mDown?fm(1.25*V3.mmax):0;
+  let X0=Infinity,X1=-Infinity,Y0=Infinity,Y1=-Infinity;
+  for(const c of corners)for(const z of [0,zUp,-zDn]){const p=proj(c[0],c[1],z);
+    X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Y0=Math.min(Y0,p[1]);Y1=Math.max(Y1,p[1])}
+  X0-=0.5; X1+=0.5;
   const LM=78*dpr;                                   // room on the left for the numbers of the scale bars
   const s=Math.min((W-LM)*0.985/(X1-X0), H*0.985/(Y1-Y0));
   const ox=LM+(W-LM)/2-s*(X0+X1)/2, oy=H/2-s*(Y0+Y1)/2;
   V3.fit={s,ox,oy,ca,sa,se,ce,D,dpr};
   const P2=(x,y,z)=>{const p=proj(x,y,z);return [ox+s*p[0],oy+s*p[1]]};
   const zmin=0.6/(s*ce);                       // towers lower than ~half a pixel are not drawn
-  const zminM=2/(s*ce);                        // money towers lower than 2 pixels neither: thousands of them would only slow the drawing
+  // money towers lower than 2 pixels are not drawn, nor more than the 1500 richest: thousands of semi-transparent towers
+  // would only make the browser slow to paint (early in a run everybody has about the same money)
+  let zminM=2/(s*ce);
+  if(money3!=='off'){const m=Float64Array.from(E.money).sort(); if(LL>1500)zminM=Math.max(zminM,fm(m[LL-1500]))}
   const quad=(pts,fill,stroke)=>{ctx.beginPath();ctx.moveTo(...pts[0]);for(let k=1;k<4;k++)ctx.lineTo(...pts[k]);ctx.closePath();
     ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.stroke()}};
   // the side faces of a box over one lattice cell that look toward the camera, and its top. The golden money towers are
@@ -1015,12 +1209,7 @@ function draw3D(){
   ctx.strokeStyle=dark?'rgba(200,210,230,.12)':'rgba(131,145,171,.25)'; ctx.beginPath();
   for(let j=1;j<8;j++){const g=-L/2+j*L/8; let a=P2(g,-L/2,0),b=P2(g,L/2,0); ctx.moveTo(...a);ctx.lineTo(...b); a=P2(-L/2,g,0);b=P2(L/2,g,0);ctx.moveTo(...a);ctx.lineTo(...b)}
   ctx.stroke();
-  const kc=P.countries|0;
-  if(kc>1){
-    ctx.strokeStyle=dark?'rgba(230,236,245,.6)':'rgba(22,35,59,.55)'; ctx.lineWidth=1.5*dpr; ctx.setLineDash([6*dpr,4*dpr]); ctx.beginPath();
-    for(let j=1;j<kc;j++){const g=Math.floor(j*L/kc)-L/2; let a=P2(g,-L/2,0),b=P2(g,L/2,0); ctx.moveTo(...a);ctx.lineTo(...b); a=P2(-L/2,g,0);b=P2(L/2,g,0);ctx.moveTo(...a);ctx.lineTo(...b)}
-    ctx.stroke(); ctx.setLineDash([]);
-  }
+  drawNet((x,y)=>P2(x-L/2,y-L/2,0),s,dpr);              // roads and borders on the ground
   if(hoverR>=0&&hoverR<LL){
     const x=(hoverR%L)-L/2, y=((hoverR/L)|0)-L/2;
     ctx.strokeStyle=dark?'#fff':'#16233b'; ctx.lineWidth=2*dpr; ctx.beginPath();
@@ -1169,13 +1358,7 @@ function draw(){
       ctx.beginPath();ctx.arc(cx(r),cy(r),rad,0,2*Math.PI);ctx.fill();ctx.stroke();
     }
   }
-  const k=P.countries|0;
-  if(k>1){
-    ctx.strokeStyle=view==='money'||view==='sales'||dark?'rgba(255,255,255,.8)':'rgba(22,35,59,.6)';
-    ctx.lineWidth=1.5*dpr;ctx.setLineDash([6*dpr,4*dpr]);ctx.beginPath();
-    for(let j=1;j<k;j++){const p=Math.floor(j*L/k)*cell;ctx.moveTo(x0+p,y0);ctx.lineTo(x0+p,y0+side);ctx.moveTo(x0,y0+p);ctx.lineTo(x0+side,y0+p)}
-    ctx.stroke();ctx.setLineDash([]);
-  }
+  drawNet((x,y)=>[x0+x*cell,y0+y*cell],cell,dpr);       // roads and borders
   if(hoverR>=0&&hoverR<LL){
     ctx.strokeStyle=view==='money'||view==='sales'||dark?'#fff':'#16233b';ctx.lineWidth=2*dpr;
     ctx.strokeRect(x0+(hoverR%L)*cell,y0+((hoverR/L)|0)*cell,cell,cell);
@@ -1206,10 +1389,12 @@ function evR(ev){
 // in 3D a drag turns (sideways) and tilts (up and down) the lattice; a tap or hover picks an agent on the ground
 let drag=null;
 cv.addEventListener('pointerdown',ev=>{
+  if(tool){toolDown(ev);return}                   // a road or border tool is chosen: draw or remove instead
   if(view==='3d'){drag={x:ev.clientX,y:ev.clientY,az:V3.az,el:V3.el,moved:false};cv.setPointerCapture(ev.pointerId)}
   hoverR=view==='3d'?evR3(ev):evR(ev);draw();
 });
 cv.addEventListener('pointermove',ev=>{
+  if(toolDrag){const g=gridPos(ev);if(g){toolDrag.x1=g[0];toolDrag.y1=g[1];draw()}return}
   if(drag&&view==='3d'){
     const dx=ev.clientX-drag.x, dy=ev.clientY-drag.y;
     if(Math.abs(dx)+Math.abs(dy)>4)drag.moved=true;
@@ -1218,8 +1403,8 @@ cv.addEventListener('pointermove',ev=>{
   }
   hoverR=view==='3d'?evR3(ev):evR(ev);if(!running)draw();
 });
-cv.addEventListener('pointerup',()=>{drag=null});
-cv.addEventListener('pointercancel',()=>{drag=null});
+cv.addEventListener('pointerup',()=>{drag=null;if(toolDrag)toolUp()});
+cv.addEventListener('pointercancel',()=>{drag=null;toolDrag=null});
 cv.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse'){hoverR=-1;$('readout').textContent='Hover over or tap an agent.';if(!running)draw()}});
 
 // ---------- pictures: .png = the display with the parameters in the lower left corner; sq = only what is drawn ----------
@@ -1243,8 +1428,9 @@ function stampParams(oc,scale){
   const lines=[
     {t:`Globalization in a nutshell — 2D · round ${E.t} · ${viewName}`,b:true},
     {t:`L = ${E.L}, n = ${P.n}, lim = ${P.lim}, wage w = ${P.wage}, upkeep μ = ${P.upkeep}, κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
-      (P.econ==='so'?`self-organized price p = ${E.price.toPrecision(3)}`:'fixed price p = 1')+
-      (P.countries>1?`, ${P.countries}×${P.countries} countries, τ = ${P.tariff}`:'')},
+      (P.econ==='so'?`self-organized price p = ${E.price.toPrecision(3)}`:'fixed price p = 1')},
+    {t:`${P.bc} boundaries`+(P.roads.length?`, ${P.roads.length} road${P.roads.length>1?'s':''}`:'')+
+      (P.borders.length?`, ${P.borders.length} border${P.borders.length>1?'s':''}`:'')},
     ...P.products.map((pr,i)=>({t:`${PNAME[i]}:  Start ${pr.start},  γ ${String(pr.gamma).replace('-','−')},  β ${pr.beta}`,c:PCOL[i]})),
   ];
   o.font=`${fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`;
@@ -1424,7 +1610,7 @@ function niceTicks(a,b,n){const span=b-a||1, st=Math.pow(10,Math.floor(Math.log1
 function fmtTick(v){return Math.abs(v)<1e-9?'0':Math.abs(v)>=10?v.toFixed(0):Math.abs(v)>=1?v.toFixed(1):v.toFixed(2)}
 
 new ResizeObserver(()=>{draw();drawChart();drawDist()}).observe(document.querySelector('.layout'));
-syncControls(); syncView(); setFlashMode("off");
+syncControls(); syncView(); setFlashMode('yellow'); $('moneySel').value=money3;
 applyPreset('three');
 </script>
 </body>
