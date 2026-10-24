@@ -850,9 +850,9 @@ function applyPreset(k){
   syncControls(); restart();
 }
 function restart(){
-  // a new lattice size: roads and borders keep their place relative to the lattice
-  const L1=+$('Lsel').value, f=L1/P.L;
-  if(f!==1)for(const s of [...P.roads,...P.borders])s.pts=s.pts.map(([x,y])=>[x*f,y*f]);
+  const L1=+$('Lsel').value;
+  if(L1!==P.L){P.roads=[];P.borders=[]}       // a new lattice size starts without roads and borders
+  $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
   P.L=L1; P.seed=(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.scaleT=-1;
   E=buildEcon(P); flashes=[];
   distReset();
@@ -1331,7 +1331,8 @@ function drawFlashes(pos){
   flashes=flashes.filter(fl=>now-fl.t<FLASH_MS);
   for(const fl of flashes){
     const a=(now-fl.t)/FLASH_MS, b=1-a, [x,y,cell,flat,topOf]=pos(fl.r);
-    const R=Math.max(3*dpr,cell*Math.min(7,0.9+0.55*Math.sqrt(fl.size)));
+    // half the size it had at first: a big crash also bursts all along its column
+    const R=Math.max(1.5*dpr,0.5*cell*Math.min(7,0.9+0.55*Math.sqrt(fl.size)));
     const c=flashMode==='colour'&&fl.prod>=0&&PRGB[fl.prod]?PRGB[fl.prod].join(','):'255,200,40';
     // shock ring on the ground
     ctx.beginPath(); ctx.ellipse(x,y,R*1.3*a,R*1.3*a*flat,0,0,2*Math.PI);
@@ -1527,10 +1528,12 @@ function exportPNG(kind){
   let oc=renderPicture(scale);
   if(kind==='sq'){
     EXPORT_DPR=scale; const hv=hoverR; hoverR=-1; draw(); const b=contentBox(); EXPORT_DPR=0; hoverR=hv; draw();
-    const m=Math.round(4*scale), c=document.createElement('canvas');
-    c.width=b.w+2*m; c.height=b.h+2*m;
-    const o=c.getContext('2d'); o.fillStyle=dark?'#0b0d13':'#ffffff'; o.fillRect(0,0,c.width,c.height);
-    o.drawImage(oc,b.x,b.y,b.w,b.h,m,m,b.w,b.h); oc=c;
+    // cut tightly around what is drawn, then compress the longer side so the picture is a square
+    const m=Math.round(4*scale), side=Math.min(b.w,b.h)+2*m, c=document.createElement('canvas');
+    c.width=side; c.height=side;
+    const o=c.getContext('2d'); o.fillStyle=dark?'#0b0d13':'#ffffff'; o.fillRect(0,0,side,side);
+    o.imageSmoothingEnabled=true; o.imageSmoothingQuality='high';
+    o.drawImage(oc,b.x,b.y,b.w,b.h,m,m,side-2*m,side-2*m); oc=c;
   }else oc=stampParams(oc,scale);
   const name=`globalization_${view}_t${E.t}${kind==='sq'?'_sq':''}.png`;
   btn.classList.add('busy'); btn.textContent='…';
@@ -1637,8 +1640,8 @@ function drawDist(){
   // the fit of the company sizes: the product whose companies are smallest on average
   const mean=h=>{let n=0,sx=0;h.forEach((c,k)=>{n+=c;sx+=c*Math.pow(10,SB.lo+(k+0.5)/SB.per)});return n?sx/n:Infinity};
   let ismall=0; d.s.forEach((h,i)=>{if(mean(h)<mean(d.s[ismall]))ismall=i});
-  logPlot($('cMoney'),[{c:'#b7791f',h:d.m,fit:'tail',fitLabel:'tail: '}],MB,'money M of an agent','money distribution P(M)',null);
-  logPlot($('cSize'),d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?'body':null,fitLabel:PNAME[i]+': '})),SB,'company size s (units sold per round)','company sizes P(s)',
+  logPlot($('cMoney'),[{c:'#b7791f',h:d.m,fit:'tail',fitLabel:'tail: '}],MB,'money M of an agent','P(M): probability density of money, per unit of M',null);
+  logPlot($('cSize'),d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?'body':null,fitLabel:PNAME[i]+': '})),SB,'company size s (units sold per round)','P(s): probability density of company size, per unit of s',
     P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}`})));
 }
 
