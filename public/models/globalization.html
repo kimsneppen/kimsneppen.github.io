@@ -116,6 +116,24 @@
   .chartnote{font-size:11.5px;color:var(--muted)}
   .chartbox{position:relative;width:100%;height:200px}
   .chartbox canvas{position:absolute;inset:0;width:100%;height:100%}
+  .distgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  @media (min-width:700px){ .distgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+  .chartbox.dist{height:250px}
+  /* view menu of the 3D view: upper left corner of the display */
+  .viewmenu{position:absolute;left:6px;top:6px;z-index:4;font-size:12.5px}
+  .viewmenu > summary{list-style:none;cursor:pointer;display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:8px;
+    background:rgba(255,255,255,.9);color:var(--accent);font-weight:700;user-select:none}
+  .viewmenu > summary::-webkit-details-marker{display:none}
+  .vmbox{margin-top:4px;width:250px;max-width:calc(100vw - 60px);background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:4px 10px 8px;box-shadow:0 8px 22px rgba(22,35,59,.18);color:var(--ink2)}
+  .vmbox .row{margin:7px 0}
+  .vmbox .row input[type=range]{width:120px}
+  .vmbox .row select{min-width:0;width:130px}
+  .display.darkbg .viewmenu > summary{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
+  .display.darkbg .vmbox{background:#141a27;border-color:#2a3140;color:#c7d2fe}
+  .display.darkbg .vmbox select{background:#16233b;border-color:#2a3140;color:#c7d2fe}
+  .cornerbtns button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .display.darkbg .cornerbtns button.on{background:#b7791f;border-color:#b7791f;color:#fff}
 
   /* ---------- control panel: a drawer at the right edge ---------- */
   .controls{
@@ -234,7 +252,10 @@
       <p><i>3D</i>: the lattice seen from the side, as in the figures of [1]; every factory is a tower as high as the units it sold
         in the last round; an agent with several products has its factories stacked, the largest at the bottom (linear or log
         heights). The agents' money can be shown in the same view as golden, semi-transparent towers, either around the
-        factories or hanging below the plane. Drag to turn and tilt.
+        factories or hanging below the plane. The scale bars at the left corner give the heights: units sold upward (one
+        length on the linear scale, the decades on the log scale) and money. Drag to turn and tilt, or use the <i>view</i>
+        menu in the upper left corner for the angles and the perspective. The height scales follow the companies only slowly,
+        so the picture keeps still.
         <i>Agents</i>: every agent with sales is a pie, area ∝ sales, with a slice for each product it makes;
         the pale background shows the factories that sold nothing.
         <i>Market</i>: for the selected product, each agent in the colour of the factory it buys from; dots are the factories,
@@ -242,7 +263,10 @@
         Hover over or tap an agent for its numbers. Below the grid: time series of the number of factories, the largest market
         share, the mean shipping distance, the agents with sales, starts and bankruptcies, and the mean money.
         The buttons in the lower right corner of the display switch between a white and a black background and save the display
-        as a picture: <i>.png</i> with the parameters in the lower left corner, <i>sq</i> cut tightly around what is drawn.</p>
+        as a picture: <i>.png</i> with the parameters in the lower left corner, <i>sq</i> cut tightly around what is drawn;
+        ⚡ makes a short flash wherever a company goes bankrupt. At the bottom: log–log plots of the money distribution over
+        the agents and of the company sizes of each product, either now or summed over the last two thirds of the rounds
+        since a parameter was last changed.</p>
       <div class="refs">
         <p>[1] K. Sneppen and S. Bornholdt, <i>Globalization in a nutshell</i>, Phys. Rev. E <b>98</b>, 042314 (2018).
           <a href="https://doi.org/10.1103/PhysRevE.98.042314" target="_blank" rel="noopener">doi:10.1103/PhysRevE.98.042314</a></p>
@@ -269,7 +293,18 @@
       <button class="tbtn" id="bReset2" title="reset">↺</button>
     </div>
     <div class="canvas-wrap"><canvas id="cv"></canvas>
+      <details class="viewmenu" id="viewMenu">
+        <summary title="viewing angles and perspective of the 3D view">view ▾</summary>
+        <div class="vmbox">
+          <div class="row"><label>Turn <span class="vv" id="azV"></span></label><input type="range" id="azR" min="-180" max="180" step="1"></div>
+          <div class="row"><label>Tilt <span class="vv" id="elV"></span></label><input type="range" id="elR" min="5" max="88" step="1"></div>
+          <div class="row"><label title="distance of the camera in units of the lattice size L; ∞ = no perspective">Perspective</label>
+            <select id="distSel"><option value="0">none (∞ far)</option><option value="4">distant (4 L)</option><option value="2.5">medium (2.5 L)</option><option value="1.8">close (1.8 L)</option><option value="1.4">very close (1.4 L)</option></select></div>
+          <button class="btn sm" id="viewReset">reset view</button>
+        </div>
+      </details>
       <div class="cornerbtns">
+        <button id="bFlash" title="flash where a company goes bankrupt (on / off)">⚡</button>
         <button id="bBg" title="black / white background"><span class="bwcirc"></span></button>
         <button id="bPng" title="save the display as a PNG picture, with the parameters in the lower left corner">.png</button>
         <button id="bSq" title="save only what is drawn, cut as tightly as possible, as a PNG picture">sq</button>
@@ -293,6 +328,18 @@
       <span class="chartnote" id="chartNote"></span>
     </div>
     <div class="chartbox"><canvas id="chart"></canvas></div>
+  </section>
+  <section class="display">
+    <div class="chartbar">
+      <b style="font-size:13px">Distributions (log–log)</b>
+      <div class="seg" id="distSeg" title="the distribution now, or summed over the last two thirds of the run since the last change of a parameter">
+        <button data-d="now" class="on">now</button><button data-d="avg">last ⅔ of run</button></div>
+      <span class="chartnote" id="distNote"></span>
+    </div>
+    <div class="distgrid">
+      <div class="chartbox dist"><canvas id="cMoney"></canvas></div>
+      <div class="chartbox dist"><canvas id="cSize"></canvas></div>
+    </div>
   </section>
 </div>
 
@@ -416,7 +463,7 @@ function buildEcon(P){
   // inc: money acquired in the last round (wage + sales); profit: sales − upkeep of the factories
   E.money=new Float64Array(LL); E.inc=new Float64Array(LL); E.prevInc=new Float64Array(LL);
   E.profit=new Float64Array(LL); E.prevProfit=new Float64Array(LL);
-  E.units=new Float64Array(LL); E.prevUnits=new Float64Array(LL); E.price=1;
+  E.units=new Float64Array(LL); E.prevUnits=new Float64Array(LL); E.price=1; E.bankruptList=[];
   E.started=new Int32Array(LL);              // round at which the agent last opened a factory (−1: never)
   E.F=[];E.sales=[];E.sup=[];E.dist=[];E.u=[];E.area=[];
   for(let i=0;i<N;i++){
@@ -531,7 +578,7 @@ function buildEcon(P){
       for(let i=0;i<N;i++)if(E.F[i][r]){const v=p*newSales[i][r]-mu*P.products[i].start;
         if(v<wv){wv=v;w=i;nt=1}else if(v===wv){nt++;if(rng()*nt<1)w=i}}
       return w};
-    let U=0;
+    let U=0; E.bankruptList=[];
     for(let r=0;r<LL;r++){
       let units=0, up=0, nf=0;
       for(let i=0;i<N;i++)if(E.F[i][r]){units+=newSales[i][r];up+=mu*P.products[i].start;nf++}
@@ -542,7 +589,7 @@ function buildEcon(P){
       E.money[r]+=P.wage+p*units-up;
       if(units>0)H.active++;
       if(E.money[r]<0){
-        const w=weakest(r); if(w>=0){E.F[w][r]=0;nf--} E.money[r]=so?P.wage:0; H.bankrupt++;
+        const w=weakest(r); if(w>=0){E.F[w][r]=0;nf--} E.money[r]=so?P.wage:0; H.bankrupt++; E.bankruptList.push(r);
       }
       const declined=E.t>0&&E.profit[r]<E.prevProfit[r]-P.kappa*p*Math.sqrt(Math.max(1,E.prevUnits[r]));
       if(nf===0||declined||E.profit[r]<=0){
@@ -617,12 +664,15 @@ function applyPreset(k){
   syncControls(); restart();
 }
 function restart(){
-  P.L=+$('Lsel').value; P.seed=(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.rel=0;
-  E=buildEcon(P);
+  P.L=+$('Lsel').value; P.seed=(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.lastT=-1; V3.ext=null;
+  E=buildEcon(P); flashes=[];
+  distReset();
   if(psel>=P.products.length)psel=0;
-  buildProductUI(); refresh();
+  buildProductUI(); refresh(); drawDist();
 }
-function refresh(){draw();drawChart();updStat()}
+let distT=0;
+function refresh(){draw();drawChart();updStat();
+  if(performance.now()-distT>300){distT=performance.now();drawDist()}}
 
 // ---------- controls ----------
 const fmt=(v,d=2)=>Math.abs(v)>=100?v.toFixed(0):Math.abs(v)>=10?v.toFixed(1):v.toFixed(d);
@@ -668,7 +718,7 @@ function buildProductUI(){
     b.onclick=()=>{psel=i;buildProductUI();draw()}; pt.appendChild(b);
   });
   pt.classList.toggle('dis',view==='3d'||view==='agents'||view==='money'||P.products.length<2);
-  $('hSeg').style.display=$('moneySel').style.display=view==='3d'?'':'none';
+  $('hSeg').style.display=$('moneySel').style.display=$('viewMenu').style.display=view==='3d'?'':'none';
   $('pAdd').disabled=P.products.length>=PNAME.length; $('pDel').disabled=P.products.length<=1;
   const ls=$('limSel'); P.lim=Math.max(1,Math.min(P.products.length,P.lim));
   ls.innerHTML=P.products.map((_,k)=>`<option value="${k+1}">${k+1}${k+1===P.products.length?' (all)':''}</option>`).join('');
@@ -689,6 +739,26 @@ function setEcon(v){
 $('econSel').onchange=e=>setEcon(e.target.value);
 $('bSO2').onclick=()=>setEcon(P.econ==='so'?'fixed':'so');
 $('ctlPull').onclick=()=>setCtlOpen(false);
+// view menu of the 3D view (upper left corner): turn, tilt and perspective; dragging the view moves the sliders along
+const VIEW0={az:-0.62,el:0.62,dist:0};
+function syncView(){
+  const az=Math.round(V3.az*180/Math.PI), el=Math.round(V3.el*180/Math.PI);
+  $('azR').value=az; $('azV').textContent=az+'°'; $('elR').value=el; $('elV').textContent=el+'°'; $('distSel').value=String(V3.dist);
+}
+$('azR').oninput=e=>{V3.az=+e.target.value*Math.PI/180;syncView();draw()};
+$('elR').oninput=e=>{V3.el=+e.target.value*Math.PI/180;syncView();draw()};
+$('distSel').onchange=e=>{V3.dist=+e.target.value;draw()};
+$('viewReset').onclick=()=>{Object.assign(V3,VIEW0);syncView();draw()};
+// flashes where companies go bankrupt
+$('bFlash').onclick=()=>{flashOn=!flashOn;$('bFlash').classList.toggle('on',flashOn);if(!flashOn)flashes=[];draw()};
+$('bStep').addEventListener('click',()=>{if(flashes.length)kickFlash()});
+// every change of a model parameter in the panel starts a new averaging window for the distributions
+$('ctlPanel').addEventListener('input',e=>{if(!['speed','delaySel','palSel'].includes(e.target.id))distMark()});
+$('ctlPanel').addEventListener('change',e=>{if(!['speed','delaySel','palSel'].includes(e.target.id))distMark()});
+$('bSO2').addEventListener('click',distMark);
+document.querySelectorAll('#distSeg button').forEach(b=>b.onclick=()=>{
+  distMode=b.dataset.d; document.querySelectorAll('#distSeg button').forEach(x=>x.classList.toggle('on',x===b)); drawDist();
+});
 $('moneySel').onchange=e=>{money3=e.target.value;draw()};
 $('bBg').onclick=()=>{dark=!dark;document.querySelector('.display').classList.toggle('darkbg',dark);draw()};
 $('bPng').onclick=()=>exportPNG('png');
@@ -750,6 +820,11 @@ function doStep(){
     $('tmR').value=Math.log10(P.tmul);$('tmV').textContent=fmt(P.tmul);
   }
   E.step();
+  distRecord();
+  if(flashOn&&E.bankruptList.length){
+    const now=performance.now(); for(const r of E.bankruptList)flashes.push({r,t:now});
+    if(flashes.length>800)flashes.splice(0,flashes.length-800);
+  }
 }
 function loop(tok){
   if(!running||tok!==loopTok)return;
@@ -757,6 +832,7 @@ function loop(tok){
   for(let j=0;j<k;j++){doStep();if(performance.now()-t0>50)break}
   refresh();
   const d=+$('delaySel').value;          // a pause between frames, to follow small systems round by round
+  if(d>0&&flashes.length)kickFlash();     // let the flashes fade during the pause
   if(d>0)setTimeout(()=>requestAnimationFrame(()=>loop(tok)),d);
   else requestAnimationFrame(()=>loop(tok));
 }
@@ -786,61 +862,101 @@ function fitCanvas(c){
   return dpr;
 }
 let geo={x0:0,y0:0,side:1};
-// ---------- 3D view: the lattice seen obliquely from the side, every factory a tower as high as its sales ----------
-const V3={az:-0.62, el:0.62, hmax:1, order:null, key:'', fit:null};
+// ---------- 3D view: the lattice seen from the side, every factory a tower as high as its sales ----------
+// camera: azimuth az, tilt el above the plane, distance dist (in units of L; 0 = infinitely far, no perspective)
+const V3={az:-0.62, el:0.62, dist:0, hmax:1, mmax:1, lastT:-1, ext:null, extKey:'', order:null, key:'', fit:null};
 const shade=(rgb,f)=>`rgb(${rgb.map(c=>Math.round(Math.min(255,c*f))).join(',')})`;
 const GOLD={a:'rgba(222,176,46,.40)',b:'rgba(176,132,24,.42)',top:'rgba(246,210,92,.48)',line:'rgba(150,108,16,.55)'};
+const niceNum=v=>{const e=Math.pow(10,Math.floor(Math.log10(v))), m=v/e; return (m<1.5?1:m<3.5?2:m<7.5?5:10)*e};
+let flashes=[], flashOn=false, flashRAF=0, noFlash=false;
 function draw3D(){
   const L=E.L, LL=L*L, N=E.N;
   const dpr=fitCanvas(cv), W=cv.width, H=cv.height;
   ctx.clearRect(0,0,W,H);
   const ca=Math.cos(V3.az), sa=Math.sin(V3.az), se=Math.sin(V3.el), ce=Math.cos(V3.el), HW=0.42*L;
+  const D=V3.dist>0?V3.dist*L:0, Dc=D||1e7;
+  const xc=Dc*sa*ce, yc=Dc*ca*ce, zc=Dc*se;            // camera position (far away along the view direction when D = 0)
   const mUp=money3==='up', mDown=money3==='down';
-  // painter's order (far to near), recomputed when the azimuth or the lattice changes
-  const key=L+':'+V3.az.toFixed(4);
+  // projection to unit screen coordinates: rotate by the azimuth, tilt, and divide by the depth for the perspective
+  const proj=(x,y,z)=>{const X=x*ca-y*sa, Y=x*sa+y*ca, k=D?D/(D-(Y*ce+z*se)):1; return [X*k,(Y*se-z*ce)*k]};
+  // painter's order: the lattice cells from far to near the camera
+  const key=L+':'+V3.az.toFixed(4)+':'+V3.el.toFixed(4)+':'+V3.dist;
   if(V3.key!==key){
     V3.key=key; const dep=new Float64Array(LL);
-    for(let r=0;r<LL;r++){const x=(r%L)+0.5-L/2, y=((r/L)|0)+0.5-L/2; dep[r]=x*sa+y*ca}
+    for(let r=0;r<LL;r++){const x=(r%L)+0.5-L/2-xc, y=((r/L)|0)+0.5-L/2-yc; dep[r]=-(x*x+y*y)}
     V3.order=Int32Array.from({length:LL},(_,r)=>r).sort((a,b)=>dep[a]-dep[b]);
   }
-  // heights: sales and money each follow their largest value slowly, so the towers do not jump
+  // height scales: they jump up (with 30 % headroom) when a company outgrows them and relax back only slowly,
+  // over some 500 rounds, so the picture keeps still while the companies grow and shrink
   let mx=1, mm=1; const tot=new Float64Array(LL);
   for(let r=0;r<LL;r++){let t=0;for(let i=0;i<N;i++)if(E.F[i][r])t+=E.sales[i][r];tot[r]=t;if(t>mx)mx=t;if(E.money[r]>mm)mm=E.money[r]}
-  V3.hmax=Math.max(mx,V3.hmax*0.97); V3.mmax=Math.max(mm,(V3.mmax||1)*0.97);
+  const dt=V3.lastT<0?0:Math.max(0,E.t-V3.lastT), relax=Math.exp(-dt/500); V3.lastT=E.t;
+  V3.hmax=mx>V3.hmax?1.3*mx:Math.max(mx,V3.hmax*relax);
+  V3.mmax=mm>V3.mmax?1.3*mm:Math.max(mm,V3.mmax*relax);
   const f=hlog?v=>HW*Math.log(1+v)/Math.log(1+V3.hmax):v=>HW*v/V3.hmax;
   const fm=v=>HW*Math.max(0,v)/V3.mmax;       // money always linear: on a log scale everybody's savings would form a carpet
-  // fit what is drawn — the ground, the towers and the hanging money — into the canvas. The scale shrinks at once when
-  // something would stick out, and grows slowly when the picture gets smaller, so it fills the display without jumping.
-  const C=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v])=>{const x=u*L/2,y=v*L/2;return [x*ca-y*sa,(x*sa+y*ca)*se]});
-  const minX=Math.min(...C.map(c=>c[0]))-0.5, maxX=Math.max(...C.map(c=>c[0]))+0.5;
+  // scale bars at the left corner of the lattice: companies upward, money (if shown) upward or downward like the towers
+  const corners=[[-L/2,-L/2],[L/2,-L/2],[L/2,L/2],[-L/2,L/2]];
+  const cl=corners.reduce((a,c)=>proj(c[0],c[1],0)[0]<proj(a[0],a[1],0)[0]?c:a);
+  const bars=[];
+  if(hlog){
+    const ticks=[]; for(let v=1;v<=V3.hmax;v*=10)ticks.push(v);
+    bars.push({h:f(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,h:f(v)})),label:'units'});
+  }else{const v=niceNum(0.5*mx); bars.push({h:f(v),ticks:[{v,h:f(v)}],label:'units'})}
+  if(money3!=='off'){const v=niceNum(0.5*mm), h=fm(v); bars.push({h:mDown?-h:h,ticks:[{v,h:mDown?-h:h}],label:'money',gold:true})}
+  // framing: everything drawn must fit; the frame grows at once and shrinks back slowly (over some 300 rounds)
+  const C=corners.map(c=>proj(c[0],c[1],0));
+  let minX=Math.min(...C.map(c=>c[0]))-0.5, maxX=Math.max(...C.map(c=>c[0]))+0.5;
   let top=Math.min(...C.map(c=>c[1])), bot=Math.max(...C.map(c=>c[1]));
   for(let r=0;r<LL;r++){
     const up=Math.max(tot[r]>0?f(tot[r]):0, mUp?fm(E.money[r]):0), dn=mDown?fm(E.money[r]):0;
     if(!(up>0)&&!(dn>0))continue;
-    const yc=(((r%L)+0.5-L/2)*sa+(((r/L)|0)+0.5-L/2)*ca)*se;
-    if(yc-up*ce-0.6<top)top=yc-up*ce-0.6; if(yc+dn*ce+0.6>bot)bot=yc+dn*ce+0.6;
+    const x=(r%L)+0.5-L/2, y=((r/L)|0)+0.5-L/2;
+    if(up>0){const p=proj(x,y,up);if(p[1]-0.6<top)top=p[1]-0.6}
+    if(dn>0){const p=proj(x,y,-dn);if(p[1]+0.6>bot)bot=p[1]+0.6}
   }
-  const rel=Math.min(0.985/(maxX-minX), 0.985*H/W/(bot-top));      // scale per canvas pixel of width
-  if(!EXPORT_DPR)V3.rel=V3.rel>0?Math.min(rel,V3.rel+0.12*(rel-V3.rel)):rel;
-  const s=Math.min(rel,V3.rel||rel)*W;
-  const ox=W/2-s*(minX+maxX)/2, oy=H/2-s*(top+bot)/2;
-  V3.fit={s,ox,oy,ca,sa,se,dpr};
-  const P2=(x,y,z)=>[ox+s*(x*ca-y*sa), oy+s*((x*sa+y*ca)*se-z*ce)];
+  bars.forEach(b=>{const p=proj(cl[0],cl[1],b.h);top=Math.min(top,p[1]-1.5);bot=Math.max(bot,p[1]+1.5)});
+  const ekey=key+':'+money3+':'+hlog+':'+W+'x'+H;
+  if(!EXPORT_DPR){
+    const e=V3.ext, rx=Math.exp(-dt/300);
+    V3.ext=(!e||V3.extKey!==ekey)?{minX,maxX,top,bot}:{
+      minX:Math.min(minX,minX+(e.minX-minX)*rx), maxX:Math.max(maxX,maxX+(e.maxX-maxX)*rx),
+      top:Math.min(top,top+(e.top-top)*rx), bot:Math.max(bot,bot+(e.bot-bot)*rx)};
+    V3.extKey=ekey;
+  }
+  const X0=V3.ext?Math.min(minX,V3.ext.minX):minX, X1=V3.ext?Math.max(maxX,V3.ext.maxX):maxX;
+  const Y0=V3.ext?Math.min(top,V3.ext.top):top, Y1=V3.ext?Math.max(bot,V3.ext.bot):bot;
+  const LM=78*dpr;                                   // room on the left for the numbers of the scale bars
+  const s=Math.min((W-LM)*0.985/(X1-X0), H*0.985/(Y1-Y0));
+  const ox=LM+(W-LM)/2-s*(X0+X1)/2, oy=H/2-s*(Y0+Y1)/2;
+  V3.fit={s,ox,oy,ca,sa,se,ce,D,dpr};
+  const P2=(x,y,z)=>{const p=proj(x,y,z);return [ox+s*p[0],oy+s*p[1]]};
   const zmin=0.6/(s*ce);                       // towers lower than ~half a pixel are not drawn
+  const zminM=2/(s*ce);                        // money towers lower than 2 pixels neither: thousands of them would only slow the drawing
   const quad=(pts,fill,stroke)=>{ctx.beginPath();ctx.moveTo(...pts[0]);for(let k=1;k<4;k++)ctx.lineTo(...pts[k]);ctx.closePath();
     ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.stroke()}};
-  // the two side faces that look toward the viewer, and the top, of a box over one lattice cell
+  // the side faces of a box over one lattice cell that look toward the camera, and its top. The golden money towers are
+  // collected into three paths (one per face shade) and painted at once: thousands of separate semi-transparent
+  // shapes would make the browser slow to paint
+  let GP=null;
+  const goldStart=()=>{GP={a:new Path2D(),b:new Path2D(),top:new Path2D()}};
+  const goldFlush=()=>{if(!GP)return; ctx.strokeStyle=GOLD.line;
+    for(const k of ['a','b','top']){ctx.fillStyle=GOLD[k];ctx.fill(GP[k]);ctx.stroke(GP[k])} GP=null};
+  const face=(pts,fill,stroke,k)=>{
+    if(GP&&fill===GOLD[k]){const p=GP[k];p.moveTo(...pts[0]);for(let j=1;j<4;j++)p.lineTo(...pts[j]);p.closePath()}
+    else quad(pts,fill,stroke)};
   const box=(r,g,z0,z1,c,stroke,withTop)=>{
-    const x0=(r%L)-L/2+g, y0=((r/L)|0)-L/2+g, x1=x0+1-2*g, y1=y0+1-2*g, xf=sa>0?x1:x0, yf=ca>0?y1:y0;
-    quad([P2(xf,y0,z0),P2(xf,y1,z0),P2(xf,y1,z1),P2(xf,y0,z1)],c.a,stroke);
-    quad([P2(x0,yf,z0),P2(x1,yf,z0),P2(x1,yf,z1),P2(x0,yf,z1)],c.b,stroke);
-    if(withTop)quad([P2(x0,y0,z1),P2(x1,y0,z1),P2(x1,y1,z1),P2(x0,y1,z1)],c.top,stroke);
+    const x0=(r%L)-L/2+g, y0=((r/L)|0)-L/2+g, x1=x0+1-2*g, y1=y0+1-2*g;
+    const xf=xc>x1?x1:xc<x0?x0:null, yf=yc>y1?y1:yc<y0?y0:null;
+    if(xf!==null)face([P2(xf,y0,z0),P2(xf,y1,z0),P2(xf,y1,z1),P2(xf,y0,z1)],c.a,stroke,'a');
+    if(yf!==null)face([P2(x0,yf,z0),P2(x1,yf,z0),P2(x1,yf,z1),P2(x0,yf,z1)],c.b,stroke,'b');
+    if(withTop&&zc>z1)face([P2(x0,y0,z1),P2(x1,y0,z1),P2(x1,y1,z1),P2(x0,y1,z1)],c.top,stroke,'top');
   };
   ctx.lineWidth=Math.max(0.5,0.35*dpr);
   // money below the plane: golden towers hanging down, seen through the semi-transparent ground
-  if(mDown)for(const r of V3.order){const h=fm(E.money[r]);if(h>zmin)box(r,0.06,-h,0,GOLD,GOLD.line,false)}
+  if(mDown){goldStart(); for(const r of V3.order){const h=fm(E.money[r]);if(h>zminM)box(r,0.06,-h,0,GOLD,GOLD.line,false)} goldFlush()}
   // ground, grid and borders
-  ctx.beginPath(); C.forEach(([X,Y],k)=>{const px=ox+s*X, py=oy+s*Y; k?ctx.lineTo(px,py):ctx.moveTo(px,py)}); ctx.closePath();
+  ctx.beginPath(); corners.forEach((c,k)=>{const p=P2(c[0],c[1],0); k?ctx.lineTo(...p):ctx.moveTo(...p)}); ctx.closePath();
   ctx.globalAlpha=mDown?0.62:1; ctx.fillStyle=dark?'#1a2131':'#e6eaf2'; ctx.fill(); ctx.globalAlpha=1;
   ctx.strokeStyle=dark?'#3a4459':'#c3cbdb'; ctx.lineWidth=dpr; ctx.stroke();
   ctx.strokeStyle=dark?'rgba(200,210,230,.12)':'rgba(131,145,171,.25)'; ctx.beginPath();
@@ -860,6 +976,7 @@ function draw3D(){
   // factory towers: one segment per product, the largest company at the bottom; with money ↑ a golden glass tower around them
   ctx.lineWidth=Math.max(0.5,0.35*dpr);
   const edge=dark?'rgba(0,0,0,.55)':'rgba(22,35,59,.35)', seg=[];
+  if(mUp)goldStart();                          // the golden glass is painted over all the factory towers at the end
   for(const r of V3.order){
     const hm=mUp?fm(E.money[r]):0;
     if(tot[r]>0){
@@ -868,19 +985,58 @@ function draw3D(){
       let cum=0, z0=0;
       seg.forEach((i,k)=>{cum+=E.sales[i][r]; const z1=f(cum); box(r,0.1,z0,z1,PSH[i],edge,k===seg.length-1); z0=z1});
     }
-    if(hm>zmin)box(r,0.03,0,hm,GOLD,GOLD.line,true);
+    if(hm>zminM)box(r,0.03,0,hm,GOLD,GOLD.line,true);
   }
+  goldFlush();
+  // scale bars: thick lines, black on white and white on black, with their numbers to the left
+  const ink=dark?'#ffffff':'#000000', fs=11*dpr;
+  ctx.font=`600 ${fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`; ctx.textAlign='right';
+  const fmtV=v=>v>=1e4?(v/1000).toFixed(0)+'k':v>=1?String(Math.round(v)):v.toPrecision(2);
+  bars.forEach((b,k)=>{
+    const base=P2(cl[0],cl[1],0), x=base[0]-(12+k*26)*dpr, y0=base[1], y1=P2(cl[0],cl[1],b.h)[1];
+    ctx.strokeStyle=ink; ctx.lineWidth=3*dpr; ctx.lineCap='butt';
+    ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1); ctx.stroke();
+    ctx.lineWidth=2*dpr; ctx.beginPath();
+    b.ticks.forEach(t=>{const y=P2(cl[0],cl[1],t.h)[1]; ctx.moveTo(x-5*dpr,y); ctx.lineTo(x+5*dpr,y)}); ctx.moveTo(x-5*dpr,y0); ctx.lineTo(x+5*dpr,y0); ctx.stroke();
+    ctx.fillStyle=b.gold?(dark?'#f6d25c':'#8a6412'):ink;
+    ctx.textBaseline='middle';
+    b.ticks.forEach(t=>ctx.fillText(fmtV(t.v),x-8*dpr,P2(cl[0],cl[1],t.h)[1]));
+    ctx.textBaseline=b.h<0?'top':'bottom'; ctx.textAlign='center';
+    ctx.fillText(b.label+(hlog&&!b.gold?' (log)':''),x,y1+(b.h<0?6:-6)*dpr); ctx.textAlign='right';
+  });
+  drawFlashes((r)=>{const p=P2((r%L)+0.5-L/2,((r/L)|0)+0.5-L/2,0);return [p[0],p[1],s]});
   $('legend').innerHTML=P.products.map((pr,i)=>`<span><i style="background:${PCOL[i]}"></i>${PNAME[i]}</span>`).join('')+
-    `<span>tower height = units sold last round, largest company lowest (${hlog?'log':'linear'}, top ≈ ${Math.round(V3.hmax)})</span>`+
-    (money3!=='off'?`<span><i style="background:rgba(222,176,46,.6)"></i>money${mDown?', hanging below the plane':''} (top ≈ ${Math.round(V3.mmax)})</span>`:'')+
+    `<span>tower height = units sold last round, largest company lowest (${hlog?'log':'linear'})</span>`+
+    (money3!=='off'?`<span><i style="background:rgba(222,176,46,.6)"></i>money${mDown?', hanging below the plane':''}</span>`:'')+
     '<span>drag to turn and tilt</span>';
   if(hoverR>=0&&hoverR<LL)readout(hoverR);
 }
 function evR3(ev){
   const b=cv.getBoundingClientRect(), F=V3.fit, L=E.L; if(!F)return -1;
-  const X=((ev.clientX-b.left)*F.dpr-F.ox)/F.s, Y=((ev.clientY-b.top)*F.dpr-F.oy)/F.s/F.se;
+  // invert the projection on the ground plane z = 0
+  const u=((ev.clientX-b.left)*F.dpr-F.ox)/F.s, v=((ev.clientY-b.top)*F.dpr-F.oy)/F.s;
+  let X,Y;
+  if(F.D){Y=v*F.D/(F.se*F.D+v*F.ce); const k=F.D/(F.D-Y*F.ce); X=u/k}
+  else{Y=v/F.se; X=u}
   const x=Math.floor(X*F.ca+Y*F.sa+L/2), y=Math.floor(-X*F.sa+Y*F.ca+L/2);
   return x<0||y<0||x>=L||y>=L?-1:y*L+x;
+}
+// a short flash where an agent went bankrupt: a ring that grows and fades within half a second
+function drawFlashes(pos){
+  if(!flashes.length||noFlash)return;
+  const now=performance.now(), dpr=EXPORT_DPR||window.devicePixelRatio||1;
+  flashes=flashes.filter(fl=>now-fl.t<450);
+  const col=dark?'255,236,140':'220,38,38';
+  for(const fl of flashes){
+    const a=(now-fl.t)/450, [x,y,cell]=pos(fl.r), rad=Math.max(3*dpr,cell*(0.6+2.4*a));
+    ctx.beginPath(); ctx.arc(x,y,rad,0,2*Math.PI);
+    ctx.fillStyle=`rgba(${col},${0.35*(1-a)})`; ctx.fill();
+    ctx.strokeStyle=`rgba(${col},${0.9*(1-a)})`; ctx.lineWidth=2*dpr; ctx.stroke();
+  }
+}
+function kickFlash(){
+  if(flashRAF)return;
+  flashRAF=requestAnimationFrame(()=>{flashRAF=0; if(!flashes.length)return; draw(); if(flashes.length)kickFlash()});
 }
 function draw(){
   if(!E)return;
@@ -960,6 +1116,7 @@ function draw(){
     if(view==='market'&&s>=0){ctx.beginPath();ctx.moveTo(cx(hoverR),cy(hoverR));ctx.lineTo(cx(s),cy(s));ctx.stroke()}
     readout(hoverR);
   }
+  drawFlashes(r=>[cx(r),cy(r),cell]);
   $('legend').innerHTML=legend;
 }
 function readout(r){
@@ -989,7 +1146,8 @@ cv.addEventListener('pointermove',ev=>{
   if(drag&&view==='3d'){
     const dx=ev.clientX-drag.x, dy=ev.clientY-drag.y;
     if(Math.abs(dx)+Math.abs(dy)>4)drag.moved=true;
-    if(drag.moved){V3.az=drag.az-dx*0.008;V3.el=Math.min(1.45,Math.max(0.12,drag.el+dy*0.005));if(!running)draw();return}
+    if(drag.moved){V3.az=drag.az-dx*0.008;V3.el=Math.min(1.53,Math.max(0.09,drag.el+dy*0.005));
+      V3.az=Math.atan2(Math.sin(V3.az),Math.cos(V3.az)); syncView(); if(!running)draw(); return}
   }
   hoverR=view==='3d'?evR3(ev):evR(ev);if(!running)draw();
 });
@@ -999,10 +1157,10 @@ cv.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse'){hoverR=-1;$
 
 // ---------- pictures: .png = the display with the parameters in the lower left corner; sq = only what is drawn ----------
 function renderPicture(scale){
-  const hv=hoverR; hoverR=-1; EXPORT_DPR=scale; draw();
+  const hv=hoverR; hoverR=-1; EXPORT_DPR=scale; noFlash=true; draw();
   const oc=document.createElement('canvas'); oc.width=cv.width; oc.height=cv.height;
   const o=oc.getContext('2d'); o.fillStyle=dark?'#0b0d13':'#ffffff'; o.fillRect(0,0,oc.width,oc.height); o.drawImage(cv,0,0);
-  EXPORT_DPR=0; hoverR=hv; draw();
+  EXPORT_DPR=0; noFlash=false; hoverR=hv; draw();
   return oc;
 }
 function contentBox(){          // bounding box of everything drawn on the (transparent) display canvas
@@ -1057,6 +1215,82 @@ function exportPNG(kind){
   else save(oc.toDataURL('image/png'));
 }
 
+// ---------- distributions: money across agents, company sizes per product (log–log) ----------
+// After every round the histograms (logarithmic bins, 4 per decade) are added to running totals; the totals at each
+// round are kept, so the sum over any window of rounds is the difference of two of them.
+const MB={lo:-3,hi:7,per:4}, SB={lo:0,hi:7,per:4};
+const nb=B=>(B.hi-B.lo)*B.per, binOf=(B,v)=>Math.floor((Math.log10(v)-B.lo)*B.per);
+let DH=null, distMode='now';
+function distReset(){DH={t0:0,rec:[{t:0,m:new Float64Array(nb(MB)),s:P.products.map(()=>new Float64Array(nb(SB)))}]}}
+function distMark(){if(E&&DH)DH.t0=E.t}
+function histNow(){
+  const LL=E.L*E.L, m=new Float64Array(nb(MB)), s=P.products.map(()=>new Float64Array(nb(SB)));
+  for(let r=0;r<LL;r++){const v=E.money[r];if(v>0){const k=binOf(MB,v);if(k>=0&&k<m.length)m[k]++}}
+  for(let i=0;i<E.N;i++){const S=E.sales[i],h=s[i];for(let r=0;r<LL;r++)if(S[r]>0){const k=binOf(SB,S[r]);if(k>=0&&k<h.length)h[k]++}}
+  return {m,s};
+}
+function distRecord(){
+  const h=histNow(), last=DH.rec[DH.rec.length-1];
+  DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k]))});
+  if(DH.rec.length>8000)DH.rec.splice(1,1000);
+}
+function histWindow(){         // summed over the last two thirds of the rounds since the last change of a parameter
+  const t1=E.t, ta=DH.t0+Math.floor((t1-DH.t0)/3);
+  let lo=0,hi=DH.rec.length-1;               // last record with t <= ta
+  while(lo<hi){const mid=(lo+hi+1)>>1;if(DH.rec[mid].t<=ta)lo=mid;else hi=mid-1}
+  const a=DH.rec[lo], b=DH.rec[DH.rec.length-1];
+  return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),rounds:b.t-a.t};
+}
+function sup10(k){const s={'-':'⁻',0:'⁰',1:'¹',2:'²',3:'³',4:'⁴',5:'⁵',6:'⁶',7:'⁷',8:'⁸',9:'⁹'};
+  return k===0?'1':k===1?'10':'10'+String(k).split('').map(c=>s[c]).join('')}
+function logPlot(canvas,series,B,xlabel,title,legend){
+  const dpr=fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
+  g.clearRect(0,0,W,H);
+  const pl=46*dpr, pr=10*dpr, pt=22*dpr, pb=34*dpr, w=W-pl-pr, h=H-pt-pb;
+  g.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+  // density P(x) = count / (total · bin width), at the geometric bin centres
+  const pts=series.map(se=>{const tot=se.h.reduce((a,b)=>a+b,0), out=[];
+    se.h.forEach((c,k)=>{if(c>0){const x0=Math.pow(10,B.lo+k/B.per), x1=Math.pow(10,B.lo+(k+1)/B.per);
+      out.push([Math.log10(Math.sqrt(x0*x1)),Math.log10(c/(tot*(x1-x0)))])}});
+    return {c:se.c,p:out}});
+  const all=pts.flatMap(s=>s.p);
+  g.fillStyle='#16233b'; g.textAlign='left'; g.textBaseline='top'; g.font=`600 ${11.5*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+  g.fillText(title,pl,4*dpr); g.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+  if(!all.length){g.fillStyle='#8391ab';g.fillText('no data yet',pl,pt+h/2);return}
+  let x0=Math.floor(Math.min(...all.map(p=>p[0]))), x1=Math.ceil(Math.max(...all.map(p=>p[0])));
+  let y0=Math.floor(Math.min(...all.map(p=>p[1]))), y1=Math.ceil(Math.max(...all.map(p=>p[1])));
+  if(x1<=x0)x1=x0+1; if(y1<=y0)y1=y0+1;
+  const X=v=>pl+(v-x0)/(x1-x0)*w, Y=v=>pt+h-(v-y0)/(y1-y0)*h;
+  g.strokeStyle='#dde3ec'; g.lineWidth=dpr; g.fillStyle='#8391ab';
+  g.textAlign='center'; g.textBaseline='top';
+  const xs=Math.max(1,Math.ceil((x1-x0)/6)), ys=Math.max(1,Math.ceil((y1-y0)/5));
+  for(let k=x0;k<=x1;k+=xs){g.beginPath();g.moveTo(X(k),pt);g.lineTo(X(k),pt+h);g.stroke();g.fillText(sup10(k),X(k),pt+h+4*dpr)}
+  g.textAlign='right'; g.textBaseline='middle';
+  for(let k=y0;k<=y1;k+=ys){g.beginPath();g.moveTo(pl,Y(k));g.lineTo(pl+w,Y(k));g.stroke();g.fillText(sup10(k),pl-5*dpr,Y(k))}
+  g.strokeStyle='#b7bfd0'; g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h); g.stroke();
+  g.textAlign='center'; g.textBaseline='bottom'; g.fillText(xlabel,pl+w/2,H-2*dpr);
+  pts.forEach(s=>{
+    g.strokeStyle=s.c; g.fillStyle=s.c; g.lineWidth=1.6*dpr; g.beginPath();
+    s.p.forEach((p,k)=>k?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.stroke();
+    s.p.forEach(p=>{g.beginPath();g.arc(X(p[0]),Y(p[1]),2.4*dpr,0,2*Math.PI);g.fill()});
+  });
+  if(legend){                                  // upper right corner: the products with their γ
+    g.textAlign='right'; g.textBaseline='top'; g.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+    legend.forEach((l,k)=>{const y=pt+4*dpr+k*15*dpr; g.fillStyle='#16233b'; g.fillText(l.t,pl+w-4*dpr,y);
+      const tw=g.measureText(l.t).width; g.fillStyle=l.c; g.fillRect(pl+w-tw-17*dpr,y+1*dpr,9*dpr,9*dpr)});
+  }
+}
+function drawDist(){
+  if(!E||!DH)return;
+  let d=histNow(), note='now (round '+E.t+')';
+  if(distMode==='avg'){const w=histWindow(); if(w.rounds>0){d=w; note=`summed over rounds ${E.t-w.rounds+1}–${E.t} (last ⅔ since the last parameter change at round ${DH.t0})`}
+    else note='no rounds since the last parameter change yet: showing now'}
+  $('distNote').textContent=note;
+  logPlot($('cMoney'),[{c:'#b7791f',h:d.m}],MB,'money M of an agent','money distribution P(M)',null);
+  logPlot($('cSize'),d.s.map((h,i)=>({c:PCOL[i],h})),SB,'company size s (units sold per round)','company sizes P(s)',
+    P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}`})));
+}
+
 // ---------- chart ----------
 const ch=$('chart'), cctx=ch.getContext('2d');
 function drawChart(){
@@ -1096,8 +1330,8 @@ function niceTicks(a,b,n){const span=b-a||1, st=Math.pow(10,Math.floor(Math.log1
   const out=[];for(let v=Math.ceil(a/s-1e-9)*s;v<=b+1e-9;v+=s)out.push(v);return out}
 function fmtTick(v){return Math.abs(v)<1e-9?'0':Math.abs(v)>=10?v.toFixed(0):Math.abs(v)>=1?v.toFixed(1):v.toFixed(2)}
 
-new ResizeObserver(()=>{draw();drawChart()}).observe(document.querySelector('.layout'));
-syncControls();
+new ResizeObserver(()=>{draw();drawChart();drawDist()}).observe(document.querySelector('.layout'));
+syncControls(); syncView();
 applyPreset('three');
 </script>
 </body>
