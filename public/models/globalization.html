@@ -337,7 +337,10 @@
         money falls from 4.7 to 1.2 and the richest agent from about 3500 to 900; there are fewer start-ups (28 instead of 36
         per round) and many more bankruptcies (84 instead of 6). Most of these are agents without any factory (seven in ten)
         whose shopping, delivery included, costs more than their wage; the others are new companies (about half the bankrupt
-        opened their factory less than 10 rounds before). With fewer start-ups the incumbents meet fewer challengers: there
+        opened their factory less than 10 rounds before). With closed boundaries this happens most at the edges: there the
+        sellers lie on one side only, deliveries come from farther away and cost more, and agents go bankrupt 1.4 to 2 times
+        as often as in the interior (with periodic boundaries, or when nobody pays for deliveries, the edges are like the
+        rest). With fewer start-ups the incumbents meet fewer challengers: there
         are far fewer local producers of the basic product (about 240 factories instead of 3800), and the markets grow more
         concentrated (the largest share of the high-tech product C rises from 0.51 to 0.83). But the picture is the same:
         local producers of the basic product, a few big companies of the scalable ones, and a steady churn.</p>
@@ -1203,7 +1206,10 @@ function doStep(){
     };
     for(const c of [...E.closeList,...E.bankruptList])if(c.size>=thr)burst(c);
     let small=flashes.reduce((n,f)=>n+(f.small&&now-f.t<FLASH_MS?1:0),0);
-    for(const b of E.bankruptList)if(b.size<thr&&small<60){burst(b);small++}
+    // the small ones shown are picked at random: the list is in the order of the agents, row by row, and taking its first
+    // entries would mark only the first rows of the lattice
+    const sm=E.bankruptList.filter(b=>b.size<thr);
+    for(let k=0;k<sm.length&&small<60;k++){const j=k+Math.floor(Math.random()*(sm.length-k));[sm[k],sm[j]]=[sm[j],sm[k]];burst(sm[k]);small++}
     if(flashes.length>400){const big=flashes.filter(f=>!f.small), sm=flashes.filter(f=>f.small);
       flashes=[...sm.slice(Math.max(0,sm.length-Math.max(0,400-big.length))),...big.slice(-400)]}
   }
