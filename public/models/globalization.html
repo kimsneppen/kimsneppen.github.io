@@ -205,68 +205,93 @@
   <details class="titledrop" id="titleDrop">
     <summary><h1>Globalization in a nutshell — 2D</h1></summary>
     <div class="dropbox">
-      <p>A two-dimensional, many-product version of the model of Sneppen and Bornholdt [1]. <b>L × L agents</b> sit on a square
-        lattice with periodic boundaries. There are <b>N products</b>, each with three parameters: a start cost <b>Start(i)</b>,
-        an economy-of-scale exponent <b>γ(i)</b> and a transport cost <b>β(i)</b>. A more scalable product (lower γ) always costs
-        more to start; the first product A is the basic one, cheap to start (Start = 2), with γ = −0.3 only moderately below zero
-        and a high transport cost β = 0.1. Each agent at <b>r</b> owns money and a list <b>F(r,i)</b> = 1 or 0 of the products it
-        can produce.</p>
-      <p>The price at which agent r₁ delivers one unit of product i to agent r₂ is</p>
-      <p class="eqc">C(r₁,r₂,i) = F(r₁,i) · s(r₁,i)<sup>γ(i)</sup> + β(i) · |r₁ − r₂| &nbsp; ( + τ across a border )</p>
-      <p>Only agents with F(r₁,i) = 1 can deliver, and an agent does not buy from itself. s(r₁,i) = 1 + the number of units of i
-        that r₁ sold in the previous round: a new factory has s = 1 and price 1, and with γ &lt; 0 a large producer sells cheaper
-        (economy of scale). |r₁ − r₂| is the shortest distance on the torus, Euclidean or Manhattan.</p>
-      <h2>One round (length T)</h2>
+      <p>Why is bread still baked around the corner, while almost every computer chip in the world comes from a handful of
+        factories? This applet is a toy world for thinking about that question. It is a two-dimensional version, with many
+        products, of the model of Sneppen and Bornholdt [1].</p>
+
+      <h2>The world</h2>
+      <p>Picture a square town of <b>L × L</b> people, the <i>agents</i>, one on each square of a grid. The grid is wrapped
+        around like a doughnut, so there is no edge: walk off the right side and you come back on the left. Everybody needs
+        <b>N</b> kinds of goods, called A, B, C, … Some agents also own a factory that makes one of them. An agent has money,
+        and a list of the products it can make: F(r,i) = 1 if the agent at r makes product i, otherwise 0.</p>
+
+      <h2>What a thing costs</h2>
+      <p>Suppose you live at r₂ and want one unit of product i. Each factory offers it to you at a price, and you simply take
+        the cheapest offer. The factory at r₁ asks</p>
+      <p class="eqc">C = s(r₁,i)<sup>γ(i)</sup> + β(i) · |r₁ − r₂| &nbsp; ( + τ if you live in another country )</p>
+      <p>The first term is what it costs to make the thing. Here <b>s</b> is the size of the factory: one plus the number of
+        units it sold last round. A brand-new factory has s = 1, so its price is 1. The exponent <b>γ</b> is negative, and it
+        says how much being big helps. With γ = −0.3 a factory a hundred times bigger makes each unit only about four times as
+        cheaply — that is bread. With γ = −0.9 it makes each unit sixty times as cheaply — that is a computer chip.
+        This is the <i>economy of scale</i>.</p>
+      <p>The second term is the cost of transport: every step between factory and customer adds <b>β</b>. Distance is measured
+        the short way round the doughnut, straight across (Euclidean) or along the streets (Manhattan). Nobody buys from
+        themselves: you shop at somebody else's factory.</p>
+      <p>So each product has just three numbers: <b>Start</b>, the price of building a factory for it; <b>γ</b>; and
+        <b>β</b>. It is natural that the products that profit most from being big are also the ones that cost most to start:
+        the applet insists on that ordering. Product A is the basic one — cheap to start (2), helped only a little by size
+        (γ = −0.3), and costly to carry around (β = 0.1).</p>
+
+      <h2>One round, step by step</h2>
       <ol>
-        <li><b>Orders.</b> Each product gets n·L² orders. The ordering agent is drawn with probability proportional to
-          <b>the money it acquired in the previous round</b> (wage + sales): rich agents place more orders, which enriches their
-          surroundings.</li>
-        <li><b>Sales.</b> An order goes to the agent that delivers at the lowest price C (ties at random). Prices are fixed during the
-          round, so every agent buys each product from the same seller all round.</li>
-        <li><b>Money.</b> Each round an agent's money changes by
-          <span class="eqc" style="display:block">ΔM = w + p · (units sold) − μ · Σ<sub>its factories</sub> Start(i)</span>
-          <b>Self-organized price</b> (the default, switch in the upper right corner): the price of a unit is set every round so
-          that the value of everything produced equals the total wages,
-          <span class="eqc" style="display:block">p(t+1) = Σ<sub>agents</sub> w / Σ<sub>agents</sub> units sold(t),</span>
-          so money does not pile up: the more is produced, the cheaper a unit, and a bankrupt agent starts again from money w.
-          <b>Fixed price</b> (switched off): every unit sells at p = 1, the reward of the original model, and successful
-          companies accumulate money without limit. The wage w, the same for everybody, is the
-          savings from work that let an agent without a business build up money to start one. The upkeep μ·Start(i) is the running
-          cost of a factory: the investment depreciates, so a factory must keep selling to pay for itself. Opening a factory costs
-          Start(i) at once. An agent whose money falls below zero is <b>bankrupt</b>: its least profitable factory closes and the
-          debt is written off (with the self-organized price it starts again from w).</li>
-        <li><b>Decisions.</b> After the round each agent compares its profit (p · units sold − upkeep) with that of the round before. If profit
-          held up, the agent goes on producing what it did. If it <b>declined</b> by more than the random fluctuation
-          κ·p·√(units sold), or is not positive, or the agent has no factory, the agent explores: it picks at random a product it does not
-          make and has money enough to start, pays Start(i) and opens that factory (s = 1). An agent may make at most <b>lim</b>
-          products; at the limit it closes its weakest factory for the new one, so with lim = 1 it changes product.</li>
+        <li><b>Shopping.</b> For each product, n·L² orders are placed. Who places them? Agents picked at random — but an agent
+          that took in more money last round is picked more often. The rich shop more, and that helps their neighbours.</li>
+        <li><b>Selling.</b> Each order goes to the cheapest offer (a tie is settled by a coin toss). The sizes, and so the prices,
+          stay fixed during the round, so you buy each product from the same factory all round long.</li>
+        <li><b>Bookkeeping.</b> After the round, each agent's money changes by
+          <span class="eqc" style="display:block">ΔM = w + p · (units sold) − μ · Σ<sub>its factories</sub> Start</span>
+          Everybody earns the same wage <b>w</b>; it is how a person without a business can save up to start one. Each unit
+          sold brings in the price <b>p</b>. And every factory costs a little upkeep each round, a fraction <b>μ</b> of what it
+          cost to build: machines wear out, so a factory must keep selling to pay for itself.
+          <br>What is the price p? In the <b>self-organized</b> economy (the default; the button in the upper right corner)
+          it adjusts itself, so that everything sold is worth exactly what everybody earned in wages:
+          <span class="eqc" style="display:block">p(next round) = Σ wages / Σ units sold (this round)</span>
+          If the world makes twice as much, each unit is worth half as much. That is why money cannot pile up without end.
+          With the <b>fixed price</b> (button off) every unit earns 1, as in the original model, and a successful company
+          grows rich without limit.
+          <br>An agent whose money falls below zero is <b>bankrupt</b>: its least profitable factory closes, the debt is
+          forgiven, and it starts again from money w (from 0 with the fixed price).</li>
+        <li><b>Deciding.</b> Each agent compares this round's profit (p · units sold − upkeep) with last round's. Things going
+          fine? Then it carries on. But if the profit fell by more than ordinary luck would explain — more than κ·p·√(units sold),
+          the typical size of the random ups and downs of a count — or if there is no profit, or no factory at all, the agent
+          tries something new. It picks at random a product it does not make yet and can afford, pays Start, and opens that
+          factory, which begins small (s = 1). Nobody may make more than <b>lim</b> products; at the limit the agent closes its
+          weakest factory to make room, so with lim = 1 it changes trade.</li>
       </ol>
-      <p>Initially every agent makes one random product and owns money M₀. Money is not conserved: the buyers' payments come from
-        outside the model, as in [1], and money leaves the economy through start costs and upkeep.</p>
+      <p>At the start, every agent makes one product picked at random and has money M₀. That is all there is to the model.</p>
+
       <h2>What to look for</h2>
-      <p>Lowering the transport costs (the <i>transport factor</i> multiplies every β, and <i>lower gradually</i> decreases it each
-        round, as in Fig. 2 of [1]) turns many local producers into a few large companies with long deliveries. Products with a
-        strong economy of scale (γ near −1) and cheap transport go global first; products that are costly to ship stay local.
-        Countries with a tariff τ on crossing a border (only one border counts) split the markets into national champions.</p>
-      <h2>Views</h2>
-      <p><i>3D</i>: the lattice seen from the side, as in the figures of [1]; every factory is a tower as high as the units it sold
-        in the last round; an agent with several products has its factories stacked, the largest at the bottom (linear or log
-        heights). The agents' money can be shown in the same view as golden, semi-transparent towers, either around the
-        factories or hanging below the plane. The scale bars at the left corner give the heights: units sold upward (one
-        length on the linear scale, the decades on the log scale) and money. Drag to turn and tilt, or use the <i>view</i>
-        menu in the upper left corner for the angles and the perspective. The height scales follow the companies only slowly,
-        so the picture keeps still.
-        <i>Agents</i>: every agent with sales is a pie, area ∝ sales, with a slice for each product it makes;
-        the pale background shows the factories that sold nothing.
-        <i>Market</i>: for the selected product, each agent in the colour of the factory it buys from; dots are the factories,
-        size ∝ sales. <i>Sales</i> and <i>Money</i>: log-scale heat maps in the gnuplot palette of the paper's figures.
-        Hover over or tap an agent for its numbers. Below the grid: time series of the number of factories, the largest market
-        share, the mean shipping distance, the agents with sales, starts and bankruptcies, and the mean money.
-        The buttons in the lower right corner of the display switch between a white and a black background and save the display
-        as a picture: <i>.png</i> with the parameters in the lower left corner, <i>sq</i> cut tightly around what is drawn;
-        ⚡ makes a short flash wherever a company goes bankrupt. At the bottom: log–log plots of the money distribution over
-        the agents and of the company sizes of each product, either now or summed over the last two thirds of the rounds
-        since a parameter was last changed.</p>
+      <p>The key question is: can a newcomer ever beat a giant? The newcomer sells at price 1, the giant at s<sup>γ</sup>,
+        which may be very small. A customer at distance d from the giant goes to the newcomer only if the giant's transport
+        cost has eaten up its advantage. So the giant keeps every customer within a distance of about
+        R ≈ (1 − s<sup>γ</sup>)/β. If R is bigger than the whole world, no newcomer can win even one customer, anywhere. The
+        giant is then a natural world monopoly, and it falls only if it gives up by itself.</p>
+      <p>Now you can see what globalization does. Make transport cheaper (the <i>transport factor</i> multiplies every β;
+        <i>lower gradually</i> keeps reducing it, as in Fig. 2 of [1]) and R grows: many small local producers merge into a
+        few big ones that ship far. Products with a strong economy of scale and cheap transport go global first; bread stays
+        local. Countries with a tariff τ on crossing a border (only one border counts) cut R down again, and each country gets
+        its own champion.</p>
+
+      <h2>How to read the pictures</h2>
+      <p><i>3D</i>: the town seen from the side, as in the figures of [1]. Every factory is a tower as tall as the units it sold
+        last round; an agent with several products has its towers stacked, the biggest at the bottom. The scale bars at the
+        left corner tell you the heights: units sold upward (one round number on the linear scale, the powers of ten on the
+        log scale), and money. The agents' money can be shown as golden glass towers, either around the factories or hanging
+        below the ground. The height scales are the average size of the biggest company over the last two thirds of the
+        run, and they are renewed only each time the run has grown by half, so the picture keeps still. Drag to turn and
+        tilt, or use the <i>view</i> menu in the upper left corner, which also sets the perspective.</p>
+      <p><i>Agents</i>: everyone who sold something is a pie, its area the units sold, a slice per product. <i>Market</i>: for
+        one product, everybody in the colour of the factory they buy from; the dots are the factories. <i>Sales</i> and
+        <i>Money</i>: heat maps on a log scale, in the colours of the paper's figures. Hover over or tap an agent to see its
+        numbers.</p>
+      <p>The buttons in the lower right corner: the lightning bolt makes a small explosion wherever a company goes bankrupt,
+        the bigger the company the bigger the bang — off (black), yellow, or in the company's colour (multicoloured bolt);
+        the half-black circle switches the background; <i>.png</i> saves the picture with the parameters written in the lower
+        left corner; <i>sq</i> saves just what is drawn, cut tight.</p>
+      <p>Below the town: how the numbers change in time, and two log–log plots — how the money is spread over the agents,
+        and how big the companies of each product are. The dashed lines are power-law fits: for money, over its tail; for
+        companies, over the product whose companies are smallest on average. Either plot shows the present, or the sum over
+        the last two thirds of the run since you last changed a parameter.</p>
       <div class="refs">
         <p>[1] K. Sneppen and S. Bornholdt, <i>Globalization in a nutshell</i>, Phys. Rev. E <b>98</b>, 042314 (2018).
           <a href="https://doi.org/10.1103/PhysRevE.98.042314" target="_blank" rel="noopener">doi:10.1103/PhysRevE.98.042314</a></p>
@@ -304,7 +329,10 @@
         </div>
       </details>
       <div class="cornerbtns">
-        <button id="bFlash" title="flash where a company goes bankrupt (on / off)">⚡</button>
+        <button id="bFlash" title="explosions where companies go bankrupt: off — click for yellow, click again for the company's colour">
+          <svg viewBox="0 0 16 16" width="15" height="15" style="vertical-align:-3px"><defs><linearGradient id="flashGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#e11d48"/><stop offset=".35" stop-color="#f59e0b"/><stop offset=".65" stop-color="#10b981"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
+            <path id="flashPath" d="M9.6 .8 2.8 9.2h4.3L5.9 15.2l7.3-8.6H8.7z" stroke-width=".9" stroke-linejoin="round"/></svg></button>
         <button id="bBg" title="black / white background"><span class="bwcirc"></span></button>
         <button id="bPng" title="save the display as a PNG picture, with the parameters in the lower left corner">.png</button>
         <button id="bSq" title="save only what is drawn, cut as tightly as possible, as a PNG picture">sq</button>
@@ -555,7 +583,7 @@ function buildEcon(P){
     let W=0; for(let r=0;r<LL;r++){W+=E.t?E.inc[r]:1;cum[r]=W}
     const uniform=!(W>0);
     const T=Math.max(1,Math.round(P.n*LL));
-    const H={t:E.t+1,prod:[],share:[],dist:[],unmet:[],active:0,starts:0,bankrupt:0,money:0};
+    const H={t:E.t+1,prod:[],share:[],dist:[],unmet:[],active:0,starts:0,bankrupt:0,money:0,maxUnits:0,maxMoney:0};
     for(let i=0;i<N;i++){
       const ns=newSales[i], sup=E.sup[i], dist=E.dist[i]; ns.fill(0);
       let dsum=0,sold=0;
@@ -587,9 +615,12 @@ function buildEcon(P){
       E.prevInc[r]=E.inc[r]; E.inc[r]=P.wage+p*units;
       E.prevProfit[r]=E.profit[r]; E.profit[r]=p*units-up;
       E.money[r]+=P.wage+p*units-up;
-      if(units>0)H.active++;
+      if(units>0)H.active++; if(units>H.maxUnits)H.maxUnits=units;
       if(E.money[r]<0){
-        const w=weakest(r); if(w>=0){E.F[w][r]=0;nf--} E.money[r]=so?P.wage:0; H.bankrupt++; E.bankruptList.push(r);
+        // the bankrupt company: its size (units sold this or last round) and its biggest product, for the display
+        let bp=-1,bv=-1; for(let i=0;i<N;i++)if(E.F[i][r]&&newSales[i][r]>bv){bv=newSales[i][r];bp=i}
+        const w=weakest(r); if(w>=0){E.F[w][r]=0;nf--} E.money[r]=so?P.wage:0; H.bankrupt++;
+        E.bankruptList.push({r,size:Math.max(units,E.prevUnits[r]),prod:bp>=0?bp:w});
       }
       const declined=E.t>0&&E.profit[r]<E.prevProfit[r]-P.kappa*p*Math.sqrt(Math.max(1,E.prevUnits[r]));
       if(nf===0||declined||E.profit[r]<=0){
@@ -603,7 +634,7 @@ function buildEcon(P){
           E.started[r]=E.t+1; H.starts++;
         }
       }
-      H.money+=E.money[r];
+      H.money+=E.money[r]; if(E.money[r]>H.maxMoney)H.maxMoney=E.money[r];
     }
     for(let i=0;i<N;i++){E.sales[i].set(newSales[i]);const F=E.F[i],S=E.sales[i];for(let r=0;r<LL;r++)if(!F[r])S[r]=0}
     H.active/=LL; H.starts/=LL; H.bankrupt/=LL; H.money/=LL; H.price=p;
@@ -664,7 +695,7 @@ function applyPreset(k){
   syncControls(); restart();
 }
 function restart(){
-  P.L=+$('Lsel').value; P.seed=(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.lastT=-1; V3.ext=null;
+  P.L=+$('Lsel').value; P.seed=(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.scaleT=-1; V3.ext=null;
   E=buildEcon(P); flashes=[];
   distReset();
   if(psel>=P.products.length)psel=0;
@@ -750,7 +781,15 @@ $('elR').oninput=e=>{V3.el=+e.target.value*Math.PI/180;syncView();draw()};
 $('distSel').onchange=e=>{V3.dist=+e.target.value;draw()};
 $('viewReset').onclick=()=>{Object.assign(V3,VIEW0);syncView();draw()};
 // flashes where companies go bankrupt
-$('bFlash').onclick=()=>{flashOn=!flashOn;$('bFlash').classList.toggle('on',flashOn);if(!flashOn)flashes=[];draw()};
+// bankruptcy explosions: off → yellow → in the colour of the company → off; the lightning icon shows the state
+function setFlashMode(m){
+  flashMode=m; const p=$('flashPath');
+  p.setAttribute('fill',m==='yellow'?'#facc15':m==='colour'?'url(#flashGrad)':(dark?'#c7d2fe':'#16233b'));
+  p.setAttribute('stroke',m==='yellow'?'#a16207':'none');
+  $('bFlash').title='explosions where companies go bankrupt: '+{off:'off — click for yellow',yellow:'yellow — click for the colour of the company',colour:'colour of the company — click to switch off'}[m];
+  if(m==='off')flashes=[]; draw();
+}
+$('bFlash').onclick=()=>setFlashMode({off:'yellow',yellow:'colour',colour:'off'}[flashMode]);
 $('bStep').addEventListener('click',()=>{if(flashes.length)kickFlash()});
 // every change of a model parameter in the panel starts a new averaging window for the distributions
 $('ctlPanel').addEventListener('input',e=>{if(!['speed','delaySel','palSel'].includes(e.target.id))distMark()});
@@ -760,7 +799,7 @@ document.querySelectorAll('#distSeg button').forEach(b=>b.onclick=()=>{
   distMode=b.dataset.d; document.querySelectorAll('#distSeg button').forEach(x=>x.classList.toggle('on',x===b)); drawDist();
 });
 $('moneySel').onchange=e=>{money3=e.target.value;draw()};
-$('bBg').onclick=()=>{dark=!dark;document.querySelector('.display').classList.toggle('darkbg',dark);draw()};
+$('bBg').onclick=()=>{dark=!dark;document.querySelector('.display').classList.toggle('darkbg',dark);setFlashMode(flashMode)};
 $('bPng').onclick=()=>exportPNG('png');
 $('bSq').onclick=()=>exportPNG('sq');
 $('pDel').onclick=()=>{P.products.pop();restart()};
@@ -821,9 +860,14 @@ function doStep(){
   }
   E.step();
   distRecord();
-  if(flashOn&&E.bankruptList.length){
-    const now=performance.now(); for(const r of E.bankruptList)flashes.push({r,t:now});
-    if(flashes.length>800)flashes.splice(0,flashes.length-800);
+  if(flashMode!=='off'&&E.bankruptList.length){
+    const now=performance.now();
+    for(const b of E.bankruptList){
+      // a few sparks thrown up and out; they fall back under gravity, which gives the burst its depth
+      const parts=[]; for(let k=0;k<9;k++){const a=-Math.PI*(0.08+0.84*Math.random()), v=0.6+0.7*Math.random(); parts.push([v*Math.cos(a),v*Math.sin(a)])}
+      flashes.push({r:b.r,t:now,size:b.size,prod:b.prod,parts});
+    }
+    if(flashes.length>400)flashes.splice(0,flashes.length-400);
   }
 }
 function loop(tok){
@@ -864,11 +908,22 @@ function fitCanvas(c){
 let geo={x0:0,y0:0,side:1};
 // ---------- 3D view: the lattice seen from the side, every factory a tower as high as its sales ----------
 // camera: azimuth az, tilt el above the plane, distance dist (in units of L; 0 = infinitely far, no perspective)
-const V3={az:-0.62, el:0.62, dist:0, hmax:1, mmax:1, lastT:-1, ext:null, extKey:'', order:null, key:'', fit:null};
+const V3={az:-0.62, el:0.62, dist:0, hmax:1, mmax:1, scaleT:-1, ext:null, extKey:'', order:null, key:'', fit:null};
+// Renew the height scales when the run (since the last change of a parameter) has grown by half since the last renewal:
+// the average, over the last two thirds of that run, of the size of the biggest company and of the largest money.
+function updateScales(){
+  const t0=DH?DH.t0:0, el=E.t-t0, last=V3.scaleT>=t0?V3.scaleT-t0:0;
+  if(V3.scaleT>=0&&el<Math.max(1.5*last,last+5))return;
+  let su=0,sm=0,n=0;
+  for(let k=E.hist.length-1;k>=0&&E.hist[k].t>t0+el/3;k--){su+=E.hist[k].maxUnits||0;sm+=E.hist[k].maxMoney||0;n++}
+  if(n){V3.hmax=Math.max(1,su/n);V3.mmax=Math.max(1e-6,sm/n)}
+  else if(V3.scaleT<0){V3.hmax=1;V3.mmax=Math.max(1e-6,P.M0)}
+  V3.scaleT=E.t; V3.extKey='';
+}
 const shade=(rgb,f)=>`rgb(${rgb.map(c=>Math.round(Math.min(255,c*f))).join(',')})`;
 const GOLD={a:'rgba(222,176,46,.40)',b:'rgba(176,132,24,.42)',top:'rgba(246,210,92,.48)',line:'rgba(150,108,16,.55)'};
 const niceNum=v=>{const e=Math.pow(10,Math.floor(Math.log10(v))), m=v/e; return (m<1.5?1:m<3.5?2:m<7.5?5:10)*e};
-let flashes=[], flashOn=false, flashRAF=0, noFlash=false;
+let flashes=[], flashMode='off', flashRAF=0, noFlash=false;
 function draw3D(){
   const L=E.L, LL=L*L, N=E.N;
   const dpr=fitCanvas(cv), W=cv.width, H=cv.height;
@@ -886,13 +941,11 @@ function draw3D(){
     for(let r=0;r<LL;r++){const x=(r%L)+0.5-L/2-xc, y=((r/L)|0)+0.5-L/2-yc; dep[r]=-(x*x+y*y)}
     V3.order=Int32Array.from({length:LL},(_,r)=>r).sort((a,b)=>dep[a]-dep[b]);
   }
-  // height scales: they jump up (with 30 % headroom) when a company outgrows them and relax back only slowly,
-  // over some 500 rounds, so the picture keeps still while the companies grow and shrink
-  let mx=1, mm=1; const tot=new Float64Array(LL);
-  for(let r=0;r<LL;r++){let t=0;for(let i=0;i<N;i++)if(E.F[i][r])t+=E.sales[i][r];tot[r]=t;if(t>mx)mx=t;if(E.money[r]>mm)mm=E.money[r]}
-  const dt=V3.lastT<0?0:Math.max(0,E.t-V3.lastT), relax=Math.exp(-dt/500); V3.lastT=E.t;
-  V3.hmax=mx>V3.hmax?1.3*mx:Math.max(mx,V3.hmax*relax);
-  V3.mmax=mm>V3.mmax?1.3*mm:Math.max(mm,V3.mmax*relax);
+  // height scales: the average size of the biggest company (and the average largest money) over the last two thirds of
+  // the run, renewed only when the run has grown by half since the last renewal (see updateScales)
+  const tot=new Float64Array(LL);
+  for(let r=0;r<LL;r++){let t=0;for(let i=0;i<N;i++)if(E.F[i][r])t+=E.sales[i][r];tot[r]=t}
+  if(!EXPORT_DPR)updateScales();
   const f=hlog?v=>HW*Math.log(1+v)/Math.log(1+V3.hmax):v=>HW*v/V3.hmax;
   const fm=v=>HW*Math.max(0,v)/V3.mmax;       // money always linear: on a log scale everybody's savings would form a carpet
   // scale bars at the left corner of the lattice: companies upward, money (if shown) upward or downward like the towers
@@ -902,9 +955,10 @@ function draw3D(){
   if(hlog){
     const ticks=[]; for(let v=1;v<=V3.hmax;v*=10)ticks.push(v);
     bars.push({h:f(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,h:f(v)})),label:'units'});
-  }else{const v=niceNum(0.5*mx); bars.push({h:f(v),ticks:[{v,h:f(v)}],label:'units'})}
-  if(money3!=='off'){const v=niceNum(0.5*mm), h=fm(v); bars.push({h:mDown?-h:h,ticks:[{v,h:mDown?-h:h}],label:'money',gold:true})}
-  // framing: everything drawn must fit; the frame grows at once and shrinks back slowly (over some 300 rounds)
+  }else{const v=niceNum(0.5*V3.hmax); bars.push({h:f(v),ticks:[{v,h:f(v)}],label:'units'})}
+  if(money3!=='off'){const v=niceNum(0.5*V3.mmax), h=fm(v); bars.push({h:mDown?-h:h,ticks:[{v,h:mDown?-h:h}],label:'money',gold:true})}
+  // framing: fitted to what is drawn, with room above, whenever the scales are renewed or the view changes; in between it
+  // only grows, and only if something would stick out
   const C=corners.map(c=>proj(c[0],c[1],0));
   let minX=Math.min(...C.map(c=>c[0]))-0.5, maxX=Math.max(...C.map(c=>c[0]))+0.5;
   let top=Math.min(...C.map(c=>c[1])), bot=Math.max(...C.map(c=>c[1]));
@@ -918,10 +972,9 @@ function draw3D(){
   bars.forEach(b=>{const p=proj(cl[0],cl[1],b.h);top=Math.min(top,p[1]-1.5);bot=Math.max(bot,p[1]+1.5)});
   const ekey=key+':'+money3+':'+hlog+':'+W+'x'+H;
   if(!EXPORT_DPR){
-    const e=V3.ext, rx=Math.exp(-dt/300);
-    V3.ext=(!e||V3.extKey!==ekey)?{minX,maxX,top,bot}:{
-      minX:Math.min(minX,minX+(e.minX-minX)*rx), maxX:Math.max(maxX,maxX+(e.maxX-maxX)*rx),
-      top:Math.min(top,top+(e.top-top)*rx), bot:Math.max(bot,bot+(e.bot-bot)*rx)};
+    const e=V3.ext;
+    V3.ext=(!e||V3.extKey!==ekey)?{minX,maxX,top:top-0.15*(bot-top),bot}:{
+      minX:Math.min(minX,e.minX), maxX:Math.max(maxX,e.maxX), top:Math.min(top,e.top), bot:Math.max(bot,e.bot)};
     V3.extKey=ekey;
   }
   const X0=V3.ext?Math.min(minX,V3.ext.minX):minX, X1=V3.ext?Math.max(maxX,V3.ext.maxX):maxX;
@@ -1004,7 +1057,7 @@ function draw3D(){
     ctx.textBaseline=b.h<0?'top':'bottom'; ctx.textAlign='center';
     ctx.fillText(b.label+(hlog&&!b.gold?' (log)':''),x,y1+(b.h<0?6:-6)*dpr); ctx.textAlign='right';
   });
-  drawFlashes((r)=>{const p=P2((r%L)+0.5-L/2,((r/L)|0)+0.5-L/2,0);return [p[0],p[1],s]});
+  drawFlashes((r)=>{const p=P2((r%L)+0.5-L/2,((r/L)|0)+0.5-L/2,0);return [p[0],p[1],s,se]});
   $('legend').innerHTML=P.products.map((pr,i)=>`<span><i style="background:${PCOL[i]}"></i>${PNAME[i]}</span>`).join('')+
     `<span>tower height = units sold last round, largest company lowest (${hlog?'log':'linear'})</span>`+
     (money3!=='off'?`<span><i style="background:rgba(222,176,46,.6)"></i>money${mDown?', hanging below the plane':''}</span>`:'')+
@@ -1021,17 +1074,31 @@ function evR3(ev){
   const x=Math.floor(X*F.ca+Y*F.sa+L/2), y=Math.floor(-X*F.sa+Y*F.ca+L/2);
   return x<0||y<0||x>=L||y>=L?-1:y*L+x;
 }
-// a short flash where an agent went bankrupt: a ring that grows and fades within half a second
+// a small explosion where a company went bankrupt, lasting 0.65 s: a fireball that rises and fades, a shock ring on the
+// ground (flattened as the ground is seen in 3D) and sparks that fly up and fall back. Its size grows with the size of
+// the company (the square root of its units sold); its colour is yellow or that of the company's biggest product.
+const FLASH_MS=650;
 function drawFlashes(pos){
   if(!flashes.length||noFlash)return;
   const now=performance.now(), dpr=EXPORT_DPR||window.devicePixelRatio||1;
-  flashes=flashes.filter(fl=>now-fl.t<450);
-  const col=dark?'255,236,140':'220,38,38';
+  flashes=flashes.filter(fl=>now-fl.t<FLASH_MS);
   for(const fl of flashes){
-    const a=(now-fl.t)/450, [x,y,cell]=pos(fl.r), rad=Math.max(3*dpr,cell*(0.6+2.4*a));
-    ctx.beginPath(); ctx.arc(x,y,rad,0,2*Math.PI);
-    ctx.fillStyle=`rgba(${col},${0.35*(1-a)})`; ctx.fill();
-    ctx.strokeStyle=`rgba(${col},${0.9*(1-a)})`; ctx.lineWidth=2*dpr; ctx.stroke();
+    const a=(now-fl.t)/FLASH_MS, b=1-a, [x,y,cell,flat]=pos(fl.r);
+    const R=Math.max(3*dpr,cell*Math.min(7,0.9+0.55*Math.sqrt(fl.size)));
+    const c=flashMode==='colour'&&fl.prod>=0&&PRGB[fl.prod]?PRGB[fl.prod].join(','):'255,200,40';
+    // shock ring on the ground
+    ctx.beginPath(); ctx.ellipse(x,y,R*1.3*a,R*1.3*a*flat,0,0,2*Math.PI);
+    ctx.strokeStyle=`rgba(${c},${0.55*b})`; ctx.lineWidth=1.5*dpr; ctx.stroke();
+    // fireball: white-hot centre in the colour of the company, rising a little while it grows and fades
+    const fy=y-R*0.45*a, fr=R*(0.35+0.55*a), g=ctx.createRadialGradient(x,fy,0,x,fy,fr);
+    g.addColorStop(0,`rgba(255,255,235,${0.95*b*b})`); g.addColorStop(0.35,`rgba(${c},${0.85*b})`); g.addColorStop(1,`rgba(${c},0)`);
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,fy,fr,0,2*Math.PI); ctx.fill();
+    // sparks thrown up and out, falling back under gravity
+    ctx.fillStyle=`rgba(${c},${b})`;
+    for(const [vx,vy] of fl.parts){
+      const px=x+vx*R*1.6*a, py=y+vy*R*1.6*a+R*1.4*a*a;
+      ctx.beginPath(); ctx.arc(px,py,Math.max(0.8*dpr,0.11*R*b),0,2*Math.PI); ctx.fill();
+    }
   }
 }
 function kickFlash(){
@@ -1116,7 +1183,7 @@ function draw(){
     if(view==='market'&&s>=0){ctx.beginPath();ctx.moveTo(cx(hoverR),cy(hoverR));ctx.lineTo(cx(s),cy(s));ctx.stroke()}
     readout(hoverR);
   }
-  drawFlashes(r=>[cx(r),cy(r),cell]);
+  drawFlashes(r=>[cx(r),cy(r),cell,1]);
   $('legend').innerHTML=legend;
 }
 function readout(r){
@@ -1274,6 +1341,29 @@ function logPlot(canvas,series,B,xlabel,title,legend){
     s.p.forEach((p,k)=>k?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.stroke();
     s.p.forEach(p=>{g.beginPath();g.arc(X(p[0]),Y(p[1]),2.4*dpr,0,2*Math.PI);g.fill()});
   });
+  // power-law fits: a straight line in log–log, least squares over a range of the points.
+  //   'tail': from where the distribution has fallen below a tenth of its peak to two bins before the last one
+  //   'body': from the peak to one bin before the last one
+  const notes=[];
+  pts.forEach((s0,j)=>{
+    const mode=series[j].fit, p=s0.p; if(!mode||p.length<3)return;
+    let im=0; p.forEach((q,k)=>{if(q[1]>p[im][1])im=k});
+    let a=im, b=p.length-1;
+    if(mode==='tail'){a=p.findIndex((q,k)=>k>im&&q[1]<p[im][1]-1); b=p.length-3}
+    else b=p.length-2;
+    if(a<0||b-a+1<3)return;
+    const seg=p.slice(a,b+1), n=seg.length, mx=seg.reduce((u,q)=>u+q[0],0)/n, my=seg.reduce((u,q)=>u+q[1],0)/n;
+    const sl=seg.reduce((u,q)=>u+(q[0]-mx)*(q[1]-my),0)/seg.reduce((u,q)=>u+(q[0]-mx)**2,0), ic=my-sl*mx;
+    const xa=seg[0][0]-0.15, xb=seg[n-1][0]+0.15;
+    g.save(); g.setLineDash([7*dpr,4*dpr]); g.strokeStyle='#16233b'; g.lineWidth=1.8*dpr;
+    g.beginPath(); g.moveTo(X(xa),Y(ic+sl*xa)); g.lineTo(X(xb),Y(ic+sl*xb)); g.stroke(); g.restore();
+    notes.push({c:s0.c,t:`${series[j].fitLabel||''}slope ${sl.toFixed(2).replace('-','−')}`});
+  });
+  if(notes.length){                            // the fitted slopes, under the legend in the upper right corner
+    g.textAlign='right'; g.textBaseline='top'; g.font=`600 ${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+    const y0=pt+4*dpr+(legend?legend.length:0)*15*dpr+(legend?4*dpr:0);
+    notes.forEach((nt,k)=>{g.fillStyle='#16233b';g.fillText('- - '+nt.t,pl+w-4*dpr,y0+k*15*dpr)});
+  }
   if(legend){                                  // upper right corner: the products with their γ
     g.textAlign='right'; g.textBaseline='top'; g.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
     legend.forEach((l,k)=>{const y=pt+4*dpr+k*15*dpr; g.fillStyle='#16233b'; g.fillText(l.t,pl+w-4*dpr,y);
@@ -1286,8 +1376,11 @@ function drawDist(){
   if(distMode==='avg'){const w=histWindow(); if(w.rounds>0){d=w; note=`summed over rounds ${E.t-w.rounds+1}–${E.t} (last ⅔ since the last parameter change at round ${DH.t0})`}
     else note='no rounds since the last parameter change yet: showing now'}
   $('distNote').textContent=note;
-  logPlot($('cMoney'),[{c:'#b7791f',h:d.m}],MB,'money M of an agent','money distribution P(M)',null);
-  logPlot($('cSize'),d.s.map((h,i)=>({c:PCOL[i],h})),SB,'company size s (units sold per round)','company sizes P(s)',
+  // the fit of the company sizes: the product whose companies are smallest on average
+  const mean=h=>{let n=0,sx=0;h.forEach((c,k)=>{n+=c;sx+=c*Math.pow(10,SB.lo+(k+0.5)/SB.per)});return n?sx/n:Infinity};
+  let ismall=0; d.s.forEach((h,i)=>{if(mean(h)<mean(d.s[ismall]))ismall=i});
+  logPlot($('cMoney'),[{c:'#b7791f',h:d.m,fit:'tail',fitLabel:'tail: '}],MB,'money M of an agent','money distribution P(M)',null);
+  logPlot($('cSize'),d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?'body':null,fitLabel:PNAME[i]+': '})),SB,'company size s (units sold per round)','company sizes P(s)',
     P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}`})));
 }
 
@@ -1331,7 +1424,7 @@ function niceTicks(a,b,n){const span=b-a||1, st=Math.pow(10,Math.floor(Math.log1
 function fmtTick(v){return Math.abs(v)<1e-9?'0':Math.abs(v)>=10?v.toFixed(0):Math.abs(v)>=1?v.toFixed(1):v.toFixed(2)}
 
 new ResizeObserver(()=>{draw();drawChart();drawDist()}).observe(document.querySelector('.layout'));
-syncControls(); syncView();
+syncControls(); syncView(); setFlashMode("off");
 applyPreset('three');
 </script>
 </body>
