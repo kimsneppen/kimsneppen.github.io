@@ -285,9 +285,12 @@
           With the <b>fixed price</b> every unit earns 1, as in the original model, and a successful company grows rich
           without limit.
           <br>In these two economies, as in the original model, nobody pays for what they buy: the goods are delivered free.
-          In the economy <b>buyers pay</b> (self-organized price as above), every buyer also pays p for each unit it buys:
-          <span class="eqc" style="display:block">ΔM = w + p · (units sold) − p · (units bought) − μ · Σ<sub>its factories</sub> Start</span>
-          Then the purchases are exactly the sales, and the wages are the only money that enters (see below).
+          In the economy <b>buyers pay</b> (self-organized price as above), every buyer pays for each unit it buys the price p,
+          which goes to the seller, plus the transport and any border tax of the delivery, which leave the economy — paid to
+          the carriers and to the state. In money, transport and tax are p·(C − s<sup>γ</sup>), the part of the delivered
+          price C that is not the producer's cost:
+          <span class="eqc" style="display:block">ΔM = w + p · (units sold) − Σ<sub>units bought</sub> p · (1 + C − s<sup>γ</sup>) − μ · Σ<sub>its factories</sub> Start</span>
+          Then the purchases pay for all the sales, and the wages are the only money that enters (see below).
           <br>An agent whose money falls below zero is <b>bankrupt</b>: its least profitable factory closes, the debt is
           forgiven, and it starts again from money w (from 0 with the fixed price).</li>
         <li><b>Deciding.</b> Each agent compares this round's profit (p · units sold − upkeep) with last round's. Things going
@@ -321,18 +324,25 @@
         the thermostat cannot keep up, and money piles up: the mean holding keeps growing, and the richest 1 % own about
         half of all money. (The thermostat controls the total, not the spread: also in the self-organized economy the
         successful companies slowly grow richer.)</p>
-      <p>What changes when the buyers pay? Then the wages are the only money that enters, and every agent spends on goods
-        part of what it earns. Measured (64 × 64, three runs): the mean money falls from 4.7 to 1.5 and the richest agent
-        from about 3500 to 1300; there are more start-ups (54 instead of 36 per round) and many more bankruptcies (55
-        instead of 6), because the spending drains what a new company has left after paying its start cost (four in five of
-        the bankrupt opened their factory less than 10 rounds before) and pushes some agents without any factory below zero
-        (one in five); and the markets grow a little more concentrated (the
-        largest share of the high-tech product C rises from 0.51 to 0.77). But the picture is the same: local producers of
-        the basic product, a few big companies of the scalable ones, and the same steady churn. Leaving the buyers' payments
-        out changes how much money there is, not how the economy organizes itself.</p>
-      <p>One more thing is free in every version: the production and transport costs in C are never paid by anyone; they
-        only decide where people shop. Being big wins a company more customers, not a bigger margin — every unit sells at
-        the same price p.</p>
+      <p>What changes when the buyers pay? Then the wages are the only money that enters, and every agent spends what it
+        earns on goods, delivery included. Of the 205 that the wages bring in per round, about 104 goes to the carriers and
+        the state; the sellers still receive 205, paid now by the buyers. Measured (64 × 64, three runs, no borders): the mean
+        money falls from 4.7 to 1.2 and the richest agent from about 3500 to 900; there are fewer start-ups (28 instead of 36
+        per round) and many more bankruptcies (84 instead of 6). Most of these are agents without any factory (seven in ten)
+        whose shopping, delivery included, costs more than their wage; the others are new companies (about half the bankrupt
+        opened their factory less than 10 rounds before). With fewer start-ups the incumbents meet fewer challengers: there
+        are far fewer local producers of the basic product (about 240 factories instead of 3800), and the markets grow more
+        concentrated (the largest share of the high-tech product C rises from 0.51 to 0.83). But the picture is the same:
+        local producers of the basic product, a few big companies of the scalable ones, and a steady churn.</p>
+      <p>Why not let the sellers pay the transport, or be paid only their production cost s<sup>γ</sup>? We tried. If a
+        seller earned p·s<sup>γ</sup> per unit, a big company would earn less per unit the bigger it is: its income would grow
+        much more slowly than its sales (for the high-tech product hardly at all), and much of the reward for being big would
+        be gone. And if the price were then set so that the sellers' income equalled the wages, about one agent in five would
+        go bankrupt every round. Keeping p for the seller, and
+        putting transport and tax on the buyer, changes the model least.</p>
+      <p>In the other two economies the production and transport costs in C are never paid by anyone; they only decide where
+        people shop. In every economy, being big wins a company more customers, not a bigger margin — every unit sells at the
+        same price p.</p>
 
       <h2>What to look for</h2>
       <p>The key question is: can a newcomer ever beat a giant? The newcomer sells at price 1, the giant at s<sup>γ</sup>,
@@ -396,7 +406,7 @@
       <select id="moneySel" title="money of the agents as golden, semi-transparent towers in the same view">
         <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down" selected>money ↓ below the plane</option></select>
       <span class="spacer"></span>
-      <button class="tbtn sobtn on" id="bSO2" title="click to cycle: self-organized price with n = 0.2 orders per agent and product → self-organized with n = 5 → self-organized with buyers paying for what they buy → fixed price 1. Self-organized: the value of all units sold equals the total wages, so money does not pile up">self-organized · n 0.2</button>
+      <button class="tbtn sobtn on" id="bSO2" title="click to cycle: self-organized price with n = 0.2 orders per agent and product → self-organized with n = 5 → self-organized with buyers paying for what they buy, transport and border tax included → fixed price 1. Self-organized: the value of all units sold equals the total wages, so money does not pile up">self-organized · n 0.2</button>
       <span class="stat">round <b id="tRound">0</b></span>
       <button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
       <button class="tbtn" id="bReset2" title="reset">↺</button>
@@ -522,7 +532,7 @@
     <summary>Economy</summary>
     <div class="sect">
       <div class="row"><label title="self-organized: a unit sells at p = Σ wages / Σ units sold in the round before, so the value of all production equals the total wages and money does not pile up. Fixed: every unit sells at 1">Price per unit</label>
-        <select id="econSel"><option value="so">self-organized</option><option value="pay">self-organized, buyers pay</option><option value="fixed">fixed = 1</option></select></div>
+        <select id="econSel"><option value="so">self-organized</option><option value="pay">self-organized, buyers pay (+ transport, tax)</option><option value="fixed">fixed = 1</option></select></div>
       <div class="row"><label>Lattice L</label>
         <select id="Lsel"><option>32</option><option>64</option><option>96</option><option selected>125</option><option>192</option><option>256</option></select></div>
       <div class="row"><label title="orders per agent per product per round: small n = few, noisy sales">Orders n</label>
@@ -576,7 +586,9 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 //      econ:'so'|'pay'|'fixed', seed}
 // econ 'so' (self-organized price): a unit sells at p = Σ wages / Σ units sold in the previous round, so the value of all
 // production equals the total wages; a bankrupt agent starts again from money w. econ 'pay': the same price, and every
-// buyer also pays p for each unit it buys, so wages are the only money that enters. econ 'fixed': a unit sells at p = 1.
+// buyer pays for each unit it buys p plus the transport and border tax of the delivery, p·(C − s^γ) with C the delivered
+// price; the seller gets p, and the transport and tax leave the economy, so wages are the only money that enters.
+// econ 'fixed': a unit sells at p = 1.
 function buildEcon(P){
   const L=P.L, LL=L*L, N=P.products.length;
   const rng=mulberry32(P.seed||1);
@@ -786,14 +798,15 @@ function buildEcon(P){
     const uniform=!(W>0);
     const T=Math.max(1,Math.round(P.n*LL));
     const H={t:E.t+1,prod:[],share:[],dist:[],unmet:[],active:0,starts:0,bankrupt:0,money:0,maxUnits:0,maxMoney:0};
-    const pays=P.econ==='pay'; if(pays)paid.fill(0);   // units each agent bought this round (buyers pay)
+    // buyers pay: what each agent bought this round, in units of p — the price plus the transport and border tax
+    const pays=P.econ==='pay'; if(pays)paid.fill(0); let trOut=0;
     for(let i=0;i<N;i++){
-      const ns=newSales[i], sup=E.sup[i], dist=E.dist[i]; ns.fill(0);
+      const ns=newSales[i], sup=E.sup[i], dist=E.dist[i], uu=E.u[i], cc=E.cost[i]; ns.fill(0);
       let dsum=0,sold=0;
       for(let k=0;k<T;k++){
         const r2=uniform?(rng()*LL)|0:pick(W), s=sup[r2];
         if(s<0)continue;
-        ns[s]++;dsum+=dist[r2];sold++;if(pays)paid[r2]++;
+        ns[s]++;dsum+=dist[r2];sold++;if(pays){const tr=cc[r2]-uu[s];paid[r2]+=1+tr;trOut+=tr}
       }
       let np=0,mx=0; const F=E.F[i];
       for(let r=0;r<LL;r++){if(F[r])np++;if(ns[r]>mx)mx=ns[r]}
@@ -842,7 +855,7 @@ function buildEcon(P){
       H.money+=E.money[r]; if(E.money[r]>H.maxMoney)H.maxMoney=E.money[r];
     }
     for(let i=0;i<N;i++){E.sales[i].set(newSales[i]);const F=E.F[i],S=E.sales[i];for(let r=0;r<LL;r++)if(!F[r])S[r]=0}
-    H.active/=LL; H.starts/=LL; H.bankrupt/=LL; H.money/=LL; H.price=p;
+    H.active/=LL; H.starts/=LL; H.bankrupt/=LL; H.money/=LL; H.price=p; H.transport=p*trOut;   // paid to carriers and the state
     // self-organized price for the next round: the value of all units sold equals the total wages
     E.price=so?(U>0&&P.wage>0?P.wage*LL/U:E.price):1;
     E.t++; E.hist.push(H); if(E.hist.length>6000)E.hist.splice(0,1000);
@@ -978,7 +991,8 @@ function setEcon(v){
   updStat();
 }
 // The economy button in the upper right corner cycles through four settings: self-organized price with n = 0.2 orders
-// per agent and product, self-organized with n = 5, self-organized with buyers paying for what they buy (n = 0.2), and the
+// per agent and product, self-organized with n = 5, self-organized with buyers paying for what they buy, delivery and
+// border tax included (n = 0.2), and the
 // fixed price (n = 0.2). Its label shows the setting in use.
 const ECON_STATES=[{econ:'so',n:0.2},{econ:'so',n:5},{econ:'pay',n:0.2},{econ:'fixed',n:0.2}];
 const ECON_LABEL={so:'self-organized',pay:'buyers pay',fixed:'fixed price'};
@@ -1203,7 +1217,8 @@ function updStat(){
   const H=E.hist[E.hist.length-1];
   $('tRound').textContent=E.t;
   let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit <b>${E.price<0.1?E.price.toFixed(4):fmt(E.price,3)}</b>${P.econ==='so'?' (self-organized)':P.econ==='pay'?' (self-organized, buyers pay)':''}`;
-  if(H)s+=`<br>agents with sales <b>${(100*H.active).toFixed(1)}%</b> · per round: starts <b>${(100*H.starts).toFixed(1)}%</b>, bankruptcies <b>${(100*H.bankrupt).toFixed(2)}%</b>`;
+  if(H)s+=`<br>agents with sales <b>${(100*H.active).toFixed(1)}%</b> · per round: starts <b>${(100*H.starts).toFixed(1)}%</b>, bankruptcies <b>${(100*H.bankrupt).toFixed(2)}%</b>`+
+    (P.econ==='pay'?` · transport and tax paid <b>${fmt(H.transport||0,2)}</b> per round`:'');
   $('stat').innerHTML=s;
 }
 
