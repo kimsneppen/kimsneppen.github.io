@@ -119,6 +119,12 @@
   .distgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
   @media (min-width:700px){ .distgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
   .chartbox.dist{height:250px}
+  /* .png and sq buttons of each plot */
+  .plotbtns{margin-left:auto;display:inline-flex;gap:4px}
+  .plotbtns .pl{font-size:11.5px;color:var(--muted);align-self:center;margin-left:4px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .plotbtns button{height:22px;min-width:28px;padding:0 7px;font-size:11px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.9);
+    color:var(--accent);font-weight:700;cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .plotbtns button.busy{opacity:.5}
   /* view menu of the 3D view: upper left corner of the display */
   /* tool bar in the upper left corner of the display: view menu (3D), roads and borders */
   .tools{position:absolute;left:6px;top:6px;z-index:4;display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start;max-width:calc(100% - 12px)}
@@ -309,7 +315,7 @@
         below the ground. The height scales are the average size of the biggest company over the last two thirds of the
         run, and they are renewed only each time the run has grown by half, so the picture keeps still. Drag to turn and
         tilt, turn the mouse wheel to zoom, or use the <i>view</i> menu in the upper left corner, which also sets the
-        perspective and the zoom. When a big company goes bankrupt, its whole column flashes.</p>
+        perspective and the zoom. When a company collapses, its tower sinks to zero over one round.</p>
       <p><i>Agents</i>: everyone who sold something is a pie, its area the units sold, a slice per product. <i>Market</i>: for
         one product, everybody in the colour of the factory they buy from; the dots are the factories. <i>Sales</i> and
         <i>Money</i>: heat maps on a log scale, in the colours of the paper's figures. Hover over or tap an agent to see its
@@ -321,14 +327,15 @@
       <p>The buttons in the lower right corner: the lightning bolt makes a small explosion wherever a company crashes — either
         it goes bankrupt (only small ones do), or it closes because its owner gives it up for another product when the profit
         falls (that is how big companies end: they have money enough never to go bankrupt). The bigger the company, the bigger
-        the bang; a big one flashes along its whole column. The many failed start-ups give only small bursts, at most 60 at
+        the bang: one blast on top of its tower, of radius growing as the cube root of its size, and small lightnings along its golden fortune pillar. The many failed start-ups give only small bursts, at most 60 at
         a time — off (black), yellow, or in the company's colour (multicoloured bolt);
         the half-black circle switches the background; <i>.png</i> saves the picture with the parameters written in the lower
         left corner; <i>sq</i> saves just what is drawn, cut tight.</p>
       <p>Below the town: how the numbers change in time, and two log–log plots — how the money is spread over the agents,
         and how big the companies of each product are. The dashed lines are power-law fits: for money, over its tail; for
         companies, over the product whose companies are smallest on average. Either plot shows the present, or the sum over
-        the last two thirds of the run since you last changed a parameter.</p>
+        the last two thirds of the run since you last changed a parameter. Each plot has its own <i>.png</i> and <i>sq</i>
+        buttons: a picture in the shape shown, or a square one, both with title and axis labels.</p>
       <div class="refs">
         <p>[1] K. Sneppen and S. Bornholdt, <i>Globalization in a nutshell</i>, Phys. Rev. E <b>98</b>, 042314 (2018).
           <a href="https://doi.org/10.1103/PhysRevE.98.042314" target="_blank" rel="noopener">doi:10.1103/PhysRevE.98.042314</a></p>
@@ -419,6 +426,7 @@
         <option value="price">Price per unit</option>
       </select>
       <span class="chartnote" id="chartNote"></span>
+      <span class="plotbtns"><button data-plot="chart" data-k="png" title="save this plot as a PNG picture, with title and axis labels">.png</button><button data-plot="chart" data-k="sq" title="save this plot in a square picture, with title and axis labels">sq</button></span>
     </div>
     <div class="chartbox"><canvas id="chart"></canvas></div>
   </section>
@@ -428,6 +436,8 @@
       <div class="seg" id="distSeg" title="the distribution now, or summed over the last two thirds of the run since the last change of a parameter">
         <button data-d="now" class="on">now</button><button data-d="avg">last ⅔ of run</button></div>
       <span class="chartnote" id="distNote"></span>
+      <span class="plotbtns"><span class="pl">P(M)</span><button data-plot="money" data-k="png" title="save the money distribution as a PNG picture, with title and axis labels">.png</button><button data-plot="money" data-k="sq" title="save the money distribution in a square picture">sq</button>
+        <span class="pl">P(s)</span><button data-plot="size" data-k="png" title="save the company sizes as a PNG picture, with title and axis labels">.png</button><button data-plot="size" data-k="sq" title="save the company sizes in a square picture">sq</button></span>
     </div>
     <div class="distgrid">
       <div class="chartbox dist"><canvas id="cMoney"></canvas></div>
@@ -765,13 +775,14 @@ function buildEcon(P){
       E.prevUnits[r]=E.units[r]; E.units[r]=units;
       E.prevInc[r]=E.inc[r]; E.inc[r]=P.wage+p*units;
       E.prevProfit[r]=E.profit[r]; E.profit[r]=p*units-up;
+      const m0=Math.max(0,E.money[r]);      // the fortune before this round, recorded with a crash for the display
       E.money[r]+=P.wage+p*units-up;
       if(units>0)H.active++; if(units>H.maxUnits)H.maxUnits=units;
       if(E.money[r]<0){
         // the bankrupt company: its size (units sold this or last round) and its biggest product, for the display
         let bp=-1,bv=-1; for(let i=0;i<N;i++)if(E.F[i][r]&&newSales[i][r]>bv){bv=newSales[i][r];bp=i}
         const w=weakest(r); if(w>=0){E.F[w][r]=0;nf--} E.money[r]=so?P.wage:0; H.bankrupt++;
-        E.bankruptList.push({r,size:Math.max(units,E.prevUnits[r]),prod:bp>=0?bp:w});
+        E.bankruptList.push({r,size:Math.max(units,E.prevUnits[r]),prod:bp>=0?bp:w,mon:m0});
       }
       const declined=E.t>0&&E.profit[r]<E.prevProfit[r]-P.kappa*p*Math.sqrt(Math.max(1,E.prevUnits[r]));
       if(nf===0||declined||E.profit[r]<=0){
@@ -781,7 +792,7 @@ function buildEcon(P){
         if(nc){
           const j=cand[(rng()*nc)|0];
           // a factory closed because its owner changes product: recorded with its size (units sold) for the display
-          if(drop>=0){E.closeList.push({r,size:Math.max(newSales[drop][r],E.sales[drop][r]),prod:drop}); E.F[drop][r]=0}
+          if(drop>=0){E.closeList.push({r,size:Math.max(newSales[drop][r],E.sales[drop][r]),prod:drop,mon:m0}); E.F[drop][r]=0}
           E.money[r]-=P.products[j].start; E.F[j][r]=1; newSales[j][r]=0;
           E.started[r]=E.t+1; H.starts++;
         }
@@ -854,7 +865,7 @@ function restart(){
   if(L1!==P.L){P.roads=[];P.borders=[]}       // a new lattice size starts without roads and borders
   $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
   P.L=L1; P.seed=(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.scaleT=-1;
-  E=buildEcon(P); flashes=[];
+  E=buildEcon(P); flashes=[]; sinking.clear();
   distReset();
   if(psel>=P.products.length)psel=0;
   buildProductUI(); refresh(); drawDist();
@@ -955,7 +966,7 @@ function setFlashMode(m){
   if(m==='off')flashes=[]; draw();
 }
 $('bFlash').onclick=()=>setFlashMode({off:'yellow',yellow:'colour',colour:'off'}[flashMode]);
-$('bStep').addEventListener('click',()=>{if(flashes.length)kickFlash()});
+$('bStep').addEventListener('click',()=>{if(flashes.length||sinking.size)kickFlash()});
 // every change of a model parameter in the panel starts a new averaging window for the distributions
 $('ctlPanel').addEventListener('input',e=>{if(!['speed','delaySel','palSel'].includes(e.target.id))distMark()});
 $('ctlPanel').addEventListener('change',e=>{if(!['speed','delaySel','palSel'].includes(e.target.id))distMark()});
@@ -1114,11 +1125,19 @@ function doStep(){
   // falls. So every company of at least 20 % of the height scale (the average biggest) that closes, for whatever reason,
   // explodes. Bankruptcies are nearly all failed start-ups (a few units at most) — dozens per round on a large lattice —
   // so at most 60 of their small bursts are shown at a time, and they never crowd out a big crash.
+  // the time a round takes on the screen: a closed company's tower sinks to zero over that time
+  const now0=performance.now(); if(lastStepT)stepMs=0.8*stepMs+0.2*Math.min(2000,now0-lastStepT); lastStepT=now0;
+  for(const c of [...E.closeList,...E.bankruptList])
+    if(c.size>0&&c.prod>=0)sinking.set(c.r,{prod:c.prod,size:c.size,t:now0,dur:Math.min(1500,Math.max(120,stepMs))});
   if(flashMode!=='off'){
     const now=performance.now(), thr=Math.max(3,0.2*V3.hmax);
-    const burst=b=>{const parts=[];        // a few sparks thrown up and out; they fall back under gravity
-      for(let k=0;k<9;k++){const a=-Math.PI*(0.08+0.84*Math.random()), v=0.6+0.7*Math.random(); parts.push([v*Math.cos(a),v*Math.sin(a),Math.random()])}
-      flashes.push({r:b.r,t:now,size:b.size,prod:b.prod,parts,small:b.size<thr})};
+    const burst=b=>{const parts=[], bolts=[];
+      // a few sparks thrown up and out from the top of the tower; they fall back under gravity
+      for(let k=0;k<9;k++){const a=-Math.PI*(0.08+0.84*Math.random()), v=0.6+0.7*Math.random(); parts.push([v*Math.cos(a),v*Math.sin(a)])}
+      // small lightnings along the fortune pillar: height along it, direction, and the kinks of the bolt
+      for(let k=0;k<7;k++)bolts.push({hf:Math.random(),ang:2*Math.PI*Math.random(),kinks:[Math.random()-0.5,Math.random()-0.5]});
+      flashes.push({r:b.r,t:now,size:b.size,prod:b.prod,mon:b.mon||0,parts,bolts,small:b.size<thr});
+    };
     for(const c of [...E.closeList,...E.bankruptList])if(c.size>=thr)burst(c);
     let small=flashes.reduce((n,f)=>n+(f.small&&now-f.t<FLASH_MS?1:0),0);
     for(const b of E.bankruptList)if(b.size<thr&&small<60){burst(b);small++}
@@ -1132,7 +1151,7 @@ function loop(tok){
   for(let j=0;j<k;j++){doStep();if(performance.now()-t0>50)break}
   refresh();
   const d=+$('delaySel').value;          // a pause between frames, to follow small systems round by round
-  if(d>0&&flashes.length)kickFlash();     // let the flashes fade during the pause
+  if(d>0&&(flashes.length||sinking.size))kickFlash();     // let the flashes fade and the towers sink during the pause
   if(d>0)setTimeout(()=>requestAnimationFrame(()=>loop(tok)),d);
   else requestAnimationFrame(()=>loop(tok));
 }
@@ -1275,14 +1294,18 @@ function draw3D(){
   ctx.lineWidth=Math.max(0.5,0.35*dpr);
   const edge=dark?'rgba(0,0,0,.55)':'rgba(22,35,59,.35)', seg=[];
   if(mUp)goldStart();                          // the golden glass is painted over all the factory towers at the end
+  // a closed company's tower sinks smoothly to zero over one round, on top of what the agent still makes
+  const nowS=performance.now();
+  for(const [r,sk] of sinking)if(nowS-sk.t>=sk.dur||noFlash)sinking.delete(r);
   for(const r of V3.order){
-    const hm=mUp?fm(E.money[r]):0;
+    const hm=mUp?fm(E.money[r]):0, sk=sinking.get(r);
+    let cum=0, z0=0;
     if(tot[r]>0){
       seg.length=0; for(let i=0;i<N;i++)if(E.F[i][r]&&E.sales[i][r]>0)seg.push(i);
       seg.sort((a,b)=>E.sales[b][r]-E.sales[a][r]);
-      let cum=0, z0=0;
-      seg.forEach((i,k)=>{cum+=E.sales[i][r]; const z1=f(cum); box(r,0.1,z0,z1,PSH[i],edge,k===seg.length-1); z0=z1});
+      seg.forEach((i,k)=>{cum+=E.sales[i][r]; const z1=f(cum); box(r,0.1,z0,z1,PSH[i],edge,k===seg.length-1&&!sk); z0=z1});
     }
+    if(sk){const h=sk.size*(1-(nowS-sk.t)/sk.dur), z1=f(cum+h); if(z1-z0>zmin)box(r,0.1,z0,z1,PSH[sk.prod]||PSH[0],edge,true)}
     if(hm>zminM)box(r,0.03,0,hm,GOLD,GOLD.line,true);
   }
   goldFlush();
@@ -1304,7 +1327,9 @@ function draw3D(){
     ctx.textBaseline=b.h<0?'top':'bottom'; ctx.textAlign='center';
     ctx.fillText(b.label+(hlog&&!b.gold?' (log)':''),x,y1+(b.h<0?6:-6)*dpr); ctx.textAlign='right';
   });
-  drawFlashes(r=>{const x=(r%L)+0.5-L/2,y=((r/L)|0)+0.5-L/2,p=P2(x,y,0);return [p[0],p[1],s,se,size=>P2(x,y,f(size))[1]]});
+  drawFlashes(r=>{const x=(r%L)+0.5-L/2,y=((r/L)|0)+0.5-L/2;
+    return {cell:s,top:size=>P2(x,y,f(size)),
+      pillar:money3==='off'?null:m=>{const h=fm(m);return h>zmin?[P2(x,y,0),P2(x,y,mDown?-h:h)]:null}}});
   $('legend').innerHTML=P.products.map((pr,i)=>`<span><i style="background:${PCOL[i]}"></i>${PNAME[i]}</span>`).join('')+
     `<span>tower height = units sold last round, largest company lowest (${hlog?'log':'linear'})</span>`+
     (money3!=='off'?`<span><i style="background:rgba(222,176,46,.6)"></i>money${mDown?', hanging below the plane':''}</span>`:'')+
@@ -1321,48 +1346,52 @@ function evR3(ev){
   const x=Math.floor(X*F.ca+Y*F.sa+L/2), y=Math.floor(-X*F.sa+Y*F.ca+L/2);
   return x<0||y<0||x>=L||y>=L?-1:y*L+x;
 }
-// a small explosion where a company went bankrupt, lasting 0.65 s: a fireball that rises and fades, a shock ring on the
-// ground (flattened as the ground is seen in 3D) and sparks that fly up and fall back. Its size grows with the size of
-// the company (the square root of its units sold); its colour is yellow or that of the company's biggest product.
+// A crash, lasting 0.65 s. On top of the company's tower one blast — a fireball with sparks that fly up and fall back —
+// whose radius grows as the cube root of the company's size (units sold). Along the agent's golden fortune pillar (when
+// money is shown in 3D) small flickering lightnings. The colour is yellow or that of the company's product. The tower
+// itself sinks to zero over one round (see sinking). pos(r) gives the place of agent r on the canvas:
+// {x, y, cell, top(size) → point on top of a tower of that size, pillar(money) → [ground point, end point] or null}.
 const FLASH_MS=650;
+let sinking=new Map(), stepMs=300, lastStepT=0;
 function drawFlashes(pos){
   if(!flashes.length||noFlash)return;
   const now=performance.now(), dpr=EXPORT_DPR||window.devicePixelRatio||1;
   flashes=flashes.filter(fl=>now-fl.t<FLASH_MS);
   for(const fl of flashes){
-    const a=(now-fl.t)/FLASH_MS, b=1-a, [x,y,cell,flat,topOf]=pos(fl.r);
-    // half the size it had at first: a big crash also bursts all along its column
-    const R=Math.max(1.5*dpr,0.5*cell*Math.min(7,0.9+0.55*Math.sqrt(fl.size)));
+    const a=(now-fl.t)/FLASH_MS, b=1-a, p=pos(fl.r);
     const c=flashMode==='colour'&&fl.prod>=0&&PRGB[fl.prod]?PRGB[fl.prod].join(','):'255,200,40';
-    // shock ring on the ground
-    ctx.beginPath(); ctx.ellipse(x,y,R*1.3*a,R*1.3*a*flat,0,0,2*Math.PI);
-    ctx.strokeStyle=`rgba(${c},${0.55*b})`; ctx.lineWidth=1.5*dpr; ctx.stroke();
-    // fireball: white-hot centre in the colour of the company, rising a little while it grows and fades
-    const fy=y-R*0.45*a, fr=R*(0.35+0.55*a), g=ctx.createRadialGradient(x,fy,0,x,fy,fr);
+    // small lightnings along the fortune pillar
+    const pl=p.pillar?p.pillar(fl.mon):null;
+    if(pl){
+      const [g0,g1]=pl, len=Math.hypot(g1[0]-g0[0],g1[1]-g0[1]), n=Math.max(1,Math.min(fl.bolts.length,Math.round(len/(3*p.cell))));
+      const bl=Math.max(4*dpr,1.1*p.cell);
+      ctx.lineWidth=Math.max(1,1.1*dpr); ctx.lineJoin='miter';
+      for(let k=0;k<n;k++){
+        const bo=fl.bolts[k], flick=0.55+0.45*Math.sin(now/35+7*k);  // the bolts flicker
+        const x0=g0[0]+(g1[0]-g0[0])*bo.hf, y0=g0[1]+(g1[1]-g0[1])*bo.hf, ux=Math.cos(bo.ang), uy=Math.sin(bo.ang);
+        ctx.strokeStyle=`rgba(255,250,215,${0.95*b*flick})`; ctx.beginPath(); ctx.moveTo(x0,y0);
+        ctx.lineTo(x0+ux*bl/3-uy*bo.kinks[0]*bl*0.6, y0+uy*bl/3+ux*bo.kinks[0]*bl*0.6);
+        ctx.lineTo(x0+ux*2*bl/3-uy*bo.kinks[1]*bl*0.6, y0+uy*2*bl/3+ux*bo.kinks[1]*bl*0.6);
+        ctx.lineTo(x0+ux*bl, y0+uy*bl); ctx.stroke();
+        const gr=ctx.createRadialGradient(x0,y0,0,x0,y0,bl*0.6); gr.addColorStop(0,`rgba(${c},${0.6*b*flick})`); gr.addColorStop(1,`rgba(${c},0)`);
+        ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(x0,y0,bl*0.6,0,2*Math.PI); ctx.fill();
+      }
+    }
+    // one blast on top of the tower, of radius ∝ (size)^(1/3)
+    const [x,y]=p.top(fl.size), R=Math.max(1.5*dpr,Math.min(6*p.cell,0.6*p.cell*Math.cbrt(Math.max(1,fl.size))));
+    const fy=y-R*0.4*a, fr=R*(0.35+0.65*a), g=ctx.createRadialGradient(x,fy,0,x,fy,fr);
     g.addColorStop(0,`rgba(255,255,235,${0.95*b*b})`); g.addColorStop(0.35,`rgba(${c},${0.85*b})`); g.addColorStop(1,`rgba(${c},0)`);
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,fy,fr,0,2*Math.PI); ctx.fill();
-    // a big company: its whole column lights up and bursts along its height (3D only)
-    const yt=topOf&&fl.size>0?topOf(fl.size):y, colH=y-yt>8*dpr?y-yt:0;
-    if(colH){
-      const wc=Math.max(3*dpr,cell*0.9)*(1+0.6*a), gc=ctx.createLinearGradient(x-wc/2,0,x+wc/2,0);
-      gc.addColorStop(0,`rgba(${c},0)`); gc.addColorStop(0.5,`rgba(255,255,235,${0.9*b})`); gc.addColorStop(1,`rgba(${c},0)`);
-      ctx.fillStyle=gc; ctx.fillRect(x-wc/2,yt,wc,colH);
-      const nb=Math.min(8,Math.max(2,Math.round(colH/(1.5*R))));
-      for(let k=0;k<nb;k++){const by=y-(k+0.5)/nb*colH, br=R*(0.3+0.5*a), gb=ctx.createRadialGradient(x,by,0,x,by,br);
-        gb.addColorStop(0,`rgba(255,255,235,${0.8*b*b})`); gb.addColorStop(0.4,`rgba(${c},${0.7*b})`); gb.addColorStop(1,`rgba(${c},0)`);
-        ctx.fillStyle=gb; ctx.beginPath(); ctx.arc(x,by,br,0,2*Math.PI); ctx.fill()}
-    }
-    // sparks thrown up and out (from all along the column of a big company), falling back under gravity
     ctx.fillStyle=`rgba(${c},${b})`;
-    for(const [vx,vy,hf] of fl.parts){
-      const px=x+vx*R*1.6*a, py=y-hf*colH+vy*R*1.6*a+R*1.4*a*a;
-      ctx.beginPath(); ctx.arc(px,py,Math.max(0.8*dpr,0.11*R*b),0,2*Math.PI); ctx.fill();
+    for(const [vx,vy] of fl.parts){
+      const px=x+vx*R*1.6*a, py=y+vy*R*1.6*a+R*1.4*a*a;
+      ctx.beginPath(); ctx.arc(px,py,Math.max(0.8*dpr,0.1*R*b),0,2*Math.PI); ctx.fill();
     }
   }
 }
 function kickFlash(){
   if(flashRAF)return;
-  flashRAF=requestAnimationFrame(()=>{flashRAF=0; if(!flashes.length)return; draw(); if(flashes.length)kickFlash()});
+  flashRAF=requestAnimationFrame(()=>{flashRAF=0; if(!flashes.length&&!sinking.size)return; draw(); if(flashes.length||sinking.size)kickFlash()});
 }
 function draw(){
   if(!E)return;
@@ -1436,7 +1465,7 @@ function draw(){
     if(view==='market'&&s>=0){ctx.beginPath();ctx.moveTo(cx(hoverR),cy(hoverR));ctx.lineTo(cx(s),cy(s));ctx.stroke()}
     readout(hoverR);
   }
-  drawFlashes(r=>[cx(r),cy(r),cell,1]);
+  drawFlashes(r=>({cell,top:()=>[cx(r),cy(r)],pillar:null}));
   $('legend').innerHTML=legend;
 }
 function readout(r){
@@ -1522,8 +1551,17 @@ function stampParams(oc,scale){
   });
   return out;
 }
+// save a canvas as a PNG file; the button shows '…' meanwhile
+function savePicture(oc,name,btn){
+  const label=btn.dataset.label||(btn.dataset.label=btn.textContent);
+  btn.classList.add('busy'); btn.textContent='…';
+  const save=url=>{const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>{btn.classList.remove('busy');btn.textContent=label},400)};
+  if(oc.toBlob)oc.toBlob(b=>{if(!b){save(oc.toDataURL('image/png'));return}const u=URL.createObjectURL(b);save(u);setTimeout(()=>URL.revokeObjectURL(u),8000)},'image/png');
+  else save(oc.toDataURL('image/png'));
+}
 function exportPNG(kind){
-  const btn=$(kind==='sq'?'bSq':'bPng'), label=btn.dataset.label||(btn.dataset.label=btn.textContent);
+  const btn=$(kind==='sq'?'bSq':'bPng');
   const scale=Math.max(2,window.devicePixelRatio||1);
   let oc=renderPicture(scale);
   if(kind==='sq'){
@@ -1535,12 +1573,7 @@ function exportPNG(kind){
     o.imageSmoothingEnabled=true; o.imageSmoothingQuality='high';
     o.drawImage(oc,b.x,b.y,b.w,b.h,m,m,side-2*m,side-2*m); oc=c;
   }else oc=stampParams(oc,scale);
-  const name=`globalization_${view}_t${E.t}${kind==='sq'?'_sq':''}.png`;
-  btn.classList.add('busy'); btn.textContent='…';
-  const save=url=>{const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>{btn.classList.remove('busy');btn.textContent=label},400)};
-  if(oc.toBlob)oc.toBlob(b=>{if(!b){save(oc.toDataURL('image/png'));return}const u=URL.createObjectURL(b);save(u);setTimeout(()=>URL.revokeObjectURL(u),8000)},'image/png');
-  else save(oc.toDataURL('image/png'));
+  savePicture(oc,`globalization_${view}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
 }
 
 // ---------- distributions: money across agents, company sizes per product (log–log) ----------
@@ -1571,10 +1604,11 @@ function histWindow(){         // summed over the last two thirds of the rounds 
 }
 function sup10(k){const s={'-':'⁻',0:'⁰',1:'¹',2:'²',3:'³',4:'⁴',5:'⁵',6:'⁶',7:'⁷',8:'⁸',9:'⁹'};
   return k===0?'1':k===1?'10':'10'+String(k).split('').map(c=>s[c]).join('')}
-function logPlot(canvas,series,B,xlabel,title,legend){
-  const dpr=fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
-  g.clearRect(0,0,W,H);
-  const pl=46*dpr, pr=10*dpr, pt=22*dpr, pb=34*dpr, w=W-pl-pr, h=H-pt-pb;
+// out (for a saved picture): {dpr, ylabel} — the canvas is already sized; wider margins and a y-axis label
+function logPlot(canvas,series,B,xlabel,title,legend,out){
+  const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
+  if(!out)g.clearRect(0,0,W,H);
+  const pl=(out?64:46)*dpr, pr=(out?16:10)*dpr, pt=(out?30:22)*dpr, pb=(out?44:34)*dpr, w=W-pl-pr, h=H-pt-pb;
   g.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
   // density P(x) = count / (total · bin width), at the geometric bin centres
   const pts=series.map(se=>{const tot=se.h.reduce((a,b)=>a+b,0), out=[];
@@ -1597,6 +1631,7 @@ function logPlot(canvas,series,B,xlabel,title,legend){
   for(let k=y0;k<=y1;k+=ys){g.beginPath();g.moveTo(pl,Y(k));g.lineTo(pl+w,Y(k));g.stroke();g.fillText(sup10(k),pl-5*dpr,Y(k))}
   g.strokeStyle='#b7bfd0'; g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h); g.stroke();
   g.textAlign='center'; g.textBaseline='bottom'; g.fillText(xlabel,pl+w/2,H-2*dpr);
+  if(out&&out.ylabel){g.save();g.translate(14*dpr,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';g.fillText(out.ylabel,0,0);g.restore()}
   pts.forEach(s=>{
     g.strokeStyle=s.c; g.fillStyle=s.c; g.lineWidth=1.6*dpr; g.beginPath();
     s.p.forEach((p,k)=>k?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.stroke();
@@ -1631,30 +1666,68 @@ function logPlot(canvas,series,B,xlabel,title,legend){
       const tw=g.measureText(l.t).width; g.fillStyle=l.c; g.fillRect(pl+w-tw-17*dpr,y+1*dpr,9*dpr,9*dpr)});
   }
 }
-function drawDist(){
-  if(!E||!DH)return;
+// the two distribution plots: their data and labels, for the screen and for the saved pictures
+function distPlots(){
   let d=histNow(), note='now (round '+E.t+')';
   if(distMode==='avg'){const w=histWindow(); if(w.rounds>0){d=w; note=`summed over rounds ${E.t-w.rounds+1}–${E.t} (last ⅔ since the last parameter change at round ${DH.t0})`}
     else note='no rounds since the last parameter change yet: showing now'}
-  $('distNote').textContent=note;
   // the fit of the company sizes: the product whose companies are smallest on average
   const mean=h=>{let n=0,sx=0;h.forEach((c,k)=>{n+=c;sx+=c*Math.pow(10,SB.lo+(k+0.5)/SB.per)});return n?sx/n:Infinity};
   let ismall=0; d.s.forEach((h,i)=>{if(mean(h)<mean(d.s[ismall]))ismall=i});
-  logPlot($('cMoney'),[{c:'#b7791f',h:d.m,fit:'tail',fitLabel:'tail: '}],MB,'money M of an agent','P(M): probability density of money, per unit of M',null);
-  logPlot($('cSize'),d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?'body':null,fitLabel:PNAME[i]+': '})),SB,'company size s (units sold per round)','P(s): probability density of company size, per unit of s',
-    P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}`})));
+  return {note,
+    money:{series:[{c:'#b7791f',h:d.m,fit:'tail',fitLabel:'tail: '}],B:MB,xl:'money M of an agent',
+      title:'P(M): probability density of money, per unit of M',stitle:'P(M), density per unit of money',legend:null,yl:'probability density P(M)'},
+    size:{series:d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?'body':null,fitLabel:PNAME[i]+': '})),B:SB,xl:'company size s (units sold per round)',
+      title:'P(s): probability density of company size, per unit of s',stitle:'P(s), density per unit of company size',
+      legend:P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}`})),yl:'probability density P(s)'}};
 }
+function drawDist(){
+  if(!E||!DH)return;
+  const d=distPlots(); $('distNote').textContent=d.note;
+  for(const [id,q] of [['cMoney',d.money],['cSize',d.size]])logPlot($(id),q.series,q.B,q.xl,q.stitle,q.legend);
+}
+
+// ---------- pictures of the plots: .png in the shape shown, sq in a square; both with title and axis labels ----------
+function exportPlot(which,kind,btn){
+  const src=$(which==='chart'?'chart':which==='money'?'cMoney':'cSize'), r=src.getBoundingClientRect();
+  const dpr=2, W=kind==='sq'?1000:Math.round(Math.max(r.width,420)*dpr), H=kind==='sq'?1000:Math.round(Math.max(r.height+60,300)*dpr);
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const g=c.getContext('2d'); g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
+  if(which==='chart')drawChart({canvas:c,dpr});
+  else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl})}
+  savePicture(c,`globalization_${which==='chart'?$('metric').value:which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
+}
+document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>exportPlot(b.dataset.plot,b.dataset.k,b));
 
 // ---------- chart ----------
 const ch=$('chart'), cctx=ch.getContext('2d');
-function drawChart(){
+// the y-axis label of each quantity of the time series
+const CHART_Y={prod:'factories of each product (log)',share:"largest company's market share",dist:'mean shipping distance',
+  active:'fraction of the agents per round',money:'mean money per agent',price:'price per unit'};
+// out (for a saved picture): {canvas, dpr} — the canvas is already sized; a title, axis labels and a legend are added
+function drawChart(out){
   if(!E)return;
-  const dpr=fitCanvas(ch), W=ch.width, H=ch.height, m=$('metric').value, hist=E.hist, N=E.N;
-  cctx.clearRect(0,0,W,H);
-  const pl=44*dpr, pr=10*dpr, pt=8*dpr, pb=20*dpr, w=W-pl-pr, h=H-pt-pb;
+  const cv2=out?out.canvas:ch, cctx=cv2.getContext('2d');
+  const dpr=out?out.dpr:fitCanvas(ch), W=cv2.width, H=cv2.height, m=$('metric').value, hist=E.hist, N=E.N;
+  if(!out)cctx.clearRect(0,0,W,H);
+  const pl=(out?66:44)*dpr, pr=(out?16:10)*dpr, pt=(out?34:8)*dpr, pb=(out?44:20)*dpr, w=W-pl-pr, h=H-pt-pb;
   cctx.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
   cctx.fillStyle='#8391ab';cctx.strokeStyle='#dde3ec';cctx.lineWidth=dpr;
-  $('chartNote').textContent=m==='prod'?'log scale':m==='active'?'per round — black: agents with sales, orange: starts, red: bankruptcies':'';
+  if(out){                                     // title, axis labels and legend of the saved picture
+    const opt=$('metric').selectedOptions[0].textContent;
+    cctx.fillStyle='#16233b';cctx.textAlign='left';cctx.textBaseline='top';cctx.font=`600 ${12*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+    cctx.fillText(opt+' — Globalization in a nutshell, round '+E.t,pl,8*dpr);
+    cctx.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;cctx.fillStyle='#4a5872';cctx.textAlign='center';cctx.textBaseline='bottom';
+    cctx.fillText('round',pl+w/2,H-4*dpr);
+    cctx.save();cctx.translate(14*dpr,pt+h/2);cctx.rotate(-Math.PI/2);cctx.textBaseline='middle';cctx.fillText(CHART_Y[m],0,0);cctx.restore();
+    const leg=m==='active'?[['#16233b','agents with sales'],['#c2410c','starts'],['#be123c','bankruptcies']]:
+      (m==='money'||m==='price')?[]:P.products.map((p,i)=>[PCOL[i],PNAME[i]+'   γ = '+String(p.gamma).replace('-','−')]);
+    cctx.textAlign='right';cctx.textBaseline='top';
+    leg.forEach(([c,t],k)=>{const y=pt+4*dpr+k*15*dpr;cctx.fillStyle='#16233b';cctx.fillText(t,pl+w-4*dpr,y);
+      const tw=cctx.measureText(t).width;cctx.fillStyle=c;cctx.fillRect(pl+w-tw-17*dpr,y+1*dpr,9*dpr,9*dpr)});
+    cctx.fillStyle='#8391ab';cctx.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+  }
+  if(!out)$('chartNote').textContent=m==='prod'?'log scale':m==='active'?'per round — black: agents with sales, orange: starts, red: bankruptcies':'';
   if(hist.length<2){cctx.textBaseline='middle';cctx.fillText('Run the model to see the time series.',pl,pt+h/2);return}
   const series=[];
   if(m==='active'){series.push({c:'#16233b',v:hist.map(q=>q.active)});series.push({c:'#c2410c',v:hist.map(q=>q.starts)});series.push({c:'#be123c',v:hist.map(q=>q.bankrupt)})}
