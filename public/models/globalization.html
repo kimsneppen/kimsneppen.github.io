@@ -226,9 +226,9 @@
         take over everything.</p>
 
       <h2>The world</h2>
-      <p>Picture a square town of <b>L × L</b> people, the <i>agents</i>, one on each square of a grid. Normally the grid is
-        wrapped around like a doughnut, so there is no edge: walk off the right side and you come back on the left (with
-        <i>closed</i> boundaries it has edges instead, like an island). Everybody needs
+      <p>Picture a square town of <b>L × L</b> people, the <i>agents</i>, one on each square of a grid. The town has edges, like an island
+        (closed boundaries, the default); with <i>periodic</i> boundaries the grid is wrapped around like a doughnut instead,
+        so there is no edge: walk off the right side and you come back on the left. Everybody needs
         <b>N</b> kinds of goods, called A, B, C, … Some agents also own a factory that makes one of them. An agent has money,
         and a list of the products it can make: F(r,i) = 1 if the agent at r makes product i, otherwise 0.</p>
 
@@ -245,8 +245,10 @@
         measured in a straight line, the short way round. Nobody buys from themselves: you shop at somebody else's factory.</p>
       <p>You can change the geography. A <b>road</b> makes travel along it cheaper: the transport cost there is multiplied by
         a factor you choose, say 0.2. A <b>border</b> charges a tax on goods that cross it, a percentage of what they are
-        worth at that point (their price plus the transport so far); a one-way border taxes only goods crossing in the
-        direction of its arrows. Goods always take the cheapest way: they may follow a road for part of the way and then
+        worth at that point (their price plus the transport so far); a one-way border taxes goods in one direction only. Its
+        arrows show which way: goods crossing the border in the direction the arrows point pay the tax, goods crossing the
+        other way pass free. (The arrows point to your left as you trace the border from where you started drawing to where
+        you let go: draw it from top to bottom and they point to the right.) Goods always take the cheapest way: they may follow a road for part of the way and then
         leave it, and if a border cuts only across a road, they may leave the road and walk around the border's end rather
         than pay the tax. With roads or borders the cheapest offer is no longer the one on the straight line, so the
         applet finds it the way water finds its way downhill: it spreads every factory's offer step by step over the grid
@@ -268,8 +270,9 @@
           Everybody earns the same wage <b>w</b>; it is how a person without a business can save up to start one. Each unit
           sold brings in the price <b>p</b>. And every factory costs a little upkeep each round, a fraction <b>μ</b> of what it
           cost to build: machines wear out, so a factory must keep selling to pay for itself.
-          <br>What is the price p? In the <b>self-organized</b> economy (the default; the button in the upper right corner)
-          it adjusts itself, so that everything sold is worth exactly what everybody earned in wages:
+          <br>What is the price p? In the <b>self-organized</b> economy (the default; the button in the upper right corner
+          cycles through self-organized with n = 0.2 orders per agent and product, self-organized with n = 5, and the fixed
+          price) it adjusts itself, so that everything sold is worth exactly what everybody earned in wages:
           <span class="eqc" style="display:block">p(next round) = Σ wages / Σ units sold (this round)</span>
           If the world makes twice as much, each unit is worth half as much. That is why money cannot pile up without end.
           With the <b>fixed price</b> (button off) every unit earns 1, as in the original model, and a successful company
@@ -314,9 +317,12 @@
       <p>The buttons in the upper left corner draw the geography: <i>+ road</i> (its ▾ sets the transport factor on the road)
         and <i>+ border</i> (its ▾ sets the tax and whether it is one-way): choose one, then press and drag on the lattice —
         the road or border follows your finger, so it can bend and curve — and release. <i>− road</i> and <i>− border</i>: choose one, then tap a road or border to remove it. Tap the chosen button
-        again to go back to turning the view.</p>
-      <p>The buttons in the lower right corner: the lightning bolt makes a small explosion wherever a company goes bankrupt,
-        the bigger the company the bigger the bang — off (black), yellow, or in the company's colour (multicoloured bolt);
+        again to go back to turning the view. <i>✕ all</i> removes every road and border.</p>
+      <p>The buttons in the lower right corner: the lightning bolt makes a small explosion wherever a company crashes — either
+        it goes bankrupt (only small ones do), or it closes because its owner gives it up for another product when the profit
+        falls (that is how big companies end: they have money enough never to go bankrupt). The bigger the company, the bigger
+        the bang; a big one flashes along its whole column. The many failed start-ups give only small bursts, at most 60 at
+        a time — off (black), yellow, or in the company's colour (multicoloured bolt);
         the half-black circle switches the background; <i>.png</i> saves the picture with the parameters written in the lower
         left corner; <i>sq</i> saves just what is drawn, cut tight.</p>
       <p>Below the town: how the numbers change in time, and two log–log plots — how the money is spread over the agents,
@@ -343,7 +349,7 @@
       <select id="moneySel" title="money of the agents as golden, semi-transparent towers in the same view">
         <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down" selected>money ↓ below the plane</option></select>
       <span class="spacer"></span>
-      <button class="tbtn sobtn on" id="bSO2" title="self-organized price: the value of all units sold equals the total wages, so money does not pile up (off: every unit sells at price 1)">self-organized</button>
+      <button class="tbtn sobtn on" id="bSO2" title="click to cycle: self-organized price with n = 0.2 orders per agent and product → self-organized with n = 5 → fixed price 1. Self-organized: the value of all units sold equals the total wages, so money does not pile up">self-organized · n 0.2</button>
       <span class="stat">round <b id="tRound">0</b></span>
       <button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
       <button class="tbtn" id="bReset2" title="reset">↺</button>
@@ -380,10 +386,12 @@
             <div class="row"><label>direction</label>
               <select id="dirSel"><option value="two">both ways</option><option value="one">one way (arrow)</option></select></div>
             <p class="hint">The tax is a percentage of the value of the goods where they cross. A one-way border taxes only goods crossing
-              in the direction of its arrows: to the right of the direction in which you drew it.</p></div>
+              in the direction its arrows point; goods crossing the other way pass free. The arrows point to your left as you
+              trace the border from where you started to where you let go (drawn from top to bottom, they point to the right).</p></div>
         </details>
       </div>
       <button class="tb" data-tool="rmBorder" title="remove a border: tap on it">− border</button>
+      <button class="tb" id="clearNet2" title="remove all roads and borders">✕ all</button>
       </div>
       <div class="cornerbtns">
         <button id="bFlash" title="explosions where companies go bankrupt: off — click for yellow, click again for the company's colour">
@@ -513,7 +521,8 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 //      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (a decline counts
 //      when profit < previous − κ·p·√(previous units sold)), M0, bc:'periodic'|'closed', tmul (transport factor),
 //      roads:[{pts:[[x,y],…],f}] (transport cost ×f along the road), borders:[{pts,tax,oneway}] (tax = fraction
-//      of the goods' value charged on crossing; one-way: only when crossing toward the right of the drawn direction),
+//      of the goods' value charged on crossing; one-way: only when crossing toward (dy, −dx) for the drawn direction (dx, dy), which on the screen (y downward)
+//      is to the left of the drawing direction),
 //      econ:'so'|'fixed', seed}
 // econ 'so' (self-organized price): a unit sells at p = Σ wages / Σ units sold in the previous round, so the value of all
 // production equals the total wages; a bankrupt agent starts again from money w. econ 'fixed': a unit sells at p = 1.
@@ -569,7 +578,7 @@ function buildEcon(P){
       hit.fill(0);
       for(const [sx,sy] of shifts)for(let j=1;j<bd.pts.length;j++){
         const x0=bd.pts[j-1][0]+sx, y0=bd.pts[j-1][1]+sy, x1=bd.pts[j][0]+sx, y1=bd.pts[j][1]+sy;
-        const nx=y1-y0, ny=-(x1-x0);                         // the taxed direction of a one-way border: to the right
+        const nx=y1-y0, ny=-(x1-x0);                         // the taxed direction of a one-way border: (dy, −dx), on the screen the left of the drawing direction
         for(let y=Math.max(0,Math.floor(Math.min(y0,y1)-3));y<=Math.min(L-1,Math.ceil(Math.max(y0,y1)+3));y++)
           for(let x=Math.max(0,Math.floor(Math.min(x0,x1)-3));x<=Math.min(L-1,Math.ceil(Math.max(x0,x1)+3));x++)
             for(let d=0;d<16;d++){
@@ -630,7 +639,7 @@ function buildEcon(P){
   // inc: money acquired in the last round (wage + sales); profit: sales − upkeep of the factories
   E.money=new Float64Array(LL); E.inc=new Float64Array(LL); E.prevInc=new Float64Array(LL);
   E.profit=new Float64Array(LL); E.prevProfit=new Float64Array(LL);
-  E.units=new Float64Array(LL); E.prevUnits=new Float64Array(LL); E.price=1; E.bankruptList=[];
+  E.units=new Float64Array(LL); E.prevUnits=new Float64Array(LL); E.price=1; E.bankruptList=[]; E.closeList=[];
   E.started=new Int32Array(LL);              // round at which the agent last opened a factory (−1: never)
   E.F=[];E.sales=[];E.sup=[];E.dist=[];E.u=[];E.area=[];E.cost=[];      // cost: the delivered price each agent pays
   for(let i=0;i<N;i++){
@@ -748,7 +757,7 @@ function buildEcon(P){
       for(let i=0;i<N;i++)if(E.F[i][r]){const v=p*newSales[i][r]-mu*P.products[i].start;
         if(v<wv){wv=v;w=i;nt=1}else if(v===wv){nt++;if(rng()*nt<1)w=i}}
       return w};
-    let U=0; E.bankruptList=[];
+    let U=0; E.bankruptList=[]; E.closeList=[];
     for(let r=0;r<LL;r++){
       let units=0, up=0, nf=0;
       for(let i=0;i<N;i++)if(E.F[i][r]){units+=newSales[i][r];up+=mu*P.products[i].start;nf++}
@@ -771,7 +780,8 @@ function buildEcon(P){
         for(let i=0;i<N;i++)if(!E.F[i][r]&&P.products[i].start<=E.money[r])cand[nc++]=i;
         if(nc){
           const j=cand[(rng()*nc)|0];
-          if(drop>=0)E.F[drop][r]=0;
+          // a factory closed because its owner changes product: recorded with its size (units sold) for the display
+          if(drop>=0){E.closeList.push({r,size:Math.max(newSales[drop][r],E.sales[drop][r]),prod:drop}); E.F[drop][r]=0}
           E.money[r]-=P.products[j].start; E.F[j][r]=1; newSales[j][r]=0;
           E.started[r]=E.t+1; H.starts++;
         }
@@ -813,7 +823,7 @@ function setPalette(){
   PSH=PRGB.map(c=>({top:shade(c.map(v=>v+(255-v)*0.18),1),a:shade(c,0.8),b:shade(c,0.6)}));
 }
 
-const P={L:125,products:[],n:0.2,lim:1,wage:0.05,upkeep:0.02,kappa:1,M0:5,bc:'periodic',tmul:1,roads:[],borders:[],econ:'so',seed:1};
+const P={L:125,products:[],n:0.2,lim:1,wage:0.05,upkeep:0.02,kappa:1,M0:5,bc:'closed',tmul:1,roads:[],borders:[],econ:'so',seed:1};
 // a 3 × 3 grid of two-way borders with 20 % tax, for the Borders preset
 const gridBorders=(L,k,tax)=>{const b=[];for(let j=0;j<k;j++){const g=j*L/k;
   b.push({pts:[[g,0],[g,L]],tax,oneway:false},{pts:[[0,g],[L,g]],tax,oneway:false})}return b};
@@ -862,7 +872,7 @@ function syncControls(){
   $('M0R').value=P.M0; $('M0V').textContent=P.M0;
   $('tmR').value=Math.log10(P.tmul); $('tmV').textContent=fmt(P.tmul);
   $('bcSel').value=P.bc; $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
-  $('econSel').value=P.econ; $('bSO2').classList.toggle('on',P.econ==='so');
+  $('econSel').value=P.econ; syncSO();
 }
 // a product with lower γ (more scalable) must have the higher start cost: mark the pairs that break this
 function checkMono(){
@@ -909,16 +919,22 @@ $('pAdd').onclick=()=>{const pr=P.products;
 $('palSel').onchange=e=>{palName=e.target.value;buildProductUI();refresh()};
 // self-organized price (default) or the fixed price 1: a switch in the panel and in the upper right corner of the display
 function setEcon(v){
-  P.econ=v; $('econSel').value=v; $('bSO2').classList.toggle('on',v==='so');
+  P.econ=v; $('econSel').value=v; syncSO();
   if(E){let U=0;for(let r=0;r<E.L*E.L;r++)U+=E.units[r];
     E.price=v==='so'&&P.wage>0?(U>0?P.wage*E.L*E.L/U:P.wage/(P.n*E.N)):1}
   updStat();
 }
+// The economy button in the upper right corner cycles through three settings: self-organized price with n = 0.2 orders
+// per agent and product, self-organized with n = 5, and the fixed price (n = 0.2). Its label shows the setting in use.
+const ECON_STATES=[{econ:'so',n:0.2},{econ:'so',n:5},{econ:'fixed',n:0.2}];
+function syncSO(){const b=$('bSO2'); b.classList.toggle('on',P.econ==='so');
+  b.textContent=(P.econ==='so'?'self-organized':'fixed price')+' · n '+P.n}
 $('econSel').onchange=e=>setEcon(e.target.value);
-$('bSO2').onclick=()=>setEcon(P.econ==='so'?'fixed':'so');
+$('bSO2').onclick=()=>{const k=P.econ==='fixed'?2:P.n>=5?1:0, s=ECON_STATES[(k+1)%3];
+  P.n=s.n; $('nSel').value=String(s.n); setEcon(s.econ)};
 $('ctlPull').onclick=()=>setCtlOpen(false);
 // view menu of the 3D view (upper left corner): turn, tilt and perspective; dragging the view moves the sliders along
-const VIEW0={az:-0.62,el:0.62,dist:4,zoom:1};
+const VIEW0={az:42*Math.PI/180,el:29*Math.PI/180,dist:4,zoom:1.5};     // the default view: turn 42°, tilt 29°, zoom 150 %
 function syncView(){
   const az=Math.round(V3.az*180/Math.PI), el=Math.round(V3.el*180/Math.PI);
   $('azR').value=az; $('azV').textContent=az+'°'; $('elR').value=el; $('elV').textContent=el+'°'; $('distSel').value=String(V3.dist);
@@ -952,7 +968,7 @@ $('bBg').onclick=()=>{dark=!dark;document.querySelector('.display').classList.to
 $('bPng').onclick=()=>exportPNG('png');
 $('bSq').onclick=()=>exportPNG('sq');
 $('pDel').onclick=()=>{P.products.pop();restart()};
-$('nSel').onchange=e=>{P.n=+e.target.value};
+$('nSel').onchange=e=>{P.n=+e.target.value;syncSO()};
 $('limSel').onchange=e=>{P.lim=+e.target.value};
 $('kapSel').onchange=e=>{P.kappa=+e.target.value};
 $('wageR').oninput=e=>{P.wage=+e.target.value;$('wageV').textContent=P.wage.toFixed(2)};
@@ -963,7 +979,7 @@ document.querySelectorAll('#hSeg button').forEach(b=>b.onclick=()=>{
 $('M0R').oninput=e=>{P.M0=+e.target.value;$('M0V').textContent=P.M0};
 $('tmR').oninput=e=>{P.tmul=Math.pow(10,+e.target.value);$('tmV').textContent=fmt(P.tmul);E.computeMarkets();draw();updStat()};
 $('bcSel').onchange=e=>{P.bc=e.target.value;E.computeMarkets();draw()};
-$('clearNet').onclick=()=>{P.roads=[];P.borders=[];netChanged()};
+$('clearNet').onclick=$('clearNet2').onclick=()=>{P.roads=[];P.borders=[];netChanged()};
 // ---- roads and borders, drawn on the display: choose a tool, then press, drag and release (or tap to remove) ----
 let tool=null, toolDrag=null;
 function syncTools(){
@@ -1036,7 +1052,7 @@ function drawNet(at,cell,dpr){
   const road=(pts,alpha)=>{ctx.globalAlpha=alpha;ctx.lineCap='round';
     line(pts,dark?'#7d869b':'#596072',Math.max(3*dpr,0.9*cell));line(pts,'#facc15',Math.max(1,0.9*dpr),[5*dpr,5*dpr]);ctx.lineCap='butt';ctx.globalAlpha=1};
   const border=(s,alpha)=>{ctx.globalAlpha=alpha; line(s.pts,'#f43f5e',2.6*dpr,[8*dpr,5*dpr]);
-    if(s.oneway)for(const f of [0.2,0.5,0.8]){              // arrows across the border, in the taxed direction (right of the drawing)
+    if(s.oneway)for(const f of [0.2,0.5,0.8]){              // arrows across the border, in the taxed direction (on the screen, to the left of the drawing direction)
       const [px,py,tx,ty]=polyAt(s.pts,f),o=at(px,py),q=at(px+ty,py-tx);
       const ang=Math.atan2(q[1]-o[1],q[0]-o[0]),la=9*dpr,lb=16*dpr,h=7*dpr;
       const a=[o[0]-la*Math.cos(ang),o[1]-la*Math.sin(ang)],b=[o[0]+lb*Math.cos(ang),o[1]+lb*Math.sin(ang)];
@@ -1065,16 +1081,16 @@ document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{
 });
 Object.entries(PRESETS).forEach(([k,pr])=>{const b=document.createElement('button');b.className='btn sm';b.textContent=pr.label;b.onclick=()=>applyPreset(k);$('presets').appendChild(b)});
 
-// the control drawer: open by default on wide windows, the choice is remembered
+// the control drawer: hidden at first (the display gets the whole window), the choice is remembered
 function setCtlOpen(open){
   document.body.classList.toggle('ctl-open',open);
-  try{localStorage.setItem('glob-ctl-open',open?'1':'0')}catch(e){}
+  try{localStorage.setItem('glob-ctl-open-v2',open?'1':'0')}catch(e){}
   setTimeout(refresh,240);
 }
 $('ctlTab').onclick=()=>setCtlOpen(true);
 $('ctlClose').onclick=()=>setCtlOpen(false);
-{let s=null;try{s=localStorage.getItem('glob-ctl-open')}catch(e){}
- if(s==='1'||(s==null&&window.innerWidth>=1000))document.body.classList.add('ctl-open')}
+{let s=null;try{s=localStorage.getItem('glob-ctl-open-v2')}catch(e){}
+ if(s==='1')document.body.classList.add('ctl-open')}       // the panel starts hidden; the choice is remembered
 document.addEventListener('keydown',e=>{
   if(e.target.closest('input,select,textarea')||e.ctrlKey||e.metaKey||e.altKey)return;
   if(e.key===' '){e.preventDefault();setRun(!running)}
@@ -1094,14 +1110,20 @@ function doStep(){
   }
   E.step();
   distRecord();
-  if(flashMode!=='off'&&E.bankruptList.length){
-    const now=performance.now();
-    for(const b of E.bankruptList){
-      // a few sparks thrown up and out; they fall back under gravity, which gives the burst its depth
-      const parts=[]; for(let k=0;k<9;k++){const a=-Math.PI*(0.08+0.84*Math.random()), v=0.6+0.7*Math.random(); parts.push([v*Math.cos(a),v*Math.sin(a),Math.random()])}
-      flashes.push({r:b.r,t:now,size:b.size,prod:b.prod,parts});
-    }
-    if(flashes.length>400)flashes.splice(0,flashes.length-400);
+  // Explosions. Big companies rarely go bankrupt: they end when their owner gives them up for another product as the profit
+  // falls. So every company of at least 20 % of the height scale (the average biggest) that closes, for whatever reason,
+  // explodes. Bankruptcies are nearly all failed start-ups (a few units at most) — dozens per round on a large lattice —
+  // so at most 60 of their small bursts are shown at a time, and they never crowd out a big crash.
+  if(flashMode!=='off'){
+    const now=performance.now(), thr=Math.max(3,0.2*V3.hmax);
+    const burst=b=>{const parts=[];        // a few sparks thrown up and out; they fall back under gravity
+      for(let k=0;k<9;k++){const a=-Math.PI*(0.08+0.84*Math.random()), v=0.6+0.7*Math.random(); parts.push([v*Math.cos(a),v*Math.sin(a),Math.random()])}
+      flashes.push({r:b.r,t:now,size:b.size,prod:b.prod,parts,small:b.size<thr})};
+    for(const c of [...E.closeList,...E.bankruptList])if(c.size>=thr)burst(c);
+    let small=flashes.reduce((n,f)=>n+(f.small&&now-f.t<FLASH_MS?1:0),0);
+    for(const b of E.bankruptList)if(b.size<thr&&small<60){burst(b);small++}
+    if(flashes.length>400){const big=flashes.filter(f=>!f.small), sm=flashes.filter(f=>f.small);
+      flashes=[...sm.slice(Math.max(0,sm.length-Math.max(0,400-big.length))),...big.slice(-400)]}
   }
 }
 function loop(tok){
@@ -1142,7 +1164,7 @@ function fitCanvas(c){
 let geo={x0:0,y0:0,side:1};
 // ---------- 3D view: the lattice seen from the side, every factory a tower as high as its sales ----------
 // camera: azimuth az, tilt el above the plane, distance dist (in units of L; 0 = infinitely far, no perspective)
-const V3={az:-0.62, el:0.62, dist:4, zoom:1, hmax:1, mmax:1, scaleT:-1, order:null, key:'', fit:null};
+const V3={az:42*Math.PI/180, el:29*Math.PI/180, dist:4, zoom:1.5, hmax:1, mmax:1, scaleT:-1, order:null, key:'', fit:null};
 // Renew the height scales only when the number of rounds has grown by half since the last renewal: the average, over
 // the last two thirds of the run, of the size of the biggest company and of the largest money.
 function updateScales(){
@@ -1269,8 +1291,10 @@ function draw3D(){
   ctx.font=`600 ${fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`; ctx.textAlign='right';
   const fmtV=v=>v>=1e4?(v/1000).toFixed(0)+'k':v>=1?String(Math.round(v)):v.toPrecision(2);
   bars.forEach((b,k)=>{
-    const base=P2(cl[0],cl[1],0), x=base[0]-(12+k*26)*dpr, y0=base[1], y1=P2(cl[0],cl[1],b.h)[1];
-    ctx.strokeStyle=ink; ctx.lineWidth=3*dpr; ctx.lineCap='butt';
+    // at the left corner of the lattice, but never off the canvas (when zoomed in)
+    const base=P2(cl[0],cl[1],0), x=Math.max(base[0]-(12+k*26)*dpr,(66-26*k)*dpr), y0=base[1], y1=P2(cl[0],cl[1],b.h)[1];
+    const col=b.gold?(dark?'#e2b33c':'#a57a14'):ink;           // the money bar is golden, like the money
+    ctx.strokeStyle=col; ctx.lineWidth=3*dpr; ctx.lineCap='butt';
     ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1); ctx.stroke();
     ctx.lineWidth=2*dpr; ctx.beginPath();
     b.ticks.forEach(t=>{const y=P2(cl[0],cl[1],t.h)[1]; ctx.moveTo(x-5*dpr,y); ctx.lineTo(x+5*dpr,y)}); ctx.moveTo(x-5*dpr,y0); ctx.lineTo(x+5*dpr,y0); ctx.stroke();
@@ -1658,6 +1682,7 @@ function niceTicks(a,b,n){const span=b-a||1, st=Math.pow(10,Math.floor(Math.log1
 function fmtTick(v){return Math.abs(v)<1e-9?'0':Math.abs(v)>=10?v.toFixed(0):Math.abs(v)>=1?v.toFixed(1):v.toFixed(2)}
 
 new ResizeObserver(()=>{draw();drawChart();drawDist()}).observe(document.querySelector('.layout'));
+if(window.innerWidth<700){V3.zoom=VIEW0.zoom=1.1}   // narrow screens: less zoom, so the lattice and its scale bars fit
 syncControls(); syncView(); setFlashMode('yellow'); $('moneySel').value=money3;
 applyPreset('three');
 </script>
