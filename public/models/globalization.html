@@ -178,7 +178,7 @@
   .tools .tool .tb{border-radius:8px 0 0 8px}
   .tools .tmenu > summary{list-style:none;border-left:0;border-radius:0 8px 8px 0;padding:0 6px;display:block}
   .tools .tmenu > summary::-webkit-details-marker{display:none}
-  .tools .tmenu .vmbox{position:absolute;left:0;top:100%}
+  .tools .tmenu .vmbox{position:absolute;left:0;top:100%;max-height:min(70vh,560px);overflow-y:auto;overscroll-behavior:contain}
   .tools .tb.on{background:#b7791f;border-color:#b7791f;color:#fff}
   .display.darkbg .tools .tb:not(.on),.display.darkbg .tools .tmenu > summary{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
   .viewmenu{font-size:12.5px;position:relative}
@@ -189,6 +189,9 @@
   .vmbox{margin-top:4px;width:250px;max-width:calc(100vw - 60px);background:var(--panel);border:1px solid var(--line);border-radius:10px;
     padding:4px 10px 8px;box-shadow:0 8px 22px rgba(22,35,59,.18);color:var(--ink2)}
   .vmbox .row{margin:7px 0}
+  .vmbox .vmsub{margin:10px 0 2px;padding-top:8px;border-top:1px solid var(--line);font-weight:700;font-size:12px;color:var(--ink)}
+  .display.darkbg .vmbox .vmsub{border-color:#2a3140;color:#e8ecf5}
+  .vmbox .btn.sm{margin:2px 0 4px}
   .vmbox .row input[type=range]{width:120px}
   .vmbox .row select{min-width:0;width:130px}
   .display.darkbg .viewmenu > summary{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
@@ -374,6 +377,9 @@
           are worth where they cross (their price plus the transport so far), and a <b>tariff</b>, a fixed amount per
           unit. A <i>one-way</i> border charges only goods crossing in the direction of its arrows; the arrows point to
           your left as you draw it (drawn from top to bottom, they point to the right).</li>
+        <li>Ready-made shapes, in the same ▾ menus: a <b>road from the centre</b> to a corner of your choice, and a
+          <b>circle in the centre</b> enclosing 5 to 70 % of the town, like a country in the middle of the world. The circle
+          charges goods both ways, or only goods going in: then it protects the inside, while its own goods go out free.</li>
         <li><b>− road</b> and <b>− border</b>: tap one to remove it. <b>✕ all</b> removes them all.</li>
       </ul>
       <p>Goods always travel the cheapest way: they may follow a road part of the way, or go around the end of a border
@@ -552,7 +558,12 @@
         <details class="tmenu"><summary title="transport cost on the road">▾</summary>
           <div class="vmbox"><div class="row"><label>transport on the road ×<span class="vv" id="roadFV">0.20</span></label>
             <input type="range" id="roadF" min="0.05" max="1" step="0.05" value="0.2"></div>
-            <p class="hint">Moving along the road costs this fraction of the normal transport cost β.</p></div>
+            <p class="hint">Moving along the road costs this fraction of the normal transport cost β.</p>
+            <div class="vmsub">Road from the centre</div>
+            <div class="row"><label>to the corner</label>
+              <select id="roadCorner"><option value="tl">upper left</option><option value="tr">upper right</option><option value="bl">lower left</option><option value="br" selected>lower right</option></select></div>
+            <button class="btn sm" id="addCornerRoad">add this road</button>
+            <p class="hint">A straight road from the middle of the lattice to the corner (as seen in the flat views), with the transport factor above.</p></div>
         </details>
       </div>
       <button class="tb" data-tool="rmRoad" title="remove a road: tap on it">− road</button>
@@ -570,7 +581,15 @@
               price of every unit that crosses, the same for every product: 1 is what a unit costs to make in a factory that sells
               one unit, 0.1 is one cell of A's transport or five of C's. A one-way border taxes only goods crossing
               in the direction its arrows point; goods crossing the other way pass free. The arrows point to your left as you
-              trace the border from where you started to where you let go (drawn from top to bottom, they point to the right).</p></div>
+              trace the border from where you started to where you let go (drawn from top to bottom, they point to the right).</p>
+            <div class="vmsub">Circle in the centre</div>
+            <div class="row"><label>area inside</label>
+              <select id="circA"><option value="0.05">5 % of the lattice</option><option value="0.1">10 %</option><option value="0.2" selected>20 %</option><option value="0.3">30 %</option><option value="0.5">50 %</option><option value="0.7">70 %</option></select></div>
+            <div class="row"><label>goods charged</label>
+              <select id="circDir"><option value="two">both ways</option><option value="in">going in only</option></select></div>
+            <button class="btn sm" id="addCircle">add this circle</button>
+            <p class="hint">A round border around the middle of the lattice, with the tax and tariff above. "Going in only"
+              protects the inside: goods from outside pay when they cross in, goods from inside go out free.</p></div>
         </details>
       </div>
       <button class="tb" data-tool="rmBorder" title="remove a border: tap on it">− border</button>
@@ -1237,6 +1256,20 @@ function closeMenus(except){document.querySelectorAll('.tools details').forEach(
 document.querySelectorAll('.tools details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)closeMenus(d)}));
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.tools'))closeMenus()});
 $('roadF').oninput=e=>{$('roadFV').textContent=(+e.target.value).toFixed(2)};
+// a circular border around the centre of the lattice, enclosing a fraction of its area. It is drawn with the angle
+// decreasing: a one-way border charges goods crossing to the left of the drawing direction, which here is inward
+$('addCircle').onclick=()=>{
+  const L=E.L, c=L/2, R=L*Math.sqrt(+$('circA').value/Math.PI), n=Math.max(24,Math.ceil(2*Math.PI*R/1.5)), pts=[];
+  for(let k=0;k<=n;k++){const a=-2*Math.PI*k/n; pts.push([c+R*Math.cos(a),c+R*Math.sin(a)])}
+  P.borders.push({pts,tax:+$('taxSel').value,tariff:+$('tarSel').value,oneway:$('circDir').value==='in'});
+  closeMenus(); netChanged();
+};
+// a straight road from the centre to a corner of the lattice
+$('addCornerRoad').onclick=()=>{
+  const L=E.L, c=L/2, k=$('roadCorner').value, x=k[1]==='l'?0.5:L-0.5, y=k[0]==='t'?0.5:L-0.5;
+  P.roads.push({pts:[[c,c],[x,y]],f:+$('roadF').value});
+  closeMenus(); netChanged();
+};
 function netChanged(){
   E.computeMarkets(); distMark();
   $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
