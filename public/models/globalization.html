@@ -29,25 +29,37 @@
 
   /* title pull-down with the rules of the model, opening over the display */
   .titledrop{position:relative;flex:0 0 auto}
-  .titledrop > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:2px 0 4px;user-select:none}
+  .titledrop{min-width:0;max-width:100%}
+  .titledrop > summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:2px 0 4px;user-select:none}
+  @media (max-width:480px){ header h1{font-size:17.5px} }
   .titledrop > summary::-webkit-details-marker{display:none}
   .titledrop > summary::after{content:"";width:7px;height:7px;border-right:1.8px solid var(--muted);border-bottom:1.8px solid var(--muted);
     transform:rotate(-45deg);transition:transform .15s;margin-left:2px}
   .titledrop[open] > summary::after{transform:rotate(45deg)}
+  .titledrop > summary .howto{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);
+    border:1px solid rgba(67,56,202,.22);border-radius:999px;padding:3px 10px;white-space:nowrap}
+  .titledrop > summary:hover .howto{background:rgba(67,56,202,.14)}
   .dropbox{
     position:absolute;top:calc(100% + 6px);left:0;z-index:80;
-    width:min(900px, calc(100vw - 24px));
-    max-height:min(74vh, 680px);overflow-y:auto;
-    background:var(--panel);border:1px solid var(--line);border-radius:12px;
-    padding:12px 16px;font-size:13px;color:var(--ink2);line-height:1.55;
-    box-shadow:0 10px 30px rgba(22,35,59,.22);
+    width:min(860px, calc(100vw - 24px));
+    max-height:min(78vh, 760px);overflow-y:auto;overscroll-behavior:contain;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px 20px 16px;font-size:14px;color:var(--ink2);line-height:1.62;
+    box-shadow:0 14px 40px rgba(22,35,59,.24);
   }
-  .dropbox p{margin:6px 0}
+  .dropbox p{margin:7px 0}
+  .dropbox .lead{font-size:15px;color:var(--ink);margin-top:2px}
   .dropbox b{color:var(--ink)}
-  .dropbox ol{margin:4px 0;padding-left:22px}
-  .dropbox li{margin:3px 0}
-  .dropbox h2{font-size:14px;color:var(--ink);margin:14px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
-  .dropbox .eqc{font-family:Georgia,"Times New Roman",serif;font-style:italic;text-align:center;color:var(--ink);font-size:14.5px;margin:8px 0}
+  .dropbox ol,.dropbox ul{margin:5px 0;padding-left:24px}
+  .dropbox li{margin:4px 0}
+  .dropbox h2{font-size:15px;color:var(--accent);margin:18px 0 4px;padding-top:12px;border-top:1px solid var(--line);letter-spacing:-.005em}
+  .dropbox .toc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+  .dropbox .toc a{padding:2px 10px;border-radius:999px;background:var(--accent-soft);border:1px solid rgba(67,56,202,.16);
+    font-size:12.5px;cursor:pointer;white-space:nowrap}
+  .dropbox .toc a:hover{background:rgba(67,56,202,.14);text-decoration:none}
+  .dropbox ul.try{background:#fff7e3;border:1px solid #f1dca6;border-radius:10px;padding:8px 14px 8px 32px}
+  .dropbox .eqc{font-family:Georgia,"Times New Roman",serif;font-style:italic;text-align:center;color:var(--ink);font-size:15px;margin:8px 0}
+  @media (max-width:520px){ .dropbox{padding:12px 14px;font-size:13.5px} .dropbox .lead{font-size:14px} }
   .dropbox a{color:var(--accent);text-decoration:none}
   .dropbox a:hover{text-decoration:underline}
   .dropbox .refs{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px}
@@ -94,6 +106,9 @@
   .cornerbtns{position:absolute;right:6px;bottom:6px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;z-index:3;max-width:calc(100% - 12px)}
   /* market domains of each product: small buttons in the product's colour */
   .cornerbtns .dombtns{display:inline-flex;gap:3px;margin-right:3px}
+  .cornerbtns .dombtns .dlab{font-size:11px;color:var(--muted);align-self:center;margin-right:2px}
+  .display.darkbg .cornerbtns .dombtns .dlab{color:#8b95ab}
+  @media (max-width:420px){ .cornerbtns .dombtns .dlab{display:none} }
   .cornerbtns .dombtns button{min-width:24px;padding:0 5px;box-shadow:inset 0 -4px 0 var(--pc);font-family:inherit;font-size:12px;line-height:25px}
   .cornerbtns .dombtns button.on,.display.darkbg .cornerbtns .dombtns button.on{background:var(--pc);border-color:var(--pc);color:var(--pt)}
   .cornerbtns button{height:28px;min-width:30px;padding:0 9px;font-size:11.5px;border-radius:8px;border:1px solid var(--line);
@@ -118,6 +133,11 @@
   .chartbar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:4px}
   .chartbar select{padding:4px 5px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:12.5px;color:var(--ink);max-width:100%}
   .chartnote{font-size:11.5px;color:var(--muted)}
+  .chartbar .lab{font-size:12px;color:var(--ink2);font-weight:600}
+  /* the title of each section under the display */
+  .cardhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:1px 10px;margin:0 0 7px}
+  .cardhead h2{font-size:14.5px;margin:0;color:var(--ink);letter-spacing:-.005em}
+  .cardhead .sub{font-size:12px;color:var(--muted)}
   .chartbox{position:relative;width:100%;height:200px}
   .chartbox canvas{position:absolute;inset:0;width:100%;height:100%}
   .distgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
@@ -131,7 +151,16 @@
   .plotbtns button.busy{opacity:.5}
   /* view menu of the 3D view: upper left corner of the display */
   /* tool bar in the upper left corner of the display: view menu (3D), roads and borders */
-  .tools{position:absolute;left:6px;top:6px;z-index:4;display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start;max-width:calc(100% - 12px)}
+  /* over the top of the display: the tool bar at the left, patience at the right; empty space lets the drag through */
+  .ovtop{position:absolute;left:6px;right:6px;top:6px;z-index:4;display:flex;justify-content:space-between;align-items:flex-start;gap:5px;pointer-events:none}
+  .tools{position:relative;flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start;pointer-events:none}
+  .tools > *{pointer-events:auto}
+  .tools.tright{flex:0 0 auto;justify-content:flex-end}
+  .pat{display:inline-flex;align-items:center;gap:4px;height:27px;padding:0 3px 0 9px;border:1px solid var(--line);border-radius:8px;
+    background:rgba(255,255,255,.9);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}
+  .pat select{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0 1px;cursor:pointer;outline-offset:2px}
+  .pat select option{color:#16233b;background:#fff}
+  .display.darkbg .pat{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
   .tools .tb,.tools .tmenu > summary{height:27px;padding:0 9px;border:1px solid var(--line);background:rgba(255,255,255,.9);color:var(--accent);
     font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;line-height:25px}
   .tools .tb{border-radius:8px}
@@ -226,202 +255,188 @@
 <div class="app">
 <header>
   <details class="titledrop" id="titleDrop">
-    <summary><h1>Globalization in a nutshell — 2D</h1></summary>
+    <summary><h1>Globalization in a nutshell — 2D</h1><span class="howto">how it works</span></summary>
     <div class="dropbox">
-      <p>Why is bread still baked around the corner, while almost every computer chip in the world comes from a handful of
-        factories? This applet is a toy world for thinking about that question. It is the model of Sneppen and Bornholdt [1],
-        made two-dimensional and — the real change — extended from one product to many. With many products, agents choose
-        what to make, and that needs a careful account of what holds back a big economy of scale: it costs money to start a
-        factory, and money every round to keep one running. Without those costs, the products that scale best would simply
-        take over everything.</p>
+      <p class="lead">Why is bread still baked around the corner, while nearly every computer chip in the world comes from
+        a handful of factories far away? This applet is a toy world for thinking about that question. It is the model of
+        Sneppen and Bornholdt [1], drawn on a flat map and extended from one product to many.</p>
+      <nav class="toc">
+        <a data-to="r-town">The town</a><a data-to="r-cost">Prices</a><a data-to="r-round">One round</a><a data-to="r-patience">Patience</a><a data-to="r-money">Money</a><a data-to="r-econ">Economies</a><a data-to="r-geo">Roads and borders</a><a data-to="r-look">What to look for</a><a data-to="r-pics">The picture</a><a data-to="r-plots">The plots</a><a data-to="r-try">Try this</a>
+      </nav>
 
-      <h2>The world</h2>
-      <p>Picture a square town of <b>L × L</b> people, the <i>agents</i>, one on each square of a grid. The town has edges, like an island
-        (closed boundaries, the default); with <i>periodic</i> boundaries the grid is wrapped around like a doughnut instead,
-        so there is no edge: walk off the right side and you come back on the left. Everybody needs
-        <b>N</b> kinds of goods, called A, B, C, … Some agents also own a factory that makes one of them. An agent has money,
-        and a list of the products it can make: F(r,i) = 1 if the agent at r makes product i, otherwise 0.</p>
+      <h2 id="r-town">The town</h2>
+      <p>Picture a square town of L × L people, one on each square of a grid: 125 × 125 = 15 625 people at the start.
+        We call them <b>agents</b>. Everybody needs a few kinds of goods, called A, B and C. An agent can own a factory
+        that makes one of them, and every agent has some money.</p>
+      <p>Think of <b>A</b> as bread: a bakery is cheap to start, and a big bakery is not much cheaper than a small one.
+        <b>B</b> is an ordinary industry. <b>C</b> is high tech, like computer chips: a chip factory is very expensive to
+        build, but the bigger it is, the cheaper each chip becomes.</p>
+      <p>The town has edges, like an island. In the control panel (the tab at the right edge of the window) you can wrap
+        it around like a doughnut instead, so that walking off the right side brings you back on the left. There you can
+        also change the products, add more of them, and change every other setting.</p>
 
-      <h2>What a thing costs</h2>
-      <p>Suppose you live at r₂ and want one unit of product i. Each factory offers it to you at a price, and you simply take
-        the cheapest offer. The factory at r₁ asks</p>
-      <p class="eqc">C = s(r₁,i)<sup>γ(i)</sup> + β(i) · |r₁ − r₂| &nbsp; ( with roads and borders: see below )</p>
-      <p>The first term is what it costs to make the thing. Here <b>s</b> is the size of the factory: one plus the number of
-        units it sold last round. A brand-new factory has s = 1, so its price is 1. The exponent <b>γ</b> is negative, and it
-        says how much being big helps. With γ = −0.3 a factory a hundred times bigger makes each unit only about four times as
-        cheaply — that is bread. With γ = −0.9 it makes each unit sixty times as cheaply — that is a computer chip.
-        This is the <i>economy of scale</i>.</p>
-      <p>The second term is the cost of transport: every step between factory and customer adds <b>β</b>, and distance is
-        measured in a straight line, the short way round. Nobody buys from themselves: you shop at somebody else's factory.</p>
-      <p>You can change the geography. A <b>road</b> makes travel along it cheaper: the transport cost there is multiplied by
-        a factor you choose, say 0.2. A <b>border</b> charges a tax on goods that cross it, a percentage of what they are
-        worth at that point (their price plus the transport so far); a one-way border taxes goods in one direction only. Its
-        arrows show which way: goods crossing the border in the direction the arrows point pay the tax, goods crossing the
-        other way pass free. (The arrows point to your left as you trace the border from where you started drawing to where
-        you let go: draw it from top to bottom and they point to the right.) Goods always take the cheapest way: they may follow a road for part of the way and then
-        leave it, and if a border cuts only across a road, they may leave the road and walk around the border's end rather
-        than pay the tax. With roads or borders the cheapest offer is no longer the one on the straight line, so the
-        applet finds it the way water finds its way downhill: it spreads every factory's offer step by step over the grid
-        (along 16 directions), always keeping the cheapest offer that has reached each place. (For speed it also works this
-        way when a product has very many factories; the distances then differ from straight lines by at most about 3 %.)</p>
-      <p>So each product has just three numbers: <b>Start</b>, the price of building a factory for it; <b>γ</b>; and
-        <b>β</b>. It is natural that the products that profit most from being big are also the ones that cost most to start:
-        the applet insists on that ordering. Product A is the basic one — cheap to start (2), helped only a little by size
-        (γ = −0.3), and costly to carry around (β = 0.1).</p>
+      <h2 id="r-cost">What things cost</h2>
+      <p>When you want one unit of a product, you look at every factory that makes it and buy from the one that is
+        cheapest for you. A factory at a distance d from you asks the price</p>
+      <p class="eqc">C = s<sup>γ</sup> + β · d</p>
+      <p><b>s<sup>γ</sup></b> is what it costs the factory to make one unit. Here <b>s</b> is the size of the factory:
+        1 + the number of units it sold last round, and <b>γ</b> (gamma) is a negative number. A brand-new factory has
+        s = 1, so its price is 1. With γ = −0.3 (bread), a factory that is 100 times bigger makes each unit only 4 times
+        more cheaply. With γ = −0.9 (chips), it makes it 60 times more cheaply. Being big pays: this is called the
+        <i>economy of scale</i>.</p>
+      <p><b>β · d</b> is the transport: every step between the factory and you adds β (beta). Bread is costly to carry
+        (β = 0.1 per step), chips are cheap to ship (β = 0.02).</p>
+      <p>Building a factory costs <b>Start</b>: 2 for A, 8 for B, 20 for C. The products that gain most from being big
+        also cost most to start, and the applet warns you if you change the numbers so that this is no longer so. Nobody
+        buys from their own factory.</p>
 
-      <h2>One round, step by step</h2>
+      <h2 id="r-round">One round, step by step</h2>
       <ol>
-        <li><b>Shopping.</b> For each product, n·L² orders are placed. Who places them? Agents picked at random — but an agent
-          that took in more money last round is picked more often. The rich shop more, and that helps their neighbours.</li>
-        <li><b>Selling.</b> Each order goes to the cheapest offer (a tie is settled by a coin toss). The sizes, and so the prices,
-          stay fixed during the round, so you buy each product from the same factory all round long.</li>
-        <li><b>Bookkeeping.</b> After the round, each agent's money changes by
-          <span class="eqc" style="display:block">ΔM = w + p · (units sold) − μ · Σ<sub>its factories</sub> Start</span>
-          Everybody earns the same wage <b>w</b>; it is how a person without a business can save up to start one. Each unit
-          sold brings in the price <b>p</b>. And every factory costs a little upkeep each round, a fraction <b>μ</b> of what it
-          cost to build: machines wear out, so a factory must keep selling to pay for itself.
-          <br>What is the price p? In the <b>self-organized</b> economy (the default; the button in the upper right corner
-          cycles through self-organized with n = 0.2 orders per agent and product, self-organized with n = 5, buyers pay with
-          n = 0.2 and with n = 5, and the fixed price) it adjusts itself, so that everything sold is worth exactly what everybody
-          earned in wages:
-          <span class="eqc" style="display:block">p(next round) = Σ wages / Σ units sold (this round)</span>
-          If the world makes twice as much, each unit is worth half as much. That is why money cannot pile up without end.
-          With the <b>fixed price</b> every unit earns 1, as in the original model, and a successful company grows rich
-          without limit.
-          <br>In these two economies, as in the original model, nobody pays for what they buy: the goods are delivered free.
-          In the economy <b>buyers pay</b> (self-organized price as above), every buyer pays for each unit it buys the price p,
-          which goes to the seller, plus the transport and any border tax of the delivery, which leave the economy — paid to
-          the carriers and to the state. In money, transport and tax are p·(C − s<sup>γ</sup>), the part of the delivered
-          price C that is not the producer's cost:
-          <span class="eqc" style="display:block">ΔM = w + p · (units sold) − Σ<sub>units bought</sub> p · (1 + C − s<sup>γ</sup>) − μ · Σ<sub>its factories</sub> Start</span>
-          Where does the 1 come from? Each unit bought costs the buyer two things:
-          <span style="display:block;margin:4px 0 4px 14px"><b>the good:</b> p, which goes to the seller — the same p the seller
-          books on the other side as + p · (units sold). In units of p, that is the 1.</span>
-          <span style="display:block;margin:4px 0 4px 14px"><b>the delivery:</b> transport plus any border tax — the part of the
-          delivered price C that is not the producer's cost, C − s<sup>γ</sup>. Converted to money with the same factor p, it is
-          p · (C − s<sup>γ</sup>), and it leaves the economy (to the carriers and the state).</span>
-          Together that is p · 1 + p · (C − s<sup>γ</sup>) = p · (1 + C − s<sup>γ</sup>) per unit bought.
-          Then the purchases pay for all the sales, and the wages are the only money that enters (see below).
-          <br>An agent whose money falls below zero is <b>bankrupt</b>: its least profitable factory closes, the debt is
-          forgiven, and it starts again from money w (from 0 with the fixed price).</li>
-        <li><b>Deciding.</b> Each agent compares this round's profit (p · units sold − upkeep) with last round's. Things going
-          fine? Then it carries on. But if the profit fell by more than ordinary luck would explain — more than κ·p·√(units sold),
-          the typical size of the random ups and downs of a count — or if there is no profit, or no factory at all, the agent
-          tries something new. It picks at random a product it does not make yet and can afford, pays Start, and opens that
-          factory, which begins small (s = 1). Nobody may make more than <b>lim</b> products; at the limit the agent closes its
-          weakest factory to make room, so with lim = 1 it changes trade.</li>
+        <li><b>Shopping.</b> For every product, orders are placed: n per person on average (n = 0.2, or 5 with the golden
+          button). Who orders? People picked at random — but those who earned more last round are picked more often.
+          Rich people shop more.</li>
+        <li><b>Selling.</b> Every order goes to the cheapest factory, price plus transport.</li>
+        <li><b>Money.</b> Everybody earns the same wage, w = 0.05 per round. A factory owner also earns p for every unit
+          it sold, and pays upkeep: each round 2 % (μ) of what its factory cost to build, because machines wear out.
+          <span class="eqc" style="display:block">ΔM = w + p · (units sold) − μ · Start</span>
+          The price p sets itself, so that everything sold in a round is worth exactly what everybody earned in wages:
+          <span class="eqc" style="display:block">p = (all the wages) / (all the units sold)</span>
+          If the town makes twice as much, each unit is worth half as much. An agent whose money falls below zero is
+          <b>bankrupt</b>: its factory closes, its debts are forgiven, and it starts again with nothing but the wage.</li>
+        <li><b>Deciding.</b> Every owner compares this round's profit with last round's. If things went fine, it carries
+          on. But if the profit fell a lot, or there is no profit, or it has no factory, it tries something new: it picks
+          at random another product it can afford, pays Start, and opens a new factory, which starts small (s = 1). An
+          agent runs one factory at a time (you can allow more in the control panel), so the old one closes.</li>
       </ol>
-      <p>At the start, every agent makes one product picked at random and has money M₀. That is all there is to the model.</p>
+      <p>At the start, every agent has money 5 and a factory of a random product. That is the whole model.</p>
 
-      <h2>Where does the money come from, and where does it go?</h2>
-      <p>Money is not conserved. In the self-organized economy, each round brings in the wages, w·L², and the sales, which
-        the price makes worth exactly the same again — but nobody pays for the purchases. So twice the wage bill enters every
-        round. Is that cheating? Look at it this way. The price makes the value of all sales equal to all wages, which is just
-        what happens in a closed economy where people spend their wages on goods and the shops' takings are that spending. So
-        in total the buyers <i>do</i> pay; only the debit on each buyer's own account is left out. It is as if every agent
-        earned 2w, spent w on goods and saved w. The model hands out one extra wage bill per round, as savings.</p>
-      <p>What can the savings be used for? Only two things: to build a factory (Start) and to keep one running (upkeep). Both
-        leave the model — paid to builders, to nature, to the world outside. So in a steady state, what is saved must be what
-        is invested and worn out: the old rule of economics, savings = investment. Measured on a 64 × 64 town, per round:
-        about 410 enters (205 wages, 205 sales), and 248 is spent on starting factories and 162 on upkeep. Only 0.1 % of what
-        enters stays.</p>
-      <p>Why does this settle down so nicely? For two reasons. First, the money an agent holds hardly matters to what it does:
-        its decisions compare profits (flows of money), and its orders follow its income (also a flow). Its savings only
-        matter at two thresholds — can it afford to start a factory, and is it below zero? Second, the economy has a
-        thermostat: whoever is doing badly and has money enough starts a new factory, and most of these start-ups fail and
-        pay upkeep until they go bankrupt. The more money is around, the more start-ups there are, and the more money is
-        burned — until the outflow matches the inflow. The self-organized price also caps the inflow at two wage bills per
-        round, however much is produced. With the fixed price the sales grow with production (here 12 times the wage bill),
-        the thermostat cannot keep up, and money piles up: the mean holding keeps growing, and the richest 1 % own about
-        half of all money. (The thermostat controls the total, not the spread: also in the self-organized economy the
-        successful companies slowly grow richer.)</p>
-      <p>What changes when the buyers pay? Then the wages are the only money that enters, and every agent spends what it
-        earns on goods, delivery included. Of the 205 that the wages bring in per round, about 104 goes to the carriers and
-        the state; the sellers still receive 205, paid now by the buyers. Measured (64 × 64, three runs, no borders): the mean
-        money falls from 4.7 to 1.2 and the richest agent from about 3500 to 900; there are fewer start-ups (28 instead of 36
-        per round) and many more bankruptcies (84 instead of 6). Most of these are agents without any factory (seven in ten)
-        whose shopping, delivery included, costs more than their wage; the others are new companies (about half the bankrupt
-        opened their factory less than 10 rounds before). With closed boundaries this happens most at the edges: there the
-        sellers lie on one side only, deliveries come from farther away and cost more, and agents go bankrupt 1.4 to 2 times
-        as often as in the interior (with periodic boundaries, or when nobody pays for deliveries, the edges are like the
-        rest). With fewer start-ups the incumbents meet fewer challengers: there
-        are far fewer local producers of the basic product (about 240 factories instead of 3800), and the markets grow more
-        concentrated (the largest share of the high-tech product C rises from 0.51 to 0.83). But the picture is the same:
-        local producers of the basic product, a few big companies of the scalable ones, and a steady churn.</p>
-      <p>Why not let the sellers pay the transport, or be paid only their production cost s<sup>γ</sup>? We tried. If a
-        seller earned p·s<sup>γ</sup> per unit, a big company would earn less per unit the bigger it is: its income would grow
-        much more slowly than its sales (for the high-tech product hardly at all), and much of the reward for being big would
-        be gone. And if the price were then set so that the sellers' income equalled the wages, about one agent in five would
-        go bankrupt every round. Keeping p for the seller, and
-        putting transport and tax on the buyer, changes the model least.</p>
-      <p>In the other two economies the production and transport costs in C are never paid by anyone; they only decide where
-        people shop. In every economy, being big wins a company more customers, not a bigger margin — every unit sells at the
-        same price p.</p>
+      <h2 id="r-patience">Patience: when does an owner give up?</h2>
+      <p>Sales always go up and down a little by pure chance, like the number of heads when you toss a hundred coins. A
+        factory that sells about q units a round sees chance ups and downs of about √q units. So an owner gives up only
+        when its profit falls by more than <b>κ</b> (kappa) times that ordinary wobble: by more than κ · p · √q.</p>
+      <p>The <b>patience</b> menu in the upper right corner of the town sets κ:</p>
+      <ul>
+        <li><b>0</b>: any fall of profit, however small, makes the owner give up. Very nervous owners.</li>
+        <li><b>1</b> (normal): the fall must be bigger than ordinary chance.</li>
+        <li><b>2 to 5</b>: the fall must be 2 to 5 times bigger than chance.</li>
+      </ul>
+      <p>With patience 0, 1 or 2 the biggest chip company usually lasts only a round or two: a small dip in its profit is
+        enough for its owner to give it up. With patience 3 it lasts about 8 rounds, and with 4 or 5 it can rule for tens
+        to hundreds of rounds, while the richest agents end up 10 to 25 times richer (measured on a 64 × 64 town with
+        n = 0.2). With n = 5, patience changes little: the sales are so large that even patience 5 forgives a fall of
+        only a few percent.</p>
 
-      <h2>What to look for</h2>
-      <p>The key question is: can a newcomer ever beat a giant? The newcomer sells at price 1, the giant at s<sup>γ</sup>,
-        which may be very small. A customer at distance d from the giant goes to the newcomer only if the giant's transport
-        cost has eaten up its advantage. So the giant keeps every customer within a distance of about
-        R ≈ (1 − s<sup>γ</sup>)/β. If R is bigger than the whole world, no newcomer can win even one customer, anywhere. The
-        giant is then a natural world monopoly, and it falls only if it gives up by itself.</p>
-      <p>Now you can see what globalization does. Make transport cheaper (the <i>transport factor</i> multiplies every β;
-        <i>lower gradually</i> keeps reducing it, as in Fig. 2 of [1]) and R grows: many small local producers merge into a
-        few big ones that ship far. Products with a strong economy of scale and cheap transport go global first; bread stays
-        local. A road stretches R along itself, so companies grow along roads; a border with a tax cuts R down again, and each
-        country gets its own champion — unless the economy of scale is so strong that the giant across the border is still
-        cheaper after the tax.</p>
+      <h2 id="r-money">Where does the money come from, and where does it go?</h2>
+      <p>Every round money comes in twice: as wages, and as payment for the units sold — and the price makes the sales
+        worth exactly as much as the wages. It is as if everybody earned two wages, spent one on goods and saved the
+        other. Money leaves in two ways: when someone builds a factory, and as upkeep. On a 64 × 64 town about 410 comes
+        in per round (205 in wages, 205 in sales), and about 248 goes into new factories and 162 into upkeep. Almost
+        nothing stays.</p>
+      <p>Why does it balance so neatly? The town has a thermostat. Anyone who does badly and has enough money starts a new
+        factory, and most of these start-ups fail: they pay upkeep until they go bankrupt. The more money there is, the
+        more start-ups, and the more money is burned — until what goes out matches what comes in.</p>
+      <p>When a big company closes, its owner keeps the money and tries one new factory after another. Most of them fail,
+        and the fortune drains away step by step: half of it is gone after about 17 rounds with n = 0.2, and after about
+        6 rounds with n = 5. That is why a golden money column stays for a while after its company has crashed.</p>
 
-      <h2>How to read the pictures</h2>
-      <p><i>3D</i>: the town seen from the side, as in the figures of [1]. Every factory is a tower as tall as the units it sold
-        last round; an agent with several products has its towers stacked, the biggest at the bottom. The scale bars at the
-        left corner tell you the heights: units sold upward (one round number on the linear scale, the powers of ten on the
-        log scale), and money. The agents' money can be shown as golden glass towers, either around the factories or hanging
-        below the ground. The height scales are the average size of the biggest company over the last two thirds of the
-        run, and they are renewed only each time the run has grown by half, so the picture keeps still. Drag to turn and
-        tilt, turn the mouse wheel to zoom, or use the <i>view</i> menu in the upper left corner, which also sets the
-        perspective and the zoom. When a company collapses, its tower sinks to zero over one round.</p>
-      <p><i>Agents</i>: everyone who sold something is a pie, its area the units sold, a slice per product. <i>Market</i>: for
-        one product, everybody in the colour of the factory they buy from; the dots are the factories. <i>Sales</i> and
-        <i>Money</i>: heat maps on a log scale, in the colours of the paper's figures. Hover over or tap an agent to see its
-        numbers.</p>
-      <p>The buttons in the upper left corner draw the geography: <i>+ road</i> (its ▾ sets the transport factor on the road)
-        and <i>+ border</i> (its ▾ sets the tax, a percentage of the goods' value, the tariff, a fixed amount per unit, and
-        whether it is one-way): choose one, then press and drag on the lattice —
-        the road or border follows your finger, so it can bend and curve — and release. <i>− road</i> and <i>− border</i>: choose one, then tap a road or border to remove it. Tap the chosen button
-        again to go back to turning the view. <i>✕ all</i> removes every road and border.</p>
-      <p>The buttons in the lower right corner: the lightning bolt marks every place where a company crashes — either
-        it goes bankrupt (only small ones do), or it closes because its owner gives it up for another product when the profit
-        falls (that is how big companies end: they have money enough never to go bankrupt). The bigger the company, the bigger
-        the mark: a soft flash at its base, of radius growing as the cube root of its size, and small lightnings flickering
-        along its tower and along its golden fortune pillar. The many failed start-ups get only small marks, at most 60 at
-        a time — off (black), yellow, or in the company's colour (multicoloured bolt);
-        the half-black circle switches the background; <i>.png</i> saves the picture with the parameters written in the lower
-        left corner; <i>sq</i> saves just what is drawn, cut tight.</p>
-      <p>The small lettered buttons, one per product, outline the market domains: dotted lines in the product's colour on
-        the ground, around the buyers of each seller (a seller counts in its own domain, although it buys the product
-        from someone else). Put one on a border to see how far trade reaches across it. The small domains of A stop at a
-        border, but the domain of a big C company usually runs right across. Its goods cost s<sup>γ</sup> ≈ 0.02 per unit
-        at the factory, while a newcomer on the near side starts at s<sup>γ</sup> ≈ 1, so even a 100 % tax on the value
-        of the goods leaves the giant far cheaper. A tax hurts mostly the products that are already local. A tariff, a
-        fixed amount per unit, is different: it costs the giant as much as anybody. Across a border down the middle of a
-        64 × 64 lattice, C supplies 19 % of the buyers on the other side without a border, and 43 % with a 100 % tax. A
-        tariff of 0.2 per unit brings that down to 12 %, 0.5 to 4 % and 1 to 0.5 %, so each side gets its own C factory.
-        A loses its trade across the border at a tariff of 0.2 to 0.5, and B at 1 (3 runs each).</p>
-      <p>Below the town: how the numbers change in time, and two log–log plots — how the money is spread over the agents,
-        and how big the companies of each product are. The dashed lines are power-law fits: for money, over its tail; for
-        companies, over the product whose companies are smallest on average. Either plot shows the present, or the sum over
-        the last two thirds of the run since you last changed a parameter. Each plot has its own <i>.png</i> and <i>sq</i>
-        buttons: a picture in the shape shown, or a square one, both with title and axis labels.</p>
-      <p>At the bottom, the companies. P(τ) is how long the factories lived that closed in the last two thirds of the run
-        since the last parameter change; τ counts the rounds a factory sold, a whole number, so each bin is divided by the
-        number of whole rounds it holds. Most start-ups of B and C close after a round or two, and so do the big C
-        companies: their reign is short. A factories either fail at once or live for up to a few hundred rounds, with
-        every lifetime about equally likely. Next to it, the size of single companies in time. You choose either the 5
-        that grew largest of each product (opened in that same window), plotted against their age, or the 20 largest of
-        each product in the last 100 rounds, plotted against the round, so you see them appear and disappear. <i>lin</i>
-        and <i>log</i> switch the size axis. A dot means the company still runs, a cross that it closed. A company is
-        followed from the round it first sells a tenth of what the biggest of its product sells (at least 5 units), and
-        its 40 rounds before that are filled in. A company that sat small for longer before it grew starts its line late.</p>
+      <h2 id="r-econ">Three kinds of economy</h2>
+      <p>The golden button in the upper right corner switches between them:</p>
+      <ul>
+        <li><b>self-organized</b> (the default), with n = 0.2 or n = 5 orders per person and product: as described above.</li>
+        <li><b>buyers pay</b>: now the buyers pay for their shopping. For every unit they pay the price p, which goes to
+          the seller, plus the transport and any border tax, which leave the town (to the carriers and the state):
+          <span class="eqc" style="display:block">ΔM = w + p · (units sold) − Σ<sub>units bought</sub> p · (1 + C − s<sup>γ</sup>) − μ · Start</span>
+          Where does the 1 come from? A unit costs the buyer two things. <b>The good:</b> p, which the seller receives —
+          the same p that appears as + p · (units sold) in the seller's account. <b>The delivery:</b> the part of the
+          price C that is not the cost of making it, C − s<sup>γ</sup>, turned into money with the same p. Together that
+          is p · 1 + p · (C − s<sup>γ</sup>) per unit bought. Money is scarce now: there are fewer start-ups and many more
+          bankruptcies (mostly agents whose shopping costs more than their wage), and the big companies win larger shares
+          of their markets.</li>
+        <li><b>fixed price</b>: every unit sells for 1, as in the original model. Now nothing holds the money back: it
+          piles up, and the richest 1 % end up owning about half of it.</li>
+      </ul>
+
+      <h2 id="r-geo">Roads, borders, taxes and tariffs</h2>
+      <p>With the buttons in the upper left corner you draw on the town: choose one, then press, drag and let go.</p>
+      <ul>
+        <li>A <b>road</b> makes transport along it cheaper; its ▾ sets how much (× 0.2 means five times cheaper).</li>
+        <li>A <b>border</b> makes goods pay when they cross it. Its ▾ sets a <b>tax</b>, a percentage of what the goods
+          are worth where they cross (their price plus the transport so far), and a <b>tariff</b>, a fixed amount per
+          unit. A <i>one-way</i> border charges only goods crossing in the direction of its arrows; the arrows point to
+          your left as you draw it (drawn from top to bottom, they point to the right).</li>
+        <li><b>− road</b> and <b>− border</b>: tap one to remove it. <b>✕ all</b> removes them all.</li>
+      </ul>
+      <p>Goods always travel the cheapest way: they may follow a road part of the way, or go around the end of a border
+        instead of paying.</p>
+      <p>A tax hits cheap goods lightly. A big chip factory makes each chip for about 0.02, while a newcomer on the other
+        side of the border starts at 1, so even a 100 % tax leaves the giant far cheaper. A tariff is different: it costs
+        the giant as much as anybody. Across a border down the middle of a 64 × 64 town, chips from the other side reach
+        19 % of the buyers without a border, and 43 % with a 100 % tax — but only 12 % with a tariff of 0.2, 4 % with
+        0.5 and 0.5 % with 1. Then each side gets its own chip factory. Bread stops crossing at a tariff of 0.2 to 0.5.</p>
+
+      <h2 id="r-look">What to look for</h2>
+      <p>The big question: can a newcomer ever beat a giant? The newcomer sells at price 1, the giant at s<sup>γ</sup>,
+        which can be tiny. A customer goes to the newcomer only if the giant's transport cost has eaten up its advantage.
+        So the giant keeps every customer within a distance of about R ≈ (1 − s<sup>γ</sup>)/β. If R is bigger than the
+        whole town, no newcomer can win a single customer anywhere. The giant is a natural world monopoly, and it falls
+        only when its owner gives up.</p>
+      <p>Now you can see what globalization does. Make transport cheaper (the <i>transport factor</i> in the control panel;
+        <i>lower gradually</i> keeps lowering it) and R grows: many small local producers merge into a few big ones that
+        ship far. Products with a strong economy of scale and cheap transport go global first. Bread stays local.</p>
+      <p>Two more things to watch. The giants are fragile: with normal patience their owners give them up after a round
+        or two, because sales and prices wobble. And a bakery can suddenly boom: when its neighbours close, it takes over
+        their customers, grows ten times bigger in two or three rounds, gets rich — and then its owner switches to B or C
+        at the first dip in profit.</p>
+
+      <h2 id="r-pics">How to read the picture of the town</h2>
+      <p><b>3D</b> (the default): the town seen from the side. Every factory is a tower as tall as the number of units it
+        sold last round. The golden glass columns are the agents' money, hanging below the ground or standing around the
+        factories (menu at the top). The scale bars at the left show the height of a round number of units and of money.
+        Drag to turn and tilt, use the mouse wheel to zoom, or open the <i>view</i> menu. <i>lin / log</i> switches the
+        towers to a logarithmic scale, so that small factories show up too.</p>
+      <p><b>Agents</b>: every seller is a small pie, its area the units sold, a slice per product. <b>Market</b>: for one
+        product, everybody is coloured like the factory they buy from. <b>Sales</b> and <b>Money</b>: heat maps. Hover
+        over or tap an agent to read its numbers.</p>
+      <p>The buttons in the lower right corner:</p>
+      <ul>
+        <li><b>markets A B C</b>: dotted lines on the ground around the customers of every seller of that product.</li>
+        <li><b>⚡</b> marks every crash, yellow, in the company's colour, or off. The bigger the company, the bigger the
+          mark: a soft flash where it stood, and small lightnings along its tower and its money column. The tower sinks
+          to the ground.</li>
+        <li><b>◐</b> switches between a black and a white background. <b>.png</b> saves a picture with all the settings
+          written under it, <b>sq</b> a square picture of just the town.</li>
+      </ul>
+
+      <h2 id="r-plots">The plots under the town</h2>
+      <p><b>In time</b>: how something changes from round to round — the number of factories of each product, the market
+        share of the biggest company, how far goods travel, the start-ups and bankruptcies, the money, the price.</p>
+      <p><b>Distributions</b>: how the money is spread over the agents, P(M), and how big the companies are, P(s). Both
+        axes are logarithmic: each step along an axis multiplies by 10. On such a plot a power law, P ∝ x<sup>−a</sup>,
+        is a straight line, and the dashed lines are such fits. You can see the present round, or everything since you
+        last changed a setting (its first third left out, so the town has time to settle).</p>
+      <p><b>Agents</b>, on the left: P(τ), how many rounds an agent lasts between two bankruptcies. Most bankruptcies are
+        failed B factories, at the end of a cycle like this one. Right after a bankruptcy an agent has only its wage, 0.05
+        a round. After 40 rounds it can afford a bakery (2). It goes on saving until it can try a B factory (8) — but a B
+        factory costs 0.16 a round in upkeep, more than three wages, and if it does not sell well the agent is soon
+        bankrupt again. On the 125 × 125 town that takes from about 50 to over 1000 rounds, half the time more than 540.
+        On the right: the money of single agents, round by round — the ten that were richest in the last 300 rounds, or
+        ten agents picked at random. The colour of the line shows what the agent was making at the time; grey means no
+        factory, or one opened that very round, and a cross marks a bankruptcy. With normal patience a rich agent's money
+        climbs while it owns a big company, then drains away in grey stretches while it tries one new factory after
+        another. With patience 4 the richest keep their companies, and their money climbs steadily.</p>
+      <p>Every plot has its own <b>.png</b> and <b>sq</b> buttons to save it as a picture.</p>
+
+      <h2 id="r-try">Try this</h2>
+      <ul class="try">
+        <li>Set <b>patience</b> to 4 and watch the chip giants: they last much longer, and the richest get much richer.
+          Then try 0.</li>
+        <li>Choose the <b>Globalization</b> preset in the control panel: transport gets cheaper every round, and local
+          producers merge into a few big ones.</li>
+        <li>Turn on <b>markets C</b>, then draw a border with a 100 % tax right through the biggest C market. Remove it
+          (<b>− border</b>) and draw one with a tariff of 0.5 instead.</li>
+        <li>Draw a road across the town and see which products grow along it.</li>
+        <li>Switch the economy to <b>buyers pay</b> and compare the money columns.</li>
+      </ul>
       <div class="refs">
         <p>[1] K. Sneppen and S. Bornholdt, <i>Globalization in a nutshell</i>, Phys. Rev. E <b>98</b>, 042314 (2018).
           <a href="https://doi.org/10.1103/PhysRevE.98.042314" target="_blank" rel="noopener">doi:10.1103/PhysRevE.98.042314</a></p>
@@ -448,6 +463,7 @@
       <button class="tbtn" id="bReset2" title="reset">↺</button>
     </div>
     <div class="canvas-wrap"><canvas id="cv"></canvas>
+      <div class="ovtop">
       <div class="tools">
       <details class="viewmenu" id="viewMenu">
         <summary title="viewing angles and perspective of the 3D view">view ▾</summary>
@@ -490,6 +506,12 @@
       <button class="tb" data-tool="rmBorder" title="remove a border: tap on it">− border</button>
       <button class="tb" id="clearNet2" title="remove all roads and borders">✕ all</button>
       </div>
+      <!-- patience: how big a fall of profit makes an owner give up its product -->
+      <div class="tools tright">
+        <label class="pat" title="Patience κ: how big a fall in profit makes an owner give up its product and try another one. 0: any fall at all. 1: a fall bigger than ordinary chance, p·√(units sold) (the default). 2–5: a fall 2 to 5 times bigger than that.">
+          <span>patience κ</span><select id="patSel"><option value="0">0 any fall</option><option value="1">1 normal</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
+      </div>
+      </div>
       <div class="cornerbtns">
         <span class="dombtns" id="domBtns"></span>
         <button id="bFlash" title="marks where companies collapse: off — click for yellow, click again for the company's colour">
@@ -507,6 +529,7 @@
     </div>
   </section>
   <section class="display">
+    <div class="cardhead"><h2>In time</h2><span class="sub">the whole run, round by round</span></div>
     <div class="chartbar">
       <select id="metric">
         <option value="prod">Factories of each product</option>
@@ -522,8 +545,8 @@
     <div class="chartbox"><canvas id="chart"></canvas></div>
   </section>
   <section class="display">
+    <div class="cardhead"><h2>Distributions</h2><span class="sub">how money and company sizes are spread · both axes logarithmic</span></div>
     <div class="chartbar">
-      <b style="font-size:13px">Distributions (log–log)</b>
       <div class="seg" id="distSeg" title="the distribution now, or summed over the last two thirds of the run since the last change of a parameter">
         <button data-d="now" class="on">now</button><button data-d="avg">last ⅔ of run</button></div>
       <span class="chartnote" id="distNote"></span>
@@ -536,19 +559,20 @@
     </div>
   </section>
   <section class="display">
+    <div class="cardhead"><h2>Agents</h2><span class="sub">how long an agent lasts between two bankruptcies, and how single fortunes rise and fall</span></div>
     <div class="chartbar">
-      <b style="font-size:13px">Companies</b>
-      <div class="seg" id="trajSeg" title="the size of the 5 companies of each product that grew largest, against the time since they opened — or the 20 largest of each product in the last 100 rounds, as they appear and disappear">
-        <button data-m="top" class="on">5 largest vs age</button><button data-m="all">20 largest in time</button></div>
-      <div class="seg" id="trajScale" title="company size on a linear or a logarithmic scale">
+      <span class="lab">fortunes</span>
+      <div class="seg" id="fortSeg" title="whose money to follow: the ten agents that were richest in the last 300 rounds, or ten agents picked at random when the run started">
+        <button data-m="rich" class="on">10 richest</button><button data-m="rand">10 at random</button></div>
+      <div class="seg" id="fortScale" title="money on a linear or a logarithmic scale">
         <button data-s="lin" class="on">lin</button><button data-s="log">log</button></div>
-      <span class="plotbtns"><span class="pl">P(τ)</span><button data-plot="life" data-k="png" title="save the lifetime distribution as a PNG picture, with title and axis labels">.png</button><button data-plot="life" data-k="sq" title="save the lifetime distribution in a square picture">sq</button>
-        <span class="pl">s(t)</span><button data-plot="traj" data-k="png" title="save the company sizes in time as a PNG picture, with title and axis labels">.png</button><button data-plot="traj" data-k="sq" title="save the company sizes in time in a square picture">sq</button></span>
+      <span class="plotbtns"><span class="pl">P(τ)</span><button data-plot="surv" data-k="png" title="save the survival times as a PNG picture, with title and axis labels">.png</button><button data-plot="surv" data-k="sq" title="save the survival times in a square picture">sq</button>
+        <span class="pl">M(t)</span><button data-plot="fort" data-k="png" title="save the fortunes in time as a PNG picture, with title and axis labels">.png</button><button data-plot="fort" data-k="sq" title="save the fortunes in time in a square picture">sq</button></span>
     </div>
-    <div class="chartnote" id="compNote" style="margin-bottom:4px"></div>
+    <div class="chartnote" id="agNote" style="margin-bottom:4px"></div>
     <div class="distgrid">
-      <div class="chartbox dist"><canvas id="cLife"></canvas></div>
-      <div class="chartbox dist"><canvas id="cTraj"></canvas></div>
+      <div class="chartbox dist"><canvas id="cSurv"></canvas></div>
+      <div class="chartbox dist"><canvas id="cFort"></canvas></div>
     </div>
   </section>
 </div>
@@ -588,24 +612,24 @@
   <details open>
     <summary>Economy</summary>
     <div class="sect">
-      <div class="row"><label title="self-organized: a unit sells at p = Σ wages / Σ units sold in the round before, so the value of all production equals the total wages and money does not pile up. Fixed: every unit sells at 1">Price per unit</label>
-        <select id="econSel"><option value="so">self-organized</option><option value="pay">self-organized, buyers pay (+ transport, tax)</option><option value="fixed">fixed = 1</option></select></div>
+      <div class="row"><label title="self-organized: a unit sells at p = Σ wages / Σ units sold in the round before, so the value of all production equals the total wages and money does not pile up. Buyers pay: the same price, and the buyers pay for what they buy, delivery and border tax included. Fixed: every unit sells at 1">Economy</label>
+        <select id="econSel"><option value="so">self-organized</option><option value="pay">buyers pay</option><option value="fixed">fixed price 1</option></select></div>
       <div class="row"><label>Lattice L</label>
         <select id="Lsel"><option>32</option><option>64</option><option>96</option><option selected>125</option><option>192</option><option>256</option></select></div>
-      <div class="row"><label title="orders per agent per product per round: small n = few, noisy sales">Orders n</label>
+      <div class="row"><label title="orders per agent per product per round: small n = few, noisy sales">Orders per person n</label>
         <select id="nSel"><option>0.05</option><option>0.1</option><option>0.2</option><option>0.5</option><option>1</option><option>2</option><option>5</option></select></div>
-      <div class="row"><label title="the largest number of different products one agent may produce">Products per agent, lim</label><select id="limSel"></select></div>
+      <div class="row"><label title="the largest number of different products one agent may produce at the same time">Factories per agent, lim</label><select id="limSel"></select></div>
       <div class="row"><label title="money every agent receives each round; it also counts in the order weight">Wage w <span class="vv" id="wageV"></span></label><input type="range" id="wageR" min="0" max="0.5" step="0.01" value="0.05"></div>
       <div class="row"><label title="running cost of a factory per round, as a fraction μ of its start cost">Upkeep μ <span class="vv" id="upV"></span></label><input type="range" id="upR" min="0" max="0.2" step="0.005" value="0.02"></div>
-      <div class="row"><label title="a fall of profit counts as a decline when it exceeds κ·√(sales), the size of the random fluctuations">Decline tolerance κ</label>
-        <select id="kapSel"><option value="0">0 (any fall)</option><option value="1">1 · √sales</option><option value="2">2 · √sales</option></select></div>
+      <div class="row"><label title="an owner gives up its product when the profit falls by more than κ·p·√(units sold), κ times the ordinary ups and downs of chance; 0: at any fall">Patience κ</label>
+        <select id="kapSel"><option value="0">0 · any fall</option><option value="1">1 · normal</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
       <div class="row"><label title="money of every agent at the start">Initial money M₀ <span class="vv" id="M0V"></span></label><input type="range" id="M0R" min="0" max="50" step="1" value="5"></div>
-      <p class="hint">Everything acts at once except L and M₀, which act on Reset.</p>
+      <p class="hint">Everything acts at once, except the size L and the starting money M₀, which act when you press Reset.</p>
     </div>
   </details>
 
   <details open>
-    <summary>Transport and borders</summary>
+    <summary>Transport, roads and borders</summary>
     <div class="sect">
       <div class="row"><label title="multiplies every β(i)">Transport factor <span class="vv" id="tmV"></span></label><input type="range" id="tmR" min="-2" max="1" step="0.01" value="0"></div>
       <div class="row"><label class="chk"><input type="checkbox" id="anneal">lower gradually</label>
@@ -635,8 +659,8 @@
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
 // P = {L, products:[{start,gamma,beta}], n (orders per agent per product per round), lim (max factories per agent),
-//      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (a decline counts
-//      when profit < previous − κ·p·√(previous units sold)), M0, bc:'periodic'|'closed', tmul (transport factor),
+//      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (patience: a
+//      decline counts when profit < previous − κ·p·√(previous units sold); 0 = any fall), M0, bc:'periodic'|'closed', tmul (transport factor),
 //      roads:[{pts:[[x,y],…],f}] (transport cost ×f along the road), borders:[{pts,tax,tariff,oneway}] (tax = fraction
 //      of the goods' value charged on crossing; tariff = amount added per unit on crossing; one-way: only when crossing toward (dy, −dx) for the drawn direction (dx, dy), which on the screen (y downward)
 //      is to the left of the drawing direction),
@@ -760,8 +784,6 @@ function buildEcon(P){
   E.money=new Float64Array(LL); E.inc=new Float64Array(LL); E.prevInc=new Float64Array(LL);
   E.profit=new Float64Array(LL); E.prevProfit=new Float64Array(LL);
   E.units=new Float64Array(LL); E.prevUnits=new Float64Array(LL); E.price=1; E.bankruptList=[]; E.closeList=[];
-  // born[i][r]: round in which agent r opened its factory of product i; deathList: the factories closed this round
-  E.born=[]; for(let i=0;i<N;i++)E.born.push(new Int32Array(LL)); E.deathList=[];
   E.started=new Int32Array(LL);              // round at which the agent last opened a factory (−1: never)
   E.F=[];E.sales=[];E.sup=[];E.dist=[];E.u=[];E.area=[];E.cost=[];      // cost: the delivered price each agent pays
   for(let i=0;i<N;i++){
@@ -777,7 +799,6 @@ function buildEcon(P){
     E.price=P.econ!=='fixed'&&P.wage>0?P.wage/(P.n*N):1;
     for(let i=0;i<N;i++){E.F[i].fill(0);E.sales[i].fill(0)}
     for(let r=0;r<LL;r++)E.F[(rng()*N)|0][r]=1;
-    for(let i=0;i<N;i++)E.born[i].fill(0);
     E.computeMarkets();
   };
 
@@ -882,8 +903,7 @@ function buildEcon(P){
       for(let i=0;i<N;i++)if(E.F[i][r]){const v=p*newSales[i][r]-mu*P.products[i].start;
         if(v<wv){wv=v;w=i;nt=1}else if(v===wv){nt++;if(rng()*nt<1)w=i}}
       return w};
-    let U=0; E.bankruptList=[]; E.closeList=[]; E.deathList=[];
-    const close=(i,r)=>{E.F[i][r]=0; E.deathList.push({r,prod:i,born:E.born[i][r],life:E.t+1-E.born[i][r]})};
+    let U=0; E.bankruptList=[]; E.closeList=[];
     for(let r=0;r<LL;r++){
       let units=0, up=0, nf=0;
       for(let i=0;i<N;i++)if(E.F[i][r]){units+=newSales[i][r];up+=mu*P.products[i].start;nf++}
@@ -897,7 +917,7 @@ function buildEcon(P){
       if(E.money[r]<0){
         // the bankrupt company: its size (units sold this or last round) and its biggest product, for the display
         let bp=-1,bv=-1; for(let i=0;i<N;i++)if(E.F[i][r]&&newSales[i][r]>bv){bv=newSales[i][r];bp=i}
-        const w=weakest(r); if(w>=0){close(w,r);nf--} E.money[r]=so?P.wage:0; H.bankrupt++;
+        const w=weakest(r); if(w>=0){E.F[w][r]=0;nf--} E.money[r]=so?P.wage:0; H.bankrupt++;
         E.bankruptList.push({r,size:Math.max(units,E.prevUnits[r]),prod:bp>=0?bp:w,mon:m0});
       }
       const declined=E.t>0&&E.profit[r]<E.prevProfit[r]-P.kappa*p*Math.sqrt(Math.max(1,E.prevUnits[r]));
@@ -908,8 +928,8 @@ function buildEcon(P){
         if(nc){
           const j=cand[(rng()*nc)|0];
           // a factory closed because its owner changes product: recorded with its size (units sold) for the display
-          if(drop>=0){E.closeList.push({r,size:Math.max(newSales[drop][r],E.sales[drop][r]),prod:drop,mon:m0}); close(drop,r)}
-          E.money[r]-=P.products[j].start; E.F[j][r]=1; E.born[j][r]=E.t+1; newSales[j][r]=0;
+          if(drop>=0){E.closeList.push({r,size:Math.max(newSales[drop][r],E.sales[drop][r]),prod:drop,mon:m0}); E.F[drop][r]=0}
+          E.money[r]-=P.products[j].start; E.F[j][r]=1; newSales[j][r]=0;
           E.started[r]=E.t+1; H.starts++;
         }
       }
@@ -993,7 +1013,7 @@ function refresh(){draw();drawChart();updStat();
 // ---------- controls ----------
 const fmt=(v,d=2)=>Math.abs(v)>=100?v.toFixed(0):Math.abs(v)>=10?v.toFixed(1):v.toFixed(d);
 function syncControls(){
-  $('nSel').value=String(P.n); $('kapSel').value=String(P.kappa);
+  $('nSel').value=String(P.n); $('kapSel').value=$('patSel').value=String(P.kappa);
   $('wageR').value=P.wage; $('wageV').textContent=P.wage.toFixed(2);
   $('upR').value=P.upkeep; $('upV').textContent=P.upkeep.toFixed(3);
   $('M0R').value=P.M0; $('M0V').textContent=P.M0;
@@ -1026,7 +1046,7 @@ function buildProductUI(){
     tb.appendChild(tr);
   });
   checkMono();
-  const db=$('domBtns'); db.innerHTML='';
+  const db=$('domBtns'); db.innerHTML='<span class="dlab">markets</span>';
   for(const i of [...domOn])if(i>=P.products.length)domOn.delete(i);
   P.products.forEach((pr,i)=>{
     const b=document.createElement('button'); b.textContent=PNAME[i]; b.classList.toggle('on',domOn.has(i));
@@ -1108,7 +1128,10 @@ $('bSq').onclick=()=>exportPNG('sq');
 $('pDel').onclick=()=>{P.products.pop();restart()};
 $('nSel').onchange=e=>{P.n=+e.target.value;syncSO()};
 $('limSel').onchange=e=>{P.lim=+e.target.value};
-$('kapSel').onchange=e=>{P.kappa=+e.target.value};
+// patience κ: in the panel and in the upper right corner of the display
+function setKappa(v){P.kappa=v; $('kapSel').value=$('patSel').value=String(v); distMark(); updStat()}
+$('kapSel').onchange=e=>setKappa(+e.target.value);
+$('patSel').onchange=e=>setKappa(+e.target.value);
 $('wageR').oninput=e=>{P.wage=+e.target.value;$('wageV').textContent=P.wage.toFixed(2)};
 $('upR').oninput=e=>{P.upkeep=+e.target.value;$('upV').textContent=P.upkeep.toFixed(3)};
 document.querySelectorAll('#hSeg button').forEach(b=>b.onclick=()=>{
@@ -1262,6 +1285,9 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='k'||e.key==='K'){e.preventDefault();setCtlOpen(!document.body.classList.contains('ctl-open'))}
   else if(e.key==='Escape'){if($('titleDrop').open)$('titleDrop').open=false;else if(document.body.classList.contains('ctl-open'))setCtlOpen(false)}
 });
+// the contents row of the pull-down scrolls it to the section
+document.querySelectorAll('.toc a').forEach(a=>a.onclick=e=>{e.preventDefault();
+  const box=document.querySelector('.dropbox'), h=$(a.dataset.to); if(h)box.scrollTo({top:h.offsetTop-10,behavior:'smooth'})});
 // a click outside the open title pull-down closes it
 document.addEventListener('pointerdown',e=>{const d=$('titleDrop');if(d.open&&!d.contains(e.target))d.open=false});
 
@@ -1272,7 +1298,7 @@ function doStep(){
     E.stale=true;                         // the markets must be recomputed with the new transport costs
   }
   E.step();
-  distRecord(); compRecord();
+  distRecord(); agRecord();
   // Explosions. Big companies rarely go bankrupt: they end when their owner gives them up for another product as the profit
   // falls. So every company of at least 20 % of the height scale (the average biggest) that closes, for whatever reason,
   // explodes. Bankruptcies are nearly all failed start-ups (a few units at most) — dozens per round on a large lattice —
@@ -1682,7 +1708,7 @@ function stampParams(oc,scale){
     (view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
   const lines=[
     {t:`Globalization in a nutshell — 2D · round ${E.t} · ${viewName}`,b:true},
-    {t:`L = ${E.L}, n = ${P.n}, lim = ${P.lim}, wage w = ${P.wage}, upkeep μ = ${P.upkeep}, κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
+    {t:`L = ${E.L}, n = ${P.n}, lim = ${P.lim}, wage w = ${P.wage}, upkeep μ = ${P.upkeep}, patience κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
       (P.econ==='fixed'?'fixed price p = 1':`self-organized price p = ${E.price.toPrecision(3)}${P.econ==='pay'?', buyers pay':''}`)},
     {t:`${P.bc} boundaries`+(P.roads.length?`, ${P.roads.length} road${P.roads.length>1?'s':''}`:'')+
       (P.borders.length?`, ${P.borders.length} border${P.borders.length>1?'s':''}`:'')},
@@ -1732,11 +1758,10 @@ function exportPNG(kind){
 // ---------- distributions: money across agents, company sizes per product (log–log) ----------
 // After every round the histograms (logarithmic bins, 4 per decade) are added to running totals; the totals at each
 // round are kept, so the sum over any window of rounds is the difference of two of them.
-const MB={lo:-3,hi:7,per:4}, SB={lo:0,hi:7,per:4}, LB={lo:0,hi:5,per:4,int:true};   // money, company size, lifetime (whole rounds)
+const MB={lo:-3,hi:7,per:4}, SB={lo:0,hi:7,per:4}, LB={lo:0,hi:5,per:4,int:true};   // money, company size, survival (whole rounds)
 const nb=B=>(B.hi-B.lo)*B.per, binOf=(B,v)=>Math.floor((Math.log10(v)-B.lo)*B.per);
 let DH=null, distMode='now';
-function distReset(){DH={t0:0,rec:[{t:0,m:new Float64Array(nb(MB)),s:P.products.map(()=>new Float64Array(nb(SB))),
-  l:P.products.map(()=>new Float64Array(nb(LB)))}]}; compReset()}
+function distReset(){agReset(); DH={t0:0,rec:[{t:0,m:new Float64Array(nb(MB)),s:P.products.map(()=>new Float64Array(nb(SB))),b:new Float64Array(nb(LB))}]}}
 function distMark(){if(E&&DH)DH.t0=E.t}
 function histNow(){
   const LL=E.L*E.L, m=new Float64Array(nb(MB)), s=P.products.map(()=>new Float64Array(nb(SB)));
@@ -1746,10 +1771,10 @@ function histNow(){
 }
 function distRecord(){
   const h=histNow(), last=DH.rec[DH.rec.length-1];
-  // lifetimes of the factories closed this round (in rounds, at least 1)
-  const l=last.l.map(a=>Float64Array.from(a));
-  for(const d of E.deathList){const k=binOf(LB,Math.max(1,d.life));if(k>=0&&k<l[d.prod].length)l[d.prod][k]++}
-  DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k])),l});
+  // survival: for every agent going bankrupt this round, the rounds since its bankruptcy before (if it had one)
+  const b=Float64Array.from(last.b);
+  for(const x of E.bankruptList){const tl=AG.last[x.r]; if(tl>=0){const k=binOf(LB,E.t-tl);if(k>=0&&k<b.length)b[k]++} AG.last[x.r]=E.t}
+  DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k])),b});
   if(DH.rec.length>8000)DH.rec.splice(1,1000);
 }
 function histWindow(){         // summed over the last two thirds of the rounds since the last change of a parameter
@@ -1757,44 +1782,58 @@ function histWindow(){         // summed over the last two thirds of the rounds 
   let lo=0,hi=DH.rec.length-1;               // last record with t <= ta
   while(lo<hi){const mid=(lo+hi+1)>>1;if(DH.rec[mid].t<=ta)lo=mid;else hi=mid-1}
   const a=DH.rec[lo], b=DH.rec[DH.rec.length-1];
-  return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),l:b.l.map((x,i)=>x.map((v,k)=>v-a.l[i][k])),rounds:b.t-a.t};
+  return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),b:b.b.map((v,k)=>v-a.b[k]),rounds:b.t-a.t};
 }
-// ---- companies followed in time: every factory that sells at least a tenth of the biggest of its product (and at least
-// 5 units) is followed from then on until it closes: its birth round and its size (units sold) in each round ----
-let CT=null;
-function compReset(){CT={live:new Map(),dead:[],ring:[]}}
-const RING=40;   // rounds of sales kept for every selling factory
-const TWIN=100, TOPALL=20;  // the plot of the companies in time: the last TWIN rounds, the TOPALL largest of each product
-function compRecord(){
-  const LL=E.L*E.L, t=E.t;
-  const finish=(k,rec)=>{rec.died=t;CT.live.delete(k);CT.dead.push(rec)};
-  for(const d of E.deathList){const k=d.prod*LL+d.r, rec=CT.live.get(k);
-    if(rec&&rec.born===d.born){if(!E.F[d.prod][d.r])rec.pts.push(t,E.sales[d.prod][d.r]); finish(k,rec)}}
-  const idx=[], val=[];
-  for(let i=0;i<E.N;i++){
-    const S=E.sales[i], Fi=E.F[i], B=E.born[i]; let mx=0; for(let r=0;r<LL;r++)if(S[r]>mx)mx=S[r];
-    const thr=Math.max(5,0.1*mx);
-    for(let r=0;r<LL;r++){
-      const k=i*LL+r; let rec=CT.live.get(k);
-      if(rec&&(!Fi[r]||B[r]!==rec.born)){finish(k,rec);rec=null}      // closed, or replaced by a new factory
-      if(!rec&&Fi[r]&&S[r]>=thr){
-        rec={prod:i,r,born:B[r],pts:[],peak:0,died:-1}; CT.live.set(k,rec);
-        for(const e of CT.ring)if(e.t>rec.born){             // its sales in the rounds before it became large
-          let a=0,b=e.idx.length-1,v=0; while(a<=b){const m=(a+b)>>1;if(e.idx[m]<k)a=m+1;else if(e.idx[m]>k)b=m-1;else{v=e.val[m];break}}
-          rec.pts.push(e.t,v); if(v>rec.peak)rec.peak=v}
-      }
-      if(Fi[r]&&S[r]>0){idx.push(k);val.push(S[r])}
-      if(rec){rec.pts.push(t,S[r]);if(S[r]>rec.peak)rec.peak=S[r]}
+// ---- agents: how long they last between bankruptcies, and their fortunes in time ----
+// AG.last[r]: the round of agent r's last bankruptcy (−1: none since the start of the run). Fortunes: every agent that
+// holds at least a tenth of the richest fortune, and ten times the mean, is followed from then on, with its 30 rounds
+// before filled in from a ring of everybody's money; it is let go once it has held less than a hundredth of the richest
+// (or less than the mean) for 100 rounds. Ten
+// agents picked at random when the run starts are followed all the time. Each point is [round, money, product made
+// (−1: no factory)]; only the last 300 rounds are kept.
+const AGRING=30, AGWIN=300, AGFADE=100, AGTOP=10, AGRAND=10;
+let AG=null;
+function agReset(){
+  const LL=E.L*E.L;
+  AG={last:new Int32Array(LL).fill(-1),live:new Map(),done:[],ring:[]};
+  while(AG.live.size<Math.min(AGRAND,LL)){const r=(Math.random()*LL)|0;
+    if(!AG.live.has(r))AG.live.set(r,{r,pts:[0,E.money[r],mainProduct(r)],bank:[],lastHigh:0,keep:true})}
+}
+// the product an agent makes (its biggest seller); −1: no factory, or one it opened this very round — an owner who keeps
+// trying new factories after giving up a company shows as grey, not as a new colour every round
+function mainProduct(r){if(E.started[r]===E.t)return -1;
+  let b=-1,bv=-1;for(let i=0;i<E.N;i++)if(E.F[i][r]&&E.sales[i][r]>bv){bv=E.sales[i][r];b=i}return b}
+function agRecord(){
+  const LL=E.L*E.L, t=E.t, M=E.money;
+  let mx=0, sum=0; for(let r=0;r<LL;r++){if(M[r]>mx)mx=M[r]; sum+=Math.max(0,M[r])}
+  const mp=new Int8Array(LL); for(let r=0;r<LL;r++)mp[r]=mainProduct(r);
+  for(const b of E.bankruptList){const rec=AG.live.get(b.r); if(rec)rec.bank.push(t)}
+  const mean=sum/LL, hi=Math.max(0.1*mx,10*mean), lo=Math.max(0.01*mx,mean);   // early on everybody has about the same
+  for(let r=0;r<LL;r++){
+    let rec=AG.live.get(r);
+    if(!rec){
+      if(!(mx>0&&M[r]>=hi))continue;
+      rec={r,pts:[],bank:[],lastHigh:t,keep:false}; AG.live.set(r,rec);
+      for(const e of AG.ring)rec.pts.push(e.t,e.m[r],e.p[r]);     // the rounds before it became rich
     }
+    rec.pts.push(t,M[r],mp[r]); if(M[r]>=lo)rec.lastHigh=t;
+    if(!rec.keep&&t-rec.lastHigh>AGFADE){AG.live.delete(r);AG.done.push(rec)}
   }
-  CT.ring.push({t,idx:Int32Array.from(idx),val:Float32Array.from(val)}); if(CT.ring.length>RING)CT.ring.shift();
-  // keep the record bounded: of the closed companies, those of the last TWIN rounds and the 40 largest of each product
-  // opened in the last two thirds of the run since the last parameter change
-  if(CT.dead.length>1500){
-    const keep=new Set(CT.dead.filter(c=>c.died>=t-TWIN)), w=histWindow(), t0=w.rounds>0?E.t-w.rounds:0;
-    for(let i=0;i<E.N;i++)CT.dead.filter(c=>c.prod===i&&c.born>=t0).sort((a,b)=>b.peak-a.peak).slice(0,40).forEach(c=>keep.add(c));
-    CT.dead=CT.dead.filter(c=>keep.has(c));
+  AG.ring.push({t,m:Float32Array.from(M),p:mp}); if(AG.ring.length>AGRING)AG.ring.shift();
+  if(t%50===0){                                // forget what lies before the last AGWIN rounds
+    const t0=t-AGWIN; AG.done=AG.done.filter(c=>c.pts[c.pts.length-3]>=t0).slice(-2000);
+    for(const c of [...AG.live.values(),...AG.done]){let k=0;while(k<c.pts.length-3&&c.pts[k]<t0)k+=3; if(k)c.pts.splice(0,k); c.bank=c.bank.filter(v=>v>=t0)}
   }
+}
+// a legend in the upper right corner (x = its right edge), on a white backing so the lines under it stay readable.
+// items: {t: text, c: colour of its square (none: no square), ink: colour of the text, bold}
+function legendBox(g,items,x,y,dpr){
+  const font=l=>`${l.bold?'600 ':''}${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+  g.textAlign='right'; g.textBaseline='top';
+  const tw=Math.max(...items.map(l=>{g.font=font(l);return g.measureText(l.t).width+(l.c?14*dpr:0)}));
+  g.fillStyle='rgba(255,255,255,.86)'; g.fillRect(x-tw-6*dpr,y-3*dpr,tw+9*dpr,items.length*15*dpr+4*dpr);
+  items.forEach((l,k)=>{const yy=y+k*15*dpr; g.font=font(l); g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,x,yy);
+    if(l.c){const w=g.measureText(l.t).width; g.fillStyle=l.c; g.fillRect(x-w-14*dpr,yy+1*dpr,9*dpr,9*dpr)}});
 }
 function sup10(k){const s={'-':'⁻',0:'⁰',1:'¹',2:'²',3:'³',4:'⁴',5:'⁵',6:'⁶',7:'⁷',8:'⁸',9:'⁹'};
   return k===0?'1':k===1?'10':'10'+String(k).split('').map(c=>s[c]).join('')}
@@ -1851,16 +1890,9 @@ function logPlot(canvas,series,B,xlabel,title,legend,out){
     g.beginPath(); g.moveTo(X(xa),Y(ic+sl*xa)); g.lineTo(X(xb),Y(ic+sl*xb)); g.stroke(); g.restore();
     notes.push({c:s0.c,t:`${series[j].fitLabel||''}slope ${sl.toFixed(2).replace('-','−')}`});
   });
-  if(notes.length){                            // the fitted slopes, under the legend in the upper right corner
-    g.textAlign='right'; g.textBaseline='top'; g.font=`600 ${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
-    const y0=pt+4*dpr+(legend?legend.length:0)*15*dpr+(legend?4*dpr:0);
-    notes.forEach((nt,k)=>{g.fillStyle='#16233b';g.fillText('- - '+nt.t,pl+w-4*dpr,y0+k*15*dpr)});
-  }
-  if(legend){                                  // upper right corner: the products with their γ
-    g.textAlign='right'; g.textBaseline='top'; g.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
-    legend.forEach((l,k)=>{const y=pt+4*dpr+k*15*dpr; g.fillStyle='#16233b'; g.fillText(l.t,pl+w-4*dpr,y);
-      const tw=g.measureText(l.t).width; g.fillStyle=l.c; g.fillRect(pl+w-tw-17*dpr,y+1*dpr,9*dpr,9*dpr)});
-  }
+  // upper right corner: the products with their γ, then the fitted slopes
+  const items=[...(legend||[]),...notes.map(nt=>({t:'- - '+nt.t,bold:true}))];
+  if(items.length)legendBox(g,items,pl+w-4*dpr,pt+4*dpr,dpr);
 }
 // the two distribution plots: their data and labels, for the screen and for the saved pictures
 function distPlots(){
@@ -1870,13 +1902,12 @@ function distPlots(){
   // the fit of the company sizes: the product whose companies are smallest on average
   const mean=h=>{let n=0,sx=0;h.forEach((c,k)=>{n+=c;sx+=c*Math.pow(10,SB.lo+(k+0.5)/SB.per)});return n?sx/n:Infinity};
   let ismall=0; d.s.forEach((h,i)=>{if(mean(h)<mean(d.s[ismall]))ismall=i});
-  // lifetimes: always the factories closed in the last two thirds of the run since the last parameter change
-  const w=histWindow(), lw=w.rounds>0?w.l:P.products.map(()=>new Float64Array(nb(LB)));
-  const nd=lw.map(h=>h.reduce((a,b)=>a+b,0));
-  return {note,lnote:w.rounds>0?`lifetimes of the ${nd.reduce((a,b)=>a+b,0)} factories closed in rounds ${E.t-w.rounds+1}–${E.t} (last ⅔ since the last parameter change)`:'lifetimes: no rounds since the last parameter change yet',
-    life:{series:lw.map((h,i)=>({c:PCOL[i],h})),B:LB,xl:'lifetime τ of a factory (rounds it sold)',
-      title:'P(τ): probability density of the lifetimes of closed factories, per round',stitle:'P(τ), lifetimes of closed factories',
-      legend:P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}   (${nd[i]})`})),yl:'probability density P(τ)'},
+  // survival: always the bankruptcies in the last two thirds of the run since the last parameter change
+  const w=histWindow(), bw=w.rounds>0?w.b:new Float64Array(nb(LB)), nbk=bw.reduce((a,b)=>a+b,0);
+  return {note,snote:w.rounds>0?`P(τ): the ${nbk} bankruptcies in rounds ${E.t-w.rounds+1}–${E.t} (last ⅔ since the last parameter change) of agents that had gone bankrupt before; τ cannot be longer than the run so far`:'P(τ): no rounds since the last parameter change yet',
+    surv:{series:[{c:'#be123c',h:bw}],B:LB,xl:'τ: rounds between two bankruptcies of the same agent',
+      title:'P(τ): probability density of the rounds an agent lasts between two bankruptcies',stitle:'P(τ), rounds between two bankruptcies',
+      legend:null,yl:'probability density P(τ), per round'},
     money:{series:[{c:'#b7791f',h:d.m,fit:'tail',fitLabel:'tail: '}],B:MB,xl:'money M of an agent',
       title:'P(M): probability density of money, per unit of M',stitle:'P(M), density per unit of money',legend:null,yl:'probability density P(M)'},
     size:{series:d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?'body':null,fitLabel:PNAME[i]+': '})),B:SB,xl:'company size s (units sold per round)',
@@ -1886,90 +1917,101 @@ function distPlots(){
 function drawDist(){
   if(!E||!DH)return;
   const d=distPlots(); $('distNote').textContent=d.note;
-  for(const [id,q] of [['cMoney',d.money],['cSize',d.size],['cLife',d.life]])logPlot($(id),q.series,q.B,q.xl,q.stitle,q.legend);
-  const nf=CT?CT.live.size+CT.dead.length:0;
-  $('compNote').textContent=d.lnote+` · sizes: ${nf} companies followed (from when they sell a tenth of the biggest of their product)`;
-  trajPlot($('cTraj'));
+  for(const [id,q] of [['cMoney',d.money],['cSize',d.size],['cSurv',d.surv]])logPlot($(id),q.series,q.B,q.xl,q.stitle,q.legend);
+  $('agNote').textContent=d.snote+' · fortunes: a rich agent is followed from 30 rounds before it first holds a tenth of the richest fortune';
+  fortPlot($('cFort'));
 }
-// ---- company sizes in time: the 5 companies of each product that grew largest, against the time since they opened;
-// or all the followed companies against the round, as they appear and disappear ----
-let trajMode='top', trajLog=false;
-function trajPlot(canvas,out){
+// ---- fortunes in time: the money of single agents over the last AGWIN rounds, the line in the colour of the product
+// the agent makes at the time (grey: no factory), a cross where it goes bankrupt ----
+let fortMode='rich', fortLog=false;
+function fortSelect(){
+  const t0=Math.max(0,E.t-AGWIN), recs=AG?[...AG.live.values(),...AG.done]:[];
+  if(fortMode==='rand')return recs.filter(c=>c.keep);
+  const best=new Map();                    // per agent: the largest fortune it held in the window, and its records
+  for(const c of recs){const q=c.pts; let pk=0;
+    for(let k=0;k<q.length;k+=3)if(q[k]>=t0&&q[k+1]>pk)pk=q[k+1];
+    if(pk>0){const b=best.get(c.r)||{pk:0,recs:[]}; if(pk>b.pk)b.pk=pk; b.recs.push(c); best.set(c.r,b)}}
+  return [...best.values()].sort((a,b)=>b.pk-a.pk).slice(0,AGTOP).flatMap(b=>b.recs);
+}
+function fortPlot(canvas,out){
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
   if(!out)g.clearRect(0,0,W,H);
-  const pl=(out?64:46)*dpr, pr=(out?16:10)*dpr, pt=(out?30:22)*dpr, pb=(out?44:34)*dpr, w=W-pl-pr, h=H-pt-pb;
-  const font=(px,b)=>`${b?'600 ':''}${px*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`, top=trajMode==='top';
-  const title=out?(top?'Size of the 5 largest companies of each product against their age':`Size in time of the ${TOPALL} largest companies of each product`)+' — round '+E.t
-    :(top?'5 largest of each: size vs age':`${TOPALL} largest of each in time`);
+  const font=(px,b)=>`${b?'600 ':''}${px*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`, rich=fortMode==='rich';
+  const title=out?(rich?`Money of the ${AGTOP} agents that were richest in the last ${AGWIN} rounds`:`Money of ${AGRAND} agents picked at random`)+' — round '+E.t
+    :(rich?`the ${AGTOP} richest: money in time`:`${AGRAND} at random: money in time`);
+  // the legend in a row of its own over the plot, beside the title if there is room: the lines end at the upper right
+  const leg=[...P.products.map((q,i)=>({c:PCOL[i],t:'makes '+PNAME[i]})),{c:'#9aa3b5',t:'no factory, or a new one'},{t:'× bankrupt',ink:'#be123c'}];
+  g.font=font(11.5,1); const ttw=g.measureText(title).width; g.font=font(11);
+  const pl=(out?64:46)*dpr, pr=(out?16:10)*dpr, iw=l=>g.measureText(l.t).width+(l.c?14*dpr:0);
+  const lw=leg.reduce((a,l)=>a+iw(l)+10*dpr,-10*dpr), beside=pl+ttw+14*dpr+lw<=W-pr;
+  const rows=[]; {const room=W-pr-(beside?pl+ttw+14*dpr:pl); let row=[], used=0;     // in reading order, each row right-aligned
+    for(const l of leg){const tw=iw(l); if(row.length&&used+10*dpr+tw>room){rows.push(row);row=[];used=0} row.push({l,tw}); used+=(row.length>1?10*dpr:0)+tw}
+    rows.push(row);
+    for(const r of rows){let x=W-pr; for(let k=r.length-1;k>=0;k--){r[k].x=x; x-=r[k].tw+10*dpr}}}
+  const pt=(out?30:22)*dpr+(beside?0:rows.length*15*dpr), pb=(out?44:34)*dpr, w=W-pl-pr, h=H-pt-pb;
   g.fillStyle='#16233b'; g.textAlign='left'; g.textBaseline='top'; g.font=font(11.5,1); g.fillText(title,pl,4*dpr); g.font=font(11);
-  const recs=CT?[...CT.dead,...CT.live.values()]:[];
-  // the 5 largest: of the companies opened in the last two thirds of the run since the last parameter change
-  const hw=DH?histWindow():{rounds:0}, t0=hw.rounds>0?E.t-hw.rounds:0;
-  let sel=[];
-  if(top)for(let i=0;i<E.N;i++)sel.push(...recs.filter(c=>c.prod===i&&c.born>=t0).sort((a,b)=>b.peak-a.peak).slice(0,5));
-  else{                                                    // the 20 largest of each product in the last TWIN rounds
-    const rw=recs.filter(c=>c.died<0||c.died>=E.t-TWIN);
-    for(let i=0;i<E.N;i++)sel.push(...rw.filter(c=>c.prod===i).sort((a,b)=>b.peak-a.peak).slice(0,TOPALL));
-  }
-  sel=sel.filter(c=>c.pts.length>=2);
-  if(!sel.length){g.fillStyle='#8391ab';g.fillText('no data yet',pl,pt+h/2);return}
-  const xOf=(c,t)=>top?t-c.born:t;
-  let xa=Infinity, xb=-Infinity, ymax=1;
-  for(const c of sel){xa=Math.min(xa,xOf(c,c.pts[0]));xb=Math.max(xb,xOf(c,c.pts[c.pts.length-2]));ymax=Math.max(ymax,c.peak)}
-  if(top)xa=0; else{xa=Math.max(xa,E.t-TWIN);xb=E.t}
-  if(xb<=xa)xb=xa+1;
-  const ylo=0, yhi=trajLog?Math.max(1,Math.ceil(Math.log10(ymax))):ymax*1.05;
-  const yv=v=>trajLog?Math.log10(Math.max(1,v)):v;
-  const X=v=>pl+(v-xa)/(xb-xa)*w, Y=v=>pt+h-(yv(v)-ylo)/(yhi-ylo)*h;
+  rows.forEach((row,j)=>row.forEach(({l,x,tw})=>{const y=(beside?4:20)*dpr+j*15*dpr;
+    g.textAlign='right'; g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,x,y); if(l.c){g.fillStyle=l.c; g.fillRect(x-tw,y+1*dpr,9*dpr,9*dpr)}}));
+  g.textAlign='left';
+  const sel=fortSelect(), t1=E.t, t0=Math.max(0,t1-AGWIN);
+  if(!sel.length||t1<1){g.fillStyle='#8391ab';g.fillText('no data yet',pl,pt+h/2);return}
+  let ymax=0, ymin=Infinity;
+  for(const c of sel)for(let k=0;k<c.pts.length;k+=3)if(c.pts[k]>=t0){const v=c.pts[k+1]; if(v>ymax)ymax=v; if(v>0&&v<ymin)ymin=v}
+  // log scale: from the decade of the smallest money shown, but not below 0.01 (after a bankruptcy an agent starts
+  // again from the wage, 0.05)
+  const FLOOR=Math.max(-2,Math.min(Math.floor(Math.log10(ymin)),Math.ceil(Math.log10(Math.max(ymax,1e-9)))-1));
+  const ylo=fortLog?FLOOR:0, yhi=fortLog?Math.max(FLOOR+1,Math.ceil(Math.log10(Math.max(ymax,1e-9)))):Math.max(1.05*ymax,1e-6);
+  const yv=v=>fortLog?Math.max(FLOOR,Math.log10(Math.max(v,1e-12))):v;
+  const X=t=>pl+(t-t0)/Math.max(1,t1-t0)*w, Y=v=>pt+h-(yv(v)-ylo)/(yhi-ylo)*h;
   // grid and axes
   g.strokeStyle='#dde3ec'; g.lineWidth=dpr; g.fillStyle='#8391ab'; g.textAlign='center'; g.textBaseline='top';
-  const xs=Math.max(1,niceNum((xb-xa)/Math.max(2,Math.min(6,Math.floor(w/(48*dpr))))));     // about 48 px between ticks
-  for(let k=Math.ceil(xa/xs)*xs;k<=xb;k+=xs){g.beginPath();g.moveTo(X(k),pt);g.lineTo(X(k),pt+h);g.stroke();g.fillText(String(Math.round(k)),X(k),pt+h+4*dpr)}
+  const xs=Math.max(1,niceNum(Math.max(1,t1-t0)/Math.max(2,Math.min(6,Math.floor(w/(48*dpr))))));     // about 48 px between ticks
+  for(let k=Math.ceil(t0/xs)*xs;k<=t1;k+=xs){g.beginPath();g.moveTo(X(k),pt);g.lineTo(X(k),pt+h);g.stroke();g.fillText(String(Math.round(k)),X(k),pt+h+4*dpr)}
   g.textAlign='right'; g.textBaseline='middle';
-  if(trajLog)for(let k=0;k<=yhi;k++){const yy=pt+h-k/yhi*h;g.beginPath();g.moveTo(pl,yy);g.lineTo(pl+w,yy);g.stroke();g.fillText(sup10(k),pl-5*dpr,yy)}
+  if(fortLog)for(let k=ylo;k<=yhi;k++){const yy=pt+h-(k-ylo)/(yhi-ylo)*h;g.beginPath();g.moveTo(pl,yy);g.lineTo(pl+w,yy);g.stroke();g.fillText(sup10(k),pl-5*dpr,yy)}
   else{const ys=niceNum(yhi/5); for(let v=0;v<=yhi;v+=ys){g.beginPath();g.moveTo(pl,Y(v));g.lineTo(pl+w,Y(v));g.stroke();g.fillText(ys>=1?String(Math.round(v)):fmt(v,1),pl-5*dpr,Y(v))}}
   g.strokeStyle='#b7bfd0'; g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h); g.stroke();
-  g.textAlign='center'; g.textBaseline='bottom';
-  g.fillText(top?'age: rounds since the factory opened':`round (the last ${TWIN})`,pl+w/2,H-2*dpr);
+  g.textAlign='center'; g.textBaseline='bottom'; g.fillText('round',pl+w/2,H-2*dpr);
   if(out){g.save();g.translate(14*dpr,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';
-    g.fillText('company size s (units sold per round)'+(trajLog?', log scale':''),0,0);g.restore()}
-  // the companies: a line each, a dot at the end if it still runs, a cross where it closed
+    g.fillText('money M of the agent'+(fortLog?', log scale':''),0,0);g.restore()}
+  // the agents: each piece of line in the colour of the product made at its end, collected per colour
   g.save(); g.beginPath(); g.rect(pl,pt-2*dpr,w+2*dpr,h+4*dpr); g.clip();
-  g.lineJoin='round'; g.lineWidth=(top?1.6:0.9)*dpr; g.globalAlpha=top?1:0.85;
+  g.lineJoin='round'; g.lineCap='round'; g.lineWidth=1.5*dpr;
+  const paths=new Map(), path=k=>{let q=paths.get(k);if(!q){q=new Path2D();paths.set(k,q)}return q};
+  const crosses=[], ends=[];
   for(const c of sel){
-    const q=c.pts; g.strokeStyle=PCOL[c.prod]; g.beginPath(); let lx=-1e9, k0=0;
-    while(k0<q.length-2&&q[k0+1]<=0)k0+=2;                 // from its first sale (the round it opened it sells nothing)
-    for(let k=k0;k<q.length;k+=2){const px=X(xOf(c,q[k])), py=Y(q[k+1]);
-      if(k===k0)g.moveTo(px,py); else if(px-lx>=0.7*dpr||k===q.length-2)g.lineTo(px,py); else continue; lx=px}
-    g.stroke();
-    const ex=X(xOf(c,q[q.length-2])), ey=Y(q[q.length-1]), m=(top?3:2)*dpr;
-    g.fillStyle=g.strokeStyle=PCOL[c.prod];
-    if(c.died<0){g.beginPath();g.arc(ex,ey,m,0,2*Math.PI);g.fill()}
-    else{g.beginPath();g.moveTo(ex-m,ey-m);g.lineTo(ex+m,ey+m);g.moveTo(ex+m,ey-m);g.lineTo(ex-m,ey+m);g.stroke()}
+    const q=c.pts; let px=null,py=null;
+    for(let k=0;k<q.length;k+=3){
+      if(q[k]<t0)continue;
+      const x=X(q[k]), y=Y(q[k+1]);
+      if(px!==null){const pa=path(q[k+2]); pa.moveTo(px,py); pa.lineTo(x,y)}
+      px=x; py=y; if(c.bank.length&&c.bank.includes(q[k]))crosses.push([x,y]);
+    }
+    if(px!==null&&AG.live.get(c.r)===c)ends.push([px,py,q[q.length-1]]);
   }
+  const col=k=>k>=0&&PCOL[k]?PCOL[k]:'#9aa3b5';
+  for(const [k,pa] of paths){g.strokeStyle=col(k); g.stroke(pa)}
+  for(const [x,y,k] of ends){g.fillStyle=col(k); g.beginPath(); g.arc(x,y,2.6*dpr,0,2*Math.PI); g.fill()}
+  g.strokeStyle='#be123c'; g.lineWidth=1.6*dpr; const m=3*dpr;
+  for(const [x,y] of crosses){g.beginPath();g.moveTo(x-m,y-m);g.lineTo(x+m,y+m);g.moveTo(x+m,y-m);g.lineTo(x-m,y+m);g.stroke()}
   g.restore();
-  // legend in the upper right corner: the products with their γ, and the end marks
   g.textAlign='right'; g.textBaseline='top'; g.font=font(11);
-  const leg=P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}`}));
-  leg.forEach((l,k)=>{const y=pt+4*dpr+k*15*dpr; g.fillStyle='#16233b'; g.fillText(l.t,pl+w-4*dpr,y);
-    const tw=g.measureText(l.t).width; g.fillStyle=l.c; g.fillRect(pl+w-tw-17*dpr,y+1*dpr,9*dpr,9*dpr)});
-  g.fillStyle='#4a5872'; g.fillText('● still running   × closed',pl+w-4*dpr,pt+4*dpr+leg.length*15*dpr);
 }
-document.querySelectorAll('#trajSeg button').forEach(b=>b.onclick=()=>{
-  trajMode=b.dataset.m; document.querySelectorAll('#trajSeg button').forEach(x=>x.classList.toggle('on',x===b)); drawDist()});
-document.querySelectorAll('#trajScale button').forEach(b=>b.onclick=()=>{
-  trajLog=b.dataset.s==='log'; document.querySelectorAll('#trajScale button').forEach(x=>x.classList.toggle('on',x===b)); drawDist()});
+document.querySelectorAll('#fortSeg button').forEach(b=>b.onclick=()=>{
+  fortMode=b.dataset.m; document.querySelectorAll('#fortSeg button').forEach(x=>x.classList.toggle('on',x===b)); drawDist()});
+document.querySelectorAll('#fortScale button').forEach(b=>b.onclick=()=>{
+  fortLog=b.dataset.s==='log'; document.querySelectorAll('#fortScale button').forEach(x=>x.classList.toggle('on',x===b)); drawDist()});
 
 // ---------- pictures of the plots: .png in the shape shown, sq in a square; both with title and axis labels ----------
 function exportPlot(which,kind,btn){
-  const src=$({chart:'chart',money:'cMoney',size:'cSize',life:'cLife',traj:'cTraj'}[which]), r=src.getBoundingClientRect();
+  const src=$({chart:'chart',money:'cMoney',size:'cSize',surv:'cSurv',fort:'cFort'}[which]), r=src.getBoundingClientRect();
   const dpr=2, W=kind==='sq'?1000:Math.round(Math.max(r.width,420)*dpr), H=kind==='sq'?1000:Math.round(Math.max(r.height+60,300)*dpr);
   const c=document.createElement('canvas'); c.width=W; c.height=H;
   const g=c.getContext('2d'); g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
   if(which==='chart')drawChart({canvas:c,dpr});
-  else if(which==='traj')trajPlot(c,{dpr});
+  else if(which==='fort')fortPlot(c,{dpr});
   else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl})}
-  savePicture(c,`globalization_${which==='chart'?$('metric').value:which==='traj'?'sizes_'+trajMode+(trajLog?'_log':''):which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
+  savePicture(c,`globalization_${which==='chart'?$('metric').value:which==='fort'?'fortunes_'+fortMode+(fortLog?'_log':''):which==='surv'?'survival':which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
 }
 document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>exportPlot(b.dataset.plot,b.dataset.k,b));
 
@@ -1994,11 +2036,6 @@ function drawChart(out){
     cctx.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;cctx.fillStyle='#4a5872';cctx.textAlign='center';cctx.textBaseline='bottom';
     cctx.fillText('round',pl+w/2,H-4*dpr);
     cctx.save();cctx.translate(14*dpr,pt+h/2);cctx.rotate(-Math.PI/2);cctx.textBaseline='middle';cctx.fillText(CHART_Y[m],0,0);cctx.restore();
-    const leg=m==='active'?[['#16233b','agents with sales'],['#c2410c','starts'],['#be123c','bankruptcies']]:
-      (m==='money'||m==='price')?[]:P.products.map((p,i)=>[PCOL[i],PNAME[i]+'   γ = '+String(p.gamma).replace('-','−')]);
-    cctx.textAlign='right';cctx.textBaseline='top';
-    leg.forEach(([c,t],k)=>{const y=pt+4*dpr+k*15*dpr;cctx.fillStyle='#16233b';cctx.fillText(t,pl+w-4*dpr,y);
-      const tw=cctx.measureText(t).width;cctx.fillStyle=c;cctx.fillRect(pl+w-tw-17*dpr,y+1*dpr,9*dpr,9*dpr)});
     cctx.fillStyle='#8391ab';cctx.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
   }
   if(!out)$('chartNote').textContent=m==='prod'?'log scale':m==='active'?'per round — black: agents with sales, orange: starts, red: bankruptcies':'';
@@ -2020,12 +2057,18 @@ function drawChart(out){
     cctx.beginPath();cctx.moveTo(pl,y);cctx.lineTo(pl+w,y);cctx.stroke()});
   cctx.strokeStyle='#b7bfd0';cctx.beginPath();cctx.moveTo(pl,pt);cctx.lineTo(pl,pt+h);cctx.lineTo(pl+w,pt+h);cctx.stroke();
   cctx.textAlign='center';cctx.textBaseline='top';
-  niceTicks(t0,t1,5).forEach(t=>{if(t>=t0&&t<=t1)cctx.fillText(String(Math.round(t)),X(t),pt+h+4*dpr)});
+  niceTicks(t0,t1,5).forEach(t=>{if(t>=t0&&t<=t1){const lab=String(Math.round(t)), hw=cctx.measureText(lab).width/2;
+    cctx.fillText(lab,Math.min(X(t),W-hw-2*dpr),pt+h+4*dpr)}});
   const step=Math.max(1,Math.floor(hist.length/(w/dpr)));
   cctx.lineWidth=1.6*dpr;cctx.lineJoin='round';
   series.forEach(s=>{cctx.strokeStyle=s.c;cctx.beginPath();
     for(let k=0;k<hist.length;k+=step){const x=X(hist[k].t),y=Y(s.v[k]);k?cctx.lineTo(x,y):cctx.moveTo(x,y)}
     cctx.stroke()});
+  if(out){                                     // the legend of the saved picture, over the lines
+    const leg=m==='active'?[['#16233b','agents with sales'],['#c2410c','starts'],['#be123c','bankruptcies']]:
+      (m==='money'||m==='price')?[]:P.products.map((p,i)=>[PCOL[i],PNAME[i]+'   γ = '+String(p.gamma).replace('-','−')]);
+    if(leg.length)legendBox(cctx,leg.map(([c,t])=>({c,t})),pl+w-4*dpr,pt+4*dpr,dpr);
+  }
 }
 function niceTicks(a,b,n){const span=b-a||1, st=Math.pow(10,Math.floor(Math.log10(span/n))), e=span/n/st, k=e>5?10:e>2?5:e>1?2:1, s=k*st;
   const out=[];for(let v=Math.ceil(a/s-1e-9)*s;v<=b+1e-9;v+=s)out.push(v);return out}
