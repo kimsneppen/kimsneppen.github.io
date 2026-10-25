@@ -134,6 +134,15 @@
   .chartbar select{padding:4px 5px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:12.5px;color:var(--ink);max-width:100%}
   .chartnote{font-size:11.5px;color:var(--muted)}
   .chartbar .lab{font-size:12px;color:var(--ink2);font-weight:600}
+  /* a small bar over each plot of the Agents section: its own controls and picture buttons */
+  .plotbar{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-height:26px;margin:0 0 3px}
+  .plotbar .plabel{font-size:12px;color:var(--ink2);font-weight:600}
+  .plotbar .win{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
+  .plotbar .win input{width:clamp(80px,20vw,150px);accent-color:var(--accent)}
+  .plotbar .win span{font-variant-numeric:tabular-nums;color:var(--muted);min-width:7.6em}
+  .tgl{height:24px;padding:0 11px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#fff;
+    font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .tgl:hover{filter:brightness(1.12)}
   /* the title of each section under the display */
   .cardhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:1px 10px;margin:0 0 7px}
   .cardhead h2{font-size:14.5px;margin:0;color:var(--ink);letter-spacing:-.005em}
@@ -419,11 +428,16 @@
         a round. After 40 rounds it can afford a bakery (2). It goes on saving until it can try a B factory (8) — but a B
         factory costs 0.16 a round in upkeep, more than three wages, and if it does not sell well the agent is soon
         bankrupt again. On the 125 × 125 town that takes from about 50 to over 1000 rounds, half the time more than 540.
-        On the right: the money of single agents, round by round — the ten that were richest in the last 300 rounds, or
-        ten agents picked at random. The colour of the line shows what the agent was making at the time; grey means no
-        factory, or one opened that very round, and a cross marks a bankruptcy. With normal patience a rich agent's money
-        climbs while it owns a big company, then drains away in grey stretches while it tries one new factory after
-        another. With patience 4 the richest keep their companies, and their money climbs steadily.</p>
+        On the right: the money of single agents, round by round. The plot follows the 10, 5 or 3 richest agents, or
+        agents picked at random. The round button over the plot switches between 10 largest, 5 largest, 10 at random and
+        5 at random; the buttons over the section let you choose freely, also 3. Each agent is drawn for its whole life:
+        from its last bankruptcy (or the start of the run) until it goes bankrupt again, where a cross marks the end. Then
+        the richest agent not yet shown (or another one picked at random) takes its place, drawn back to where its own
+        life began. The slider sets the time window: from now back in time, each step 1.5 times longer, and at its right
+        end the whole run. The colour of the line shows what the agent was making at the time; grey means no factory, or
+        one opened that very round. With normal patience a rich agent's money climbs while it owns a big company, then
+        drains away in grey stretches while it tries one new factory after another. With patience 4 the richest keep
+        their companies, and their money climbs steadily.</p>
       <p>Every plot has its own <b>.png</b> and <b>sq</b> buttons to save it as a picture.</p>
 
       <h2 id="r-try">Try this</h2>
@@ -562,17 +576,28 @@
     <div class="cardhead"><h2>Agents</h2><span class="sub">how long an agent lasts between two bankruptcies, and how single fortunes rise and fall</span></div>
     <div class="chartbar">
       <span class="lab">fortunes</span>
-      <div class="seg" id="fortSeg" title="whose money to follow: the ten agents that were richest in the last 300 rounds, or ten agents picked at random when the run started">
-        <button data-m="rich" class="on">10 richest</button><button data-m="rand">10 at random</button></div>
+      <div class="seg" id="fortSeg" title="follow the richest agents, or agents picked at random">
+        <button data-m="rich" class="on">largest</button><button data-m="rand">at random</button></div>
+      <div class="seg" id="fortNum" title="how many agents to follow">
+        <button data-n="10" class="on">10</button><button data-n="5">5</button><button data-n="3">3</button></div>
       <div class="seg" id="fortScale" title="money on a linear or a logarithmic scale">
         <button data-s="lin" class="on">lin</button><button data-s="log">log</button></div>
-      <span class="plotbtns"><span class="pl">P(τ)</span><button data-plot="surv" data-k="png" title="save the survival times as a PNG picture, with title and axis labels">.png</button><button data-plot="surv" data-k="sq" title="save the survival times in a square picture">sq</button>
-        <span class="pl">M(t)</span><button data-plot="fort" data-k="png" title="save the fortunes in time as a PNG picture, with title and axis labels">.png</button><button data-plot="fort" data-k="sq" title="save the fortunes in time in a square picture">sq</button></span>
     </div>
     <div class="chartnote" id="agNote" style="margin-bottom:4px"></div>
     <div class="distgrid">
-      <div class="chartbox dist"><canvas id="cSurv"></canvas></div>
-      <div class="chartbox dist"><canvas id="cFort"></canvas></div>
+      <div>
+        <div class="plotbar"><span class="plabel">survival between bankruptcies</span>
+          <span class="plotbtns"><button data-plot="surv" data-k="png" title="save the survival times as a PNG picture, with title and axis labels">.png</button><button data-plot="surv" data-k="sq" title="save the survival times in a square picture">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cSurv"></canvas></div>
+      </div>
+      <div>
+        <div class="plotbar">
+          <button class="tgl" id="fortTgl" title="click to switch: 10 largest → 5 largest → 10 at random → 5 at random">10 largest</button>
+          <label class="win" title="the time window: from now back in time, in steps of a factor 1.5; at the right end, the whole run">window
+            <input type="range" id="fortWin" min="0" max="0" step="1" value="0"><span id="fortWinV"></span></label>
+          <span class="plotbtns"><button data-plot="fort" data-k="png" title="save the fortunes in time as a PNG picture, with title and axis labels">.png</button><button data-plot="fort" data-k="sq" title="save the fortunes in time in a square picture">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cFort"></canvas></div>
+      </div>
     </div>
   </section>
 </div>
@@ -1773,7 +1798,7 @@ function distRecord(){
   const h=histNow(), last=DH.rec[DH.rec.length-1];
   // survival: for every agent going bankrupt this round, the rounds since its bankruptcy before (if it had one)
   const b=Float64Array.from(last.b);
-  for(const x of E.bankruptList){const tl=AG.last[x.r]; if(tl>=0){const k=binOf(LB,E.t-tl);if(k>=0&&k<b.length)b[k]++} AG.last[x.r]=E.t}
+  for(const x of E.bankruptList){const tl=AH.last[x.r]; if(tl>=0){const k=binOf(LB,E.t-tl);if(k>=0&&k<b.length)b[k]++} AH.last[x.r]=E.t}
   DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k])),b});
   if(DH.rec.length>8000)DH.rec.splice(1,1000);
 }
@@ -1784,46 +1809,79 @@ function histWindow(){         // summed over the last two thirds of the rounds 
   const a=DH.rec[lo], b=DH.rec[DH.rec.length-1];
   return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),b:b.b.map((v,k)=>v-a.b[k]),rounds:b.t-a.t};
 }
-// ---- agents: how long they last between bankruptcies, and their fortunes in time ----
-// AG.last[r]: the round of agent r's last bankruptcy (−1: none since the start of the run). Fortunes: every agent that
-// holds at least a tenth of the richest fortune, and ten times the mean, is followed from then on, with its 30 rounds
-// before filled in from a ring of everybody's money; it is let go once it has held less than a hundredth of the richest
-// (or less than the mean) for 100 rounds. Ten
-// agents picked at random when the run starts are followed all the time. Each point is [round, money, product made
-// (−1: no factory)]; only the last 300 rounds are kept.
-const AGRING=30, AGWIN=300, AGFADE=100, AGTOP=10, AGRAND=10;
-let AG=null;
-function agReset(){
-  const LL=E.L*E.L;
-  AG={last:new Int32Array(LL).fill(-1),live:new Map(),done:[],ring:[]};
-  while(AG.live.size<Math.min(AGRAND,LL)){const r=(Math.random()*LL)|0;
-    if(!AG.live.has(r))AG.live.set(r,{r,pts:[0,E.money[r],mainProduct(r)],bank:[],lastHigh:0,keep:true})}
-}
+// ---- agents: how long they last between bankruptcies, and their fortunes ----
+// Every agent's money since its last bankruptcy (or the start of the run) is kept, compressed: a point is stored only
+// when the money leaves a band of ±2 % (at least ±0.01) around the straight line from the last stored point (a "swing
+// door"), and whenever the product it makes changes — about a dozen points per agent instead of one per round.
+// Each point is [round, money, product made (−1: no factory, or one opened that round)]. AH.last[r]: the round of
+// agent r's last bankruptcy (−1: none since the start of the run).
+// The plot follows fortN agents (AH.slots): the richest, or picked at random. An agent is followed until it goes
+// bankrupt; its line then stays (AH.ended), ending in a cross, and the richest agent not yet shown (or another one
+// picked at random) takes its place, drawn back to where its own life began.
+const HREL=0.02, HABS=0.01;
+let AH=null, fortMode='rich', fortN=10, fortLog=false;
 // the product an agent makes (its biggest seller); −1: no factory, or one it opened this very round — an owner who keeps
 // trying new factories after giving up a company shows as grey, not as a new colour every round
 function mainProduct(r){if(E.started[r]===E.t)return -1;
   let b=-1,bv=-1;for(let i=0;i<E.N;i++)if(E.F[i][r]&&E.sales[i][r]>bv){bv=E.sales[i][r];b=i}return b}
+function agReset(){
+  const LL=E.L*E.L;
+  AH={last:new Int32Array(LL).fill(-1),buf:new Array(LL),n:new Int32Array(LL),
+    t0:new Float64Array(LL),v0:new Float64Array(LL),U:new Float64Array(LL),Lo:new Float64Array(LL),
+    pt:new Float64Array(LL),pv:new Float64Array(LL),pp:new Int8Array(LL),slots:[],ended:[]};
+  for(let r=0;r<LL;r++){AH.buf[r]=new Float32Array(24); hStart(r,0,E.money[r],mainProduct(r))}
+  fillSlots();
+}
+function hPush(r,t,v,p){
+  let b=AH.buf[r], n=AH.n[r];
+  if(n+3>b.length){const c=new Float32Array(2*b.length); c.set(b); AH.buf[r]=b=c}
+  b[n]=t; b[n+1]=v; b[n+2]=p; AH.n[r]=n+3;
+}
+function hStart(r,t,v,p){hPush(r,t,v,p); AH.t0[r]=t; AH.v0[r]=v; AH.U[r]=Infinity; AH.Lo[r]=-Infinity; AH.pt[r]=t; AH.pv[r]=v; AH.pp[r]=p}
+function hFlush(r){if(AH.pt[r]>AH.t0[r])hPush(r,AH.pt[r],AH.pv[r],AH.pp[r])}    // the newest point, not stored yet
+function hAdd(r,t,v,p){
+  if(p!==AH.pp[r]){hFlush(r); hStart(r,t,v,p); return}           // a new product: a new piece of line
+  const tol=Math.max(HREL*Math.abs(v),HABS); let dt=t-AH.t0[r];
+  let u=Math.min(AH.U[r],(v+tol-AH.v0[r])/dt), l=Math.max(AH.Lo[r],(v-tol-AH.v0[r])/dt);
+  if(l>u){                                // the door closes: keep the point before, and open a new door from it
+    hPush(r,AH.pt[r],AH.pv[r],AH.pp[r]); AH.t0[r]=AH.pt[r]; AH.v0[r]=AH.pv[r]; dt=t-AH.t0[r];
+    u=(v+tol-AH.v0[r])/dt; l=(v-tol-AH.v0[r])/dt;
+  }
+  AH.U[r]=u; AH.Lo[r]=l; AH.pt[r]=t; AH.pv[r]=v; AH.pp[r]=p;
+}
+// the line of agent r's present life: its stored points and the newest one
+function hLine(r){const b=AH.buf[r].subarray(0,AH.n[r]);
+  if(!(AH.pt[r]>AH.t0[r]))return b;
+  const c=new Float32Array(b.length+3); c.set(b); c[b.length]=AH.pt[r]; c[b.length+1]=AH.pv[r]; c[b.length+2]=AH.pp[r]; return c}
 function agRecord(){
-  const LL=E.L*E.L, t=E.t, M=E.money;
-  let mx=0, sum=0; for(let r=0;r<LL;r++){if(M[r]>mx)mx=M[r]; sum+=Math.max(0,M[r])}
-  const mp=new Int8Array(LL); for(let r=0;r<LL;r++)mp[r]=mainProduct(r);
-  for(const b of E.bankruptList){const rec=AG.live.get(b.r); if(rec)rec.bank.push(t)}
-  const mean=sum/LL, hi=Math.max(0.1*mx,10*mean), lo=Math.max(0.01*mx,mean);   // early on everybody has about the same
+  const LL=E.L*E.L, t=E.t, M=E.money, bk=new Uint8Array(LL);
+  for(const b of E.bankruptList)bk[b.r]=1;
   for(let r=0;r<LL;r++){
-    let rec=AG.live.get(r);
-    if(!rec){
-      if(!(mx>0&&M[r]>=hi))continue;
-      rec={r,pts:[],bank:[],lastHigh:t,keep:false}; AG.live.set(r,rec);
-      for(const e of AG.ring)rec.pts.push(e.t,e.m[r],e.p[r]);     // the rounds before it became rich
+    const v=M[r], p=mainProduct(r);
+    if(bk[r]){                            // bankrupt: the life ends here, and a new one starts from this point
+      hFlush(r); hPush(r,t,v,p);
+      const k=AH.slots.indexOf(r); if(k>=0){AH.ended.push({r,pts:AH.buf[r].slice(0,AH.n[r])}); AH.slots.splice(k,1)}
+      AH.n[r]=0; hStart(r,t,v,p); continue;
     }
-    rec.pts.push(t,M[r],mp[r]); if(M[r]>=lo)rec.lastHigh=t;
-    if(!rec.keep&&t-rec.lastHigh>AGFADE){AG.live.delete(r);AG.done.push(rec)}
+    hAdd(r,t,v,p);
   }
-  AG.ring.push({t,m:Float32Array.from(M),p:mp}); if(AG.ring.length>AGRING)AG.ring.shift();
-  if(t%50===0){                                // forget what lies before the last AGWIN rounds
-    const t0=t-AGWIN; AG.done=AG.done.filter(c=>c.pts[c.pts.length-3]>=t0).slice(-2000);
-    for(const c of [...AG.live.values(),...AG.done]){let k=0;while(k<c.pts.length-3&&c.pts[k]<t0)k+=3; if(k)c.pts.splice(0,k); c.bank=c.bank.filter(v=>v>=t0)}
+  if(AH.ended.length>400)AH.ended.splice(0,AH.ended.length-400);
+  fillSlots();
+}
+// fill the empty places: the richest agents not shown yet — only clearly rich ones, ten times the mean money, since
+// early in a run everybody has about the same — or agents picked at random
+function fillSlots(){
+  const LL=E.L*E.L, M=E.money, inS=new Set(AH.slots);
+  if(AH.slots.length>=fortN)return;
+  if(fortMode==='rand'){
+    while(AH.slots.length<Math.min(fortN,LL)){const r=(Math.random()*LL)|0; if(!inS.has(r)){AH.slots.push(r);inS.add(r)}}
+    return;
   }
+  let sum=0; for(let r=0;r<LL;r++)sum+=Math.max(0,M[r]);
+  const big=10*sum/LL, cand=[];
+  for(let r=0;r<LL;r++)if(M[r]>=big&&!inS.has(r))cand.push(r);
+  cand.sort((a,b)=>M[b]-M[a]);
+  for(const r of cand){if(AH.slots.length>=fortN)break; AH.slots.push(r)}
 }
 // a legend in the upper right corner (x = its right edge), on a white backing so the lines under it stay readable.
 // items: {t: text, c: colour of its square (none: no square), ink: colour of the text, bold}
@@ -1918,27 +1976,29 @@ function drawDist(){
   if(!E||!DH)return;
   const d=distPlots(); $('distNote').textContent=d.note;
   for(const [id,q] of [['cMoney',d.money],['cSize',d.size],['cSurv',d.surv]])logPlot($(id),q.series,q.B,q.xl,q.stitle,q.legend);
-  $('agNote').textContent=d.snote+' · fortunes: a rich agent is followed from 30 rounds before it first holds a tenth of the richest fortune';
+  $('agNote').textContent=d.snote+' · fortunes: each agent from the start of its life (its last bankruptcy, or the start of the run) until it goes bankrupt (×); then '+
+    (fortMode==='rich'?'the richest agent not yet shown':'another agent picked at random')+' takes its place';
   fortPlot($('cFort'));
 }
-// ---- fortunes in time: the money of single agents over the last AGWIN rounds, the line in the colour of the product
-// the agent makes at the time (grey: no factory), a cross where it goes bankrupt ----
-let fortMode='rich', fortLog=false;
-function fortSelect(){
-  const t0=Math.max(0,E.t-AGWIN), recs=AG?[...AG.live.values(),...AG.done]:[];
-  if(fortMode==='rand')return recs.filter(c=>c.keep);
-  const best=new Map();                    // per agent: the largest fortune it held in the window, and its records
-  for(const c of recs){const q=c.pts; let pk=0;
-    for(let k=0;k<q.length;k+=3)if(q[k]>=t0&&q[k+1]>pk)pk=q[k+1];
-    if(pk>0){const b=best.get(c.r)||{pk:0,recs:[]}; if(pk>b.pk)b.pk=pk; b.recs.push(c); best.set(c.r,b)}}
-  return [...best.values()].sort((a,b)=>b.pk-a.pk).slice(0,AGTOP).flatMap(b=>b.recs);
+// ---- fortunes in time: the followed agents and those that went bankrupt, each line in the colour of the product the
+// agent makes at the time (grey: no factory, or a new one), a cross where it went bankrupt. The time window: the last
+// W = 10·1.5^k rounds for the slider position k; its last position shows the whole run.
+const winOf=k=>Math.round(10*Math.pow(1.5,k));
+let fortWinK=0, fortWinAll=true;
+function fortWindow(){
+  const t=E.t; let K=0; while(winOf(K)<t)K++;
+  const k=fortWinAll?K:Math.min(fortWinK,K), all=k>=K;
+  return {t0:all?0:Math.max(0,t-winOf(k)),K,k,all};
 }
 function fortPlot(canvas,out){
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
   if(!out)g.clearRect(0,0,W,H);
   const font=(px,b)=>`${b?'600 ':''}${px*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`, rich=fortMode==='rich';
-  const title=out?(rich?`Money of the ${AGTOP} agents that were richest in the last ${AGWIN} rounds`:`Money of ${AGRAND} agents picked at random`)+' — round '+E.t
-    :(rich?`the ${AGTOP} richest: money in time`:`${AGRAND} at random: money in time`);
+  const wnd=fortWindow(), t1=E.t, t0=wnd.t0;
+  if(!out){const sl=$('fortWin'); sl.max=wnd.K; sl.value=wnd.k;
+    $('fortWinV').textContent=wnd.all?`all ${t1} rounds`:`last ${t1-t0} rounds`}
+  const title=out?(rich?`Money of the ${fortN} richest agents, each from its last bankruptcy on`:`Money of ${fortN} agents picked at random, each from its last bankruptcy on`)+' — round '+E.t
+    :(rich?`the ${fortN} largest fortunes`:`${fortN} agents at random`);
   // the legend in a row of its own over the plot, beside the title if there is room: the lines end at the upper right
   const leg=[...P.products.map((q,i)=>({c:PCOL[i],t:'makes '+PNAME[i]})),{c:'#9aa3b5',t:'no factory, or a new one'},{t:'× bankrupt',ink:'#be123c'}];
   g.font=font(11.5,1); const ttw=g.measureText(title).width; g.font=font(11);
@@ -1953,10 +2013,17 @@ function fortPlot(canvas,out){
   rows.forEach((row,j)=>row.forEach(({l,x,tw})=>{const y=(beside?4:20)*dpr+j*15*dpr;
     g.textAlign='right'; g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,x,y); if(l.c){g.fillStyle=l.c; g.fillRect(x-tw,y+1*dpr,9*dpr,9*dpr)}}));
   g.textAlign='left';
-  const sel=fortSelect(), t1=E.t, t0=Math.max(0,t1-AGWIN);
-  if(!sel.length||t1<1){g.fillStyle='#8391ab';g.fillText('no data yet',pl,pt+h/2);return}
+  // the lines: the agents followed now, and those that went bankrupt, as far as they reach into the window
+  const lines=[];
+  if(AH){for(const r of AH.slots)lines.push({pts:hLine(r),alive:true}); for(const e of AH.ended)lines.push({pts:e.pts,alive:false})}
+  const vis=lines.filter(l=>l.pts.length>=3&&l.pts[l.pts.length-3]>=t0);
+  if(!vis.length||t1<1){g.fillStyle='#8391ab';g.fillText(rich?'no agent is rich yet':'no data yet',pl,pt+h/2);return}
+  // where a line enters the window: its money at the first round shown, by interpolation
+  const at0=(q,k)=>q[k+1]+(q[k+4]-q[k+1])*(t0-q[k])/Math.max(1e-9,q[k+3]-q[k]);
   let ymax=0, ymin=Infinity;
-  for(const c of sel)for(let k=0;k<c.pts.length;k+=3)if(c.pts[k]>=t0){const v=c.pts[k+1]; if(v>ymax)ymax=v; if(v>0&&v<ymin)ymin=v}
+  const see=v=>{if(v>ymax)ymax=v; if(v>0&&v<ymin)ymin=v};
+  for(const l of vis){const q=l.pts; for(let k=0;k<q.length;k+=3){if(q[k]>=t0)see(q[k+1]); else if(k+3<q.length&&q[k+3]>t0)see(at0(q,k))}}
+  if(!(ymin<Infinity))ymin=1;
   // log scale: from the decade of the smallest money shown, but not below 0.01 (after a bankruptcy an agent starts
   // again from the wage, 0.05)
   const FLOOR=Math.max(-2,Math.min(Math.floor(Math.log10(ymin)),Math.ceil(Math.log10(Math.max(ymax,1e-9)))-1));
@@ -1966,7 +2033,8 @@ function fortPlot(canvas,out){
   // grid and axes
   g.strokeStyle='#dde3ec'; g.lineWidth=dpr; g.fillStyle='#8391ab'; g.textAlign='center'; g.textBaseline='top';
   const xs=Math.max(1,niceNum(Math.max(1,t1-t0)/Math.max(2,Math.min(6,Math.floor(w/(48*dpr))))));     // about 48 px between ticks
-  for(let k=Math.ceil(t0/xs)*xs;k<=t1;k+=xs){g.beginPath();g.moveTo(X(k),pt);g.lineTo(X(k),pt+h);g.stroke();g.fillText(String(Math.round(k)),X(k),pt+h+4*dpr)}
+  for(let k=Math.ceil(t0/xs)*xs;k<=t1;k+=xs){g.beginPath();g.moveTo(X(k),pt);g.lineTo(X(k),pt+h);g.stroke();
+    const lab=String(Math.round(k)), hw=g.measureText(lab).width/2; g.fillText(lab,Math.min(X(k),W-hw-2*dpr),pt+h+4*dpr)}
   g.textAlign='right'; g.textBaseline='middle';
   if(fortLog)for(let k=ylo;k<=yhi;k++){const yy=pt+h-(k-ylo)/(yhi-ylo)*h;g.beginPath();g.moveTo(pl,yy);g.lineTo(pl+w,yy);g.stroke();g.fillText(sup10(k),pl-5*dpr,yy)}
   else{const ys=niceNum(yhi/5); for(let v=0;v<=yhi;v+=ys){g.beginPath();g.moveTo(pl,Y(v));g.lineTo(pl+w,Y(v));g.stroke();g.fillText(ys>=1?String(Math.round(v)):fmt(v,1),pl-5*dpr,Y(v))}}
@@ -1974,20 +2042,21 @@ function fortPlot(canvas,out){
   g.textAlign='center'; g.textBaseline='bottom'; g.fillText('round',pl+w/2,H-2*dpr);
   if(out){g.save();g.translate(14*dpr,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';
     g.fillText('money M of the agent'+(fortLog?', log scale':''),0,0);g.restore()}
-  // the agents: each piece of line in the colour of the product made at its end, collected per colour
+  // each piece of line in the colour of the product made at its end, collected per colour
   g.save(); g.beginPath(); g.rect(pl,pt-2*dpr,w+2*dpr,h+4*dpr); g.clip();
   g.lineJoin='round'; g.lineCap='round'; g.lineWidth=1.5*dpr;
   const paths=new Map(), path=k=>{let q=paths.get(k);if(!q){q=new Path2D();paths.set(k,q)}return q};
   const crosses=[], ends=[];
-  for(const c of sel){
-    const q=c.pts; let px=null,py=null;
-    for(let k=0;k<q.length;k+=3){
-      if(q[k]<t0)continue;
+  for(const l of vis){
+    const q=l.pts; let px=null,py=null, k=0;
+    while(k+3<q.length&&q[k+3]<=t0)k+=3;
+    if(q[k]<t0&&k+3<q.length){px=X(t0);py=Y(at0(q,k));k+=3}       // enters the window from before
+    for(;k<q.length;k+=3){
       const x=X(q[k]), y=Y(q[k+1]);
       if(px!==null){const pa=path(q[k+2]); pa.moveTo(px,py); pa.lineTo(x,y)}
-      px=x; py=y; if(c.bank.length&&c.bank.includes(q[k]))crosses.push([x,y]);
+      px=x; py=y;
     }
-    if(px!==null&&AG.live.get(c.r)===c)ends.push([px,py,q[q.length-1]]);
+    (l.alive?ends:crosses).push([px,py,q[q.length-1]]);
   }
   const col=k=>k>=0&&PCOL[k]?PCOL[k]:'#9aa3b5';
   for(const [k,pa] of paths){g.strokeStyle=col(k); g.stroke(pa)}
@@ -1995,12 +2064,21 @@ function fortPlot(canvas,out){
   g.strokeStyle='#be123c'; g.lineWidth=1.6*dpr; const m=3*dpr;
   for(const [x,y] of crosses){g.beginPath();g.moveTo(x-m,y-m);g.lineTo(x+m,y+m);g.moveTo(x+m,y-m);g.lineTo(x-m,y+m);g.stroke()}
   g.restore();
-  g.textAlign='right'; g.textBaseline='top'; g.font=font(11);
 }
-document.querySelectorAll('#fortSeg button').forEach(b=>b.onclick=()=>{
-  fortMode=b.dataset.m; document.querySelectorAll('#fortSeg button').forEach(x=>x.classList.toggle('on',x===b)); drawDist()});
+// which agents to follow: a button that switches between four settings, and the detailed choice above the section
+const FSTATES=[{m:'rich',n:10},{m:'rich',n:5},{m:'rand',n:10},{m:'rand',n:5}];
+function syncFort(){
+  $('fortTgl').textContent=fortN+(fortMode==='rich'?' largest':' at random');
+  document.querySelectorAll('#fortSeg button').forEach(x=>x.classList.toggle('on',x.dataset.m===fortMode));
+  document.querySelectorAll('#fortNum button').forEach(x=>x.classList.toggle('on',+x.dataset.n===fortN));
+}
+function setFort(m,n){fortMode=m; fortN=n; syncFort(); if(AH&&E){AH.slots=[]; AH.ended=[]; fillSlots()} drawDist()}
+$('fortTgl').onclick=()=>{const k=FSTATES.findIndex(q=>q.m===fortMode&&q.n===fortN), q=FSTATES[(k+1)%FSTATES.length]; setFort(q.m,q.n)};
+document.querySelectorAll('#fortSeg button').forEach(b=>b.onclick=()=>setFort(b.dataset.m,fortN));
+document.querySelectorAll('#fortNum button').forEach(b=>b.onclick=()=>setFort(fortMode,+b.dataset.n));
 document.querySelectorAll('#fortScale button').forEach(b=>b.onclick=()=>{
   fortLog=b.dataset.s==='log'; document.querySelectorAll('#fortScale button').forEach(x=>x.classList.toggle('on',x===b)); drawDist()});
+$('fortWin').oninput=e=>{fortWinK=+e.target.value; fortWinAll=fortWinK>=+e.target.max; drawDist()};
 
 // ---------- pictures of the plots: .png in the shape shown, sq in a square; both with title and axis labels ----------
 function exportPlot(which,kind,btn){
@@ -2011,7 +2089,7 @@ function exportPlot(which,kind,btn){
   if(which==='chart')drawChart({canvas:c,dpr});
   else if(which==='fort')fortPlot(c,{dpr});
   else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl})}
-  savePicture(c,`globalization_${which==='chart'?$('metric').value:which==='fort'?'fortunes_'+fortMode+(fortLog?'_log':''):which==='surv'?'survival':which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
+  savePicture(c,`globalization_${which==='chart'?$('metric').value:which==='fort'?'fortunes_'+fortMode+fortN+(fortLog?'_log':''):which==='surv'?'survival':which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
 }
 document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>exportPlot(b.dataset.plot,b.dataset.k,b));
 
