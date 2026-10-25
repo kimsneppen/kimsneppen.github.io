@@ -147,11 +147,12 @@
   .cardhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:1px 10px;margin:0 0 7px}
   .cardhead h2{font-size:14.5px;margin:0;color:var(--ink);letter-spacing:-.005em}
   .cardhead .sub{font-size:12px;color:var(--muted)}
-  .chartbox{position:relative;width:100%;height:200px}
+  .chartbox{position:relative;width:100%;height:290px}
   .chartbox canvas{position:absolute;inset:0;width:100%;height:100%}
   .distgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
   @media (min-width:700px){ .distgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
-  .chartbox.dist{height:250px}
+  .chartbox.dist{height:380px}
+  @media (max-width:520px){ .chartbox{height:250px} .chartbox.dist{height:340px} }
   /* .png and sq buttons of each plot */
   .plotbtns{margin-left:auto;display:inline-flex;gap:4px}
   .plotbtns .pl{font-size:11.5px;color:var(--muted);align-self:center;margin-left:4px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
@@ -1883,15 +1884,57 @@ function fillSlots(){
   cand.sort((a,b)=>M[b]-M[a]);
   for(const r of cand){if(AH.slots.length>=fortN)break; AH.slots.push(r)}
 }
+// The text of the plots under the display is drawn FZ times the base size (base: 11 px numbers, 11.5 px titles).
+const FZ=2, PFONT='-apple-system,Segoe UI,Roboto,sans-serif';
+const pfont=(px,z,bold)=>`${bold?'600 ':''}${px*z}px ${PFONT}`;
+// a title: the font made smaller if needed so it fits in maxW
+function plotTitle(g,text,x,y,z,maxW){
+  let sz=11.5; g.font=pfont(sz,z,true); const tw=g.measureText(text).width;
+  if(tw>maxW){sz*=maxW/tw; g.font=pfont(sz,z,true)}
+  g.textAlign='left'; g.textBaseline='top'; g.fillStyle='#16233b'; g.fillText(text,x,y); return sz*z;
+}
+// an axis title centred at x, made smaller if needed so it fits in maxW
+function axisTitle(g,text,x,y,z,maxW){
+  let sz=11; g.font=pfont(sz,z); const tw=g.measureText(text).width;
+  if(tw>maxW){sz*=maxW/tw; g.font=pfont(sz,z)}
+  g.textAlign='center'; g.textBaseline='bottom'; g.fillText(text,x,y); g.font=pfont(11,z);
+}
+// Numbers on an axis: every tick keeps its grid line and a short mark, but only every k-th tick gets its number —
+// at least every second on a linear axis — so that the numbers have room. ticks: [value, position]; need: room a
+// number takes along the axis (px); lin: a linear axis. Returns the ticks that get numbers.
+function tickLabels(ticks,need,lin){
+  if(ticks.length<2)return ticks;
+  const gap=Math.abs(ticks[1][1]-ticks[0][1]); let k=lin?2:1; while(k*gap<need&&k<ticks.length)k++;
+  const step=ticks[1][0]-ticks[0][0], i0=((Math.round(ticks[0][0]/step)%k)+k)%k;     // numbers on multiples of k steps
+  return ticks.filter((t,i)=>((i+i0)%k)===0);
+}
+// Grid lines and a short mark at every tick, the frame, and the numbers (thinned by tickLabels). a: {xt, yt: [value,
+// position], pl, pt, w, h, z (text scale), dpr, W, fx, fy (value → text), linX, linY}
+function drawAxes(g,a){
+  const {xt,yt,pl,pt,w,h,z,dpr,W}=a, fs=11*z;
+  g.lineWidth=dpr; g.strokeStyle='#dde3ec';
+  for(const [,x] of xt){g.beginPath();g.moveTo(x,pt);g.lineTo(x,pt+h);g.stroke()}
+  for(const [,y] of yt){g.beginPath();g.moveTo(pl,y);g.lineTo(pl+w,y);g.stroke()}
+  g.strokeStyle='#9aa3b5'; g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h);
+  for(const [,x] of xt){g.moveTo(x,pt+h);g.lineTo(x,pt+h+5*dpr)}
+  for(const [,y] of yt){g.moveTo(pl,y);g.lineTo(pl-5*dpr,y)}
+  g.stroke();
+  g.font=pfont(11,z); g.fillStyle='#6b7690'; g.textAlign='center'; g.textBaseline='top';
+  const xw=Math.max(1,...xt.map(([v])=>g.measureText(a.fx(v)).width));
+  for(const [v,x] of tickLabels(xt,xw+(a.linX?2.5:1.2)*fs,a.linX)){const t=a.fx(v), hw=g.measureText(t).width/2;
+    g.fillText(t,Math.max(hw+2*dpr,Math.min(x,W-hw-2*dpr)),pt+h+6*dpr)}
+  g.textAlign='right'; g.textBaseline='middle';
+  for(const [v,y] of tickLabels(yt,2*fs,a.linY))g.fillText(a.fy(v),pl-8*dpr,y);
+}
 // a legend in the upper right corner (x = its right edge), on a white backing so the lines under it stay readable.
 // items: {t: text, c: colour of its square (none: no square), ink: colour of the text, bold}
 function legendBox(g,items,x,y,dpr){
-  const font=l=>`${l.bold?'600 ':''}${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+  const z=dpr*FZ, font=l=>pfont(11,z,l.bold);
   g.textAlign='right'; g.textBaseline='top';
-  const tw=Math.max(...items.map(l=>{g.font=font(l);return g.measureText(l.t).width+(l.c?14*dpr:0)}));
-  g.fillStyle='rgba(255,255,255,.86)'; g.fillRect(x-tw-6*dpr,y-3*dpr,tw+9*dpr,items.length*15*dpr+4*dpr);
-  items.forEach((l,k)=>{const yy=y+k*15*dpr; g.font=font(l); g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,x,yy);
-    if(l.c){const w=g.measureText(l.t).width; g.fillStyle=l.c; g.fillRect(x-w-14*dpr,yy+1*dpr,9*dpr,9*dpr)}});
+  const tw=Math.max(...items.map(l=>{g.font=font(l);return g.measureText(l.t).width+(l.c?14*z:0)}));
+  g.fillStyle='rgba(255,255,255,.86)'; g.fillRect(x-tw-6*z,y-3*z,tw+9*z,items.length*15*z+4*z);
+  items.forEach((l,k)=>{const yy=y+k*15*z; g.font=font(l); g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,x,yy);
+    if(l.c){const w=g.measureText(l.t).width; g.fillStyle=l.c; g.fillRect(x-w-14*z,yy+1*z,9*z,9*z)}});
 }
 function sup10(k){const s={'-':'⁻',0:'⁰',1:'¹',2:'²',3:'³',4:'⁴',5:'⁵',6:'⁶',7:'⁷',8:'⁸',9:'⁹'};
   return k===0?'1':k===1?'10':'10'+String(k).split('').map(c=>s[c]).join('')}
@@ -1899,8 +1942,8 @@ function sup10(k){const s={'-':'⁻',0:'⁰',1:'¹',2:'²',3:'³',4:'⁴',5:'⁵
 function logPlot(canvas,series,B,xlabel,title,legend,out){
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
   if(!out)g.clearRect(0,0,W,H);
-  const pl=(out?64:46)*dpr, pr=(out?16:10)*dpr, pt=(out?30:22)*dpr, pb=(out?44:34)*dpr, w=W-pl-pr, h=H-pt-pb;
-  g.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+  const z=dpr*FZ, pl=(out?46:30)*z, pr=12*z, pt=(out?32:25)*z, pb=(out?32:30)*z, w=W-pl-pr, h=H-pt-pb;
+  g.font=pfont(11,z);
   // density P(x) = count / (total · bin width), at the geometric bin centres
   const pts=series.map(se=>{const tot=se.h.reduce((a,b)=>a+b,0), out=[];
     se.h.forEach((c,k)=>{if(c>0){const x0=Math.pow(10,B.lo+k/B.per), x1=Math.pow(10,B.lo+(k+1)/B.per);
@@ -1909,22 +1952,17 @@ function logPlot(canvas,series,B,xlabel,title,legend,out){
       else out.push([Math.log10(Math.sqrt(x0*x1)),Math.log10(c/(tot*(x1-x0)))])}});
     return {c:se.c,p:out}});
   const all=pts.flatMap(s=>s.p);
-  g.fillStyle='#16233b'; g.textAlign='left'; g.textBaseline='top'; g.font=`600 ${11.5*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
-  g.fillText(title,pl,4*dpr); g.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+  {const tx=out?pl:4*dpr; plotTitle(g,title,tx,4*z,z,W-tx-4*dpr)} g.font=pfont(11,z);
   if(!all.length){g.fillStyle='#8391ab';g.fillText('no data yet',pl,pt+h/2);return}
   let x0=Math.floor(Math.min(...all.map(p=>p[0]))), x1=Math.ceil(Math.max(...all.map(p=>p[0])));
   let y0=Math.floor(Math.min(...all.map(p=>p[1]))), y1=Math.ceil(Math.max(...all.map(p=>p[1])));
   if(x1<=x0)x1=x0+1; if(y1<=y0)y1=y0+1;
   const X=v=>pl+(v-x0)/(x1-x0)*w, Y=v=>pt+h-(v-y0)/(y1-y0)*h;
-  g.strokeStyle='#dde3ec'; g.lineWidth=dpr; g.fillStyle='#8391ab';
-  g.textAlign='center'; g.textBaseline='top';
-  const xs=Math.max(1,Math.ceil((x1-x0)/6)), ys=Math.max(1,Math.ceil((y1-y0)/5));
-  for(let k=x0;k<=x1;k+=xs){g.beginPath();g.moveTo(X(k),pt);g.lineTo(X(k),pt+h);g.stroke();g.fillText(sup10(k),X(k),pt+h+4*dpr)}
-  g.textAlign='right'; g.textBaseline='middle';
-  for(let k=y0;k<=y1;k+=ys){g.beginPath();g.moveTo(pl,Y(k));g.lineTo(pl+w,Y(k));g.stroke();g.fillText(sup10(k),pl-5*dpr,Y(k))}
-  g.strokeStyle='#b7bfd0'; g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h); g.stroke();
-  g.textAlign='center'; g.textBaseline='bottom'; g.fillText(xlabel,pl+w/2,H-2*dpr);
-  if(out&&out.ylabel){g.save();g.translate(14*dpr,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';g.fillText(out.ylabel,0,0);g.restore()}
+  const xs=Math.max(1,Math.ceil((x1-x0)/6)), ys=Math.max(1,Math.ceil((y1-y0)/5)), xt=[], yt=[];
+  for(let k=x0;k<=x1;k+=xs)xt.push([k,X(k)]); for(let k=y0;k<=y1;k+=ys)yt.push([k,Y(k)]);
+  drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:sup10,fy:sup10,linX:false,linY:false});
+  g.fillStyle='#4a5872'; axisTitle(g,xlabel,W/2,H-2*dpr,z,W-8*dpr);
+  if(out&&out.ylabel){g.save();g.translate(8*z,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';g.fillText(out.ylabel,0,0);g.restore()}
   pts.forEach(s=>{
     g.strokeStyle=s.c; g.fillStyle=s.c; g.lineWidth=1.6*dpr; g.beginPath();
     s.p.forEach((p,k)=>k?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.stroke();
@@ -1950,7 +1988,7 @@ function logPlot(canvas,series,B,xlabel,title,legend,out){
   });
   // upper right corner: the products with their γ, then the fitted slopes
   const items=[...(legend||[]),...notes.map(nt=>({t:'- - '+nt.t,bold:true}))];
-  if(items.length)legendBox(g,items,pl+w-4*dpr,pt+4*dpr,dpr);
+  if(items.length)legendBox(g,items,pl+w-4*z,pt+4*z,dpr);
 }
 // the two distribution plots: their data and labels, for the screen and for the saved pictures
 function distPlots(){
@@ -1993,7 +2031,7 @@ function fortWindow(){
 function fortPlot(canvas,out){
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
   if(!out)g.clearRect(0,0,W,H);
-  const font=(px,b)=>`${b?'600 ':''}${px*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`, rich=fortMode==='rich';
+  const z=dpr*FZ, font=(px,b)=>pfont(px,z,b), rich=fortMode==='rich';
   const wnd=fortWindow(), t1=E.t, t0=wnd.t0;
   if(!out){const sl=$('fortWin'); sl.max=wnd.K; sl.value=wnd.k;
     $('fortWinV').textContent=wnd.all?`all ${t1} rounds`:`last ${t1-t0} rounds`}
@@ -2002,22 +2040,26 @@ function fortPlot(canvas,out){
   // the legend in a row of its own over the plot, beside the title if there is room: the lines end at the upper right
   const leg=[...P.products.map((q,i)=>({c:PCOL[i],t:'makes '+PNAME[i]})),{c:'#9aa3b5',t:'no factory, or a new one'},{t:'× bankrupt',ink:'#be123c'}];
   g.font=font(11.5,1); const ttw=g.measureText(title).width; g.font=font(11);
-  const pl=(out?64:46)*dpr, pr=(out?16:10)*dpr, iw=l=>g.measureText(l.t).width+(l.c?14*dpr:0);
-  const lw=leg.reduce((a,l)=>a+iw(l)+10*dpr,-10*dpr), beside=pl+ttw+14*dpr+lw<=W-pr;
-  const rows=[]; {const room=W-pr-(beside?pl+ttw+14*dpr:pl); let row=[], used=0;     // in reading order, each row right-aligned
-    for(const l of leg){const tw=iw(l); if(row.length&&used+10*dpr+tw>room){rows.push(row);row=[];used=0} row.push({l,tw}); used+=(row.length>1?10*dpr:0)+tw}
+  const pl=(out?46:38)*z, pr=6*z, tx=out?pl:4*dpr, iw=l=>g.measureText(l.t).width+(l.c?14*z:0);
+  // the legend in rows, in reading order, each row right-aligned
+  const layout=items=>{const lw=items.reduce((a,l)=>a+iw(l)+10*z,-10*z), beside=tx+ttw+14*z+lw<=W-pr, rows=[];
+    const room=W-pr-(beside?tx+ttw+14*z:tx); let row=[], used=0;
+    for(const l of items){const tw=iw(l); if(row.length&&used+10*z+tw>room){rows.push(row);row=[];used=0} row.push({l,tw}); used+=(row.length>1?10*z:0)+tw}
     rows.push(row);
-    for(const r of rows){let x=W-pr; for(let k=r.length-1;k>=0;k--){r[k].x=x; x-=r[k].tw+10*dpr}}}
-  const pt=(out?30:22)*dpr+(beside?0:rows.length*15*dpr), pb=(out?44:34)*dpr, w=W-pl-pr, h=H-pt-pb;
-  g.fillStyle='#16233b'; g.textAlign='left'; g.textBaseline='top'; g.font=font(11.5,1); g.fillText(title,pl,4*dpr); g.font=font(11);
-  rows.forEach((row,j)=>row.forEach(({l,x,tw})=>{const y=(beside?4:20)*dpr+j*15*dpr;
-    g.textAlign='right'; g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,x,y); if(l.c){g.fillStyle=l.c; g.fillRect(x-tw,y+1*dpr,9*dpr,9*dpr)}}));
+    for(const r of rows){let x=W-pr; for(let k=r.length-1;k>=0;k--){r[k].x=x; x-=r[k].tw+10*z}}
+    return {beside,rows}};
+  let {beside,rows}=layout(leg);
+  if(rows.length>2)({beside,rows}=layout(leg.map(l=>({...l,t:l.t==='no factory, or a new one'?'none':l.t.replace('makes ','')}))));
+  const pt=(out?32:25)*z+(beside?0:rows.length*15*z), pb=(out?32:30)*z, w=W-pl-pr, h=H-pt-pb;
+  plotTitle(g,title,tx,4*z,z,W-tx-pr); g.font=font(11);
+  rows.forEach((row,j)=>row.forEach(({l,x,tw})=>{const y=(beside?4:19)*z+j*15*z;
+    g.textAlign='right'; g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,x,y); if(l.c){g.fillStyle=l.c; g.fillRect(x-tw,y+1*z,9*z,9*z)}}));
   g.textAlign='left';
   // the lines: the agents followed now, and those that went bankrupt, as far as they reach into the window
   const lines=[];
   if(AH){for(const r of AH.slots)lines.push({pts:hLine(r),alive:true}); for(const e of AH.ended)lines.push({pts:e.pts,alive:false})}
   const vis=lines.filter(l=>l.pts.length>=3&&l.pts[l.pts.length-3]>=t0);
-  if(!vis.length||t1<1){g.fillStyle='#8391ab';g.fillText(rich?'no agent is rich yet':'no data yet',pl,pt+h/2);return}
+  if(!vis.length||t1<1){g.fillStyle='#8391ab';g.textAlign='left';g.fillText(rich?'no agent is rich yet':'no data yet',pl,pt+h/2);return}
   // where a line enters the window: its money at the first round shown, by interpolation
   const at0=(q,k)=>q[k+1]+(q[k+4]-q[k+1])*(t0-q[k])/Math.max(1e-9,q[k+3]-q[k]);
   let ymax=0, ymin=Infinity;
@@ -2030,17 +2072,14 @@ function fortPlot(canvas,out){
   const ylo=fortLog?FLOOR:0, yhi=fortLog?Math.max(FLOOR+1,Math.ceil(Math.log10(Math.max(ymax,1e-9)))):Math.max(1.05*ymax,1e-6);
   const yv=v=>fortLog?Math.max(FLOOR,Math.log10(Math.max(v,1e-12))):v;
   const X=t=>pl+(t-t0)/Math.max(1,t1-t0)*w, Y=v=>pt+h-(yv(v)-ylo)/(yhi-ylo)*h;
-  // grid and axes
-  g.strokeStyle='#dde3ec'; g.lineWidth=dpr; g.fillStyle='#8391ab'; g.textAlign='center'; g.textBaseline='top';
-  const xs=Math.max(1,niceNum(Math.max(1,t1-t0)/Math.max(2,Math.min(6,Math.floor(w/(48*dpr))))));     // about 48 px between ticks
-  for(let k=Math.ceil(t0/xs)*xs;k<=t1;k+=xs){g.beginPath();g.moveTo(X(k),pt);g.lineTo(X(k),pt+h);g.stroke();
-    const lab=String(Math.round(k)), hw=g.measureText(lab).width/2; g.fillText(lab,Math.min(X(k),W-hw-2*dpr),pt+h+4*dpr)}
-  g.textAlign='right'; g.textBaseline='middle';
-  if(fortLog)for(let k=ylo;k<=yhi;k++){const yy=pt+h-(k-ylo)/(yhi-ylo)*h;g.beginPath();g.moveTo(pl,yy);g.lineTo(pl+w,yy);g.stroke();g.fillText(sup10(k),pl-5*dpr,yy)}
-  else{const ys=niceNum(yhi/5); for(let v=0;v<=yhi;v+=ys){g.beginPath();g.moveTo(pl,Y(v));g.lineTo(pl+w,Y(v));g.stroke();g.fillText(ys>=1?String(Math.round(v)):fmt(v,1),pl-5*dpr,Y(v))}}
-  g.strokeStyle='#b7bfd0'; g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h); g.stroke();
-  g.textAlign='center'; g.textBaseline='bottom'; g.fillText('round',pl+w/2,H-2*dpr);
-  if(out){g.save();g.translate(14*dpr,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';
+  // grid and axes: ticks about every 48 px along the rounds
+  const xs=Math.max(1,niceNum(Math.max(1,t1-t0)/Math.max(4,Math.min(12,Math.floor(w/(40*dpr)))))), xt=[], yt=[];
+  for(let k=Math.ceil(t0/xs)*xs;k<=t1;k+=xs)xt.push([k,X(k)]);
+  const ys=fortLog?1:niceNum(yhi/9);
+  if(fortLog)for(let k=ylo;k<=yhi;k++)yt.push([k,pt+h-(k-ylo)/(yhi-ylo)*h]); else for(let v=0;v<=yhi;v+=ys)yt.push([v,Y(v)]);
+  drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:v=>String(Math.round(v)),fy:fortLog?sup10:v=>ys>=1?String(Math.round(v)):fmt(v,1),linX:true,linY:!fortLog});
+  g.fillStyle='#4a5872'; g.textAlign='center'; g.textBaseline='bottom'; g.fillText('round',pl+w/2,H-2*dpr);
+  if(out){g.save();g.translate(8*z,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';
     g.fillText('money M of the agent'+(fortLog?', log scale':''),0,0);g.restore()}
   // each piece of line in the colour of the product made at its end, collected per colour
   g.save(); g.beginPath(); g.rect(pl,pt-2*dpr,w+2*dpr,h+4*dpr); g.clip();
@@ -2060,8 +2099,8 @@ function fortPlot(canvas,out){
   }
   const col=k=>k>=0&&PCOL[k]?PCOL[k]:'#9aa3b5';
   for(const [k,pa] of paths){g.strokeStyle=col(k); g.stroke(pa)}
-  for(const [x,y,k] of ends){g.fillStyle=col(k); g.beginPath(); g.arc(x,y,2.6*dpr,0,2*Math.PI); g.fill()}
-  g.strokeStyle='#be123c'; g.lineWidth=1.6*dpr; const m=3*dpr;
+  for(const [x,y,k] of ends){g.fillStyle=col(k); g.beginPath(); g.arc(x,y,3*dpr,0,2*Math.PI); g.fill()}
+  g.strokeStyle='#be123c'; g.lineWidth=1.8*dpr; const m=4*dpr;
   for(const [x,y] of crosses){g.beginPath();g.moveTo(x-m,y-m);g.lineTo(x+m,y+m);g.moveTo(x+m,y-m);g.lineTo(x-m,y+m);g.stroke()}
   g.restore();
 }
@@ -2104,20 +2143,18 @@ function drawChart(out){
   const cv2=out?out.canvas:ch, cctx=cv2.getContext('2d');
   const dpr=out?out.dpr:fitCanvas(ch), W=cv2.width, H=cv2.height, m=$('metric').value, hist=E.hist, N=E.N;
   if(!out)cctx.clearRect(0,0,W,H);
-  const pl=(out?66:44)*dpr, pr=(out?16:10)*dpr, pt=(out?34:8)*dpr, pb=(out?44:20)*dpr, w=W-pl-pr, h=H-pt-pb;
-  cctx.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
-  cctx.fillStyle='#8391ab';cctx.strokeStyle='#dde3ec';cctx.lineWidth=dpr;
+  const z=dpr*FZ, pl=(out?48:40)*z, pr=(out?8:6)*z, pt=(out?24:8)*z, pb=(out?32:17)*z, w=W-pl-pr, h=H-pt-pb;
+  cctx.font=pfont(11,z); cctx.fillStyle='#8391ab'; cctx.lineWidth=dpr;
   if(out){                                     // title, axis labels and legend of the saved picture
     const opt=$('metric').selectedOptions[0].textContent;
-    cctx.fillStyle='#16233b';cctx.textAlign='left';cctx.textBaseline='top';cctx.font=`600 ${12*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
-    cctx.fillText(opt+' — Globalization in a nutshell, round '+E.t,pl,8*dpr);
-    cctx.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;cctx.fillStyle='#4a5872';cctx.textAlign='center';cctx.textBaseline='bottom';
+    plotTitle(cctx,opt+' — Globalization in a nutshell, round '+E.t,6*dpr,6*z,z,W-12*dpr);
+    cctx.font=pfont(11,z);cctx.fillStyle='#4a5872';cctx.textAlign='center';cctx.textBaseline='bottom';
     cctx.fillText('round',pl+w/2,H-4*dpr);
-    cctx.save();cctx.translate(14*dpr,pt+h/2);cctx.rotate(-Math.PI/2);cctx.textBaseline='middle';cctx.fillText(CHART_Y[m],0,0);cctx.restore();
-    cctx.fillStyle='#8391ab';cctx.font=`${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
+    cctx.save();cctx.translate(8*z,pt+h/2);cctx.rotate(-Math.PI/2);cctx.textBaseline='middle';cctx.fillText(CHART_Y[m],0,0);cctx.restore();
+    cctx.fillStyle='#8391ab';cctx.font=pfont(11,z);
   }
   if(!out)$('chartNote').textContent=m==='prod'?'log scale':m==='active'?'per round — black: agents with sales, orange: starts, red: bankruptcies':'';
-  if(hist.length<2){cctx.textBaseline='middle';cctx.fillText('Run the model to see the time series.',pl,pt+h/2);return}
+  if(hist.length<2){cctx.textAlign='left';cctx.textBaseline='middle';cctx.fillText('Run the model to see the time series.',pl,pt+h/2);return}
   const series=[];
   if(m==='active'){series.push({c:'#16233b',v:hist.map(q=>q.active)});series.push({c:'#c2410c',v:hist.map(q=>q.starts)});series.push({c:'#be123c',v:hist.map(q=>q.bankrupt)})}
   else if(m==='money'||m==='price')series.push({c:'#16233b',v:hist.map(q=>q[m])});
@@ -2129,14 +2166,9 @@ function drawChart(out){
   else{lo=Math.floor(lo);hi=Math.max(lo+1,Math.ceil(hi))}
   const t0=hist[0].t, t1=hist[hist.length-1].t;
   const X=t=>pl+(t-t0)/Math.max(1,t1-t0)*w, Y=v=>pt+h-(tz(v)-lo)/(hi-lo)*h;
-  cctx.textAlign='right';cctx.textBaseline='middle';
-  const yt=logy?Array.from({length:hi-lo+1},(_,k)=>lo+k):niceTicks(lo,hi,4);
-  yt.forEach(z=>{const y=pt+h-(z-lo)/(hi-lo)*h;cctx.fillText(logy?String(Math.round(Math.pow(10,z))):fmtTick(z),pl-5*dpr,y);
-    cctx.beginPath();cctx.moveTo(pl,y);cctx.lineTo(pl+w,y);cctx.stroke()});
-  cctx.strokeStyle='#b7bfd0';cctx.beginPath();cctx.moveTo(pl,pt);cctx.lineTo(pl,pt+h);cctx.lineTo(pl+w,pt+h);cctx.stroke();
-  cctx.textAlign='center';cctx.textBaseline='top';
-  niceTicks(t0,t1,5).forEach(t=>{if(t>=t0&&t<=t1){const lab=String(Math.round(t)), hw=cctx.measureText(lab).width/2;
-    cctx.fillText(lab,Math.min(X(t),W-hw-2*dpr),pt+h+4*dpr)}});
+  const ytv=logy?Array.from({length:hi-lo+1},(_,k)=>lo+k):niceTicks(lo,hi,8), xtv=niceTicks(t0,t1,12).filter(t=>t>=t0&&t<=t1);
+  drawAxes(cctx,{xt:xtv.map(t=>[t,X(t)]),yt:ytv.map(v=>[v,pt+h-(v-lo)/(hi-lo)*h]),pl,pt,w,h,z,dpr,W,
+    fx:t=>String(Math.round(t)),fy:v=>logy?String(Math.round(Math.pow(10,v))):fmtTick(v),linX:true,linY:!logy});
   const step=Math.max(1,Math.floor(hist.length/(w/dpr)));
   cctx.lineWidth=1.6*dpr;cctx.lineJoin='round';
   series.forEach(s=>{cctx.strokeStyle=s.c;cctx.beginPath();
@@ -2145,7 +2177,7 @@ function drawChart(out){
   if(out){                                     // the legend of the saved picture, over the lines
     const leg=m==='active'?[['#16233b','agents with sales'],['#c2410c','starts'],['#be123c','bankruptcies']]:
       (m==='money'||m==='price')?[]:P.products.map((p,i)=>[PCOL[i],PNAME[i]+'   γ = '+String(p.gamma).replace('-','−')]);
-    if(leg.length)legendBox(cctx,leg.map(([c,t])=>({c,t})),pl+w-4*dpr,pt+4*dpr,dpr);
+    if(leg.length)legendBox(cctx,leg.map(([c,t])=>({c,t})),pl+w-4*z,pt+4*z,dpr);
   }
 }
 function niceTicks(a,b,n){const span=b-a||1, st=Math.pow(10,Math.floor(Math.log10(span/n))), e=span/n/st, k=e>5?10:e>2?5:e>1?2:1, s=k*st;
