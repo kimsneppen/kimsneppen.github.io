@@ -411,7 +411,8 @@
         Drag to turn and tilt, use the mouse wheel to zoom, or open the <i>view</i> menu. <i>lin / log</i> switches the
         towers to a logarithmic scale, so that small factories show up too.</p>
       <p><b>Agents</b>: every seller is a small pie, its area the units sold, a slice per product. <b>Market</b>: for one
-        product, everybody is coloured like the factory they buy from. <b>Sales</b> and <b>Money</b>: heat maps. Hover
+        product, everybody is coloured like the factory they buy from. <b>Sales</b> and <b>Money</b>: heat maps. When there are borders, the Money map also shows the mean money in each
+        region they cut out, so you can compare the countries. Hover
         over or tap an agent to read its numbers.</p>
       <p>The buttons in the lower right corner:</p>
       <ul>
@@ -1346,6 +1347,64 @@ function drawDomains(at,dpr){
   }
   ctx.restore();
 }
+// ---- regions cut out by the borders: the lattice is split where a step between two neighbouring agents crosses a
+// border (in either direction), and the pieces are found by flood fill. Each region gets a place for its label: the
+// agent farthest from the region's edge. Recomputed only when the borders, the size or the boundaries change ----
+let REG=null;
+function regions(){
+  const L=E.L, LL=L*L, key=JSON.stringify([L,P.bc,P.borders.map(b=>b.pts)]);
+  if(REG&&REG.key===key)return REG;
+  const cl=P.bc==='closed', blockR=new Uint8Array(LL), blockD=new Uint8Array(LL);   // the step to the right / down is cut
+  // do the segments a–b and c–d meet? (touching counts, so that no step slips through a corner of a border)
+  const cross=(ax,ay,bx,by,cx,cy,dx,dy)=>{const o=(px,py,qx,qy,rx,ry)=>(qx-px)*(ry-py)-(qy-py)*(rx-px);
+    return o(cx,cy,dx,dy,ax,ay)*o(cx,cy,dx,dy,bx,by)<=0&&o(ax,ay,bx,by,cx,cy)*o(ax,ay,bx,by,dx,dy)<=0};
+  const shifts=cl?[[0,0]]:[[0,0],[L,0],[-L,0],[0,L],[0,-L]];
+  for(const bd of P.borders)for(const [sx,sy] of shifts)for(let j=1;j<bd.pts.length;j++){
+    const x0=bd.pts[j-1][0]+sx, y0=bd.pts[j-1][1]+sy, x1=bd.pts[j][0]+sx, y1=bd.pts[j][1]+sy;
+    for(let y=Math.max(0,Math.floor(Math.min(y0,y1))-2);y<=Math.min(L-1,Math.ceil(Math.max(y0,y1))+1);y++)
+      for(let x=Math.max(0,Math.floor(Math.min(x0,x1))-2);x<=Math.min(L-1,Math.ceil(Math.max(x0,x1))+1);x++){
+        const ax=x+0.5, ay=y+0.5;
+        if(cross(ax,ay,ax+1,ay,x0,y0,x1,y1))blockR[y*L+x]=1;
+        if(cross(ax,ay,ax,ay+1,x0,y0,x1,y1))blockD[y*L+x]=1;
+      }
+  }
+  // the neighbours of r that can be reached without crossing a border
+  const nbrs=(r,f)=>{const x=r%L, y=(r/L)|0;
+    if(x<L-1||!cl){if(!blockR[r])f(y*L+(x+1)%L)}
+    if(x>0||!cl){const l=y*L+(x+L-1)%L; if(!blockR[l])f(l)}
+    if(y<L-1||!cl){if(!blockD[r])f(((y+1)%L)*L+x)}
+    if(y>0||!cl){const u=((y+L-1)%L)*L+x; if(!blockD[u])f(u)}};
+  const id=new Int32Array(LL).fill(-1), q=new Int32Array(LL); let n=0;
+  for(let r0=0;r0<LL;r0++){if(id[r0]>=0)continue;
+    let h=0,t=0; q[t++]=r0; id[r0]=n;
+    while(h<t){const r=q[h++]; nbrs(r,w=>{if(id[w]<0){id[w]=n;q[t++]=w}})}
+    n++}
+  // distance of every agent from its region's edge (or the lattice edge), by a search from the edge agents inward
+  const dist=new Int32Array(LL).fill(-1); let h=0,t=0;
+  for(let r=0;r<LL;r++){const x=r%L, y=(r/L)|0; let edge=cl&&(x===0||y===0||x===L-1||y===L-1), k=0;
+    nbrs(r,()=>k++); if(k<(cl?(x>0)+(x<L-1)+(y>0)+(y<L-1):4))edge=true;
+    if(edge){dist[r]=0;q[t++]=r}}
+  while(h<t){const r=q[h++]; nbrs(r,w=>{if(dist[w]<0){dist[w]=dist[r]+1;q[t++]=w}})}
+  // among the agents nearly as deep as the deepest, the one farthest to the upper right: the tool bar covers the upper left
+  const at=new Int32Array(n).fill(-1), size=new Int32Array(n), dmax=new Int32Array(n);
+  for(let r=0;r<LL;r++){const k=id[r]; size[k]++; if(dist[r]>dmax[k])dmax[k]=dist[r]}
+  const score=r=>(r%L)-((r/L)|0);
+  for(let r=0;r<LL;r++){const k=id[r]; if(dist[r]>=0.9*dmax[k]&&(at[k]<0||score(r)>score(at[k])))at[k]=r}
+  REG={key,id,n,at,size};
+  return REG;
+}
+// the mean money of each region, written on the map of the money (only regions of at least 0.3 % of the agents)
+function drawRegionMeans(cx,cy,side,dpr){
+  const R=regions(), LL=E.L*E.L, sum=new Float64Array(R.n);
+  for(let r=0;r<LL;r++)sum[R.id[r]]+=E.money[r];
+  const fs=Math.round(Math.max(12,Math.min(20,side/dpr/36)))*dpr;
+  ctx.font=`700 ${fs}px -apple-system,Segoe UI,Roboto,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.lineJoin='round'; ctx.lineWidth=Math.max(3,0.28*fs);
+  for(let k=0;k<R.n;k++){if(R.size[k]<Math.max(4,0.003*LL))continue;
+    const r=R.at[k], t='mean '+fmt(sum[k]/R.size[k]);
+    ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.strokeText(t,cx(r),cy(r)); ctx.fillStyle='#ffffff'; ctx.fillText(t,cx(r),cy(r))}
+  return R;
+}
 function drawNet(at,cell,dpr){
   const line=(pts,col,w,dash)=>{ctx.setLineDash(dash||[]);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineJoin='round';ctx.beginPath();
     pts.forEach((p,k)=>{const q=at(p[0],p[1]);k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});ctx.stroke();ctx.setLineDash([])};
@@ -1753,6 +1812,8 @@ function draw(){
   }
   drawNet((x,y)=>[x0+x*cell,y0+y*cell],cell,dpr);       // roads and borders
   drawDomains((x,y)=>[x0+x*cell,y0+y*cell],dpr);        // market domains
+  if(view==='money'&&P.borders.length){const R=drawRegionMeans(cx,cy,side,dpr);    // mean money of each region
+    legend+=`<span>numbers: the mean money in each of the ${R.n>1?R.n+' regions':'region'} the borders cut out</span>`}
   if(hoverR>=0&&hoverR<LL){
     ctx.strokeStyle=view==='money'||view==='sales'||dark?'#fff':'#16233b';ctx.lineWidth=2*dpr;
     ctx.strokeRect(x0+(hoverR%L)*cell,y0+((hoverR/L)|0)*cell,cell,cell);
