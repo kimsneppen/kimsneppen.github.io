@@ -271,7 +271,7 @@
         a handful of factories far away? This applet is a toy world for thinking about that question. It is the model of
         Sneppen and Bornholdt [1], drawn on a flat map and extended from one product to many.</p>
       <nav class="toc">
-        <a data-to="r-town">The town</a><a data-to="r-cost">Prices</a><a data-to="r-round">One round</a><a data-to="r-patience">Patience</a><a data-to="r-money">Money</a><a data-to="r-econ">Economies</a><a data-to="r-geo">Roads and borders</a><a data-to="r-look">What to look for</a><a data-to="r-pics">The picture</a><a data-to="r-plots">The plots</a><a data-to="r-try">Try this</a>
+        <a data-to="r-town">The town</a><a data-to="r-cost">Prices</a><a data-to="r-round">One round</a><a data-to="r-patience">Patience</a><a data-to="r-money">Money</a><a data-to="r-econ">Economies</a><a data-to="r-geo">Roads and borders</a><a data-to="r-look">What to look for</a><a data-to="r-pics">The picture</a><a data-to="r-plots">The plots</a><a data-to="r-try">Try this</a><a data-to="r-lit">Related models</a>
       </nav>
 
       <h2 id="r-town">The town</h2>
@@ -422,13 +422,17 @@
         share of the biggest company, how far goods travel, the start-ups and bankruptcies, the money, the price.</p>
       <p><b>Distributions</b>: how the money is spread over the agents, P(M), and how big the companies are, P(s). Both
         axes are logarithmic: each step along an axis multiplies by 10. On such a plot a power law, P ∝ x<sup>−a</sup>,
-        is a straight line, and the dashed lines are such fits. You can see the present round, or everything since you
+        is a straight line, and the dashed lines are such fits. In P(M) the dotted lines mark the mean money (orange) and the
+        typical money, the median (blue): half of the agents have less. The tail is fitted from five times the mean to a
+        fifth of the largest fortune, away from both the crowd of ordinary agents and the few richest; it gives a slope of
+        about −1.2 to −1.35 (125 × 125 town, three runs each with n = 0.2 and n = 5). You can see the present round, or everything since you
         last changed a setting (its first third left out, so the town has time to settle).</p>
       <p><b>Agents</b>, on the left: P(τ), how many rounds an agent lasts between two bankruptcies. Most bankruptcies are
         failed B factories, at the end of a cycle like this one. Right after a bankruptcy an agent has only its wage, 0.05
         a round. After 40 rounds it can afford a bakery (2). It goes on saving until it can try a B factory (8) — but a B
         factory costs 0.16 a round in upkeep, more than three wages, and if it does not sell well the agent is soon
         bankrupt again. On the 125 × 125 town that takes from about 50 to over 1000 rounds, half the time more than 540.
+        The <i>decades</i> slider over this plot shows fewer decades of the y axis, to look closely at the common times.
         On the right: the money of single agents, round by round. The plot follows the 10, 5 or 3 richest agents, or
         agents picked at random. The round button over the plot switches between 10 largest, 5 largest, 10 at random and
         5 at random; the buttons over the section let you choose freely, also 3. Each agent is drawn for its whole life:
@@ -452,9 +456,60 @@
         <li>Draw a road across the town and see which products grow along it.</li>
         <li>Switch the economy to <b>buyers pay</b> and compare the money columns.</li>
       </ul>
+      <h2 id="r-lit">Related models</h2>
+      <p>The model sits where economics and physics meet, and older models share parts of it.</p>
+      <p><b>Shops on a map.</b> Hotelling [2] was the first to put sellers on a map: customers along a street buy from the
+        shop whose price plus walking cost is lowest. The rule here, C = s<sup>γ</sup> + β·d, is the same idea, in two
+        dimensions and with a price that falls as the factory grows.</p>
+      <p><b>Economic geography.</b> In Krugman's model [3] economies of scale and transport costs decide whether industry
+        spreads out or gathers in one region, and when transport gets cheap enough, manufacturing concentrates. The town
+        here reaches the same conclusion, but from simple agents that only react to their own profits, without the
+        equilibrium and foresight of the economic models — and it shows the order: the products with the strongest
+        economy of scale and the cheapest transport go global first.</p>
+      <p><b>Lock-in.</b> Arthur [4] showed that with increasing returns, small chance events decide which technology wins,
+        and the winner is then hard to dislodge. A chip giant here is such a lock-in in space: inside its reach R no
+        newcomer can win a customer. The original model [1] also finds that new companies tend to reappear close to old
+        ones: history matters.</p>
+      <p><b>Trade networks.</b> The closest recent model we found is by Han, Schröder, Witthaut and Böttcher [5]: agents
+        choose whom to trade with, with economies of scale, transport costs and different tastes. They find three regimes —
+        centralized production with a star-shaped trade network, distributed production where everybody trades with
+        everybody, and local production without trade — much like the chips, the ordinary industry and the bread here.</p>
+      <p><b>Avalanches.</b> Bak, Chen, Scheinkman and Woodford [6] showed that producers who interact locally, with
+        economies of scale, can turn small independent shocks into large swings of the whole economy (self-organized
+        criticality). The steady churn of start-ups, giants and crashes here is of the same kind.</p>
+      <p><b>Money.</b> When money is only passed around, never created or destroyed, it spreads like energy in a gas, with
+        an exponential distribution, as Dragulescu and Yakovenko showed [7]. When wealth also grows by risky investments,
+        the rich form a power-law (Pareto) tail, as in the model of Bouchaud and Mézard [8]. In this town money is created
+        (wages and sales) and destroyed (start costs and upkeep), and P(M) has a power-law tail, falling as about
+        M<sup>−1.2</sup> to M<sup>−1.35</sup> per unit of money. Real wealth tails are usually steeper.</p>
+      <p><b>Company sizes.</b> Axtell found [9] that the sizes of US companies follow Zipf's law: the number of companies
+        bigger than s falls as 1/s, so the density falls as s<sup>−2</sup>. The bread companies here come close: their
+        fitted slope is about −2 (−1.9 to −2.2 in our runs). Stanley and co-workers [10] found that big companies grow and
+        shrink less, in proportion, than small ones; one could test that in this town too.</p>
+      <p>In a short search of the literature we found no other model that puts these pieces together — many products,
+        each with its own economy of scale and transport cost, on a map, with prices that set themselves — beyond the
+        one-product original [1].</p>
       <div class="refs">
         <p>[1] K. Sneppen and S. Bornholdt, <i>Globalization in a nutshell</i>, Phys. Rev. E <b>98</b>, 042314 (2018).
           <a href="https://doi.org/10.1103/PhysRevE.98.042314" target="_blank" rel="noopener">doi:10.1103/PhysRevE.98.042314</a></p>
+        <p>[2] H. Hotelling, <i>Stability in competition</i>, Economic Journal <b>39</b>, 41–57 (1929).</p>
+        <p>[3] P. Krugman, <i>Increasing returns and economic geography</i>, Journal of Political Economy <b>99</b>, 483–499 (1991).
+          <a href="https://doi.org/10.1086/261763" target="_blank" rel="noopener">doi:10.1086/261763</a></p>
+        <p>[4] W. B. Arthur, <i>Competing technologies, increasing returns, and lock-in by historical events</i>, Economic Journal
+          <b>99</b>, 116–131 (1989).</p>
+        <p>[5] C. Han, M. Schröder, D. Witthaut and P. C. Böttcher, <i>Formation of trade networks by economies of scale and product
+          differentiation</i>, J. Phys. Complexity <b>4</b>, 025006 (2023).
+          <a href="https://doi.org/10.1088/2632-072X/acc91f" target="_blank" rel="noopener">doi:10.1088/2632-072X/acc91f</a></p>
+        <p>[6] P. Bak, K. Chen, J. Scheinkman and M. Woodford, <i>Aggregate fluctuations from independent sectoral shocks:
+          self-organized criticality in a model of production and inventory dynamics</i>, Ricerche Economiche <b>47</b>, 3–30 (1993).</p>
+        <p>[7] A. Dragulescu and V. M. Yakovenko, <i>Statistical mechanics of money</i>, Eur. Phys. J. B <b>17</b>, 723 (2000).
+          <a href="https://doi.org/10.1007/s100510070114" target="_blank" rel="noopener">doi:10.1007/s100510070114</a></p>
+        <p>[8] J.-P. Bouchaud and M. Mézard, <i>Wealth condensation in a simple model of economy</i>, Physica A <b>282</b>, 536–545 (2000).
+          <a href="https://doi.org/10.1016/S0378-4371(00)00205-3" target="_blank" rel="noopener">doi:10.1016/S0378-4371(00)00205-3</a></p>
+        <p>[9] R. L. Axtell, <i>Zipf distribution of U.S. firm sizes</i>, Science <b>293</b>, 1818–1820 (2001).
+          <a href="https://doi.org/10.1126/science.1062081" target="_blank" rel="noopener">doi:10.1126/science.1062081</a></p>
+        <p>[10] M. H. R. Stanley, L. A. N. Amaral, S. V. Buldyrev, S. Havlin, H. Leschhorn, P. Maass, M. A. Salinger and
+          H. E. Stanley, <i>Scaling behaviour in the growth of companies</i>, Nature <b>379</b>, 804–806 (1996).</p>
       </div>
     </div>
   </details>
@@ -587,7 +642,9 @@
     <div class="chartnote" id="agNote" style="margin-bottom:4px"></div>
     <div class="distgrid">
       <div>
-        <div class="plotbar"><span class="plabel">survival between bankruptcies</span>
+        <div class="plotbar"><span class="plabel">survival</span>
+          <label class="win" title="how many decades of the y axis to show: fewer cuts off the lowest ones">decades
+            <input type="range" id="survDec" min="1" max="6" step="1" value="6"><span id="survDecV">all</span></label>
           <span class="plotbtns"><button data-plot="surv" data-k="png" title="save the survival times as a PNG picture, with title and axis labels">.png</button><button data-plot="surv" data-k="sq" title="save the survival times in a square picture">sq</button></span></div>
         <div class="chartbox dist"><canvas id="cSurv"></canvas></div>
       </div>
@@ -1791,16 +1848,18 @@ function distReset(){agReset(); DH={t0:0,rec:[{t:0,m:new Float64Array(nb(MB)),s:
 function distMark(){if(E&&DH)DH.t0=E.t}
 function histNow(){
   const LL=E.L*E.L, m=new Float64Array(nb(MB)), s=P.products.map(()=>new Float64Array(nb(SB)));
-  for(let r=0;r<LL;r++){const v=E.money[r];if(v>0){const k=binOf(MB,v);if(k>=0&&k<m.length)m[k]++}}
+  let msum=0, mmax=0;
+  for(let r=0;r<LL;r++){const v=E.money[r]; msum+=v; if(v>mmax)mmax=v; if(v>0){const k=binOf(MB,v);if(k>=0&&k<m.length)m[k]++}}
   for(let i=0;i<E.N;i++){const S=E.sales[i],h=s[i];for(let r=0;r<LL;r++)if(S[r]>0){const k=binOf(SB,S[r]);if(k>=0&&k<h.length)h[k]++}}
-  return {m,s};
+  return {m,s,msum,mcnt:LL,mmax};
 }
 function distRecord(){
   const h=histNow(), last=DH.rec[DH.rec.length-1];
   // survival: for every agent going bankrupt this round, the rounds since its bankruptcy before (if it had one)
   const b=Float64Array.from(last.b);
   for(const x of E.bankruptList){const tl=AH.last[x.r]; if(tl>=0){const k=binOf(LB,E.t-tl);if(k>=0&&k<b.length)b[k]++} AH.last[x.r]=E.t}
-  DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k])),b});
+  DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k])),b,
+    msum:(last.msum||0)+h.msum,mcnt:(last.mcnt||0)+h.mcnt,mmax:h.mmax});     // running sums; the largest money of the round
   if(DH.rec.length>8000)DH.rec.splice(1,1000);
 }
 function histWindow(){         // summed over the last two thirds of the rounds since the last change of a parameter
@@ -1808,7 +1867,9 @@ function histWindow(){         // summed over the last two thirds of the rounds 
   let lo=0,hi=DH.rec.length-1;               // last record with t <= ta
   while(lo<hi){const mid=(lo+hi+1)>>1;if(DH.rec[mid].t<=ta)lo=mid;else hi=mid-1}
   const a=DH.rec[lo], b=DH.rec[DH.rec.length-1];
-  return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),b:b.b.map((v,k)=>v-a.b[k]),rounds:b.t-a.t};
+  let mmax=0; for(let k=lo+1;k<DH.rec.length;k++)if(DH.rec[k].mmax>mmax)mmax=DH.rec[k].mmax;
+  return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),b:b.b.map((v,k)=>v-a.b[k]),rounds:b.t-a.t,
+    msum:(b.msum||0)-(a.msum||0),mcnt:(b.mcnt||0)-(a.mcnt||0),mmax};
 }
 // ---- agents: how long they last between bankruptcies, and their fortunes ----
 // Every agent's money since its last bankruptcy (or the start of the run) is kept, compressed: a point is stored only
@@ -1928,10 +1989,12 @@ function drawAxes(g,a){
 }
 // a legend in the upper right corner (x = its right edge), on a white backing so the lines under it stay readable.
 // items: {t: text, c: colour of its square (none: no square), ink: colour of the text, bold}
-function legendBox(g,items,x,y,dpr){
-  const z=dpr*FZ, font=l=>pfont(11,z,l.bold);
+// left: x is the left edge of the box instead of the right edge of the text; sc: a smaller legend on narrow plots
+function legendBox(g,items,x,y,dpr,left,sc){
+  const z=dpr*FZ*(sc||1), font=l=>pfont(11,z,l.bold);
   g.textAlign='right'; g.textBaseline='top';
   const tw=Math.max(...items.map(l=>{g.font=font(l);return g.measureText(l.t).width+(l.c?14*z:0)}));
+  if(left)x+=tw+6*z;
   g.fillStyle='rgba(255,255,255,.86)'; g.fillRect(x-tw-6*z,y-3*z,tw+9*z,items.length*15*z+4*z);
   items.forEach((l,k)=>{const yy=y+k*15*z; g.font=font(l); g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,x,yy);
     if(l.c){const w=g.measureText(l.t).width; g.fillStyle=l.c; g.fillRect(x-w-14*z,yy+1*z,9*z,9*z)}});
@@ -1939,7 +2002,10 @@ function legendBox(g,items,x,y,dpr){
 function sup10(k){const s={'-':'⁻',0:'⁰',1:'¹',2:'²',3:'³',4:'⁴',5:'⁵',6:'⁶',7:'⁷',8:'⁸',9:'⁹'};
   return k===0?'1':k===1?'10':'10'+String(k).split('').map(c=>s[c]).join('')}
 // out (for a saved picture): {dpr, ylabel} — the canvas is already sized; wider margins and a y-axis label
-function logPlot(canvas,series,B,xlabel,title,legend,out){
+// opt: {marks: [{x, c}] dashed vertical lines, ydec: show only this many decades of the y axis (from the top; 0: all)}.
+// Returns the number of decades the y axis needs for all the points.
+function logPlot(canvas,series,B,xlabel,title,legend,out,opt){
+  opt=opt||{};
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
   if(!out)g.clearRect(0,0,W,H);
   const z=dpr*FZ, pl=(out?46:30)*z, pr=12*z, pt=(out?32:25)*z, pb=(out?32:30)*z, w=W-pl-pr, h=H-pt-pb;
@@ -1953,16 +2019,21 @@ function logPlot(canvas,series,B,xlabel,title,legend,out){
     return {c:se.c,p:out}});
   const all=pts.flatMap(s=>s.p);
   {const tx=out?pl:4*dpr; plotTitle(g,title,tx,4*z,z,W-tx-4*dpr)} g.font=pfont(11,z);
-  if(!all.length){g.fillStyle='#8391ab';g.fillText('no data yet',pl,pt+h/2);return}
+  if(!all.length){g.fillStyle='#8391ab';g.textAlign='left';g.fillText('no data yet',pl,pt+h/2);return 0}
   let x0=Math.floor(Math.min(...all.map(p=>p[0]))), x1=Math.ceil(Math.max(...all.map(p=>p[0])));
   let y0=Math.floor(Math.min(...all.map(p=>p[1]))), y1=Math.ceil(Math.max(...all.map(p=>p[1])));
   if(x1<=x0)x1=x0+1; if(y1<=y0)y1=y0+1;
+  const decAll=y1-y0; if(opt.ydec>0&&opt.ydec<decAll)y0=y1-opt.ydec;          // fewer decades: the lowest are cut off
   const X=v=>pl+(v-x0)/(x1-x0)*w, Y=v=>pt+h-(v-y0)/(y1-y0)*h;
   const xs=Math.max(1,Math.ceil((x1-x0)/6)), ys=Math.max(1,Math.ceil((y1-y0)/5)), xt=[], yt=[];
   for(let k=x0;k<=x1;k+=xs)xt.push([k,X(k)]); for(let k=y0;k<=y1;k+=ys)yt.push([k,Y(k)]);
   drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:sup10,fy:sup10,linX:false,linY:false});
   g.fillStyle='#4a5872'; axisTitle(g,xlabel,W/2,H-2*dpr,z,W-8*dpr);
   if(out&&out.ylabel){g.save();g.translate(8*z,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';g.fillText(out.ylabel,0,0);g.restore()}
+  g.save(); g.beginPath(); g.rect(pl,pt-4*dpr,w+4*dpr,h+8*dpr); g.clip();     // curves and fits inside the frame
+  for(const mk of opt.marks||[])if(mk.x>0){const lx=Math.log10(mk.x); if(lx<x0||lx>x1)continue;
+    g.save(); g.setLineDash([3*dpr,4*dpr]); g.strokeStyle=mk.c; g.lineWidth=2*dpr;
+    g.beginPath(); g.moveTo(X(lx),pt); g.lineTo(X(lx),pt+h); g.stroke(); g.restore()}
   pts.forEach(s=>{
     g.strokeStyle=s.c; g.fillStyle=s.c; g.lineWidth=1.6*dpr; g.beginPath();
     s.p.forEach((p,k)=>k?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.stroke();
@@ -1971,13 +2042,16 @@ function logPlot(canvas,series,B,xlabel,title,legend,out){
   // power-law fits: a straight line in log–log, least squares over a range of the points.
   //   'tail': from where the distribution has fallen below a tenth of its peak to two bins before the last one
   //   'body': from the peak to one bin before the last one
+  //   {lo, hi}: the points between these two values of log10 x (at least three of them)
   const notes=[];
   pts.forEach((s0,j)=>{
-    const mode=series[j].fit, p=s0.p; if(!mode||p.length<3)return;
+    let mode=series[j].fit, p=s0.p; if(!mode||p.length<3)return;
     let im=0; p.forEach((q,k)=>{if(q[1]>p[im][1])im=k});
     let a=im, b=p.length-1;
+    if(typeof mode==='object'){a=p.findIndex(q=>q[0]>=mode.lo); b=p.length-1; while(b>=0&&p[b][0]>mode.hi)b--;
+      if(a<0||b-a+1<3)mode='tail'}                // too few points in the range: the old rule
     if(mode==='tail'){a=p.findIndex((q,k)=>k>im&&q[1]<p[im][1]-1); b=p.length-3}
-    else b=p.length-2;
+    else if(mode==='body')b=p.length-2;
     if(a<0||b-a+1<3)return;
     const seg=p.slice(a,b+1), n=seg.length, mx=seg.reduce((u,q)=>u+q[0],0)/n, my=seg.reduce((u,q)=>u+q[1],0)/n;
     const sl=seg.reduce((u,q)=>u+(q[0]-mx)*(q[1]-my),0)/seg.reduce((u,q)=>u+(q[0]-mx)**2,0), ic=my-sl*mx;
@@ -1986,15 +2060,26 @@ function logPlot(canvas,series,B,xlabel,title,legend,out){
     g.beginPath(); g.moveTo(X(xa),Y(ic+sl*xa)); g.lineTo(X(xb),Y(ic+sl*xb)); g.stroke(); g.restore();
     notes.push({c:s0.c,t:`${series[j].fitLabel||''}slope ${sl.toFixed(2).replace('-','−')}`});
   });
+  g.restore();
   // upper right corner: the products with their γ, then the fitted slopes
-  const items=[...(legend||[]),...notes.map(nt=>({t:'- - '+nt.t,bold:true}))];
-  if(items.length)legendBox(g,items,pl+w-4*z,pt+4*z,dpr);
+  // on a narrow plot the legend is smaller, with the short texts (ts) where there are any
+  const narrow=w<520*dpr, sc=narrow?0.8:1;
+  const items=[...(legend||[]),...notes.map(nt=>({t:'- - '+nt.t,bold:true}))].map(l=>narrow&&l.ts?{...l,t:l.ts}:l);
+  if(items.length){if(opt.legendBL)legendBox(g,items,pl+4*z,pt+h-items.length*15*z*sc-4*z,dpr,true,sc);   // lower left corner
+    else legendBox(g,items,pl+w-4*z,pt+4*z,dpr,false,sc)}
+  return decAll;
 }
 // the two distribution plots: their data and labels, for the screen and for the saved pictures
 function distPlots(){
   let d=histNow(), note='now (round '+E.t+')';
   if(distMode==='avg'){const w=histWindow(); if(w.rounds>0){d=w; note=`summed over rounds ${E.t-w.rounds+1}–${E.t} (last ⅔ since the last parameter change at round ${DH.t0})`}
     else note='no rounds since the last parameter change yet: showing now'}
+  // money: the mean, the typical money (the median, from the histogram; agents with no money count as below it), and
+  // the tail fitted from five times the mean to a fifth of the largest money
+  const mMean=d.mcnt>0?d.msum/d.mcnt:0, mMax=d.mmax||0, mTot=d.m.reduce((a,b)=>a+b,0);
+  let mMed=0; {let need=d.mcnt/2-(d.mcnt-mTot);
+    if(need>0)for(let k=0;k<d.m.length;k++){if(need<=d.m[k]){mMed=Math.pow(10,MB.lo+(k+need/d.m[k])/MB.per);break} need-=d.m[k]}}
+  const fitM=mMean>0&&mMax>25*mMean?{lo:Math.log10(5*mMean),hi:Math.log10(mMax/5)}:'tail';
   // the fit of the company sizes: the product whose companies are smallest on average
   const mean=h=>{let n=0,sx=0;h.forEach((c,k)=>{n+=c;sx+=c*Math.pow(10,SB.lo+(k+0.5)/SB.per)});return n?sx/n:Infinity};
   let ismall=0; d.s.forEach((h,i)=>{if(mean(h)<mean(d.s[ismall]))ismall=i});
@@ -2003,9 +2088,11 @@ function distPlots(){
   return {note,snote:w.rounds>0?`P(τ): the ${nbk} bankruptcies in rounds ${E.t-w.rounds+1}–${E.t} (last ⅔ since the last parameter change) of agents that had gone bankrupt before; τ cannot be longer than the run so far`:'P(τ): no rounds since the last parameter change yet',
     surv:{series:[{c:'#be123c',h:bw}],B:LB,xl:'τ: rounds between two bankruptcies of the same agent',
       title:'P(τ): probability density of the rounds an agent lasts between two bankruptcies',stitle:'P(τ), rounds between two bankruptcies',
-      legend:null,yl:'probability density P(τ), per round'},
-    money:{series:[{c:'#b7791f',h:d.m,fit:'tail',fitLabel:'tail: '}],B:MB,xl:'money M of an agent',
-      title:'P(M): probability density of money, per unit of M',stitle:'P(M), density per unit of money',legend:null,yl:'probability density P(M)'},
+      legend:null,yl:'probability density P(τ), per round',opt:{ydec:survDecAll?0:survDec}},
+    money:{series:[{c:'#b7791f',h:d.m,fit:fitM,fitLabel:'tail: '}],B:MB,xl:'money M of an agent',
+      title:'P(M): probability density of money, per unit of M',stitle:'P(M), density per unit of money',yl:'probability density P(M)',
+      legend:[{c:'#c2410c',t:'mean '+fmt(mMean)},...(mMed>0?[{c:'#2563eb',t:'typical (median) '+fmt(mMed),ts:'median '+fmt(mMed)}]:[])],
+      opt:{marks:[{x:mMean,c:'#c2410c'},{x:mMed,c:'#2563eb'}],legendBL:true}},
     size:{series:d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?'body':null,fitLabel:PNAME[i]+': '})),B:SB,xl:'company size s (units sold per round)',
       title:'P(s): probability density of company size, per unit of s',stitle:'P(s), density per unit of company size',
       legend:P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}`})),yl:'probability density P(s)'}};
@@ -2013,11 +2100,18 @@ function distPlots(){
 function drawDist(){
   if(!E||!DH)return;
   const d=distPlots(); $('distNote').textContent=d.note;
-  for(const [id,q] of [['cMoney',d.money],['cSize',d.size],['cSurv',d.surv]])logPlot($(id),q.series,q.B,q.xl,q.stitle,q.legend);
+  for(const [id,q] of [['cMoney',d.money],['cSize',d.size]])logPlot($(id),q.series,q.B,q.xl,q.stitle,q.legend,null,q.opt);
+  // P(τ), and its slider: how many decades of the y axis to show, at most all of them
+  const dec=logPlot($('cSurv'),d.surv.series,d.surv.B,d.surv.xl,d.surv.stitle,d.surv.legend,null,d.surv.opt), sl=$('survDec');
+  sl.max=Math.max(1,dec); sl.value=survDecAll?sl.max:Math.min(survDec,dec);
+  $('survDecV').textContent=survDecAll||survDec>=dec?`all ${dec}`:String(survDec);
   $('agNote').textContent=d.snote+' · fortunes: each agent from the start of its life (its last bankruptcy, or the start of the run) until it goes bankrupt (×); then '+
     (fortMode==='rich'?'the richest agent not yet shown':'another agent picked at random')+' takes its place';
   fortPlot($('cFort'));
 }
+// the decades of P(τ) shown: all, or fewer (the lowest cut off)
+let survDec=3, survDecAll=true;
+$('survDec').oninput=e=>{survDec=+e.target.value; survDecAll=survDec>=+e.target.max; drawDist()};
 // ---- fortunes in time: the followed agents and those that went bankrupt, each line in the colour of the product the
 // agent makes at the time (grey: no factory, or a new one), a cross where it went bankrupt. The time window: the last
 // W = 10·1.5^k rounds for the slider position k; its last position shows the whole run.
@@ -2127,7 +2221,7 @@ function exportPlot(which,kind,btn){
   const g=c.getContext('2d'); g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
   if(which==='chart')drawChart({canvas:c,dpr});
   else if(which==='fort')fortPlot(c,{dpr});
-  else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl})}
+  else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl},q.opt)}
   savePicture(c,`globalization_${which==='chart'?$('metric').value:which==='fort'?'fortunes_'+fortMode+fortN+(fortLog?'_log':''):which==='surv'?'survival':which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
 }
 document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>exportPlot(b.dataset.plot,b.dataset.k,b));
