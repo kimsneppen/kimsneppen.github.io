@@ -91,7 +91,11 @@
   .display.darkbg .tbtn.sobtn.on{background:#b7791f;border-color:#b7791f;color:#fff}
   canvas#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
   /* lower right corner of the display: background, picture with parameters, compact picture */
-  .cornerbtns{position:absolute;right:6px;bottom:6px;display:flex;gap:5px;z-index:3}
+  .cornerbtns{position:absolute;right:6px;bottom:6px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;z-index:3;max-width:calc(100% - 12px)}
+  /* market domains of each product: small buttons in the product's colour */
+  .cornerbtns .dombtns{display:inline-flex;gap:3px;margin-right:3px}
+  .cornerbtns .dombtns button{min-width:24px;padding:0 5px;box-shadow:inset 0 -4px 0 var(--pc);font-family:inherit;font-size:12px;line-height:25px}
+  .cornerbtns .dombtns button.on,.display.darkbg .cornerbtns .dombtns button.on{background:var(--pc);border-color:var(--pc);color:var(--pt)}
   .cornerbtns button{height:28px;min-width:30px;padding:0 9px;font-size:11.5px;border-radius:8px;border:1px solid var(--line);
     background:rgba(255,255,255,.88);color:var(--accent);font-weight:700;cursor:pointer;
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:26px}
@@ -381,7 +385,8 @@
         <i>Money</i>: heat maps on a log scale, in the colours of the paper's figures. Hover over or tap an agent to see its
         numbers.</p>
       <p>The buttons in the upper left corner draw the geography: <i>+ road</i> (its ▾ sets the transport factor on the road)
-        and <i>+ border</i> (its ▾ sets the tax and whether it is one-way): choose one, then press and drag on the lattice —
+        and <i>+ border</i> (its ▾ sets the tax, a percentage of the goods' value, the tariff, a fixed amount per unit, and
+        whether it is one-way): choose one, then press and drag on the lattice —
         the road or border follows your finger, so it can bend and curve — and release. <i>− road</i> and <i>− border</i>: choose one, then tap a road or border to remove it. Tap the chosen button
         again to go back to turning the view. <i>✕ all</i> removes every road and border.</p>
       <p>The buttons in the lower right corner: the lightning bolt marks every place where a company crashes — either
@@ -392,11 +397,31 @@
         a time — off (black), yellow, or in the company's colour (multicoloured bolt);
         the half-black circle switches the background; <i>.png</i> saves the picture with the parameters written in the lower
         left corner; <i>sq</i> saves just what is drawn, cut tight.</p>
+      <p>The small lettered buttons, one per product, outline the market domains: dotted lines in the product's colour on
+        the ground, around the buyers of each seller (a seller counts in its own domain, although it buys the product
+        from someone else). Put one on a border to see how far trade reaches across it. The small domains of A stop at a
+        border, but the domain of a big C company usually runs right across. Its goods cost s<sup>γ</sup> ≈ 0.02 per unit
+        at the factory, while a newcomer on the near side starts at s<sup>γ</sup> ≈ 1, so even a 100 % tax on the value
+        of the goods leaves the giant far cheaper. A tax hurts mostly the products that are already local. A tariff, a
+        fixed amount per unit, is different: it costs the giant as much as anybody. Across a border down the middle of a
+        64 × 64 lattice, C supplies 19 % of the buyers on the other side without a border, and 43 % with a 100 % tax. A
+        tariff of 0.2 per unit brings that down to 12 %, 0.5 to 4 % and 1 to 0.5 %, so each side gets its own C factory.
+        A loses its trade across the border at a tariff of 0.2 to 0.5, and B at 1 (3 runs each).</p>
       <p>Below the town: how the numbers change in time, and two log–log plots — how the money is spread over the agents,
         and how big the companies of each product are. The dashed lines are power-law fits: for money, over its tail; for
         companies, over the product whose companies are smallest on average. Either plot shows the present, or the sum over
         the last two thirds of the run since you last changed a parameter. Each plot has its own <i>.png</i> and <i>sq</i>
         buttons: a picture in the shape shown, or a square one, both with title and axis labels.</p>
+      <p>At the bottom, the companies. P(τ) is how long the factories lived that closed in the last two thirds of the run
+        since the last parameter change; τ counts the rounds a factory sold, a whole number, so each bin is divided by the
+        number of whole rounds it holds. Most start-ups of B and C close after a round or two, and so do the big C
+        companies: their reign is short. A factories either fail at once or live for up to a few hundred rounds, with
+        every lifetime about equally likely. Next to it, the size of single companies in time. You choose either the 5
+        that grew largest of each product (opened in that same window), plotted against their age, or the 20 largest of
+        each product in the last 100 rounds, plotted against the round, so you see them appear and disappear. <i>lin</i>
+        and <i>log</i> switch the size axis. A dot means the company still runs, a cross that it closed. A company is
+        followed from the round it first sells a tenth of what the biggest of its product sells (at least 5 units), and
+        its 40 rounds before that are filled in. A company that sat small for longer before it grew starts its line late.</p>
       <div class="refs">
         <p>[1] K. Sneppen and S. Bornholdt, <i>Globalization in a nutshell</i>, Phys. Rev. E <b>98</b>, 042314 (2018).
           <a href="https://doi.org/10.1103/PhysRevE.98.042314" target="_blank" rel="noopener">doi:10.1103/PhysRevE.98.042314</a></p>
@@ -450,10 +475,14 @@
         <details class="tmenu"><summary title="tax and direction of the border">▾</summary>
           <div class="vmbox">
             <div class="row"><label>tax on crossing</label>
-              <select id="taxSel"><option value="0.05">5 %</option><option value="0.1">10 %</option><option value="0.2" selected>20 %</option><option value="0.3">30 %</option><option value="0.5">50 %</option><option value="1">100 %</option><option value="2">200 %</option></select></div>
+              <select id="taxSel"><option value="0">none</option><option value="0.05">5 %</option><option value="0.1">10 %</option><option value="0.2" selected>20 %</option><option value="0.3">30 %</option><option value="0.5">50 %</option><option value="1">100 %</option><option value="2">200 %</option></select></div>
+            <div class="row"><label>tariff per unit</label>
+              <select id="tarSel"><option value="0" selected>none</option><option value="0.01">0.01</option><option value="0.02">0.02</option><option value="0.05">0.05</option><option value="0.1">0.1</option><option value="0.2">0.2</option><option value="0.5">0.5</option><option value="1">1</option></select></div>
             <div class="row"><label>direction</label>
               <select id="dirSel"><option value="two">both ways</option><option value="one">one way (arrow)</option></select></div>
-            <p class="hint">The tax is a percentage of the value of the goods where they cross. A one-way border taxes only goods crossing
+            <p class="hint">The tax is a percentage of the value of the goods where they cross. The tariff is a fixed amount added to the
+              price of every unit that crosses, the same for every product: 1 is what a unit costs to make in a factory that sells
+              one unit, 0.1 is one cell of A's transport or five of C's. A one-way border taxes only goods crossing
               in the direction its arrows point; goods crossing the other way pass free. The arrows point to your left as you
               trace the border from where you started to where you let go (drawn from top to bottom, they point to the right).</p></div>
         </details>
@@ -462,6 +491,7 @@
       <button class="tb" id="clearNet2" title="remove all roads and borders">✕ all</button>
       </div>
       <div class="cornerbtns">
+        <span class="dombtns" id="domBtns"></span>
         <button id="bFlash" title="marks where companies collapse: off — click for yellow, click again for the company's colour">
           <svg viewBox="0 0 16 16" width="15" height="15" style="vertical-align:-3px"><defs><linearGradient id="flashGrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="#e11d48"/><stop offset=".35" stop-color="#f59e0b"/><stop offset=".65" stop-color="#10b981"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
@@ -503,6 +533,22 @@
     <div class="distgrid">
       <div class="chartbox dist"><canvas id="cMoney"></canvas></div>
       <div class="chartbox dist"><canvas id="cSize"></canvas></div>
+    </div>
+  </section>
+  <section class="display">
+    <div class="chartbar">
+      <b style="font-size:13px">Companies</b>
+      <div class="seg" id="trajSeg" title="the size of the 5 companies of each product that grew largest, against the time since they opened — or the 20 largest of each product in the last 100 rounds, as they appear and disappear">
+        <button data-m="top" class="on">5 largest vs age</button><button data-m="all">20 largest in time</button></div>
+      <div class="seg" id="trajScale" title="company size on a linear or a logarithmic scale">
+        <button data-s="lin" class="on">lin</button><button data-s="log">log</button></div>
+      <span class="plotbtns"><span class="pl">P(τ)</span><button data-plot="life" data-k="png" title="save the lifetime distribution as a PNG picture, with title and axis labels">.png</button><button data-plot="life" data-k="sq" title="save the lifetime distribution in a square picture">sq</button>
+        <span class="pl">s(t)</span><button data-plot="traj" data-k="png" title="save the company sizes in time as a PNG picture, with title and axis labels">.png</button><button data-plot="traj" data-k="sq" title="save the company sizes in time in a square picture">sq</button></span>
+    </div>
+    <div class="chartnote" id="compNote" style="margin-bottom:4px"></div>
+    <div class="distgrid">
+      <div class="chartbox dist"><canvas id="cLife"></canvas></div>
+      <div class="chartbox dist"><canvas id="cTraj"></canvas></div>
     </div>
   </section>
 </div>
@@ -591,8 +637,8 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 // P = {L, products:[{start,gamma,beta}], n (orders per agent per product per round), lim (max factories per agent),
 //      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (a decline counts
 //      when profit < previous − κ·p·√(previous units sold)), M0, bc:'periodic'|'closed', tmul (transport factor),
-//      roads:[{pts:[[x,y],…],f}] (transport cost ×f along the road), borders:[{pts,tax,oneway}] (tax = fraction
-//      of the goods' value charged on crossing; one-way: only when crossing toward (dy, −dx) for the drawn direction (dx, dy), which on the screen (y downward)
+//      roads:[{pts:[[x,y],…],f}] (transport cost ×f along the road), borders:[{pts,tax,tariff,oneway}] (tax = fraction
+//      of the goods' value charged on crossing; tariff = amount added per unit on crossing; one-way: only when crossing toward (dy, −dx) for the drawn direction (dx, dy), which on the screen (y downward)
 //      is to the left of the drawing direction),
 //      econ:'so'|'pay'|'fixed', seed}
 // econ 'so' (self-organized price): a unit sells at p = Σ wages / Σ units sold in the previous round, so the value of all
@@ -628,12 +674,12 @@ function buildEcon(P){
   // search on the lattice (16 neighbour moves: steps 1, √2 and √5, so distances are within ~3 % of straight lines) ----
   const NB=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1],[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
   const NBL=NB.map(([dx,dy])=>Math.sqrt(dx*dx+dy*dy));
-  const roadF=new Float32Array(LL), taxM=new Float32Array(LL*16);   // road factor of a cell; tax multiplier of a move
+  const roadF=new Float32Array(LL), taxM=new Float32Array(LL*16), taxA=new Float32Array(LL*16);   // road factor of a cell; tax multiplier and tariff of a move
   let netKey='';
   E.useGraph=()=>(P.roads&&P.roads.length)||(P.borders&&P.borders.length);
   function buildNet(){
     const key=JSON.stringify([P.roads,P.borders,P.bc]); if(key===netKey)return; netKey=key;
-    roadF.fill(1); taxM.fill(1);
+    roadF.fill(1); taxM.fill(1); taxA.fill(0);
     // roads and borders are polylines (curved by the drag that drew them): pts = [[x,y], …]
     for(const rd of P.roads||[])for(let j=1;j<rd.pts.length;j++){   // cells along the road, sampled every quarter cell
       const [x0,y0]=rd.pts[j-1], [x1,y1]=rd.pts[j], n=Math.max(1,Math.ceil(4*Math.hypot(x1-x0,y1-y0)));
@@ -660,14 +706,14 @@ function buildEcon(P){
               const ax=x+0.5, ay=y+0.5;
               if(!cross(ax,ay,ax+NB[d][0],ay+NB[d][1],x0,y0,x1,y1))continue;
               if(bd.oneway&&NB[d][0]*nx+NB[d][1]*ny<=0)continue;
-              hit[m]=1; taxM[m]*=1+bd.tax;
+              hit[m]=1; taxM[m]*=1+(bd.tax||0); taxA[m]+=bd.tariff||0;
             }
       }
     }
   }
   // Dijkstra from all factories at once. Each cell keeps the two cheapest offers from different factories, because
   // a factory cell must buy from somebody else. A move multiplies the cost so far by the border tax (a percentage of the
-  // goods' value) and adds β·(length)·(road factor); both keep the costs ordered, so Dijkstra stays exact.
+  // goods' value), adds the border tariff and β·(length)·(road factor); all keep the costs ordered, so Dijkstra stays exact.
   let hc=new Float64Array(1<<16), hn=new Int32Array(1<<16), hs=new Int32Array(1<<16), hl=0;
   const push=(c,n,s)=>{if(hl===hc.length){const g=hc.length*2,a=new Float64Array(g),b=new Int32Array(g),d=new Int32Array(g);a.set(hc);b.set(hn);d.set(hs);hc=a;hn=b;hs=d}
     let i=hl++; while(i>0){const p=(i-1)>>1;if(hc[p]<=c)break;hc[i]=hc[p];hn[i]=hn[p];hs[i]=hs[p];i=p} hc[i]=c;hn[i]=n;hs[i]=s};
@@ -690,7 +736,7 @@ function buildEcon(P){
         else{if(wx<0)wx+=L;else if(wx>=L)wx-=L; if(wy<0)wy+=L;else if(wy>=L)wy-=L}
         const w=wy*L+wx, dw=done[w]; if(dw===2)continue;
         const rf=roadF[v]<1&&roadF[w]<1?Math.max(roadF[v],roadF[w]):1;
-        const c2=c*taxM[base+d]+beta*NBL[d]*rf;
+        const c2=c*taxM[base+d]+taxA[base+d]+beta*NBL[d]*rf;
         if(dw===1){if(s!==sA[w]&&c2<cB[w]){cB[w]=c2;sB[w]=s;push(c2,w,s)}}       // the best is final: only the second
         else if(s===sA[w]){if(c2<cA[w]){cA[w]=c2;push(c2,w,s)}}
         else if(c2<cA[w]){cB[w]=cA[w];sB[w]=sA[w];cA[w]=c2;sA[w]=s;push(c2,w,s)}   // the old best becomes the second
@@ -714,6 +760,8 @@ function buildEcon(P){
   E.money=new Float64Array(LL); E.inc=new Float64Array(LL); E.prevInc=new Float64Array(LL);
   E.profit=new Float64Array(LL); E.prevProfit=new Float64Array(LL);
   E.units=new Float64Array(LL); E.prevUnits=new Float64Array(LL); E.price=1; E.bankruptList=[]; E.closeList=[];
+  // born[i][r]: round in which agent r opened its factory of product i; deathList: the factories closed this round
+  E.born=[]; for(let i=0;i<N;i++)E.born.push(new Int32Array(LL)); E.deathList=[];
   E.started=new Int32Array(LL);              // round at which the agent last opened a factory (−1: never)
   E.F=[];E.sales=[];E.sup=[];E.dist=[];E.u=[];E.area=[];E.cost=[];      // cost: the delivered price each agent pays
   for(let i=0;i<N;i++){
@@ -729,6 +777,7 @@ function buildEcon(P){
     E.price=P.econ!=='fixed'&&P.wage>0?P.wage/(P.n*N):1;
     for(let i=0;i<N;i++){E.F[i].fill(0);E.sales[i].fill(0)}
     for(let r=0;r<LL;r++)E.F[(rng()*N)|0][r]=1;
+    for(let i=0;i<N;i++)E.born[i].fill(0);
     E.computeMarkets();
   };
 
@@ -833,7 +882,8 @@ function buildEcon(P){
       for(let i=0;i<N;i++)if(E.F[i][r]){const v=p*newSales[i][r]-mu*P.products[i].start;
         if(v<wv){wv=v;w=i;nt=1}else if(v===wv){nt++;if(rng()*nt<1)w=i}}
       return w};
-    let U=0; E.bankruptList=[]; E.closeList=[];
+    let U=0; E.bankruptList=[]; E.closeList=[]; E.deathList=[];
+    const close=(i,r)=>{E.F[i][r]=0; E.deathList.push({r,prod:i,born:E.born[i][r],life:E.t+1-E.born[i][r]})};
     for(let r=0;r<LL;r++){
       let units=0, up=0, nf=0;
       for(let i=0;i<N;i++)if(E.F[i][r]){units+=newSales[i][r];up+=mu*P.products[i].start;nf++}
@@ -847,7 +897,7 @@ function buildEcon(P){
       if(E.money[r]<0){
         // the bankrupt company: its size (units sold this or last round) and its biggest product, for the display
         let bp=-1,bv=-1; for(let i=0;i<N;i++)if(E.F[i][r]&&newSales[i][r]>bv){bv=newSales[i][r];bp=i}
-        const w=weakest(r); if(w>=0){E.F[w][r]=0;nf--} E.money[r]=so?P.wage:0; H.bankrupt++;
+        const w=weakest(r); if(w>=0){close(w,r);nf--} E.money[r]=so?P.wage:0; H.bankrupt++;
         E.bankruptList.push({r,size:Math.max(units,E.prevUnits[r]),prod:bp>=0?bp:w,mon:m0});
       }
       const declined=E.t>0&&E.profit[r]<E.prevProfit[r]-P.kappa*p*Math.sqrt(Math.max(1,E.prevUnits[r]));
@@ -858,8 +908,8 @@ function buildEcon(P){
         if(nc){
           const j=cand[(rng()*nc)|0];
           // a factory closed because its owner changes product: recorded with its size (units sold) for the display
-          if(drop>=0){E.closeList.push({r,size:Math.max(newSales[drop][r],E.sales[drop][r]),prod:drop,mon:m0}); E.F[drop][r]=0}
-          E.money[r]-=P.products[j].start; E.F[j][r]=1; newSales[j][r]=0;
+          if(drop>=0){E.closeList.push({r,size:Math.max(newSales[drop][r],E.sales[drop][r]),prod:drop,mon:m0}); close(drop,r)}
+          E.money[r]-=P.products[j].start; E.F[j][r]=1; E.born[j][r]=E.t+1; newSales[j][r]=0;
           E.started[r]=E.t+1; H.starts++;
         }
       }
@@ -976,6 +1026,15 @@ function buildProductUI(){
     tb.appendChild(tr);
   });
   checkMono();
+  const db=$('domBtns'); db.innerHTML='';
+  for(const i of [...domOn])if(i>=P.products.length)domOn.delete(i);
+  P.products.forEach((pr,i)=>{
+    const b=document.createElement('button'); b.textContent=PNAME[i]; b.classList.toggle('on',domOn.has(i));
+    b.style.setProperty('--pc',PCOL[i]); b.style.setProperty('--pt',PTXT[i]);
+    b.title=`market domains of product ${PNAME[i]}: dotted lines on the ground around the buyers of each seller`;
+    b.onclick=()=>{if(domOn.has(i))domOn.delete(i);else domOn.add(i); b.classList.toggle('on',domOn.has(i)); draw()};
+    db.appendChild(b);
+  });
   const pt=$('ptabs'); pt.innerHTML='';
   P.products.forEach((pr,i)=>{
     const b=document.createElement('button'); b.textContent=PNAME[i]; b.style.background=PCOL[i]; b.style.color=PTXT[i];
@@ -1120,11 +1179,34 @@ function toolUp(){
   if(Math.hypot(d.cur[0]-last[0],d.cur[1]-last[1])>0.3)pts.push(d.cur);
   if(pts.length<2||polyLen(pts)<1){draw();return}
   if(tool==='addRoad')P.roads.push({pts,f:+$('roadF').value});
-  else P.borders.push({pts,tax:+$('taxSel').value,oneway:$('dirSel').value==='one'});
+  else P.borders.push({pts,tax:+$('taxSel').value,tariff:+$('tarSel').value,oneway:$('dirSel').value==='one'});
   netChanged();
 }
 // roads (asphalt with a dashed yellow middle line) and borders (dashed red, with the tax, and arrows when one-way),
 // drawn with a function that maps lattice positions to the canvas
+// market domains: for each chosen product, dotted lines in its colour between neighbouring agents that buy it from
+// different sellers. A seller with buyers belongs to its own domain (it buys the product from someone else).
+// at(x,y): the screen point of the lattice corner (x,y)
+const domOn=new Set();
+function drawDomains(at,dpr){
+  if(!domOn.size)return;
+  const L=E.L, LL=L*L, dom=new Int32Array(LL);
+  ctx.save(); ctx.lineCap='round'; ctx.lineWidth=Math.max(1.2,1.5*dpr); ctx.setLineDash([0.01,3*dpr]);
+  for(const i of domOn){
+    if(i>=E.N)continue;
+    const F=E.F[i], sup=E.sup[i], A=E.area[i];
+    for(let r=0;r<LL;r++)dom[r]=F[r]&&A[r]>0?r:sup[r];
+    const c=dark?PRGB[i].map(v=>Math.round(v+(255-v)*0.35)):PRGB[i];   // a lighter tint on the black ground
+    ctx.strokeStyle=`rgb(${c})`; ctx.beginPath();
+    const seg=(xa,ya,xb,yb)=>{ctx.moveTo(...at(xa,ya));ctx.lineTo(...at(xb,yb))};
+    for(let x=0;x<L-1;x++){let y0=-1;          // between columns x and x+1, joined along y
+      for(let y=0;y<=L;y++){const b=y<L&&dom[y*L+x]!==dom[y*L+x+1]; if(b&&y0<0)y0=y; else if(!b&&y0>=0){seg(x+1,y0,x+1,y);y0=-1}}}
+    for(let y=0;y<L-1;y++){let x0=-1;          // between rows y and y+1, joined along x
+      for(let x=0;x<=L;x++){const b=x<L&&dom[y*L+x]!==dom[(y+1)*L+x]; if(b&&x0<0)x0=x; else if(!b&&x0>=0){seg(x0,y+1,x,y+1);x0=-1}}}
+    ctx.stroke();
+  }
+  ctx.restore();
+}
 function drawNet(at,cell,dpr){
   const line=(pts,col,w,dash)=>{ctx.setLineDash(dash||[]);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineJoin='round';ctx.beginPath();
     pts.forEach((p,k)=>{const q=at(p[0],p[1]);k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])});ctx.stroke();ctx.setLineDash([])};
@@ -1137,12 +1219,14 @@ function drawNet(at,cell,dpr){
       const a=[o[0]-la*Math.cos(ang),o[1]-la*Math.sin(ang)],b=[o[0]+lb*Math.cos(ang),o[1]+lb*Math.sin(ang)];
       ctx.strokeStyle='#f43f5e';ctx.fillStyle='#f43f5e';ctx.lineWidth=2.2*dpr;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
       ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.lineTo(b[0]-h*Math.cos(ang-0.45),b[1]-h*Math.sin(ang-0.45));ctx.lineTo(b[0]-h*Math.cos(ang+0.45),b[1]-h*Math.sin(ang+0.45));ctx.fill()}
-    if(s.tax!=null){const [lx,ly,tx,ty]=polyAt(s.pts,0.3),o=at(lx,ly),q=at(lx-ty,ly+tx),
+    const lab=[s.tax?Math.round(100*s.tax)+' %':'',s.tariff?'+'+s.tariff+'/unit':''].filter(Boolean).join(' ');
+    if(lab){const [lx,ly,tx,ty]=polyAt(s.pts,0.3),o=at(lx,ly),q=at(lx-ty,ly+tx),
       dl=Math.hypot(q[0]-o[0],q[1]-o[1])||1,p=[o[0]+(q[0]-o[0])/dl*14*dpr,o[1]+(q[1]-o[1])/dl*14*dpr];ctx.font=`700 ${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillStyle=dark?'#fecdd3':'#be123c';ctx.fillText(Math.round(100*s.tax)+' %',p[0],p[1])}
+      ctx.lineJoin='round';ctx.lineWidth=3*dpr;ctx.strokeStyle=dark?'rgba(0,0,0,.8)':'rgba(255,255,255,.85)';ctx.strokeText(lab,p[0],p[1]);  // readable on any map
+      ctx.fillStyle=dark?'#fecdd3':'#be123c';ctx.fillText(lab,p[0],p[1])}
     ctx.globalAlpha=1};
   P.roads.forEach(s=>road(s.pts,1)); P.borders.forEach(s=>border(s,1));
-  if(toolDrag){const pts=[...toolDrag.pts,toolDrag.cur]; if(tool==='addRoad')road(pts,0.6); else border({pts,tax:+$('taxSel').value,oneway:$('dirSel').value==='one'},0.6)}
+  if(toolDrag){const pts=[...toolDrag.pts,toolDrag.cur]; if(tool==='addRoad')road(pts,0.6); else border({pts,tax:+$('taxSel').value,tariff:+$('tarSel').value,oneway:$('dirSel').value==='one'},0.6)}
 }
 $('Lsel').onchange=restart;
 $('speed').oninput=e=>{$('speedV').textContent=e.target.value};
@@ -1188,7 +1272,7 @@ function doStep(){
     E.stale=true;                         // the markets must be recomputed with the new transport costs
   }
   E.step();
-  distRecord();
+  distRecord(); compRecord();
   // Explosions. Big companies rarely go bankrupt: they end when their owner gives them up for another product as the profit
   // falls. So every company of at least 20 % of the height scale (the average biggest) that closes, for whatever reason,
   // explodes. Bankruptcies are nearly all failed start-ups (a few units at most) — dozens per round on a large lattice —
@@ -1355,6 +1439,7 @@ function draw3D(){
   for(let j=1;j<8;j++){const g=-L/2+j*L/8; let a=P2(g,-L/2,0),b=P2(g,L/2,0); ctx.moveTo(...a);ctx.lineTo(...b); a=P2(-L/2,g,0);b=P2(L/2,g,0);ctx.moveTo(...a);ctx.lineTo(...b)}
   ctx.stroke();
   drawNet((x,y)=>P2(x-L/2,y-L/2,0),s,dpr);              // roads and borders on the ground
+  drawDomains((x,y)=>P2(x-L/2,y-L/2,0),dpr);             // market domains on the ground
   if(hoverR>=0&&hoverR<LL){
     const x=(hoverR%L)-L/2, y=((hoverR/L)|0)-L/2;
     ctx.strokeStyle=dark?'#fff':'#16233b'; ctx.lineWidth=2*dpr; ctx.beginPath();
@@ -1525,6 +1610,7 @@ function draw(){
     }
   }
   drawNet((x,y)=>[x0+x*cell,y0+y*cell],cell,dpr);       // roads and borders
+  drawDomains((x,y)=>[x0+x*cell,y0+y*cell],dpr);        // market domains
   if(hoverR>=0&&hoverR<LL){
     ctx.strokeStyle=view==='money'||view==='sales'||dark?'#fff':'#16233b';ctx.lineWidth=2*dpr;
     ctx.strokeRect(x0+(hoverR%L)*cell,y0+((hoverR/L)|0)*cell,cell,cell);
@@ -1646,10 +1732,11 @@ function exportPNG(kind){
 // ---------- distributions: money across agents, company sizes per product (log–log) ----------
 // After every round the histograms (logarithmic bins, 4 per decade) are added to running totals; the totals at each
 // round are kept, so the sum over any window of rounds is the difference of two of them.
-const MB={lo:-3,hi:7,per:4}, SB={lo:0,hi:7,per:4};
+const MB={lo:-3,hi:7,per:4}, SB={lo:0,hi:7,per:4}, LB={lo:0,hi:5,per:4,int:true};   // money, company size, lifetime (whole rounds)
 const nb=B=>(B.hi-B.lo)*B.per, binOf=(B,v)=>Math.floor((Math.log10(v)-B.lo)*B.per);
 let DH=null, distMode='now';
-function distReset(){DH={t0:0,rec:[{t:0,m:new Float64Array(nb(MB)),s:P.products.map(()=>new Float64Array(nb(SB)))}]}}
+function distReset(){DH={t0:0,rec:[{t:0,m:new Float64Array(nb(MB)),s:P.products.map(()=>new Float64Array(nb(SB))),
+  l:P.products.map(()=>new Float64Array(nb(LB)))}]}; compReset()}
 function distMark(){if(E&&DH)DH.t0=E.t}
 function histNow(){
   const LL=E.L*E.L, m=new Float64Array(nb(MB)), s=P.products.map(()=>new Float64Array(nb(SB)));
@@ -1659,7 +1746,10 @@ function histNow(){
 }
 function distRecord(){
   const h=histNow(), last=DH.rec[DH.rec.length-1];
-  DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k]))});
+  // lifetimes of the factories closed this round (in rounds, at least 1)
+  const l=last.l.map(a=>Float64Array.from(a));
+  for(const d of E.deathList){const k=binOf(LB,Math.max(1,d.life));if(k>=0&&k<l[d.prod].length)l[d.prod][k]++}
+  DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k])),l});
   if(DH.rec.length>8000)DH.rec.splice(1,1000);
 }
 function histWindow(){         // summed over the last two thirds of the rounds since the last change of a parameter
@@ -1667,7 +1757,44 @@ function histWindow(){         // summed over the last two thirds of the rounds 
   let lo=0,hi=DH.rec.length-1;               // last record with t <= ta
   while(lo<hi){const mid=(lo+hi+1)>>1;if(DH.rec[mid].t<=ta)lo=mid;else hi=mid-1}
   const a=DH.rec[lo], b=DH.rec[DH.rec.length-1];
-  return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),rounds:b.t-a.t};
+  return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),l:b.l.map((x,i)=>x.map((v,k)=>v-a.l[i][k])),rounds:b.t-a.t};
+}
+// ---- companies followed in time: every factory that sells at least a tenth of the biggest of its product (and at least
+// 5 units) is followed from then on until it closes: its birth round and its size (units sold) in each round ----
+let CT=null;
+function compReset(){CT={live:new Map(),dead:[],ring:[]}}
+const RING=40;   // rounds of sales kept for every selling factory
+const TWIN=100, TOPALL=20;  // the plot of the companies in time: the last TWIN rounds, the TOPALL largest of each product
+function compRecord(){
+  const LL=E.L*E.L, t=E.t;
+  const finish=(k,rec)=>{rec.died=t;CT.live.delete(k);CT.dead.push(rec)};
+  for(const d of E.deathList){const k=d.prod*LL+d.r, rec=CT.live.get(k);
+    if(rec&&rec.born===d.born){if(!E.F[d.prod][d.r])rec.pts.push(t,E.sales[d.prod][d.r]); finish(k,rec)}}
+  const idx=[], val=[];
+  for(let i=0;i<E.N;i++){
+    const S=E.sales[i], Fi=E.F[i], B=E.born[i]; let mx=0; for(let r=0;r<LL;r++)if(S[r]>mx)mx=S[r];
+    const thr=Math.max(5,0.1*mx);
+    for(let r=0;r<LL;r++){
+      const k=i*LL+r; let rec=CT.live.get(k);
+      if(rec&&(!Fi[r]||B[r]!==rec.born)){finish(k,rec);rec=null}      // closed, or replaced by a new factory
+      if(!rec&&Fi[r]&&S[r]>=thr){
+        rec={prod:i,r,born:B[r],pts:[],peak:0,died:-1}; CT.live.set(k,rec);
+        for(const e of CT.ring)if(e.t>rec.born){             // its sales in the rounds before it became large
+          let a=0,b=e.idx.length-1,v=0; while(a<=b){const m=(a+b)>>1;if(e.idx[m]<k)a=m+1;else if(e.idx[m]>k)b=m-1;else{v=e.val[m];break}}
+          rec.pts.push(e.t,v); if(v>rec.peak)rec.peak=v}
+      }
+      if(Fi[r]&&S[r]>0){idx.push(k);val.push(S[r])}
+      if(rec){rec.pts.push(t,S[r]);if(S[r]>rec.peak)rec.peak=S[r]}
+    }
+  }
+  CT.ring.push({t,idx:Int32Array.from(idx),val:Float32Array.from(val)}); if(CT.ring.length>RING)CT.ring.shift();
+  // keep the record bounded: of the closed companies, those of the last TWIN rounds and the 40 largest of each product
+  // opened in the last two thirds of the run since the last parameter change
+  if(CT.dead.length>1500){
+    const keep=new Set(CT.dead.filter(c=>c.died>=t-TWIN)), w=histWindow(), t0=w.rounds>0?E.t-w.rounds:0;
+    for(let i=0;i<E.N;i++)CT.dead.filter(c=>c.prod===i&&c.born>=t0).sort((a,b)=>b.peak-a.peak).slice(0,40).forEach(c=>keep.add(c));
+    CT.dead=CT.dead.filter(c=>keep.has(c));
+  }
 }
 function sup10(k){const s={'-':'⁻',0:'⁰',1:'¹',2:'²',3:'³',4:'⁴',5:'⁵',6:'⁶',7:'⁷',8:'⁸',9:'⁹'};
   return k===0?'1':k===1?'10':'10'+String(k).split('').map(c=>s[c]).join('')}
@@ -1680,7 +1807,9 @@ function logPlot(canvas,series,B,xlabel,title,legend,out){
   // density P(x) = count / (total · bin width), at the geometric bin centres
   const pts=series.map(se=>{const tot=se.h.reduce((a,b)=>a+b,0), out=[];
     se.h.forEach((c,k)=>{if(c>0){const x0=Math.pow(10,B.lo+k/B.per), x1=Math.pow(10,B.lo+(k+1)/B.per);
-      out.push([Math.log10(Math.sqrt(x0*x1)),Math.log10(c/(tot*(x1-x0)))])}});
+      if(B.int){const a=Math.ceil(x0-1e-9), b=Math.ceil(x1-1e-9)-1;     // whole numbers: the bin holds a…b
+        if(b>=a)out.push([Math.log10(Math.sqrt(a*b)),Math.log10(c/(tot*(b-a+1)))])}
+      else out.push([Math.log10(Math.sqrt(x0*x1)),Math.log10(c/(tot*(x1-x0)))])}});
     return {c:se.c,p:out}});
   const all=pts.flatMap(s=>s.p);
   g.fillStyle='#16233b'; g.textAlign='left'; g.textBaseline='top'; g.font=`600 ${11.5*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;
@@ -1741,7 +1870,13 @@ function distPlots(){
   // the fit of the company sizes: the product whose companies are smallest on average
   const mean=h=>{let n=0,sx=0;h.forEach((c,k)=>{n+=c;sx+=c*Math.pow(10,SB.lo+(k+0.5)/SB.per)});return n?sx/n:Infinity};
   let ismall=0; d.s.forEach((h,i)=>{if(mean(h)<mean(d.s[ismall]))ismall=i});
-  return {note,
+  // lifetimes: always the factories closed in the last two thirds of the run since the last parameter change
+  const w=histWindow(), lw=w.rounds>0?w.l:P.products.map(()=>new Float64Array(nb(LB)));
+  const nd=lw.map(h=>h.reduce((a,b)=>a+b,0));
+  return {note,lnote:w.rounds>0?`lifetimes of the ${nd.reduce((a,b)=>a+b,0)} factories closed in rounds ${E.t-w.rounds+1}–${E.t} (last ⅔ since the last parameter change)`:'lifetimes: no rounds since the last parameter change yet',
+    life:{series:lw.map((h,i)=>({c:PCOL[i],h})),B:LB,xl:'lifetime τ of a factory (rounds it sold)',
+      title:'P(τ): probability density of the lifetimes of closed factories, per round',stitle:'P(τ), lifetimes of closed factories',
+      legend:P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}   (${nd[i]})`})),yl:'probability density P(τ)'},
     money:{series:[{c:'#b7791f',h:d.m,fit:'tail',fitLabel:'tail: '}],B:MB,xl:'money M of an agent',
       title:'P(M): probability density of money, per unit of M',stitle:'P(M), density per unit of money',legend:null,yl:'probability density P(M)'},
     size:{series:d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?'body':null,fitLabel:PNAME[i]+': '})),B:SB,xl:'company size s (units sold per round)',
@@ -1751,18 +1886,90 @@ function distPlots(){
 function drawDist(){
   if(!E||!DH)return;
   const d=distPlots(); $('distNote').textContent=d.note;
-  for(const [id,q] of [['cMoney',d.money],['cSize',d.size]])logPlot($(id),q.series,q.B,q.xl,q.stitle,q.legend);
+  for(const [id,q] of [['cMoney',d.money],['cSize',d.size],['cLife',d.life]])logPlot($(id),q.series,q.B,q.xl,q.stitle,q.legend);
+  const nf=CT?CT.live.size+CT.dead.length:0;
+  $('compNote').textContent=d.lnote+` · sizes: ${nf} companies followed (from when they sell a tenth of the biggest of their product)`;
+  trajPlot($('cTraj'));
 }
+// ---- company sizes in time: the 5 companies of each product that grew largest, against the time since they opened;
+// or all the followed companies against the round, as they appear and disappear ----
+let trajMode='top', trajLog=false;
+function trajPlot(canvas,out){
+  const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
+  if(!out)g.clearRect(0,0,W,H);
+  const pl=(out?64:46)*dpr, pr=(out?16:10)*dpr, pt=(out?30:22)*dpr, pb=(out?44:34)*dpr, w=W-pl-pr, h=H-pt-pb;
+  const font=(px,b)=>`${b?'600 ':''}${px*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`, top=trajMode==='top';
+  const title=out?(top?'Size of the 5 largest companies of each product against their age':`Size in time of the ${TOPALL} largest companies of each product`)+' — round '+E.t
+    :(top?'5 largest of each: size vs age':`${TOPALL} largest of each in time`);
+  g.fillStyle='#16233b'; g.textAlign='left'; g.textBaseline='top'; g.font=font(11.5,1); g.fillText(title,pl,4*dpr); g.font=font(11);
+  const recs=CT?[...CT.dead,...CT.live.values()]:[];
+  // the 5 largest: of the companies opened in the last two thirds of the run since the last parameter change
+  const hw=DH?histWindow():{rounds:0}, t0=hw.rounds>0?E.t-hw.rounds:0;
+  let sel=[];
+  if(top)for(let i=0;i<E.N;i++)sel.push(...recs.filter(c=>c.prod===i&&c.born>=t0).sort((a,b)=>b.peak-a.peak).slice(0,5));
+  else{                                                    // the 20 largest of each product in the last TWIN rounds
+    const rw=recs.filter(c=>c.died<0||c.died>=E.t-TWIN);
+    for(let i=0;i<E.N;i++)sel.push(...rw.filter(c=>c.prod===i).sort((a,b)=>b.peak-a.peak).slice(0,TOPALL));
+  }
+  sel=sel.filter(c=>c.pts.length>=2);
+  if(!sel.length){g.fillStyle='#8391ab';g.fillText('no data yet',pl,pt+h/2);return}
+  const xOf=(c,t)=>top?t-c.born:t;
+  let xa=Infinity, xb=-Infinity, ymax=1;
+  for(const c of sel){xa=Math.min(xa,xOf(c,c.pts[0]));xb=Math.max(xb,xOf(c,c.pts[c.pts.length-2]));ymax=Math.max(ymax,c.peak)}
+  if(top)xa=0; else{xa=Math.max(xa,E.t-TWIN);xb=E.t}
+  if(xb<=xa)xb=xa+1;
+  const ylo=0, yhi=trajLog?Math.max(1,Math.ceil(Math.log10(ymax))):ymax*1.05;
+  const yv=v=>trajLog?Math.log10(Math.max(1,v)):v;
+  const X=v=>pl+(v-xa)/(xb-xa)*w, Y=v=>pt+h-(yv(v)-ylo)/(yhi-ylo)*h;
+  // grid and axes
+  g.strokeStyle='#dde3ec'; g.lineWidth=dpr; g.fillStyle='#8391ab'; g.textAlign='center'; g.textBaseline='top';
+  const xs=Math.max(1,niceNum((xb-xa)/Math.max(2,Math.min(6,Math.floor(w/(48*dpr))))));     // about 48 px between ticks
+  for(let k=Math.ceil(xa/xs)*xs;k<=xb;k+=xs){g.beginPath();g.moveTo(X(k),pt);g.lineTo(X(k),pt+h);g.stroke();g.fillText(String(Math.round(k)),X(k),pt+h+4*dpr)}
+  g.textAlign='right'; g.textBaseline='middle';
+  if(trajLog)for(let k=0;k<=yhi;k++){const yy=pt+h-k/yhi*h;g.beginPath();g.moveTo(pl,yy);g.lineTo(pl+w,yy);g.stroke();g.fillText(sup10(k),pl-5*dpr,yy)}
+  else{const ys=niceNum(yhi/5); for(let v=0;v<=yhi;v+=ys){g.beginPath();g.moveTo(pl,Y(v));g.lineTo(pl+w,Y(v));g.stroke();g.fillText(ys>=1?String(Math.round(v)):fmt(v,1),pl-5*dpr,Y(v))}}
+  g.strokeStyle='#b7bfd0'; g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h); g.stroke();
+  g.textAlign='center'; g.textBaseline='bottom';
+  g.fillText(top?'age: rounds since the factory opened':`round (the last ${TWIN})`,pl+w/2,H-2*dpr);
+  if(out){g.save();g.translate(14*dpr,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';
+    g.fillText('company size s (units sold per round)'+(trajLog?', log scale':''),0,0);g.restore()}
+  // the companies: a line each, a dot at the end if it still runs, a cross where it closed
+  g.save(); g.beginPath(); g.rect(pl,pt-2*dpr,w+2*dpr,h+4*dpr); g.clip();
+  g.lineJoin='round'; g.lineWidth=(top?1.6:0.9)*dpr; g.globalAlpha=top?1:0.85;
+  for(const c of sel){
+    const q=c.pts; g.strokeStyle=PCOL[c.prod]; g.beginPath(); let lx=-1e9, k0=0;
+    while(k0<q.length-2&&q[k0+1]<=0)k0+=2;                 // from its first sale (the round it opened it sells nothing)
+    for(let k=k0;k<q.length;k+=2){const px=X(xOf(c,q[k])), py=Y(q[k+1]);
+      if(k===k0)g.moveTo(px,py); else if(px-lx>=0.7*dpr||k===q.length-2)g.lineTo(px,py); else continue; lx=px}
+    g.stroke();
+    const ex=X(xOf(c,q[q.length-2])), ey=Y(q[q.length-1]), m=(top?3:2)*dpr;
+    g.fillStyle=g.strokeStyle=PCOL[c.prod];
+    if(c.died<0){g.beginPath();g.arc(ex,ey,m,0,2*Math.PI);g.fill()}
+    else{g.beginPath();g.moveTo(ex-m,ey-m);g.lineTo(ex+m,ey+m);g.moveTo(ex+m,ey-m);g.lineTo(ex-m,ey+m);g.stroke()}
+  }
+  g.restore();
+  // legend in the upper right corner: the products with their γ, and the end marks
+  g.textAlign='right'; g.textBaseline='top'; g.font=font(11);
+  const leg=P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}`}));
+  leg.forEach((l,k)=>{const y=pt+4*dpr+k*15*dpr; g.fillStyle='#16233b'; g.fillText(l.t,pl+w-4*dpr,y);
+    const tw=g.measureText(l.t).width; g.fillStyle=l.c; g.fillRect(pl+w-tw-17*dpr,y+1*dpr,9*dpr,9*dpr)});
+  g.fillStyle='#4a5872'; g.fillText('● still running   × closed',pl+w-4*dpr,pt+4*dpr+leg.length*15*dpr);
+}
+document.querySelectorAll('#trajSeg button').forEach(b=>b.onclick=()=>{
+  trajMode=b.dataset.m; document.querySelectorAll('#trajSeg button').forEach(x=>x.classList.toggle('on',x===b)); drawDist()});
+document.querySelectorAll('#trajScale button').forEach(b=>b.onclick=()=>{
+  trajLog=b.dataset.s==='log'; document.querySelectorAll('#trajScale button').forEach(x=>x.classList.toggle('on',x===b)); drawDist()});
 
 // ---------- pictures of the plots: .png in the shape shown, sq in a square; both with title and axis labels ----------
 function exportPlot(which,kind,btn){
-  const src=$(which==='chart'?'chart':which==='money'?'cMoney':'cSize'), r=src.getBoundingClientRect();
+  const src=$({chart:'chart',money:'cMoney',size:'cSize',life:'cLife',traj:'cTraj'}[which]), r=src.getBoundingClientRect();
   const dpr=2, W=kind==='sq'?1000:Math.round(Math.max(r.width,420)*dpr), H=kind==='sq'?1000:Math.round(Math.max(r.height+60,300)*dpr);
   const c=document.createElement('canvas'); c.width=W; c.height=H;
   const g=c.getContext('2d'); g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
   if(which==='chart')drawChart({canvas:c,dpr});
+  else if(which==='traj')trajPlot(c,{dpr});
   else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl})}
-  savePicture(c,`globalization_${which==='chart'?$('metric').value:which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
+  savePicture(c,`globalization_${which==='chart'?$('metric').value:which==='traj'?'sizes_'+trajMode+(trajLog?'_log':''):which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
 }
 document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>exportPlot(b.dataset.plot,b.dataset.k,b));
 
