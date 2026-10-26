@@ -1472,7 +1472,8 @@ function drawDomains(at,dpr){
 }
 // ---- regions cut out by the borders: the lattice is split where a step between two neighbouring agents crosses a
 // border (in either direction), and the pieces are found by flood fill. Each region gets a place for its label: the
-// agent farthest from the region's edge. Recomputed only when the borders, the size or the boundaries change ----
+// agent farthest from the region's edge — except a region around an enclosed one (a circle, or any closed loop), whose
+// label goes just outside it. Recomputed only when the borders, the size or the boundaries change ----
 let REG=null;
 function regions(){
   const L=E.L, LL=L*L, key=JSON.stringify([L,P.bc,P.borders.map(b=>b.pts)]);
@@ -1513,6 +1514,29 @@ function regions(){
   for(let r=0;r<LL;r++){const k=id[r]; size[k]++; if(dist[r]>dmax[k])dmax[k]=dist[r]}
   const score=r=>(r%L)-((r/L)|0);
   for(let r=0;r<LL;r++){const k=id[r]; if(dist[r]>=0.9*dmax[k]&&(at[k]<0||score(r)>score(at[k])))at[k]=r}
+  // A region j lying wholly inside one other region k — k is its only neighbour across the borders, and on a closed
+  // lattice j does not reach the edge (on a periodic one: j is the smaller) — like a circle: k's label goes just
+  // outside j, about max(5, 0.08 L) cells beyond the border, toward the upper right if there is room (else along another
+  // diagonal or axis), so that inside and outside can be compared at a glance instead of from a far corner
+  const touch=new Uint8Array(n), nb=Array.from({length:n},()=>new Set());
+  for(let r=0;r<LL;r++){const x=r%L, y=(r/L)|0, k=id[r];
+    if(cl&&(x===0||y===0||x===L-1||y===L-1))touch[k]=1;
+    if(x<L-1||!cl){const w=y*L+(x+1)%L; if(id[w]!==k){nb[k].add(id[w]);nb[id[w]].add(k)}}
+    if(y<L-1||!cl){const w=((y+1)%L)*L+x; if(id[w]!==k){nb[k].add(id[w]);nb[id[w]].add(k)}}}
+  const gap=Math.max(5,0.08*L), placed=new Uint8Array(n), cellAt=(x,y)=>{
+    x=Math.floor(x); y=Math.floor(y); if(cl&&(x<0||y<0||x>=L||y>=L))return -1; return ((y%L)+L)%L*L+((x%L)+L)%L};
+  for(const j of [...Array(n).keys()].sort((a,b)=>size[b]-size[a])){       // the largest enclosed regions first
+    if(nb[j].size!==1)continue; const k=[...nb[j]][0];
+    if(placed[k]||(cl?touch[j]:size[j]>=size[k]))continue;
+    const x0=(at[j]%L)+0.5, y0=((at[j]/L)|0)+0.5;
+    for(const [ux,uy] of [[1,-1],[-1,-1],[1,1],[-1,1],[1,0],[0,-1],[-1,0],[0,1]]){
+      const l=Math.hypot(ux,uy), dx=ux/l, dy=uy/l; let out=-1;
+      for(let t=0;t<2*L;t+=0.5){const c=cellAt(x0+dx*t,y0+dy*t); if(c<0)break; if(id[c]!==j){out=t;break}}
+      if(out<0)continue;
+      const c=cellAt(x0+dx*(out+gap),y0+dy*(out+gap));
+      if(c>=0&&id[c]===k){at[k]=c; placed[k]=1; break}
+    }
+  }
   REG={key,id,n,at,size};
   return REG;
 }
