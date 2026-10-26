@@ -26,6 +26,10 @@
   header h1{font-size:20px;margin:0;letter-spacing:-.01em}
   .eq{font-size:13.5px;color:var(--ink2);font-family:Georgia,"Times New Roman",serif;font-style:italic;min-width:0}
   .eq b{color:var(--accent);font-weight:600}
+  .eq .eqnote{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-style:normal;font-size:12px;color:var(--muted);
+    margin-left:14px;padding-left:12px;border-left:1px solid var(--line);white-space:nowrap}
+  .eq .eqnote b{font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  @media (max-width:520px){ .eq .eqnote{display:block;margin:2px 0 0;padding:0;border:0;white-space:normal} }
 
   /* title pull-down with the rules of the model, opening over the display */
   .titledrop{position:relative;flex:0 0 auto}
@@ -57,6 +61,7 @@
   .dropbox .toc a{padding:2px 10px;border-radius:999px;background:var(--accent-soft);border:1px solid rgba(67,56,202,.16);
     font-size:12.5px;cursor:pointer;white-space:nowrap}
   .dropbox .toc a:hover{background:rgba(67,56,202,.14);text-decoration:none}
+  .dropbox ol.lessons li{margin:9px 0}
   .dropbox ul.try{background:#fff7e3;border:1px solid #f1dca6;border-radius:10px;padding:8px 14px 8px 32px}
   .dropbox .eqc{font-family:Georgia,"Times New Roman",serif;font-style:italic;text-align:center;color:var(--ink);font-size:15px;margin:8px 0}
   @media (max-width:520px){ .dropbox{padding:12px 14px;font-size:13.5px} .dropbox .lead{font-size:14px} }
@@ -274,7 +279,7 @@
         a handful of factories far away? This applet is a toy world for thinking about that question. It is the model of
         Sneppen and Bornholdt [1], drawn on a flat map and extended from one product to many.</p>
       <nav class="toc">
-        <a data-to="r-town">The town</a><a data-to="r-cost">Prices</a><a data-to="r-round">One round</a><a data-to="r-patience">Patience</a><a data-to="r-money">Money</a><a data-to="r-econ">Economies</a><a data-to="r-geo">Roads and borders</a><a data-to="r-look">What to look for</a><a data-to="r-pics">The picture</a><a data-to="r-plots">The plots</a><a data-to="r-try">Try this</a><a data-to="r-lit">Related models</a>
+        <a data-to="r-town">The town</a><a data-to="r-cost">Prices</a><a data-to="r-round">One round</a><a data-to="r-patience">Patience</a><a data-to="r-money">Money</a><a data-to="r-econ">Economies</a><a data-to="r-geo">Roads and borders</a><a data-to="r-look">What to look for</a><a data-to="r-lessons">Lessons</a><a data-to="r-pics">The picture</a><a data-to="r-plots">The plots</a><a data-to="r-try">Try this</a><a data-to="r-lit">Related models</a>
       </nav>
 
       <h2 id="r-town">The town</h2>
@@ -404,6 +409,51 @@
         their customers, grows ten times bigger in two or three rounds, gets rich — and then its owner switches to B or C
         at the first dip in profit.</p>
 
+      <h2 id="r-lessons">Lessons from the model</h2>
+      <p>Each lesson below was checked by running the model: a 125 × 125 town with the self-organized price, n = 0.2 and
+        patience 1 unless said otherwise, three runs of 1000 rounds each, measured over the last 700. <i>Scaling</i> means
+        the slopes of the straight lines in the log–log plots: P(s) ∝ s<sup>−2</sup> for the bakeries, and the tail of
+        P(M), about M<sup>−1.24</sup>.</p>
+      <ol class="lessons">
+        <li><b>Making the high-tech factories dearer to start does not change the scaling.</b> With B and C half as dear,
+          or two or four times as dear (up to 32 and 80 instead of 8 and 20), the bakeries keep P(s) ∝ s<sup>−2.0</sup> to
+          s<sup>−2.1</sup>, and the money tail stays between −1.06 and −1.28, with no trend. What changes is how much
+          happens. Four times dearer gives about 5 times fewer start-ups (30 instead of 138 a round), 10 times fewer
+          bankruptcies, almost 4 times fewer chip factories, and three times more money in the agents' pockets (mean 13.8
+          instead of 4.6): the thermostat needs more savings before anybody can afford to try.</li>
+        <li><b>More upkeep does not change the scaling of the companies, but it can wipe out the bakeries.</b> From μ = 0.01
+          to 0.08 the bakeries keep P(s) ∝ s<sup>−2.0</sup>, while the money tail becomes a little flatter, from −1.36 to
+          −1.10. The big change comes at a threshold: once a bakery's upkeep, μ · 2, is more than the wage, 0.05, a bakery
+          that sells nothing loses money every round. At μ = 0.04 the bakeries drop from 14 400 to 1 500, bankruptcies
+          rise from 25 to 360 a round, and an agent lasts just 40 rounds between two bankruptcies — exactly the time it
+          takes to save up for a bakery, which then sinks it.</li>
+        <li><b>When the buyers pay, money gets scarce, bread production collapses, and markets concentrate.</b> The mean
+          money falls from 4.6 to 1.5 and the typical money (the median) from 3.2 to 0.8, while the richest still hold about
+          1 700. Bankruptcies rise from 25 to 360 a round, and half the time an agent goes bankrupt again within 6 rounds:
+          mostly agents without a factory, whose shopping, delivery included, costs more than their wage. There are 17
+          times fewer bakeries (830 instead of 14 400), and the biggest chip company's share of its market almost doubles,
+          from 0.21 to 0.39. The scaling of the bakeries changes little, s<sup>−1.9</sup> instead of s<sup>−2.1</sup>.
+          Transport takes about 410 money out of the town every round.</li>
+        <li><b>More patience makes the rich richer, not the typical agent.</b> With patience 3 instead of 1, the richest agent
+          holds about 6 900 instead of 1 800 and the mean money rises from 4.6 to 11.5, but the median stays at 3.2–3.4.
+          The money tail flattens from M<sup>−1.24</sup> to M<sup>−0.87</sup>: owners of big companies keep them longer
+          and pile up money, while everybody else lives as before. (On a 64 × 64 town the leading chip company lasted
+          about 8 rounds instead of 1 to 2.)</li>
+        <li><b>A protected country in the middle gets richer — in both economies.</b> Put a circle with 10 % of the town in
+          the middle, with a tariff of 1 on goods going in. One might expect the insiders to get poor when the buyers pay,
+          since they pay the tariff on what they import. That does not happen. With the self-organized price the insiders
+          end up with 1.6 times as much money as the outsiders, and when the buyers pay with 5 times as much (3 to 7 in the
+          three runs). Their income per round is 1.7 and 2.7 times that of the outsiders, in all three runs, against 0.7 to
+          2.2 times in the same circle without a border, where it only depends on where the giants happen to sit. The
+          reason: behind the border the insiders buy practically everything at home, so they hardly pay any tariff. Their
+          own B and C companies grow — the inside holds 10 % of the people but about a quarter (self-organized) to 40 %
+          (buyers pay) of all the chip factories — and they sell to the outside for free.</li>
+        <li><b>A 100 % tax on goods going in does the same.</b> With the same circle and a tax of 100 % instead of the
+          tariff, the insiders end up with 1.8 times as much money as the outsiders with the self-organized price, and 7.6
+          times as much when the buyers pay; their income is 1.7 and 3.4 times higher, in all three runs. Again they buy
+          nearly everything at home, from their own chip makers — about 6 of the town's 28 sit inside.</li>
+      </ol>
+
       <h2 id="r-pics">How to read the picture of the town</h2>
       <p><b>3D</b> (the default): the town seen from the side. Every factory is a tower as tall as the number of units it
         sold last round. The golden glass columns are the agents' money, hanging below the ground or standing around the
@@ -520,7 +570,7 @@
       </div>
     </div>
   </details>
-  <div class="eq">C(r₁,r₂,i) = F(r₁,i)·s(r₁,i)<sup><b>γ<sub>i</sub></b></sup> + <b>β<sub>i</sub></b>|r₁−r₂| · start cost <b>Start<sub>i</sub></b></div>
+  <div class="eq" title="C: the price at which a factory of product i at r₁ offers one unit to an agent at r₂ (F(r₁,i) = 1 if the agent at r₁ makes product i). The start cost is paid once, when a factory opens; it is not part of the price.">C(r₁,r₂,i) = F(r₁,i)·s(r₁,i)<sup><b>γ<sub>i</sub></b></sup> + <b>β<sub>i</sub></b>|r₁−r₂|<span class="eqnote">a new factory of product i costs <b>Start<sub>i</sub></b>, paid once</span></div>
 </header>
 
 <div class="layout">
