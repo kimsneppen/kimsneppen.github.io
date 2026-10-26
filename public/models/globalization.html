@@ -104,6 +104,7 @@
     .display.darkbg .overlayinfo{background:rgba(11,13,19,.72)}
   }
   .tbtn.sobtn{font-size:12px;font-weight:600}
+  .tbtn.stdbtn{font-size:12px;font-weight:600}
   .tbtn.sobtn.on{background:#b7791f;border-color:#b7791f;color:#fff}
   .display.darkbg .tbtn.sobtn.on{background:#b7791f;border-color:#b7791f;color:#fff}
   canvas#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
@@ -170,7 +171,7 @@
   .ovtop{position:absolute;left:6px;right:6px;top:6px;z-index:4;display:flex;justify-content:space-between;align-items:flex-start;gap:5px;pointer-events:none}
   .tools{position:relative;flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start;pointer-events:none}
   .tools > *{pointer-events:auto}
-  .tools.tright{flex:0 0 auto;justify-content:flex-end}
+  .tools.tright{flex:0 0 auto;flex-direction:column;align-items:flex-end}
   .pat{display:inline-flex;align-items:center;gap:4px;height:27px;padding:0 3px 0 9px;border:1px solid var(--line);border-radius:8px;
     background:rgba(255,255,255,.9);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}
   .pat select{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0 1px;cursor:pointer;outline-offset:2px}
@@ -283,7 +284,7 @@
         a handful of factories far away? This applet is a toy world for thinking about that question. It is the model of
         Sneppen and Bornholdt [1], drawn on a flat map and extended from one product to many.</p>
       <nav class="toc">
-        <a data-to="r-town">The town</a><a data-to="r-cost">Prices</a><a data-to="r-round">One round</a><a data-to="r-patience">Patience</a><a data-to="r-money">Money</a><a data-to="r-econ">Economies</a><a data-to="r-geo">Roads and borders</a><a data-to="r-look">What to look for</a><a data-to="r-lessons">Lessons</a><a data-to="r-pics">The picture</a><a data-to="r-plots">The plots</a><a data-to="r-try">Try this</a><a data-to="r-lit">Related models</a>
+        <a data-to="r-town">The town</a><a data-to="r-cost">Prices</a><a data-to="r-round">One round</a><a data-to="r-patience">Patience</a><a data-to="r-money">Money</a><a data-to="r-econ">Economies</a><a data-to="r-geo">Roads and borders</a><a data-to="r-look">What to look for</a><a data-to="r-pics">The picture</a><a data-to="r-plots">The plots</a><a data-to="r-lessons">Lessons</a><a data-to="r-try">Try this</a><a data-to="r-lit">Related models</a>
       </nav>
 
       <h2 id="r-town">The town</h2>
@@ -294,7 +295,8 @@
         <b>B</b> is an ordinary industry. <b>C</b> is high tech, like computer chips: a chip factory is very expensive to
         build, but the bigger it is, the cheaper each chip becomes.</p>
       <p>The town has edges, like an island. In the control panel (the tab at the right edge of the window) you can wrap
-        it around like a doughnut instead, so that walking off the right side brings you back on the left. There you can
+        it around like a doughnut instead (the <i>edges</i> menu in the upper right corner), so that walking off the right
+        side brings you back on the left. There you can
         also change the products, add more of them, and change every other setting.</p>
 
       <h2 id="r-cost">What things cost</h2>
@@ -420,51 +422,6 @@
         their customers, grows ten times bigger in two or three rounds, gets rich — and then its owner switches to B or C
         at the first dip in profit.</p>
 
-      <h2 id="r-lessons">Lessons from the model</h2>
-      <p>Each lesson below was checked by running the model: a 125 × 125 town with the self-organized price, n = 0.2 and
-        patience 1 unless said otherwise, three runs of 1000 rounds each, measured over the last 700. <i>Scaling</i> means
-        the slopes of the straight lines in the log–log plots: P(s) ∝ s<sup>−2</sup> for the bakeries, and the tail of
-        P(M), about M<sup>−1.24</sup>.</p>
-      <ol class="lessons">
-        <li><b>Making the high-tech factories dearer to start does not change the scaling.</b> With B and C half as dear,
-          or two or four times as dear (up to 32 and 80 instead of 8 and 20), the bakeries keep P(s) ∝ s<sup>−2.0</sup> to
-          s<sup>−2.1</sup>, and the money tail stays between −1.06 and −1.28, with no trend. What changes is how much
-          happens. Four times dearer gives about 5 times fewer start-ups (30 instead of 138 a round), 10 times fewer
-          bankruptcies, almost 4 times fewer chip factories, and three times more money in the agents' pockets (mean 13.8
-          instead of 4.6): the thermostat needs more savings before anybody can afford to try.</li>
-        <li><b>More upkeep does not change the scaling of the companies, but it can wipe out the bakeries.</b> From μ = 0.01
-          to 0.08 the bakeries keep P(s) ∝ s<sup>−2.0</sup>, while the money tail becomes a little flatter, from −1.36 to
-          −1.10. The big change comes at a threshold: once a bakery's upkeep, μ · 2, is more than the wage, 0.05, a bakery
-          that sells nothing loses money every round. At μ = 0.04 the bakeries drop from 14 400 to 1 500, bankruptcies
-          rise from 25 to 360 a round, and an agent lasts just 40 rounds between two bankruptcies — exactly the time it
-          takes to save up for a bakery, which then sinks it.</li>
-        <li><b>When the buyers pay, money gets scarce, bread production collapses, and markets concentrate.</b> The mean
-          money falls from 4.6 to 1.5 and the typical money (the median) from 3.2 to 0.8, while the richest still hold about
-          1 700. Bankruptcies rise from 25 to 360 a round, and half the time an agent goes bankrupt again within 6 rounds:
-          mostly agents without a factory, whose shopping, delivery included, costs more than their wage. There are 17
-          times fewer bakeries (830 instead of 14 400), and the biggest chip company's share of its market almost doubles,
-          from 0.21 to 0.39. The scaling of the bakeries changes little, s<sup>−1.9</sup> instead of s<sup>−2.1</sup>.
-          Transport takes about 410 money out of the town every round.</li>
-        <li><b>More patience makes the rich richer, not the typical agent.</b> With patience 3 instead of 1, the richest agent
-          holds about 6 900 instead of 1 800 and the mean money rises from 4.6 to 11.5, but the median stays at 3.2–3.4.
-          The money tail flattens from M<sup>−1.24</sup> to M<sup>−0.87</sup>: owners of big companies keep them longer
-          and pile up money, while everybody else lives as before. (On a 64 × 64 town the leading chip company lasted
-          about 8 rounds instead of 1 to 2.)</li>
-        <li><b>A protected country in the middle gets richer — in both economies.</b> Put a circle with 10 % of the town in
-          the middle, with a tariff of 1 on goods going in. One might expect the insiders to get poor when the buyers pay,
-          since they pay the tariff on what they import. That does not happen. With the self-organized price the insiders
-          end up with 1.6 times as much money as the outsiders, and when the buyers pay with 5 times as much (3 to 7 in the
-          three runs). Their income per round is 1.7 and 2.7 times that of the outsiders, in all three runs, against 0.7 to
-          2.2 times in the same circle without a border, where it only depends on where the giants happen to sit. The
-          reason: behind the border the insiders buy practically everything at home, so they hardly pay any tariff. Their
-          own B and C companies grow — the inside holds 10 % of the people but about a quarter (self-organized) to 40 %
-          (buyers pay) of all the chip factories — and they sell to the outside for free.</li>
-        <li><b>A 100 % tax on goods going in does the same.</b> With the same circle and a tax of 100 % instead of the
-          tariff, the insiders end up with 1.8 times as much money as the outsiders with the self-organized price, and 7.6
-          times as much when the buyers pay; their income is 1.7 and 3.4 times higher, in all three runs. Again they buy
-          nearly everything at home, from their own chip makers — about 6 of the town's 28 sit inside.</li>
-      </ol>
-
       <h2 id="r-pics">How to read the picture of the town</h2>
       <p><b>3D</b> (the default): the town seen from the side. Every factory is a tower as tall as the number of units it
         sold last round. The golden glass columns are the agents' money, hanging below the ground or standing around the
@@ -512,13 +469,58 @@
         drains away in grey stretches while it tries one new factory after another. With patience 4 the richest keep
         their companies, and their money climbs steadily.</p>
       <p><b>Around the high-tech companies</b>: the mean and the median money of the agents, and the mean size of the
-        bread factories, against the distance d to the nearest big company of the most scalable product (one that sells
-        at least a tenth of what the biggest one sells), summed over the last 100 rounds. Linear, or both axes
-        logarithmic. Close to a big chip company the mean money is high — its owner lives there — and the bakeries sell
+        bread factories and of the ordinary (B) factories, against the distance d to the nearest big company of the most scalable product (one that sells
+        at least a tenth of what the biggest one sells), summed over the last 100 rounds or over the last two
+        thirds of the run. Linear, or both axes logarithmic. Close to a big chip company the mean money is high — its owner lives there — and the bakeries sell
         many times more than far away (10 to 20 times in our runs) — most likely because the rich order more, and bread is
         bought close by. Some ten cells away both curves are flat. The median changes much less than the mean: the wealth
         sits with a few, not with the whole neighbourhood.</p>
       <p>Every plot has its own <b>.png</b> and <b>sq</b> buttons to save it as a picture.</p>
+
+      <h2 id="r-lessons">Lessons from the model</h2>
+      <p>Each lesson below was checked by running the model: a 125 × 125 town with the self-organized price, n = 0.2 and
+        patience 1 unless said otherwise, three runs of 1000 rounds each, measured over the last 700. <i>Scaling</i> means
+        the slopes of the straight lines in the log–log plots: P(s) ∝ s<sup>−2</sup> for the bakeries, and the tail of
+        P(M), about M<sup>−1.24</sup>.</p>
+      <ol class="lessons">
+        <li><b>Making the high-tech factories dearer to start does not change the scaling.</b> With B and C half as dear,
+          or two or four times as dear (up to 32 and 80 instead of 8 and 20), the bakeries keep P(s) ∝ s<sup>−2.0</sup> to
+          s<sup>−2.1</sup>, and the money tail stays between −1.06 and −1.28, with no trend. What changes is how much
+          happens. Four times dearer gives about 5 times fewer start-ups (30 instead of 138 a round), 10 times fewer
+          bankruptcies, almost 4 times fewer chip factories, and three times more money in the agents' pockets (mean 13.8
+          instead of 4.6): the thermostat needs more savings before anybody can afford to try.</li>
+        <li><b>More upkeep does not change the scaling of the companies, but it can wipe out the bakeries.</b> From μ = 0.01
+          to 0.08 the bakeries keep P(s) ∝ s<sup>−2.0</sup>, while the money tail becomes a little flatter, from −1.36 to
+          −1.10. The big change comes at a threshold: once a bakery's upkeep, μ · 2, is more than the wage, 0.05, a bakery
+          that sells nothing loses money every round. At μ = 0.04 the bakeries drop from 14 400 to 1 500, bankruptcies
+          rise from 25 to 360 a round, and an agent lasts just 40 rounds between two bankruptcies — exactly the time it
+          takes to save up for a bakery, which then sinks it.</li>
+        <li><b>When the buyers pay, money gets scarce, bread production collapses, and markets concentrate.</b> The mean
+          money falls from 4.6 to 1.5 and the typical money (the median) from 3.2 to 0.8, while the richest still hold about
+          1 700. Bankruptcies rise from 25 to 360 a round, and half the time an agent goes bankrupt again within 6 rounds:
+          mostly agents without a factory, whose shopping, delivery included, costs more than their wage. There are 17
+          times fewer bakeries (830 instead of 14 400), and the biggest chip company's share of its market almost doubles,
+          from 0.21 to 0.39. The scaling of the bakeries changes little, s<sup>−1.9</sup> instead of s<sup>−2.1</sup>.
+          Transport takes about 410 money out of the town every round.</li>
+        <li><b>More patience makes the rich richer, not the typical agent.</b> With patience 3 instead of 1, the richest agent
+          holds about 6 900 instead of 1 800 and the mean money rises from 4.6 to 11.5, but the median stays at 3.2–3.4.
+          The money tail flattens from M<sup>−1.24</sup> to M<sup>−0.87</sup>: owners of big companies keep them longer
+          and pile up money, while everybody else lives as before. (On a 64 × 64 town the leading chip company lasted
+          about 8 rounds instead of 1 to 2.)</li>
+        <li><b>A protected country in the middle gets richer — in both economies.</b> Put a circle with 10 % of the town in
+          the middle, with a tariff of 1 on goods going in. One might expect the insiders to get poor when the buyers pay,
+          since they pay the tariff on what they import. That does not happen. With the self-organized price the insiders
+          end up with 1.6 times as much money as the outsiders, and when the buyers pay with 5 times as much (3 to 7 in the
+          three runs). Their income per round is 1.7 and 2.7 times that of the outsiders, in all three runs, against 0.7 to
+          2.2 times in the same circle without a border, where it only depends on where the giants happen to sit. The
+          reason: behind the border the insiders buy practically everything at home, so they hardly pay any tariff. Their
+          own B and C companies grow — the inside holds 10 % of the people but about a quarter (self-organized) to 40 %
+          (buyers pay) of all the chip factories — and they sell to the outside for free.</li>
+        <li><b>A 100 % tax on goods going in does the same.</b> With the same circle and a tax of 100 % instead of the
+          tariff, the insiders end up with 1.8 times as much money as the outsiders with the self-organized price, and 7.6
+          times as much when the buyers pay; their income is 1.7 and 3.4 times higher, in all three runs. Again they buy
+          nearly everything at home, from their own chip makers — about 6 of the town's 28 sit inside.</li>
+      </ol>
 
       <h2 id="r-try">Try this</h2>
       <ul class="try">
@@ -606,6 +608,7 @@
       <span class="stat">round <b id="tRound">0</b></span>
       <button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
       <button class="tbtn" id="bReset2" title="reset">↺</button>
+      <button class="tbtn stdbtn" id="bStd" title="restore the standard setup: the three products A, B and C, the self-organized price with n = 0.2, patience 1, wage 0.05, upkeep 0.02, a closed 125 × 125 town without roads or borders">standard</button>
     </div>
     <div class="canvas-wrap"><canvas id="cv"></canvas>
       <div class="ovtop">
@@ -670,6 +673,8 @@
       <div class="tools tright">
         <label class="pat" title="Patience κ: how big a fall in profit makes an owner give up its product and try another one. 0: any fall at all. 1: a fall bigger than ordinary chance, p·√(units sold) (the default). 2–5: a fall 2 to 5 times bigger than that.">
           <span>patience κ</span><select id="patSel"><option value="0">0 any fall</option><option value="1">1 normal</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
+        <label class="pat" title="the edges of the town: closed, like an island, or periodic, wrapped around like a doughnut, so that walking off one side brings you back on the other">
+          <span>edges</span><select id="bcSel2"><option value="closed">closed</option><option value="periodic">periodic</option></select></label>
       </div>
       </div>
       <div class="cornerbtns">
@@ -749,8 +754,10 @@
     </div>
   </section>
   <section class="display">
-    <div class="cardhead"><h2>Around the high-tech companies</h2><span class="sub" id="nearSub">money and bakery size against the distance to the nearest big company of the most scalable product</span></div>
+    <div class="cardhead"><h2>Around the high-tech companies</h2><span class="sub" id="nearSub">money, and the size of the bread and ordinary factories, against the distance to the nearest big company of the most scalable product</span></div>
     <div class="chartbar">
+      <div class="seg" id="nearWin" title="sum over the last 100 rounds, or over the last two thirds of the run since the last change of a parameter">
+        <button data-w="r100" class="on">last 100 rounds</button><button data-w="avg">last ⅔ of run</button></div>
       <div class="seg" id="nearScale" title="linear axes, or both axes logarithmic">
         <button data-s="lin" class="on">linear</button><button data-s="log">log–log</button></div>
       <span class="plotbtns"><span class="pl">M(d)</span><button data-plot="nearM" data-k="png" title="save the money against distance as a PNG picture, with title and axis labels">.png</button><button data-plot="nearM" data-k="sq" title="save the money against distance in a square picture">sq</button>
@@ -787,12 +794,13 @@
         <tbody id="ptbody"></tbody>
       </table>
       <div class="presets" style="margin-top:8px">
-        <button class="btn sm" id="pAdd">+ product</button><button class="btn sm" id="pDel">− product</button>
+        <button class="btn sm" id="pAdd">+ product</button><button class="btn sm" id="pDel" title="remove the last product; with two left, both become copies of the first (twins), since one product alone has nothing to switch to">− product</button>
       </div>
       <div class="row"><label>Factory colours</label>
         <select id="palSel"><option value="jet">jet</option><option value="spectral">spectral</option></select></div>
       <p class="hint" id="monoHint">A more scalable product (lower γ) must cost more to start: Start increases as γ decreases.
-        A new product is added as the most scalable one. Start, γ and β act at once; changing the number of products restarts.</p>
+        A new product is added as the most scalable one. At least two products stay: going down to one makes twins, two
+        products with the same numbers. Start, γ and β act at once; changing the number of products restarts.</p>
     </div>
   </details>
 
@@ -1171,8 +1179,8 @@ const gridBorders=(L,k,tax)=>{const b=[];for(let j=0;j<k;j++){const g=j*L/k;
 // a more scalable product (lower γ) always costs more to start; A is the basic product
 const THREE=[{start:2,gamma:-0.3,beta:0.1},{start:8,gamma:-0.6,beta:0.05},{start:20,gamma:-0.9,beta:0.02}];
 const PRESETS={
-  three:{label:'Three industries',note:'A: basic product, cheap to start, weak economy of scale, costly to ship. B: ordinary industry. C: high tech, strong economy of scale and cheap to ship, but expensive to start.',
-    products:THREE,tmul:1,anneal:false},
+  standard:{label:'Standard setup',note:'The standard setup. A: basic product, cheap to start, weak economy of scale, costly to ship. B: ordinary industry. C: high tech, strong economy of scale and cheap to ship, but expensive to start. Self-organized price with n = 0.2, patience 1, wage 0.05, upkeep 0.02, a closed 125 × 125 town without roads or borders.',
+    products:THREE,tmul:1,anneal:false,std:true},
   twins:{label:'Twin products',note:'Two products with the numbers of the original one-product model (Start 5, γ −0.5, β 0.05) but different names. With a single product an owner whose profit falls has nothing to switch to, and the money of the big companies piles up without end; with twins it can switch.',
     products:[{start:5,gamma:-0.5,beta:0.05},{start:5,gamma:-0.5,beta:0.05}],tmul:1,anneal:false},
   glob:{label:'Globalization',note:'Transport starts 3× dearer and is lowered by e^−0.002 per round: local producers coarsen into a few big companies.',
@@ -1182,8 +1190,11 @@ const PRESETS={
 };
 let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=true, loopTok=0;
 
+// the model settings of the standard setup (the view and the colours are left as they are)
+const STD={L:125,n:0.2,lim:1,wage:0.05,upkeep:0.02,kappa:1,M0:5,bc:'closed',econ:'so'};
 function applyPreset(k){
   const pr=PRESETS[k];
+  if(pr.std){Object.assign(P,STD); $('Lsel').value=String(STD.L); $('aRate').value='0.002'; circOn.clear()}
   P.products=pr.products.map(o=>({...o}));
   P.tmul=pr.tmul; P.roads=[]; P.borders=pr.borders?pr.borders(+$('Lsel').value):[];
   $('anneal').checked=!!pr.anneal;
@@ -1212,7 +1223,7 @@ function syncControls(){
   $('upR').value=P.upkeep; $('upV').textContent=P.upkeep.toFixed(3);
   $('M0R').value=P.M0; $('M0V').textContent=P.M0;
   $('tmR').value=Math.log10(P.tmul); $('tmV').textContent=fmt(P.tmul);
-  $('bcSel').value=P.bc; $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
+  $('bcSel').value=$('bcSel2').value=P.bc; $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
   $('econSel').value=P.econ; syncSO();
 }
 // a product with lower γ (more scalable) must have the higher start cost: mark the pairs that break this
@@ -1267,7 +1278,7 @@ function buildProductUI(){
   });
   pt.classList.toggle('dis',view==='3d'||view==='agents'||view==='money'||P.products.length<2);
   $('hSeg').style.display=$('moneySel').style.display=$('viewMenu').style.display=view==='3d'?'':'none';
-  $('pAdd').disabled=P.products.length>=PNAME.length; $('pDel').disabled=P.products.length<=1;
+  $('pAdd').disabled=P.products.length>=PNAME.length; $('pDel').disabled=P.products.length<=1||isTwins();
   const ls=$('limSel'); P.lim=Math.max(1,Math.min(P.products.length,P.lim));
   ls.innerHTML=P.products.map((_,k)=>`<option value="${k+1}">${k+1}${k+1===P.products.length?' (all)':''}</option>`).join('');
   ls.value=String(P.lim);
@@ -1329,7 +1340,13 @@ $('moneySel').onchange=e=>{money3=e.target.value;draw()};
 $('bBg').onclick=()=>{dark=!dark;document.querySelector('.display').classList.toggle('darkbg',dark);setFlashMode(flashMode)};
 $('bPng').onclick=()=>exportPNG('png');
 $('bSq').onclick=()=>exportPNG('sq');
-$('pDel').onclick=()=>{P.products.pop();restart()};
+// fewer products: at least two stay. Going down to one makes twins instead — two products with the numbers of the
+// first — because with a single product an owner has nothing to switch to, and the money of the big companies piles up
+const isTwins=()=>P.products.length===2&&['start','gamma','beta'].every(k=>P.products[0][k]===P.products[1][k]);
+$('pDel').onclick=()=>{const pr=P.products;
+  if(pr.length>2)pr.pop(); else if(pr.length===2&&!isTwins())P.products=[{...pr[0]},{...pr[0]}]; else return;
+  restart()};
+$('bStd').onclick=()=>applyPreset('standard');
 $('nSel').onchange=e=>{P.n=+e.target.value;syncSO()};
 $('limSel').onchange=e=>{P.lim=+e.target.value};
 // patience κ: in the panel and in the upper right corner of the display
@@ -1343,7 +1360,10 @@ document.querySelectorAll('#hSeg button').forEach(b=>b.onclick=()=>{
 });
 $('M0R').oninput=e=>{P.M0=+e.target.value;$('M0V').textContent=P.M0};
 $('tmR').oninput=e=>{P.tmul=Math.pow(10,+e.target.value);$('tmV').textContent=fmt(P.tmul);E.computeMarkets();draw();updStat()};
-$('bcSel').onchange=e=>{P.bc=e.target.value;E.computeMarkets();draw()};
+// the boundaries: in the panel and in the upper right corner of the display
+function setBC(v){P.bc=v; $('bcSel').value=$('bcSel2').value=v; E.computeMarkets(); distMark(); draw(); drawDist()}
+$('bcSel').onchange=e=>setBC(e.target.value);
+$('bcSel2').onchange=e=>setBC(e.target.value);
 $('clearNet').onclick=$('clearNet2').onclick=()=>{P.roads=[];P.borders=[];netChanged()};
 // ---- roads and borders, drawn on the display: choose a tool, then press, drag and release (or tap to remove) ----
 let tool=null, toolDrag=null;
@@ -2330,49 +2350,81 @@ $('survDec').oninput=e=>{survDec=+e.target.value; survDecAll=survDec>=+e.target.
 // lowest γ): one that sells at least a tenth of what the biggest of that product sells. Every round adds, for each
 // whole number of cells d, the number of agents, their money (sum and histogram, for the median), and the number and
 // sales of the factories of the least scalable product (the highest γ); the plots sum the last NEARN rounds ----
-const NEARN=100; let NEAR=null, nearLog=false;
+const NEARN=100, NEARSNAP=120; let NEAR=null, nearLog=false, nearWin='r100';
 const NMB=nb(MB);
-function nearReset(){NEAR={ring:[],D:Math.ceil(E.L*Math.SQRT2)+2}}
-function nearProducts(){let ib=0,il=0; P.products.forEach((q,i)=>{if(q.gamma<=P.products[ib].gamma)ib=i; if(q.gamma>P.products[il].gamma)il=i}); return {ib,il}}
+// per distance (whole cells): the number of agents, their money (sum and histogram, for the median), and the number
+// and sales of the factories of the two least scalable products. Kept for the last NEARN rounds (one record per round),
+// and as running sums over the whole run with snapshots, so that the sum over the last two thirds since the last
+// change of a parameter is a difference (snapshots every few rounds: at most NEARSNAP, thinned out as the run grows)
+function nearReset(){const D=Math.ceil(E.L*Math.SQRT2)+2;
+  NEAR={ring:[],D,cum:nearZero(D),t:0,snaps:[],every:5,key:''}}
+function nearZero(D){return {cnt:new Float64Array(D),msum:new Float64Array(D),mh:new Float64Array(D*NMB),
+  ac:[new Float64Array(D),new Float64Array(D)],as:[new Float64Array(D),new Float64Array(D)]}}
+// the most scalable product (the lowest γ, the last of equals) and the two least scalable ones (the highest γ first)
+function nearProducts(){const pr=P.products; let ib=0; pr.forEach((q,i)=>{if(q.gamma<=pr[ib].gamma)ib=i});
+  const order=pr.map((q,i)=>i).sort((a,b)=>pr[b].gamma-pr[a].gamma||a-b);
+  return {ib,il:order[0],il2:order.length>1?order[1]:-1}}
 function nearRecord(){
-  const L=E.L, LL=L*L, D=NEAR.D, {ib,il}=nearProducts(), S=E.sales[ib], F=E.F[ib];
+  const L=E.L, LL=L*L, D=NEAR.D, {ib,il,il2}=nearProducts(), S=E.sales[ib], F=E.F[ib];
+  const key=[ib,il,il2].join(); if(key!==NEAR.key){NEAR.ring=[];NEAR.cum=nearZero(D);NEAR.snaps=[];NEAR.key=key}
   let mx=0; for(let r=0;r<LL;r++)if(F[r]&&S[r]>mx)mx=S[r];
   const big=[]; if(mx>0)for(let r=0;r<LL;r++)if(F[r]&&S[r]>=Math.max(1,0.1*mx))big.push(r);
   if(!big.length)return;
-  const cnt=new Float32Array(D), msum=new Float32Array(D), mh=new Float32Array(D*NMB), acnt=new Float32Array(D), asum=new Float32Array(D);
-  const SA=E.sales[il], FA=E.F[il];
+  const e={cnt:new Float32Array(D),msum:new Float32Array(D),mh:new Float32Array(D*NMB),
+    ac:[new Float32Array(D),new Float32Array(D)],as:[new Float32Array(D),new Float32Array(D)],ib,il,il2};
+  const ls=[il,il2];
   for(let r=0;r<LL;r++){
     let d=Infinity; for(const b of big){const q=E.pdist(b,r); if(q<d)d=q}
     const k=Math.min(D-1,Math.floor(d)), v=E.money[r];
-    cnt[k]++; msum[k]+=v; if(v>0){const j=binOf(MB,v); if(j>=0&&j<NMB)mh[k*NMB+j]++}
-    if(FA[r]){acnt[k]++; asum[k]+=SA[r]}
+    e.cnt[k]++; e.msum[k]+=v; if(v>0){const j=binOf(MB,v); if(j>=0&&j<NMB)e.mh[k*NMB+j]++}
+    for(let q=0;q<2;q++){const i=ls[q]; if(i>=0&&E.F[i][r]){e.ac[q][k]++; e.as[q][k]+=E.sales[i][r]}}
   }
-  NEAR.ring.push({cnt,msum,mh,acnt,asum,ib,il}); if(NEAR.ring.length>NEARN)NEAR.ring.shift();
+  NEAR.ring.push(e); if(NEAR.ring.length>NEARN)NEAR.ring.shift();
+  const c=NEAR.cum; for(let k=0;k<D;k++){c.cnt[k]+=e.cnt[k];c.msum[k]+=e.msum[k];for(let q=0;q<2;q++){c.ac[q][k]+=e.ac[q][k];c.as[q][k]+=e.as[q][k]}}
+  for(let j=0;j<D*NMB;j++)c.mh[j]+=e.mh[j];
+  NEAR.t=E.t;
+  if(E.t%NEAR.every===0){
+    NEAR.snaps.push({t:E.t,cnt:Float64Array.from(c.cnt),msum:Float64Array.from(c.msum),mh:Float64Array.from(c.mh),
+      ac:c.ac.map(a=>Float64Array.from(a)),as:c.as.map(a=>Float64Array.from(a))});
+    if(NEAR.snaps.length>NEARSNAP){NEAR.snaps=NEAR.snaps.filter((x,k)=>k%2===1); NEAR.every*=2}
+  }
+}
+// the sums to plot: the last NEARN rounds, or the last two thirds of the run since the last parameter change
+function nearSums(){
+  const D=NEAR.D;
+  if(nearWin==='r100'){const z=nearZero(D);
+    for(const e of NEAR.ring){for(let k=0;k<D;k++){z.cnt[k]+=e.cnt[k];z.msum[k]+=e.msum[k];for(let q=0;q<2;q++){z.ac[q][k]+=e.ac[q][k];z.as[q][k]+=e.as[q][k]}}
+      for(let j=0;j<D*NMB;j++)z.mh[j]+=e.mh[j]}
+    return {...z,rounds:NEAR.ring.length,from:E.t-NEAR.ring.length+1}}
+  const t0=DH?DH.t0:0, ta=t0+Math.floor((E.t-t0)/3); let a=null;
+  for(const sn of NEAR.snaps)if(sn.t<=ta)a=sn;
+  const c=NEAR.cum, sub=(x,y)=>y?x.map((v,k)=>v-y[k]):Float64Array.from(x);
+  return {cnt:sub(c.cnt,a&&a.cnt),msum:sub(c.msum,a&&a.msum),mh:sub(c.mh,a&&a.mh),ac:c.ac.map((x,q)=>sub(x,a&&a.ac[q])),
+    as:c.as.map((x,q)=>sub(x,a&&a.as[q])),rounds:E.t-(a?a.t:0),from:(a?a.t:0)+1};
 }
 // the points of the plots: distances grouped in bins (linear: about 30 bins; log–log: 4 per decade, from 1 cell on)
 function nearData(){
   if(!NEAR||!NEAR.ring.length)return null;
-  const D=NEAR.D, cnt=new Float64Array(D), msum=new Float64Array(D), mh=new Float64Array(D*NMB), acnt=new Float64Array(D), asum=new Float64Array(D);
-  for(const e of NEAR.ring){for(let k=0;k<D;k++){cnt[k]+=e.cnt[k];msum[k]+=e.msum[k];acnt[k]+=e.acnt[k];asum[k]+=e.asum[k]}
-    for(let j=0;j<D*NMB;j++)mh[j]+=e.mh[j]}
+  const D=NEAR.D, z=nearSums(), {cnt,msum,mh,ac:acs,as:ass}=z;
   let kmax=0; for(let k=0;k<D;k++)if(cnt[k]>0)kmax=k;
   const groups=[];
   if(nearLog){let cur=null; for(let k=1;k<=kmax;k++){const j=Math.floor(Math.log10(k)*4+1e-9);
       if(!cur||cur.j!==j){cur={j,lo:k,hi:k};groups.push(cur)} else cur.hi=k}
     groups.forEach(g=>g.x=Math.sqrt(g.lo*(g.hi+1)))}
   else{const wb=Math.max(1,Math.ceil((kmax+1)/30)); for(let k0=0;k0<=kmax;k0+=wb)groups.push({lo:k0,hi:Math.min(kmax,k0+wb-1),x:k0+wb/2})}
-  const mean=[], median=[], size=[];
+  const mean=[], median=[], size=[[],[]];
   for(const g of groups){
-    let c=0,ms=0,ac=0,as=0; const h=new Float64Array(NMB);
-    for(let k=g.lo;k<=g.hi;k++){c+=cnt[k];ms+=msum[k];ac+=acnt[k];as+=asum[k];for(let j=0;j<NMB;j++)h[j]+=mh[k*NMB+j]}
+    let c=0,ms=0; const ac=[0,0], as=[0,0], h=new Float64Array(NMB);
+    for(let k=g.lo;k<=g.hi;k++){c+=cnt[k];ms+=msum[k];for(let q=0;q<2;q++){ac[q]+=acs[q][k];as[q]+=ass[q][k]}
+      for(let j=0;j<NMB;j++)h[j]+=mh[k*NMB+j]}
     if(c>=20){mean.push([g.x,ms/c]);
       let need=c/2-(c-h.reduce((a,b)=>a+b,0)), med=0;
       for(let j=0;j<NMB&&need>0;j++){if(need<=h[j]){med=Math.pow(10,MB.lo+(j+need/h[j])/MB.per);break} need-=h[j]}
       if(med>0)median.push([g.x,med])}
-    if(ac>=5)size.push([g.x,as/ac]);
+    for(let q=0;q<2;q++)if(ac[q]>=5)size[q].push([g.x,as[q]/ac[q]]);
   }
   const last=NEAR.ring[NEAR.ring.length-1];
-  return {ib:last.ib,il:last.il,rounds:NEAR.ring.length,mean,median,size};
+  return {ib:last.ib,il:last.il,il2:last.il2,rounds:z.rounds,from:z.from,mean,median,size};
 }
 // y against x for a few series, on linear axes or log–log. series: [{c, t (legend), p: [[x,y], …]}]; o: {title, xl, yl,
 // log}; out (a saved picture): {dpr}
@@ -2407,14 +2459,15 @@ function xyPlot(canvas,series,o,out){
 // the two plots: their data and labels, for the screen and the saved pictures
 function nearPlots(){
   const d=nearData(); if(!d)return null;
-  const B=PNAME[d.ib], A=PNAME[d.il];
-  return {d,note:`d: the distance to the nearest big ${B} company — a factory of the most scalable product (γ = ${String(P.products[d.ib].gamma).replace('-','−')}) that sells at least a tenth of what the biggest one sells · summed over the last ${d.rounds} rounds`+(nearLog?' · the owners of these companies, at distance 0, are left out on the log–log scale':''),
+  const B=PNAME[d.ib], A=PNAME[d.il], A2=d.il2>=0?PNAME[d.il2]:null;
+  const span=nearWin==='r100'?`summed over the last ${d.rounds} rounds`:`summed over rounds ${d.from}–${E.t} (about the last ⅔ since the last parameter change)`;
+  return {d,note:`d: the distance to the nearest big ${B} company — a factory of the most scalable product (γ = ${String(P.products[d.ib].gamma).replace('-','−')}) that sells at least a tenth of what the biggest one sells · ${span}`+(nearLog?' · the owners of these companies, at distance 0, are left out on the log–log scale':''),
     nearM:{series:[{c:'#c2410c',t:'mean money',p:d.mean},{c:'#2563eb',t:'median money',p:d.median}],
       o:{title:`money against distance to big ${B}`,xl:`distance d to the nearest big ${B} company (cells)`,yl:'money M of an agent',log:nearLog},
       title:`Mean and median money against the distance to the nearest big ${B} company`},
-    nearS:{series:[{c:PCOL[d.il]||'#16233b',t:`mean size of the ${A} factories`,p:d.size}],
-      o:{title:`${A} factory size against distance to big ${B}`,xl:`distance d to the nearest big ${B} company (cells)`,yl:`units of ${A} sold per round`,log:nearLog},
-      title:`Mean size of the ${A} factories against the distance to the nearest big ${B} company`}};
+    nearS:{series:[{c:PCOL[d.il]||'#16233b',t:`${A} factories`,p:d.size[0]},...(A2?[{c:PCOL[d.il2]||'#4a5872',t:`${A2} factories`,p:d.size[1]}]:[])],
+      o:{title:`factory size against distance to big ${B}`,xl:`distance d to the nearest big ${B} company (cells)`,yl:'mean units sold per round per factory',log:nearLog},
+      title:`Mean size of the ${A}${A2?' and '+A2:''} factories against the distance to the nearest big ${B} company`}};
 }
 function drawNear(){
   const q=nearPlots();
@@ -2423,6 +2476,8 @@ function drawNear(){
   $('nearNote').textContent=q.note;
   xyPlot($('cNearM'),q.nearM.series,q.nearM.o); xyPlot($('cNearS'),q.nearS.series,q.nearS.o);
 }
+document.querySelectorAll('#nearWin button').forEach(b=>b.onclick=()=>{
+  nearWin=b.dataset.w; document.querySelectorAll('#nearWin button').forEach(x=>x.classList.toggle('on',x===b)); drawNear()});
 document.querySelectorAll('#nearScale button').forEach(b=>b.onclick=()=>{
   nearLog=b.dataset.s==='log'; document.querySelectorAll('#nearScale button').forEach(x=>x.classList.toggle('on',x===b)); drawNear()});
 // ---- fortunes in time: the followed agents and those that went bankrupt, each line in the colour of the product the
@@ -2596,7 +2651,7 @@ function fmtTick(v){return Math.abs(v)<1e-9?'0':Math.abs(v)>=10?v.toFixed(0):Mat
 new ResizeObserver(()=>{draw();drawChart();drawDist()}).observe(document.querySelector('.layout'));
 if(window.innerWidth<700){V3.zoom=VIEW0.zoom=1.1}   // narrow screens: less zoom, so the lattice and its scale bars fit
 syncControls(); syncView(); setFlashMode('yellow'); $('moneySel').value=money3;
-applyPreset('three');
+applyPreset('standard');
 </script>
 </body>
 </html>
