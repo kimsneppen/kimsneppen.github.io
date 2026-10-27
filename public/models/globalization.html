@@ -146,6 +146,7 @@
   .plotbar .win,.chartbar .win{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
   .plotbar .win input,.chartbar .win input{width:clamp(80px,20vw,150px);accent-color:var(--accent)}
   .chartbar .win span{font-variant-numeric:tabular-nums;color:var(--muted);min-width:2.2em}
+  .chartbar #chartWinV{min-width:7.6em}
   .plotbar .win span{font-variant-numeric:tabular-nums;color:var(--muted);min-width:7.6em}
   .tgl{height:24px;padding:0 11px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#fff;
     font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
@@ -456,9 +457,10 @@
       <p>The buttons in the lower right corner:</p>
       <ul>
         <li><b>markets A B C</b>: dotted lines on the ground around the customers of every seller of that product.</li>
-        <li><b>⚡</b> marks every crash, yellow, in the company's colour, or off. The bigger the company, the bigger the
-          mark: a soft flash where it stood, and small lightnings along its tower and its money column. The tower sinks
-          to the ground.</li>
+        <li><b>⚡</b> marks every agent whose money falls to zero (to one wage or less), in the colour of the company it
+          had then — yellow if it had none — or all in yellow, or off. The bigger the company, the bigger the mark: a soft
+          flash where it stood, and small lightnings along its tower and its money column; the many small falls give
+          small flashes, at most 60 at a time. A company that closes sinks to the ground.</li>
         <li><b>◐</b> switches between a black and a white background. <b>.png</b> saves a picture with all the settings
           written under it, <b>sq</b> a square picture of just the town.</li>
       </ul>
@@ -466,16 +468,20 @@
       <h2 id="r-plots">The plots under the town</h2>
       <p><b>In time</b>: how something changes from round to round — the number of factories of each product (dashed:
         their effective size (Σs)²/Σs², where s is what a factory sells: the number of equal factories that would be as
-        concentrated — 1 when one company sells everything), the market share of the biggest company, how far goods travel, the start-ups and bankruptcies, the money, the price.</p>
+        concentrated — 1 when one company sells everything), the market share of the biggest company, how far goods travel, the start-ups and bankruptcies, the money, the price.
+        The <i>window</i> slider shows the last 10, 15, 23 … rounds or the whole run, <i>lin / log</i> switches the
+        vertical axis, and for the factories the band between the two curves of the most scalable product, C, is shaded.</p>
       <p><b>Distributions</b>: how the money is spread over the agents, P(M), and how big the companies are, P(s). Both
         axes are logarithmic: each step along an axis multiplies by 10. On such a plot a power law, P ∝ x<sup>−a</sup>,
         is a straight line, and the dashed lines are such fits. In P(M) the dotted lines mark the mean money (orange) and the
-        typical money, the median (blue): half of the agents have less. The tail is fitted from five times the mean to a
-        fifth of the largest fortune, away from both the crowd of ordinary agents and the few richest; it gives a slope of
-        about −1.2 to −1.35 (125 × 125 town, three runs each with n = 0.2, 1 and 5). In P(s) the bread factories are
-        fitted over one decade of sizes, from a fiftieth to a fifth of the largest bakery (in a sum over many rounds, of
-        the typical largest bakery of a round); in the self-organized economy the slope is about −2 with n = 0.2, 1 and 5
-        alike. You can see the present round, or everything since you
+        typical money, the median (blue): half of the agents have less. Above them, in the lower left corner, is P(M ≤ w),
+        the share of agents with no money (one wage or less), which a logarithmic axis cannot show. The tail is fitted
+        over one decade, from a thirtieth to a third of the largest fortune (in a sum over many rounds, of the typical
+        largest fortune of a round), away from both the crowd of ordinary agents and the very richest; in the
+        self-organized economy it gives a slope of about −1.0 to −1.25 (125 × 125 town, three runs each with n = 0.2, 1
+        and 5). In P(s) the bread factories are fitted over one decade of sizes, from a fiftieth to a fifth of the largest
+        bakery (in a sum over many rounds, of the typical largest bakery of a round); in the self-organized economy the
+        slope is about −2 with n = 0.2 and 1. You can see the present round, or everything since you
         last changed a setting (its first third left out, so the town has time to settle).</p>
       <p><b>Agents</b>, on the left: P(τ), how many rounds an agent lasts between two bankruptcies. In the standard setup
         the self-organized town has none — without upkeep nobody's money can fall below zero — and the plot says so; when
@@ -525,7 +531,9 @@
         and upkeep 0.02 — unless said otherwise; lesson 8 the present one: n = 1, patience 0 and no upkeep.
         <i>Scaling</i> means the slopes of the straight lines in the log–log plots: P(s) ∝ s<sup>−2</sup> for the
         bakeries (with n = 0.2 fitted from the peak of P(s) to its end, as the applet did then; the present fit gives
-        nearly the same in the self-organized economy, −2.05), and the tail of P(M), about M<sup>−1.24</sup>.</p>
+        nearly the same in the self-organized economy, −2.05), and the tail of P(M), about M<sup>−1.24</sup> (then fitted
+        from five times the mean to a fifth of the largest fortune; the present fit, over the decade from a thirtieth to a
+        third of it, gives −1.0 to −1.25).</p>
       <ol class="lessons">
         <li><b>Making the high-tech factories dearer to start does not change the scaling.</b> With B and C half as dear,
           or two or four times as dear (up to 32 and 80 instead of 8 and 20), the bakeries keep P(s) ∝ s<sup>−2.0</sup> to
@@ -588,7 +596,11 @@
           (lesson 2): the bakeries drop from 14&nbsp;400 to 2&nbsp;000, the median money from about 3 to 1, and the richest 1 % own
           58 % of the money. When the buyers pay, μ = 0.01 is already a big step, because the shopping takes about three
           quarters of a wage: the bakeries drop from 10&nbsp;300 to 2&nbsp;500 (280 at μ = 0.02), and the share of agents with no money rises
-          from 1 % to 5 % (9 % at 0.02, 27 % at 0.05). In no run does that share grow in time. But with upkeep the money
+          from 1 % to 5 % (9 % at 0.02, 27 % at 0.05). Upkeep also straightens the bread market when the buyers pay:
+          without it, P(s) of the bakeries that sell is curved above some 30 units, with local slopes between −1.9 and
+          −2.9; with μ = 0.02 it becomes a single power law, s<sup>−2.05</sup> from 100 to 3&nbsp;000 units
+          (s<sup>−2.25</sup> from 30 to 3&nbsp;000), about 100 rounds after the upkeep is switched on (with μ = 0.01 the
+          slope from 100 to 3&nbsp;000 is −1.9 to −2.35). In no run does the share of agents with no money grow in time. But with upkeep the money
           slowly piles up at the top — the mean keeps rising while the median stays — and the poorer half's share keeps
           falling: with μ = 0.02 from 17 % to 10 % between rounds 1&nbsp;000 and 4&nbsp;000 in the self-organized economy, and to
           2–6 % when the buyers pay.</li>
@@ -632,12 +644,13 @@
         an exponential distribution, as Dragulescu and Yakovenko showed [7]. When wealth also grows by risky investments,
         the rich form a power-law (Pareto) tail, as in the model of Bouchaud and Mézard [8]. In this town money is created
         (wages and sales) and destroyed (start costs and upkeep), and P(M) has a power-law tail, falling as about
-        M<sup>−1.2</sup> to M<sup>−1.35</sup> per unit of money. Real wealth tails are usually steeper.</p>
+        M<sup>−1.0</sup> to M<sup>−1.25</sup> per unit of money. Real wealth tails are usually steeper.</p>
       <p><b>Company sizes.</b> Axtell found [9] that the sizes of US companies follow Zipf's law: the number of companies
         bigger than s falls as 1/s, so the density falls as s<sup>−2</sup>. The bread companies here come close: over the
-        decade of sizes below a fifth of the largest bakery the slope is −1.97 to −2.07 in the self-organized economy,
-        with n = 0.2, 1 and 5 alike (summed over the last two thirds of 1000 rounds, three runs each); when the buyers
-        pay it is mostly steeper, down to −2.9. Below that decade the curve depends on n: from 4 to 40 units it falls as
+        decade of sizes below a fifth of the largest bakery the slope is −1.97 to −2.07 in the self-organized economy
+        with n = 0.2 and 1 (summed over the last two thirds of 1000 rounds, three runs each); with n = 5 that decade
+        straddles a knee in the curve, and the slope comes out anywhere between −1.2 and −2.0; when the buyers pay it is
+        mostly steeper, down to −2.9. Below that decade the curve depends on n: from 4 to 40 units it falls as
         s<sup>−2.2</sup> with n = 0.2, but only as s<sup>−0.6</sup> with n = 1 and 5 — there most bakeries sell almost
         nothing, while those that boom spread over a wide range of sizes. Stanley and co-workers [10] found that big companies grow and
         shrink less, in proportion, than small ones; one could test that in this town too.</p>
@@ -764,7 +777,7 @@
       </div>
       <div class="cornerbtns">
         <span class="dombtns" id="domBtns"></span>
-        <button id="bFlash" title="marks where companies collapse: off — click for yellow, click again for the company's colour">
+        <button id="bFlash" title="marks where an agent's money falls to zero: in the colour of its company (yellow without one), all yellow, or off">
           <svg viewBox="0 0 16 16" width="15" height="15" style="vertical-align:-3px"><defs><linearGradient id="flashGrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="#e11d48"/><stop offset=".35" stop-color="#f59e0b"/><stop offset=".65" stop-color="#10b981"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
             <path id="flashPath" d="M9.6 .8 2.8 9.2h4.3L5.9 15.2l7.3-8.6H8.7z" stroke-width=".9" stroke-linejoin="round"/></svg></button>
@@ -789,6 +802,10 @@
         <option value="money">Mean money per agent</option>
         <option value="price">Price per unit</option>
       </select>
+      <div class="seg" id="chartScale" title="the vertical axis linear or logarithmic">
+        <button data-s="lin">lin</button><button data-s="log" class="on">log</button></div>
+      <label class="win" title="the time window: from now back in time, in steps of a factor 1.5; at the right end, the whole run">window
+        <input type="range" id="chartWin" min="0" max="0" step="1" value="0"><span id="chartWinV"></span></label>
       <span class="chartnote" id="chartNote"></span>
       <span class="plotbtns"><button data-plot="chart" data-k="png" title="save this plot as a PNG picture, with title and axis labels">.png</button><button data-plot="chart" data-k="sq" title="save this plot in a square picture, with title and axis labels">sq</button></span>
     </div>
@@ -1422,13 +1439,13 @@ $('elR').oninput=e=>{V3.el=+e.target.value*Math.PI/180;syncView();draw()};
 $('distSel').onchange=e=>{V3.dist=+e.target.value;draw()};
 $('viewReset').onclick=()=>{Object.assign(V3,VIEW0);syncView();draw()};
 $('zoomR').oninput=e=>{V3.zoom=Math.exp(+e.target.value);syncView();draw()};
-// flashes where companies go bankrupt
-// bankruptcy explosions: off → yellow → in the colour of the company → off; the lightning icon shows the state
+// flashes where an agent's money falls to zero: off → yellow → in the colour of its company → off; the lightning icon
+// shows the state
 function setFlashMode(m){
   flashMode=m; const p=$('flashPath');
   p.setAttribute('fill',m==='yellow'?'#facc15':m==='colour'?'url(#flashGrad)':(dark?'#c7d2fe':'#16233b'));
   p.setAttribute('stroke',m==='yellow'?'#a16207':'none');
-  $('bFlash').title='marks where companies collapse: '+{off:'off — click for yellow',yellow:'yellow — click for the colour of the company',colour:'colour of the company — click to switch off'}[m];
+  $('bFlash').title='marks where an agent\'s money falls to zero: '+{off:'off — click for yellow',yellow:'yellow — click for the colour of its company',colour:'colour of its company, yellow without one — click to switch off'}[m];
   if(m==='off')flashes=[]; draw();
 }
 $('bFlash').onclick=()=>setFlashMode({off:'yellow',yellow:'colour',colour:'off'}[flashMode]);
@@ -1771,7 +1788,12 @@ function setRun(on){
 $('bRun').onclick=$('bRun2').onclick=()=>setRun(!running);
 $('bStep').onclick=()=>{doStep();refresh()};
 $('bReset').onclick=$('bReset2').onclick=restart;
-$('metric').onchange=drawChart;
+$('metric').onchange=()=>drawChart();
+// the time series: the vertical axis per quantity (true: logarithmic), and the time window shown, as for the fortunes
+const chartLog={};
+let chartWinK=0, chartWinAll=true;
+document.querySelectorAll('#chartScale button').forEach(b=>b.onclick=()=>{chartLog[$('metric').value]=b.dataset.s==='log'; drawChart()});
+$('chartWin').oninput=e=>{chartWinK=+e.target.value; chartWinAll=chartWinK>=+e.target.max; drawChart()};
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{
   view=b.dataset.v; document.querySelectorAll('#viewSeg button').forEach(x=>x.classList.toggle('on',x===b));
   buildProductUI(); draw();
@@ -1810,14 +1832,15 @@ function doStep(){
   }
   E.step();
   agRecord(); distRecord(); nearRecord(); ravRecord();
-  // Explosions. Big companies rarely go bankrupt: they end when their owner gives them up for another product as the profit
-  // falls. So every company of at least 20 % of the height scale (the average biggest) that closes, for whatever reason,
-  // explodes. Bankruptcies are nearly all failed start-ups (a few units at most) — dozens per round on a large lattice —
-  // so at most 60 of their small bursts are shown at a time, and they never crowd out a big crash.
   // the time a round takes on the screen: a closed company's tower sinks to zero over that time
   const now0=performance.now(); if(lastStepT)stepMs=0.8*stepMs+0.2*Math.min(2000,now0-lastStepT); lastStepT=now0;
   for(const c of [...E.closeList,...E.bankruptList])
     if(c.size>0&&c.prod>=0)sinking.set(c.r,{prod:c.prod,size:c.size,t:now0,dur:Math.min(1500,Math.max(120,stepMs))});
+  // Flashes: every agent whose money fell to zero this round (from more than one wage to one wage or less), in the colour
+  // of the company it had then — the one it gave up or lost this round, else the one it still runs; none (yellow) if it
+  // had no factory, or opened its first one with its last money — and as big as that company. Those whose company is at
+  // least 20 % of the height scale (the average biggest) always flash; most falls are small (savers spending their last
+  // money on a new factory, dozens a round), so at most 60 of those are shown at a time, and they never crowd out a big one.
   if(flashMode!=='off'){
     const now=performance.now(), thr=Math.max(3,0.2*V3.hmax);
     const burst=b=>{const bolts=[];
@@ -1825,11 +1848,14 @@ function doStep(){
       for(let k=0;k<7;k++)bolts.push({hf:Math.random(),ang:2*Math.PI*Math.random(),kinks:[Math.random()-0.5,Math.random()-0.5]});
       flashes.push({r:b.r,t:now,size:b.size,prod:b.prod,mon:b.mon||0,bolts,small:b.size<thr});
     };
-    for(const c of [...E.closeList,...E.bankruptList])if(c.size>=thr)burst(c);
+    const lost=new Map(); for(const c of [...E.closeList,...E.bankruptList])lost.set(c.r,c);
+    const falls=AH.zl.map(z=>{const c=lost.get(z.r); if(c)return {r:z.r,size:c.size,prod:c.prod,mon:z.mon};
+      const p=mainProduct(z.r); return {r:z.r,size:p>=0?E.sales[p][z.r]:0,prod:p,mon:z.mon}});
+    for(const f of falls)if(f.size>=thr)burst(f);
     let small=flashes.reduce((n,f)=>n+(f.small&&now-f.t<FLASH_MS?1:0),0);
     // the small ones shown are picked at random: the list is in the order of the agents, row by row, and taking its first
     // entries would mark only the first rows of the lattice
-    const sm=E.bankruptList.filter(b=>b.size<thr);
+    const sm=falls.filter(f=>f.size<thr);
     for(let k=0;k<sm.length&&small<60;k++){const j=k+Math.floor(Math.random()*(sm.length-k));[sm[k],sm[j]]=[sm[j],sm[k]];burst(sm[k]);small++}
     if(flashes.length>400){const big=flashes.filter(f=>!f.small), sm=flashes.filter(f=>f.small);
       flashes=[...sm.slice(Math.max(0,sm.length-Math.max(0,400-big.length))),...big.slice(-400)]}
@@ -2040,10 +2066,11 @@ function evR3(ev){
   const x=Math.floor(X*F.ca+Y*F.sa+L/2), y=Math.floor(-X*F.sa+Y*F.ca+L/2);
   return x<0||y<0||x>=L||y>=L?-1:y*L+x;
 }
-// A crash, marked discreetly for 0.65 s: small flickering lightnings along the company's tower and along the agent's
-// golden fortune pillar (when money is shown in 3D), and a soft flash at the base where the company stood, of radius
-// growing as the cube root of its size. The colour is yellow or that of the company's product. The tower itself sinks to
-// zero over one round (see sinking). pos(r) gives the place of agent r on the canvas:
+// A fall to zero money, marked discreetly for 0.65 s: small flickering lightnings along the company's tower and along
+// the agent's golden fortune pillar as it was (when money is shown in 3D), and a soft flash at the base, of radius
+// growing as the cube root of the company's size — at least about a cell, so that the many small falls stay visible.
+// The colour is yellow or that of the company's product. A company that closes sinks to zero over one round (see
+// sinking). pos(r) gives the place of agent r on the canvas:
 // {cell, base: point on the ground, top(size) → top of a tower of that size, pillar(money) → [ground, end] or null}.
 const FLASH_MS=650;
 let sinking=new Map(), stepMs=300, lastStepT=0;
@@ -2071,7 +2098,7 @@ function drawFlashes(pos){
     const a=(now-fl.t)/FLASH_MS, b=1-a, p=pos(fl.r);
     const c=flashMode==='colour'&&fl.prod>=0&&PRGB[fl.prod]?PRGB[fl.prod].join(','):'255,200,40';
     // a soft flash at the base where the company stood
-    const [x,y]=p.base, R=Math.max(1.5*dpr,Math.min(3*p.cell,0.45*p.cell*Math.cbrt(Math.max(1,fl.size))))*(0.6+0.4*a);
+    const [x,y]=p.base, R=Math.max(2.5*dpr,0.9*p.cell,Math.min(3*p.cell,0.45*p.cell*Math.cbrt(Math.max(1,fl.size))))*(0.6+0.4*a);
     const g=ctx.createRadialGradient(x,y,0,x,y,R);
     g.addColorStop(0,`rgba(255,255,235,${0.8*b*b})`); g.addColorStop(0.4,`rgba(${c},${0.6*b})`); g.addColorStop(1,`rgba(${c},0)`);
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,R,0,2*Math.PI); ctx.fill();
@@ -2283,11 +2310,11 @@ function distReset(){agReset(); nearReset(); RAV=null; DH={t0:0,rec:[{t:0,m:new 
 function distMark(){if(E&&DH)DH.t0=E.t}
 function histNow(){
   const LL=E.L*E.L, m=new Float64Array(nb(MB)), s=P.products.map(()=>new Float64Array(nb(SB)));
-  let msum=0, mmax=0; const smax=s.map(()=>0);
-  for(let r=0;r<LL;r++){const v=E.money[r]; msum+=v; if(v>mmax)mmax=v; if(v>0){const k=binOf(MB,v);if(k>=0&&k<m.length)m[k]++}}
+  let msum=0, mmax=0, mz=0; const smax=s.map(()=>0);
+  for(let r=0;r<LL;r++){const v=E.money[r]; msum+=v; if(v>mmax)mmax=v; if(v<=P.wage)mz++; if(v>0){const k=binOf(MB,v);if(k>=0&&k<m.length)m[k]++}}
   for(let i=0;i<E.N;i++){const S=E.sales[i],h=s[i];for(let r=0;r<LL;r++)if(S[r]>0){const k=binOf(SB,S[r]);if(k>=0&&k<h.length)h[k]++;
     if(S[r]>smax[i])smax[i]=S[r]}}
-  return {m,s,msum,mcnt:LL,mmax,smax};
+  return {m,s,msum,mcnt:LL,mmax,smax,mz};
 }
 function distRecord(){
   const h=histNow(), last=DH.rec[DH.rec.length-1];
@@ -2297,7 +2324,7 @@ function distRecord(){
   for(const tau of AH.tb)add(b,tau);
   for(const tau of AH.tz)add(z,tau);
   DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k])),b,z,
-    msum:(last.msum||0)+h.msum,mcnt:(last.mcnt||0)+h.mcnt,mmax:h.mmax,smax:h.smax});     // running sums; the largest money and companies of the round
+    msum:(last.msum||0)+h.msum,mcnt:(last.mcnt||0)+h.mcnt,mz:(last.mz||0)+h.mz,mmax:h.mmax,smax:h.smax});     // running sums; the largest money and companies of the round
   if(DH.rec.length>8000)DH.rec.splice(1,1000);
 }
 function histWindow(){         // summed over the last two thirds of the rounds since the last change of a parameter
@@ -2305,21 +2332,23 @@ function histWindow(){         // summed over the last two thirds of the rounds 
   let lo=0,hi=DH.rec.length-1;               // last record with t <= ta
   while(lo<hi){const mid=(lo+hi+1)>>1;if(DH.rec[mid].t<=ta)lo=mid;else hi=mid-1}
   const a=DH.rec[lo], b=DH.rec[DH.rec.length-1];
-  // the largest money of all these rounds; for the companies the typical largest one, the mean of each round's largest
-  // (a sum over many rounds holds a few rare booms, far out in the tail)
+  // the typical largest money and company, the mean of each round's largest (a sum over many rounds holds a few rare
+  // booms, far out in the tail)
   let mmax=0, ns=0; const smax=b.s.map(()=>0);
-  for(let k=lo+1;k<DH.rec.length;k++){const q=DH.rec[k]; if(q.mmax>mmax)mmax=q.mmax;
+  for(let k=lo+1;k<DH.rec.length;k++){const q=DH.rec[k]; mmax+=q.mmax||0;
     if(q.smax){ns++; q.smax.forEach((v,i)=>{if(i<smax.length)smax[i]+=v})}}
+  if(DH.rec.length-1>lo)mmax/=DH.rec.length-1-lo;
   if(ns)for(let i=0;i<smax.length;i++)smax[i]/=ns;
   return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),b:b.b.map((v,k)=>v-a.b[k]),z:b.z.map((v,k)=>v-a.z[k]),rounds:b.t-a.t,
-    msum:(b.msum||0)-(a.msum||0),mcnt:(b.mcnt||0)-(a.mcnt||0),mmax,smax};
+    msum:(b.msum||0)-(a.msum||0),mcnt:(b.mcnt||0)-(a.mcnt||0),mz:(b.mz||0)-(a.mz||0),mmax,smax};
 }
 // ---- agents: how long they last, and their fortunes ----
 // An agent's life ends when it goes bankrupt or — the other view, lifeZero — whenever its money falls to zero: from more
 // than one wage to one wage or less, as when it goes bankrupt or spends its last savings on a new factory. Without
 // upkeep nobody goes bankrupt, but the money still falls to zero. AH.last[r], AH.lastZ[r]: the round of agent r's last
 // bankruptcy, and of the last time its money fell to zero (−1: none since the start of the run); AH.tb, AH.tz: the
-// lengths of the lives of either kind that ended this round, for P(τ); AH.pm: the money of the round before.
+// lengths of the lives of either kind that ended this round, for P(τ); AH.zl: the agents whose money fell to zero
+// this round, for the flashes; AH.pm: the money of the round before.
 // Every agent's money is kept, compressed, from the start of its present life in either view (the earlier of the
 // two): a point is stored only when the money leaves a band of ±2 % (at least ±0.01) around the straight line from the
 // last stored point (a "swing door"), whenever the product it makes changes, and where a life begins — about a dozen
@@ -2387,9 +2416,10 @@ function lifePart(r,b,end){
 function agRecord(){
   const LL=E.L*E.L, t=E.t, M=E.money, w=P.wage, bk=new Uint8Array(LL), mean=meanMoney();
   for(const b of E.bankruptList)bk[b.r]=1;
-  AH.tb=[]; AH.tz=[]; AH.big=10*mean;
+  AH.tb=[]; AH.tz=[]; AH.zl=[]; AH.big=10*mean;
   for(let r=0;r<LL;r++){
-    const v=M[r], p=mainProduct(r), zero=AH.pm[r]>w&&v<=w; AH.pm[r]=v;
+    const v=M[r], p=mainProduct(r), pv=AH.pm[r], zero=pv>w&&v<=w; AH.pm[r]=v;
+    if(zero)AH.zl.push({r,mon:pv});                // for the flashes: who fell to zero, and the money it had before
     if(!bk[r]&&!zero){hAdd(r,t,v,p); continue}
     // a life ends here, in one view or both. A followed agent whose life ends in the view shown leaves the plot, its
     // line kept with a cross; a new life starts from this point, and what came before both present lives is dropped
@@ -2562,12 +2592,13 @@ function distPlots(){
   let d=histNow(), note='now (round '+E.t+')';
   if(distMode==='avg'){const w=histWindow(); if(w.rounds>0){d=w; note=`summed over rounds ${E.t-w.rounds+1}–${E.t} (last ⅔ since the last parameter change at round ${DH.t0})`}
     else note='no rounds since the last parameter change yet: showing now'}
-  // money: the mean, the typical money (the median, from the histogram; agents with no money count as below it), and
-  // the tail fitted from five times the mean to a fifth of the largest money
+  // money: the mean, the typical money (the median, from the histogram; agents with no money count as below it), the
+  // share of agents with no money (one wage or less), and the tail fitted over one decade, from a thirtieth to a third
+  // of the largest money (summed over rounds: of the typical largest)
   const mMean=d.mcnt>0?d.msum/d.mcnt:0, mMax=d.mmax||0, mTot=d.m.reduce((a,b)=>a+b,0);
   let mMed=0; {let need=d.mcnt/2-(d.mcnt-mTot);
     if(need>0)for(let k=0;k<d.m.length;k++){if(need<=d.m[k]){mMed=Math.pow(10,MB.lo+(k+need/d.m[k])/MB.per);break} need-=d.m[k]}}
-  const fitM=mMean>0&&mMax>25*mMean?{lo:Math.log10(5*mMean),hi:Math.log10(mMax/5)}:'tail';
+  const fitM=mMax>0?{lo:Math.log10(mMax/30),hi:Math.log10(mMax/3),fallback:'tail'}:'tail', pZero=String(+(d.mcnt>0?(d.mz||0)/d.mcnt:0).toPrecision(2));
   // the fit of the company sizes: the product whose companies are smallest on average, over one decade of sizes, from a
   // fifth of its largest company down to a fiftieth (summed over rounds: of its typical largest company); from the peak
   // to the end when that decade holds too few points
@@ -2587,7 +2618,8 @@ function distPlots(){
         empty:!lifeZero&&P.upkeep===0&&P.econ!=='pay'?['no bankruptcies without upkeep:','see  a life ends · money 0']:null}},
     money:{series:[{c:'#b7791f',h:d.m,fit:fitM,fitLabel:'tail: '}],B:MB,xl:'money M of an agent',
       title:'P(M): probability density of money, per unit of M',stitle:'P(M), density per unit of money',yl:'probability density P(M)',
-      legend:[{c:'#c2410c',t:'mean '+fmt(mMean)},...(mMed>0?[{c:'#2563eb',t:'typical (median) '+fmt(mMed),ts:'median '+fmt(mMed)}]:[])],
+      legend:[{t:'P(M ≤ w) = '+pZero,ts:'P(M≤w) '+pZero},...(mMed>0?[{c:'#2563eb',t:'typical (median) '+fmt(mMed),ts:'median '+fmt(mMed)}]:[]),
+        {c:'#c2410c',t:'mean '+fmt(mMean)}],
       opt:{marks:[{x:mMean,c:'#c2410c'},{x:mMed,c:'#2563eb'}],legendBL:true}},
     size:{series:d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?fitS:null,fitLabel:PNAME[i]+': '})),B:SB,xl:'company size s (units sold per round)',
       title:'P(s): probability density of company size, per unit of s',stitle:'P(s), density per unit of company size',
@@ -2882,7 +2914,7 @@ document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>exportPlo
 // ---------- chart ----------
 const ch=$('chart'), cctx=ch.getContext('2d');
 // the y-axis label of each quantity of the time series
-const CHART_Y={prod:'factories of each product (log)',share:"largest company's market share",dist:'mean shipping distance',
+const CHART_Y={prod:'factories of each product',share:"largest company's market share",dist:'mean shipping distance',
   active:'fraction of the agents per round',money:'mean money per agent',price:'price per unit'};
 // out (for a saved picture): {canvas, dpr} — the canvas is already sized; a title, axis labels and a legend are added
 function drawChart(out){
@@ -2897,30 +2929,49 @@ function drawChart(out){
     plotTitle(cctx,opt+' — Globalization in a nutshell, round '+E.t,6*dpr,6*z,z,W-12*dpr);
     cctx.font=pfont(11,z);cctx.fillStyle='#4a5872';cctx.textAlign='center';cctx.textBaseline='bottom';
     cctx.fillText('round',pl+w/2,H-4*dpr);
-    cctx.save();cctx.translate(8*z,pt+h/2);cctx.rotate(-Math.PI/2);cctx.textBaseline='middle';cctx.fillText(CHART_Y[m],0,0);cctx.restore();
+    const lg=chartLog[m]!==undefined?chartLog[m]:m==='prod';
+    cctx.save();cctx.translate(8*z,pt+h/2);cctx.rotate(-Math.PI/2);cctx.textBaseline='middle';cctx.fillText(CHART_Y[m]+(lg?' (log)':''),0,0);cctx.restore();
     cctx.fillStyle='#8391ab';cctx.font=pfont(11,z);
   }
-  if(!out)$('chartNote').textContent=m==='prod'?'log scale — solid: the number of factories; dashed: their effective size (Σs)²/Σs², s = units a factory sells':m==='active'?'per round — black: agents with sales, orange: starts, red: bankruptcies':'';
+  // the product whose two curves (factories and effective size) enclose a shaded band: the most scalable one
+  let ic=0; P.products.forEach((q,i)=>{if(q.gamma<=P.products[ic].gamma)ic=i});
+  if(!out)$('chartNote').textContent=m==='prod'?`solid: the number of factories; dashed: their effective size (Σs)²/Σs², s = units a factory sells; shaded between the two ${PNAME[ic]} curves`:m==='active'?'per round — black: agents with sales, orange: starts, red: bankruptcies':'';
   if(hist.length<2){cctx.textAlign='left';cctx.textBaseline='middle';cctx.fillText('Run the model to see the time series.',pl,pt+h/2);return}
   const series=[];
   if(m==='active'){series.push({c:'#16233b',v:hist.map(q=>q.active)});series.push({c:'#c2410c',v:hist.map(q=>q.starts)});series.push({c:'#be123c',v:hist.map(q=>q.bankrupt)})}
   else if(m==='money'||m==='price')series.push({c:'#16233b',v:hist.map(q=>q[m])});
   else for(let i=0;i<N;i++){series.push({c:PCOL[i],v:hist.map(q=>q[m][i])});
     if(m==='prod')series.push({c:PCOL[i],v:hist.map(q=>q.neff?q.neff[i]:NaN),dash:true})}
-  const logy=m==='prod', tz=v=>logy?Math.log10(Math.max(1,v)):v;
+  // the vertical axis: linear or logarithmic as chosen for this quantity (at first logarithmic for the factories only);
+  // a logarithmic axis leaves out zero and less (the number of factories counts from 1)
+  const logy=chartLog[m]!==undefined?chartLog[m]:m==='prod', tz=v=>!logy?v:m==='prod'?Math.log10(Math.max(1,v)):v>0?Math.log10(v):NaN;
+  // the time window: the last 10·1.5^k rounds, or (the slider at its right end) the whole run
+  const tA=hist[0].t, t1=hist[hist.length-1].t; let K=0; while(winOf(K)<t1-tA)K++;
+  const kw=chartWinAll?K:Math.min(chartWinK,K), t0=kw>=K?tA:t1-winOf(kw);
+  let i0=0; while(i0<hist.length-2&&hist[i0].t<t0)i0++;
+  if(!out){const sl=$('chartWin'); sl.max=K; sl.value=kw; $('chartWinV').textContent=kw>=K?`all ${t1-tA} rounds`:`last ${t1-t0} rounds`;
+    document.querySelectorAll('#chartScale button').forEach(b=>b.classList.toggle('on',(b.dataset.s==='log')===logy))}
   let lo=Infinity,hi=-Infinity;
-  series.forEach(s=>s.v.forEach(v=>{const z=tz(v);if(z<lo)lo=z;if(z>hi)hi=z}));
-  if(m!=='prod'){lo=0;hi=Math.max(hi*1.05,m==='dist'?1:0.05)}
-  else{lo=Math.floor(lo);hi=Math.max(lo+1,Math.ceil(hi))}
-  const t0=hist[0].t, t1=hist[hist.length-1].t;
+  for(const s of series)for(let k=i0;k<hist.length;k++){const v=tz(s.v[k]); if(!Number.isFinite(v))continue; if(v<lo)lo=v; if(v>hi)hi=v}
+  if(!Number.isFinite(lo)){lo=0;hi=1}
+  if(logy){lo=Math.floor(lo);hi=Math.max(lo+1,Math.ceil(hi))}
+  else{lo=0;hi=Math.max(hi*1.05,m==='dist'?1:0.05)}
   const X=t=>pl+(t-t0)/Math.max(1,t1-t0)*w, Y=v=>pt+h-(tz(v)-lo)/(hi-lo)*h;
   const ytv=logy?Array.from({length:hi-lo+1},(_,k)=>lo+k):niceTicks(lo,hi,8), xtv=niceTicks(t0,t1,12).filter(t=>t>=t0&&t<=t1);
   drawAxes(cctx,{xt:xtv.map(t=>[t,X(t)]),yt:ytv.map(v=>[v,pt+h-(v-lo)/(hi-lo)*h]),pl,pt,w,h,z,dpr,W,
-    fx:t=>String(Math.round(t)),fy:v=>logy?String(Math.round(Math.pow(10,v))):fmtTick(v),linX:true,linY:!logy});
-  const step=Math.max(1,Math.floor(hist.length/(w/dpr)));
+    fx:t=>String(Math.round(t)),fy:v=>logy?String(+Math.pow(10,v).toPrecision(1)):fmtTick(v),linX:true,linY:!logy});
+  const step=Math.max(1,Math.floor((hist.length-i0)/(w/dpr)));
+  // the band between the two curves of the most scalable product, in its colour, under all the curves
+  if(m==='prod'&&PRGB[ic]){const a=series[2*ic].v, b=series[2*ic+1].v, up=[], dn=[];
+    cctx.fillStyle=`rgba(${PRGB[ic].join(',')},0.22)`;
+    const fill=()=>{if(up.length>1){cctx.beginPath(); up.forEach(([x,y],j)=>j?cctx.lineTo(x,y):cctx.moveTo(x,y));
+      for(let j=dn.length-1;j>=0;j--)cctx.lineTo(dn[j][0],dn[j][1]); cctx.closePath(); cctx.fill()} up.length=dn.length=0};
+    for(let k=i0;k<hist.length;k+=step){if(!Number.isFinite(tz(a[k]))||!Number.isFinite(tz(b[k]))){fill();continue}
+      const x=X(hist[k].t); up.push([x,Y(a[k])]); dn.push([x,Y(b[k])])}
+    fill()}
   cctx.lineWidth=1.6*dpr;cctx.lineJoin='round';
   series.forEach(s=>{cctx.strokeStyle=s.c;cctx.setLineDash(s.dash?[5*z,3*z]:[]);cctx.beginPath(); let on=false;
-    for(let k=0;k<hist.length;k+=step){const v=s.v[k]; if(!Number.isFinite(v)){on=false;continue}
+    for(let k=i0;k<hist.length;k+=step){const v=s.v[k]; if(!Number.isFinite(tz(v))){on=false;continue}
       const x=X(hist[k].t),y=Y(v); if(on)cctx.lineTo(x,y); else{cctx.moveTo(x,y);on=true}}
     cctx.stroke()});
   cctx.setLineDash([]);
@@ -2937,7 +2988,7 @@ function fmtTick(v){return Math.abs(v)<1e-9?'0':Math.abs(v)>=10||Math.abs(v-Math
 
 new ResizeObserver(()=>{draw();drawChart();drawDist()}).observe(document.querySelector('.layout'));
 if(window.innerWidth<700){V3.zoom=VIEW0.zoom=1.1}   // narrow screens: less zoom, so the lattice and its scale bars fit
-syncControls(); syncView(); setFlashMode('yellow'); $('moneySel').value=money3;
+syncControls(); syncView(); setFlashMode('colour'); $('moneySel').value=money3;
 applyPreset('standard');
 </script>
 </body>
