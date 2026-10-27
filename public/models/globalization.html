@@ -143,8 +143,9 @@
   /* a small bar over each plot of the Agents section: its own controls and picture buttons */
   .plotbar{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-height:26px;margin:0 0 3px}
   .plotbar .plabel{font-size:12px;color:var(--ink2);font-weight:600}
-  .plotbar .win{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
-  .plotbar .win input{width:clamp(80px,20vw,150px);accent-color:var(--accent)}
+  .plotbar .win,.chartbar .win{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
+  .plotbar .win input,.chartbar .win input{width:clamp(80px,20vw,150px);accent-color:var(--accent)}
+  .chartbar .win span{font-variant-numeric:tabular-nums;color:var(--muted);min-width:2.2em}
   .plotbar .win span{font-variant-numeric:tabular-nums;color:var(--muted);min-width:7.6em}
   .tgl{height:24px;padding:0 11px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#fff;
     font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
@@ -178,11 +179,6 @@
   .pat select{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0 1px;cursor:pointer;outline-offset:2px}
   .pat select option{color:#16233b;background:#fff}
   .display.darkbg .pat{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
-  /* n and μ before the patience menu: small buttons, the value in use in gold */
-  .pat.pseg{gap:1px;padding:0 2px 0 8px;cursor:default}
-  .pat.pseg > span{margin-right:3px}
-  .pseg button{height:21px;min-width:21px;padding:0 4px;border:0;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}
-  .pseg button.on{background:#b7791f;color:#fff}
   .tools .tb,.tools .tmenu > summary{height:27px;padding:0 9px;border:1px solid var(--line);background:rgba(255,255,255,.9);color:var(--accent);
     font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;line-height:25px}
   .tools .tb{border-radius:8px}
@@ -323,13 +319,13 @@
       <h2 id="r-round">One round, step by step</h2>
       <ol>
         <li><b>Shopping.</b> For every product, orders are placed: n per person on average (n = 1 in the standard setup; the
-          n buttons in the upper right corner of the town give 0.2, 1, 2 or 5). Who orders? People picked at random —
+          n menu in the upper right corner of the town offers 0.2, 1, 2 or 5). Who orders? People picked at random —
           but those who earned more last round are picked more often.
           Rich people shop more.</li>
         <li><b>Selling.</b> Every order goes to the cheapest factory, price plus transport.</li>
         <li><b>Money.</b> Everybody earns the same wage, w = 0.05 per round. A factory owner also earns p for every unit
           it sold, and can be made to pay upkeep: each round a fraction μ of what its factory cost to build, because
-          machines wear out. The standard setup has no upkeep, μ = 0; the μ buttons set it from 1 to 10 %.
+          machines wear out. The standard setup has no upkeep, μ = 0; the μ menu sets it from 1 to 10 %.
           <span class="eqc" style="display:block">ΔM = w + p · (units sold) − μ · Start</span>
           The price p sets itself, so that everything sold in a round is worth exactly what everybody earned in wages:
           <span class="eqc" style="display:block">p = (all the wages) / (all the units sold)</span>
@@ -476,20 +472,23 @@
         is a straight line, and the dashed lines are such fits. In P(M) the dotted lines mark the mean money (orange) and the
         typical money, the median (blue): half of the agents have less. The tail is fitted from five times the mean to a
         fifth of the largest fortune, away from both the crowd of ordinary agents and the few richest; it gives a slope of
-        about −1.2 to −1.35 (125 × 125 town, three runs each with n = 0.2, 1 and 5). You can see the present round, or everything since you
+        about −1.2 to −1.35 (125 × 125 town, three runs each with n = 0.2, 1 and 5). In P(s) the bread factories are
+        fitted over one decade of sizes, from a fiftieth to a fifth of the largest bakery (in a sum over many rounds, of
+        the typical largest bakery of a round); in the self-organized economy the slope is about −2 with n = 0.2, 1 and 5
+        alike. You can see the present round, or everything since you
         last changed a setting (its first third left out, so the town has time to settle).</p>
       <p><b>Agents</b>, on the left: P(τ), how many rounds an agent lasts between two bankruptcies. In the standard setup
         the self-organized town has none — without upkeep nobody's money can fall below zero — and the plot says so; when
-        the buyers pay, agents go bankrupt when their shopping costs more than they have. With upkeep (the μ buttons)
+        the buyers pay, agents go bankrupt when their shopping costs more than they have. With upkeep (the μ menu)
         nearly all bankruptcies are failed B factories, at the end of a cycle like this one. Right after a bankruptcy an
         agent has only its wage, 0.05 a round. After 40 rounds it can afford a bakery (2). It goes on saving until it can
         try a B factory (8) — but with μ = 0.02 a B factory costs 0.16 a round in upkeep, more than three wages, and if it
         does not sell well the agent is soon bankrupt again. On the 125 × 125 town that takes half the time more than 320
         rounds; a quarter of the cycles are shorter than 180 rounds, and a quarter longer than 490.
         The <i>decades</i> slider over this plot shows fewer decades of the y axis, to look closely at the common times.
-        On the right: the money of single agents, round by round. The plot follows the 10, 5 or 3 richest agents, or
-        agents picked at random. The round button over the plot switches between 10 largest, 5 largest, 10 at random and
-        5 at random; the buttons over the section let you choose freely, also 3. Each agent is drawn for its whole life:
+        On the right: the money of single agents, round by round. The plot follows the 5 richest agents (or 10 or 3),
+        or agents picked at random. The round button over the plot switches between 5 largest, 10 largest, 5 at random
+        and 10 at random; the buttons over the section let you choose freely, also 3. Each agent is drawn for its whole life:
         from its last bankruptcy (or the start of the run) until it goes bankrupt again, where a cross marks the end. One
         of the richest is also let go once its fortune is gone — its money back to the mean money of the town — where a
         circle marks the end. Then the richest agent not yet shown (or another one picked at random) takes its place,
@@ -512,7 +511,8 @@
       <p><b>Around the high-tech companies</b>: the mean and the median money of the agents, and the mean size of the
         bread factories and of the ordinary (B) factories, against the distance d to the nearest big company of the most scalable product (one that sells
         at least a tenth of what the biggest one sells), summed over the last 100 rounds or over the last two
-        thirds of the run. Linear, log–lin (only the vertical axis logarithmic) or log–log. Close to a big chip company the mean money is high — its owner lives there — and the bakeries sell
+        thirds of the run. Linear, log–lin (only the vertical axis logarithmic) or log–log; the slider shortens the distance
+        axis, for instance to the first 20 cells, where most of the change happens. Close to a big chip company the mean money is high — its owner lives there — and the bakeries sell
         many times more than far away (about 7 times in the standard setup, 10 to 20 times with n = 0.2 and upkeep) —
         most likely because the rich order more, and bread is
         bought close by. Some ten cells away both curves are flat. The median changes much less than the mean: the wealth
@@ -524,7 +524,8 @@
         over the last 700. Lessons 1 to 7 used the earlier standard setup — the self-organized price, n = 0.2, patience 1
         and upkeep 0.02 — unless said otherwise; lesson 8 the present one: n = 1, patience 0 and no upkeep.
         <i>Scaling</i> means the slopes of the straight lines in the log–log plots: P(s) ∝ s<sup>−2</sup> for the
-        bakeries (with n = 0.2), and the tail of P(M), about M<sup>−1.24</sup>.</p>
+        bakeries (with n = 0.2 fitted from the peak of P(s) to its end, as the applet did then; the present fit gives
+        nearly the same in the self-organized economy, −2.05), and the tail of P(M), about M<sup>−1.24</sup>.</p>
       <ol class="lessons">
         <li><b>Making the high-tech factories dearer to start does not change the scaling.</b> With B and C half as dear,
           or two or four times as dear (up to 32 and 80 instead of 8 and 20), the bakeries keep P(s) ∝ s<sup>−2.0</sup> to
@@ -543,7 +544,9 @@
           1&nbsp;700. Bankruptcies rise from 25 to 360 a round, and half the time an agent goes bankrupt again within 6 rounds:
           mostly agents without a factory, whose shopping, delivery included, costs more than their wage. There are 17
           times fewer bakeries (830 instead of 14&nbsp;400), and the biggest chip company's share of its market almost doubles,
-          from 0.21 to 0.39. The scaling of the bakeries changes little, s<sup>−1.9</sup> instead of s<sup>−2.1</sup>.
+          from 0.21 to 0.39. Fitted from the peak of P(s) to its end, the scaling of the bakeries changes little,
+          s<sup>−1.9</sup> instead of s<sup>−2.1</sup>; fitted over the decade below a fifth of the largest bakery, as the
+          applet does now, it steepens from s<sup>−2.05</sup> to s<sup>−2.7</sup>.
           Transport takes about 410 money out of the town every round. Without upkeep, as in the present standard setup,
           the bread survives — 10&nbsp;300 bakeries instead of 12&nbsp;400, with n = 1 — but the chip market still concentrates,
           from 0.23 to 0.40 (lesson 8).</li>
@@ -578,7 +581,7 @@
           about 1 % of the agents have no money (one wage or less), and the poorer half of the town keeps about 16 % of
           all the money, in both economies and without a trend. (In real countries the poorer half owns 5 to 10 % of all
           wealth [11].) Patience up to 3 leaves the chip giants at about four rounds; 4 and 5 are another world (see
-          <i>Patience</i>). Upkeep, the μ buttons, removes the factories that sell nothing — without it 97 % of the
+          <i>Patience</i>). Upkeep, the μ menu, removes the factories that sell nothing — without it 97 % of the
           bakeries and B factories sell nothing in a given round. In the self-organized economy that changes the details
           more than the picture: of 3&nbsp;150 B factories, 200 are left at μ = 0.02, and owners of failing B factories now go
           bankrupt, 25 to 50 a round. A threshold comes at μ = 0.03, when a bakery's upkeep, 2μ, is more than the wage
@@ -601,7 +604,7 @@
         <li>Turn on <b>markets C</b>, then draw a border with a 100 % tax right through the biggest C market. Remove it
           (<b>− border</b>) and draw one with a tariff of 0.5 instead.</li>
         <li>Draw a road across the town and see which products grow along it.</li>
-        <li>Switch the economy to <b>buyers pay</b> and compare the money columns. Then click <b>μ</b> .02 and watch the
+        <li>Switch the economy to <b>buyers pay</b> and compare the money columns. Then set <b>μ</b> to 0.02 and watch the
           bakeries disappear and the money gather around the chip giants.</li>
       </ul>
       <h2 id="r-lit">Related models</h2>
@@ -631,10 +634,12 @@
         (wages and sales) and destroyed (start costs and upkeep), and P(M) has a power-law tail, falling as about
         M<sup>−1.2</sup> to M<sup>−1.35</sup> per unit of money. Real wealth tails are usually steeper.</p>
       <p><b>Company sizes.</b> Axtell found [9] that the sizes of US companies follow Zipf's law: the number of companies
-        bigger than s falls as 1/s, so the density falls as s<sup>−2</sup>. The bread companies here come close with
-        n = 0.2: their fitted slope is about −2 (−1.9 to −2.2 in our runs). With more orders per agent it is flatter,
-        about −1.5 with n = 1 and −1.2 with n = 5, because s = 1 + (units sold) counts units, not customers: with n = 1
-        a bakery reaches the bend of its economy of scale with one customer, with n = 0.2 it needs five. Stanley and co-workers [10] found that big companies grow and
+        bigger than s falls as 1/s, so the density falls as s<sup>−2</sup>. The bread companies here come close: over the
+        decade of sizes below a fifth of the largest bakery the slope is −1.97 to −2.07 in the self-organized economy,
+        with n = 0.2, 1 and 5 alike (summed over the last two thirds of 1000 rounds, three runs each); when the buyers
+        pay it is mostly steeper, down to −2.9. Below that decade the curve depends on n: from 4 to 40 units it falls as
+        s<sup>−2.2</sup> with n = 0.2, but only as s<sup>−0.6</sup> with n = 1 and 5 — there most bakeries sell almost
+        nothing, while those that boom spread over a wide range of sizes. Stanley and co-workers [10] found that big companies grow and
         shrink less, in proportion, than small ones; one could test that in this town too.</p>
       <p>In a short search of the literature we found no other model that puts these pieces together — many products,
         each with its own economy of scale and transport cost, on a map, with prices that set themselves — beyond the
@@ -680,7 +685,7 @@
       <select id="moneySel" title="money of the agents as golden, semi-transparent towers in the same view">
         <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down" selected>money ↓ below the plane</option></select>
       <span class="spacer"></span>
-      <button class="tbtn sobtn on" id="bSO2" title="click to switch between the self-organized price and buyers paying for what they buy, transport and border tax included. Self-organized: the value of all units sold equals the total wages, so money does not pile up. The orders per agent n, the upkeep μ and the patience κ have their own buttons in the upper right corner of the town; the fixed price 1 is in the control panel">self-organized · n 1</button>
+      <button class="tbtn sobtn on" id="bSO2" title="click to switch between the self-organized price and buyers paying for what they buy, transport and border tax included. Self-organized: the value of all units sold equals the total wages, so money does not pile up. The orders per agent n, the upkeep μ and the patience κ have their own menus in the upper right corner of the town; the fixed price 1 is in the control panel">self-organized · n 1</button>
       <span class="stat">round <b id="tRound">0</b></span>
       <button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
       <button class="tbtn" id="bReset2" title="reset">↺</button>
@@ -747,10 +752,10 @@
       </div>
       <!-- orders per agent n, upkeep μ and patience κ (how big a fall of profit makes an owner give up its product) -->
       <div class="tools tright">
-        <span class="pat pseg" id="nSeg" title="n: orders per agent and product per round. The standard setup has n = 1. With small n sales are few and noisy; the panel has more values">
-          <span>n</span><button data-v="0.2">0.2</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="5">5</button></span>
-        <span class="pat pseg" id="upSeg" title="upkeep μ: every round a factory owner pays μ times what its factory cost to build (Start), because machines wear out. The standard setup has μ = 0">
-          <span>μ</span><button data-v="0">0</button><button data-v="0.01">.01</button><button data-v="0.02">.02</button><button data-v="0.03">.03</button><button data-v="0.05">.05</button><button data-v="0.1">.10</button></span>
+        <label class="pat" title="n: orders per agent and product per round. The standard setup has n = 1. With small n sales are few and noisy; the control panel has more values">
+          <span>n</span><select id="nSel2"><option value="0.2">0.2</option><option value="1">1</option><option value="2">2</option><option value="5">5</option></select></label>
+        <label class="pat" title="upkeep μ: every round a factory owner pays μ times what its factory cost to build (Start), because machines wear out. The standard setup has μ = 0; the slider in the control panel has more values">
+          <span>μ</span><select id="upSel2"><option value="0">0</option><option value="0.01">0.01</option><option value="0.02">0.02</option><option value="0.03">0.03</option><option value="0.05">0.05</option><option value="0.1">0.10</option></select></label>
         <label class="pat" title="Patience κ: how big a fall in profit makes an owner give up its product and try another one. 0: any fall at all (the standard setup). 1: a fall bigger than ordinary chance, p·√(units sold). 2–5: a fall 2 to 5 times bigger than that.">
           <span>patience κ</span><select id="patSel"><option value="0">0 any fall</option><option value="1">1 normal</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
         <label class="pat" title="the edges of the town: closed, like an island, or periodic, wrapped around like a doughnut, so that walking off one side brings you back on the other">
@@ -813,7 +818,7 @@
       <div class="seg" id="fortSeg" title="follow the richest agents, or agents picked at random">
         <button data-m="rich" class="on">largest</button><button data-m="rand">at random</button></div>
       <div class="seg" id="fortNum" title="how many agents to follow">
-        <button data-n="10" class="on">10</button><button data-n="5">5</button><button data-n="3">3</button></div>
+        <button data-n="10">10</button><button data-n="5" class="on">5</button><button data-n="3">3</button></div>
       <div class="seg" id="fortScale" title="money on a linear or a logarithmic scale">
         <button data-s="lin" class="on">lin</button><button data-s="log">log</button></div>
     </div>
@@ -828,7 +833,7 @@
       </div>
       <div>
         <div class="plotbar">
-          <button class="tgl" id="fortTgl" title="click to switch: 10 largest → 5 largest → 10 at random → 5 at random">10 largest</button>
+          <button class="tgl" id="fortTgl" title="click to switch: 5 largest → 10 largest → 5 at random → 10 at random">5 largest</button>
           <label class="win" title="the time window: from now back in time, in steps of a factor 1.5; at the right end, the whole run">window
             <input type="range" id="fortWin" min="0" max="0" step="1" value="0"><span id="fortWinV"></span></label>
           <span class="plotbtns"><button data-plot="fort" data-k="png" title="save the fortunes in time as a PNG picture, with title and axis labels">.png</button><button data-plot="fort" data-k="sq" title="save the fortunes in time in a square picture">sq</button></span></div>
@@ -843,6 +848,8 @@
         <button data-w="r100" class="on">last 100 rounds</button><button data-w="avg">last ⅔ of run</button></div>
       <div class="seg" id="nearScale" title="linear axes; log–lin: only the vertical axis logarithmic; or both axes logarithmic">
         <button data-s="lin" class="on">linear</button><button data-s="loglin">log–lin</button><button data-s="log">log–log</button></div>
+      <label class="win" title="how far the distance axis goes, from 5 cells to all of it (the right end of the slider)">distance up to
+        <input type="range" id="nearX" min="0" max="0" step="1" value="0"><span id="nearXV">all</span></label>
     </div>
     <div class="chartnote" id="nearNote" style="margin-bottom:4px"></div>
     <div class="distgrid">
@@ -1390,8 +1397,16 @@ function setEcon(v){
 // shows the economy and the n in use.
 const ECON_LABEL={so:'self-organized',pay:'buyers pay',fixed:'fixed price'};
 function syncSO(){const b=$('bSO2'); b.classList.toggle('on',P.econ!=='fixed');
-  b.textContent=ECON_LABEL[P.econ]+' · n '+P.n;
-  document.querySelectorAll('#nSeg button').forEach(x=>x.classList.toggle('on',+x.dataset.v===P.n))}
+  b.textContent=ECON_LABEL[P.econ]+' · n '+P.n; menuShow($('nSel2'),P.n)}
+// a menu in the upper right corner shows the value in use; one it does not list (chosen in the control panel) is added
+// to it for as long as it is in use
+function menuShow(sel,v){
+  sel.querySelectorAll('option.extra').forEach(o=>{if(Math.abs(+o.value-v)>1e-9)o.remove()});
+  let o=[...sel.options].find(x=>Math.abs(+x.value-v)<1e-9);
+  if(!o){o=document.createElement('option'); o.className='extra'; o.value=o.textContent=String(+v.toFixed(3));
+    sel.insertBefore(o,[...sel.options].find(x=>+x.value>v)||null)}
+  sel.value=o.value;
+}
 $('econSel').onchange=e=>setEcon(e.target.value);
 $('bSO2').onclick=()=>setEcon(P.econ==='so'?'pay':'so');
 $('ctlPull').onclick=()=>setCtlOpen(false);
@@ -1436,14 +1451,12 @@ $('pDel').onclick=()=>{const pr=P.products;
   if(pr.length>2)pr.pop(); else if(pr.length===2&&!isTwins())P.products=[{...pr[0]},{...pr[0]}]; else return;
   restart()};
 $('bStd').onclick=()=>applyPreset('standard');
-// orders per agent n and upkeep μ: in the panel and as buttons in the upper right corner of the display
+// orders per agent n and upkeep μ: in the panel and as menus in the upper right corner of the display
 function setN(v){P.n=v; $('nSel').value=String(v); syncSO(); distMark()}
-$('nSel').onchange=e=>setN(+e.target.value);
-document.querySelectorAll('#nSeg button').forEach(b=>b.onclick=()=>setN(+b.dataset.v));
-function syncUp(){$('upR').value=P.upkeep; $('upV').textContent=P.upkeep.toFixed(3);
-  document.querySelectorAll('#upSeg button').forEach(x=>x.classList.toggle('on',Math.abs(+x.dataset.v-P.upkeep)<1e-9))}
+$('nSel').onchange=$('nSel2').onchange=e=>setN(+e.target.value);
+function syncUp(){$('upR').value=P.upkeep; $('upV').textContent=P.upkeep.toFixed(3); menuShow($('upSel2'),P.upkeep)}
 function setUpkeep(v){P.upkeep=v; syncUp(); distMark()}
-document.querySelectorAll('#upSeg button').forEach(b=>b.onclick=()=>setUpkeep(+b.dataset.v));
+$('upSel2').onchange=e=>setUpkeep(+e.target.value);
 $('limSel').onchange=e=>{P.lim=+e.target.value};
 // patience κ: in the panel and in the upper right corner of the display
 function setKappa(v){P.kappa=v; $('kapSel').value=$('patSel').value=String(v); distMark(); updStat()}
@@ -2270,10 +2283,11 @@ function distReset(){agReset(); nearReset(); RAV=null; DH={t0:0,rec:[{t:0,m:new 
 function distMark(){if(E&&DH)DH.t0=E.t}
 function histNow(){
   const LL=E.L*E.L, m=new Float64Array(nb(MB)), s=P.products.map(()=>new Float64Array(nb(SB)));
-  let msum=0, mmax=0;
+  let msum=0, mmax=0; const smax=s.map(()=>0);
   for(let r=0;r<LL;r++){const v=E.money[r]; msum+=v; if(v>mmax)mmax=v; if(v>0){const k=binOf(MB,v);if(k>=0&&k<m.length)m[k]++}}
-  for(let i=0;i<E.N;i++){const S=E.sales[i],h=s[i];for(let r=0;r<LL;r++)if(S[r]>0){const k=binOf(SB,S[r]);if(k>=0&&k<h.length)h[k]++}}
-  return {m,s,msum,mcnt:LL,mmax};
+  for(let i=0;i<E.N;i++){const S=E.sales[i],h=s[i];for(let r=0;r<LL;r++)if(S[r]>0){const k=binOf(SB,S[r]);if(k>=0&&k<h.length)h[k]++;
+    if(S[r]>smax[i])smax[i]=S[r]}}
+  return {m,s,msum,mcnt:LL,mmax,smax};
 }
 function distRecord(){
   const h=histNow(), last=DH.rec[DH.rec.length-1];
@@ -2283,7 +2297,7 @@ function distRecord(){
   for(const tau of AH.tb)add(b,tau);
   for(const tau of AH.tz)add(z,tau);
   DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k])),b,z,
-    msum:(last.msum||0)+h.msum,mcnt:(last.mcnt||0)+h.mcnt,mmax:h.mmax});     // running sums; the largest money of the round
+    msum:(last.msum||0)+h.msum,mcnt:(last.mcnt||0)+h.mcnt,mmax:h.mmax,smax:h.smax});     // running sums; the largest money and companies of the round
   if(DH.rec.length>8000)DH.rec.splice(1,1000);
 }
 function histWindow(){         // summed over the last two thirds of the rounds since the last change of a parameter
@@ -2291,9 +2305,14 @@ function histWindow(){         // summed over the last two thirds of the rounds 
   let lo=0,hi=DH.rec.length-1;               // last record with t <= ta
   while(lo<hi){const mid=(lo+hi+1)>>1;if(DH.rec[mid].t<=ta)lo=mid;else hi=mid-1}
   const a=DH.rec[lo], b=DH.rec[DH.rec.length-1];
-  let mmax=0; for(let k=lo+1;k<DH.rec.length;k++)if(DH.rec[k].mmax>mmax)mmax=DH.rec[k].mmax;
+  // the largest money of all these rounds; for the companies the typical largest one, the mean of each round's largest
+  // (a sum over many rounds holds a few rare booms, far out in the tail)
+  let mmax=0, ns=0; const smax=b.s.map(()=>0);
+  for(let k=lo+1;k<DH.rec.length;k++){const q=DH.rec[k]; if(q.mmax>mmax)mmax=q.mmax;
+    if(q.smax){ns++; q.smax.forEach((v,i)=>{if(i<smax.length)smax[i]+=v})}}
+  if(ns)for(let i=0;i<smax.length;i++)smax[i]/=ns;
   return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),b:b.b.map((v,k)=>v-a.b[k]),z:b.z.map((v,k)=>v-a.z[k]),rounds:b.t-a.t,
-    msum:(b.msum||0)-(a.msum||0),mcnt:(b.mcnt||0)-(a.mcnt||0),mmax};
+    msum:(b.msum||0)-(a.msum||0),mcnt:(b.mcnt||0)-(a.mcnt||0),mmax,smax};
 }
 // ---- agents: how long they last, and their fortunes ----
 // An agent's life ends when it goes bankrupt or — the other view, lifeZero — whenever its money falls to zero: from more
@@ -2312,7 +2331,7 @@ function histWindow(){         // summed over the last two thirds of the rounds 
 // the richest also makes room once its fortune is gone — its money back to the mean money of the town — its line
 // ending in a circle; without upkeep it would otherwise be followed for ever.
 const HREL=0.02, HABS=0.01, HMAX=64, HMAXR=4096;
-let AH=null, fortMode='rich', fortN=10, fortLog=false, lifeZero=false;
+let AH=null, fortMode='rich', fortN=5, fortLog=false, lifeZero=false;
 // the product an agent makes (its biggest seller); −1: no factory, or one it opened this very round — an owner who keeps
 // trying new factories after giving up a company shows as grey, not as a new colour every round
 function mainProduct(r){if(E.started[r]===E.t)return -1;
@@ -2422,11 +2441,13 @@ function axisTitle(g,text,x,y,z,maxW){
   g.textAlign='center'; g.textBaseline='bottom'; g.fillText(text,x,y); g.font=pfont(11,z);
 }
 // Numbers on an axis: every tick keeps its grid line and a short mark, but only every k-th tick gets its number —
-// at least every second on a linear axis — so that the numbers have room. ticks: [value, position]; need: room a
-// number takes along the axis (px); lin: a linear axis. Returns the ticks that get numbers.
+// on a linear axis every 2nd, 5th, 10th, 20th … tick, so that the numbers are round — so that the numbers have room.
+// ticks: [value, position]; need: room a number takes along the axis (px); lin: a linear axis. Returns the ticks that
+// get numbers.
 function tickLabels(ticks,need,lin){
   if(ticks.length<2)return ticks;
-  const gap=Math.abs(ticks[1][1]-ticks[0][1]); let k=lin?2:1; while(k*gap<need&&k<ticks.length)k++;
+  const gap=Math.abs(ticks[1][1]-ticks[0][1]); let k=1;
+  if(lin){const ks=[2,5,10,20,50,100]; k=ks.find(q=>q*gap>=need)||100} else while(k*gap<need&&k<ticks.length)k++;
   const step=ticks[1][0]-ticks[0][0], i0=((Math.round(ticks[0][0]/step)%k)+k)%k;     // numbers on multiples of k steps
   return ticks.filter((t,i)=>((i+i0)%k)===0);
 }
@@ -2508,14 +2529,15 @@ function logPlot(canvas,series,B,xlabel,title,legend,out,opt){
   // power-law fits: a straight line in log–log, least squares over a range of the points.
   //   'tail': from where the distribution has fallen below a tenth of its peak to two bins before the last one
   //   'body': from the peak to one bin before the last one
-  //   {lo, hi}: the points between these two values of log10 x (at least three of them)
+  //   {lo, hi, fallback}: the points between these two values of log10 x (at least three of them; with fewer, the
+  //   rule fallback, or 'tail')
   const notes=[];
   pts.forEach((s0,j)=>{
     let mode=series[j].fit, p=s0.p; if(!mode||p.length<3)return;
     let im=0; p.forEach((q,k)=>{if(q[1]>p[im][1])im=k});
     let a=im, b=p.length-1;
     if(typeof mode==='object'){a=p.findIndex(q=>q[0]>=mode.lo); b=p.length-1; while(b>=0&&p[b][0]>mode.hi)b--;
-      if(a<0||b-a+1<3)mode='tail'}                // too few points in the range: the old rule
+      if(a<0||b-a+1<3){mode=mode.fallback||'tail'; a=im}}         // too few points in the range
     if(mode==='tail'){a=p.findIndex((q,k)=>k>im&&q[1]<p[im][1]-1); b=p.length-3}
     else if(mode==='body')b=p.length-2;
     if(a<0||b-a+1<3)return;
@@ -2546,9 +2568,12 @@ function distPlots(){
   let mMed=0; {let need=d.mcnt/2-(d.mcnt-mTot);
     if(need>0)for(let k=0;k<d.m.length;k++){if(need<=d.m[k]){mMed=Math.pow(10,MB.lo+(k+need/d.m[k])/MB.per);break} need-=d.m[k]}}
   const fitM=mMean>0&&mMax>25*mMean?{lo:Math.log10(5*mMean),hi:Math.log10(mMax/5)}:'tail';
-  // the fit of the company sizes: the product whose companies are smallest on average
+  // the fit of the company sizes: the product whose companies are smallest on average, over one decade of sizes, from a
+  // fifth of its largest company down to a fiftieth (summed over rounds: of its typical largest company); from the peak
+  // to the end when that decade holds too few points
   const mean=h=>{let n=0,sx=0;h.forEach((c,k)=>{n+=c;sx+=c*Math.pow(10,SB.lo+(k+0.5)/SB.per)});return n?sx/n:Infinity};
   let ismall=0; d.s.forEach((h,i)=>{if(mean(h)<mean(d.s[ismall]))ismall=i});
+  const sMax=d.smax?d.smax[ismall]||0:0, fitS=sMax>0?{lo:Math.log10(sMax/50),hi:Math.log10(sMax/5),fallback:'body'}:'body';
   // survival: always the lives that ended in the last two thirds of the run since the last parameter change — at a
   // bankruptcy, or (lifeZero) when the money fell to zero
   const w=histWindow(), bw=w.rounds>0?(lifeZero?w.z:w.b):new Float64Array(nb(LB)), nbk=bw.reduce((a,b)=>a+b,0),
@@ -2564,7 +2589,7 @@ function distPlots(){
       title:'P(M): probability density of money, per unit of M',stitle:'P(M), density per unit of money',yl:'probability density P(M)',
       legend:[{c:'#c2410c',t:'mean '+fmt(mMean)},...(mMed>0?[{c:'#2563eb',t:'typical (median) '+fmt(mMed),ts:'median '+fmt(mMed)}]:[])],
       opt:{marks:[{x:mMean,c:'#c2410c'},{x:mMed,c:'#2563eb'}],legendBL:true}},
-    size:{series:d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?'body':null,fitLabel:PNAME[i]+': '})),B:SB,xl:'company size s (units sold per round)',
+    size:{series:d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?fitS:null,fitLabel:PNAME[i]+': '})),B:SB,xl:'company size s (units sold per round)',
       title:'P(s): probability density of company size, per unit of s',stitle:'P(s), density per unit of company size',
       legend:P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}`})),yl:'probability density P(s)'}};
 }
@@ -2641,16 +2666,25 @@ function nearSums(){
   return {cnt:sub(c.cnt,a&&a.cnt),msum:sub(c.msum,a&&a.msum),mh:sub(c.mh,a&&a.mh),ac:c.ac.map((x,q)=>sub(x,a&&a.ac[q])),
     as:c.as.map((x,q)=>sub(x,a&&a.as[q])),rounds:E.t-(a?a.t:0),from:(a?a.t:0)+1};
 }
-// the points of the plots: distances grouped in bins (linear distance: about 30 bins; log–log: 4 per decade, from 1 cell on)
+// the length of the distance axis: nice lengths up to the largest distance with agents; at the right end of the slider
+// all of it
+const NEARX=[5,10,15,20,30,40,50,70,100,150,200,300];
+let nearXk=3, nearXAll=true;
+function nearXrange(kmax){const v=NEARX.filter(x=>x<=kmax), k=nearXAll?v.length:Math.min(nearXk,v.length);
+  return {v,k,dmax:k<v.length?v[k]:Infinity}}
+$('nearX').oninput=e=>{nearXk=+e.target.value; nearXAll=nearXk>=+e.target.max; drawNear()};
+// the points of the plots: distances grouped in bins (linear distance: about 30 bins; log–log: 4 per decade, from 1 cell
+// on), up to the length of the axis
 function nearData(){
   if(!NEAR||!NEAR.ring.length)return null;
   const D=NEAR.D, z=nearSums(), {cnt,msum,mh,ac:acs,as:ass}=z;
   let kmax=0; for(let k=0;k<D;k++)if(cnt[k]>0)kmax=k;
+  const xr=nearXrange(kmax), km=Math.min(kmax,xr.dmax-1);
   const groups=[];
-  if(nearScale==='log'){let cur=null; for(let k=1;k<=kmax;k++){const j=Math.floor(Math.log10(k)*4+1e-9);
+  if(nearScale==='log'){let cur=null; for(let k=1;k<=km;k++){const j=Math.floor(Math.log10(k)*4+1e-9);
       if(!cur||cur.j!==j){cur={j,lo:k,hi:k};groups.push(cur)} else cur.hi=k}
     groups.forEach(g=>g.x=Math.sqrt(g.lo*(g.hi+1)))}
-  else{const wb=Math.max(1,Math.ceil((kmax+1)/30)); for(let k0=0;k0<=kmax;k0+=wb)groups.push({lo:k0,hi:Math.min(kmax,k0+wb-1),x:k0+wb/2})}
+  else{const wb=Math.max(1,Math.ceil((km+1)/30)); for(let k0=0;k0<=km;k0+=wb)groups.push({lo:k0,hi:Math.min(km,k0+wb-1),x:k0+wb/2})}
   const mean=[], median=[], size=[[],[]];
   for(const g of groups){
     let c=0,ms=0; const ac=[0,0], as=[0,0], h=new Float64Array(NMB);
@@ -2663,10 +2697,10 @@ function nearData(){
     for(let q=0;q<2;q++)if(ac[q]>=5)size[q].push([g.x,as[q]/ac[q]]);
   }
   const last=NEAR.ring[NEAR.ring.length-1];
-  return {ib:last.ib,il:last.il,il2:last.il2,rounds:z.rounds,from:z.from,mean,median,size};
+  return {ib:last.ib,il:last.il,il2:last.il2,rounds:z.rounds,from:z.from,mean,median,size,xr,xmax:xr.dmax<Infinity?xr.dmax:0};
 }
 // y against x for a few series. series: [{c, t (legend), p: [[x,y], …]}]; o: {title, xl, yl, scale: lin | loglin (only
-// y logarithmic) | log (both)}; out (a saved picture): {dpr}
+// y logarithmic) | log (both), xmax: the end of the x axis (0: as far as the points go)}; out (a saved picture): {dpr}
 function xyPlot(canvas,series,o,out){
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
   if(!out)g.clearRect(0,0,W,H);
@@ -2677,8 +2711,8 @@ function xyPlot(canvas,series,o,out){
   if(!all.length){g.fillStyle='#8391ab';g.textAlign='left';g.fillText('no data yet',pl,pt+h/2);return}
   const fx=v=>xl?Math.log10(v):v, fy=v=>yl?Math.log10(v):v;
   let x0,x1,y0,y1;
-  if(xl){x0=Math.floor(Math.min(...all.map(q=>fx(q[0]))));x1=Math.ceil(Math.max(...all.map(q=>fx(q[0]))));if(x1<=x0)x1=x0+1}
-  else{x0=0;x1=Math.max(...all.map(q=>q[0]))*1.02||1}
+  if(xl){x0=Math.floor(Math.min(...all.map(q=>fx(q[0]))));x1=o.xmax?fx(o.xmax):Math.ceil(Math.max(...all.map(q=>fx(q[0]))));if(x1<=x0)x1=x0+1}
+  else{x0=0;x1=o.xmax||Math.max(...all.map(q=>q[0]))*1.02||1}
   if(yl){y0=Math.floor(Math.min(...all.map(q=>fy(q[1]))));y1=Math.ceil(Math.max(...all.map(q=>fy(q[1]))));if(y1<=y0)y1=y0+1}
   else{y0=0;y1=Math.max(...all.map(q=>q[1]))*1.08||1}
   const X=v=>pl+(fx(v)-x0)/(x1-x0)*w, Y=v=>pt+h-(fy(v)-y0)/(y1-y0)*h;
@@ -2703,10 +2737,10 @@ function nearPlots(){
   const span=nearWin==='r100'?`summed over the last ${d.rounds} rounds`:`summed over rounds ${d.from}–${E.t} (about the last ⅔ since the last parameter change)`;
   return {d,note:`d: the distance to the nearest big ${B} company — a factory of the most scalable product (γ = ${String(P.products[d.ib].gamma).replace('-','−')}) that sells at least a tenth of what the biggest one sells · ${span}`+(nearScale==='log'?' · the owners of these companies, at distance 0, are left out on the log–log scale':''),
     nearM:{series:[{c:'#c2410c',t:'mean wealth',p:d.mean},{c:'#2563eb',t:'median wealth',p:d.median}],
-      o:{title:`wealth against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Wealth',scale:nearScale},
+      o:{title:`wealth against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Wealth',scale:nearScale,xmax:d.xmax},
       title:`Mean and median wealth against the distance to the nearest big ${B} company`},
     nearS:{series:[{c:PCOL[d.il]||'#16233b',t:`${A} factories`,p:d.size[0]},...(A2?[{c:PCOL[d.il2]||'#4a5872',t:`${A2} factories`,p:d.size[1]}]:[])],
-      o:{title:`factory size against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Factory size',scale:nearScale},
+      o:{title:`factory size against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Factory size',scale:nearScale,xmax:d.xmax},
       title:`Mean size of the ${A}${A2?' and '+A2:''} factories against the distance to the nearest big ${B} company`}};
 }
 function drawNear(){
@@ -2714,6 +2748,7 @@ function drawNear(){
   if(!q){for(const id of ['cNearM','cNearS']){const c=$(id); fitCanvas(c); c.getContext('2d').clearRect(0,0,c.width,c.height)}
     $('nearNote').textContent='no big company of the most scalable product yet'; return}
   $('nearNote').textContent=q.note;
+  const xr=q.d.xr, sl=$('nearX'); sl.max=xr.v.length; sl.value=xr.k; $('nearXV').textContent=xr.k<xr.v.length?String(xr.v[xr.k]):'all';
   xyPlot($('cNearM'),q.nearM.series,q.nearM.o); xyPlot($('cNearS'),q.nearS.series,q.nearS.o);
 }
 document.querySelectorAll('#nearWin button').forEach(b=>b.onclick=()=>{
@@ -2811,7 +2846,7 @@ function fortPlot(canvas,out){
   g.restore();
 }
 // which agents to follow: a button that switches between four settings, and the detailed choice above the section
-const FSTATES=[{m:'rich',n:10},{m:'rich',n:5},{m:'rand',n:10},{m:'rand',n:5}];
+const FSTATES=[{m:'rich',n:5},{m:'rich',n:10},{m:'rand',n:5},{m:'rand',n:10}];
 function syncFort(){
   $('fortTgl').textContent=fortN+(fortMode==='rich'?' largest':' at random');
   document.querySelectorAll('#fortSeg button').forEach(x=>x.classList.toggle('on',x.dataset.m===fortMode));
@@ -2898,7 +2933,7 @@ function drawChart(out){
 }
 function niceTicks(a,b,n){const span=b-a||1, st=Math.pow(10,Math.floor(Math.log10(span/n))), e=span/n/st, k=e>5?10:e>2?5:e>1?2:1, s=k*st;
   const out=[];for(let v=Math.ceil(a/s-1e-9)*s;v<=b+1e-9;v+=s)out.push(v);return out}
-function fmtTick(v){return Math.abs(v)<1e-9?'0':Math.abs(v)>=10?v.toFixed(0):Math.abs(v)>=1?v.toFixed(1):v.toFixed(2)}
+function fmtTick(v){return Math.abs(v)<1e-9?'0':Math.abs(v)>=10||Math.abs(v-Math.round(v))<1e-9?v.toFixed(0):Math.abs(v)>=1?v.toFixed(1):v.toFixed(2)}
 
 new ResizeObserver(()=>{draw();drawChart();drawDist()}).observe(document.querySelector('.layout'));
 if(window.innerWidth<700){V3.zoom=VIEW0.zoom=1.1}   // narrow screens: less zoom, so the lattice and its scale bars fit
