@@ -321,8 +321,15 @@
       <ol>
         <li><b>Shopping.</b> For every product, orders are placed: n per person on average (n = 1 in the standard setup; the
           n menu in the upper right corner of the town offers 0.2, 1, 2 or 5). Who orders? People picked at random —
-          but those who earned more last round are picked more often.
-          Rich people shop more.</li>
+          but those who earned more last round are picked more often. Each of the n · L² orders of a product picks its
+          buyer on its own, agent i with the probability
+          <span class="eqc" style="display:block">P(i) = I<sub>i</sub> / Σ<sub>j</sub> I<sub>j</sub></span>
+          <span class="eqc" style="display:block">I<sub>i</sub> = w + p · (units i sold last round)</span>
+          where I<sub>i</sub> is what agent i earned last round: its wage w and its sales at the price p (both explained
+          under <i>Money</i> below; in the very first round all are picked equally often). So an agent can place several
+          orders: with the self-organized price, on average (n/2) · I<sub>i</sub>/w of each product — half of n for one
+          living on its wage alone, several hundred for the owner of the biggest chip company in the standard setup. High
+          earners shop more; the money an agent has saved does not count.</li>
         <li><b>Selling.</b> Every order goes to the cheapest factory, price plus transport.</li>
         <li><b>Money.</b> Everybody earns the same wage, w = 0.05 per round. A factory owner also earns p for every unit
           it sold, and can be made to pay upkeep: each round a fraction μ of what its factory cost to build, because
