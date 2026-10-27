@@ -331,7 +331,9 @@
           The price p sets itself, so that everything sold in a round is worth exactly what everybody earned in wages:
           <span class="eqc" style="display:block">p = (all the wages) / (all the units sold)</span>
           If the town makes twice as much, each unit is worth half as much. An agent whose money falls below zero is
-          <b>bankrupt</b>: its factory closes, its debts are forgiven, and it starts again with nothing but the wage.</li>
+          <b>bankrupt</b>: its factory closes, its debts are forgiven, and it starts again with nothing but the wage.
+          With a wealth tax (the <i>tax</i> menu, none in the standard setup), every agent also pays a share of its money
+          at the start of each round, and the total is shared equally by all (see <i>Money</i> below).</li>
         <li><b>Deciding.</b> Every owner compares this round's profit with last round's. If things went fine, it carries
           on. But if the profit fell (by any amount in the standard setup; see Patience below), or there is no profit, or
           it has no factory, it tries something new: it picks
@@ -380,6 +382,14 @@
         and the fortune drains away step by step: in the standard setup half of it is gone after about 6 rounds (after
         about 16 with n = 0.2, patience 1 and upkeep 0.02). That is why a golden money column stays for a while after its
         company has crashed.</p>
+      <p><b>A wealth tax.</b> The <i>tax</i> menu in the upper right corner sets a tax on money, from 0 (the standard
+        setup) to 1 % a round: at the start of every round each agent pays that share of its money, and the total is
+        paid back in equal parts to all agents, so no money is made or lost. When the buyers pay and there is upkeep,
+        the fortunes at the top otherwise grow without end (lesson 8). A tax of 0.2 % a round stops that: in 2&nbsp;000
+        rounds with n = 1 and μ = 0.02 the richest agent stays at about 1&nbsp;200 to 2&nbsp;200 instead of growing to
+        3&nbsp;000–6&nbsp;800, the top spot changes hands after a few rounds to about a hundred instead of staying with one
+        agent for 250 to 1&nbsp;700 rounds, and the richest 1 % own 40 to 60 % of the money instead of 50 to 80 % (three runs each). The share of agents
+        with no money hardly changes. At 1 % the town gets poorer: in one run, a quarter of the agents had no money.</p>
       <p>That spending needs a second product. With a single product an owner whose profit falls has nothing to switch
         to, so it keeps its factory and never pays a start cost again. Then the sales money of the established companies
         has no way out: on a 125 × 125 town the money grows by about 770 a round, almost a whole wage bill, and after
@@ -603,7 +613,8 @@
           slope from 100 to 3&nbsp;000 is −1.9 to −2.35). In no run does the share of agents with no money grow in time. But with upkeep the money
           slowly piles up at the top — the mean keeps rising while the median stays — and the poorer half's share keeps
           falling: with μ = 0.02 from 17 % to 10 % between rounds 1&nbsp;000 and 4&nbsp;000 in the self-organized economy, and to
-          2–6 % when the buyers pay.</li>
+          2–6 % when the buyers pay. A wealth tax of 0.2 % a round (the <i>tax</i> menu), paid back equally to all, keeps
+          the richest bounded when the buyers pay (see <i>Money</i>).</li>
       </ol>
 
       <h2 id="r-try">Try this</h2>
@@ -617,7 +628,8 @@
           (<b>− border</b>) and draw one with a tariff of 0.5 instead.</li>
         <li>Draw a road across the town and see which products grow along it.</li>
         <li>Switch the economy to <b>buyers pay</b> and compare the money columns. Then set <b>μ</b> to 0.02 and watch the
-          bakeries disappear and the money gather around the chip giants.</li>
+          bakeries disappear and the money gather around the chip giants. Follow the 5 largest fortunes for a few hundred
+          rounds, then set the <b>tax</b> to 0.2 % and see the richest stop growing.</li>
       </ul>
       <h2 id="r-lit">Related models</h2>
       <p>The model sits where economics and physics meet, and older models share parts of it.</p>
@@ -769,8 +781,10 @@
           <span>n</span><select id="nSel2"><option value="0.2">0.2</option><option value="1">1</option><option value="2">2</option><option value="5">5</option></select></label>
         <label class="pat" title="upkeep μ: every round a factory owner pays μ times what its factory cost to build (Start), because machines wear out. The standard setup has μ = 0; the slider in the control panel has more values">
           <span>μ</span><select id="upSel2"><option value="0">0</option><option value="0.01">0.01</option><option value="0.02">0.02</option><option value="0.03">0.03</option><option value="0.05">0.05</option><option value="0.1">0.10</option></select></label>
+        <label class="pat" title="wealth tax: every round each agent pays this share of its money, and the total is paid back equally to all agents. The standard setup has none">
+          <span>tax</span><select id="wtaxSel"><option value="0">0</option><option value="0.0005">0.05 %</option><option value="0.001">0.1 %</option><option value="0.002">0.2 %</option><option value="0.003">0.3 %</option><option value="0.004">0.4 %</option><option value="0.005">0.5 %</option><option value="0.006">0.6 %</option><option value="0.007">0.7 %</option><option value="0.008">0.8 %</option><option value="0.009">0.9 %</option><option value="0.01">1 %</option></select></label>
         <label class="pat" title="Patience κ: how big a fall in profit makes an owner give up its product and try another one. 0: any fall at all (the standard setup). 1: a fall bigger than ordinary chance, p·√(units sold). 2–5: a fall 2 to 5 times bigger than that.">
-          <span>patience κ</span><select id="patSel"><option value="0">0 any fall</option><option value="1">1 normal</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
+          <span>patience κ</span><select id="patSel"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
         <label class="pat" title="the edges of the town: closed, like an island, or periodic, wrapped around like a doughnut, so that walking off one side brings you back on the other">
           <span>edges</span><select id="bcSel2"><option value="closed">closed</option><option value="periodic">periodic</option></select></label>
       </div>
@@ -968,7 +982,9 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 
 // P = {L, products:[{start,gamma,beta}], n (orders per agent per product per round), lim (max factories per agent),
 //      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (patience: a
-//      decline counts when profit < previous − κ·p·√(previous units sold); 0 = any fall), M0, bc:'periodic'|'closed', tmul (transport factor),
+//      decline counts when profit < previous − κ·p·√(previous units sold); 0 = any fall), wtax (wealth tax: the fraction
+//      of its money every agent pays at the start of a round, the total shared equally by all; 0 = none), M0,
+//      bc:'periodic'|'closed', tmul (transport factor),
 //      roads:[{pts:[[x,y],…],f}] (transport cost ×f along the road), borders:[{pts,tax,tariff,oneway,prods}] (tax = fraction
 //      of the goods' value charged on crossing; tariff = amount added per unit on crossing; prods: the products it taxes,
 //      all if absent; one-way: only when crossing toward (dy, −dx) for the drawn direction (dx, dy), which on the screen (y downward)
@@ -1189,6 +1205,9 @@ function buildEcon(P){
 
   E.step=function(){
     if(E.stale!==false)E.computeMarkets();       // fresh from the end of the last round unless a parameter changed
+    // wealth tax: every agent pays the fraction wtax of its money, and the total is shared equally by all
+    if(P.wtax>0){let tx=0; for(let r=0;r<LL;r++){const d=P.wtax*Math.max(0,E.money[r]); E.money[r]-=d; tx+=d}
+      tx/=LL; for(let r=0;r<LL;r++)E.money[r]+=tx}
     // orders: buyer ∝ the money it acquired in the previous round (wage + sales)
     let W=0; for(let r=0;r<LL;r++){W+=E.t?E.inc[r]:1;cum[r]=W}
     const uniform=!(W>0);
@@ -1286,7 +1305,7 @@ function setPalette(){
   PSH=PRGB.map(c=>({top:shade(c.map(v=>v+(255-v)*0.18),1),a:shade(c,0.8),b:shade(c,0.6)}));
 }
 
-const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:0,M0:5,bc:'closed',tmul:1,roads:[],borders:[],econ:'so',seed:1};
+const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:0,wtax:0,M0:5,bc:'closed',tmul:1,roads:[],borders:[],econ:'so',seed:1};
 // a 3 × 3 grid of two-way borders with 20 % tax, for the Borders preset
 const gridBorders=(L,k,tax)=>{const b=[];for(let j=0;j<k;j++){const g=j*L/k;
   b.push({pts:[[g,0],[g,L]],tax,oneway:false},{pts:[[0,g],[L,g]],tax,oneway:false})}return b};
@@ -1305,7 +1324,7 @@ const PRESETS={
 let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=true, loopTok=0;
 
 // the model settings of the standard setup (the view and the colours are left as they are)
-const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:0,M0:5,bc:'closed',econ:'so'};
+const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:0,wtax:0,M0:5,bc:'closed',econ:'so'};
 function applyPreset(k){
   const pr=PRESETS[k];
   if(pr.std){Object.assign(P,STD); $('Lsel').value=String(STD.L); $('aRate').value='0.002'; circOn.clear()}
@@ -1334,7 +1353,7 @@ const fmt=(v,d=2)=>Math.abs(v)>=100?v.toFixed(0):Math.abs(v)>=10?v.toFixed(1):v.
 function syncControls(){
   $('nSel').value=String(P.n); $('kapSel').value=$('patSel').value=String(P.kappa);
   $('wageR').value=P.wage; $('wageV').textContent=P.wage.toFixed(2);
-  syncUp();
+  syncUp(); $('wtaxSel').value=String(P.wtax||0);
   $('M0R').value=P.M0; $('M0V').textContent=P.M0;
   $('tmR').value=Math.log10(P.tmul); $('tmV').textContent=fmt(P.tmul);
   $('bcSel').value=$('bcSel2').value=P.bc; $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
@@ -1474,6 +1493,8 @@ $('nSel').onchange=$('nSel2').onchange=e=>setN(+e.target.value);
 function syncUp(){$('upR').value=P.upkeep; $('upV').textContent=P.upkeep.toFixed(3); menuShow($('upSel2'),P.upkeep)}
 function setUpkeep(v){P.upkeep=v; syncUp(); distMark()}
 $('upSel2').onchange=e=>setUpkeep(+e.target.value);
+// wealth tax: a menu in the upper right corner only
+$('wtaxSel').onchange=e=>{P.wtax=+e.target.value; distMark()};
 $('limSel').onchange=e=>{P.lim=+e.target.value};
 // patience κ: in the panel and in the upper right corner of the display
 function setKappa(v){P.kappa=v; $('kapSel').value=$('patSel').value=String(v); distMark(); updStat()}
@@ -2253,7 +2274,7 @@ function stampParams(oc,scale){
     (view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
   const lines=[
     {t:`Globalization in a nutshell — 2D · round ${E.t} · ${viewName}`,b:true},
-    {t:`L = ${E.L}, n = ${P.n}, lim = ${P.lim}, wage w = ${P.wage}, upkeep μ = ${P.upkeep}, patience κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
+    {t:`L = ${E.L}, n = ${P.n}, lim = ${P.lim}, wage w = ${P.wage}, upkeep μ = ${P.upkeep}, ${P.wtax?`wealth tax ${+(100*P.wtax).toFixed(2)} %, `:''}patience κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
       (P.econ==='fixed'?'fixed price p = 1':`self-organized price p = ${E.price.toPrecision(3)}${P.econ==='pay'?', buyers pay':''}`)},
     {t:`${P.bc} boundaries`+(P.roads.length?`, ${P.roads.length} road${P.roads.length>1?'s':''}`:'')+
       (P.borders.length?`, ${P.borders.length} border${P.borders.length>1?'s':''}`:'')},
