@@ -180,6 +180,9 @@
   .pat select{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0 1px;cursor:pointer;outline-offset:2px}
   .pat select option{color:#16233b;background:#fff}
   .display.darkbg .pat{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
+  /* the buyers' weight: a toggle in the style of the menus, gold when it is not the standard one */
+  .pat.ptog{font-family:inherit;padding:0 9px}
+  .pat.ptog.on,.display.darkbg .pat.ptog.on{background:#b7791f;border-color:#b7791f;color:#fff}
   .tools .tb,.tools .tmenu > summary{height:27px;padding:0 9px;border:1px solid var(--line);background:rgba(255,255,255,.9);color:var(--accent);
     font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;line-height:25px}
   .tools .tb{border-radius:8px}
@@ -784,6 +787,7 @@
       </div>
       <!-- orders per agent n, upkeep μ and patience κ (how big a fall of profit makes an owner give up its product) -->
       <div class="tools tright">
+        <button class="pat ptog" id="bBuyW" title="who places the orders: picked ∝ last round's income (Active weight), ∝ the money they have (Money weight), or ∝ the money they have with p = all the money / all units sold (Money buy) — click to switch">Active weight</button>
         <label class="pat" title="n: orders per agent and product per round. The standard setup has n = 1. With small n sales are few and noisy; the control panel has more values">
           <span>n</span><select id="nSel2"><option value="0.2">0.2</option><option value="1">1</option><option value="2">2</option><option value="5">5</option></select></label>
         <label class="pat" title="upkeep μ: every round a factory owner pays μ times what its factory cost to build (Start), because machines wear out. The standard setup has μ = 0; the slider in the control panel has more values">
@@ -990,7 +994,9 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 // P = {L, products:[{start,gamma,beta}], n (orders per agent per product per round), lim (max factories per agent),
 //      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (patience: a
 //      decline counts when profit < previous − κ·p·√(previous units sold); 0 = any fall), wtax (wealth tax: the fraction
-//      of its money every agent pays at the start of a round, the total shared equally by all; 0 = none), M0,
+//      of its money every agent pays at the start of a round, the total shared equally by all; 0 = none), buyw (who
+//      places the orders: 'inc' ∝ last round's income, 'money' ∝ the money held, 'moneyp' ∝ the money held and the
+//      self-organized price set by all the money instead of the wages), M0,
 //      bc:'periodic'|'closed', tmul (transport factor),
 //      roads:[{pts:[[x,y],…],f}] (transport cost ×f along the road), borders:[{pts,tax,tariff,oneway,prods}] (tax = fraction
 //      of the goods' value charged on crossing; tariff = amount added per unit on crossing; prods: the products it taxes,
@@ -1133,8 +1139,9 @@ function buildEcon(P){
   E.reset=function(){
     E.t=0;E.hist=[];
     for(let r=0;r<LL;r++){E.money[r]=P.M0;E.inc[r]=0;E.prevInc[r]=0;E.profit[r]=0;E.prevProfit[r]=0;E.units[r]=0;E.prevUnits[r]=0;E.started[r]=-1}
-    // first round: all n·L²·N orders are expected to be served
-    E.price=P.econ!=='fixed'&&P.wage>0?P.wage/(P.n*N):1;
+    // first round: all n·L²·N orders are expected to be served; they are worth the wages, or (buyw 'moneyp') all the money
+    const v0=P.buyw==='moneyp'?P.M0:P.wage;
+    E.price=P.econ!=='fixed'&&v0>0?v0/(P.n*N):1;
     for(let i=0;i<N;i++){E.F[i].fill(0);E.sales[i].fill(0)}
     for(let r=0;r<LL;r++)E.F[(rng()*N)|0][r]=1;
     E.computeMarkets();
@@ -1215,8 +1222,10 @@ function buildEcon(P){
     // wealth tax: every agent pays the fraction wtax of its money, and the total is shared equally by all
     if(P.wtax>0){let tx=0; for(let r=0;r<LL;r++){const d=P.wtax*Math.max(0,E.money[r]); E.money[r]-=d; tx+=d}
       tx/=LL; for(let r=0;r<LL;r++)E.money[r]+=tx}
-    // orders: buyer ∝ the money it acquired in the previous round (wage + sales)
-    let W=0; for(let r=0;r<LL;r++){W+=E.t?E.inc[r]:1;cum[r]=W}
+    // orders: buyer ∝ the money it acquired in the previous round (wage + sales), or (buyw 'money', 'moneyp') ∝ the
+    // money it has, so that agents without money do not shop
+    const byM=P.buyw==='money'||P.buyw==='moneyp';
+    let W=0; for(let r=0;r<LL;r++){W+=byM?Math.max(0,E.money[r]):E.t?E.inc[r]:1;cum[r]=W}
     const uniform=!(W>0);
     const T=Math.max(1,Math.round(P.n*LL));
     const H={t:E.t+1,prod:[],neff:[],share:[],dist:[],unmet:[],active:0,starts:0,bankrupt:0,money:0,maxUnits:0,maxMoney:0};
@@ -1279,8 +1288,10 @@ function buildEcon(P){
     }
     for(let i=0;i<N;i++){E.sales[i].set(newSales[i]);const F=E.F[i],S=E.sales[i];for(let r=0;r<LL;r++)if(!F[r])S[r]=0}
     H.active/=LL; H.starts/=LL; H.bankrupt/=LL; H.money/=LL; H.price=p; H.transport=p*trOut;   // paid to carriers and the state
-    // self-organized price for the next round: the value of all units sold equals the total wages
-    E.price=so?(U>0&&P.wage>0?P.wage*LL/U:E.price):1;
+    // self-organized price for the next round: the value of all units sold equals the total wages, or (buyw 'moneyp')
+    // all the money
+    let val=P.wage*LL; if(P.buyw==='moneyp'){val=0; for(let r=0;r<LL;r++)val+=Math.max(0,E.money[r])}
+    E.price=so?(U>0&&val>0?val/U:E.price):1;
     E.t++; E.hist.push(H); if(E.hist.length>6000)E.hist.splice(0,1000);
     E.computeMarkets();
     return H;
@@ -1312,7 +1323,7 @@ function setPalette(){
   PSH=PRGB.map(c=>({top:shade(c.map(v=>v+(255-v)*0.18),1),a:shade(c,0.8),b:shade(c,0.6)}));
 }
 
-const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:0,wtax:0,M0:5,bc:'closed',tmul:1,roads:[],borders:[],econ:'so',seed:1};
+const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:0,wtax:0,buyw:'inc',M0:5,bc:'closed',tmul:1,roads:[],borders:[],econ:'so',seed:1};
 // a 3 × 3 grid of two-way borders with 20 % tax, for the Borders preset
 const gridBorders=(L,k,tax)=>{const b=[];for(let j=0;j<k;j++){const g=j*L/k;
   b.push({pts:[[g,0],[g,L]],tax,oneway:false},{pts:[[0,g],[L,g]],tax,oneway:false})}return b};
@@ -1331,7 +1342,7 @@ const PRESETS={
 let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=true, loopTok=0;
 
 // the model settings of the standard setup (the view and the colours are left as they are)
-const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:0,wtax:0,M0:5,bc:'closed',econ:'so'};
+const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:0,wtax:0,buyw:'inc',M0:5,bc:'closed',econ:'so'};
 function applyPreset(k){
   const pr=PRESETS[k];
   if(pr.std){Object.assign(P,STD); $('Lsel').value=String(STD.L); $('aRate').value='0.002'; circOn.clear()}
@@ -1360,7 +1371,7 @@ const fmt=(v,d=2)=>Math.abs(v)>=100?v.toFixed(0):Math.abs(v)>=10?v.toFixed(1):v.
 function syncControls(){
   $('nSel').value=String(P.n); $('kapSel').value=$('patSel').value=String(P.kappa);
   $('wageR').value=P.wage; $('wageV').textContent=P.wage.toFixed(2);
-  syncUp(); $('wtaxSel').value=String(P.wtax||0);
+  syncUp(); $('wtaxSel').value=String(P.wtax||0); syncBuyW();
   $('M0R').value=P.M0; $('M0V').textContent=P.M0;
   $('tmR').value=Math.log10(P.tmul); $('tmV').textContent=fmt(P.tmul);
   $('bcSel').value=$('bcSel2').value=P.bc; $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
@@ -1431,10 +1442,17 @@ $('palSel').onchange=e=>{palName=e.target.value;buildProductUI();refresh()};
 // self-organized price (default) or the fixed price 1: a switch in the panel and in the upper right corner of the display
 function setEcon(v){
   P.econ=v; $('econSel').value=v; syncSO();
-  if(E){let U=0;for(let r=0;r<E.L*E.L;r++)U+=E.units[r];
-    E.price=v!=='fixed'&&P.wage>0?(U>0?P.wage*E.L*E.L/U:P.wage/(P.n*E.N)):1}
+  // the price at once, as the core sets it: all units sold are worth the wages, or (Money buy) all the money
+  if(E){const LL=E.L*E.L; let U=0,M=0; for(let r=0;r<LL;r++){U+=E.units[r]; M+=Math.max(0,E.money[r])}
+    const val=P.buyw==='moneyp'?M:P.wage*LL;
+    E.price=v!=='fixed'&&val>0?(U>0?val/U:val/(P.n*E.N*LL)):1}
   updStat();
 }
+// who places the orders: Active weight (∝ last round's income, the standard), Money weight (∝ the money held) or Money
+// buy (∝ the money held, and the price set by all the money); a toggle left of the n menu
+const BUYW=['inc','money','moneyp'], BUYW_LABEL={inc:'Active weight',money:'Money weight',moneyp:'Money buy'};
+function syncBuyW(){const b=$('bBuyW'); b.textContent=BUYW_LABEL[P.buyw]||BUYW_LABEL.inc; b.classList.toggle('on',P.buyw!=='inc')}
+$('bBuyW').onclick=()=>{P.buyw=BUYW[(BUYW.indexOf(P.buyw)+1)%BUYW.length]; syncBuyW(); setEcon(P.econ); distMark()};
 // The economy button in the upper right corner switches between the self-organized price and buyers paying for what
 // they buy, delivery and border tax included (the fixed price is in the panel); n, μ and κ keep their values. Its label
 // shows the economy and the n in use.
@@ -1853,12 +1871,17 @@ document.querySelectorAll('.toc a').forEach(a=>a.onclick=e=>{e.preventDefault();
 document.addEventListener('pointerdown',e=>{const d=$('titleDrop');if(d.open&&!d.contains(e.target))d.open=false});
 
 function doStep(){
+  // money grown beyond 10^18 (Money buy in the self-organized economy doubles it every round) stops the run: soon the
+  // numbers would overflow, and before that the fortune lines, a new point for every agent every round, fill the
+  // memory. Buyers pay with Money buy peaks near 10^14
+  if(E.halted)return;
   if($('anneal').checked){
     P.tmul=Math.max(0.01,P.tmul*Math.exp(-parseFloat($('aRate').value)));
     $('tmR').value=Math.log10(P.tmul);$('tmV').textContent=fmt(P.tmul);
     E.stale=true;                         // the markets must be recomputed with the new transport costs
   }
   E.step();
+  if(!(E.hist[E.hist.length-1].maxMoney<1e18)){E.halted=true; setRun(false); updStat(); return}
   agRecord(); distRecord(); nearRecord(); ravRecord();
   // the time a round takes on the screen: a closed company's tower sinks to zero over that time
   const now0=performance.now(); if(lastStepT)stepMs=0.8*stepMs+0.2*Math.min(2000,now0-lastStepT); lastStepT=now0;
@@ -1901,8 +1924,9 @@ function loop(tok){
 }
 function updStat(){
   const H=E.hist[E.hist.length-1];
-  $('tRound').textContent=E.t;
-  let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit <b>${E.price<0.1?E.price.toFixed(4):fmt(E.price,3)}</b>${P.econ==='so'?' (self-organized)':P.econ==='pay'?' (self-organized, buyers pay)':''}`;
+  $('tRound').textContent=E.halted?E.t+' — stopped, money too large':E.t;
+  let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit <b>${E.price<0.1?E.price.toFixed(4):fmt(E.price,3)}</b>${P.econ==='so'?' (self-organized)':P.econ==='pay'?' (self-organized, buyers pay)':''}${P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:''}`+
+    (E.halted?'<br><b>Stopped: the money has grown beyond 10<sup>18</sup>. Reset to start again.</b>':'');
   if(H)s+=`<br>agents with sales <b>${(100*H.active).toFixed(1)}%</b> · per round: starts <b>${(100*H.starts).toFixed(1)}%</b>, bankruptcies <b>${(100*H.bankrupt).toFixed(2)}%</b>`+
     (P.econ==='pay'?` · transport and tax paid <b>${fmt(H.transport||0,2)}</b> per round`:'');
   $('stat').innerHTML=s;
@@ -2281,7 +2305,7 @@ function stampParams(oc,scale){
     (view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
   const lines=[
     {t:`Globalization in a nutshell — 2D · round ${E.t} · ${viewName}`,b:true},
-    {t:`L = ${E.L}, n = ${P.n}, lim = ${P.lim}, wage w = ${P.wage}, upkeep μ = ${P.upkeep}, ${P.wtax?`wealth tax ${+(100*P.wtax).toFixed(2)} %, `:''}patience κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
+    {t:`L = ${E.L}, n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}lim = ${P.lim}, wage w = ${P.wage}, upkeep μ = ${P.upkeep}, ${P.wtax?`wealth tax ${+(100*P.wtax).toFixed(2)} %, `:''}patience κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
       (P.econ==='fixed'?'fixed price p = 1':`self-organized price p = ${E.price.toPrecision(3)}${P.econ==='pay'?', buyers pay':''}`)},
     {t:`${P.bc} boundaries`+(P.roads.length?`, ${P.roads.length} road${P.roads.length>1?'s':''}`:'')+
       (P.borders.length?`, ${P.borders.length} border${P.borders.length>1?'s':''}`:'')},
