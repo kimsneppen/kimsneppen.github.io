@@ -694,8 +694,8 @@
         linear terms can be replaced by +&nabla;&#8308;h + &nabla;&#8310;h, or by &Lambda;&nabla;&sup2;h +
         &nabla;&#8308;h + &nabla;&#8310;h — the Nikolaevskiy equation of seismic waves
         [<a class="cite" href="#ref-12">12</a>] — and the nonlinearity (&nabla;h)&sup2; can be joined by
-        &alpha;|&nabla;h|, &beta;(&nabla;h)&#8308;, &gamma;&nabla;&sup2;(&nabla;h)&sup2; and
-        &delta;&nabla;&sup2;h(&nabla;h)&sup2;. Where these variants come from and what each of them does to
+        &alpha;|&nabla;h|, &beta;(&nabla;h)&#8308;, &gamma;&nabla;&sup2;(&nabla;h)&sup2;,
+        &delta;&nabla;&sup2;h(&nabla;h)&sup2; and &sigma;(&nabla;&sup2;h)&sup2;. Where these variants come from and what each of them does to
         the front is described in <a class="tomore" href="#variantDetails"><i>More details on the variant models</i></a> at the end of this text;
         the tables below measure how the slope correction &beta; changes the chaos for three of the
         linear forms.</p>
@@ -1293,6 +1293,7 @@
         <span class="term" id="termB">+ &beta;(&nabla;h)&#8308;</span>
         <span class="term" id="termG" title="&gamma;&nabla;&sup2;[(&nabla;h)&sup2;]: the conserved counterpart of the KS nonlinearity — it redistributes height without changing the mean">+ &gamma;&nabla;&sup2;(&nabla;h)&sup2;</span>
         <span class="term" id="termD" title="&delta;&nabla;&sup2;h&middot;(&nabla;h)&sup2;: a slope-dependent (nonlinear) diffusion — &delta; &gt; 0 smooths steep regions, &delta; &lt; 0 sharpens them">+ &delta;&nabla;&sup2;h(&nabla;h)&sup2;</span>
+        <span class="term" id="termS" title="&sigma;(&nabla;&sup2;h)&sup2;: the square of the curvature — extra growth (&sigma; &gt; 0) or loss (&sigma; &lt; 0) wherever the front is strongly curved, at tops and in valleys alike">+ &sigma;(&nabla;&sup2;h)&sup2;</span>
         <span class="linwarn" id="linWarn" hidden title="no nonlinear term is active: the equation is linear and its unstable modes grow without bound">linear — add &alpha; or &beta;</span></span>
       <span class="tctl">&alpha;
         <select id="selAlpha" title="&alpha;: coefficient of the |&nabla;h| term"></select></span>
@@ -1302,6 +1303,8 @@
         <select id="selGamma" title="&gamma;: coefficient of the &nabla;&sup2;(&nabla;h)&sup2; term"></select></span>
       <span class="tctl">&delta;
         <select id="selDelta" title="&delta;: coefficient of the &nabla;&sup2;h&middot;(&nabla;h)&sup2; term (only &delta; &ge; 0: negative &delta; blows up in finite time)"></select></span>
+      <span class="tctl">&sigma;
+        <select id="selSigma" title="&sigma;: coefficient of the (&nabla;&sup2;h)&sup2; term, the squared curvature"></select></span>
       <span class="tctl" id="lamCtl" hidden title="&Lambda;: coefficient of the &nabla;&sup2;h term of &Lambda;&nabla;&sup2;h +&nabla;&#8308;h +&nabla;&#8310;h — a diffusion that damps the long waves. The flat surface is unstable only for &Lambda; &lt; 1/4; the fastest wave grows at most at 4/27 (&Lambda; &rarr; 0), 0.107 at &Lambda; = 1/16 = 0.0625 and 0.084 at the KKS value &Lambda; = 0.1, 0.026 at 0.2. (Capital &Lambda;, because &lambda; is the Lyapunov exponent.)">&Lambda;
         <select id="selLam"></select></span>
     </div>
@@ -1342,6 +1345,7 @@
           <option value="lyB" class="lyopt lyterm" hidden title="contribution of the β(∇h)⁴ term to λ(x)">λ(β(∇h)⁴)</option>
           <option value="lyG" class="lyopt lyterm" hidden title="contribution of the γ∇²(∇h)² term to λ(x)">λ(γ∇²(∇h)²)</option>
           <option value="lyD" class="lyopt lyterm" hidden title="contribution of the δ∇²h(∇h)² term to λ(x)">λ(δ∇²h(∇h)²)</option>
+          <option value="lyS" class="lyopt lyterm" hidden title="contribution of the σ(∇²h)² term to λ(x)">λ(σ(∇²h)²)</option>
         </select>
         <select id="cmap" title="colour map">
           <optgroup label="diverging">
@@ -1651,12 +1655,13 @@
           <div class="row"><label>&beta;(&nabla;h)&#8308;</label><select id="scB" class="scsel"></select></div>
           <div class="row"><label>&gamma;&nabla;&sup2;(&nabla;h)&sup2;</label><select id="scG" class="scsel"></select></div>
           <div class="row"><label>&delta;&nabla;&sup2;h(&nabla;h)&sup2;</label><select id="scD" class="scsel"></select></div>
+          <div class="row"><label>&sigma;(&nabla;&sup2;h)&sup2;</label><select id="scS" class="scsel"></select></div>
           <div class="row"><label>scanned coefficient</label>
-            <select id="scPar"><option value="beta">&beta;</option><option value="alpha">&alpha;</option><option value="gamma">&gamma;</option><option value="delta">&delta;</option><option value="L">system size L</option><option value="lam">&Lambda; (the &Lambda; equation)</option></select></div>
+            <select id="scPar"><option value="beta">&beta;</option><option value="alpha">&alpha;</option><option value="gamma">&gamma;</option><option value="delta">&delta;</option><option value="sigma">&sigma;</option><option value="L">system size L</option><option value="lam">&Lambda; (the &Lambda; equation)</option></select></div>
           <div class="row" id="scLRow" style="display:none"><label>sizes 16, 32, … , 2<sup>n</sup>, n =</label>
             <select id="scNmax" title="the sizes L = 16, 32, 64, … up to 2^n are sampled; each has L/dx lattice points (2D: at most 256 points, L ≤ 256·dx)"></select></div>
           <div class="row" id="scRangeRow"><label>from &middot; to &middot; step</label>
-            <span class="triple"><input type="number" id="scMin" value="-1" step="any" title="first value"><input type="number" id="scMax" value="1" step="any" title="last value"><select id="scStep" title="step of the scanned coefficient; always included are the points −1.5, −1.2, −0.9, −0.7, −0.5, −0.4, −0.3, −0.2, 0 and +0.5 for α, and −0.4, −0.3, −0.2, −0.15, −0.1, −0.07, −0.05, 0, +0.1 and +0.2 for β, γ and δ"><option>0.05</option><option>0.1</option><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option><option>5</option></select></span></div>
+            <span class="triple"><input type="number" id="scMin" value="-1" step="any" title="first value"><input type="number" id="scMax" value="1" step="any" title="last value"><select id="scStep" title="step of the scanned coefficient; always included are the points −1.5, −1.2, −0.9, −0.7, −0.5, −0.4, −0.3, −0.2, 0 and +0.5 for α, and −0.4, −0.3, −0.2, −0.15, −0.1, −0.07, −0.05, 0, +0.1 and +0.2 for β, γ and δ; σ is scanned over its whole window, −0.3 … 1.5 in steps of 0.1 in 1D and −0.3 … 0.3 in steps of 0.05 in 2D"><option>0.05</option><option>0.1</option><option>0.2</option><option selected>0.5</option><option>1</option><option>2</option><option>5</option></select></span></div>
           <div class="row"><label>dimension</label>
             <div class="seg mini" id="scDim"><button data-v="1" class="on">1D</button><button data-v="2">2D</button></div></div>
           <div class="row"><label>box length L</label>
@@ -1678,7 +1683,7 @@
             <button class="btn" id="scStop" disabled>stop</button>
           </div>
           <div class="hint" id="scStatus">idle</div>
-          <div class="hint"><b>Linear terms:</b> tick any of the four equations (the second is the mean-curvature form of the KS instability, −∇·(∇h/√(1+(∇h)²)) − ∇⁴h, linear only for gentle slopes); several are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (default 0.1, as KKS). The scanned points are the range in the chosen step plus always &minus;1.5, &minus;1.2, &minus;0.9, &minus;0.7, &minus;0.5, &minus;0.4, &minus;0.3, &minus;0.2, 0 and +0.5 for &alpha;, and &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.15, &minus;0.1, &minus;0.07, &minus;0.05, 0, +0.1 and +0.2 for &beta;, &gamma; and &delta;; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient (with a <b>KS pre-transient</b> t &gt; 0 the start is instead the surface reached by the standard KS equation &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h + (&nabla;h)&sup2; after time t from the usual random start, integrated at its usual step dt = 0.1; the equation under study then runs at the step set by <i>time step dt (at most)</i>), then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
+          <div class="hint"><b>Linear terms:</b> tick any of the four equations (the second is the mean-curvature form of the KS instability, −∇·(∇h/√(1+(∇h)²)) − ∇⁴h, linear only for gentle slopes); several are run with identical settings and tabulated side by side, one column group and one colour each, in the order of the list from top to bottom — &#9650; moves an equation one place up. <b>&Lambda;</b> belongs to the third equation, &Lambda;&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h: <i>scan &Lambda;</i> (or &Lambda; in the scanned-coefficient menu) steps it from 0.01, 0.02 or 0.05 in steps of 0.01, 0.02 or 0.05, up to and including the first value above 1/4 (where the flat surface turns stable), and runs that equation alone; when another coefficient — &beta;, say — is scanned, &Lambda; is held at the <i>&Lambda; fixed at</i> value (default 0.1, as KKS). The scanned points are the range in the chosen step plus always &minus;1.5, &minus;1.2, &minus;0.9, &minus;0.7, &minus;0.5, &minus;0.4, &minus;0.3, &minus;0.2, 0 and +0.5 for &alpha;, and &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.15, &minus;0.1, &minus;0.07, &minus;0.05, 0, +0.1 and +0.2 for &beta;, &gamma; and &delta;; &sigma; is always scanned over its whole bounded window, &minus;0.3 … 1.5 in steps of 0.1 in 1D and &minus;0.3 … 0.3 in steps of 0.05 in 2D, so the range row is fixed while &sigma; is chosen; scanning the system size L takes L = 16, 32, 64, … up to 2<sup>n</sup>. Each sample lasts twice the transient: the surface is integrated from a small random start for the transient (with a <b>KS pre-transient</b> t &gt; 0 the start is instead the surface reached by the standard KS equation &minus;&nabla;&sup2;h &minus; &nabla;&#8308;h + (&nabla;h)&sup2; after time t from the usual random start, integrated at its usual step dt = 0.1; the equation under study then runs at the step set by <i>time step dt (at most)</i>), then the twin is switched on: the first half of the remaining time gives the Benettin exponent (running average), the second half is spent on repeated free runs (seeded from the running state, released, stopped after complete divergence) whose fitted slopes give the long-run exponent. W is the mean width over the measurement. With NMC &gt; 1 every value is repeated from NMC different random starts and mean &plusmn; spread are shown. The time step follows the same rule as in the main display. A run that diverges is repeated at a four times smaller dt, and if it diverges again at a sixteen times smaller one (that smaller dt then also serves the remaining starts of the value); only when all three diverge is the value marked yellow as diverged, and the scan moves on to the next.</div>
         </div>
       </details>
 
@@ -1755,6 +1760,25 @@
           (&nabla;h)&sup2; makes the smoothing act only on the steep parts. That is why only
           &delta; &ge; 0 is offered: a negative &delta; would be <i>anti</i>-diffusion on the steep
           parts and blows up. The time step is kept at 0.01 or below while &delta; is on.</p>
+          <h4>&sigma;(&nabla;&sup2;h)&sup2; — the square of the curvature</h4>
+          <p>The second power of the second derivative: the local term of second order in the
+          curvature, in the same way as (&nabla;h)&sup2; is the second-order term in the slope. It is
+          never negative, so it adds growth (&sigma; &gt; 0) or loss (&sigma; &lt; 0) wherever the
+          front is strongly curved, at the tops and in the valleys alike, and nothing in between.
+          Like &gamma; and &delta; it carries two more derivatives than (&nabla;h)&sup2;, and like them it is
+          bounded only in a narrow window: with the KS terms (dx = 0.5, runs of 500 time units from two
+          random starts) the one-dimensional front stays bounded for &minus;0.3 &le; &sigma; &le; 1.2 and blows
+          up in finite time at &sigma; = &minus;0.5 (t &asymp; 38) and from &sigma; &asymp; 1.3 upwards (1.3: one of the two
+          starts, at t &asymp; 90; 1.4 and 1.5: t &asymp; 30 to 40; 2, 3, 5: t &asymp; 20, 13, 9); in two dimensions (L = 64, 200 t.u.) the window is &minus;0.3 &le; &sigma; &le; 0.25, with
+          blow-up at +0.3 (t &asymp; 36 and 72), at &plusmn;0.5 (t &asymp; 17) and beyond. The divergence time does not depend on dt, so
+          this is the equation, not the numerics; the run stops with a warning. Inside the window the
+          front stays KS-like, with the growth speed rising steeply with &sigma; (2D: 1.1 at
+          &sigma; = 0, 1.5 at 0.1, 2.1 at 0.2, 2.8 at 0.25). The menu and the scan are therefore confined to this
+          neighbourhood: &sigma; runs from &minus;0.3 to 1.5 in steps of 0.1 in 1D and from &minus;0.3 to 0.3 in steps of
+          0.05 in 2D. The last values of each list, 1.3 to 1.5 in 1D and 0.3 in 2D, lie just beyond the
+          window measured here and are offered so that the blow-up itself can be watched; switching the display to 2D moves a larger &sigma; to the nearest offered value. The time
+          step is 0.02 in 1D (0.01 beyond |&sigma;| = 1) and 0.05 in 2D,
+          see the convergence note at SIGMA_DT in the code.</p>
           <p>For what these terms do to the pattern and to the chaos — which of them kill it,
           which sign matters, and the measured Lyapunov exponents — see <i>Variant models</i> and
           the tables in the main text above the display.</p>
@@ -1928,9 +1952,9 @@
           <p>The <i>Systematic scan</i> menu repeats the measurements of the tables in the main
           text for an equation of your choice: set the linear terms (one of the two operators, or
           <i>both</i>, which runs the two equations and tabulates them side by side like the first
-          table of the main text), (&nabla;h)&sup2; and the fixed coefficients, pick the quantity to scan — &alpha;, &beta;, &gamma;, &delta; or the box size
+          table of the main text), (&nabla;h)&sup2; and the fixed coefficients, pick the quantity to scan — &alpha;, &beta;, &gamma;, &delta;, &sigma; or the box size
           L — with its range and step (always included are the values &minus;1.5, &minus;1.2, &minus;0.9, &minus;0.7, &minus;0.5, &minus;0.4, &minus;0.3, &minus;0.2, 0 and +0.5
-          for &alpha;, and &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.15, &minus;0.1, &minus;0.07, &minus;0.05, 0, +0.1 and +0.2 for &beta;, &gamma; and &delta;; L runs 16, 32, … up to 2<sup>n</sup>), the dimension, the box length L (default 128), the lattice step dx (default 0.5; the lattice has L/dx points) and an upper bound
+          for &alpha;, and &minus;0.4, &minus;0.3, &minus;0.2, &minus;0.15, &minus;0.1, &minus;0.07, &minus;0.05, 0, +0.1 and +0.2 for &beta;, &gamma; and &delta;; &sigma; is scanned over its whole window, &minus;0.3 … 1.5 in steps of 0.1 in 1D and &minus;0.3 … 0.3 in steps of 0.05 in 2D; L runs 16, 32, … up to 2<sup>n</sup>), the dimension, the box length L (default 128), the lattice step dx (default 0.5; the lattice has L/dx points) and an upper bound
           on the time step dt (default 0.05; the automatic rule lowers it further for large
           coefficients), the boundary, the transient (the total time
           per sample is twice the transient: the Benettin exponent is measured in the first half
@@ -2233,12 +2257,12 @@ function buildSim(P){
 
   const FT = (re,im,inv) => { if(ny===1) fftCore(re,im,inv); else fft2(re,im,nx,ny,inv,csr,csi); };
 
-  /* nonlinearity: N = NL(grad h) + ALPHA*|grad h| + BETA*(grad h)^4, where the KS term NL is
+  /* nonlinearity: N = NL(grad h) + ALPHA*|grad h| + BETA*(grad h)^4 + SIGMA*(lap h)^2 + …, where the KS term NL is
      chosen in the header: NL2 = 1 the standard (∇h)², NL2 = 2 the exact growth along the normal
      2(√(1+(∇h)²) − 1) = (∇h)² − ¼(∇h)⁴ + …, NL2 = 0 none (then α or β must supply the
      saturation).  In 2D |grad h| is either the Euclidean norm sqrt(hx²+hy²) (absMode 'euclid',
      the standard) or the taxicab sum |hx|+|hy| (absMode 'sum'); in 1D both are |dh/dx|. */
-  let ALPHA = P.alpha || 0, BETA = P.beta || 0, GAMMA = P.gamma || 0, DELTA = P.delta || 0;
+  let ALPHA = P.alpha || 0, BETA = P.beta || 0, GAMMA = P.gamma || 0, DELTA = P.delta || 0, SIGMA = P.sigma || 0;
   let NL2 = nl2Code(P.nl2);
   let GEO = P.order === 40;   // order 40: the mean-curvature form of the KS instability (see geoCorrection)
   let ABS_SUM = P.absMode === 'sum';
@@ -2253,7 +2277,9 @@ function buildSim(P){
   const lpr=A(), lpi=A(), zr=A(), zi=A();          // Laplacian; packed transform for the γ term
   const fxr=A(), fxi=A();                          // the curvature-correction flux of order 40
 
-  /* Nonlinearity N = NL2·(∇h)² + α|∇h| + β(∇h)⁴ + δ∇²h·(∇h)² + γ∇²[(∇h)²].
+  /* Nonlinearity N = NL2·(∇h)² + α|∇h| + β(∇h)⁴ + δ∇²h·(∇h)² + σ(∇²h)² + γ∇²[(∇h)²].
+     σ(∇²h)²: the square of the curvature, the local term of second order in the
+     second derivative; it needs ∇²h in x-space like the δ term and shares its transform.
      Both gradient components come out of ONE inverse transform: the spectra of
      dh/dx and dh/dy are Hermitian, so transforming (i·kx·v) + i(i·ky·v) returns
      dh/dx in the real part and dh/dy in the imaginary part.  In 1D the free
@@ -2262,7 +2288,7 @@ function buildSim(P){
      imaginary part of the forward transform of the local terms and is unpacked
      with the Hermitian symmetry, N̂ = Â − γk²·ĝ — no extra transform. */
   function nonlin(inr, ini, outr, outi){                 // dealiased pseudospectral N(v)
-    const dOn = DELTA !== 0, gOn = GAMMA !== 0;
+    const dOn = DELTA !== 0, gOn = GAMMA !== 0, sOn = SIGMA !== 0, lOn = dOn || sOn;   // lOn: ∇²h is needed in x-space
     let lap = null;
     if(ny > 1){
       for(let p=0;p<M;p++){
@@ -2271,9 +2297,9 @@ function buildSim(P){
         g1i[p] =  kx*r - ky*i;
       }
       FT(g1r, g1i, true);                                // g1r = dh/dx, g1i = dh/dy
-      if(dOn){ for(let p=0;p<M;p++){ const k2=K2[p]; lpr[p] = -k2*inr[p]; lpi[p] = -k2*ini[p]; } FT(lpr, lpi, true); lap = lpr; }
+      if(lOn){ for(let p=0;p<M;p++){ const k2=K2[p]; lpr[p] = -k2*inr[p]; lpi[p] = -k2*ini[p]; } FT(lpr, lpi, true); lap = lpr; }
     } else {
-      if(dOn){                                           // dh/dx in the real, ∇²h in the imaginary part
+      if(lOn){                                           // dh/dx in the real, ∇²h in the imaginary part
         for(let p=0;p<M;p++){ const kx=KX[p], k2=K2[p]; g1r[p] = -kx*ini[p] + k2*ini[p]; g1i[p] = kx*inr[p] - k2*inr[p]; }
         FT(g1r, g1i, true); lap = g1i;
       } else {
@@ -2282,7 +2308,7 @@ function buildSim(P){
       }
     }
     const two = ny > 1, tr = gOn ? zr : outr, ti = gOn ? zi : outi;
-    if(ALPHA === 0 && BETA === 0 && NL2 === 1 && !dOn && !gOn){
+    if(ALPHA === 0 && BETA === 0 && NL2 === 1 && !dOn && !gOn && !sOn){
       if(two) for(let p=0;p<M;p++){ const a = g1r[p], b = g1i[p]; outr[p] = a*a + b*b; outi[p] = 0; }
       else    for(let p=0;p<M;p++){ outr[p] = g1r[p]*g1r[p]; outi[p] = 0; }
     } else {
@@ -2291,6 +2317,7 @@ function buildSim(P){
         let n = (NL2 === 1 ? g : NL2 === 2 ? 2*(Math.sqrt(1 + g) - 1) : 0) + BETA*g*g;
         if(ALPHA !== 0) n += ALPHA*((two && ABS_SUM) ? ((a<0?-a:a) + (b<0?-b:b)) : Math.sqrt(g));
         if(dOn) n += DELTA*lap[p]*g;
+        if(sOn){ const l = lap[p]; n += SIGMA*l*l; }
         tr[p] = n; ti[p] = gOn ? g : 0;                  // g packed into the imaginary part
       }
     }
@@ -2404,7 +2431,7 @@ function buildSim(P){
      nonlinear terms, and the k = 0 mode (mean growth, absorbed into ⟨h⟩ for
      both trajectories) removed.  Nothing here is linearized, so the budget is
      exact at any separation — also in a free run near saturation. */
-  const TERMKEYS = ['lyLin1','lyLin2','lyNL2','lyA','lyB','lyG','lyD'];
+  const TERMKEYS = ['lyLin1','lyLin2','lyNL2','lyA','lyB','lyG','lyD','lyS'];
   const tfld = { tot:A() }; for(const k of TERMKEYS) tfld[k] = A();
   const budget = { keys:TERMKEYS, fld:tfld, val:{tot:NaN}, avg:{tot:NaN}, sum:{tot:0}, T:0, ready:false };
   for(const k of TERMKEYS){ budget.val[k]=NaN; budget.avg[k]=NaN; budget.sum[k]=0; }
@@ -2440,7 +2467,7 @@ function buildSim(P){
   }
   s.lyapWindow = () => WA.t.length ? { from: WA.t[0] + (WA.t[WA.t.length-1] - WA.t[0])/3, to: WA.t[WA.t.length-1] } : null;
   function budgetResetAvg(){ budget.T = 0; for(const k in budget.sum){ budget.sum[k]=0; budget.avg[k]=NaN; } waReset(s.t); }
-  const t1r=A(), t1i=A(), t2r=A(), t2i=A(), t3r=A(), t3i=A(), t4r=A(), t4i=A(), t5r=A(), t5i=A(), t6r=A(), t6i=A(), t7r=A(), t7i=A(), t8r=A(), t8i=A();
+  const t1r=A(), t1i=A(), t2r=A(), t2i=A(), t3r=A(), t3i=A(), t4r=A(), t4i=A(), t5r=A(), t5i=A(), t6r=A(), t6i=A(), t7r=A(), t7i=A(), t8r=A(), t8i=A(), t9r=A(), t9i=A();
   function gradOf(inr, ini, outr, outi){         // ∇ of a spectral field: outr = ∂x, outi = ∂y
     if(ny > 1){
       for(let p=0;p<M;p++){ const kx=KX[p], ky=KY[p], r=inr[p], i=ini[p]; outr[p] = -kx*i - ky*r; outi[p] = kx*r - ky*i; }
@@ -2458,7 +2485,7 @@ function buildSim(P){
   }
   /* step 1, with (dr, di) = δv̂ = ŵ − v̂ still spectral: the term fields in x-space
      t1r = T_lin1 δh, t1i = T_lin2 δh, t4r = Δ(∇h)², t4i = Δ α|∇h|, t2r = Δ β(∇h)⁴,
-     t2i = Δ δ∇²h(∇h)², t5r = Δ γ∇²(∇h)² */
+     t2i = Δ δ∇²h(∇h)², t5r = Δ γ∇²(∇h)², t9r = Δ σ(∇²h)² */
   function budgetFields(){
     const o6 = s.P.order === 6, o246 = s.P.order === 246, lm = lamOf(s.P);
     for(let p=0;p<M;p++){
@@ -2470,7 +2497,7 @@ function buildSim(P){
     FT(t1r, t1i, true);
     gradOf(vr, vi, t2r, t2i);                    // ∇h
     gradOf(wr, wi, t3r, t3i);                    // ∇w
-    const aOn = ALPHA !== 0, bOn = BETA !== 0, gOn = GAMMA !== 0, dOn = DELTA !== 0, nOn = NL2 !== 0, huy = NL2 === 2, two = ny > 1;
+    const aOn = ALPHA !== 0, bOn = BETA !== 0, gOn = GAMMA !== 0, dOn = DELTA !== 0, sOn = SIGMA !== 0, nOn = NL2 !== 0, huy = NL2 === 2, two = ny > 1;
     if(GEO){                                     // order 40: slot 1 also carries the curvature correction, twin minus surface
       for(let p=0;p<M;p++){
         const hx=t2r[p], hy = two ? t2i[p] : 0, wx=t3r[p], wy = two ? t3i[p] : 0;
@@ -2488,7 +2515,7 @@ function buildSim(P){
       FT(t8r, t8i, true);
       for(let p=0;p<M;p++) t1r[p] += t8r[p];
     }
-    if(dOn){                                     // ∇²h in the real, ∇²w in the imaginary part
+    if(dOn || sOn){                              // ∇²h in the real, ∇²w in the imaginary part
       for(let p=0;p<M;p++){ const k2=K2[p]; t6r[p] = -k2*(vr[p] - wi[p]); t6i[p] = -k2*(vi[p] + wr[p]); }
       FT(t6r, t6i, true);
     }
@@ -2505,10 +2532,12 @@ function buildSim(P){
       t4i[p] = da;
       t2r[p] = bOn ? BETA*(gw*gw - gh*gh) : 0;
       t2i[p] = dOn ? DELTA*(t6i[p]*gw - t6r[p]*gh) : 0;
+      t9r[p] = sOn ? SIGMA*(t6i[p]*t6i[p] - t6r[p]*t6r[p]) : 0; t9i[p] = 0;
       t5r[p] = gOn ? gw - gh : 0; t5i[p] = 0;
     }
     if(nOn || aOn) dealiasPair(t4r, t4i);
     if(bOn || dOn) dealiasPair(t2r, t2i);
+    if(sOn) dealiasPair(t9r, t9i);
     if(gOn){                                     // γ∇²[(∇w)² − (∇h)²]: spectral Laplacian, dealiased
       FT(t5r, t5i, false);
       for(let p=0;p<M;p++){ const f = -GAMMA*K2[p]*mask[p]; t5r[p]*=f; t5i[p]*=f; }
@@ -2519,20 +2548,20 @@ function buildSim(P){
   /* step 2, with dr = δh(x) real and norm2 = ⟨δh²⟩ over the physical domain */
   function budgetDensities(norm2, dtSeg){
     const inv = 1/norm2, F = budget.fld;
-    let sL1=0, sL2=0, sN=0, sA=0, sB=0, sG=0, sD=0;
+    let sL1=0, sL2=0, sN=0, sA=0, sB=0, sG=0, sD=0, sS=0;
     for(let j=0;j<physNy;j++){
       const row=j*nx;
       for(let i=0;i<physNx;i++){
         const p=row+i, d=dr[p]*inv;
-        const c1=d*t1r[p], c2=d*t1i[p], cn=d*t4r[p], ca=d*t4i[p], cb=d*t2r[p], cg=d*t5r[p], cd=d*t2i[p];
-        F.lyLin1[p]=c1; F.lyLin2[p]=c2; F.lyNL2[p]=cn; F.lyA[p]=ca; F.lyB[p]=cb; F.lyG[p]=cg; F.lyD[p]=cd;
-        F.tot[p]=c1+c2+cn+ca+cb+cg+cd;
-        sL1+=c1; sL2+=c2; sN+=cn; sA+=ca; sB+=cb; sG+=cg; sD+=cd;
+        const c1=d*t1r[p], c2=d*t1i[p], cn=d*t4r[p], ca=d*t4i[p], cb=d*t2r[p], cg=d*t5r[p], cd=d*t2i[p], cs=d*t9r[p];
+        F.lyLin1[p]=c1; F.lyLin2[p]=c2; F.lyNL2[p]=cn; F.lyA[p]=ca; F.lyB[p]=cb; F.lyG[p]=cg; F.lyD[p]=cd; F.lyS[p]=cs;
+        F.tot[p]=c1+c2+cn+ca+cb+cg+cd+cs;
+        sL1+=c1; sL2+=c2; sN+=cn; sA+=ca; sB+=cb; sG+=cg; sD+=cd; sS+=cs;
       }
     }
     const v = budget.val;
-    v.lyLin1=sL1/NP; v.lyLin2=sL2/NP; v.lyNL2=sN/NP; v.lyA=sA/NP; v.lyB=sB/NP; v.lyG=sG/NP; v.lyD=sD/NP;
-    v.tot = v.lyLin1+v.lyLin2+v.lyNL2+v.lyA+v.lyB+v.lyG+v.lyD;
+    v.lyLin1=sL1/NP; v.lyLin2=sL2/NP; v.lyNL2=sN/NP; v.lyA=sA/NP; v.lyB=sB/NP; v.lyG=sG/NP; v.lyD=sD/NP; v.lyS=sS/NP;
+    v.tot = v.lyLin1+v.lyLin2+v.lyNL2+v.lyA+v.lyB+v.lyG+v.lyD+v.lyS;
     if(dtSeg > 1e-12){
       budget.T += dtSeg;
       for(const k in budget.sum) budget.sum[k] += v[k]*dtSeg;   // full-record sums (kept for reference)
@@ -2783,10 +2812,11 @@ function buildSim(P){
 
   s.frame = function(n){ for(let i=0;i<n;i++) s.step(); s.sync(); };
   s.setDt = function(dt){ s.P.dt = dt; computeCoeffs(dt); };
-  s.setTerms = function(a, b, nl2, absMode, g, d){
+  s.setTerms = function(a, b, nl2, absMode, g, d, sg){
     ALPHA = a; BETA = b;
     if(g !== undefined) GAMMA = g;
     if(d !== undefined) DELTA = d;
+    if(sg !== undefined) SIGMA = sg;
     if(nl2 !== undefined) NL2 = nl2Code(nl2);
     if(absMode !== undefined) ABS_SUM = absMode === 'sum';
   };
@@ -2904,13 +2934,13 @@ function scRandomIC(seed){
 async function scanSample(c, value, seed, report, stopped, yieldFn){
   const ic = seed === undefined ? { n: 4, amp: 0 } : scRandomIC(seed);
   const P = { dim: c.dim, L: c.L, bc: c.bc, dt: c.dt, dx: c.dx || 1, nwx: ic.n, nwy: ic.n, amp: ic.amp, eps: 0.1,
-              alpha: c.alpha, beta: c.beta, gamma: c.gamma, delta: c.delta, order: c.order, lam: c.lam, nl2: c.nl2, absMode: 'euclid', seed, noise: 0.1 };
+              alpha: c.alpha, beta: c.beta, gamma: c.gamma, delta: c.delta, sigma: c.sigma || 0, order: c.order, lam: c.lam, nl2: c.nl2, absMode: 'euclid', seed, noise: 0.1 };
   if(c.par === 'L') P.L = value; else P[c.par] = value;
   /* optional pre-transient: the standard KS equation, ∂h/∂t = −∇²h − ∇⁴h + (∇h)², from the same
      random start and at its own time step c.dtPre, for c.tPre; the equation under study then takes
      over the KS surface at its own time step c.dt. Times reported count from that switch. */
   const tPre = c.tPre > 0 ? c.tPre : 0;
-  const m = buildSim(tPre ? Object.assign({}, P, { order: 4, nl2: true, alpha: 0, beta: 0, gamma: 0, delta: 0, dt: c.dtPre || 0.1 }) : P);
+  const m = buildSim(tPre ? Object.assign({}, P, { order: 4, nl2: true, alpha: 0, beta: 0, gamma: 0, delta: 0, sigma: 0, dt: c.dtPre || 0.1 }) : P);
   m.lyap.on = false;
   const spf = 5, fdt = c.dt*spf, bad = () => !isFinite(m.W) || m.W > 1e4;
   let last = performance.now(), tOff = 0;
@@ -2921,8 +2951,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       if(bad() || stopped()) return null;
       if(performance.now() - last > 30){ last = performance.now(); report(m.t - tPre); await yieldFn(); }
     }
-    Object.assign(m.P, { order: P.order, lam: P.lam, nl2: P.nl2, alpha: P.alpha, beta: P.beta, gamma: P.gamma, delta: P.delta });
-    m.setTerms(P.alpha, P.beta, P.nl2, P.absMode, P.gamma, P.delta);
+    Object.assign(m.P, { order: P.order, lam: P.lam, nl2: P.nl2, alpha: P.alpha, beta: P.beta, gamma: P.gamma, delta: P.delta, sigma: P.sigma });
+    m.setTerms(P.alpha, P.beta, P.nl2, P.absMode, P.gamma, P.delta, P.sigma);
     m.setOrder(P.order); m.setDt(P.dt);
     tOff = m.t;
   }
@@ -2986,7 +3016,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   let clean = false, onScreen = true;
   const capInset = () => onScreen ? 96 : 0;
 
-  const params = { dim:1, L:128, bc:'periodic', n:5, amp:0.1, eps:0.1, dt:0.1, dx:0.5, alpha:0, beta:0, gamma:0, delta:0, order:4, lam:0.1,
+  const params = { dim:1, L:128, bc:'periodic', n:5, amp:0.1, eps:0.1, dt:0.1, dx:0.5, alpha:0, beta:0, gamma:0, delta:0, sigma:0, order:4, lam:0.1,
                    nl2:true, absMode:'euclid' };
   let stepsPerFrame = 5;
   /* L is the physical length of the box, dx the lattice spacing: the lattice
@@ -3026,7 +3056,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   let qbuf = null;
   /* the Lyapunov colourings: the total density λ(x), its negative, and the
      contribution of each term of the equation (see the budget in the core) */
-  const TERMKEYS = ['lyLin1','lyLin2','lyNL2','lyA','lyB','lyG','lyD'];
+  const TERMKEYS = ['lyLin1','lyLin2','lyNL2','lyA','lyB','lyG','lyD','lyS'];
   const LYKINDS = ['lydiv','nlydiv', ...TERMKEYS];
   const qscales = { h:1e-6, dx:1e-6, absdx:1e-6, lap:1e-6, nlap:1e-6 };
   const scaleStamp = { h:-1, dx:-1, absdx:-1, lap:-1, nlap:-1 };
@@ -3037,12 +3067,12 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const termActive = k => k === 'lyLin1' || k === 'lyLin2' ? true
                         : k === 'lyNL2' ? params.nl2 : k === 'lyA' ? params.alpha !== 0
                         : k === 'lyB' ? params.beta !== 0 : k === 'lyG' ? params.gamma !== 0
-                        : k === 'lyD' ? params.delta !== 0 : false;
+                        : k === 'lyD' ? params.delta !== 0 : k === 'lyS' ? params.sigma !== 0 : false;
   const activeTermKeys = () => TERMKEYS.filter(termActive);
   function termLabel(k){
     const o6 = params.order === 6, o246 = params.order === 246, geo = params.order === 40;
     return { lyLin1: o246 ? 'Λ∇²h+∇⁶h' : o6 ? '+∇⁴h' : geo ? '−∇·(∇h/√(1+(∇h)²))' : '−∇²h', lyLin2: o246 ? '+∇⁴h' : o6 ? '+∇⁶h' : '−∇⁴h',
-             lyNL2: params.nl2 === 2 ? '2(√(1+(∇h)²)−1)' : '(∇h)²', lyA: 'α|∇h|', lyB: 'β(∇h)⁴', lyG: 'γ∇²(∇h)²', lyD: 'δ∇²h(∇h)²' }[k] || k;
+             lyNL2: params.nl2 === 2 ? '2(√(1+(∇h)²)−1)' : '(∇h)²', lyA: 'α|∇h|', lyB: 'β(∇h)⁴', lyG: 'γ∇²(∇h)²', lyD: 'δ∇²h(∇h)²', lyS: 'σ(∇²h)²' }[k] || k;
   }
   const qscalesP = {}, qscalesN = {};          // extremes of λ>0 and λ<0 (split mode)
   /* 'grey λ<0' mode: colours only where λ > 0, grey→black where λ < 0 */
@@ -3298,7 +3328,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      the five term contributions, packed one after the other — stored with each
      1D profile so the stacked views can be coloured by any of them; null while
      the twin is off */
-  const LYSLOT = { lydiv:0, nlydiv:0, lyLin1:1, lyLin2:2, lyNL2:3, lyA:4, lyB:5, lyG:6, lyD:7 }, NSLOT = 8;
+  const LYSLOT = { lydiv:0, nlydiv:0, lyLin1:1, lyLin2:2, lyNL2:3, lyA:4, lyB:5, lyG:6, lyD:7, lyS:8 }, NSLOT = 9;
   function lyField(){
     if(!lyapOpen || !sim.lyap.ready || !sim.lyap.budget.ready) return null;
     const n = sim.physNx, F = sim.lyap.budget.fld, out = new Float32Array(NSLOT*n);
@@ -3350,7 +3380,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     clampDx(); updateHint();
     sim = buildSim({ dim:params.dim, L:params.L, bc:params.bc, dt:params.dt, dx:params.dx,
                      nwx:params.n, nwy:params.n, amp:params.amp, eps:params.eps,
-                     alpha:params.alpha, beta:params.beta, gamma:params.gamma, delta:params.delta, order:params.order,
+                     alpha:params.alpha, beta:params.beta, gamma:params.gamma, delta:params.delta, sigma:params.sigma, order:params.order,
                      lam:params.lam, nl2:params.nl2, absMode:params.absMode });
     sim.lyap.on = lyapOpen; sim.lyap.mode = lyMode;
     stamp++;
@@ -3391,7 +3421,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     }
     return gradMax;
   }
-  const eqKey = () => [params.order, params.lam, params.nl2, params.alpha, params.beta, params.gamma, params.delta,
+  const eqKey = () => [params.order, params.lam, params.nl2, params.alpha, params.beta, params.gamma, params.delta, params.sigma,
                        params.absMode, params.dim, params.L, params.dx, params.bc].join('|');
   function avgTrack(){
     const key = eqKey(), n = AV.T.length;
@@ -3657,7 +3687,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   /* finite-difference stand-ins used on stored profiles, with the field kind
      resolved to an integer once per frame instead of a string test per point */
   const KCODE = { plain:0, h:0, dx:1, absdx:2, lap:3, nlap:4, lydiv:5, nlydiv:6,
-                  lyLin1:7, lyLin2:8, lyNL2:9, lyA:10, lyB:11, lyG:12, lyD:13 };   // ≥ 5: stored with the profile
+                  lyLin1:7, lyLin2:8, lyNL2:9, lyA:10, lyB:11, lyG:12, lyD:13, lyS:14 };   // ≥ 5: stored with the profile
   function wfDerivC(f, i, n, code, per, dxp){
     if(code === 0) return f[i];
     const ip = i+1 < n ? i+1 : (per ? 0 : n-1);
@@ -4370,7 +4400,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const CUMH = 132, TOPPAD = 18;                      // summary plot height; header line above the strips
   const termRows = () => ['tot', ...activeTermKeys()];   // 2D maps: total first
   /* one colour per term, used in the strips, the summary plot and the waterfall */
-  const TCOL = { lyLin1:'#dc2626', lyLin2:'#2563eb', lyNL2:'#d97706', lyA:'#0f766e', lyB:'#7c3aed', lyG:'#be185d', lyD:'#65a30d' };
+  const TCOL = { lyLin1:'#dc2626', lyLin2:'#2563eb', lyNL2:'#d97706', lyA:'#0f766e', lyB:'#7c3aed', lyG:'#be185d', lyD:'#65a30d', lyS:'#0891b2' };
   const rgba = (hex, a) => { const c = hex2rgb(hex); return `rgba(${c[0]},${c[1]},${c[2]},${a})`; };
   /* the terms from the most dissipative to the most chaotic, by their time
      averages (the present values before the first average is in) */
@@ -4936,6 +4966,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     if(params.beta  !== 0) eq += (params.beta  > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.beta))  + '·(∇h)⁴';
     if(params.gamma !== 0) eq += (params.gamma > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.gamma)) + '·∇²(∇h)²';
     if(params.delta !== 0) eq += (params.delta > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.delta)) + '·∇²h(∇h)²';
+    if(params.sigma !== 0) eq += (params.sigma > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.sigma)) + '·(∇²h)²';
     const geom = (params.dim === 1 ? '1+1 D' : '2+1 D') + ',  ' + params.bc +
                  ',  L = ' + params.L + ',  dx = ' + params.dx + ' (' + sim.physNx + (params.dim === 2 ? '²' : '') + ' points)';
     const num  = 'dt = ' + params.dt + ',  ETDRK4 pseudospectral,  t = ' + sim.t.toFixed(1);
@@ -5016,7 +5047,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   /* the parameter part of the file names of pictures and films */
   const fileTag = () => (params.dim === 1 ? 'KS1D' : 'KS2D') + (params.nl2 === 2 ? '_huy' : params.nl2 ? '' : '_nosq') +
                 (params.alpha ? '_a' + fmtTerm(params.alpha) + (params.dim === 2 && params.absMode === 'sum' ? 'sum' : '') : '') +
-                (params.beta  ? '_b' + fmtTerm(params.beta)  : '') + '_L' + params.L + '_dx' + params.dx;
+                (params.beta  ? '_b' + fmtTerm(params.beta)  : '') + (params.sigma ? '_s' + fmtTerm(params.sigma) : '') + '_L' + params.L + '_dx' + params.dx;
   /* white text with a faint dark halo: readable on the black background and still on a light one */
   function ovText(c, str, x, y, fs){
     c.lineJoin = 'round'; c.lineWidth = Math.max(2, Math.round(fs/5)); c.strokeStyle = 'rgba(0,0,0,.6)';
@@ -5360,6 +5391,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   seg($('segDim'), ()=>''+params.dim, v=>{
     params.dim = +v;
+    params.sigma = nearest(SIGMAV(params.dim), params.sigma);   // σ is offered in a narrower window in 2D
     if(!userSpf){ stepsPerFrame = params.dim === 2 ? 2 : 5; $('selSpf').value = ''+stepsPerFrame; noteSpfRef(); }   // default pace: 2 steps/frame in 2D, 5 in 1D
     if(params.dim === 1 && yvar !== 'h' && yvar !== 'dx'){   // 1D plots only h or dh/dx
       yvar = 'h'; setSeg('segYvar', yvar); setSeg('segYvar2', yvar); setSeg('segYvar4', yvar);
@@ -5550,7 +5582,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const fmtTerm = v => (Math.abs(v) < 1e-9 ? '0' : (+v.toFixed(2)).toString());
   function applyTerms(){
     if(!beautyBuilding){ if(beauty !== 'off') setBeauty('off'); if(curPreset || $('presetHead').classList.contains('run')) setPresetLabel(null); }
-    sim.setTerms(params.alpha, params.beta, params.nl2, params.absMode, params.gamma, params.delta);
+    sim.setTerms(params.alpha, params.beta, params.nl2, params.absMode, params.gamma, params.delta, params.sigma);
     sim.lyapResetAvg();
     syncEqHeader();
     syncLyOptions();
@@ -5564,7 +5596,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     $('termB').classList.toggle('on', params.beta !== 0);
     $('termG').classList.toggle('on', params.gamma !== 0);
     $('termD').classList.toggle('on', params.delta !== 0);
-    setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta);
+    $('termS').classList.toggle('on', params.sigma !== 0);
+    setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta); setSigmaSel();
     { const nl = $('termNL2'), huy = params.nl2 === 2;
       nl.classList.toggle('on', !!params.nl2); nl.classList.toggle('off', !params.nl2); nl.classList.toggle('huy', huy);
       nl.innerHTML = huy ? '+ 2(&radic;(1+(&nabla;h)&sup2;) &minus; 1)' : '+ (&nabla;h)&sup2;';   // the label names the form in use
@@ -5574,7 +5607,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     $('segAbs').hidden = !is2;                   // 2D: the switch between the two norms
     $('segAbs').classList.toggle('zero', !aOn);
     setSeg('segAbs', params.absMode);
-    $('linWarn').hidden = params.nl2 || aOn || params.beta !== 0 || params.gamma !== 0 || params.delta !== 0;
+    $('linWarn').hidden = params.nl2 || aOn || params.beta !== 0 || params.gamma !== 0 || params.delta !== 0 || params.sigma !== 0;
   }
   $('termNL2').addEventListener('click', toggleNL2);
   $('termNL2').addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleNL2(); } });
@@ -5586,7 +5619,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function toggleNL2(){
     const was = params.nl2;
     params.nl2 = was === 2 ? 0 : was ? 2 : 1;
-    if(!params.nl2 && params.alpha === 0 && params.beta === 0 && params.gamma === 0 && params.delta === 0){
+    if(!params.nl2 && params.alpha === 0 && params.beta === 0 && params.gamma === 0 && params.delta === 0 && params.sigma === 0){
       params.beta = 1; betaAuto = true;
     } else if(params.nl2 && !was && betaAuto && params.beta === 1){
       params.beta = 0; betaAuto = false;
@@ -5603,9 +5636,17 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     for(const v of list){ const o = document.createElement('option'); o.value = ''+v; o.textContent = (v > 0 ? '+' : '') + v; el.appendChild(o); }
   }
   const DELTAV = BETAV.filter(v => v >= 0);      // δ < 0 blows up in finite time, so only δ ≥ 0 is offered
-  fillSel('selAlpha', ALPHAV); fillSel('selBeta', BETAV); fillSel('selGamma', BETAV); fillSel('selDelta', DELTAV);
+  /* σ is offered only inside the window in which KS + σ(∇²h)² stays bounded (the σ paragraph of
+     the variant notes): −0.3 … 1.5 in steps of 0.1 in 1D, −0.3 … 0.3 in steps of 0.05 in 2D.
+     The same two lists are the scan's fixed-coefficient menu and the scan range of σ. */
+  const grid = (a, b, st) => Array.from({ length: Math.round((b - a)/st) + 1 }, (_, i) => +(a + i*st).toFixed(6));
+  const SIGMAV1 = grid(-0.3, 1.5, 0.1), SIGMAV2 = grid(-0.3, 0.3, 0.05);
+  const SIGMAV = dim => dim === 2 ? SIGMAV2 : SIGMAV1;
+  fillSel('selAlpha', ALPHAV); fillSel('selBeta', BETAV); fillSel('selGamma', BETAV); fillSel('selDelta', DELTAV); fillSel('selSigma', SIGMAV(params.dim));
   /* show a value in its menu (the nearest listed one) and mark non-zero terms */
   function setTermSel(id, list, v){ const el = $(id); el.value = ''+nearest(list, v); el.classList.toggle('on', v !== 0); }
+  /* the σ menu holds the list of the present dimension */
+  function setSigmaSel(){ const list = SIGMAV(params.dim), el = $('selSigma'); if(el.options.length !== list.length) fillSel('selSigma', list); setTermSel('selSigma', list, params.sigma); }
 
   /* Integration step, chosen from the strength of the nonlinearity.  ETDRK4 does
      the stiff linear part exactly, so this is an accuracy limit, not a stability
@@ -5620,6 +5661,15 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      λ 0.14–0.17), and the short-time rms error against a dt = 0.0025 reference
      is 0.1 % at 0.02, 0.3 % at 0.05, 0.6 % at 0.1 — so 2D uses 0.05 up to
      |β| = 2 and the preset runs at 0.1 (a 2D step costs L× more). */
+  /* σ(∇²h)²: time step by |σ| and dimension. Measured 2026-10-30 against a dt = 0.002 (1D) / 0.005 (2D)
+     reference from the same start, KS + σ(∇²h)², dx = 0.5. 1D, σ = 1, L = 128: short-time (20 t.u.) rms error
+     35 % at dt 0.1, 15 % at 0.05, 5 % at 0.02, 2 % at 0.01, 0.6 % at 0.005; ⟨W⟩ (2.3–2.5) and the growth speed
+     (0.64) agree within the start-to-start scatter at every dt from 0.1 to 0.01 over 1500 t.u. — so 1D runs at
+     0.02 (0.01 beyond |σ| = 1). 2D, L = 64, σ = +0.2 and −0.1: short-time (10 t.u.) error 1.1 % / 0.4 % at
+     dt 0.1, 0.5 % / 0.2 % at 0.05, 0.17 % / 0.07 % at 0.02; ⟨W⟩ and speed converged at 0.1 already — so 2D
+     runs at 0.05 (0.02 beyond |σ| = 0.5). Outside a narrow range the equation itself blows up in finite time
+     at every dt: see the σ paragraph of the variant notes. */
+  const SIGMA_DT = (sg, dim) => { const a = Math.abs(sg); return dim === 2 ? (a > 0.5 ? 0.02 : 0.05) : (a > 1 ? 0.01 : 0.02); };
   function dtForTerms(){
     const b = Math.abs(params.beta);
     let dt;
@@ -5633,6 +5683,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
        |γ| ≤ 5, δ∇²h(∇h)² needs 0.01 (2 % at 0.02 for δ = 0.5, exact at 0.01) */
     if(params.gamma !== 0) dt = Math.min(dt, 0.02);
     if(params.delta !== 0) dt = Math.min(dt, 0.01);
+    if(params.sigma !== 0) dt = Math.min(dt, SIGMA_DT(params.sigma, params.dim));
     return dt;
   }
   /* A smaller dt would otherwise make the picture crawl, so the steps per frame
@@ -5663,6 +5714,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   $('selBeta').addEventListener('change', e=>{ params.beta = +e.target.value; betaAuto = false; applyTerms(); autoDt(); if(!running) draw(); });
   $('selGamma').addEventListener('change', e=>{ params.gamma = +e.target.value; applyTerms(); autoDt(); if(!running) draw(); });
   $('selDelta').addEventListener('change', e=>{ params.delta = +e.target.value; applyTerms(); autoDt(); if(!running) draw(); });
+  $('selSigma').addEventListener('change', e=>{ params.sigma = +e.target.value; applyTerms(); autoDt(); if(!running) draw(); });
 
   /* top-bar vertical displacement per curve (discrete steps). In the profiles view the spacing
      doubles with every unit of Δy from 0.5 up, and below 0.5 shrinks in proportion to Δy (0.01 is a
@@ -5940,7 +5992,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     $('selGain').value = ''+dispGain;
     $('rngN').value = params.n; $('nVal').textContent = params.n;
     setTermSel('selAlpha', ALPHAV, params.alpha); setTermSel('selBeta', BETAV, params.beta);
-    setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta);
+    setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta); setSigmaSel();
   }
   /* the presets box: folds to its title line, which names the preset that is running */
   const PRESET_NAME = { bPre1:'KS 1D', bPre2:'KS 2D', bPre1a:'KS 1D abs1', bPre2a:'KS 2D abs1', bPre1n:'KS 1D nnl', bPre2n:'KS 2D nnl', bPreK1:'KKS 1D', bPreK2:'KKS 2D', bPreBubble:'Bubble life' };
@@ -5987,7 +6039,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   function base1D(){
     params.dim=1; params.L=128; params.bc='periodic'; params.dx=0.5; params.order=4;
-    params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.amp=0.1; params.eps=0.1; params.n=5; params.nl2=true; params.absMode='euclid';
+    params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.sigma=0; params.amp=0.1; params.eps=0.1; params.n=5; params.nl2=true; params.absMode='euclid';
     /* dt = 0.1 (was 0.05): at β = 0 and at α = 1, 1D, L = 128, dx = 0.5, runs of
        8000 time units from three random starts give the same ⟨W⟩, growth speed and
        λ at dt = 0.05, 0.1, 0.2 and 0.25 (e.g. λ = 0.092–0.096 throughout), so 0.1 —
@@ -6008,7 +6060,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   function base2D(){
     params.dim=2; params.L=128; params.bc='periodic'; params.dx=0.5; params.order=4;
-    params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.amp=0; params.eps=0.1; params.n=4; params.nl2=true; params.absMode='euclid';
+    params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.sigma=0; params.amp=0; params.eps=0.1; params.n=4; params.nl2=true; params.absMode='euclid';
     params.dt=0.2; $('selDt').value='0.2';
     stepsPerFrame=2; $('selSpf').value='2';
     dispGain=2; yvar='h'; qkind='lap'; modeSel[2]='surface';
@@ -6505,11 +6557,11 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      Protocol per sample: transient T_tr from a small random start, twin on;
      first half of (T_tot − T_tr): Benettin; second half: free runs.        */
   const SC = { rows: [], running: false, stop: false, dark: false, eq: '', par: 'beta', cfg: null };
-  const GSYM = { alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', L: 'L', lam: 'Λ' };
+  const GSYM = { alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', sigma: 'σ', L: 'L', lam: 'Λ' };
   const LINLAB = { 4: '−∇²h − ∇⁴h', 40: '−∇·(∇h/√(1+(∇h)²)) − ∇⁴h', 6: '+∇⁴h + ∇⁶h', 246: 'Λ∇²h + ∇⁴h + ∇⁶h' };
-  const GLAB = { alpha: 'α|∇h|', beta: 'β(∇h)⁴', gamma: 'γ∇²(∇h)²', delta: 'δ∇²h(∇h)²' };
-  fillSel('scA', ALPHAV); fillSel('scB', BETAV); fillSel('scG', BETAV); fillSel('scD', DELTAV);
-  ['scA','scB','scG','scD'].forEach(id => { $(id).value = '0'; });
+  const GLAB = { alpha: 'α|∇h|', beta: 'β(∇h)⁴', gamma: 'γ∇²(∇h)²', delta: 'δ∇²h(∇h)²', sigma: 'σ(∇²h)²' };
+  fillSel('scA', ALPHAV); fillSel('scB', BETAV); fillSel('scG', BETAV); fillSel('scD', DELTAV); fillSel('scS', SIGMAV1);   // the scan starts in 1D
+  ['scA','scB','scG','scD','scS'].forEach(id => { $(id).value = '0'; });
   let scNL2 = 1, scDim = 1, scBC = 'periodic';   // the KS term: 1 = (∇h)², 2 = 2(√(1+(∇h)²) − 1), 0 = off
   const scOrds = new Set([4]);                     // the equations included in the scan
   const scOrdList = [4, 40, 6, 246];               // their order: column groups left to right, colours in turn
@@ -6519,12 +6571,19 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     fx.value = '0.1';
   })();
   (function(){ const el = $('scNmax'); for(let n=5;n<=20;n++){ const o = document.createElement('option'); o.value = ''+n; o.textContent = n + '  (L = ' + (1<<n) + ')'; el.appendChild(o); } el.value = '8'; })();
-  /* the three lines of the linear terms: which equations, the Λ scan, Λ held fixed */
+  /* the three lines of the linear terms: which equations, the Λ scan, Λ held fixed;
+     and the range row, which σ takes over: its whole window in its fixed step */
+  let scRangeSaved = null;                         // the from · to · step the user had before σ took the row over
   function scRows(){
-    const par = $('scPar').value, isL = par === 'L', isLam = par === 'lam';
+    const par = $('scPar').value, isL = par === 'L', isLam = par === 'lam', isS = par === 'sigma';
     if(isLam) scOrds.add(246);                     // a Λ scan needs the Λ equation
     $('scLRow').style.display = isL ? '' : 'none';
     $('scRangeRow').style.display = (isL || isLam) ? 'none' : '';
+    { const inp = ['scMin','scMax','scStep'].map(id => $(id));
+      if(isS){ if(!scRangeSaved) scRangeSaved = inp.map(e => e.value);
+               const list = SIGMAV(scDim); inp[0].value = ''+list[0]; inp[1].value = ''+list[list.length-1]; inp[2].value = scDim === 2 ? '0.05' : '0.1'; }
+      else if(scRangeSaved){ inp.forEach((e, i) => { e.value = scRangeSaved[i]; }); scRangeSaved = null; }
+      inp.forEach(e => { e.disabled = isS; }); }
     const box = $('scOrd');
     for(const v of scOrdList) box.appendChild(box.querySelector('.scoitem[data-v="' + v + '"]'));   // the list in scan order
     box.querySelectorAll('.scoitem').forEach(it => it.querySelector('.scotog').classList.toggle('on', scOrds.has(+it.dataset.v)));
@@ -6554,7 +6613,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   seg($('scNL2'), ()=>''+scNL2, v=>{ scNL2 = +v; });
   /* 2D scans are capped at 256 lattice points per direction (L/dx ≤ 256): the box is halved until it fits */
   function scFit2D(){ if(scDim !== 2) return; const dx = +$('scDx').value; let L = +$('scL').value; while(L/dx > 256 && L > 32) L /= 2; $('scL').value = ''+L; }
-  seg($('scDim'), ()=>''+scDim, v=>{ scDim = +v; scFit2D(); });
+  /* σ is offered in the window of the scan's dimension: the fixed-coefficient menu and, when σ is scanned, the range */
+  function scSigmaDim(){ const list = SIGMAV(scDim), el = $('scS'), v = +el.value; fillSel('scS', list); el.value = ''+nearest(list, v); scRows(); }
+  seg($('scDim'), ()=>''+scDim, v=>{ scDim = +v; scFit2D(); scSigmaDim(); });
   $('scDx').addEventListener('change', scFit2D);
   seg($('scBC'), ()=>scBC, v=>{ scBC = v; });
   /* the KS pre-transient: the slider steps through these times (0 = none) */
@@ -6567,13 +6628,14 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     else if(Math.abs(c.alpha) > 2) dt = 0.05; else dt = c.order === 6 ? 0.02 : 0.1;
     if(c.gamma !== 0) dt = Math.min(dt, 0.02);
     if(c.delta !== 0) dt = Math.min(dt, 0.01);
+    if(c.sigma) dt = Math.min(dt, SIGMA_DT(c.sigma, c.dim));
     if(c.dtMax > 0) dt = Math.min(dt, c.dtMax);
     return dt;
   }
   function scEquation(c, par){
     const lin = c.order === 6 ? '+∇⁴h + ∇⁶h' : c.order === 246 ? (par === 'lam' ? 'Λ∇²h + ∇⁴h + ∇⁶h' : c.lam + '·∇²h + ∇⁴h + ∇⁶h') : c.order === 40 ? '−∇·(∇h/√(1+(∇h)²)) − ∇⁴h' : '−∇²h − ∇⁴h';
     let eq = '∂h/∂t = ' + lin + (c.nl2 === 2 ? ' + 2(√(1+(∇h)²)−1)' : c.nl2 ? ' + (∇h)²' : '');
-    for(const k of ['alpha','beta','gamma','delta']){
+    for(const k of ['alpha','beta','gamma','delta','sigma']){
       if(k === par) eq += ' + ' + GLAB[k];
       else if(par === 'L' && c[k] !== 0) eq += (c[k] > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(c[k])) + '·' + GLAB[k].slice(1);
       else if(par === 'L') continue;
@@ -6655,11 +6717,11 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     if(SC.running) return;
     const par0 = $('scPar').value;
     const orders = par0 === 'lam' ? [246] : scOrdList.filter(o => scOrds.has(o));
-    const c = { order: orders[0], lam: +$('scLamFix').value, nl2: scNL2, alpha: +$('scA').value, beta: +$('scB').value, gamma: +$('scG').value, delta: +$('scD').value,
+    const c = { order: orders[0], lam: +$('scLamFix').value, nl2: scNL2, alpha: +$('scA').value, beta: +$('scB').value, gamma: +$('scG').value, delta: +$('scD').value, sigma: +$('scS').value,
                 par: $('scPar').value, dim: scDim, L: +$('scL').value, dx: +$('scDx').value, dtMax: +$('scDtMax').value, bc: scBC, tTrans: +$('scTrans').value, nmc: +$('scNMC').value, tPre: SCPRE[+$('scPre').value] || 0 };
     c.tTotal = 2*c.tTrans;
     /* the KS pre-transient runs at the usual KS step of the main display, not capped by "dt (at most)" */
-    c.dtPre = scDt({ order: 4, alpha: 0, beta: 0, gamma: 0, delta: 0, dim: c.dim, dtMax: 0 });
+    c.dtPre = scDt({ order: 4, alpha: 0, beta: 0, gamma: 0, delta: 0, sigma: 0, dim: c.dim, dtMax: 0 });
     const v0 = +$('scMin').value, v1 = +$('scMax').value, st = +$('scStep').value;
     let vals = [], capNote = '';
     if(c.par === 'lam'){                          // Λ = first, first + step, … up to the first value above 1/4
@@ -6673,11 +6735,14 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       if(c.dim === 2 && +$('scNmax').value > nmax) capNote = '   —   2D: sizes capped at L = ' + (1<<nmax) + ' (256 lattice points at dx = ' + c.dx + ')';
     } else {
       if(c.dim === 2 && c.L/c.dx > 256){ $('scStatus').textContent = '2D: L/dx = ' + Math.round(c.L/c.dx) + ' points per direction is too many — at most 256 (raise dx or lower L)'; return; }
-      if(!(v1 >= v0)){ $('scStatus').textContent = 'the range needs from ≤ to'; return; }
-      for(let v = v0; v <= v1 + 1e-9; v += st) vals.push(+v.toFixed(6));
-      const always = c.par === 'alpha' ? [-1.5, -1.2, -0.9, -0.7, -0.5, -0.4, -0.3, -0.2, 0, 0.5] : [-0.4, -0.3, -0.2, -0.15, -0.1, -0.07, -0.05, 0, 0.1, 0.2];
-      for(const v of always) if(!vals.some(x => Math.abs(x - v) < 1e-9)) vals.push(v);   // always sampled
-      vals.sort((a, b) => a - b);
+      if(c.par === 'sigma') vals = SIGMAV(c.dim).slice();   // σ: its whole bounded window, in its fixed step
+      else {
+        if(!(v1 >= v0)){ $('scStatus').textContent = 'the range needs from ≤ to'; return; }
+        for(let v = v0; v <= v1 + 1e-9; v += st) vals.push(+v.toFixed(6));
+        const always = c.par === 'alpha' ? [-1.5, -1.2, -0.9, -0.7, -0.5, -0.4, -0.3, -0.2, 0, 0.5] : [-0.4, -0.3, -0.2, -0.15, -0.1, -0.07, -0.05, 0, 0.1, 0.2];
+        for(const v of always) if(!vals.some(x => Math.abs(x - v) < 1e-9)) vals.push(v);   // always sampled
+        vals.sort((a, b) => a - b);
+      }
       if(vals.length > 200){ $('scStatus').textContent = 'too many values (' + vals.length + ') — coarsen the step'; return; }
     }
     SC.running = true; SC.stop = false; SC.par = c.par; SC.cfg = c;
