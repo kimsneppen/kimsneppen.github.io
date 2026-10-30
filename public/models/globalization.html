@@ -323,7 +323,7 @@
       <h2 id="r-round">One round, step by step</h2>
       <ol>
         <li><b>Shopping.</b> For every product, orders are placed: n per person on average (n = 1 in the standard setup; the
-          n menu in the upper right corner of the town offers 0.2, 1, 2 or 5). Who orders? People picked at random —
+          n menu in the upper right corner of the town offers 0.2, 0.5, 1, 2 or 5). Who orders? People picked at random —
           but those who earned more last round are picked more often. Each of the n · L² orders of a product picks its
           buyer on its own, agent i with the probability
           <span class="eqc" style="display:block">P(i) = I<sub>i</sub> / Σ<sub>j</sub> I<sub>j</sub></span>
@@ -332,7 +332,9 @@
           under <i>Money</i> below; in the very first round all are picked equally often). So an agent can place several
           orders: with the self-organized price, on average (n/2) · I<sub>i</sub>/w of each product — half of n for one
           living on its wage alone, several hundred for the owner of the biggest chip company in the standard setup. High
-          earners shop more; the money an agent has saved does not count.</li>
+          earners shop more; the money an agent has saved does not count. This is the <i>Wage weight</i>, the standard.
+          The button left of the n menu switches to the <i>Money weight</i>: agents are then picked in proportion to the
+          money they hold, so the poor shop little.</li>
         <li><b>Selling.</b> Every order goes to the cheapest factory, price plus transport.</li>
         <li><b>Money.</b> Everybody earns the same wage, w = 0.05 per round. A factory owner also earns p for every unit
           it sold, and can be made to pay upkeep: each round a fraction μ of what its factory cost to build, because
@@ -408,7 +410,7 @@
         them, about 150 times a round, and the money stays level, with the richest 1 % owning about 28 %.</p>
 
       <h2 id="r-econ">Three kinds of economy</h2>
-      <p>The golden button in the upper right corner switches between the first two; the third is in the control
+      <p>The golden button above the town switches between the first two; the third is in the control
         panel:</p>
       <ul>
         <li><b>self-organized</b> (the standard setup): as described above.</li>
@@ -418,9 +420,9 @@
           Where does the 1 come from? A unit costs the buyer two things. <b>The good:</b> p, which the seller receives —
           the same p that appears as + p · (units sold) in the seller's account. <b>The delivery:</b> the part of the
           price C that is not the cost of making it, C − s<sup>γ</sup>, turned into money with the same p. Together that
-          is p · 1 + p · (C − s<sup>γ</sup>) per unit bought. Money is scarcer now: there are fewer start-ups, agents go
-          bankrupt when their shopping costs more than they have, and the big companies win larger shares of their
-          markets. With upkeep the difference becomes much larger (lesson 8).</li>
+          is p · 1 + p · (C − s<sup>γ</sup>) per unit bought. Money is scarcer now and there are fewer start-ups. With
+          the Wage weight, agents also go bankrupt when their shopping costs more than they have, and the big companies
+          win larger shares of their markets. Upkeep makes the difference much larger (lesson 2).</li>
         <li><b>fixed price</b>: every unit sells for 1, as in the original model. Now nothing holds the money back: it
           piles up — in the standard town the mean money passes 1&nbsp;000 within 600 rounds — and the poorer half of the
           agents ends up with almost none of it.</li>
@@ -546,85 +548,60 @@
       <p>Every plot has its own <b>.png</b> and <b>sq</b> buttons to save it as a picture.</p>
 
       <h2 id="r-lessons">Lessons from the model</h2>
-      <p>Each lesson below was checked by running the model on a 125 × 125 town, three runs of 1000 rounds each, measured
-        over the last 700. Lessons 1 to 7 used the earlier standard setup — the self-organized price, n = 0.2, patience 1
-        and upkeep 0.02 — unless said otherwise; lesson 8 the present one: n = 1, patience 0 and no upkeep.
-        <i>Scaling</i> means the slopes of the straight lines in the log–log plots: P(s) ∝ s<sup>−2</sup> for the
-        bakeries (with n = 0.2 fitted from the peak of P(s) to its end, as the applet did then; the present fit gives
-        nearly the same in the self-organized economy, −2.05), and the tail of P(M), about M<sup>−1.24</sup> (then fitted
-        from five times the mean to a fifth of the largest fortune; the present fit, over the decade from a thirtieth to a
-        third of it, gives −1.0 to −1.25).</p>
+      <p>The lessons start from the standard setup (self-organized, Wage weight, n = 1, patience 0, no upkeep, no wealth
+        tax) and its three variants: buyers pay, the Money weight (see <i>Shopping</i>), or both. The numbers are means of
+        two or three runs on the 125 × 125 town over rounds 301–1&nbsp;000, or of longer runs where the town has not
+        settled by then.</p>
       <ol class="lessons">
-        <li><b>Making the high-tech factories dearer to start does not change the scaling.</b> With B and C half as dear,
-          or two or four times as dear (up to 32 and 80 instead of 8 and 20), the bakeries keep P(s) ∝ s<sup>−2.0</sup> to
-          s<sup>−2.1</sup>, and the money tail stays between −1.06 and −1.28, with no trend. What changes is how much
-          happens. Four times dearer gives about 5 times fewer start-ups (30 instead of 138 a round), 10 times fewer
-          bankruptcies, almost 4 times fewer chip factories, and three times more money in the agents' pockets (mean 13.8
-          instead of 4.6): the thermostat needs more savings before anybody can afford to try.</li>
-        <li><b>More upkeep does not change the scaling of the companies, but it can wipe out the bakeries.</b> From μ = 0.01
-          to 0.08 the bakeries keep P(s) ∝ s<sup>−2.0</sup>, while the money tail becomes a little flatter, from −1.36 to
-          −1.10. The big change comes at a threshold: once a bakery's upkeep, μ · 2, is more than the wage, 0.05, a bakery
-          that sells nothing loses money every round. At μ = 0.04 the bakeries drop from 14&nbsp;400 to 1&nbsp;500, bankruptcies
-          rise from 25 to 360 a round, and an agent lasts just 40 rounds between two bankruptcies — exactly the time it
-          takes to save up for a bakery, which then sinks it.</li>
-        <li><b>When the buyers pay, money gets scarce, bread production collapses, and markets concentrate.</b> The mean
-          money falls from 4.6 to 1.5 and the typical money (the median) from 3.2 to 0.8, while the richest still hold about
-          1&nbsp;700. Bankruptcies rise from 25 to 360 a round, and half the time an agent goes bankrupt again within 6 rounds:
-          mostly agents without a factory, whose shopping, delivery included, costs more than their wage. There are 17
-          times fewer bakeries (830 instead of 14&nbsp;400), and the biggest chip company's share of its market almost doubles,
-          from 0.21 to 0.39. Fitted from the peak of P(s) to its end, the scaling of the bakeries changes little,
-          s<sup>−1.9</sup> instead of s<sup>−2.1</sup>; fitted over the decade below a fifth of the largest bakery, as the
-          applet does now, it steepens from s<sup>−2.05</sup> to s<sup>−2.7</sup>.
-          Transport takes about 410 money out of the town every round. Without upkeep, as in the present standard setup,
-          the bread survives — 10&nbsp;300 bakeries instead of 12&nbsp;400, with n = 1 — but the chip market still concentrates,
-          from 0.23 to 0.40 (lesson 8).</li>
-        <li><b>More patience makes the rich richer, not the typical agent.</b> With patience 3 instead of 1, the richest agent
-          holds about 6&nbsp;900 instead of 1&nbsp;800 and the mean money rises from 4.6 to 11.5, but the median stays at 3.2–3.4.
-          The money tail flattens from M<sup>−1.24</sup> to M<sup>−0.87</sup>: owners of big companies keep them longer
-          and pile up money, while everybody else lives as before. (On a 64 × 64 town the leading chip company lasted
-          about 8 rounds instead of 1 to 2.)</li>
-        <li><b>A protected country in the middle gets richer — in both economies.</b> Put a circle with 10 % of the town in
-          the middle, with a tariff of 1 on goods going in. One might expect the insiders to get poor when the buyers pay,
-          since they pay the tariff on what they import. That does not happen. With the self-organized price the insiders
-          end up with 1.6 times as much money as the outsiders, and when the buyers pay with 5 times as much (3 to 7 in the
-          three runs). Their income per round is 1.7 and 2.7 times that of the outsiders, in all three runs, against 0.7 to
-          2.2 times in the same circle without a border, where it only depends on where the giants happen to sit. The
-          reason: behind the border the insiders buy practically everything at home, so they hardly pay any tariff. Their
-          own B and C companies grow — the inside holds 10 % of the people but about a quarter (self-organized) to 40 %
-          (buyers pay) of all the chip factories — and they sell to the outside for free.</li>
-        <li><b>A 100 % tax on goods going in does the same.</b> With the same circle and a tax of 100 % instead of the
-          tariff, the insiders end up with 1.8 times as much money as the outsiders with the self-organized price, and 7.6
-          times as much when the buyers pay; their income is 1.7 and 3.4 times higher, in all three runs. Again they buy
-          nearly everything at home, from their own chip makers — about 6 of the town's 28 sit inside.</li>
-        <li><b>A middle product gives failed investments a soft landing.</b> Keep only A and C (with C at γ = −0.9 or −1
-          alike): big chip companies still last about four rounds, but every agent that has saved up 20 now tries a chip
-          factory — 41 tries a round instead of 17 — and only 7&nbsp;% of them grow big instead of 14&nbsp;%. With B the savers try
-          B at 8 instead, so a failed try costs 8, not 20, and 9&nbsp;% of those tries last ten rounds, against 0.2&nbsp;% of the chip
-          tries. The owners of a big chip company that ends try some 17 new ones over the next 80 rounds in both towns,
-          but with B they keep most of their fortune (median about 300 → 260), while without B it is gone within 40 rounds
-          (220 → 20). So without the middle no fortune lasts: the mean money, 10.0, is the median, against 4.6 and 3.2
-          with B. (When the buyers pay, with n = 5, the chip companies also last about four rounds and the mean comes close
-          to the median without B, but whether the owners keep their fortunes varies from run to run.)</li>
-        <li><b>Patience and upkeep are zero in the standard setup, and the town is then steady.</b> Over 4&nbsp;000 rounds
-          about 1 % of the agents have no money (one wage or less), and the poorer half of the town keeps about 16 % of
-          all the money, in both economies and without a trend. (In real countries the poorer half owns 5 to 10 % of all
-          wealth [11].) Patience up to 3 leaves the chip giants at about four rounds; 4 and 5 are another world (see
-          <i>Patience</i>). Upkeep, the μ menu, removes the factories that sell nothing — without it 97 % of the
-          bakeries and B factories sell nothing in a given round. In the self-organized economy that changes the details
-          more than the picture: of 3&nbsp;150 B factories, 200 are left at μ = 0.02, and owners of failing B factories now go
-          bankrupt, 25 to 50 a round. A threshold comes at μ = 0.03, when a bakery's upkeep, 2μ, is more than the wage
-          (lesson 2): the bakeries drop from 14&nbsp;400 to 2&nbsp;000, the median money from about 3 to 1, and the richest 1 % own
-          58 % of the money. When the buyers pay, μ = 0.01 is already a big step, because the shopping takes about three
-          quarters of a wage: the bakeries drop from 10&nbsp;300 to 2&nbsp;500 (280 at μ = 0.02), and the share of agents with no money rises
-          from 1 % to 5 % (9 % at 0.02, 27 % at 0.05). Upkeep also straightens the bread market when the buyers pay:
-          without it, P(s) of the bakeries that sell is curved above some 30 units, with local slopes between −1.9 and
-          −2.9; with μ = 0.02 it becomes a single power law, s<sup>−2.05</sup> from 100 to 3&nbsp;000 units
-          (s<sup>−2.25</sup> from 30 to 3&nbsp;000), about 100 rounds after the upkeep is switched on (with μ = 0.01 the
-          slope from 100 to 3&nbsp;000 is −1.9 to −2.35). In no run does the share of agents with no money grow in time. But with upkeep the money
-          slowly piles up at the top — the mean keeps rising while the median stays — and the poorer half's share keeps
-          falling: with μ = 0.02 from 17 % to 10 % between rounds 1&nbsp;000 and 4&nbsp;000 in the self-organized economy, and to
-          2–6 % when the buyers pay. A wealth tax of 0.2 % a round (the <i>tax</i> menu), paid back equally to all, keeps
-          the richest bounded when the buyers pay (see <i>Money</i>).</li>
+        <li><b>Four times dearer B and C factories mean fewer start-ups — and more savings, unless the buyers pay.</b>
+          Self-organized, start-ups fall 3.3-fold and the median money rises from 2.9 to 15; with the Wage weight the
+          largest fortune keeps growing, to 22&nbsp;000–34&nbsp;000 by round 4&nbsp;000. When the buyers pay, start-ups fall
+          8- to 11-fold and only about six B factories remain, far from most buyers: the median agent gets 2 to 5 times
+          poorer, and with the Wage weight bankruptcies jump from 34 to 2&nbsp;100 a round.</li>
+        <li><b>Upkeep wipes out most bakeries once it costs more than an idle baker can spare.</b> Self-organized, that is
+          when a bakery's upkeep, 2μ, passes the wage, 0.05: between μ = 0.02 and 0.03 the bakeries fall about tenfold, to
+          1&nbsp;100–1&nbsp;600, and nearly every agent goes bankrupt every 40 rounds — 40 wages buy a bakery, which then
+          sinks it. The median money falls from 3 to 1, and the richest 1 % come to own most of the money (lesson 9). When
+          the buyers pay with the Wage weight, shopping eats three quarters of a wage, so already at μ = 0.01 only about
+          700 of 10&nbsp;300 bakeries remain, and the share of agents with no money rises from 1 to 5 %. With the Money
+          weight hardly a factory is left from μ = 0.02.</li>
+        <li><b>When the buyers pay, money gets scarcer and the chip market concentrates — but without upkeep the bakeries
+          survive.</b> With the Wage weight the median money falls from 2.9 to 2.1, the biggest chip maker's share of the
+          market rises from 0.23 to 0.39, and 34 agents go bankrupt a round instead of none, yet the bakeries only drop
+          from 12&nbsp;450 to 10&nbsp;300. With the Money weight the median falls five-fold, but nobody goes bankrupt and
+          the biggest chip maker's share only reaches 0.29 (lesson 9).</li>
+        <li><b>Patience 3 makes the rich much richer — when the orders follow the money.</b> Self-organized with the Money
+          weight, it lifts the richest 1 % from 21 to 61 % of the money while the median stays at 3; with the Wage weight
+          they reach only 29 %, and the richest agent is even poorer (900 instead of 1&nbsp;700). When the buyers pay,
+          patience 3 helps the typical agent: the median rises from 2.1 to 2.9 with the Wage weight, and everybody gets
+          about 8 times richer with the Money weight. Patience 4 or 5 is another world (see <i>Patience</i>).</li>
+        <li><b>A protected country in the middle gets richer — in all four setups.</b> Put a circle with 10 % of the town
+          in the middle, with a tariff of 1 per unit on goods going in. In every run the insiders hold, per head, 1.3 to
+          1.8 times the outsiders' money and earn 1.6 to 3.4 times as much (0.8 to 1.3 times without the border). They buy
+          nearly everything at home, while their companies sell about a third of their goods outside, tariff-free. The
+          gain goes to the owners of big companies, not to the typical insider, and it is the outsiders' loss: the town's
+          total income is fixed.</li>
+        <li><b>A 100 % tax on goods going in does the same.</b> In every run the insiders hold, per head, 1.4 to 2.2 times
+          the outsiders' money and earn 1.7 to 3.5 times as much.</li>
+        <li><b>A middle product keeps fortunes alive.</b> Without B, savers go from bread straight to chips: self-organized,
+          70 chip factories open a round instead of 15, and only 3 to 4 % of them grow big instead of 13 to 15 %. Twenty
+          rounds after a chip giant has closed, its owner has typically lost 85 to 90 % of the fortune, against less than
+          half with B, and the richest agent has 150 to 500 instead of 900 to 1&nbsp;700. (Not when the buyers pay with
+          the Money weight: there fortunes drain within 20 rounds, with or without B.)</li>
+        <li><b>In the standard setup the town is steady; upkeep piles the money up at the top.</b> The same holds when the
+          buyers pay or with the Money weight (for both together, see lessons 2 and 9). From round 1&nbsp;000 to
+          4&nbsp;000 about 1 % of the agents have no money (one wage or less), and the poorer half keeps 14 to 17 % of the
+          money, without a trend. With μ = 0.02 the mean money keeps rising but the median does not: by round 4&nbsp;000
+          the richest 1 % own 53 to 61 % of the money (75 % when the buyers pay), and the poorer half only 5 to 10 %, as
+          in real countries [11], and still falling. A wealth tax of 0.2 % a round, paid back equally to all, keeps the
+          richest 1 % at about 20 % (self-organized).</li>
+        <li><b>Who places the orders matters with patience, high upkeep or buyers who pay.</b> Self-organized, without
+          patience or upkeep, both weights give nearly the same town. With patience 3 (lesson 4) or upkeep μ ≥ 0.03 the
+          money piles up far more at the top with the Money weight, where a fortune keeps placing orders after its company
+          has closed: with upkeep the richest 1 % own 77 to 90 % of the money instead of 56 to 72 %. When the buyers pay
+          with the Money weight, everybody spends about 8 % of their money a round, so an agent living on its wage
+          settles near 0.6, twelve wages: nobody goes bankrupt, practically nobody has no money, the poorer half keeps
+          30 % of the money, and fortunes drain within 20 rounds.</li>
       </ol>
 
       <h2 id="r-try">Try this</h2>
@@ -787,9 +764,9 @@
       </div>
       <!-- orders per agent n, upkeep μ and patience κ (how big a fall of profit makes an owner give up its product) -->
       <div class="tools tright">
-        <button class="pat ptog" id="bBuyW" title="who places the orders: picked ∝ last round's income (Active weight), ∝ the money they have (Money weight), or ∝ the money they have with p = all the money / all units sold (Money buy) — click to switch">Active weight</button>
+        <button class="pat ptog" id="bBuyW" title="who places the orders: picked ∝ last round's income (Wage weight) or ∝ the money they have (Money weight) — click to switch">Wage weight</button>
         <label class="pat" title="n: orders per agent and product per round. The standard setup has n = 1. With small n sales are few and noisy; the control panel has more values">
-          <span>n</span><select id="nSel2"><option value="0.2">0.2</option><option value="1">1</option><option value="2">2</option><option value="5">5</option></select></label>
+          <span>n</span><select id="nSel2"><option value="0.2">0.2</option><option value="0.5">0.5</option><option value="1">1</option><option value="2">2</option><option value="5">5</option></select></label>
         <label class="pat" title="upkeep μ: every round a factory owner pays μ times what its factory cost to build (Start), because machines wear out. The standard setup has μ = 0; the slider in the control panel has more values">
           <span>μ</span><select id="upSel2"><option value="0">0</option><option value="0.01">0.01</option><option value="0.02">0.02</option><option value="0.03">0.03</option><option value="0.05">0.05</option><option value="0.1">0.10</option></select></label>
         <label class="pat" title="wealth tax: every round each agent pays this share of its money, and the total is paid back equally to all agents. The standard setup has none">
@@ -995,8 +972,7 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 //      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (patience: a
 //      decline counts when profit < previous − κ·p·√(previous units sold); 0 = any fall), wtax (wealth tax: the fraction
 //      of its money every agent pays at the start of a round, the total shared equally by all; 0 = none), buyw (who
-//      places the orders: 'inc' ∝ last round's income, 'money' ∝ the money held, 'moneyp' ∝ the money held and the
-//      self-organized price set by all the money instead of the wages), M0,
+//      places the orders: 'inc' ∝ last round's income, 'money' ∝ the money held), M0,
 //      bc:'periodic'|'closed', tmul (transport factor),
 //      roads:[{pts:[[x,y],…],f}] (transport cost ×f along the road), borders:[{pts,tax,tariff,oneway,prods}] (tax = fraction
 //      of the goods' value charged on crossing; tariff = amount added per unit on crossing; prods: the products it taxes,
@@ -1139,9 +1115,8 @@ function buildEcon(P){
   E.reset=function(){
     E.t=0;E.hist=[];
     for(let r=0;r<LL;r++){E.money[r]=P.M0;E.inc[r]=0;E.prevInc[r]=0;E.profit[r]=0;E.prevProfit[r]=0;E.units[r]=0;E.prevUnits[r]=0;E.started[r]=-1}
-    // first round: all n·L²·N orders are expected to be served; they are worth the wages, or (buyw 'moneyp') all the money
-    const v0=P.buyw==='moneyp'?P.M0:P.wage;
-    E.price=P.econ!=='fixed'&&v0>0?v0/(P.n*N):1;
+    // first round: all n·L²·N orders are expected to be served
+    E.price=P.econ!=='fixed'&&P.wage>0?P.wage/(P.n*N):1;
     for(let i=0;i<N;i++){E.F[i].fill(0);E.sales[i].fill(0)}
     for(let r=0;r<LL;r++)E.F[(rng()*N)|0][r]=1;
     E.computeMarkets();
@@ -1222,9 +1197,9 @@ function buildEcon(P){
     // wealth tax: every agent pays the fraction wtax of its money, and the total is shared equally by all
     if(P.wtax>0){let tx=0; for(let r=0;r<LL;r++){const d=P.wtax*Math.max(0,E.money[r]); E.money[r]-=d; tx+=d}
       tx/=LL; for(let r=0;r<LL;r++)E.money[r]+=tx}
-    // orders: buyer ∝ the money it acquired in the previous round (wage + sales), or (buyw 'money', 'moneyp') ∝ the
-    // money it has, so that agents without money do not shop
-    const byM=P.buyw==='money'||P.buyw==='moneyp';
+    // orders: buyer ∝ the money it acquired in the previous round (wage + sales), or (buyw 'money') ∝ the money it
+    // has, so that agents without money do not shop
+    const byM=P.buyw==='money';
     let W=0; for(let r=0;r<LL;r++){W+=byM?Math.max(0,E.money[r]):E.t?E.inc[r]:1;cum[r]=W}
     const uniform=!(W>0);
     const T=Math.max(1,Math.round(P.n*LL));
@@ -1288,10 +1263,8 @@ function buildEcon(P){
     }
     for(let i=0;i<N;i++){E.sales[i].set(newSales[i]);const F=E.F[i],S=E.sales[i];for(let r=0;r<LL;r++)if(!F[r])S[r]=0}
     H.active/=LL; H.starts/=LL; H.bankrupt/=LL; H.money/=LL; H.price=p; H.transport=p*trOut;   // paid to carriers and the state
-    // self-organized price for the next round: the value of all units sold equals the total wages, or (buyw 'moneyp')
-    // all the money
-    let val=P.wage*LL; if(P.buyw==='moneyp'){val=0; for(let r=0;r<LL;r++)val+=Math.max(0,E.money[r])}
-    E.price=so?(U>0&&val>0?val/U:E.price):1;
+    // self-organized price for the next round: the value of all units sold equals the total wages
+    E.price=so?(U>0&&P.wage>0?P.wage*LL/U:E.price):1;
     E.t++; E.hist.push(H); if(E.hist.length>6000)E.hist.splice(0,1000);
     E.computeMarkets();
     return H;
@@ -1442,17 +1415,15 @@ $('palSel').onchange=e=>{palName=e.target.value;buildProductUI();refresh()};
 // self-organized price (default) or the fixed price 1: a switch in the panel and in the upper right corner of the display
 function setEcon(v){
   P.econ=v; $('econSel').value=v; syncSO();
-  // the price at once, as the core sets it: all units sold are worth the wages, or (Money buy) all the money
-  if(E){const LL=E.L*E.L; let U=0,M=0; for(let r=0;r<LL;r++){U+=E.units[r]; M+=Math.max(0,E.money[r])}
-    const val=P.buyw==='moneyp'?M:P.wage*LL;
-    E.price=v!=='fixed'&&val>0?(U>0?val/U:val/(P.n*E.N*LL)):1}
+  if(E){let U=0;for(let r=0;r<E.L*E.L;r++)U+=E.units[r];
+    E.price=v!=='fixed'&&P.wage>0?(U>0?P.wage*E.L*E.L/U:P.wage/(P.n*E.N)):1}
   updStat();
 }
-// who places the orders: Active weight (∝ last round's income, the standard), Money weight (∝ the money held) or Money
-// buy (∝ the money held, and the price set by all the money); a toggle left of the n menu
-const BUYW=['inc','money','moneyp'], BUYW_LABEL={inc:'Active weight',money:'Money weight',moneyp:'Money buy'};
+// who places the orders: Wage weight (∝ last round's income, the standard) or Money weight (∝ the money held); a
+// toggle left of the n menu
+const BUYW=['inc','money'], BUYW_LABEL={inc:'Wage weight',money:'Money weight'};
 function syncBuyW(){const b=$('bBuyW'); b.textContent=BUYW_LABEL[P.buyw]||BUYW_LABEL.inc; b.classList.toggle('on',P.buyw!=='inc')}
-$('bBuyW').onclick=()=>{P.buyw=BUYW[(BUYW.indexOf(P.buyw)+1)%BUYW.length]; syncBuyW(); setEcon(P.econ); distMark()};
+$('bBuyW').onclick=()=>{P.buyw=BUYW[(BUYW.indexOf(P.buyw)+1)%BUYW.length]; syncBuyW(); updStat(); distMark()};
 // The economy button in the upper right corner switches between the self-organized price and buyers paying for what
 // they buy, delivery and border tax included (the fixed price is in the panel); n, μ and κ keep their values. Its label
 // shows the economy and the n in use.
@@ -1871,17 +1842,12 @@ document.querySelectorAll('.toc a').forEach(a=>a.onclick=e=>{e.preventDefault();
 document.addEventListener('pointerdown',e=>{const d=$('titleDrop');if(d.open&&!d.contains(e.target))d.open=false});
 
 function doStep(){
-  // money grown beyond 10^18 (Money buy in the self-organized economy doubles it every round) stops the run: soon the
-  // numbers would overflow, and before that the fortune lines, a new point for every agent every round, fill the
-  // memory. Buyers pay with Money buy peaks near 10^14
-  if(E.halted)return;
   if($('anneal').checked){
     P.tmul=Math.max(0.01,P.tmul*Math.exp(-parseFloat($('aRate').value)));
     $('tmR').value=Math.log10(P.tmul);$('tmV').textContent=fmt(P.tmul);
     E.stale=true;                         // the markets must be recomputed with the new transport costs
   }
   E.step();
-  if(!(E.hist[E.hist.length-1].maxMoney<1e18)){E.halted=true; setRun(false); updStat(); return}
   agRecord(); distRecord(); nearRecord(); ravRecord();
   // the time a round takes on the screen: a closed company's tower sinks to zero over that time
   const now0=performance.now(); if(lastStepT)stepMs=0.8*stepMs+0.2*Math.min(2000,now0-lastStepT); lastStepT=now0;
@@ -1924,9 +1890,8 @@ function loop(tok){
 }
 function updStat(){
   const H=E.hist[E.hist.length-1];
-  $('tRound').textContent=E.halted?E.t+' — stopped, money too large':E.t;
-  let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit <b>${E.price<0.1?E.price.toFixed(4):fmt(E.price,3)}</b>${P.econ==='so'?' (self-organized)':P.econ==='pay'?' (self-organized, buyers pay)':''}${P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:''}`+
-    (E.halted?'<br><b>Stopped: the money has grown beyond 10<sup>18</sup>. Reset to start again.</b>':'');
+  $('tRound').textContent=E.t;
+  let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit <b>${E.price<0.1?E.price.toFixed(4):fmt(E.price,3)}</b>${P.econ==='so'?' (self-organized)':P.econ==='pay'?' (self-organized, buyers pay)':''}${P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:''}`;
   if(H)s+=`<br>agents with sales <b>${(100*H.active).toFixed(1)}%</b> · per round: starts <b>${(100*H.starts).toFixed(1)}%</b>, bankruptcies <b>${(100*H.bankrupt).toFixed(2)}%</b>`+
     (P.econ==='pay'?` · transport and tax paid <b>${fmt(H.transport||0,2)}</b> per round`:'');
   $('stat').innerHTML=s;
