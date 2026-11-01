@@ -118,6 +118,12 @@
   }
   .tbtn.sobtn{font-size:12px;font-weight:600}
   .tbtn.stdbtn{font-size:12px;font-weight:600}
+  /* buttons of the bar above the town that go to a new line together: ▶ with step, and tiny town with standard (they
+     load a town); on wide screens the bar is a little tighter, so that it still takes one line in the 3D view of a
+     page 1024 px wide up to round 99 999 (9 999 at n 0.05 beside a scroll bar; a 1024 px window wraps sooner) */
+  .bargrp{display:inline-flex;flex:0 0 auto;gap:6px}
+  @media (min-width:700px){ .dispbar{column-gap:4px} .dispbar .tbtn{padding:5px 7px} }
+  .dispbar > .bargrp:last-child{margin-left:auto}      /* tiny town and standard at the right, also when wrapped */
   .tbtn.sobtn.on{background:#b7791f;border-color:#b7791f;color:#fff}
   .display.darkbg .tbtn.sobtn.on{background:#b7791f;border-color:#b7791f;color:#fff}
   canvas#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
@@ -207,6 +213,8 @@
   .tools .tmenu > summary{list-style:none;border-left:0;border-radius:0 8px 8px 0;padding:0 6px;display:block}
   .tools .tmenu > summary::-webkit-details-marker{display:none}
   .tools .tmenu .vmbox{position:absolute;left:0;top:100%;max-height:min(70vh,560px);overflow-y:auto;overscroll-behavior:contain}
+  .tools .vmbox{z-index:5}    /* an open tool-bar menu lies over the toggles of the upper right corner, which on
+                                 phones wrap under the tool bar and come later in the page */
   .tools .tb.on{background:#b7791f;border-color:#b7791f;color:#fff}
   .display.darkbg .tools .tb:not(.on),.display.darkbg .tools .tmenu > summary{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
   .viewmenu{font-size:12.5px;position:relative}
@@ -290,13 +298,18 @@
   .stat2 b{color:var(--ink)}
   table.prod{width:100%;border-collapse:collapse;font-size:12.5px}
   table.prod th{font-weight:600;color:var(--muted);text-align:left;padding:2px 3px;font-size:11.5px}
-  table.prod td{padding:2px 3px}
-  table.prod input{width:100%;min-width:0;font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:7px;padding:4px 5px;
-    font-variant-numeric:tabular-nums;color:var(--ink)}
+  table.prod td{padding:2px 2px}
+  table.prod input{width:100%;min-width:0;font-family:inherit;font-size:13px;border:1px solid var(--line);
+    border-radius:7px;padding:4px 4px;font-variant-numeric:tabular-nums;color:var(--ink);
+    -moz-appearance:textfield;appearance:textfield}
+  /* no spin buttons: they take some 15 px of an input even while hidden, and four numbers (Start, γ, β, α) must fit
+     side by side, also on a phone; the arrow keys still step them */
+  table.prod input::-webkit-inner-spin-button,
+  table.prod input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
   table.prod .sw{width:24px;height:22px;border-radius:6px;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
   table.prod .pk{width:42px;text-align:right;white-space:nowrap;padding-right:6px}       /* Start counted in sales */
   table.prod td.pk{color:var(--muted);font-variant-numeric:tabular-nums}
-  table.prod{table-layout:fixed} table.prod th:first-child{width:30px}       /* Start, γ and β share the rest */
+  table.prod{table-layout:fixed} table.prod th:first-child{width:28px}       /* Start, γ, β and α share the rest */
   .chk{display:flex;align-items:center;gap:6px;color:var(--ink2)}
   .chk input{accent-color:var(--accent)}
   .presets{display:flex;flex-wrap:wrap;gap:6px}
@@ -331,8 +344,8 @@
       <p>The town has edges, like an island. The <i>edges</i> menu in the upper right corner of the town can wrap it
         around like a doughnut instead, so that walking off the right side brings you back on the left. The control
         panel (the tab at the right edge of the window) has this and most other settings: there you can also change
-        the products and add more of them. A tiny town of 8 × 8 agents lets you follow every agent by eye: see
-        <i>A tiny town, step by step</i>.</p>
+        the products and add more of them. The button <i>tiny town</i> above the town loads a town of only 8 × 8
+        agents, in which you can follow every agent by eye: see <i>A tiny town, step by step</i>.</p>
 
       <h2 id="r-cost">What things cost</h2>
       <p>When you want one unit of a product, you look at every factory that makes it. You pick the one that can make
@@ -360,6 +373,10 @@
         table in the control panel shows Start both ways: in money, as it costs at the start of a run (column
         <i>Start</i>), and in sales (column <i>sales</i>). The products that gain most from being big also cost most
         to start, and the applet warns you if you change the numbers so that this is no longer so.</p>
+      <p>The products table also has a factor <b>α</b> (alpha) for each product, 1 in the standard setup: a factory of
+        that product then makes a unit for α · s<sup>γ</sup> instead of s<sup>γ</sup>, so that C = α · s<sup>γ</sup> +
+        β · d. α is at least 1, and a product with a lower γ should not have a smaller α; the applet warns you if it
+        does.</p>
 
       <h2 id="r-pay">Who pays? Free goods or buyers pay</h2>
       <p>The <b>price p</b> is what a seller gets for one unit. It is set every round so that the sellers together earn
@@ -470,18 +487,19 @@
 
       <h2 id="r-tiny">A tiny town, step by step</h2>
       <p><button type="button" class="tutbtn" data-action="tiny">Load the tiny town</button></p>
-      <p>The button loads a town of 8 × 8 = 64 agents with the standard rules. It is always the same town. It shows
-        the <i>Agents</i> view, waits at round 0, and closes this text, so that you can see the town. Open the text
-        again with <i>how it works</i>, at the top of the page, and it opens here. Then read a step, close the text
-        (Esc, or tap outside it), and try the step. The <i>Tiny town</i> link at the top of the text brings you back
-        here.</p>
+      <p>The button loads a town of 8 × 8 = 64 agents with the standard rules, but a chip factory costs 10 instead of
+        20 (step 5 tells why). It is always the same town. It shows the <i>Agents</i> view, waits at round 0, and
+        closes this text, so that you can see the town. Open the text again with <i>how it works</i>, at the top of
+        the page, and it opens here. Then read a step, close the text (Esc, or tap outside it), and try the step. The
+        <i>Tiny town</i> link at the top of the text brings you back here. The button <i>tiny town</i> above the town
+        loads the same town.</p>
       <ol>
         <li><b>What a square shows.</b> Each square is one agent. It shows the letter of the product its factory makes,
           A, B or C, with the number of units the factory sold in the last round: A 7 is a bakery that sold 7 loaves.
           It also shows the agent's money. At round 0 every agent owns a factory of a random product, has sold
           nothing yet, and has money 5. Hover over a square, or tap it, to read more about the agent in the read-out
-          in the lower left corner of the town (under the town on a phone). The read-out names the agent by its column
-          and row, counted from 0 at the upper left: (2,3) is the third square from the left in the fourth row.</li>
+          under the town. The read-out names the agent by its column and row, counted from 0 at the upper left: (2,3)
+          is the third square from the left in the fourth row.</li>
         <li><b>Round 1: shopping and selling.</b> Press <i>step</i> above the town once (or <i>Step</i> in the control
           panel, or the key s). Every product now gets 64 orders, one per agent on average, and in this first round
           every agent is equally likely to place them. Each order goes to the buyer's cheapest factory. All the
@@ -495,37 +513,48 @@
           agents.</li>
         <li><b>Deciding.</b> In round 1 no sales can have fallen yet, but some owners sold nothing. Look for an agent
           with money of about 3: it sold nothing, gave up its factory and opened a bakery, which cost it 2. With money
-          5 a bakery was all it could afford (a B factory costs 8, a chip factory 20). An owner of a bakery that sold
+          5 a bakery was all it could afford (a B factory costs 8, a chip factory 10). An owner of a bakery that sold
           nothing keeps it: it could afford nothing else, and the read-out says so. Now press Step again. The
           factories that sold most in round 1 are bigger now, and so cheaper: they take the buyers of their
           neighbours. Many owners sell less than before, or nothing, and give up. Find one: the read-out says why it
           gave up, and what it opened.</li>
         <li><b>The chips.</b> Step three more times. After round 3 one chip factory is left, and in round 4 it sells 57
           of the 64 chips: a giant in a small world. In round 5 its sales dip to 52, and its owner gives up (patience
-          0): hover over its square, (1,4), and the read-out says so. Now the tiny town has no chips left, and it stays
-          so for a long time. A new chip factory costs the money of 1&nbsp;200 sales, as many chips as the whole town
-          buys in 19 rounds, and hardly anybody saves that much. Without chips the price p in the status line of the
-          control panel goes up, to between 0.025 and 0.05: the chip orders find no seller, so fewer units share the
-          same wages. Start follows p (the status line shows the factor, ×3.00 while only bread is sold), so a new
-          bakery now costs 6 instead of 2, still the money of 120 sales.</li>
-        <li><b>The bread.</b> Now press ▶ above the town (or <i>Run</i> in the control panel, or the space bar), and let
-          it run; the <i>Delay per frame</i> menu in the control panel slows it down. The bakeries merge until two or
-          three big ones bake for the whole town, the biggest selling about 34 of the 64 loaves a round. Most agents
-          keep a bakery that sells nothing, and now and then one that has saved enough tries a B factory.</li>
-        <li><b>Buyers pay.</b> Load the tiny town again, and switch to <i>buyers pay</i> with the golden button. Step a
-          few rounds. The read-out now also shows what an agent paid for its shopping, and the equal income it got.
-          Check that the money still adds up: wage + equal income + sales − shopping. With the Income weight an agent
-          can be picked to shop for more than it has, but that is rare: in this town it first happens in round 40, to
-          the agent at (2,3), which has just spent its money on a new bakery after big sales of B. Set <i>Delay per
-          frame</i> in the control panel to 0.5 s, run, pause a little before round 40 and step to it: the read-out of
-          (2,3) says that it went bankrupt. Load the town again, switch to buyers pay, set <i>Shopping debts</i> to
-          <i>forgiven</i> in the control panel and go to round 40 once more: the same agent now keeps its bakery.</li>
+          0): hover over its square, (1,4), and the read-out says so. Now the tiny town has no chips left, and no B
+          factory either. Step once more. The price p in the status line of the control panel goes up to 0.05: the B
+          and chip orders find no seller, so fewer units share the same wages (p is 0.025 to 0.03 when B is sold again).
+          Start follows p (the status line shows the factor, ×3.00 while only bread is sold). So a new bakery now costs
+          6 instead of 2, still the money of 120 sales. A chip factory costs 30 instead of 10, still the money of 600
+          sales: as many chips as the whole town buys in about 9 rounds. In the standard setup a chip factory costs
+          the money of 1&nbsp;200 sales. A town this small then hardly ever gets its chips back (in 24 tiny towns of
+          1&nbsp;000 rounds each, only 3 times), so here it costs half.</li>
+        <li><b>The bread, and the chips again.</b> Now press ▶ above the town (or <i>Run</i> in the control panel, or
+          the space bar), and let it run; the <i>Delay per frame</i> menu in the control panel slows it down. The
+          bakeries merge until two or three big ones bake for the whole town, the biggest selling about 35 of the 64
+          loaves a round. Most agents keep a bakery that sells nothing, and now and then one that has saved enough
+          tries a B factory, or a chip factory. The chips first come back in round 27: the biggest bakery, at (4,1),
+          sells 48 loaves instead of 51, and its owner, who has saved 27, opens a chip factory for 17 (Start is now
+          ×1.71, because B is sold again). It sells 51 of the 64 chips in round 28 and 50 in round 29, so its owner
+          gives up. In the first 1&nbsp;000 rounds the chips come back 19 times, often for just two rounds, but once
+          for 18 rounds (170 to 187). In round 171 chips are sold again, so a chip factory costs only 10.2 (×1.02):
+          fifteen more agents open one at once, and nine chip factories take turns as the biggest, two rounds each.</li>
+        <li><b>Buyers pay.</b> Load the tiny town again (the button <i>tiny town</i> above the town does it), and
+          switch to <i>buyers pay</i> with the golden button. Step a few rounds. The read-out now also shows what an
+          agent paid for its shopping, and the equal income it got. Check that the money still adds up: wage + equal
+          income + sales − shopping − new factory (for an agent that opened one). With the Income weight an agent can
+          be picked to shop for more than it has. In this town it first happens in round 40, to the agent at (2,3),
+          which has just spent its money on a new bakery after big sales of B. After that it happens in about one
+          round in ten. Set <i>Delay per frame</i> in the control panel to 0.5 s, run, pause a little before round 40
+          and step to it: the read-out of (2,3) says that it went bankrupt. Load the town again, switch to buyers pay,
+          set <i>Shopping debts</i> to <i>forgiven</i> in the control panel and go to round 40 once more: the same
+          agent now keeps its bakery.</li>
         <li><b>Gouging.</b> Now switch on gouging, with the button right of <i>Income weight</i>. Step a few rounds and
           hover over the big sellers: their sales now bring more than p a unit, because their buyers' next-best
           factory is dearer. Compare the sales part of the money change with p times the units sold. Which keep the
           most a unit? Here it is seldom the biggest bakery: what counts is how much dearer the buyers' next-best
-          bakery is. Where a product has only one factory, its buyers have no other to turn to, and they pay the
-          normal price.</li>
+          bakery is. Where a product has only one factory, as B has in round 41 and the chips have when a single chip
+          factory comes back, its buyers have no other to turn to, and they pay the normal price. Right after round
+          41, hover over (6,3): it sells 56 units of B at 1.00·p a unit, then gives B up.</li>
       </ol>
 
       <h2 id="r-patience">Patience: when does an owner give up?</h2>
@@ -594,21 +623,25 @@
         <li>A <b>road</b> makes transport along it cheaper; its ▾ sets how much (× 0.2 means five times cheaper).</li>
         <li>A <b>border</b> makes goods dearer when they cross it. Its ▾ sets a <b>tax</b>, a percentage of what the
           goods are worth where they cross (see below), and a <b>tariff</b>, a fixed amount per unit, in units of p like
-          all costs. A <i>one-way</i> border charges only goods crossing in the direction of its arrows; the arrows
-          point to your left as you draw it (drawn from top to bottom, they point to the right).</li>
+          all costs. Lower down, below the circle (next item), the same menu has a second <b>+ border</b> button. It
+          works like the first. With it come the direction and the product buttons, which hold for every border you
+          draw, with either button.
+          A <i>one-way</i> border charges only goods crossing in the direction of its arrows; the arrows point to your
+          left as you draw it (drawn from top to bottom, they point to the right).</li>
         <li>Ready-made shapes, in the same ▾ menus: a <b>road from the centre</b> to a corner of your choice, and a
           <b>circle in the centre</b> enclosing 5 to 70 % of the town, like a country in the middle of the world. The circle
           charges goods both ways, or only goods going in: then it protects the inside, while its own goods go out free.
-          The product buttons in the same menu choose which products the circle taxes, for instance only the chips.</li>
+          The product buttons in the same menu choose which products the circle taxes, for instance only the chips.
+          A border you draw can do the same: choose its products with the buttons by the second <b>+ border</b>.</li>
         <li><b>− road</b> and <b>− border</b>: tap one to remove it. <b>✕ all</b> removes them all.</li>
       </ul>
       <p>Goods always travel the cheapest way: they may follow a road part of the way, or go around the end of a border
         instead of paying.</p>
-      <p>What the goods are worth where they cross is their full price so far, p · (1 + s<sup>γ</sup> + the transport
-        so far), the seller's share p included. A tax takes its share of that, in both economies. With free goods no
-        money changes hands: the tax and the tariff only change where the buyers buy. When the buyers pay, the buyer
-        pays the tax and the tariff as part of its cost C, and that money comes back to everybody as the equal
-        income.</p>
+      <p>What the goods are worth where they cross is their full price so far, p · (1 + α · s<sup>γ</sup> + the
+        transport so far), the seller's share p included (α = 1 in the standard setup). A tax takes its share of
+        that, in both economies. With free goods no money changes hands: the tax and the tariff only change where
+        the buyers buy. When the buyers pay, the buyer pays the tax and the tariff as part of its cost C, and that
+        money comes back to everybody as the equal income.</p>
       <p>So a tax hits even the cheapest goods. A chip factory that sold 1&nbsp;000 chips last round makes each for
         about 0.002, but where a chip crosses it is still worth at least p, the seller's share. A 100 % tax doubles what
         every good is worth there, the giant's chips too, and adds at least 1 to its cost C: it acts much like a tariff
@@ -787,10 +820,10 @@
 
       <h2 id="r-try">Try this</h2>
       <ul class="try">
-        <li>Press <b>Load the tiny town</b> in <i>A tiny town, step by step</i>, and follow the first rounds with
-          <b>Step</b>: hover over the agents, check how their money changes, and find out why an owner gives up. ↺
-          then gives a new tiny town; <b>standard</b> above the town, or any preset but <i>Tiny town</i> in the
-          control panel, goes back to the 125 × 125 town, which the ideas below need.</li>
+        <li>Press <b>tiny town</b> above the town (or <b>Load the tiny town</b> in <i>A tiny town, step by step</i>),
+          and follow the first rounds with <b>step</b>: hover over the agents, check how their money changes, and find
+          out why an owner gives up. ↺ then gives a new tiny town; <b>standard</b> above the town, or any preset but
+          <i>Tiny town</i> in the control panel, goes back to the 125 × 125 town, which the ideas below need.</li>
         <li>Let the town run a few hundred rounds, then set <b>patience</b> to 5: the richest get much richer, and now
           and then a chip giant rules for a hundred rounds or more. Then press ↺ for a new town with patience 5: it
           freezes.</li>
@@ -878,7 +911,7 @@
     </div>
   </details>
   <!-- the long help texts (title) of the elements with data-tip are in HELP, at the top of the UI script -->
-  <div class="eq" data-tip="eq">C(r₁,r₂,i) = F(r₁,i)·s(r₁,i)<sup><b>γ<sub>i</sub></b></sup> +
+  <div class="eq" data-tip="eq">C(r₁,r₂,i) = F(r₁,i)·<b>α<sub>i</sub></b>·s(r₁,i)<sup><b>γ<sub>i</sub></b></sup> +
     <b>β<sub>i</sub></b>|r₁−r₂|<span class="eqnote">a new factory of product i costs
     <b>Start<sub>i</sub></b>·p/p<sub>0</sub>, paid once</span></div>
 </header>
@@ -896,10 +929,12 @@
       <span class="spacer"></span>
       <button class="tbtn sobtn on" id="bSO2" data-tip="econ">free goods · n 1</button>
       <span class="stat">round <b id="tRound">0</b></span>
-      <button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
-      <button class="tbtn" id="bStep2" title="one round (key s)">step</button>
+      <span class="bargrp"><button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
+        <button class="tbtn" id="bStep2" title="one round (key s)">step</button></span>
       <button class="tbtn" id="bReset2" title="reset">↺</button>
-      <button class="tbtn stdbtn" id="bStd" data-tip="std">standard</button>
+      <span class="bargrp"><button class="tbtn stdbtn" id="bTiny"
+        title="load the tiny 8 × 8 town of the tutorial: always the same town, Agents view, paused">tiny town</button>
+        <button class="tbtn stdbtn" id="bStd" data-tip="std">standard</button></span>
     </div>
     <div class="canvas-wrap"><canvas id="cv"></canvas>
       <div class="ovtop">
@@ -932,23 +967,21 @@
       <button class="tb" data-tool="rmRoad" title="remove a road: tap on it">− road</button>
       <div class="tool">
         <button class="tb" data-tool="addBorder" title="add a border: press, drag and release on the lattice">+ border</button>
-        <details class="tmenu"><summary title="tax and direction of the border">▾</summary>
+        <details class="tmenu"><summary
+          title="tax and tariff of new borders, a circle, direction and products of a border you draw">▾</summary>
           <div class="vmbox">
             <div class="row"><label>tax on crossing</label>
               <select id="taxSel"><option value="0">none</option><option value="0.05">5 %</option><option value="0.1">10 %</option><option value="0.2" selected>20 %</option><option value="0.3">30 %</option><option value="0.5">50 %</option><option value="1">100 %</option><option value="2">200 %</option></select></div>
             <div class="row"><label>tariff per unit</label>
               <select id="tarSel"><option value="0" selected>none</option><option value="0.01">0.01</option><option value="0.02">0.02</option><option value="0.05">0.05</option><option value="0.1">0.1</option><option value="0.2">0.2</option><option value="0.5">0.5</option><option value="1">1</option></select></div>
-            <div class="row"><label>direction</label>
-              <select id="dirSel"><option value="two">both ways</option><option value="one">one way (arrow)</option></select></div>
-            <p class="hint">The tax is a percentage of the full value of the goods where they cross,
-              p·(1 + s<sup>γ</sup> + transport so far), in both economies. With free goods no money moves: the tax
+            <p class="hint">The tax and the tariff hold for every new border: the circle and the borders you
+              draw (below). The tax is a percentage of the full value of the goods where they cross,
+              p·(1 + α·s<sup>γ</sup> + transport so far), in both economies. With free goods no money moves: the tax
               only changes where the buyers buy. When the buyers pay it is part of what they pay, and like the cost of
               making and carrying the goods it comes back to everybody as an equal income.
-              The tariff is a fixed amount added to the cost of every unit that crosses, in units of p, the same for every
-              product: 1 is what a unit costs to make in a new factory (s = 1), 0.1 is one cell of A's transport or five of
-              C's. A one-way border taxes only goods crossing
-              in the direction its arrows point; goods crossing the other way pass free. The arrows point to your left as you
-              trace the border from where you started to where you let go (drawn from top to bottom, they point to the right).</p>
+              The tariff is a fixed amount added to the cost of every unit that crosses, in units of p, the same for
+              every product taxed: 1 is what a unit costs to make in a new factory (s = 1, α = 1), 0.1 is one cell of
+              A's transport or five of C's.</p>
             <div class="vmsub">Circle in the centre</div>
             <div class="row"><label>area inside</label>
               <select id="circA"><option value="0.05">5 % of the lattice</option><option value="0.1">10 %</option><option value="0.2" selected>20 %</option><option value="0.3">30 %</option><option value="0.5">50 %</option><option value="0.7">70 %</option></select></div>
@@ -958,7 +991,19 @@
             <button class="btn sm" id="addCircle">add this circle</button>
             <p class="hint">A round border around the middle of the lattice, with the tax and tariff above. "Going in only"
               protects the inside: goods from outside pay when they cross in, goods from inside go out free. The product buttons
-              choose which products pay; the others cross free.</p></div>
+              choose which products pay; the others cross free.</p>
+            <div class="vmsub">A border you draw</div>
+            <div class="row"><label>direction</label>
+              <select id="dirSel"><option value="two">both ways</option><option value="one">one way (arrow)</option>
+              </select></div>
+            <div class="row"><label>products taxed</label><span class="circprods" id="bordProds"></span></div>
+            <button class="tb" data-tool="addBorder" style="border-radius:8px;margin:2px 0 4px"
+              title="the same as + border in the tool bar: press, drag and release on the lattice">+ border</button>
+            <p class="hint">Choose + border, here or in the tool bar, then press, drag and let go on the town: the
+              border follows your drag, with the tax and tariff above. The product buttons choose which products
+              pay; the others cross free. A one-way border taxes only goods crossing in the direction its arrows
+              point; goods crossing the other way pass free. The arrows point to your left as you trace the border
+              from where you started to where you let go (drawn from top to bottom, they point to the right).</p></div>
         </details>
       </div>
       <button class="tb" data-tool="rmBorder" title="remove a border: tap on it">− border</button>
@@ -1108,7 +1153,7 @@
     <div class="sect">
       <table class="prod">
         <thead><tr><th></th><th data-tip="start">Start</th><th class="pk" data-tip="sales">sales</th><th>γ</th>
-          <th>β</th></tr></thead>
+          <th>β</th><th data-tip="alpha">α</th></tr></thead>
         <tbody id="ptbody"></tbody>
       </table>
       <div class="presets" style="margin-top:8px">
@@ -1116,11 +1161,13 @@
       </div>
       <div class="row"><label>Factory colours</label>
         <select id="palSel"><option value="jet">jet</option><option value="spectral">spectral</option></select></div>
-      <p class="hint" id="monoHint">A more scalable product (lower γ) must cost more to start: Start increases as γ decreases.
-        A new product is added as the most scalable one. At least two products stay: going down to one makes twins, two
-        products with the same numbers. Start, γ and β act at once; changing the number of products restarts. The
-        column <i>sales</i> is Start counted in sales, Start/p₀: so many units sold pay for a new factory in both
-        economies.</p>
+      <p class="hint" id="monoHint">A more scalable product (lower γ) must cost more to start: Start increases as γ
+        decreases. Its α must not be smaller: α does not decrease as γ decreases. α is the production-cost factor, at
+        least 1 (1 in the standard setup): a factory of size s makes a unit for α·s<sup>γ</sup> instead of
+        s<sup>γ</sup>. A new product is added as the most scalable one, with the largest α. At least two products stay:
+        going down to one makes twins, two products with the same numbers. Start, γ, β and α act at once; changing the
+        number of products restarts. The column <i>sales</i> is Start counted in sales, Start/p₀: so many units sold
+        pay for a new factory in both economies.</p>
     </div>
   </details>
 
@@ -1180,7 +1227,8 @@
 // ---------- model core (no DOM; runs in Node as well) ----------
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 
-// P = {L, products:[{start,gamma,beta}], n (orders per agent per product per round), lim (max factories per agent),
+// P = {L, products:[{start,gamma,beta,alpha}] (alpha: the production-cost factor, kept ≥ 1 by the UI and used here
+//      as given; absent or not > 0 means 1), n (orders per agent per product per round), lim (max factories per agent),
 //      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (patience: an
 //      owner gives up when its units sold, net of upkeep, fall below last round's by more than κ·√(units sold last
 //      round); 0 = any fall), buyw (who places the orders: 'inc' ∝ last round's income, the Income weight, 'money' ∝
@@ -1192,7 +1240,7 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 //      is to the left of the drawing direction),
 //      econ:'so'|'pay' (free goods | buyers pay), gouge (a seller charges the buyer's next-best offer), forgive (a
 //      debt run up by shopping alone is forgiven; gouge and forgive act only when the buyers pay), seed}
-// Every order goes to the buyer's cheapest offer C₁ = s^γ + β·d (+ border tax and tariff), the delivered cost; nobody
+// Every order goes to the buyer's cheapest offer C₁ = α·s^γ + β·d (+ border tax and tariff), the delivered cost; nobody
 // buys from itself. The seller keeps m = 1 a unit, in units of the price p; with gouging m = 1 + C₂ − C₁, C₂ the
 // delivered cost of the buyer's next-best offer from another factory (none: m = 1), while the buyers still choose by
 // C₁. p = Σ wages / Σ m over this round's orders (none: p stays), so the sellers together get the wages. Two
@@ -1200,11 +1248,11 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 // econ 'so' (free goods): the buyers pay nothing; the seller gets p·m as new money.
 // econ 'pay' (buyers pay): a buyer pays p·(m + C₁) a unit, p·(1 + C₂) with gouging; the seller gets p·m, and p·C₁
 // (making, transport, border tax and tariff) comes back in the same round as an equal income to every agent.
-// With a taxed border a tax is a share of the goods' full value where they cross, p·(1 + s^γ + transport so far); with
-// free goods it only changes where the buyers buy. Start and upkeep are counted in sales: a factory costs Start·p/p₀
-// to open and μ·Start·p/p₀ a round, with p₀ = w·L²/(N·T) (T = n·L² orders a product) the price when every order is
-// served at m = 1, and an owner judges its business by its units sold net of upkeep, so that a change of the common p
-// is no reason to give up.
+// With a taxed border a tax is a share of the goods' full value where they cross, p·(1 + α·s^γ + transport so far);
+// with free goods it only changes where the buyers buy. Start and upkeep are counted in sales: a factory costs
+// Start·p/p₀ to open and μ·Start·p/p₀ a round, with p₀ = w·L²/(N·T) (T = n·L² orders a product) the price when every
+// order is served at m = 1, and an owner judges its business by its units sold net of upkeep, so that a change of the
+// common p is no reason to give up.
 // A bankrupt agent (money < 0) closes its weakest factory, its debts are written off, and it starts again from money w;
 // with forgive, a debt that its shopping alone ran up is written off and its factories stay.
 function buildEcon(P){
@@ -1239,10 +1287,11 @@ function buildEcon(P){
   // per product when some border taxes only some products
   const roadF=new Float32Array(LL); let taxMs=[], taxAs=[];
   let netKey='', taxOff=0;
+  E.bshift=[1.414e-7,1.047e-7];          // how far the borders are moved for the crossing test (buildNet)
   E.useGraph=()=>(P.roads&&P.roads.length)||(P.borders&&P.borders.length);
   function buildNet(){
     const key=JSON.stringify([P.roads,P.borders,P.bc]); if(key===netKey)return; netKey=key;
-    taxOff=(P.borders||[]).some(b=>(b.tax||0)>0)?1:0;          // a taxed border: offers start from 1 + s^γ (below)
+    taxOff=(P.borders||[]).some(b=>(b.tax||0)>0)?1:0;          // a taxed border: offers start from 1 + α·s^γ (below)
     const some=(P.borders||[]).some(b=>b.prods&&b.prods.length<N), nArr=some?N:1;
     if(taxMs.length!==nArr){taxMs=[];taxAs=[];for(let k=0;k<nArr;k++){taxMs.push(new Float32Array(LL*16));taxAs.push(new Float32Array(LL*16))}}
     roadF.fill(1); for(let k=0;k<nArr;k++){taxMs[k].fill(1);taxAs[k].fill(0)}
@@ -1257,14 +1306,23 @@ function buildEcon(P){
       const d1=o(cx,cy,dx,dy,ax,ay), d2=o(cx,cy,dx,dy,bx,by), d3=o(ax,ay,bx,by,cx,cy), d4=o(ax,ay,bx,by,dx,dy);
       return d1*d2<0&&d3*d4<0};
     // A move is taxed once by a border it crosses (even where it cuts through a bend). With periodic boundaries a move
-    // can wrap around the edge, so each border is also tested shifted by ±L.
-    const shifts=closed()?[[0,0]]:[[0,0],[L,0],[-L,0],[0,L],[0,-L]];
-    const hit=new Uint8Array(LL*16);
+    // can wrap around an edge, or around a corner of the town, so each border is also tested shifted by ±L along x,
+    // along y and along both.
+    const shifts=closed()?[[0,0]]:[[0,0],[L,0],[-L,0],[0,L],[0,-L],[L,L],[L,-L],[-L,L],[-L,-L]];
+    // Every border is moved by about a ten-millionth of a cell (ex, ey). Otherwise a corner, or a straight piece,
+    // can lie exactly on the line of a move between two cell centres (at odd L every circle has corners on the
+    // middle row), and the move slips through untaxed, since neither segment meeting there counts it as crossed.
+    // A move between cell centres passes through a corner only if dy·x − dx·y is a multiple of ½; the shift changes
+    // that by dy·ex − dx·ey, between 3·10⁻⁸ and 4·10⁻⁷ for the 16 moves. Borders with no corner within 4·10⁻⁷ of
+    // such lines, and no cell centre within 2·10⁻⁷ of them (the shift is 1.8·10⁻⁷ long), are crossed by the same
+    // moves as before. A move that only touches a corner may now cut through its tip, and is then taxed once, like a
+    // move that cuts through a bend.
+    const [ex,ey]=E.bshift, hit=new Uint8Array(LL*16);
     for(const bd of P.borders||[]){
       hit.fill(0);
       const ks=!some?[0]:bd.prods&&bd.prods.length<N?bd.prods.filter(k=>k>=0&&k<N):[...Array(N).keys()];
       for(const [sx,sy] of shifts)for(let j=1;j<bd.pts.length;j++){
-        const x0=bd.pts[j-1][0]+sx, y0=bd.pts[j-1][1]+sy, x1=bd.pts[j][0]+sx, y1=bd.pts[j][1]+sy;
+        const x0=bd.pts[j-1][0]+sx+ex, y0=bd.pts[j-1][1]+sy+ey, x1=bd.pts[j][0]+sx+ex, y1=bd.pts[j][1]+sy+ey;
         const nx=y1-y0, ny=-(x1-x0);                         // the taxed direction of a one-way border: (dy, −dx), on the screen the left of the drawing direction
         for(let y=Math.max(0,Math.floor(Math.min(y0,y1)-3));y<=Math.min(L-1,Math.ceil(Math.max(y0,y1)+3));y++)
           for(let x=Math.max(0,Math.floor(Math.min(x0,x1)-3));x<=Math.min(L-1,Math.ceil(Math.max(x0,x1)+3));x++)
@@ -1281,8 +1339,8 @@ function buildEcon(P){
   // Dijkstra from all factories at once. Each cell keeps the two cheapest offers from different factories, because
   // a factory cell must buy from somebody else. A move multiplies the cost so far by the border tax (a percentage of the
   // goods' value), adds the border tariff and β·(length)·(road factor); all keep the costs ordered, so Dijkstra stays exact.
-  // off: what the offers start from besides the unit cost s^γ — 1 (the seller's p) when a border is taxed, so that the
-  // tax takes its share of the goods' full value, else 0; it is taken off the stored costs again.
+  // off: what the offers start from besides the unit cost α·s^γ — 1 (the seller's p) when a border is taxed, so that
+  // the tax takes its share of the goods' full value, else 0; it is taken off the stored costs again.
   let hc=new Float64Array(1<<16), hn=new Int32Array(1<<16), hs=new Int32Array(1<<16), hl=0;
   const push=(c,n,s)=>{if(hl===hc.length){const g=hc.length*2,a=new Float64Array(g),b=new Int32Array(g),d=new Int32Array(g);a.set(hc);b.set(hn);d.set(hs);hc=a;hn=b;hs=d}
     let i=hl++; while(i>0){const p=(i-1)>>1;if(hc[p]<=c)break;hc[i]=hc[p];hn[i]=hn[p];hs[i]=hs[p];i=p} hc[i]=c;hn[i]=n;hs[i]=s};
@@ -1386,7 +1444,8 @@ function buildEcon(P){
   E.why=new Int8Array(LL); E.opened=new Int8Array(LL); E.dropped=new Int8Array(LL); E.fate=new Int8Array(LL);
   E.prevMoney=new Float64Array(LL); E.upk=new Float64Array(LL); E.spent=new Float64Array(LL); E.ubi=0;
   // cost: the delivered price C₁ each agent pays; c2: its next-best offer C₂ (∞: none; found only with gouging);
-  // mg: Σ m = 1 + C₂ − C₁ over the units each factory sold this round (gouging)
+  // mg: Σ m = 1 + C₂ − C₁ over the units each factory sold this round (gouging); u: what a unit costs each factory to
+  // make, α·s^γ (∞ where there is no factory)
   E.F=[];E.sales=[];E.sup=[];E.dist=[];E.u=[];E.area=[];E.cost=[];E.c2=[];E.mg=[];
   for(let i=0;i<N;i++){
     E.F.push(new Uint8Array(LL)); E.sales.push(new Int32Array(LL)); E.sup.push(new Int32Array(LL));
@@ -1414,11 +1473,11 @@ function buildEcon(P){
   // cheapest supplier of product i for every agent, at the current sizes
   function market(i){
     const pr=P.products[i], F=E.F[i], S=E.sales[i], u=E.u[i], sup=E.sup[i], dist=E.dist[i], area=E.area[i];
-    const beta=Math.max(0,pr.beta*P.tmul), g=pr.gamma, cl=closed();
+    const beta=Math.max(0,pr.beta*P.tmul), g=pr.gamma, al=pr.alpha>0?pr.alpha:1, cl=closed();
     const off=taxOff, g2=mode()===1, graph=g2?marketGraph3:marketGraph, c2=E.c2[i];   // g2: C₂ is wanted
     const fac=[]; let umin=Infinity, umax=-Infinity;
     for(let r=0;r<LL;r++){
-      if(F[r]){const v=Math.pow(1+S[r],g);u[r]=v;fac.push(r);if(v<umin)umin=v;if(v>umax)umax=v}
+      if(F[r]){const v=al*Math.pow(1+S[r],g);u[r]=v;fac.push(r);if(v<umin)umin=v;if(v>umax)umax=v}
       else u[r]=Infinity;
     }
     area.fill(0);
@@ -1499,8 +1558,8 @@ function buildEcon(P){
     const H={t:E.t+1,econ:P.econ,gouge,forgive,prod:[],neff:[],share:[],dist:[],unmet:[],active:0,starts:0,bankrupt:0,
       forgiven:0,money:0,maxUnits:0,maxMoney:0,wage:P.wage,kappa:P.kappa};
     // an order: the seller keeps m, in units of p: 1, or with gouging 1 + C₂ − C₁ (no other factory: 1). Buyers pay:
-    // the buyer pays m + C₁ (paid: Σ for each agent), and C₁, the making s^γ (prOut) and the transport, taxes and
-    // tariffs C₁ − s^γ (trOut), comes back to everybody
+    // the buyer pays m + C₁ (paid: Σ for each agent), and C₁, the making α·s^γ (prOut) and the transport, taxes and
+    // tariffs C₁ − α·s^γ (trOut), comes back to everybody
     paid.fill(0); if(gouge)for(let i=0;i<N;i++)E.mg[i].fill(0);
     let trOut=0, prOut=0, sumF=0, sumM=0, sumC=0, nOrd=0;
     for(let i=0;i<N;i++){
@@ -1611,7 +1670,9 @@ const $=id=>document.getElementById(id);
 const HELP={
   eq:'C: the cost, in units of the price p, at which a factory of product i at r₁ delivers one unit to an agent '+
     'at r₂ (F(r₁,i) = 1 if the agent at r₁ makes product i): what it costs to make, plus the transport (and any '+
-    'border tax and tariff). Every buyer picks the lowest C. The start cost is paid once, when a factory opens; '+
+    'border tax and tariff). A factory of size s (1 + the units it sold last round) makes a unit for αᵢ·s^γᵢ; αᵢ, '+
+    'the production-cost factor of product i, is 1 in the standard setup. Every buyer picks the lowest C. The start '+
+    'cost is paid once, when a factory opens; '+
     'it is not part of C. With free goods the buyers pay nothing and the seller gets p a unit. When the buyers '+
     'pay, a unit costs the buyer p·(1 + C): the seller gets p, and p·C comes back to everybody as an equal '+
     'income. With gouging the buyer pays p·(1 + C₂), C₂ its next-best offer, and the seller keeps p·(1 + C₂ − C); '+
@@ -1645,6 +1706,9 @@ const HELP={
     'the same number of sales always pays for it',
   sales:'what a new factory costs, counted in sales: Start/p₀, the units it must sell to pay for itself, in both '+
     'economies. It changes with n, w and L (–: no wages)',
+  alpha:'the production-cost factor α of the product, at least 1: a factory of size s (1 + the units it sold last '+
+    'round) makes a unit for α·s^γ instead of s^γ. 1 in the standard setup. A more scalable product (lower γ) should '+
+    'not have a smaller α; the table marks it red if it does. It acts at once',
   econLab:'free goods: the buyers pay nothing, and a seller gets p for every unit it sells. Buyers pay: a buyer '+
     'pays p·(1 + C) a unit, C its cheapest offer (making, transport, border tax and tariff); the seller gets p, '+
     'and p·C comes back in the same round as an equal income to every agent. The two differ only in who pays the '+
@@ -1698,12 +1762,14 @@ const PRESETS={
     'Income weight, then lets the sellers charge the next-best offer, and Shopping debts, under the Economy menu, '+
     'can forgive debts that come from shopping alone (both off in the standard setup).',
     products:THREE,tmul:1,anneal:false,std:true},
-  // the standard rules on 8 × 8: the tutorial of the pull-down starts it with a fixed seed (startTinyTutorial)
+  // the standard rules on 8 × 8, but with a chip factory of Start 10 instead of 20, so that the chips, once gone,
+  // can come back: the tutorial of the pull-down starts it with a fixed seed (startTinyTutorial)
   tiny:{label:'Tiny town',note:'The standard rules and products on a tiny 8 × 8 town of 64 agents, small enough to '+
-    'follow each of them. In the Agents view every square shows the factory of its agent with the units it sold last '+
-    'round, and its money; hover over or tap an agent to see where its money came from and went, and why it kept or '+
-    'changed its factory. Step through the rounds with Step (key s).',
-    products:THREE,tmul:1,anneal:false,std:true,L:8},
+    'follow each of them, except that a chip factory costs 10 instead of 20: the money of 600 sales instead of '+
+    '1\u00a0200, so that the chips, once gone, come back now and then. In the Agents view every square shows the '+
+    'factory of its agent with the units it sold last round, and its money; hover over or tap an agent to see where '+
+    'its money came from and went, and why it kept or changed its factory. Step through the rounds with Step (key s).',
+    products:[THREE[0],THREE[1],{...THREE[2],start:10}],tmul:1,anneal:false,std:true,L:8},
   twins:{label:'Twin products',note:'Two products with the numbers of the original one-product model (Start 5, γ −0.5, β 0.05) but different names. With a single product an owner whose sales fall has nothing to switch to, nobody pays a start cost again, and the money piles up without end; with twins an owner can switch.',
     products:[{start:5,gamma:-0.5,beta:0.05},{start:5,gamma:-0.5,beta:0.05}],tmul:1,anneal:false},
   glob:{label:'Globalization',note:'Transport starts 3× dearer and is lowered by e^−0.002 per round: local producers coarsen into a few big companies.',
@@ -1718,7 +1784,8 @@ const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:0,buyw:'inc',M0:5,bc:'closed
 // a preset (a standard one on its own lattice size, L, if it has one); seed: a fixed seed, else one at random
 function applyPreset(k,seed){
   const pr=PRESETS[k];
-  if(pr.std){Object.assign(P,STD); $('Lsel').value=String(pr.L||STD.L); $('aRate').value='0.002'; circOn.clear()}
+  if(pr.std){Object.assign(P,STD); $('Lsel').value=String(pr.L||STD.L); $('aRate').value='0.002'; circOn.clear();
+    bordOn.clear()}
   // any other preset chosen in a tiny town (L ≤ 16, the tutorial) goes back to the standard size; P.L too, so that
   // restart keeps the preset's borders
   else if(+$('Lsel').value<=16){$('Lsel').value=String(STD.L); P.L=STD.L}
@@ -1755,14 +1822,26 @@ function syncControls(){
   $('bcSel').value=$('bcSel2').value=P.bc; $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
   $('econSel').value=P.econ; syncSO();
 }
-// a product with lower γ (more scalable) must have the higher start cost: mark the pairs that break this
+// the production-cost factor α of a product: a factory makes a unit for α·s^γ; absent (or not > 0) it is 1, as in
+// the core
+const alphaOf=pr=>pr.alpha>0?pr.alpha:1;
+// a product with lower γ (more scalable) must have the higher start cost, and not a smaller α: mark the pairs that
+// break this (Start and γ of the first rule, α of the second; all α equal, as in the standard setup, is fine)
 function checkMono(){
-  const pr=P.products, bad=new Set();
-  for(let i=0;i<pr.length;i++)for(let j=0;j<pr.length;j++)
-    if(pr[i].gamma<pr[j].gamma&&pr[i].start<=pr[j].start){bad.add(i);bad.add(j)}
-  document.querySelectorAll('#ptbody tr').forEach((tr,i)=>tr.querySelectorAll('input[data-k=start],input[data-k=gamma]').forEach(inp=>{
-    inp.classList.toggle('bad',bad.has(i)); inp.title=bad.has(i)?'Start should increase as γ decreases':inp.dataset.t}));
-  $('monoHint').style.color=bad.size?'#dc2626':'';
+  const pr=P.products, bad=new Set(), badA=new Set();
+  for(let i=0;i<pr.length;i++)for(let j=0;j<pr.length;j++)if(pr[i].gamma<pr[j].gamma){
+    if(pr[i].start<=pr[j].start){bad.add(i);bad.add(j)}
+    if(alphaOf(pr[i])<alphaOf(pr[j])){badA.add(i);badA.add(j)}
+  }
+  // an input that breaks a rule is marked, with the rule as its title (else its own title)
+  const mark=(inp,on,rule)=>{inp.classList.toggle('bad',on); inp.title=on?rule:inp.dataset.t};
+  document.querySelectorAll('#ptbody tr').forEach((tr,i)=>{
+    tr.querySelectorAll('input[data-k=start],input[data-k=gamma]')
+      .forEach(inp=>mark(inp,bad.has(i),'Start should increase as γ decreases'));
+    tr.querySelectorAll('input[data-k=alpha]')
+      .forEach(inp=>mark(inp,badA.has(i),'α should not decrease as γ decreases'));
+  });
+  $('monoHint').style.color=bad.size||badA.size?'#dc2626':'';
 }
 function buildProductUI(){
   setPalette();
@@ -1774,24 +1853,40 @@ function buildProductUI(){
         title="start cost of product ${PNAME[i]}: its money at the price p₀; at the price p it costs Start·p/p₀"></td>
       <td class="pk"></td>
       <td><input type="number" inputmode="decimal" step="0.05" min="-2" max="1" data-k="gamma" value="${pr.gamma}" title="economy-of-scale exponent of ${PNAME[i]}"></td>
-      <td><input type="number" inputmode="decimal" step="0.01" min="0" data-k="beta" value="${pr.beta}" title="transport cost of ${PNAME[i]} per unit distance"></td>`;
+      <td><input type="number" inputmode="decimal" step="0.01" min="0" data-k="beta" value="${pr.beta}"
+        title="transport cost of ${PNAME[i]} per unit distance"></td>
+      <td><input type="number" inputmode="decimal" step="0.5" min="1" data-k="alpha" value="${alphaOf(pr)}"
+        title="production-cost factor of ${PNAME[i]}: a factory makes a unit for α·s^γ; 1 in the standard setup"></td>`;
+    // Start and β stay ≥ 0 and the production-cost factor α ≥ 1; γ is free
     tr.querySelectorAll('input').forEach(inp=>{inp.dataset.t=inp.title;inp.addEventListener('input',()=>{
-      const v=parseFloat(inp.value); if(!isFinite(v))return;
-      pr[inp.dataset.k]=inp.dataset.k==='gamma'?v:Math.max(0,v); checkMono(); syncSales(); E.computeMarkets(); draw();
-    })});
+      const v=parseFloat(inp.value), k=inp.dataset.k; if(!isFinite(v))return;
+      pr[k]=k==='gamma'?v:Math.max(k==='alpha'?1:0,v); checkMono(); syncSales(); E.computeMarkets(); draw();
+      $('pDel').disabled=P.products.length<=1||isTwins();          // the new value may make or break twins
+    });
+    // once typed (Enter, or leaving the field), the field shows the value the model uses: Start, β ≥ 0, α ≥ 1; a
+    // field left empty shows it again
+    inp.addEventListener('change',()=>{const k=inp.dataset.k; inp.value=k==='alpha'?alphaOf(pr):pr[k]})});
     tb.appendChild(tr);
   });
   checkMono(); syncSales();
-  // the products the circle border taxes: all at first, at least one
-  const cp=$('circProds'); cp.innerHTML='';
-  for(const i of [...circOn])if(i>=P.products.length)circOn.delete(i);
-  if(!circOn.size)P.products.forEach((q,i)=>circOn.add(i));
-  P.products.forEach((pr,i)=>{
-    const b=document.createElement('button'); b.textContent=PNAME[i]; b.classList.toggle('on',circOn.has(i));
-    b.style.setProperty('--pc',PCOL[i]); b.style.setProperty('--pt',PTXT[i]); b.title=`the circle taxes product ${PNAME[i]}: click to switch`;
-    b.onclick=()=>{if(circOn.has(i)){if(circOn.size>1)circOn.delete(i)}else circOn.add(i); b.classList.toggle('on',circOn.has(i))};
-    cp.appendChild(b);
-  });
+  // the products the circle border taxes, and those a border drawn by hand taxes (a set each, in the border menu):
+  // all at first, at least one
+  for(const [id,on,who] of [['circProds',circOn,'the circle taxes'],['bordProds',bordOn,'a border you draw taxes']]){
+    const cp=$(id); cp.innerHTML='';
+    for(const i of [...on])if(i>=P.products.length)on.delete(i);
+    // a set that held every product (on.all) still does when products are added, so that a new border taxes a new
+    // product too, unless some product was switched off
+    if(!on.size||on.all)P.products.forEach((q,i)=>on.add(i));
+    on.all=on.size===P.products.length;
+    P.products.forEach((pr,i)=>{
+      const b=document.createElement('button'); b.textContent=PNAME[i]; b.classList.toggle('on',on.has(i));
+      b.style.setProperty('--pc',PCOL[i]); b.style.setProperty('--pt',PTXT[i]);
+      b.title=`${who} product ${PNAME[i]}: click to switch`;
+      b.onclick=()=>{if(on.has(i)){if(on.size>1)on.delete(i)}else on.add(i); on.all=on.size===P.products.length;
+        b.classList.toggle('on',on.has(i))};
+      cp.appendChild(b);
+    });
+  }
   const db=$('domBtns'); db.innerHTML='<span class="dlab">markets</span>';
   for(const i of [...domOn])if(i>=P.products.length)domOn.delete(i);
   P.products.forEach((pr,i)=>{
@@ -1823,10 +1918,11 @@ function syncSales(){
     td.textContent=p0>0?(k<1e4?String(k):k<1e6?Math.round(k/1e3)+'k':+(k/1e6).toPrecision(2)+'M'):'–';
     td.title=p0>0?`a new ${PNAME[i]} factory costs as much as ${k} sales bring`:'no wages: p = 0'});
 }
-// a new product is the most scalable one: lower γ, higher start cost, cheaper transport than all the others
+// a new product is the most scalable one: lower γ, higher start cost, cheaper transport than all the others, and the
+// largest production-cost factor α of them
 $('pAdd').onclick=()=>{const pr=P.products;
   pr.push({start:Math.round(1.6*Math.max(...pr.map(p=>p.start))),gamma:Math.round(100*(Math.min(...pr.map(p=>p.gamma))-0.15))/100,
-    beta:Math.round(1000*0.75*Math.min(...pr.map(p=>p.beta)))/1000});restart()};
+    beta:Math.round(1000*0.75*Math.min(...pr.map(p=>p.beta)))/1000,alpha:Math.max(...pr.map(alphaOf))});restart()};
 $('palSel').onchange=e=>{palName=e.target.value;buildProductUI();refresh()};
 // the economy, free goods (the standard) or buyers pay: a menu in the panel and the golden button above the town. In
 // both the next round works out its own p
@@ -1914,9 +2010,13 @@ $('bPng').onclick=()=>exportPNG('png');
 $('bSq').onclick=()=>exportPNG('sq');
 // fewer products: at least two stay. Going down to one makes twins instead — two products with the numbers of the
 // first — because with a single product an owner has nothing to switch to, and the money of the big companies piles up
-const isTwins=()=>P.products.length===2&&['start','gamma','beta'].every(k=>P.products[0][k]===P.products[1][k]);
+const isTwins=()=>P.products.length===2&&['start','gamma','beta'].every(k=>P.products[0][k]===P.products[1][k])&&
+  alphaOf(P.products[0])===alphaOf(P.products[1]);          // α absent counts as 1 (the twins of pDel copy it)
 $('pDel').onclick=()=>{const pr=P.products;
   if(pr.length>2)pr.pop(); else if(pr.length===2&&!isTwins())P.products=[{...pr[0]},{...pr[0]}]; else return;
+  // a border that taxes some products forgets the one removed, and goes when it taxed only that one
+  for(const b of P.borders)if(b.prods)b.prods=b.prods.filter(k=>k<P.products.length);
+  P.borders=P.borders.filter(b=>!b.prods||b.prods.length);
   restart()};
 $('bStd').onclick=()=>applyPreset('standard');
 // orders per agent n and upkeep μ: in the panel and as menus in the upper right corner of the display
@@ -1955,13 +2055,20 @@ function closeMenus(except){document.querySelectorAll('.tools details').forEach(
 document.querySelectorAll('.tools details').forEach(d=>d.addEventListener('toggle',()=>{if(d.open)closeMenus(d)}));
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.tools'))closeMenus()});
 $('roadF').oninput=e=>{$('roadFV').textContent=(+e.target.value).toFixed(2)};
-const circOn=new Set();       // the products the next circle taxes
+// the products the next circle, and the next border drawn by hand, tax: a set each, switched by the product buttons of
+// the border menu (buildProductUI). A new border carries its set, sorted, as prods; none when it taxes every product
+const circOn=new Set(), bordOn=new Set();
+const prodsOf=on=>on.size<P.products.length?[...on].sort((a,b)=>a-b):undefined;
+// a border drawn by hand through the points pts (from either + border button), with the tax and tariff of the menu
+// and the direction and products of its part "A border you draw"; also the preview while it is drawn
+const drawnBorder=pts=>({pts,tax:+$('taxSel').value,tariff:+$('tarSel').value,oneway:$('dirSel').value==='one',
+  prods:prodsOf(bordOn)});
 // a circular border around the centre of the lattice, enclosing a fraction of its area. It is drawn with the angle
 // decreasing: a one-way border charges goods crossing to the left of the drawing direction, which here is inward
 $('addCircle').onclick=()=>{
   const L=E.L, c=L/2, R=L*Math.sqrt(+$('circA').value/Math.PI), n=Math.max(24,Math.ceil(2*Math.PI*R/1.5)), pts=[];
   for(let k=0;k<=n;k++){const a=-2*Math.PI*k/n; pts.push([c+R*Math.cos(a),c+R*Math.sin(a)])}
-  const prods=circOn.size<P.products.length?[...circOn].sort((a,b)=>a-b):undefined;
+  const prods=prodsOf(circOn);
   P.borders.push({pts,tax:+$('taxSel').value,tariff:+$('tarSel').value,oneway:$('circDir').value==='in',prods});
   closeMenus(); netChanged();
 };
@@ -2019,7 +2126,7 @@ function toolUp(){
   if(Math.hypot(d.cur[0]-last[0],d.cur[1]-last[1])>0.3)pts.push(d.cur);
   if(pts.length<2||polyLen(pts)<1){draw();return}
   if(tool==='addRoad')P.roads.push({pts,f:+$('roadF').value});
-  else P.borders.push({pts,tax:+$('taxSel').value,tariff:+$('tarSel').value,oneway:$('dirSel').value==='one'});
+  else P.borders.push(drawnBorder(pts));
   netChanged();
 }
 // roads (asphalt with a dashed yellow middle line) and borders (dashed red, with the tax, and arrows when one-way),
@@ -2060,8 +2167,9 @@ function regions(){
   const cross=(ax,ay,bx,by,cx,cy,dx,dy)=>{const o=(px,py,qx,qy,rx,ry)=>(qx-px)*(ry-py)-(qy-py)*(rx-px);
     return o(cx,cy,dx,dy,ax,ay)*o(cx,cy,dx,dy,bx,by)<=0&&o(ax,ay,bx,by,cx,cy)*o(ax,ay,bx,by,dx,dy)<=0};
   const shifts=cl?[[0,0]]:[[0,0],[L,0],[-L,0],[0,L],[0,-L]];
+  const [ex,ey]=E.bshift;                     // the borders moved a little, as for the taxes (buildNet)
   for(const bd of P.borders)for(const [sx,sy] of shifts)for(let j=1;j<bd.pts.length;j++){
-    const x0=bd.pts[j-1][0]+sx, y0=bd.pts[j-1][1]+sy, x1=bd.pts[j][0]+sx, y1=bd.pts[j][1]+sy;
+    const x0=bd.pts[j-1][0]+sx+ex, y0=bd.pts[j-1][1]+sy+ey, x1=bd.pts[j][0]+sx+ex, y1=bd.pts[j][1]+sy+ey;
     for(let y=Math.max(0,Math.floor(Math.min(y0,y1))-2);y<=Math.min(L-1,Math.ceil(Math.max(y0,y1))+1);y++)
       for(let x=Math.max(0,Math.floor(Math.min(x0,x1))-2);x<=Math.min(L-1,Math.ceil(Math.max(x0,x1))+1);x++){
         const ax=x+0.5, ay=y+0.5;
@@ -2228,7 +2336,8 @@ function drawNet(at,cell,dpr){
       ctx.fillStyle=dark?'#fecdd3':'#be123c';ctx.fillText(lab,p[0],p[1])}
     ctx.globalAlpha=1};
   P.roads.forEach(s=>road(s.pts,1)); P.borders.forEach(s=>border(s,1));
-  if(toolDrag){const pts=[...toolDrag.pts,toolDrag.cur]; if(tool==='addRoad')road(pts,0.6); else border({pts,tax:+$('taxSel').value,tariff:+$('tarSel').value,oneway:$('dirSel').value==='one'},0.6)}
+  if(toolDrag){const pts=[...toolDrag.pts,toolDrag.cur];       // the road or border being drawn, faded
+    if(tool==='addRoad')road(pts,0.6); else border(drawnBorder(pts),0.6)}
 }
 $('Lsel').onchange=restart;
 $('speed').oninput=e=>{$('speedV').textContent=e.target.value};
@@ -2251,17 +2360,18 @@ function setView(v){
 }
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
 Object.entries(PRESETS).forEach(([k,pr])=>{const b=document.createElement('button');b.className='btn sm';b.textContent=pr.label;b.onclick=()=>applyPreset(k);$('presets').appendChild(b)});
-// The tiny-town tutorial of the pull-down, started by any element with data-action="tiny": the Tiny town preset with
-// the fixed seed 1, so that it runs as the tutorial tells, paused, in the Agents view. The pull-down closes so that
-// the town can be seen; opened again, it comes back to where it was
+// The tiny-town tutorial of the pull-down, started by any element with data-action="tiny" and by the button tiny town
+// above the town: the Tiny town preset with the fixed seed 1, so that it runs as the tutorial tells, paused, in the
+// Agents view. The pull-down closes so that the town can be seen; opened again, it comes back to where it was
 let dropY=-1;
 function startTinyTutorial(){
-  setRun(false); applyPreset('tiny',1); setView('agents');
+  setRun(false); tool=null; syncTools(); applyPreset('tiny',1); setView('agents');   // and no drawing tool left on
   const d=$('titleDrop'); if(d.open){dropY=document.querySelector('.dropbox').scrollTop; d.open=false}
   document.querySelector('.display').scrollIntoView({block:'nearest',behavior:'smooth'});   // buttons, town, read-out
 }
 document.addEventListener('click',e=>{
   if(e.target.closest&&e.target.closest('[data-action="tiny"]')){e.preventDefault(); startTinyTutorial()}});
+$('bTiny').onclick=()=>startTinyTutorial();
 $('titleDrop').addEventListener('toggle',()=>{
   if($('titleDrop').open&&dropY>=0){document.querySelector('.dropbox').scrollTop=dropY; dropY=-1}});
 
@@ -2796,7 +2906,8 @@ function stampParams(oc,scale){
       (pe.next?'; '+pe.next:'')},
     {t:`${P.bc} boundaries`+(P.roads.length?`, ${P.roads.length} road${P.roads.length>1?'s':''}`:'')+
       (P.borders.length?`, ${P.borders.length} border${P.borders.length>1?'s':''}`:'')},
-    ...P.products.map((pr,i)=>({t:`${PNAME[i]}:  Start ${pr.start},  γ ${String(pr.gamma).replace('-','−')},  β ${pr.beta}`,c:PCOL[i]})),
+    ...P.products.map((pr,i)=>({t:`${PNAME[i]}:  Start ${pr.start},  γ ${String(pr.gamma).replace('-','−')},  `+
+      `β ${pr.beta}${alphaOf(pr)!==1?`,  α ${alphaOf(pr)}`:''}`,c:PCOL[i]})),   // α only when it is not 1
   ];
   o.font=`${fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`;
   const sw=fs*0.9, tw=Math.max(...lines.map(l=>{o.font=`${l.b?'600 ':''}${fs}px -apple-system,Segoe UI,Roboto,sans-serif`;return o.measureText(l.t).width+(l.c?sw+5*scale:0)}));
