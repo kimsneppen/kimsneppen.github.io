@@ -797,7 +797,8 @@
         fail saves 40 rounds for a bakery, then 160 rounds for a B factory (8), and so on, and P(τ) has peaks at 40 and
         160 rounds (about 41 % and 33 % of the lives).</p>
       <p><b>Around the high-tech companies</b>: the mean and the median money of the agents, and the mean size of the
-        bread factories and of the ordinary (B) factories, against the distance d to the nearest big company of the most scalable product (one that sells
+        bread factories, of the ordinary (B) factories and of the chip factories themselves (at d = 0 the big ones),
+        against the distance d to the nearest big company of the most scalable product (one that sells
         at least a tenth of what the biggest one sells), summed over the last 100 rounds or over the last two
         thirds of the run. Linear, log–lin (only the vertical axis logarithmic) or log–log; the slider shortens the distance
         axis, for instance to the first 20 cells, where most of the change happens. Close to a big chip company the mean money is high — its owner lives there — and the bakeries sell
@@ -805,7 +806,8 @@
         most likely because the rich order more, and bread is
         bought close by. Some ten cells away both curves are flat. The median changes much less than the mean: the wealth
         sits with a few, not with the whole neighbourhood.</p>
-      <p>Every plot has its own <b>.png</b> and <b>sq</b> buttons to save it as a picture.</p>
+      <p>Every plot has its own <b>.png</b> and <b>sq</b> buttons to save it as a picture: <b>.png</b> in the shape
+        shown, with a title; <b>sq</b> a square one for a paper, without a title and with narrow margins.</p>
 
       <h2 id="r-lessons">Lessons from the model</h2>
       <p>The lessons come from the standard setup — the closed 125 × 125 town with free goods, the Income weight, n = 1,
@@ -1137,7 +1139,7 @@
       <label class="win" title="the time window: from now back in time, in steps of a factor 1.5; at the right end, the whole run">window
         <input type="range" id="chartWin" min="0" max="0" step="1" value="0"><span id="chartWinV"></span></label>
       <span class="chartnote" id="chartNote"></span>
-      <span class="plotbtns"><button data-plot="chart" data-k="png" title="save this plot as a PNG picture, with title and axis labels">.png</button><button data-plot="chart" data-k="sq" title="save this plot in a square picture, with title and axis labels">sq</button></span>
+      <span class="plotbtns"><button data-plot="chart" data-k="png" title="save this plot as a PNG picture, with title and axis labels">.png</button><button data-plot="chart" data-k="sq" title="save this plot in a square picture for a paper: axis labels, no title">sq</button></span>
     </div>
     <div class="chartbox"><canvas id="chart"></canvas></div>
   </section>
@@ -1189,7 +1191,7 @@
     </div>
   </section>
   <section class="display">
-    <div class="cardhead"><h2>Around the high-tech companies</h2><span class="sub" id="nearSub">money, and the size of the bread and ordinary factories, against the distance to the nearest big company of the most scalable product</span></div>
+    <div class="cardhead"><h2>Around the high-tech companies</h2><span class="sub" id="nearSub">money, and the size of the bread, ordinary and chip factories, against the distance to the nearest big company of the most scalable product</span></div>
     <div class="chartbar">
       <div class="seg" id="nearWin" title="sum over the last 100 rounds, or over the last two thirds of the run since the last change of a parameter">
         <button data-w="r100" class="on">last 100 rounds</button><button data-w="avg">last ⅔ of run</button></div>
@@ -1886,7 +1888,7 @@ function restart(seed){
   $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
   P.L=L1; P.seed=Number.isInteger(seed)?seed:(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.scaleT=-1;
   document.querySelector('.display').classList.toggle('tiny',L1<=16);      // room for a tiny town (CSS, draw)
-  E=buildEcon(P); flashes=[]; sinking.clear();
+  E=buildEcon(P); flashes=[]; sinking.clear(); frozenAt=0;
   distReset();
   if(psel>=P.products.length)psel=0;
   buildProductUI(); refresh(); drawDist();
@@ -2098,7 +2100,6 @@ function setFlashMode(m){
   if(m==='off')flashes=[]; draw();
 }
 $('bFlash').onclick=()=>setFlashMode({off:'yellow',yellow:'colour',colour:'off'}[flashMode]);
-['bStep','bStep2'].forEach(b=>$(b).addEventListener('click',()=>{if(flashes.length||sinking.size)kickFlash()}));
 // every change of a model parameter in the panel starts a new averaging window for the distributions
 $('ctlPanel').addEventListener('input',e=>{if(!['speed','delaySel','palSel'].includes(e.target.id))distMark()});
 $('ctlPanel').addEventListener('change',e=>{if(!['speed','delaySel','palSel'].includes(e.target.id))distMark()});
@@ -2240,12 +2241,14 @@ const domOn=new Set();
 function drawDomains(at,dpr){
   if(!domOn.size)return;
   const L=E.L, LL=L*L, dom=new Int32Array(LL);
-  ctx.save(); ctx.lineCap='round'; ctx.lineWidth=Math.max(1.2,1.5*dpr); ctx.setLineDash([0.01,3*dpr]);
+  // on the white ground bigger dots, in a light colour made darker (B's light green would vanish on the light ground)
+  ctx.save(); ctx.lineCap='round'; ctx.lineWidth=Math.max(1.2,(dark?1.5:2.2)*dpr);
+  ctx.setLineDash([0.01,(dark?3:4)*dpr]);
   for(const i of domOn){
     if(i>=E.N)continue;
-    const F=E.F[i], sup=E.sup[i], A=E.area[i];
+    const F=E.F[i], sup=E.sup[i], A=E.area[i], q=PRGB[i], lum=(0.299*q[0]+0.587*q[1]+0.114*q[2])/255;
     for(let r=0;r<LL;r++)dom[r]=F[r]&&A[r]>0?r:sup[r];
-    const c=dark?PRGB[i].map(v=>Math.round(v+(255-v)*0.35)):PRGB[i];   // a lighter tint on the black ground
+    const c=dark?q.map(v=>Math.round(v+(255-v)*0.35)):q.map(v=>Math.round(v*Math.min(1,0.4/Math.max(0.01,lum))));
     ctx.strokeStyle=`rgb(${c})`; ctx.beginPath();
     const seg=(xa,ya,xb,yb)=>{ctx.moveTo(...at(xa,ya));ctx.lineTo(...at(xb,yb))};
     for(let x=0;x<L-1;x++){let y0=-1;          // between columns x and x+1, joined along y
@@ -2450,13 +2453,14 @@ $('speed').oninput=e=>{$('speedV').textContent=e.target.value};
 // ▶ with a small s, lit while it runs). A new run ends the loop of the old one (loopTok)
 let slow=false;
 function setRun(on,sl){
+  if(running&&!on)frozenAt=animT||performance.now();   // a pause: the flashes and sinking towers stop where they are
   running=on; slow=on&&!!sl; $('bRun').textContent=on?'Pause':'Run'; $('bRun2').textContent=on?'❚❚':'▶';
   $('bSlow2').classList.toggle('on',slow);
   if(on){const t=++loopTok;requestAnimationFrame(()=>loop(t))}
 }
 $('bRun').onclick=$('bRun2').onclick=()=>setRun(!running);
 $('bSlow2').onclick=()=>setRun(!slow,true);
-$('bStep').onclick=$('bStep2').onclick=()=>{doStep();refresh()};
+$('bStep').onclick=$('bStep2').onclick=()=>{doStep();refresh();kickFlash()};    // the round's flashes play out
 $('bReset').onclick=$('bReset2').onclick=restart;
 $('metric').onchange=()=>drawChart();
 // the time series: the vertical axis per quantity (true: logarithmic), and the time window shown, as for the fortunes
@@ -2498,7 +2502,7 @@ $('ctlClose').onclick=()=>setCtlOpen(false);
 document.addEventListener('keydown',e=>{
   if(e.target.closest('input,select,textarea')||e.ctrlKey||e.metaKey||e.altKey)return;
   if(e.key===' '){e.preventDefault();setRun(!running)}
-  else if(e.key==='s'||e.key==='S'){e.preventDefault();doStep();refresh()}
+  else if(e.key==='s'||e.key==='S'){e.preventDefault();doStep();refresh();kickFlash()}
   else if(e.key==='r'||e.key==='R'){e.preventDefault();restart()}
   else if(e.key==='k'||e.key==='K'){e.preventDefault();setCtlOpen(!document.body.classList.contains('ctl-open'))}
   else if(e.key==='Escape'){if($('titleDrop').open)$('titleDrop').open=false;else if(document.body.classList.contains('ctl-open'))setCtlOpen(false)}
@@ -2510,6 +2514,7 @@ document.querySelectorAll('.toc a').forEach(a=>a.onclick=e=>{e.preventDefault();
 document.addEventListener('pointerdown',e=>{const d=$('titleDrop');if(d.open&&!d.contains(e.target))d.open=false});
 
 function doStep(){
+  thaw();                                   // a new round: the flashes and sinking towers of a paused one go on
   if($('anneal').checked){
     P.tmul=Math.max(0.01,P.tmul*Math.exp(-parseFloat($('aRate').value)));
     $('tmR').value=Math.log10(P.tmul);$('tmV').textContent=fmt(P.tmul);
@@ -2712,7 +2717,7 @@ function draw3D(){
   const edge=dark?'rgba(0,0,0,.55)':'rgba(22,35,59,.35)', seg=[];
   if(mUp)goldStart();                          // the golden glass is painted over all the factory towers at the end
   // a closed company's tower sinks smoothly to zero over one round, on top of what the agent still makes
-  const nowS=performance.now();
+  const nowS=animNow();
   for(const [r,sk] of sinking)if(nowS-sk.t>=sk.dur||noFlash)sinking.delete(r);
   for(const r of V3.order){
     const hm=mUp?fm(E.money[r]):0, sk=sinking.get(r);
@@ -2771,6 +2776,13 @@ function evR3(ev){
 // {cell, base: point on the ground, top(size) → top of a tower of that size, pillar(money) → [ground, end] or null}.
 const FLASH_MS=650;
 let sinking=new Map(), stepMs=300, lastStepT=0;
+// The clock of the flashes and of the sinking towers (animT: the time of the picture drawn last) stands still from a
+// pause until the next round (frozenAt: the time of the last picture before the pause), so that the picture stays as
+// it was at the click: a hover or a turn of the view redraws it unchanged
+let frozenAt=0, animT=0;
+const animNow=()=>frozenAt||animT||performance.now();
+function thaw(){if(!frozenAt)return; const d=performance.now()-frozenAt; frozenAt=0;
+  for(const fl of flashes)fl.t+=d; for(const sk of sinking.values())sk.t+=d}
 // small lightnings along a segment g0–g1 of the canvas, one per three cells of length at most as many as fl has bolts
 function drawBolts(g0,g1,fl,c,b,now,cell,dpr,shift){
   const len=Math.hypot(g1[0]-g0[0],g1[1]-g0[1]), n=Math.max(1,Math.min(fl.bolts.length,Math.round(len/(3*cell))));
@@ -2789,7 +2801,7 @@ function drawBolts(g0,g1,fl,c,b,now,cell,dpr,shift){
 }
 function drawFlashes(pos){
   if(!flashes.length||noFlash)return;
-  const now=performance.now(), dpr=EXPORT_DPR||window.devicePixelRatio||1;
+  const now=animNow(), dpr=EXPORT_DPR||window.devicePixelRatio||1;
   flashes=flashes.filter(fl=>now-fl.t<FLASH_MS);
   for(const fl of flashes){
     const a=(now-fl.t)/FLASH_MS, b=1-a, p=pos(fl.r);
@@ -2805,7 +2817,7 @@ function drawFlashes(pos){
   }
 }
 function kickFlash(){
-  if(flashRAF)return;
+  if(flashRAF||frozenAt)return;             // paused: the picture stands still
   flashRAF=requestAnimationFrame(()=>{flashRAF=0; if(!flashes.length&&!sinking.size)return; draw(); if(flashes.length||sinking.size)kickFlash()});
 }
 // the button that switches the numbers of the regions between now and the average (only with borders)
@@ -2814,6 +2826,7 @@ function syncAvgBtn(){const b=$('bAvg'); b.style.display=P.borders.length?'':'no
 $('bAvg').onclick=()=>{regionAvg=!regionAvg; draw()};
 function draw(){
   if(!E)return;
+  if(!frozenAt)animT=performance.now();         // the time of this picture, for the flashes and sinking towers
   syncAvgBtn();
   regionBoxes=[];                                 // the numbers of the regions, where they are drawn this time
   if(view==='3d'){draw3D();return}
@@ -3278,9 +3291,21 @@ function legendBox(g,items,x,y,dpr,left,sc){
     else if(l.dash){const w=g.measureText(l.t).width; g.strokeStyle=l.dash; g.lineWidth=0.8*z; g.setLineDash([3*z,2*z]);
       g.beginPath(); g.moveTo(x-w-19*z,yy+5.5*z); g.lineTo(x-w-4*z,yy+5.5*z); g.stroke(); g.setLineDash([])}});
 }
+// a legend in one row, centred at x with its top at y, on a white backing — in the pictures of the time series at the
+// top inside the plot; the text made smaller if the row would be wider than maxW. items: {t, c: colour of its square}
+function legendRow(g,items,x,y,dpr,maxW){
+  let z=dpr*FZ; const iw=l=>{g.font=pfont(11,z); return g.measureText(l.t).width+(l.c?14*z:0)};
+  const tw0=items.reduce((a,l)=>a+iw(l),0)+12*z*(items.length-1); if(tw0>maxW)z*=maxW/tw0;
+  const tw=Math.min(tw0,maxW); let xx=x-tw/2;
+  g.fillStyle='rgba(255,255,255,.86)'; g.fillRect(xx-5*z,y-3*z,tw+10*z,16*z);
+  g.textAlign='left'; g.textBaseline='top';
+  for(const l of items){const w=iw(l); if(l.c){g.fillStyle=l.c; g.fillRect(xx,y+1*z,9*z,9*z)}
+    g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,xx+(l.c?14*z:0),y); xx+=w+12*z}
+}
 function sup10(k){const s={'-':'⁻',0:'⁰',1:'¹',2:'²',3:'³',4:'⁴',5:'⁵',6:'⁶',7:'⁷',8:'⁸',9:'⁹'};
   return k===0?'1':k===1?'10':'10'+String(k).split('').map(c=>s[c]).join('')}
-// out (for a saved picture): {dpr, ylabel} — the canvas is already sized; wider margins and a y-axis label
+// out (for a saved picture): {dpr, ylabel, sq} — the canvas is already sized; wider margins and a y-axis label; sq (a
+// square picture, for a paper): no title
 // opt: {marks: [{x, c}] dashed vertical lines, ydec: show only this many decades of the y axis (from the top; 0: all),
 // empty: the lines of text shown when there is nothing to plot}.
 // Returns the number of decades the y axis needs for all the points.
@@ -3288,7 +3313,7 @@ function logPlot(canvas,series,B,xlabel,title,legend,out,opt){
   opt=opt||{};
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
   if(!out)g.clearRect(0,0,W,H);
-  const z=dpr*FZ, pl=(out?46:30)*z, pr=12*z, pt=(out?32:25)*z, pb=(out?32:30)*z, w=W-pl-pr, h=H-pt-pb;
+  const z=dpr*FZ, pl=(out?46:30)*z, pr=12*z, pt=(out&&out.sq?8:out?32:25)*z, pb=(out?32:30)*z, w=W-pl-pr, h=H-pt-pb;
   g.font=pfont(11,z);
   // density P(x) = count / (total · bin width), at the geometric bin centres
   const pts=series.map(se=>{const tot=se.h.reduce((a,b)=>a+b,0), out=[];
@@ -3298,7 +3323,7 @@ function logPlot(canvas,series,B,xlabel,title,legend,out,opt){
       else out.push([Math.log10(Math.sqrt(x0*x1)),Math.log10(c/(tot*(x1-x0)))])}});
     return {c:se.c,p:out}});
   const all=pts.flatMap(s=>s.p);
-  {const tx=out?pl:4*dpr; plotTitle(g,title,tx,4*z,z,W-tx-4*dpr)} g.font=pfont(11,z);
+  if(title){const tx=out?pl:4*dpr; plotTitle(g,title,tx,4*z,z,W-tx-4*dpr)} g.font=pfont(11,z);
   if(!all.length){const msg=opt.empty||['no data yet'], k=Math.min(1,(W-pl-pr)/Math.max(...msg.map(s=>g.measureText(s).width)));
     g.fillStyle='#8391ab'; g.textAlign='left'; g.font=pfont(11*k,z);
     msg.forEach((s,i)=>g.fillText(s,pl,pt+h/2+(i-(msg.length-1)/2)*15*k*z)); return 0}
@@ -3411,17 +3436,19 @@ $('survDec').oninput=e=>{survDec=+e.target.value; survDecAll=survDec>=+e.target.
 // ---- money and company size against the distance d to the nearest big company of the most scalable product (the
 // lowest γ): one that sells at least a tenth of what the biggest of that product sells. Every round adds, for each
 // whole number of cells d, the number of agents, their money (sum and histogram, for the median), and the number and
-// sales of the factories of the least scalable product (the highest γ); the plots sum the last NEARN rounds ----
+// sales of the factories of the two least scalable products (the highest γ) and of the most scalable one; the plots sum
+// the last NEARN rounds ----
 const NEARN=100, NEARSNAP=120; let NEAR=null, nearScale='lin', nearWin='r100';     // nearScale: lin, loglin (y log) or log
 const NMB=nb(MB);
 // per distance (whole cells): the number of agents, their money (sum and histogram, for the median), and the number
-// and sales of the factories of the two least scalable products. Kept for the last NEARN rounds (one record per round),
+// and sales of the factories of the two least scalable products and of the most scalable one (three slots, -1 when the
+// products are fewer). Kept for the last NEARN rounds (one record per round),
 // and as running sums over the whole run with snapshots, so that the sum over the last two thirds since the last
 // change of a parameter is a difference (snapshots every few rounds: at most NEARSNAP, thinned out as the run grows)
 function nearReset(){const D=Math.ceil(E.L*Math.SQRT2)+2;
   NEAR={ring:[],D,cum:nearZero(D),t:0,snaps:[],every:5,key:''}}
 function nearZero(D){return {cnt:new Float64Array(D),msum:new Float64Array(D),mh:new Float64Array(D*NMB),
-  ac:[new Float64Array(D),new Float64Array(D)],as:[new Float64Array(D),new Float64Array(D)]}}
+  ac:[0,1,2].map(()=>new Float64Array(D)),as:[0,1,2].map(()=>new Float64Array(D))}}
 // the most scalable product (the lowest γ, the last of equals) and the two least scalable ones (the highest γ first)
 function nearProducts(){const pr=P.products; let ib=0; pr.forEach((q,i)=>{if(q.gamma<=pr[ib].gamma)ib=i});
   const order=pr.map((q,i)=>i).sort((a,b)=>pr[b].gamma-pr[a].gamma||a-b);
@@ -3433,16 +3460,16 @@ function nearRecord(){
   const big=[]; if(mx>0)for(let r=0;r<LL;r++)if(F[r]&&S[r]>=Math.max(1,0.1*mx))big.push(r);
   if(!big.length)return;
   const e={cnt:new Float32Array(D),msum:new Float32Array(D),mh:new Float32Array(D*NMB),
-    ac:[new Float32Array(D),new Float32Array(D)],as:[new Float32Array(D),new Float32Array(D)],ib,il,il2};
-  const ls=[il,il2];
+    ac:[0,1,2].map(()=>new Float32Array(D)),as:[0,1,2].map(()=>new Float32Array(D)),ib,il,il2};
+  const ls=[il,il2,ib!==il&&ib!==il2?ib:-1];
   for(let r=0;r<LL;r++){
     let d=Infinity; for(const b of big){const q=E.pdist(b,r); if(q<d)d=q}
     const k=Math.min(D-1,Math.floor(d)), v=E.money[r];
     e.cnt[k]++; e.msum[k]+=v; if(v>0){const j=binOf(MB,v); if(j>=0&&j<NMB)e.mh[k*NMB+j]++}
-    for(let q=0;q<2;q++){const i=ls[q]; if(i>=0&&E.F[i][r]){e.ac[q][k]++; e.as[q][k]+=E.sales[i][r]}}
+    for(let q=0;q<3;q++){const i=ls[q]; if(i>=0&&E.F[i][r]){e.ac[q][k]++; e.as[q][k]+=E.sales[i][r]}}
   }
   NEAR.ring.push(e); if(NEAR.ring.length>NEARN)NEAR.ring.shift();
-  const c=NEAR.cum; for(let k=0;k<D;k++){c.cnt[k]+=e.cnt[k];c.msum[k]+=e.msum[k];for(let q=0;q<2;q++){c.ac[q][k]+=e.ac[q][k];c.as[q][k]+=e.as[q][k]}}
+  const c=NEAR.cum; for(let k=0;k<D;k++){c.cnt[k]+=e.cnt[k];c.msum[k]+=e.msum[k];for(let q=0;q<3;q++){c.ac[q][k]+=e.ac[q][k];c.as[q][k]+=e.as[q][k]}}
   for(let j=0;j<D*NMB;j++)c.mh[j]+=e.mh[j];
   NEAR.t=E.t;
   if(E.t%NEAR.every===0){
@@ -3455,7 +3482,7 @@ function nearRecord(){
 function nearSums(){
   const D=NEAR.D;
   if(nearWin==='r100'){const z=nearZero(D);
-    for(const e of NEAR.ring){for(let k=0;k<D;k++){z.cnt[k]+=e.cnt[k];z.msum[k]+=e.msum[k];for(let q=0;q<2;q++){z.ac[q][k]+=e.ac[q][k];z.as[q][k]+=e.as[q][k]}}
+    for(const e of NEAR.ring){for(let k=0;k<D;k++){z.cnt[k]+=e.cnt[k];z.msum[k]+=e.msum[k];for(let q=0;q<3;q++){z.ac[q][k]+=e.ac[q][k];z.as[q][k]+=e.as[q][k]}}
       for(let j=0;j<D*NMB;j++)z.mh[j]+=e.mh[j]}
     return {...z,rounds:NEAR.ring.length,from:E.t-NEAR.ring.length+1}}
   const t0=DH?DH.t0:0, ta=t0+Math.floor((E.t-t0)/3); let a=null;
@@ -3483,28 +3510,30 @@ function nearData(){
       if(!cur||cur.j!==j){cur={j,lo:k,hi:k};groups.push(cur)} else cur.hi=k}
     groups.forEach(g=>g.x=Math.sqrt(g.lo*(g.hi+1)))}
   else{const wb=Math.max(1,Math.ceil((km+1)/30)); for(let k0=0;k0<=km;k0+=wb)groups.push({lo:k0,hi:Math.min(km,k0+wb-1),x:k0+wb/2})}
-  const mean=[], median=[], size=[[],[]];
+  const mean=[], median=[], size=[[],[],[]];
   for(const g of groups){
-    let c=0,ms=0; const ac=[0,0], as=[0,0], h=new Float64Array(NMB);
-    for(let k=g.lo;k<=g.hi;k++){c+=cnt[k];ms+=msum[k];for(let q=0;q<2;q++){ac[q]+=acs[q][k];as[q]+=ass[q][k]}
+    let c=0,ms=0; const ac=[0,0,0], as=[0,0,0], h=new Float64Array(NMB);
+    for(let k=g.lo;k<=g.hi;k++){c+=cnt[k];ms+=msum[k];for(let q=0;q<3;q++){ac[q]+=acs[q][k];as[q]+=ass[q][k]}
       for(let j=0;j<NMB;j++)h[j]+=mh[k*NMB+j]}
     if(c>=20){mean.push([g.x,ms/c]);
       let need=c/2-(c-h.reduce((a,b)=>a+b,0)), med=0;
       for(let j=0;j<NMB&&need>0;j++){if(need<=h[j]){med=Math.pow(10,MB.lo+(j+need/h[j])/MB.per);break} need-=h[j]}
       if(med>0)median.push([g.x,med])}
-    for(let q=0;q<2;q++)if(ac[q]>=5)size[q].push([g.x,as[q]/ac[q]]);
+    for(let q=0;q<3;q++)if(ac[q]>=5)size[q].push([g.x,as[q]/ac[q]]);
   }
   const last=NEAR.ring[NEAR.ring.length-1];
   return {ib:last.ib,il:last.il,il2:last.il2,rounds:z.rounds,from:z.from,mean,median,size,xr,xmax:xr.dmax<Infinity?xr.dmax:0};
 }
 // y against x for a few series. series: [{c, t (legend), p: [[x,y], …]}]; o: {title, xl, yl, scale: lin | loglin (only
-// y logarithmic) | log (both), xmax: the end of the x axis (0: as far as the points go)}; out (a saved picture): {dpr}
+// y logarithmic) | log (both), xmax: the end of the x axis (0: as far as the points go)}; out (a saved picture): {dpr,
+// sq: a square picture, for a paper — no title, and a left margin only as wide as the numbers need}
 function xyPlot(canvas,series,o,out){
-  const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d');
+  const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d'), sq=out&&out.sq;
   if(!out)g.clearRect(0,0,W,H);
-  const z=dpr*FZ, pl=(out?48:46)*z, pr=10*z, pt=(out?32:25)*z, pb=(out?32:30)*z, w=W-pl-pr, h=H-pt-pb;
+  const z=dpr*FZ, pr=10*z, pt=(sq?8:out?32:25)*z, pb=(out?32:30)*z, h=H-pt-pb;
+  let pl=(out?48:46)*z, w=W-pl-pr;
   const xl=o.scale==='log', yl=o.scale==='log'||o.scale==='loglin';      // which axes are logarithmic
-  {const tx=out?pl:4*dpr; plotTitle(g,o.title,tx,4*z,z,W-tx-4*dpr)} g.font=pfont(11,z);
+  if(o.title){const tx=out?pl:4*dpr; plotTitle(g,o.title,tx,4*z,z,W-tx-4*dpr)} g.font=pfont(11,z);
   const ok=q=>(!xl||q[0]>0)&&(!yl||q[1]>0), all=series.flatMap(s=>s.p).filter(ok);
   if(!all.length){g.fillStyle='#8391ab';g.textAlign='left';g.fillText('no data yet',pl,pt+h/2);return}
   const fx=v=>xl?Math.log10(v):v, fy=v=>yl?Math.log10(v):v;
@@ -3514,11 +3543,12 @@ function xyPlot(canvas,series,o,out){
   if(yl){y0=Math.floor(Math.min(...all.map(q=>fy(q[1]))));y1=Math.ceil(Math.max(...all.map(q=>fy(q[1]))));if(y1<=y0)y1=y0+1}
   else{y0=0;y1=Math.max(...all.map(q=>q[1]))*1.08||1}
   const X=v=>pl+(fx(v)-x0)/(x1-x0)*w, Y=v=>pt+h-(fy(v)-y0)/(y1-y0)*h;
-  const xt=[], yt=[];
-  if(xl)for(let k=x0;k<=x1;k++)xt.push([k,pl+(k-x0)/(x1-x0)*w]); else for(const v of niceTicks(x0,x1,10))xt.push([v,X(v)]);
+  const xt=[], yt=[], fyt=yl?sup10:fmtTick;
   if(yl)for(let k=y0;k<=y1;k++)yt.push([k,pt+h-(k-y0)/(y1-y0)*h]); else for(const v of niceTicks(y0,y1,8))yt.push([v,Y(v)]);
-  drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:xl?sup10:fmtTick,fy:yl?sup10:fmtTick,linX:!xl,linY:!yl});
-  g.fillStyle='#4a5872'; axisTitle(g,o.xl,W/2,H-2*dpr,z,W-8*dpr);
+  if(sq){pl=Math.max(30*z,Math.max(...yt.map(([v])=>g.measureText(fyt(v)).width))+8*dpr+17*z); w=W-pl-pr}
+  if(xl)for(let k=x0;k<=x1;k++)xt.push([k,pl+(k-x0)/(x1-x0)*w]); else for(const v of niceTicks(x0,x1,10))xt.push([v,X(v)]);
+  drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:xl?sup10:fmtTick,fy:fyt,linX:!xl,linY:!yl});
+  const xc=sq?pl+w/2:W/2; g.fillStyle='#4a5872'; axisTitle(g,o.xl,xc,H-2*dpr,z,2*Math.min(xc,W-xc)-8*dpr);
   if(o.yl){g.save();g.translate(8*z,pt+h/2);g.rotate(-Math.PI/2);g.textAlign='center';g.textBaseline='middle';g.fillText(o.yl,0,0);g.restore()}
   g.save(); g.beginPath(); g.rect(pl,pt-4*dpr,w+4*dpr,h+8*dpr); g.clip();
   for(const se of series){const q=se.p.filter(ok); if(!q.length)continue;
@@ -3531,15 +3561,18 @@ function xyPlot(canvas,series,o,out){
 // the two plots: their data and labels, for the screen and the saved pictures
 function nearPlots(){
   const d=nearData(); if(!d)return null;
-  const B=PNAME[d.ib], A=PNAME[d.il], A2=d.il2>=0?PNAME[d.il2]:null;
+  const B=PNAME[d.ib], A=PNAME[d.il], A2=d.il2>=0?PNAME[d.il2]:null, own=d.ib!==d.il&&d.ib!==d.il2;
+  const names=[A,A2,own?B:null].filter(Boolean);
+  const nameList=names.length>1?names.slice(0,-1).join(', ')+' and '+names[names.length-1]:A;
   const span=nearWin==='r100'?`summed over the last ${d.rounds} rounds`:`summed over rounds ${d.from}–${E.t} (about the last ⅔ since the last parameter change)`;
   return {d,note:`d: the distance to the nearest big ${B} company — a factory of the most scalable product (γ = ${String(P.products[d.ib].gamma).replace('-','−')}) that sells at least a tenth of what the biggest one sells · ${span}`+(nearScale==='log'?' · the owners of these companies, at distance 0, are left out on the log–log scale':''),
     nearM:{series:[{c:'#c2410c',t:'mean wealth',p:d.mean},{c:'#2563eb',t:'median wealth',p:d.median}],
       o:{title:`wealth against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Wealth',scale:nearScale,xmax:d.xmax},
       title:`Mean and median wealth against the distance to the nearest big ${B} company`},
-    nearS:{series:[{c:PCOL[d.il]||'#16233b',t:`${A} factories`,p:d.size[0]},...(A2?[{c:PCOL[d.il2]||'#4a5872',t:`${A2} factories`,p:d.size[1]}]:[])],
+    nearS:{series:[{c:PCOL[d.il]||'#16233b',t:`${A} factories`,p:d.size[0]},...(A2?[{c:PCOL[d.il2]||'#4a5872',t:`${A2} factories`,p:d.size[1]}]:[]),
+      ...(own?[{c:PCOL[d.ib]||'#be123c',t:`${B} factories`,p:d.size[2]}]:[])],
       o:{title:`factory size against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Factory size',scale:nearScale,xmax:d.xmax},
-      title:`Mean size of the ${A}${A2?' and '+A2:''} factories against the distance to the nearest big ${B} company`}};
+      title:`Mean size of the ${nameList} factories against the distance to the nearest big ${B} company`}};
 }
 function drawNear(){
   const q=nearPlots();
@@ -3570,14 +3603,15 @@ function fortPlot(canvas,out){
   const wnd=fortWindow(), t1=E.t, t0=wnd.t0;
   if(!out){const sl=$('fortWin'); sl.max=wnd.K; sl.value=wnd.k;
     $('fortWinV').textContent=wnd.all?`all ${t1} rounds`:`last ${t1-t0} rounds`}
-  const from=lifeZero?'since the last time its money was zero':'from its last bankruptcy on';
-  const title=out?(rich?`Money of the ${fortN} richest agents, each ${from}`:`Money of ${fortN} agents picked at random, each ${from}`)+' — round '+E.t
+  const from=lifeZero?'since the last time its money was zero':'from its last bankruptcy on', sq=out&&out.sq;
+  // a square picture (for a paper) has neither the title nor the legend: the plot alone, with its axes
+  const title=sq?'':out?(rich?`Money of the ${fortN} richest agents, each ${from}`:`Money of ${fortN} agents picked at random, each ${from}`)+' — round '+E.t
     :(rich?`the ${fortN} largest fortunes`:`${fortN} agents at random`);
   // the legend in a row of its own over the plot, beside the title if there is room: the lines end at the upper right
   const leg=[...P.products.map((q,i)=>({c:PCOL[i],t:'makes '+PNAME[i],ts:PNAME[i]})),{c:'#9aa3b5',t:'no factory, or a new one',ts:'none'},
     {t:lifeZero?'× money 0':'× bankrupt',ink:'#be123c'},...(rich&&!lifeZero?[{t:'○ fortune gone',ink:'#4a5872'}]:[])];
   g.font=font(11.5,1); const ttw=g.measureText(title).width; g.font=font(11);
-  const pl=(out?46:38)*z, pr=6*z, tx=out?pl:4*dpr, iw=l=>g.measureText(l.t).width+(l.c?14*z:0);
+  let pl=(out?46:38)*z; const pr=6*z, tx=out?pl:4*dpr, iw=l=>g.measureText(l.t).width+(l.c?14*z:0);
   // the legend in rows, in reading order, each row right-aligned
   const layout=items=>{const lw=items.reduce((a,l)=>a+iw(l)+10*z,-10*z), beside=tx+ttw+14*z+lw<=W-pr, rows=[];
     const room=W-pr-(beside?tx+ttw+14*z:tx); let row=[], used=0;
@@ -3585,10 +3619,10 @@ function fortPlot(canvas,out){
     rows.push(row);
     for(const r of rows){let x=W-pr; for(let k=r.length-1;k>=0;k--){r[k].x=x; x-=r[k].tw+10*z}}
     return {beside,rows}};
-  let {beside,rows}=layout(leg);
+  let {beside,rows}=sq?{beside:true,rows:[]}:layout(leg);
   if(rows.length>2)({beside,rows}=layout(leg.map(l=>({...l,t:l.ts||l.t}))));
-  const pt=(out?32:25)*z+(beside?0:rows.length*15*z), pb=(out?32:30)*z, w=W-pl-pr, h=H-pt-pb;
-  plotTitle(g,title,tx,4*z,z,W-tx-pr); g.font=font(11);
+  const pt=sq?8*z:(out?32:25)*z+(beside?0:rows.length*15*z), pb=(out?32:30)*z, h=H-pt-pb; let w=W-pl-pr;
+  if(title)plotTitle(g,title,tx,4*z,z,W-tx-pr); g.font=font(11);
   rows.forEach((row,j)=>row.forEach(({l,x,tw})=>{const y=(beside?4:19)*z+j*15*z;
     g.textAlign='right'; g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,x,y); if(l.c){g.fillStyle=l.c; g.fillRect(x-tw,y+1*z,9*z,9*z)}}));
   g.textAlign='left';
@@ -3610,11 +3644,12 @@ function fortPlot(canvas,out){
   const yv=v=>fortLog?Math.max(FLOOR,Math.log10(Math.max(v,1e-12))):v;
   const X=t=>pl+(t-t0)/Math.max(1,t1-t0)*w, Y=v=>pt+h-(yv(v)-ylo)/(yhi-ylo)*h;
   // grid and axes: ticks about every 48 px along the rounds
-  const xs=Math.max(1,niceNum(Math.max(1,t1-t0)/Math.max(4,Math.min(12,Math.floor(w/(40*dpr)))))), xt=[], yt=[];
-  for(let k=Math.ceil(t0/xs)*xs;k<=t1;k+=xs)xt.push([k,X(k)]);
-  const ys=fortLog?1:niceNum(yhi/9);
+  const ys=fortLog?1:niceNum(yhi/9), yt=[], fyt=fortLog?sup10:v=>ys>=1?String(Math.round(v)):fmt(v,1);
   if(fortLog)for(let k=ylo;k<=yhi;k++)yt.push([k,pt+h-(k-ylo)/(yhi-ylo)*h]); else for(let v=0;v<=yhi;v+=ys)yt.push([v,Y(v)]);
-  drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:v=>String(Math.round(v)),fy:fortLog?sup10:v=>ys>=1?String(Math.round(v)):fmt(v,1),linX:true,linY:!fortLog});
+  if(sq){pl=Math.max(30*z,Math.max(...yt.map(([v])=>g.measureText(fyt(v)).width))+8*dpr+17*z); w=W-pl-pr}
+  const xs=Math.max(1,niceNum(Math.max(1,t1-t0)/Math.max(4,Math.min(12,Math.floor(w/(40*dpr)))))), xt=[];
+  for(let k=Math.ceil(t0/xs)*xs;k<=t1;k+=xs)xt.push([k,X(k)]);
+  drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:v=>String(Math.round(v)),fy:fyt,linX:true,linY:!fortLog});
   g.fillStyle='#4a5872'; g.textAlign='center'; g.textBaseline='bottom'; g.fillText('round',pl+w/2,H-2*dpr);
   if(out){g.save();g.translate(8*z,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';
     g.fillText('money M of the agent'+(fortLog?', log scale':''),0,0);g.restore()}
@@ -3662,17 +3697,18 @@ function setLife(z){lifeZero=z; document.querySelectorAll('#lifeSeg button').for
   if(AH&&E){AH.slots=[]; AH.ended=[]; fillSlots()} drawDist()}
 document.querySelectorAll('#lifeSeg button').forEach(b=>b.onclick=()=>setLife(b.dataset.e==='zero'));
 
-// ---------- pictures of the plots: .png in the shape shown, sq in a square; both with title and axis labels ----------
+// ---------- pictures of the plots: .png in the shape shown, with a title; sq in a square, for a paper: no title, and
+// the margins only as wide as the numbers need; both with axis labels ----------
 function exportPlot(which,kind,btn){
   const src=$({chart:'chart',money:'cMoney',size:'cSize',surv:'cSurv',fort:'cFort',nearM:'cNearM',nearS:'cNearS'}[which]), r=src.getBoundingClientRect();
-  const dpr=2, W=kind==='sq'?1000:Math.round(Math.max(r.width,420)*dpr), H=kind==='sq'?1000:Math.round(Math.max(r.height+60,300)*dpr);
+  const sq=kind==='sq', dpr=2, W=sq?1000:Math.round(Math.max(r.width,420)*dpr), H=sq?1000:Math.round(Math.max(r.height+60,300)*dpr);
   const c=document.createElement('canvas'); c.width=W; c.height=H;
   const g=c.getContext('2d'); g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
-  if(which==='chart')drawChart({canvas:c,dpr});
-  else if(which==='fort')fortPlot(c,{dpr});
+  if(which==='chart')drawChart({canvas:c,dpr,sq});
+  else if(which==='fort')fortPlot(c,{dpr,sq});
   else if(which==='nearM'||which==='nearS'){const q=nearPlots(); if(!q)return; const e=q[which];
-    xyPlot(c,e.series,{...e.o,title:e.title+' — round '+E.t},{dpr})}
-  else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl},q.opt)}
+    xyPlot(c,e.series,{...e.o,title:sq?'':e.title+' — round '+E.t},{dpr,sq})}
+  else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,sq?'':q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl,sq},q.opt)}
   savePicture(c,`globalization_${which==='chart'?$('metric').value:which==='fort'?'fortunes_'+fortMode+fortN+(fortLog?'_log':'')+(lifeZero?'_zero':''):which==='surv'?'survival'+(lifeZero?'_zero':''):which.startsWith('near')&&nearScale!=='lin'?which+'_'+nearScale:which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
 }
 document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>exportPlot(b.dataset.plot,b.dataset.k,b));
@@ -3682,21 +3718,19 @@ const ch=$('chart'), cctx=ch.getContext('2d');
 // the y-axis label of each quantity of the time series
 const CHART_Y={prod:'factories of each product',share:"largest company's market share",dist:'mean shipping distance',
   active:'fraction of the agents per round',money:'mean money per agent',price:'price per unit'};
-// out (for a saved picture): {canvas, dpr} — the canvas is already sized; a title, axis labels and a legend are added
+// out (for a saved picture): {canvas, dpr, sq} — the canvas is already sized; axis labels and a legend are added, and
+// a title unless the picture is square (sq: for a paper, the left margin only as wide as the numbers need)
 function drawChart(out){
   if(!E)return;
   const cv2=out?out.canvas:ch, cctx=cv2.getContext('2d');
   const dpr=out?out.dpr:fitCanvas(ch), W=cv2.width, H=cv2.height, m=$('metric').value, hist=E.hist, N=E.N;
   if(!out)cctx.clearRect(0,0,W,H);
-  const z=dpr*FZ, pl=(out?48:40)*z, pr=(out?8:6)*z, pt=(out?24:8)*z, pb=(out?32:17)*z, w=W-pl-pr, h=H-pt-pb;
+  const sq=out&&out.sq, z=dpr*FZ, pr=(out?8:6)*z, pt=(sq?8:out?24:8)*z, pb=(out?32:17)*z, h=H-pt-pb;
+  let pl=(out?48:40)*z, w=W-pl-pr;
   cctx.font=pfont(11,z); cctx.fillStyle='#8391ab'; cctx.lineWidth=dpr;
-  if(out){                                     // title, axis labels and legend of the saved picture
+  if(out&&!sq){                                // the title of a .png picture
     const opt=$('metric').selectedOptions[0].textContent;
     plotTitle(cctx,opt+' — Globalization in a nutshell, round '+E.t,6*dpr,6*z,z,W-12*dpr);
-    cctx.font=pfont(11,z);cctx.fillStyle='#4a5872';cctx.textAlign='center';cctx.textBaseline='bottom';
-    cctx.fillText('round',pl+w/2,H-4*dpr);
-    const lg=chartLog[m]!==undefined?chartLog[m]:m==='prod';
-    cctx.save();cctx.translate(8*z,pt+h/2);cctx.rotate(-Math.PI/2);cctx.textBaseline='middle';cctx.fillText(CHART_Y[m]+(lg?' (log)':''),0,0);cctx.restore();
     cctx.fillStyle='#8391ab';cctx.font=pfont(11,z);
   }
   // the product whose two curves (factories and effective size) enclose a shaded band: the most scalable one
@@ -3720,12 +3754,20 @@ function drawChart(out){
   let lo=Infinity,hi=-Infinity;
   for(const s of series)for(let k=i0;k<hist.length;k++){const v=tz(s.v[k]); if(!Number.isFinite(v))continue; if(v<lo)lo=v; if(v>hi)hi=v}
   if(!Number.isFinite(lo)){lo=0;hi=1}
-  if(logy){lo=Math.floor(lo);hi=Math.max(lo+1,Math.ceil(hi))}
-  else{lo=0;hi=Math.max(hi*1.05,m==='dist'?1:0.05)}
+  // the legend of a saved picture: one row at the top inside the plot — the products by their γ (what the dashed curves
+  // are belongs in the caption), or the three counts of the activity; the vertical axis leaves room for it
+  const leg=!out||m==='money'||m==='price'?[]:
+    m==='active'?[{c:'#16233b',t:'agents with sales'},{c:'#c2410c',t:'starts'},{c:'#be123c',t:'bankruptcies'}]:
+    P.products.map((p,i)=>({c:PCOL[i],t:'γ = '+String(p.gamma).replace('-','−')}));
+  const strip=leg.length?22*z:0, vmax=hi;
+  if(logy){lo=Math.floor(lo);hi=Math.max(lo+1,Math.ceil(hi)); if(strip&&(hi-vmax)/(hi-lo)*h<strip)hi++}
+  else{lo=0;hi=Math.max(hi*1.05,m==='dist'?1:0.05,strip?vmax*h/(h-strip):0)}
   const X=t=>pl+(t-t0)/Math.max(1,t1-t0)*w, Y=v=>pt+h-(tz(v)-lo)/(hi-lo)*h;
   const ytv=logy?Array.from({length:hi-lo+1},(_,k)=>lo+k):niceTicks(lo,hi,8), xtv=niceTicks(t0,t1,12).filter(t=>t>=t0&&t<=t1);
+  const fyt=v=>logy?String(+Math.pow(10,v).toPrecision(1)):fmtTick(v);
+  if(sq){pl=Math.max(30*z,Math.max(...ytv.map(v=>cctx.measureText(fyt(v)).width))+8*dpr+17*z); w=W-pl-pr}
   drawAxes(cctx,{xt:xtv.map(t=>[t,X(t)]),yt:ytv.map(v=>[v,pt+h-(v-lo)/(hi-lo)*h]),pl,pt,w,h,z,dpr,W,
-    fx:t=>String(Math.round(t)),fy:v=>logy?String(+Math.pow(10,v).toPrecision(1)):fmtTick(v),linX:true,linY:!logy});
+    fx:t=>String(Math.round(t)),fy:fyt,linX:true,linY:!logy});
   const step=Math.max(1,Math.floor((hist.length-i0)/(w/dpr)));
   // the band between the two curves of the most scalable product, in its colour, under all the curves
   if(m==='prod'&&PRGB[ic]){const a=series[2*ic].v, b=series[2*ic+1].v, up=[], dn=[];
@@ -3741,11 +3783,12 @@ function drawChart(out){
       const x=X(hist[k].t),y=Y(v); if(on)cctx.lineTo(x,y); else{cctx.moveTo(x,y);on=true}}
     cctx.stroke()});
   cctx.setLineDash([]);
-  if(out){                                     // the legend of the saved picture, over the lines
-    const leg=m==='active'?[['#16233b','agents with sales'],['#c2410c','starts'],['#be123c','bankruptcies']]:
-      (m==='money'||m==='price')?[]:P.products.map((p,i)=>[PCOL[i],PNAME[i]+'   γ = '+String(p.gamma).replace('-','−')]);
-    const items=leg.map(([c,t])=>({c,t})); if(m==='prod')items.push({t:'effective size (Σs)²/Σs²',dash:'#16233b'});
-    if(items.length)legendBox(cctx,items,pl+w-4*z,pt+4*z,dpr);
+  if(out){                                     // axis labels and legend of the saved picture, over the lines
+    cctx.font=pfont(11,z); cctx.fillStyle='#4a5872'; cctx.textAlign='center'; cctx.textBaseline='bottom';
+    cctx.fillText('time',pl+w/2,H-4*dpr);
+    cctx.save(); cctx.translate(8*z,pt+h/2); cctx.rotate(-Math.PI/2); cctx.textBaseline='middle';
+    cctx.fillText(CHART_Y[m]+(logy?' (log)':''),0,0); cctx.restore();
+    if(leg.length)legendRow(cctx,leg,pl+w/2,pt+4*z,dpr,w-8*z);
   }
 }
 function niceTicks(a,b,n){const span=b-a||1, st=Math.pow(10,Math.floor(Math.log10(span/n))), e=span/n/st, k=e>5?10:e>2?5:e>1?2:1, s=k*st;
