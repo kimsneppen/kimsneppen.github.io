@@ -118,12 +118,18 @@
   }
   .tbtn.sobtn{font-size:12px;font-weight:600}
   .tbtn.stdbtn{font-size:12px;font-weight:600}
-  /* buttons of the bar above the town that go to a new line together: ▶ with step, and tiny town with standard (they
+  /* buttons of the bar above the town that go to a new line together: ▶, slow run and step, and tiny town with
+     standard (they
      load a town); on wide screens the bar is a little tighter, so that it still takes one line in the 3D view of a
-     page 1024 px wide up to round 99 999 (9 999 at n 0.05 beside a scroll bar; a 1024 px window wraps sooner) */
+     1024 px window beside a scroll bar, with the slow-run button, up to round 99 999 and down to n 0.05 */
   .bargrp{display:inline-flex;flex:0 0 auto;gap:6px}
-  @media (min-width:700px){ .dispbar{column-gap:4px} .dispbar .tbtn{padding:5px 7px} }
+  @media (min-width:700px){ .dispbar{column-gap:4px} .dispbar .tbtn,.dispbar .seg button{padding:5px 7px} }
   .dispbar > .bargrp:last-child{margin-left:auto}      /* tiny town and standard at the right, also when wrapped */
+  /* slow run: a white triangle with a small s in the button's colour; gold while it runs */
+  .tbtn.slow{min-width:28px;padding-left:5px;padding-right:5px}
+  .tbtn.slow svg{display:block;width:13px;height:13px;margin:0 auto}
+  .tbtn.slow path{fill:#fff} .tbtn.slow text{fill:var(--accent);font:700 7.5px/1 Arial,sans-serif}
+  .tbtn.slow.on{background:#b7791f;border-color:#b7791f} .tbtn.slow.on text{fill:#b7791f}
   .tbtn.sobtn.on{background:#b7791f;border-color:#b7791f;color:#fff}
   .display.darkbg .tbtn.sobtn.on{background:#b7791f;border-color:#b7791f;color:#fff}
   canvas#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
@@ -428,11 +434,11 @@
       <p>Gouging changes what is paid, not how the buyers choose: each buyer still picks the factory with the lowest
         C<sub>1</sub>, and the owners still judge by their sales. It changes the town through the money. Start and
         upkeep are counted in sales, so in money they fall with p: a bakery now costs 1.5 instead of 2, still the money
-        of 120 sales. New factories cost less money, so more of them open: about 194 a round instead of 144 without
+        of 120 sales. New factories cost less money, so more of them open: about 190 a round instead of 148 without
         gouging. They come in bursts: p now changes by a few percent from round to round, and when it dips, Start dips
         with it, so that many owners who wanted to change but could not afford it suddenly can. Switched on in a
         running town, gouging lowers p at once, and in the next round more than ten times as many agents as usual
-        open a factory. The typical agent (the median: half of the agents have less) has 2.0 instead of 2.9, and the
+        open a factory. The typical agent (the median: half of the agents have less) has 2.1 instead of 2.7, and the
         richest 1&nbsp;% own 13 % of the money instead of 10 %.</p>
       <p>The button <i>no gouging</i>, right of the <i>Income weight</i> button in the upper right corner of the town,
         switches it on. It works only when the buyers pay; with free goods it is faded and cannot be clicked.</p>
@@ -487,12 +493,14 @@
 
       <h2 id="r-tiny">A tiny town, step by step</h2>
       <p><button type="button" class="tutbtn" data-action="tiny">Load the tiny town</button></p>
-      <p>The button loads a town of 8 × 8 = 64 agents with the standard rules, but a chip factory costs 10 instead of
-        20 (step 5 tells why). It is always the same town. It shows the <i>Agents</i> view, waits at round 0, and
-        closes this text, so that you can see the town. Open the text again with <i>how it works</i>, at the top of
-        the page, and it opens here. Then read a step, close the text (Esc, or tap outside it), and try the step. The
-        <i>Tiny town</i> link at the top of the text brings you back here. The button <i>tiny town</i> above the town
-        loads the same town.</p>
+      <p>The button loads a town of 8 × 8 = 64 agents with the standard rules, but with cheaper factories and dearer
+        transport. A bakery still costs 2, but a B factory costs 4 and a chip factory 8 (instead of 8 and 20): the
+        money of 120, 240 and 480 sales. To move a unit one step costs β = 0.2 for bread, 0.1 for B and 0.05 for chips
+        (instead of 0.1, 0.05 and 0.02). It is always the same town. It shows the <i>Agents</i> view, waits at
+        round 0, and closes this text, so that you can see the town. Open the text again with <i>how it works</i>, at
+        the top of the page, and it opens here. Then read a step, close the text (Esc, or tap outside it), and try the
+        step. The <i>Tiny town</i> link at the top of the text brings you back here. The button <i>tiny town</i> above
+        the town loads the same town.</p>
       <ol>
         <li><b>What a square shows.</b> Each square is one agent. It shows the letter of the product its factory makes,
           A, B or C, with the number of units the factory sold in the last round: A 7 is a bakery that sold 7 loaves.
@@ -504,57 +512,79 @@
           panel, or the key s). Every product now gets 64 orders, one per agent on average, and in this first round
           every agent is equally likely to place them. Each order goes to the buyer's cheapest factory. All the
           factories are new, s = 1, so a unit costs 1 + β · d: the cheapest factory is simply the nearest one. Find a
-          square with a big number. Has it few factories of its kind nearby? The <i>Market</i> view shows who will buy
-          from it in the next round, now that it has grown: everybody is coloured like the factory they buy from (pick
-          the product with the buttons next to the views). Then go back to <i>Agents</i>.</li>
+          square with a big number, such as B 10 at (7,1). Has it few factories of its kind nearby? (The B 0 just above
+          it, at (7,0), was opened only at the end of round 1: step 4 tells why.) The <i>Market</i>
+          view shows who will buy from it in the next round, now that it has grown: everybody is coloured like the
+          factory they buy from (pick the product with the buttons next to the views). For B, 11 agents will now buy
+          from (7,1), against 5 in round 1; for chips, 20 will buy from (3,6), which sold 7, against 6. Then go back
+          to <i>Agents</i>.</li>
         <li><b>The money rule.</b> Hover over an owner. Its money changed by the wage, 0.05, plus p ≈ 0.0167 for every
-          unit it sold: the owner of a factory that sold 6 units went from 5 to 5 + 0.05 + 6 × 0.0167 = 5.15. The
-          read-out shows the money before and after the round, and splits the change into its parts. Check a few
-          agents.</li>
-        <li><b>Deciding.</b> In round 1 no sales can have fallen yet, but some owners sold nothing. Look for an agent
-          with money of about 3: it sold nothing, gave up its factory and opened a bakery, which cost it 2. With money
-          5 a bakery was all it could afford (a B factory costs 8, a chip factory 10). An owner of a bakery that sold
-          nothing keeps it: it could afford nothing else, and the read-out says so. Now press Step again. The
-          factories that sold most in round 1 are bigger now, and so cheaper: they take the buyers of their
-          neighbours. Many owners sell less than before, or nothing, and give up. Find one: the read-out says why it
-          gave up, and what it opened.</li>
-        <li><b>The chips.</b> Step three more times. After round 3 one chip factory is left, and in round 4 it sells 57
-          of the 64 chips: a giant in a small world. In round 5 its sales dip to 52, and its owner gives up (patience
-          0): hover over its square, (1,4), and the read-out says so. Now the tiny town has no chips left, and no B
-          factory either. Step once more. The price p in the status line of the control panel goes up to 0.05: the B
-          and chip orders find no seller, so fewer units share the same wages (p is 0.025 to 0.03 when B is sold again).
-          Start follows p (the status line shows the factor, ×3.00 while only bread is sold). So a new bakery now costs
-          6 instead of 2, still the money of 120 sales. A chip factory costs 30 instead of 10, still the money of 600
-          sales: as many chips as the whole town buys in about 9 rounds. In the standard setup a chip factory costs
-          the money of 1&nbsp;200 sales. A town this small then hardly ever gets its chips back (in 24 tiny towns of
-          1&nbsp;000 rounds each, only 3 times), so here it costs half.</li>
-        <li><b>The bread, and the chips again.</b> Now press ▶ above the town (or <i>Run</i> in the control panel, or
-          the space bar), and let it run; the <i>Delay per frame</i> menu in the control panel slows it down. The
-          bakeries merge until two or three big ones bake for the whole town, the biggest selling about 35 of the 64
-          loaves a round. Most agents keep a bakery that sells nothing, and now and then one that has saved enough
-          tries a B factory, or a chip factory. The chips first come back in round 27: the biggest bakery, at (4,1),
-          sells 48 loaves instead of 51, and its owner, who has saved 27, opens a chip factory for 17 (Start is now
-          ×1.71, because B is sold again). It sells 51 of the 64 chips in round 28 and 50 in round 29, so its owner
-          gives up. In the first 1&nbsp;000 rounds the chips come back 19 times, often for just two rounds, but once
-          for 18 rounds (170 to 187). In round 171 chips are sold again, so a chip factory costs only 10.2 (×1.02):
-          fifteen more agents open one at once, and nine chip factories take turns as the biggest, two rounds each.</li>
+          unit it sold: the owner of a factory that sold 6 units, such as (4,1), went from 5 to
+          5 + 0.05 + 6 × 0.0167 = 5.15. The read-out shows the money before and after the round, and splits the change
+          into its parts. Check a few agents.</li>
+        <li><b>Deciding.</b> In round 1 no sales can have fallen yet, but six owners sold nothing. Each of them gave
+          up its factory and opened another product it could afford. Five now have money of about 3: they opened a
+          bakery, which cost 2. The sixth, (7,0), had a bakery, so it opened a B factory for 4 and has about 1 left. A
+          chip factory was out of reach: it costs 8, and they had 5.05. Now press Step again. The factories that sold
+          most in round 1 are bigger now, and so cheaper: they take the buyers of their neighbours. Many owners sell
+          less than before, or nothing, and give up: 41 of the 64 open a new factory. Find one: the read-out says why
+          it gave up, and what it opened. Some cannot afford another product and keep theirs: the new bakery of (1,0)
+          sold nothing, but its owner has 3.10, less than the 4 a B factory costs, and the read-out says so.</li>
+        <li><b>The chips.</b> Step twice more. After round 4 only one chip factory is left, at (4,2): it sold 42 of
+          the 64 chips. Step on: it sells 54 in round 5 and 57 in round 6, a giant in a small world. It cannot sell
+          all 64, because nobody buys from itself: the chips its own owner orders find no seller (its read-out says
+          that it buys C nowhere). In round 7 its sales dip to 56, and its owner gives up (patience 0): hover over
+          (4,2), and the read-out says so. Now the tiny town has no chips left. Step once more. The price p in the
+          status line of the control panel goes up to 0.025: the 64 chip orders find no seller, so fewer units share
+          the same wages. Start follows p (the status line shows the factor, ×1.50). So a bakery now costs 3, a B
+          factory 6 and a chip factory 12: still the money of 120, 240 and 480 sales.</li>
+        <li><b>B goes round the town.</b> Since round 2 the biggest B factory has been the one at (1,2): in round 8 it
+          sold 55 of the 64 B. Step to round 9: it sells 47, so its owner gives B up and opens a bakery. Its square
+          showed 10.6 after round 8 (the read-out rounds it to 11). With the wage and 47 × 0.025 for its sales, it had
+          11.8 before it paid for the bakery, just short of the 12 a chip factory costs. Step to round 10: now (0,2),
+          the B factory where (1,2) bought its B, sells 60. Hover over it: the last line of the read-out says that its
+          owner buys B from (0,4). In round 10 this owner got 1.55, about a quarter of all the money the
+          town got (3.2 in wages and 3.2 in sales). So with the Income weight it places about a quarter of the orders
+          in round 11, and its own B orders go to (0,4), since nobody buys from itself. Step: (0,2) sells only 51 and
+          gives B up, and (0,4) sells 13. Step again: (0,4) is now the biggest B factory, so the cheapest, and
+          sells 62. Then the same happens to it. Now press the slow-run button, ▶ with a small s, right of ▶ above the
+          town: it plays one round a frame, with 0.1 s between frames; press it again to pause. Watch B go round the
+          town: from round 10 to round 1&nbsp;000 it changes hands 485 times, 457 of them after two rounds, and every
+          time to the factory the old leader bought from.</li>
+        <li><b>The bread, and no more chips.</b> Let the slow run go on. To go faster, pause, then press ▶ (or
+          <i>Run</i> in the control panel, or the space bar): it runs at the speed set in the control panel. Bread is
+          dear to ship, and a big bakery bakes only a little more cheaply, so bread stays local. In most rounds two or
+          three bakeries sell 10 loaves or more, the biggest about 27 of the 64. Its buyers live within three or four
+          steps of it, while the biggest B factory sells to nearly everybody. Most agents keep a factory that sells
+          nothing, about 36 bakeries and 20 B factories. They cannot afford another product, so they save their wage:
+          the owner of a B factory that sells nothing opens a bakery once it has 3, and a baker that sells nothing
+          opens a B factory once it has 6. In rounds 39 to 41 there is a wave of this: fifteen B factories that sell
+          nothing become bakeries. Fourteen of them were opened in rounds 1 to 3 and never sold a unit. To watch it,
+          load the town again, slow-run it to about round 35, pause, and step. And the chips never come back in the
+          first 1&nbsp;000 rounds: when an owner picks a new factory, it never has the 12 a chip factory costs. In 24
+          tiny towns of 1&nbsp;000 rounds each, the chips came back only 6 times.</li>
         <li><b>Buyers pay.</b> Load the tiny town again (the button <i>tiny town</i> above the town does it), and
-          switch to <i>buyers pay</i> with the golden button. Step a few rounds. The read-out now also shows what an
+          switch to <i>buyers pay</i> with the golden button. Step three rounds. The read-out now also shows what an
           agent paid for its shopping, and the equal income it got. Check that the money still adds up: wage + equal
           income + sales − shopping − new factory (for an agent that opened one). With the Income weight an agent can
-          be picked to shop for more than it has. In this town it first happens in round 40, to the agent at (2,3),
-          which has just spent its money on a new bakery after big sales of B. After that it happens in about one
-          round in ten. Set <i>Delay per frame</i> in the control panel to 0.5 s, run, pause a little before round 40
-          and step to it: the read-out of (2,3) says that it went bankrupt. Load the town again, switch to buyers pay,
-          set <i>Shopping debts</i> to <i>forgiven</i> in the control panel and go to round 40 once more: the same
-          agent now keeps its bakery.</li>
-        <li><b>Gouging.</b> Now switch on gouging, with the button right of <i>Income weight</i>. Step a few rounds and
-          hover over the big sellers: their sales now bring more than p a unit, because their buyers' next-best
-          factory is dearer. Compare the sales part of the money change with p times the units sold. Which keep the
-          most a unit? Here it is seldom the biggest bakery: what counts is how much dearer the buyers' next-best
-          bakery is. Where a product has only one factory, as B has in round 41 and the chips have when a single chip
-          factory comes back, its buyers have no other to turn to, and they pay the normal price. Right after round
-          41, hover over (6,3): it sells 56 units of B at 1.00·p a unit, then gives B up.</li>
+          be picked to shop for more than it has. In this town it first happens in round 6, to the agent at (1,2). It
+          had the biggest B factory, but in round 4 its sales fell, and it opened a bakery for 2. The bakery sold
+          nothing in round 5, so its sales fell again, and it spent 4 of its last 4.04 on a B factory. Step to
+          round 6: its shopping costs 0.13, more than it has, and the read-out of (1,2) says that it went bankrupt. It
+          happens in 222 of the first 1&nbsp;000 rounds, more than one round in five. Load the town again, switch to
+          buyers pay, set <i>Shopping debts</i> to <i>forgiven</i> in the control panel and go to round 6 once more:
+          the same agent now keeps its B factory.</li>
+        <li><b>Gouging.</b> Now switch on gouging, with the button right of <i>Income weight</i>, and step. Hover over
+          the big sellers: their sales now bring more than p a unit, because their buyers' next-best factory is
+          dearer. In round 7 the B factory at (6,3) sells 63 units at 1.58·p a unit. Compare the sales part of the
+          money change with p times the units sold. Which keep the most a unit? In rounds 7 to 13 the biggest B factory.
+          Over the first 1&nbsp;000 rounds it is mostly a B factory, but only half of the time the biggest one. When it
+          is another B factory, it is nearly always the one the biggest buys from. Of the bakeries, the biggest keeps
+          the most in only one round in five. What counts is how much dearer the buyers' next-best factory is. Where a
+          product has only one factory, its buyers have no other to turn to, and they pay the normal price: in rounds 7
+          and 8 the last chip factory, (4,2), sells 57 chips at 1.00·p a unit. Gouging also lowers p, since the sellers
+          together still get the wages. The status line shows ×0.80, so a B factory costs only 3.2. In round 7 fifteen
+          owners of bakeries that sold nothing open one; thirteen of them had less than the 4 it cost in round 6.</li>
       </ol>
 
       <h2 id="r-patience">Patience: when does an owner give up?</h2>
@@ -571,18 +601,20 @@
         <li><b>2 to 5</b>: the fall must be 2 to 5 times bigger than chance.</li>
       </ul>
       <p>The numbers below are for free goods. With patience 0, 1 or 2 a chip company that has grown to the top usually
-        stays there only a round or two: the first small dip in its sales makes its owner give up. Patience matters
+        stays there only a round or two. A big chip company ends when a rival takes about a third of its sales in one
+        round, many times the chance wobble and far more than patience forgives (lesson 5). Patience matters
         most when sales are small: on a 64 × 64 town with n = 0.2, patience 3 sometimes lets a chip giant rule for 100
         rounds or more, and the richest 1 % own three quarters of the money, not an eighth. With n = 5 even patience 5
         forgives a giant a fall of only a few percent: switched on in a running town it changes little.</p>
-      <p>In the standard setup (n = 1, 125 × 125) big chip companies last about four rounds with patience up to 3, and
-        3 makes the rich much richer only with the Money weight (lesson 4). What patience 4 or 5 does depends on when
-        you choose it. Chosen in a running town, it piles money up at the top while the median stays put: within
-        1&nbsp;000 rounds the richest 1 % own half of it (κ = 4) or three quarters (κ = 5) instead of a fifth. With
-        κ = 5 a chip giant can rule for hundreds of rounds, and the richest agent goes from about 1&nbsp;000 to
-        25&nbsp;000–40&nbsp;000.
-        Chosen before a new start (↺), it freezes the town into some 150–230 local chip monopolies, and money piles up
-        with the few sellers; with κ = 4 the giants return after about 2&nbsp;000 rounds.</p>
+      <p>In the standard setup (n = 1, 125 × 125) big chip companies typically last about four rounds at any patience
+        (lesson 5); patience 3 lifts the richest 1 % from about a fifth to a third of the money, but not the richest
+        agent. What patience 4 or 5 does depends on when you choose it. Chosen in a running town, it piles money up at
+        the top while the median stays put: by round 1&nbsp;000 the richest 1 % own over half of it (κ = 4) or nearly
+        two thirds (κ = 5) instead of a fifth (lesson 9). With κ = 5 a few chip companies stay big for a hundred rounds
+        or more, and by round 1&nbsp;000 the richest agent has some 9&nbsp;000 (1&nbsp;700 without patience), still
+        gaining. Chosen before a new start (↺), κ = 5 freezes the chip market into some 230 local chip makers, each
+        selling to its neighbours, and money piles up with the few sellers; with κ = 4 they slowly merge, and the
+        giants return after about 2&nbsp;000 rounds (lesson 9).</p>
 
       <h2 id="r-money">Where does the money come from, and where does it go?</h2>
       <p><b>Free goods.</b> Every round money comes in twice: as wages, and as payment for the units sold — and the
@@ -606,8 +638,9 @@
         burned — until what goes out matches what comes in.</p>
       <p>When a big company closes, its owner keeps the money and tries one new factory after another. Most of them
         fail. In the standard setup the owner of a big bakery or B factory has some 30 and loses half within 3 rounds,
-        while a chip giant's owner has a few hundred and typically keeps half for about 25 rounds or more, so its
-        golden money column in the 3D picture stays for a while.</p>
+        while a chip giant's owner has a few hundred. Three times in four it builds a new chip giant within 80 rounds,
+        and such owners together keep most of their money; the other times it loses nearly all of it within 20
+        rounds (lesson 4). So a golden money column in the 3D picture either stays for a while or melts away fast.</p>
       <p>Spending on new factories needs a second product. With a single product an owner whose sales fall has nothing
         to switch to, so it keeps its factory and never pays a start cost again. Then, with free goods and without
         upkeep, nothing ever leaves: on a 125 × 125 town the money grows by twice the wages, about 1&nbsp;560 a round,
@@ -655,14 +688,21 @@
       <p>The big question: can a newcomer ever beat a giant? The newcomer makes a unit for 1, the giant for
         s<sup>γ</sup>, which can be tiny. A customer goes to the newcomer only if the giant's transport cost has eaten
         up its advantage. So the giant keeps every customer within a distance of about R ≈ (1 − s<sup>γ</sup>)/β. If R
-        is bigger than the whole town, no newcomer can win a single customer anywhere. The giant is a natural world
-        monopoly, and it falls only when its owner gives up. This holds in both economies, with or without gouging,
-        because the buyers always pick the lowest cost C.</p>
+        is bigger than the whole town, no newcomer can win a single customer from it anywhere: the giant is a natural
+        world monopoly. This holds in both economies, with or without gouging, because the buyers always pick the
+        lowest cost C. Yet such a giant lasts only about two rounds, like the biggest B factory in the tiny town. Its
+        owner earns the most, so with the Income weight it places the most orders, and nobody buys from itself: its
+        own orders go to a rival. The giant's sales fall, its owner gives up, and the rival, grown on those orders,
+        takes over.</p>
       <p>Now you can see what globalization does. Make transport cheaper (the <i>transport factor</i> in the control panel;
         <i>lower gradually</i> keeps lowering it) and R grows: many small local producers merge into a few big ones that
-        ship far. Products with a strong economy of scale and cheap transport go global first. Bread stays local.</p>
-      <p>Two more things to watch. The giants are fragile: their owners give them up after a few rounds, because sales
-        wobble, and with patience 0 the first dip ends a giant. And a bakery can suddenly boom: when its neighbours
+        ship far. Products that are cheap to carry go global first, and even bread goes global once transport costs
+        a twentieth of the standard (lesson 1).</p>
+      <p>Two more things to watch. The giants are fragile: in the standard town a big chip company typically lasts
+        about four rounds, at any patience. It ends by losing about a third of its sales in one round, far more than
+        chance, nearly all to one chip factory, and the next giant often grows up next door, on the orders of the old
+        giant's own owner (lesson 5). With patience 5, though, a few giants now and then stay for hundreds of rounds.
+        And a bakery can suddenly boom: when its neighbours
         close, it takes over their customers, grows ten times bigger in two or three rounds, gets rich — and then its
         owner switches to B or C at the first dip in its sales.</p>
 
@@ -704,7 +744,11 @@
         the share of agents with no money (one wage or less), which a logarithmic axis cannot show. The tail is fitted
         over one decade, from a thirtieth to a third of the largest fortune (in a sum over many rounds, of the mean
         largest of a round), away from both the crowd of ordinary agents and the very richest; summed, its slope is
-        about −1 with free goods (single runs −0.7 to −1.3; 125 × 125 town, n = 0.2 to 5). The bakeries
+        about −1 with free goods (single runs −0.7 to −1.3; 125 × 125 town, n = 0.2 to 5). But the money follows no
+        single power law: in the standard town P(M) falls as about M<sup>−0.9</sup> from 1 to 10, where the savers
+        are, M<sup>−2</sup> from 10 to 100 and M<sup>−1.3</sup> to M<sup>−1.5</sup> from 100 to 1&nbsp;000, in both
+        economies. The fitted decade gives about −1 only because it lies on a flatter stretch between about 70 and
+        300, where the fortunes of the chip owners sit. The bakeries
         in P(s) are fitted likewise, from a fiftieth to a fifth of the largest, across a bend near 40·n units: about −2
         in the standard setup, also with n = 0.2, but −0.7 to −3.7 at other n, with the Money weight or with upkeep
         (all with free goods). You can see the present round, or everything since you
@@ -730,7 +774,9 @@
         the last time it had nothing). The slider sets the time window: from now back in time, each step 1.5
         times longer, and at its right end the whole run. The colour of the line shows what the agent was making at the
         time; grey means no factory, or one opened that very round. In the standard setup a rich agent's money climbs
-        while it owns a big company, then drains away in grey stretches while it tries one new factory after another.
+        while it owns a big company and sinks in grey stretches while it tries one new factory after another. Three
+        times in four that a chip giant closes, its owner builds a new one within 80 rounds and the money climbs
+        again; after its last giant the money drains away (lesson 4).
         With patience 4 or 5 chosen before a new start (↺), the richest keep their companies, and their money climbs
         steadily (at 4 for about 2&nbsp;000 rounds).</p>
       <p><b>A life ends: bankrupt or money 0.</b> These buttons over the section give both plots another view. With
@@ -755,67 +801,80 @@
       <p>Every plot has its own <b>.png</b> and <b>sq</b> buttons to save it as a picture.</p>
 
       <h2 id="r-lessons">Lessons from the model</h2>
-      <p>The lessons start from the standard setup (free goods, Income weight, n = 1, patience 0, no upkeep) and its
-        three variants: buyers pay, the Money weight (see <i>Shopping</i>), or both. The numbers are means of two or
-        three runs on the 125 × 125 town over rounds 301–1&nbsp;000, or of longer runs where the town has not settled by
-        then.</p>
-      <p>They were measured with earlier rules, and they will be redone. With free goods the standard town runs
-        exactly as before, round for round, and elsewhere the numbers agree within chance — except with a border tax
-        (lesson 6), which was then a share of the goods' cost so far, not of their full value, and with upkeep, where
-        the chip market now comes out somewhat more concentrated. The buyers-pay numbers come from the
-        first buyers-pay rule: p was set by the units sold, the buyers paid p, the transport and the border taxes
-        but not the making of the goods, and that money left the town; owners judged their profit in money, and
-        Start did not follow p.</p>
+      <p>The lessons come from the standard setup — the closed 125 × 125 town with free goods, the Income weight, n = 1,
+        patience 0, no upkeep and α = 1 — and from the same town when the buyers pay (gouging off, shopping debts
+        bankrupt). They hold in both economies unless said; a number in parentheses is for buyers pay. A big chip
+        company, or chip giant, sells at least 5 % of all chips. The most important come first. Most numbers are means
+        of five to ten runs, or of three to six for some changes, over rounds 301–1&nbsp;000; where the town has not
+        settled by then, they come from rounds 901–1&nbsp;000 or from one to five runs of up to 4&nbsp;000 rounds.</p>
       <ol class="lessons">
-        <li><b>Four times dearer B and C factories mean fewer start-ups — and more savings, unless the buyers pay.</b>
-          With free goods, start-ups fall 3.3-fold and the median money rises from 2.9 to 15; with the Income weight the
-          largest fortune keeps growing, to 22&nbsp;000–34&nbsp;000 by round 4&nbsp;000. When the buyers pay, start-ups
-          fall 8- to 11-fold and only about six B factories remain, far from most buyers: the median agent gets 2 to 5
-          times poorer, and with the Income weight bankruptcies jump from 34 to 2&nbsp;100 a round.</li>
-        <li><b>Upkeep wipes out most bakeries once it costs more than an idle baker can spare.</b> With free goods, that
-          is when a bakery's upkeep, 2μ, passes the wage, 0.05: between μ = 0.02 and 0.03 the bakeries fall about
-          tenfold, to 1&nbsp;100–1&nbsp;600, and nearly every agent goes bankrupt every 40 rounds — 40 wages buy a
-          bakery, which then sinks it. The median money falls from 3 to 1, and the richest 1 % come to own most of the
-          money (lesson 9). When the buyers pay with the Income weight, shopping eats three quarters of a wage, so
-          already at μ = 0.01 only about 700 of 10&nbsp;300 bakeries remain, and the share of agents with no money rises
-          from 1 to 5 %. With the Money weight hardly a factory is left from μ = 0.02.</li>
-        <li><b>When the buyers pay, money gets scarcer and the chip market concentrates — but without upkeep the
-          bakeries survive.</b> With the Income weight the median money falls from 2.9 to 2.1, the biggest chip maker's
-          share of the market rises from 0.23 to 0.39, and 34 agents go bankrupt a round instead of none, yet the
-          bakeries only drop from 12&nbsp;450 to 10&nbsp;300. With the Money weight the median falls five-fold, but
-          nobody goes bankrupt and the biggest chip maker's share only reaches 0.29 (lesson 9).</li>
-        <li><b>Patience 3 makes the rich much richer — when the orders follow the money.</b> With free goods and the
-          Money weight, it lifts the richest 1 % from 21 to 61 % of the money while the median stays at 3; with the
-          Income weight they reach only 29 %, and the richest agent is even poorer (900 instead of 1&nbsp;700). When the
-          buyers pay, patience 3 helps the typical agent: the median rises from 2.1 to 2.9 with the Income weight, and
-          everybody gets about 8 times richer with the Money weight. Patience 4 or 5 is another world (see
-          <i>Patience</i>).</li>
-        <li><b>A protected country in the middle gets richer — in all four setups.</b> Put a circle with 10 % of the town
-          in the middle, with a tariff of 1 per unit on goods going in. In every run the insiders hold, per head, 1.3 to
-          1.8 times the outsiders' money and earn 1.6 to 3.4 times as much (0.8 to 1.3 times without the border). They buy
-          nearly everything at home, while their companies sell about a third of their goods outside, tariff-free. The
-          gain goes to the owners of big companies, not to the typical insider, and it is the outsiders' loss: the town's
-          total income is fixed.</li>
-        <li><b>A 100 % tax on goods going in does the same.</b> In every run the insiders hold, per head, 1.4 to 2.2 times
-          the outsiders' money and earn 1.7 to 3.5 times as much.</li>
-        <li><b>A middle product keeps fortunes alive.</b> Without B, savers go from bread straight to chips: with free
-          goods, 70 chip factories open a round instead of 15, and only 3 to 4 % of them grow big instead of 13 to 15 %.
-          Twenty rounds after a chip giant has closed, its owner has typically lost 85 to 90 % of the fortune, against
-          less than half with B, and the richest agent has 150 to 500 instead of 900 to 1&nbsp;700. (Not when the buyers
-          pay with the Money weight: there fortunes drain within 20 rounds, with or without B.)</li>
-        <li><b>In the standard setup the town is steady; upkeep piles the money up at the top.</b> The same holds when the
-          buyers pay or with the Money weight (for both together, see lessons 2 and 9). From round 1&nbsp;000 to
-          4&nbsp;000 about 1 % of the agents have no money (one wage or less), and the poorer half keeps 14 to 17 % of the
-          money, without a trend. With μ = 0.02 the mean money keeps rising but the median does not: by round 4&nbsp;000
-          the richest 1 % own 53 to 61 % of the money (75 % when the buyers pay), and the poorer half only 5 to 10 %, as
-          in real countries [11], and still falling.</li>
-        <li><b>Who places the orders matters with patience, high upkeep or buyers who pay.</b> With free goods and
-          without patience or upkeep, both weights give nearly the same town. With patience 3 (lesson 4) or upkeep μ ≥
-          0.03 the money piles up far more at the top with the Money weight, where a fortune keeps placing orders after
-          its company has closed: with upkeep the richest 1 % own 77 to 90 % of the money instead of 56 to 72 %. When
-          the buyers pay with the Money weight, everybody spends about 8 % of their money a round, so an agent living on
-          its wage settles near 0.6, twelve wages: nobody goes bankrupt, practically nobody has no money, the poorer
-          half keeps 30 % of the money, and fortunes drain within 20 rounds.</li>
+        <li><b>Cheaper transport merges markets: a product goes global once carrying it across the town costs as much as
+          making it in a new factory.</b> With transport four times cheaper, the biggest chip maker makes 80 % of the
+          chips instead of 22 % (84 instead of 31 % when the buyers pay), and just 2 % of new chip factories grow big,
+          not 15 % (5, not 29 %). Lower transport slowly, as the <i>Globalization</i> preset does, and one company makes
+          most of the chips once transport costs a third of the standard, most of B at a ninth and most of the bread at
+          a twentieth. In each case, carrying a unit from corner to corner, some 175 steps, then costs about 1. With the
+          same β for all three products, they go global together.</li>
+        <li><b>Cheap transport makes the richest much richer, and so does dear transport.</b> With transport four times
+          cheaper a chip giant sells to most of the town and earns its owner some 200 a round while it lasts: the
+          richest 1 % own 60 % of the money instead of 19 % (18 instead of 10 % when the buyers pay), while the median
+          stays near 3. With transport four times dearer, 24 chip makers sell at a time instead of 10 (9 instead of 6)
+          and most new ones grow big, so the same owners stay rich: in runs of 3&nbsp;000 rounds the richest 1 % kept
+          gaining, to 64 % (43 to 52 %), against 16 to 24 % (12 to 16 %) with standard transport. When the buyers pay,
+          dear transport also ruins those far from the factories: 130 to 320 go bankrupt a round instead of 24.</li>
+        <li><b>A protected country gets richer, but only its company owners do.</b> Put a circle with 10 % of the town
+          in the middle, and charge goods going in a tariff of 1 a unit, or a 100 % tax, which does the same. Its chip
+          makers get the home market to themselves, grow big and win the outside market too: the town's biggest chip
+          maker sits inside in about four rounds of five (more than nine of ten when the buyers pay), and the insiders
+          earn 1.8 times as much a head as the outsiders (2.0). Yet the typical insider has only 2 % more money than the
+          typical outsider: 96 to 97 % of the insiders' extra money sits with their richest tenth. Charge goods both
+          ways, and the gain is gone; when the buyers pay, the inside even loses its chip makers.</li>
+        <li><b>A fortune lasts only while its owner keeps winning, and owners win more often when fewer try.</b>
+          Fortunes come from chip giants. Three in four times a giant falls (four in five when the buyers pay), its
+          owner builds a new one within 80 rounds; these owners together keep about 85 % of their money, the others only
+          3 to 4 % after 20 rounds. These wins go to a few; half of the owners whose giant falls build no other. At most
+          about three new chip giants arise a round, so the more try, the worse the odds. Without B, savers jump from
+          bread to chips: 70 chip factories open a round, not 15 (37, not 5), 4 % grow big, not 15 % (8, not 29 %), and
+          the richest agent has 350, not 1&nbsp;300 (130, not 900). With B and C four times dearer, 2.6 open a round
+          (1), and nearly half grow big (seven in ten).</li>
+        <li><b>Patience seldom saves a chip giant, and its successor often grows up next door, fed by the giant's own
+          owner.</b> With any patience, also 4 or 5 chosen in a running town, a big chip company typically lasts about
+          four rounds; with 4 or 5 only 2 to 5 in 100 stay big for more than ten rounds, though with 5 a few stay big
+          for hundreds of rounds (up to about 90 when the buyers pay). A giant ends by losing about a third of its
+          sales in one round, 14 to 20 times the chance wobble,
+          nearly all to one chip factory. Nobody buys from itself, so the giant's owner, a top earner, sends its chip
+          orders, 3 to 4 % of all, to its cheapest other chip factory. So 7 in 10 new chip giants start within 5 cells
+          of a falling one (6 in 10 when the buyers pay), but only 2 to 3 in 10 in a test where chip owners buy no
+          chips.</li>
+        <li><b>When the buyers pay, only the wages are new money, so fewer companies start and the chip market falls to
+          a few.</b> With free goods the sellers' takings come on top of the wages; when the buyers pay, they come out
+          of the buyers' pockets. Nearly all new money goes into new factories, so 148 start a round instead of 267, 12
+          chip factories remain instead of 35, and the biggest sells 31 % of the chips instead of 22 %. Yet the typical
+          agent is hardly poorer. Whoever pays, an agent whose factory sells nothing saves 8 for a B factory, then 2 for
+          a bakery, and so on, so the median money is near 3, half the gap between the two prices: 3.0 with free goods,
+          2.7 when the buyers pay.</li>
+        <li><b>When the buyers pay, forgiving shopping debts breaks up the big fortunes.</b> Some 24 agents a round
+          cannot pay for their shopping, mostly agents that have just spent their savings on a new factory. Bankrupt,
+          they lose that factory; forgiven, they keep it. With forgiveness the richest 1 % own 5 % of the money instead
+          of 10 %, the richest agent has 280 instead of 900, and 20 rounds after its giant closed, a chip giant's owner
+          has 7 left instead of about 200. What matters are the few chip makers among the debtors, under one a round:
+          bankrupt, they leave the chip market to the rich, who can pay any bill; forgiven, they stay and make about a
+          third of the chips. With free goods nobody runs into debt.</li>
+        <li><b>Upkeep sinks the owners of idle factories once it costs more than they can spare, and it piles the money
+          up at the top.</b> An agent that sells nothing can spare its wage, 0.05, with free goods, but only about 0.03
+          when the buyers pay. So idle B factories go first, and between μ = 0.02 and 0.03 (0.01 and 0.02) the bakeries
+          collapse, from 14&nbsp;500 to 1&nbsp;100 (13&nbsp;000 to 2&nbsp;300). The median money falls from 3 to 1, and
+          nearly every agent goes bankrupt every 40 rounds (65). At μ = 0.02 all the money the town gains ends with the
+          richest 1 %: by round 4&nbsp;000 they own 45 to 62 % of it (59 to 75 %), against 16 to 28 % (8 to 20 %)
+          without upkeep, and the poorer half keeps 8 to 12 % (5 to 9 %), as in real countries [11].</li>
+        <li><b>Patience keeps the small companies alive, and the money piles up with their owners.</b> Chosen in a
+          running town, patience 5 lets bakeries and B factories go on for hundreds of rounds, while most chip giants
+          still fall within a few (lesson 5). Fewer owners give up, so less of the new money goes into new factories: 73
+          instead of 97 % (85 instead of 99 % when the buyers pay). The rest piles up with the bakers and B makers: by
+          round 1&nbsp;000 the richest 1 % own 64 % of the money instead of 21 % (47 instead of 12 %), and their share
+          is still rising. Chosen before a new start, patience 5 freezes the chip market into some 230 local chip
+          makers, each selling to its neighbours; with patience 4 they slowly merge, and after about 2&nbsp;000 rounds
+          the giants are back.</li>
       </ol>
 
       <h2 id="r-try">Try this</h2>
@@ -825,8 +884,8 @@
           out why an owner gives up. ↺ then gives a new tiny town; <b>standard</b> above the town, or any preset but
           <i>Tiny town</i> in the control panel, goes back to the 125 × 125 town, which the ideas below need.</li>
         <li>Let the town run a few hundred rounds, then set <b>patience</b> to 5: the richest get much richer, and now
-          and then a chip giant rules for a hundred rounds or more. Then press ↺ for a new town with patience 5: it
-          freezes.</li>
+          and then a chip company stays big for a hundred rounds or more. Then press ↺ for a new town with patience
+          5: it freezes.</li>
         <li>Choose the <b>Globalization</b> preset in the control panel: transport gets cheaper every round, and local
           producers merge into a few big ones.</li>
         <li>Turn on <b>markets C</b>, then draw a border with a 100 % tax right through the biggest C market. Remove it
@@ -850,12 +909,13 @@
       <p><b>Economic geography.</b> In Krugman's model [3] economies of scale and transport costs decide whether industry
         spreads out or gathers in one region, and when transport gets cheap enough, manufacturing concentrates. The town
         here reaches the same conclusion, but from simple agents that only react to their own sales, without the
-        equilibrium and foresight of the economic models — and it shows the order: the products with the strongest
-        economy of scale and the cheapest transport go global first.</p>
+        equilibrium and foresight of the economic models — and it shows the order: the products that are cheapest to
+        carry go global first (lesson 1).</p>
       <p><b>Lock-in.</b> Arthur [4] showed that with increasing returns, small chance events decide which technology wins,
-        and the winner is then hard to dislodge. A chip giant here is such a lock-in in space: inside its reach R no
-        newcomer can win a customer. The original model [1] also finds that new companies tend to reappear close to old
-        ones: history matters.</p>
+        and the winner is then hard to dislodge. A chip giant here is such a lock-in in space: inside its reach R no new
+        factory can win a customer from it. Yet the giants change every few rounds, and the next one often grows up
+        next door, on the orders of the old giant's own owner (lesson 5). The original model [1] also finds that new
+        companies tend to reappear close to old ones: history matters.</p>
       <p><b>Trade networks.</b> The closest recent model we found is by Han, Schröder, Witthaut and Böttcher [5]: agents
         choose whom to trade with, with economies of scale, transport costs and different tastes. They find three regimes —
         centralized production with a star-shaped trade network, distributed production where everybody trades with
@@ -868,9 +928,10 @@
         the rich form a power-law (Pareto) tail, as in the model of Bouchaud and Mézard [8]. In this town money is created
         (as wages, and with free goods also by the sales) and destroyed (by start costs and upkeep). When the buyers
         pay, what they pay for making and carrying the goods, and for border taxes and tariffs, comes back to
-        everybody, so nothing else leaves. P(M) has a power-law tail, falling as about M<sup>−1</sup> per unit of
-        money with free goods. Real
-        wealth tails are usually steeper.</p>
+        everybody, so nothing else leaves. P(M) has a fat tail, but not a single power law: per unit of money it falls
+        as about M<sup>−2</sup> from 10 to 100 and M<sup>−1.3</sup> to M<sup>−1.5</sup> from 100 to 1&nbsp;000, in both
+        economies, with a flatter stretch between about 70 and 300, where the chip owners' fortunes sit; a fit over
+        one decade across that stretch gives about M<sup>−1</sup>. Real wealth tails are usually steeper.</p>
       <p><b>Company sizes.</b> Axtell found [9] that the sizes of US companies follow Zipf's law: the number of companies
         bigger than s falls as 1/s, so the density falls as s<sup>−2</sup>. The bread companies here come close: over the
         decade of sizes below a fifth of the largest bakery the slope is −1.97 to −2.03 in the standard setup, also
@@ -878,7 +939,9 @@
         curve, near 40·n units, and at other n, with the Money weight or with upkeep the slope comes out anywhere
         between −0.7 and −3.7 (with free goods). From 4 to 40 units the curve falls as s<sup>−2.2</sup> with n = 0.2,
         but below the bend, with n = 1 and 5, only as s<sup>−0.6</sup> — there most bakeries sell almost nothing,
-        while those that boom spread over a wide range of sizes. Stanley and co-workers [10] found that big companies
+        while those that boom spread over a wide range of sizes. Ranked by size, the k-th largest bakery sells about
+        k<sup>−0.7</sup> times as much as the largest (k<sup>−0.55</sup> when the buyers pay) for k up to 100, not
+        1/k, as Zipf's law would have it. Stanley and co-workers [10] found that big companies
         grow and shrink less, in proportion, than small ones; one could test that in this town too.</p>
       <p>In a short search of the literature we found no other model that puts these pieces together — many products,
         each with its own economy of scale and transport cost, on a map, with prices that set themselves — beyond the
@@ -930,6 +993,9 @@
       <button class="tbtn sobtn on" id="bSO2" data-tip="econ">free goods · n 1</button>
       <span class="stat">round <b id="tRound">0</b></span>
       <span class="bargrp"><button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
+        <button class="tbtn run slow" id="bSlow2" aria-label="slow run"
+          title="slow run: one round a frame, 0.1 s between frames; press again to pause"><svg viewBox="0 0 14 14"
+          aria-hidden="true"><path d="M2.5 1.2 L12.6 7 L2.5 12.8 Z"/><text x="3.4" y="9.7">s</text></svg></button>
         <button class="tbtn" id="bStep2" title="one round (key s)">step</button></span>
       <button class="tbtn" id="bReset2" title="reset">↺</button>
       <span class="bargrp"><button class="tbtn stdbtn" id="bTiny"
@@ -1762,14 +1828,17 @@ const PRESETS={
     'Income weight, then lets the sellers charge the next-best offer, and Shopping debts, under the Economy menu, '+
     'can forgive debts that come from shopping alone (both off in the standard setup).',
     products:THREE,tmul:1,anneal:false,std:true},
-  // the standard rules on 8 × 8, but with a chip factory of Start 10 instead of 20, so that the chips, once gone,
-  // can come back: the tutorial of the pull-down starts it with a fixed seed (startTinyTutorial)
-  tiny:{label:'Tiny town',note:'The standard rules and products on a tiny 8 × 8 town of 64 agents, small enough to '+
-    'follow each of them, except that a chip factory costs 10 instead of 20: the money of 600 sales instead of '+
-    '1\u00a0200, so that the chips, once gone, come back now and then. In the Agents view every square shows the '+
-    'factory of its agent with the units it sold last round, and its money; hover over or tap an agent to see where '+
-    'its money came from and went, and why it kept or changed its factory. Step through the rounds with Step (key s).',
-    products:[THREE[0],THREE[1],{...THREE[2],start:10}],tmul:1,anneal:false,std:true,L:8},
+  // the standard rules on 8 × 8, with cheaper B and chip factories (Start 4 and 8 instead of 8 and 20) and dearer
+  // transport (β 0.2, 0.1 and 0.05 instead of 0.1, 0.05 and 0.02): the tutorial of the pull-down starts it with a fixed
+  // seed (startTinyTutorial)
+  tiny:{label:'Tiny town',note:'The standard rules on a tiny 8 × 8 town of 64 agents, small enough to follow each of '+
+    'them. The products keep their γ, but a B factory costs 4 and a chip factory 8 (instead of 8 and 20), and '+
+    'transport is dearer: β is 0.2, 0.1 and 0.05 for A, B and C (instead of 0.1, 0.05 and 0.02). In the Agents view '+
+    'every square shows the factory of its agent with the units it sold last round, and its money; hover over or tap '+
+    'an agent to see where its money came from and went, and why it kept or changed its factory. Step through the '+
+    'rounds with Step (key s), or run slowly with the button ▶ with a small s.',
+    products:[{...THREE[0],beta:0.2},{...THREE[1],start:4,beta:0.1},{...THREE[2],start:8,beta:0.05}],tmul:1,
+    anneal:false,std:true,L:8},
   twins:{label:'Twin products',note:'Two products with the numbers of the original one-product model (Start 5, γ −0.5, β 0.05) but different names. With a single product an owner whose sales fall has nothing to switch to, nobody pays a start cost again, and the money piles up without end; with twins an owner can switch.',
     products:[{start:5,gamma:-0.5,beta:0.05},{start:5,gamma:-0.5,beta:0.05}],tmul:1,anneal:false},
   glob:{label:'Globalization',note:'Transport starts 3× dearer and is lowered by e^−0.002 per round: local producers coarsen into a few big companies.',
@@ -2341,11 +2410,16 @@ function drawNet(at,cell,dpr){
 }
 $('Lsel').onchange=restart;
 $('speed').oninput=e=>{$('speedV').textContent=e.target.value};
-function setRun(on){
-  running=on; $('bRun').textContent=on?'Pause':'Run'; $('bRun2').textContent=on?'❚❚':'▶';
+// run (on) or pause; sl: a slow run, one round a frame with 0.1 s between frames, whatever the panel says (the button
+// ▶ with a small s, lit while it runs). A new run ends the loop of the old one (loopTok)
+let slow=false;
+function setRun(on,sl){
+  running=on; slow=on&&!!sl; $('bRun').textContent=on?'Pause':'Run'; $('bRun2').textContent=on?'❚❚':'▶';
+  $('bSlow2').classList.toggle('on',slow);
   if(on){const t=++loopTok;requestAnimationFrame(()=>loop(t))}
 }
 $('bRun').onclick=$('bRun2').onclick=()=>setRun(!running);
+$('bSlow2').onclick=()=>setRun(!slow,true);
 $('bStep').onclick=$('bStep2').onclick=()=>{doStep();refresh()};
 $('bReset').onclick=$('bReset2').onclick=restart;
 $('metric').onchange=()=>drawChart();
@@ -2438,10 +2512,10 @@ function doStep(){
 }
 function loop(tok){
   if(!running||tok!==loopTok)return;
-  const k=+$('speed').value, t0=performance.now();
+  const k=slow?1:+$('speed').value, t0=performance.now();          // a slow run: one round a frame
   for(let j=0;j<k;j++){doStep();if(performance.now()-t0>50)break}
   refresh();
-  const d=+$('delaySel').value;          // a pause between frames, to follow small systems round by round
+  const d=slow?100:+$('delaySel').value; // a pause between frames, to follow small systems round by round
   if(d>0&&(flashes.length||sinking.size))kickFlash();     // let the flashes fade and the towers sink during the pause
   if(d>0)setTimeout(()=>requestAnimationFrame(()=>loop(tok)),d);
   else requestAnimationFrame(()=>loop(tok));
