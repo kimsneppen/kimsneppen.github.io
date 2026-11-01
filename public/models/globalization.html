@@ -115,7 +115,12 @@
     .overlayinfo .readout{min-height:0}
     .overlayinfo .readout:empty{display:none}
     .display.darkbg .overlayinfo{background:rgba(11,13,19,.72)}
+    /* the legend and read-out sit behind the pull-down above the markets row, in the lower right corner */
+    .display:not(.tiny) .overlayinfo{left:auto;right:12px;bottom:var(--infob,44px);display:none}
+    .display.info-open:not(.tiny) .overlayinfo{display:block}
   }
+  .cornerbtns .inforow{display:none;flex-basis:100%;justify-content:flex-end}
+  @media (min-width:700px){ .display:not(.tiny) .cornerbtns .inforow{display:flex} }
   .tbtn.sobtn{font-size:12px;font-weight:600}
   .tbtn.stdbtn{font-size:12px;font-weight:600}
   /* buttons of the bar above the town that go to a new line together: ▶, slow run and step, and tiny town with
@@ -990,6 +995,9 @@
       <select id="moneySel" title="money of the agents as golden, semi-transparent towers in the same view">
         <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down" selected>money ↓ below the plane</option></select>
       <span class="spacer"></span>
+      <button class="tbtn stdbtn" id="bCost"
+        title="start costs of A, B and C: standard 2, 8, 20 · wide 2, 10, 50 · flat 2, 2, 2; click to switch"
+        >Cost standard</button>
       <button class="tbtn sobtn on" id="bSO2" data-tip="econ">free goods · n 1</button>
       <span class="stat">round <b id="tRound">0</b></span>
       <span class="bargrp"><button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
@@ -1014,6 +1022,7 @@
             <select id="distSel"><option value="0">none (∞ far)</option><option value="4">distant (4 L)</option><option value="2.5">medium (2.5 L)</option><option value="1.8">close (1.8 L)</option><option value="1.4">very close (1.4 L)</option></select></div>
           <div class="row"><label title="enlarge the 3D view (also with the mouse wheel over the display)">Zoom <span class="vv" id="zoomV"></span></label><input type="range" id="zoomR" min="-0.7" max="1.4" step="0.01" value="0"></div>
           <button class="btn sm" id="viewReset">reset view</button>
+          <button class="btn sm" id="viewFront" title="turn 90°, tilt 18°, perspective 2.5 L">front</button>
         </div>
       </details>
       <!-- roads and borders: choose a tool, then press, drag and release on the lattice (or tap a road or border to remove it) -->
@@ -1091,6 +1100,8 @@
       </div>
       </div>
       <div class="cornerbtns">
+        <span class="inforow"><button id="bInfo"
+          title="show or hide the legend and the read-out">legend ▴</button></span>
         <span class="dombtns" id="domBtns"></span>
         <button id="bFlash" title="marks where an agent's money falls to zero: in the colour of its company (yellow without one), all yellow, or off">
           <svg viewBox="0 0 16 16" width="15" height="15" style="vertical-align:-3px"><defs><linearGradient id="flashGrad" x1="0" y1="0" x2="1" y2="1">
@@ -1981,7 +1992,15 @@ function buildProductUI(){
 // the column sales of the products table: Start counted in sales, Start/p₀, with p₀ = w·L²/(N·T) the price when all T
 // orders of each product are served (T = n·L², rounded); renewed when Start, n, w, L or the products change. From
 // 10 000 on in thousands (k), so that it fits the column; the title has the whole number
+// the start costs of A, B and C as one of three sets (the button left of the economy button); other values: custom
+const COSTS=[['standard',[2,8,20]],['wide',[2,10,50]],['flat',[2,2,2]]];
+const costNow=()=>COSTS.findIndex(([,c])=>c.every((v,i)=>!P.products[i]||P.products[i].start===v));
+function syncCost(){const k=costNow(); $('bCost').textContent='Cost '+(k<0?'custom':COSTS[k][0])}
+$('bCost').onclick=()=>{const k=costNow(), c=COSTS[(k+1)%COSTS.length][1];
+  P.products.forEach((pr,i)=>{if(i<3)pr.start=c[i]});
+  buildProductUI(); E.computeMarkets(); draw()};
 function syncSales(){
+  syncCost();
   const N=P.products.length, T=Math.max(1,Math.round(P.n*P.L*P.L)), p0=P.wage*P.L*P.L/(N*T);
   document.querySelectorAll('#ptbody td.pk').forEach((td,i)=>{const k=Math.round(P.products[i].start/p0);
     td.textContent=p0>0?(k<1e4?String(k):k<1e6?Math.round(k/1e3)+'k':+(k/1e6).toPrecision(2)+'M'):'–';
@@ -2045,6 +2064,15 @@ $('bSO2').onclick=()=>setEcon(P.econ==='so'?'pay':'so');
 $('ctlPull').onclick=()=>setCtlOpen(false);
 // view menu of the 3D view (upper left corner): turn, tilt and perspective; dragging the view moves the sliders along
 const VIEW0={az:42*Math.PI/180,el:29*Math.PI/180,dist:4,zoom:1.5};     // the default view: turn 42°, tilt 29°, zoom 150 %
+// the legend pull-down: open or shut (remembered), placed just above the corner buttons
+function placeInfo(){const d=$('bInfo').closest('.display'), cb=document.querySelector('.cornerbtns');
+  d.style.setProperty('--infob',(d.getBoundingClientRect().bottom-cb.getBoundingClientRect().top+4)+'px')}
+function setInfo(open){$('bInfo').closest('.display').classList.toggle('info-open',open);
+  $('bInfo').textContent=open?'legend ▾':'legend ▴'; $('bInfo').classList.toggle('on',open); placeInfo();
+  try{localStorage.setItem('glob-info-open',open?'1':'0')}catch(e){}}
+$('bInfo').onclick=()=>setInfo(!$('bInfo').closest('.display').classList.contains('info-open'));
+window.addEventListener('resize',placeInfo);
+{let v=null; try{v=localStorage.getItem('glob-info-open')}catch(e){} setInfo(v==='1')}
 function syncView(){
   const az=Math.round(V3.az*180/Math.PI), el=Math.round(V3.el*180/Math.PI);
   $('azR').value=az; $('azV').textContent=az+'°'; $('elR').value=el; $('elV').textContent=el+'°'; $('distSel').value=String(V3.dist);
@@ -2054,6 +2082,7 @@ $('azR').oninput=e=>{V3.az=+e.target.value*Math.PI/180;syncView();draw()};
 $('elR').oninput=e=>{V3.el=+e.target.value*Math.PI/180;syncView();draw()};
 $('distSel').onchange=e=>{V3.dist=+e.target.value;draw()};
 $('viewReset').onclick=()=>{Object.assign(V3,VIEW0);syncView();draw()};
+$('viewFront').onclick=()=>{V3.az=90*Math.PI/180; V3.el=18*Math.PI/180; V3.dist=2.5; syncView(); draw()};
 $('zoomR').oninput=e=>{V3.zoom=Math.exp(+e.target.value);syncView();draw()};
 // flashes where an agent's money falls to zero: off → yellow → in the colour of its company → off; the lightning icon
 // shows the state
