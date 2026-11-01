@@ -722,7 +722,8 @@
         factory with the units it sold in the last round (A 7), and the agent's money. <b>Market</b>: for one
         product, everybody is coloured like the factory they buy from. <b>Sales</b> and <b>Money</b>: heat maps. When there are borders, every view shows the mean and the median money in each
         region they cut out (in 3D written on the ground, behind the towers), so you can compare the countries. Click
-        the numbers to switch all of them to their averages over the last two thirds of the run (in gold), and click
+        the numbers to switch all of them to their averages over the last half of the run since a setting or the
+        borders last changed (in gold), and click
         again for the present. Hover
         over or tap an agent to read its numbers.</p>
       <p>The buttons in the lower right corner:</p>
@@ -2335,8 +2336,8 @@ function regionStats(){
     mean[k]=m?sum[k]/m:0; med[k]=m?(m%2?a[m>>1]:(a[m/2-1]+a[m/2])/2):0}
   return {R,mean,med};
 }
-// The mean and the median of each region, every round, as running sums: their averages over the last two thirds of
-// the run (since the last parameter change, or since the borders changed) are differences of two records. Past 4000
+// The mean and the median of each region, every round, as running sums: their averages over the last half of the
+// run (since the last parameter change, or since the borders changed) are differences of two records. Past 4000
 // records every second one is dropped, so the window starts at most a few thousandths of the run too early.
 let RAV=null, regionAvg=false, regionBoxes=[];
 function ravRecord(){
@@ -2349,13 +2350,13 @@ function ravRecord(){
 }
 function ravWindow(R){
   if(!RAV||RAV.key!==R.key||RAV.rec.length<2)return null;
-  const rec=RAV.rec, b=rec[rec.length-1], t0=Math.max(DH?DH.t0:0,rec[0].t), ta=t0+Math.floor((b.t-t0)/3);
+  const rec=RAV.rec, b=rec[rec.length-1], t0=Math.max(DH?DH.t0:0,rec[0].t), ta=t0+Math.floor((b.t-t0)/2);
   let lo=0,hi=rec.length-1; while(lo<hi){const mid=(lo+hi+1)>>1; if(rec[mid].t<=ta)lo=mid; else hi=mid-1}
   const a=rec[lo], n=b.t-a.t; if(n<1)return null;
   return {mean:b.m.map((v,k)=>(v-a.m[k])/n),med:b.d.map((v,k)=>(v-a.d[k])/n),from:a.t+1,to:b.t};
 }
 // The mean and the median money written in each region (of at least 0.3 % of the agents): now, or averaged over the
-// last ⅔ of the run (in gold; a click on the numbers switches). Flat views: pos(r) is the canvas point of agent r.
+// last half of the run (in gold; a click on the numbers switches; on screen a thin frame marks them as a button). Flat views: pos(r) is the canvas point of agent r.
 // 3D: ground(x,y) maps the lattice to the canvas, and the text lies on the ground — drawn before the towers, which
 // stand in front of it. Labels that would overlap (in 3D on a small screen) are all made smaller, down to half size.
 function drawRegionStats(pos,side,dpr,ground){
@@ -2384,7 +2385,7 @@ function drawRegionStats(pos,side,dpr,ground){
     }
     let wmax=0; for(const [t,f] of T){ctx.font=font(Math.round(f*FT)); wmax=Math.max(wmax,ctx.measureText(t).width/FT)}
     const wb=wmax/2+0.25, cs=[[-wb,-1.15],[wb,-1.15],[-wb,bot],[wb,bot]].map(([p,q])=>[M[0]*p+M[2]*q,M[1]*p+M[3]*q]);
-    lab.push({T,a,M,l:Math.min(...cs.map(c=>c[0])),r:Math.max(...cs.map(c=>c[0])),t:Math.min(...cs.map(c=>c[1])),b:Math.max(...cs.map(c=>c[1]))});
+    lab.push({T,a,M,wb,bot,l:Math.min(...cs.map(c=>c[0])),r:Math.max(...cs.map(c=>c[0])),t:Math.min(...cs.map(c=>c[1])),b:Math.max(...cs.map(c=>c[1]))});
   }
   // the largest common scale at which no two boxes overlap: apart along x or along y
   let sc=1;
@@ -2399,6 +2400,8 @@ function drawRegionStats(pos,side,dpr,ground){
   const ink=regionAvg?'#fde68a':'#ffffff';
   for(const q of lab){
     ctx.save(); ctx.transform(q.M[0]*sc/FT,q.M[1]*sc/FT,q.M[2]*sc/FT,q.M[3]*sc/FT,q.a[0],q.a[1]);
+    if(!EXPORT_DPR){ctx.beginPath(); ctx.roundRect(-q.wb*FT,-1.15*FT,2*q.wb*FT,(q.bot+1.15)*FT,0.35*FT);
+      ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fill(); ctx.lineWidth=0.07*FT; ctx.strokeStyle=ink; ctx.stroke()}
     for(const [t,f,dy] of q.T){const sz=Math.round(f*FT); ctx.font=font(sz); ctx.lineWidth=Math.max(3,0.28*sz);
       ctx.strokeStyle='rgba(0,0,0,.85)'; ctx.strokeText(t,0,dy*FT); ctx.fillStyle=ink; ctx.fillText(t,0,dy*FT)}
     ctx.restore();
@@ -2407,7 +2410,8 @@ function drawRegionStats(pos,side,dpr,ground){
   ctx.restore();
   return R;
 }
-const regionNote=R=>`<span>numbers: the mean and the median money in ${R.n>1?'each of the '+R.n+' regions':'the region'} the borders cut out — ${regionAvg?'in gold: averaged over the last ⅔ of the run; click them for the present':'click them for the average over the last ⅔ of the run'}</span>`;
+const regionNote=R=>`<span>numbers: the mean and the median money in ${R.n>1?'each of the '+R.n+' regions':'the region'} the borders cut out — ${regionAvg?'in gold: averaged over the last half of the run since a setting changed; click them for the present':
+  'click them for the average over the last half of the run since a setting changed'}</span>`;
 // is the pointer on the numbers of a region?
 function onRegionNumbers(ev){
   if(!regionBoxes.length)return false;
