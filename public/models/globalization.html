@@ -129,7 +129,7 @@
      1024 px window beside a scroll bar, with the slow-run button, up to round 99 999 and down to n 0.05 */
   .bargrp{display:inline-flex;flex:0 0 auto;gap:6px}
   @media (min-width:700px){ .dispbar{column-gap:4px} .dispbar .tbtn,.dispbar .seg button{padding:5px 7px} }
-  .dispbar > .bargrp:last-child{margin-left:auto}      /* tiny town and standard at the right, also when wrapped */
+  .dispbar > .bargrp:last-child{margin-left:auto}      /* tiny town, standard and large at the right, also when wrapped */
   /* slow run: a white triangle with a small s in the button's colour; gold while it runs */
   .tbtn.slow{min-width:28px;padding-left:5px;padding-right:5px}
   .tbtn.slow svg{display:block;width:13px;height:13px;margin:0 auto}
@@ -243,6 +243,8 @@
   .circprods button{min-width:27px;height:25px;border-radius:7px;border:1.5px solid var(--pc);background:transparent;color:var(--pc);
     font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;padding:0 5px}
   .circprods button.on{background:var(--pc);color:var(--pt)}
+  .circprods.gridn{display:flex;justify-content:flex-start;margin:0 0 6px}      /* n of the grid of countries */
+  .circprods.gridn button{--pc:var(--accent);--pt:#fff}
   .vmbox .row input[type=range]{width:120px}
   .vmbox .row select{min-width:0;width:130px}
   .display.darkbg .viewmenu > summary{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
@@ -670,7 +672,9 @@
           <b>circle in the centre</b> enclosing 5 to 70 % of the town, like a country in the middle of the world. The circle
           charges goods both ways, or only goods going in: then it protects the inside, while its own goods go out free.
           The product buttons in the same menu choose which products the circle taxes, for instance only the chips.
-          A border you draw can do the same: choose its products with the buttons by the second <b>+ border</b>.</li>
+          A border you draw can do the same: choose its products with the buttons by the second <b>+ border</b>.
+          At the bottom of the border menu, a <b>grid of countries</b>: n borders along each axis cut the town into
+          (n + 1) × (n + 1) countries, with the tax and tariff of the menu, both ways and for every product.</li>
         <li><b>− road</b> and <b>− border</b>: tap one to remove it. <b>✕ all</b> removes them all.</li>
       </ul>
       <p>Goods always travel the cheapest way: they may follow a road part of the way, or go around the end of a border
@@ -714,7 +718,8 @@
       <h2 id="r-pics">How to read the picture of the town</h2>
       <p><b>3D</b> (the default): the town seen from the side. Every factory is a tower as tall as the number of units it
         sold last round. The golden glass columns are the agents' money, hanging below the ground or standing around the
-        factories (menu at the top). The scale bars at the left show the height of a round number of units and of money.
+        factories (menu at the top). The scale bar at the left corner of the town shows the height of a round number
+        of units, and its golden, thicker continuation the height of a round number of money.
         Drag to turn and tilt, use the mouse wheel to zoom, or open the <i>view</i> menu. <i>lin / log</i> switches the
         towers to a logarithmic scale, so that small factories show up too.</p>
       <p><b>Agents</b>: every seller is a small pie, its area the units sold, a slice per product. When the squares are
@@ -725,7 +730,9 @@
         the numbers, or the button <i>regions</i> beside the markets buttons in the lower right corner, to switch all
         of them to their averages over the last two thirds of the run since a setting or the borders last changed (in
         gold), and click
-        again for the present. Hover
+        again for the present. With a grid of countries (the border menu) the legend also gives the mean wealth of
+        the regions and the standard deviation between them, both taken every round and averaged over the last two
+        thirds of the run. Hover
         over or tap an agent to read its numbers.</p>
       <p>The buttons in the lower right corner:</p>
       <ul>
@@ -734,7 +741,7 @@
           had then — yellow if it had none — or all in yellow, or off. The bigger the company, the bigger the mark: a soft
           flash where it stood, and small lightnings along its tower and its money column; the many small falls give
           small flashes, at most 60 at a time. A company that closes sinks to the ground.</li>
-        <li><b>◐</b> switches between a black and a white background. <b>.png</b> saves a picture with all the settings
+        <li><b>◐</b> switches between the white background and a black one. <b>.png</b> saves a picture with all the settings
           written under it, <b>sq</b> a square picture of just the town.</li>
       </ul>
 
@@ -891,7 +898,8 @@
         <li>Press <b>tiny town</b> above the town (or <b>Load the tiny town</b> in <i>A tiny town, step by step</i>),
           and follow the first rounds with <b>step</b>: hover over the agents, check how their money changes, and find
           out why an owner gives up. ↺ then gives a new tiny town; <b>standard</b> above the town, or any preset but
-          <i>Tiny town</i> in the control panel, goes back to the 125 × 125 town, which the ideas below need.</li>
+          <i>Tiny town</i> and <i>Large town</i> in the control panel, goes back to the 125 × 125 town, which the ideas
+          below need (<b>large</b>, right of <b>standard</b>, gives the same rules on a 250 × 250 town).</li>
         <li>Let the town run a few hundred rounds, then set <b>patience</b> to 5: the richest get much richer, and now
           and then a chip company stays big for a hundred rounds or more. Then press ↺ for a new town with patience
           5: it freezes.</li>
@@ -989,7 +997,7 @@
 </header>
 
 <div class="layout">
-  <section class="display darkbg">
+  <section class="display">
     <div class="dispbar">
       <div class="seg" id="viewSeg">
         <button data-v="3d" class="on">3D</button><button data-v="agents">Agents</button><button data-v="market">Market</button><button data-v="sales">Sales</button><button data-v="money">Money</button>
@@ -1012,7 +1020,8 @@
       <button class="tbtn" id="bReset2" title="reset">↺</button>
       <span class="bargrp"><button class="tbtn stdbtn" id="bTiny"
         title="load the tiny 8 × 8 town of the tutorial: always the same town, Agents view, paused">tiny town</button>
-        <button class="tbtn stdbtn" id="bStd" data-tip="std">standard</button></span>
+        <button class="tbtn stdbtn" id="bStd" data-tip="std">standard</button>
+        <button class="tbtn stdbtn" id="bLarge" data-tip="large">large</button></span>
     </div>
     <div class="canvas-wrap"><canvas id="cv"></canvas>
       <div class="ovtop">
@@ -1047,14 +1056,15 @@
       <div class="tool">
         <button class="tb" data-tool="addBorder" title="add a border: press, drag and release on the lattice">+ border</button>
         <details class="tmenu"><summary
-          title="tax and tariff of new borders, a circle, direction and products of a border you draw">▾</summary>
+          title="tax and tariff of new borders, a circle, direction and products of a border you draw, a grid of countries"
+          >▾</summary>
           <div class="vmbox">
             <div class="row"><label>tax on crossing</label>
               <select id="taxSel"><option value="0">none</option><option value="0.05">5 %</option><option value="0.1">10 %</option><option value="0.2" selected>20 %</option><option value="0.3">30 %</option><option value="0.5">50 %</option><option value="1">100 %</option><option value="2">200 %</option></select></div>
             <div class="row"><label>tariff per unit</label>
               <select id="tarSel"><option value="0" selected>none</option><option value="0.01">0.01</option><option value="0.02">0.02</option><option value="0.05">0.05</option><option value="0.1">0.1</option><option value="0.2">0.2</option><option value="0.5">0.5</option><option value="1">1</option></select></div>
-            <p class="hint">The tax and the tariff hold for every new border: the circle and the borders you
-              draw (below). The tax is a percentage of the full value of the goods where they cross,
+            <p class="hint">The tax and the tariff hold for every new border: the circle, the borders you
+              draw and the grid of countries (below). The tax is a percentage of the full value of the goods where they cross,
               p·(1 + α·s<sup>γ</sup> + transport so far), in both economies. With free goods no money moves: the tax
               only changes where the buyers buy. When the buyers pay it is part of what they pay, and like the cost of
               making and carrying the goods it comes back to everybody as an equal income.
@@ -1082,7 +1092,17 @@
               border follows your drag, with the tax and tariff above. The product buttons choose which products
               pay; the others cross free. A one-way border taxes only goods crossing in the direction its arrows
               point; goods crossing the other way pass free. The arrows point to your left as you trace the border
-              from where you started to where you let go (drawn from top to bottom, they point to the right).</p></div>
+              from where you started to where you let go (drawn from top to bottom, they point to the right).</p>
+            <div class="vmsub">A grid of countries</div>
+            <div class="row"><label>n: borders along each axis</label></div>
+            <span class="circprods gridn" id="gridN"><button data-n="0" class="on">0</button><button data-n="1">1</button
+              ><button data-n="2">2</button><button data-n="3">3</button><button data-n="4">4</button><button
+              data-n="5">5</button><button data-n="10">10</button></span>
+            <p class="hint">n straight borders along each axis cut the town into (n + 1) × (n + 1) countries, with the
+              tax and tariff above, both ways and for every product (n = 2 gives the 3 × 3 countries of the Borders
+              preset). A number lays out a new grid, the one already chosen too, after a new tax; 0 removes it. The
+              circle and the borders you draw stay. With a grid, the legend gives the mean wealth of the countries and
+              the standard deviation between them, averaged over the last ⅔ of the run.</p></div>
         </details>
       </div>
       <button class="tb" data-tool="rmBorder" title="remove a border: tap on it">− border</button>
@@ -1264,7 +1284,7 @@
         <button class="btn sm tog" id="bDebt">bankrupt</button></div>
       <div class="row"><label>Lattice L</label>
         <select id="Lsel"><option>8</option><option>16</option><option>32</option><option>64</option><option>96</option>
-          <option selected>125</option><option>192</option><option>256</option></select></div>
+          <option selected>125</option><option>192</option><option>250</option></select></div>
       <div class="row"><label title="orders per agent per product per round: small n = few, noisy sales">Orders per person n</label>
         <select id="nSel"><option>0.05</option><option>0.1</option><option>0.2</option><option>0.5</option><option>1</option><option>2</option><option>5</option></select></div>
       <div class="row"><label title="the largest number of different products one agent may produce at the same time">Factories per agent, lim</label><select id="limSel"></select></div>
@@ -1773,6 +1793,7 @@ const HELP={
   std:'restore the standard setup: the three products A, B and C, free goods with the Income weight (gouging off, '+
     'shopping debts bankrupt), n = 1, patience 0, wage 0.05, upkeep 0, a closed 125 × 125 town without roads or '+
     'borders',
+  large:'the standard setup on a large 250 × 250 town: 62 500 agents, four times as many, so the rounds take longer',
   buyw:'who places the orders: picked ∝ last round\'s income (Income weight: the wage, the sales and, when the '+
     'buyers pay, the equal income) or ∝ the money they have (Money weight) — click to switch',
   mu:'upkeep μ: every round a factory owner pays μ times what its factory cost to build, Start·p/p₀, the same '+
@@ -1832,9 +1853,11 @@ function setPalette(){
 
 const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:0,buyw:'inc',M0:5,bc:'closed',tmul:1,roads:[],borders:[],
   econ:'so',gouge:false,forgive:false,seed:1};
-// a 3 × 3 grid of two-way borders with 20 % tax, for the Borders preset
-const gridBorders=(L,k,tax)=>{const b=[];for(let j=0;j<k;j++){const g=j*L/k;
-  b.push({pts:[[g,0],[g,L]],tax,oneway:false},{pts:[[0,g],[L,g]],tax,oneway:false})}return b};
+// a grid of k × k countries: two-way borders taxing every product at j·L/k, j = 0 … k − 1, along each axis (the one at
+// 0 lies on the edge and counts only in a periodic town); grid: k − 1, the borders along each axis inside the town, gi:
+// j. The Borders preset is k = 3 with 20 % tax, the grid of the border menu k = n + 1
+const gridBorders=(L,k,tax,tariff=0)=>{const b=[];for(let j=0;j<k;j++){const g=j*L/k, o={tax,tariff,oneway:false,
+  grid:k-1,gi:j}; b.push({pts:[[g,0],[g,L]],...o},{pts:[[0,g],[L,g]],...o})}return b};
 // a more scalable product (lower γ) always costs more to start; A is the basic product
 const THREE=[{start:2,gamma:-0.3,beta:0.1},{start:8,gamma:-0.6,beta:0.05},{start:20,gamma:-0.9,beta:0.02}];
 const PRESETS={
@@ -1845,6 +1868,10 @@ const PRESETS={
     'Income weight, then lets the sellers charge the next-best offer, and Shopping debts, under the Economy menu, '+
     'can forgive debts that come from shopping alone (both off in the standard setup).',
     products:THREE,tmul:1,anneal:false,std:true},
+  // the standard setup on 250 × 250 (the button large above the town)
+  large:{label:'Large town',note:'The standard setup on a large 250 × 250 town: 62 500 agents, four times as many as '+
+    'in the standard 125 × 125 town, so the rounds take longer.',
+    products:THREE,tmul:1,anneal:false,std:true,L:250},
   // the standard rules on 8 × 8, with cheaper B and chip factories (Start 4 and 8 instead of 8 and 20) and dearer
   // transport (β 0.2, 0.1 and 0.05 instead of 0.1, 0.05 and 0.02): the tutorial of the pull-down starts it with a fixed
   // seed (startTinyTutorial)
@@ -1860,10 +1887,10 @@ const PRESETS={
     products:[{start:5,gamma:-0.5,beta:0.05},{start:5,gamma:-0.5,beta:0.05}],tmul:1,anneal:false},
   glob:{label:'Globalization',note:'Transport starts 3× dearer and is lowered by e^−0.002 per round: local producers coarsen into a few big companies.',
     products:THREE,tmul:3,anneal:true},
-  borders:{label:'Borders',note:'Cheap transport (factor 0.2), but 3 × 3 countries: crossing a border costs 20 % of the value of the goods.',
+  borders:{label:'Borders',note:'Cheap transport (factor 0.2), but 3 × 3 countries: crossing a border costs 20 % of the value of the goods. It is the grid of countries with n = 2 in the border menu.',
     products:THREE,tmul:0.2,anneal:false,borders:L=>gridBorders(L,3,0.2)},
 };
-let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=true, loopTok=0;
+let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=false, loopTok=0;
 
 // the model settings of the standard setup (the view and the colours are left as they are)
 const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:0,buyw:'inc',M0:5,bc:'closed',econ:'so',gouge:false,forgive:false};
@@ -1884,7 +1911,8 @@ function applyPreset(k,seed){
 // a new start, with the given seed (a whole number) or a new one at random
 function restart(seed){
   const L1=+$('Lsel').value;
-  if(L1!==P.L){P.roads=[];P.borders=[]}       // a new lattice size starts without roads and borders
+  if(L1!==P.L){const g=P.borders.find(b=>b.grid); P.roads=[];   // a new lattice size starts without roads and borders,
+    P.borders=g?gridBorders(L1,g.grid+1,g.tax,g.tariff):[]}        // but a grid of countries is laid out on it again
   $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
   P.L=L1; P.seed=Number.isInteger(seed)?seed:(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.scaleT=-1;
   document.querySelector('.display').classList.toggle('tiny',L1<=16);      // room for a tiny town (CSS, draw)
@@ -2122,6 +2150,7 @@ $('pDel').onclick=()=>{const pr=P.products;
   P.borders=P.borders.filter(b=>!b.prods||b.prods.length);
   restart()};
 $('bStd').onclick=()=>applyPreset('standard');
+$('bLarge').onclick=()=>applyPreset('large');
 // orders per agent n and upkeep μ: in the panel and as menus in the upper right corner of the display
 function setN(v){P.n=v; $('nSel').value=String(v); syncSO(); syncSales(); distMark()}
 $('nSel').onchange=$('nSel2').onchange=e=>setN(+e.target.value);
@@ -2175,6 +2204,17 @@ $('addCircle').onclick=()=>{
   P.borders.push({pts,tax:+$('taxSel').value,tariff:+$('tarSel').value,oneway:$('circDir').value==='in',prods});
   closeMenus(); netChanged();
 };
+// a grid of countries (the border menu): n borders along each axis, with the tax and tariff of the menu, both ways, for
+// every product. A number lays out a new grid (the same number again takes a new tax), 0 removes it; other borders stay
+function setGrid(n){
+  P.borders=P.borders.filter(b=>!b.grid);
+  if(n>0)P.borders.push(...gridBorders(E.L,n+1,+$('taxSel').value,+$('tarSel').value));
+  closeMenus(); netChanged();
+}
+document.querySelectorAll('#gridN button').forEach(b=>b.onclick=()=>setGrid(+b.dataset.n));
+// the number of the grid in place lit in the border menu (0 without one)
+function syncGrid(){const g=P.borders.find(b=>b.grid), n=g?g.grid:0;
+  document.querySelectorAll('#gridN button').forEach(b=>b.classList.toggle('on',+b.dataset.n===n))}
 // a straight road from the centre to a corner of the lattice
 $('addCornerRoad').onclick=()=>{
   const L=E.L, c=L/2, k=$('roadCorner').value, x=k[1]==='l'?0.5:L-0.5, y=k[0]==='t'?0.5:L-0.5;
@@ -2215,7 +2255,8 @@ function toolDown(ev){
   const g=gridPos(ev); if(!g)return;
   if(tool==='addRoad'||tool==='addBorder'){toolDrag={pts:[g],cur:g};cv.setPointerCapture(ev.pointerId);draw();return}
   const list=tool==='rmRoad'?P.roads:P.borders; let k=-1,best=Math.max(1.5,E.L/60);
-  list.forEach((s,j)=>{const d=polyDist(g[0],g[1],s.pts);if(d<best){best=d;k=j}});
+  list.forEach((s,j)=>{if(s.grid&&s.gi===0&&P.bc==='closed')return;      // not drawn (drawNet)
+    const d=polyDist(g[0],g[1],s.pts);if(d<best){best=d;k=j}});
   if(k>=0){list.splice(k,1);netChanged()}
 }
 function toolMove(g){
@@ -2345,13 +2386,19 @@ function regionStats(){
 // The mean and the median of each region, every round, as running sums: their averages over the last two thirds of
 // the run (since the last parameter change, or since the borders changed) are differences of two records. Past 4000
 // records every second one is dropped, so the window starts at most a few thousandths of the run too early.
+// Also the mean of the regions' mean money and its standard deviation between them (for the legend with a grid), over
+// the regions with numbers on the board, of at least 0.3 % of the agents (bigRegion).
 let RAV=null, regionAvg=false, regionBoxes=[];
+const bigRegion=(R,k)=>R.size[k]>=Math.max(4,0.003*E.L*E.L);
 function ravRecord(){
   if(!P.borders.length){RAV=null;return}
   const {R,mean,med}=regionStats();
-  if(!RAV||RAV.key!==R.key)RAV={key:R.key,rec:[{t:E.t-1,m:new Float64Array(R.n),d:new Float64Array(R.n)}]};
+  let K=0,gm=0,gs=0;
+  for(let k=0;k<R.n;k++)if(bigRegion(R,k)){K++;gm+=mean[k]}
+  if(K){gm/=K; for(let k=0;k<R.n;k++)if(bigRegion(R,k))gs+=(mean[k]-gm)**2; gs=Math.sqrt(gs/K)}
+  if(!RAV||RAV.key!==R.key)RAV={key:R.key,rec:[{t:E.t-1,m:new Float64Array(R.n),d:new Float64Array(R.n),gm:0,gs:0}]};
   const last=RAV.rec[RAV.rec.length-1];
-  RAV.rec.push({t:E.t,m:last.m.map((v,k)=>v+mean[k]),d:last.d.map((v,k)=>v+med[k])});
+  RAV.rec.push({t:E.t,m:last.m.map((v,k)=>v+mean[k]),d:last.d.map((v,k)=>v+med[k]),gm:last.gm+gm,gs:last.gs+gs});
   if(RAV.rec.length>4000)RAV.rec=RAV.rec.filter((q,i,a)=>i%2===0||i===a.length-1);
 }
 function ravWindow(R){
@@ -2359,7 +2406,8 @@ function ravWindow(R){
   const rec=RAV.rec, b=rec[rec.length-1], t0=Math.max(DH?DH.t0:0,rec[0].t), ta=t0+Math.floor((b.t-t0)/3);
   let lo=0,hi=rec.length-1; while(lo<hi){const mid=(lo+hi+1)>>1; if(rec[mid].t<=ta)lo=mid; else hi=mid-1}
   const a=rec[lo], n=b.t-a.t; if(n<1)return null;
-  return {mean:b.m.map((v,k)=>(v-a.m[k])/n),med:b.d.map((v,k)=>(v-a.d[k])/n),from:a.t+1,to:b.t};
+  return {mean:b.m.map((v,k)=>(v-a.m[k])/n),med:b.d.map((v,k)=>(v-a.d[k])/n),from:a.t+1,to:b.t,
+    gm:(b.gm-a.gm)/n,gs:(b.gs-a.gs)/n};
 }
 // The mean and the median money written in each region (of at least 0.3 % of the agents): now, or averaged over the
 // last ⅔ of the run (in gold; the button "regions" beside the markets buttons, or a click on the numbers, switches). Flat views: pos(r) is the canvas point of agent r.
@@ -2416,7 +2464,17 @@ function drawRegionStats(pos,side,dpr,ground){
   ctx.restore();
   return R;
 }
-const regionNote=R=>`<span>numbers: the mean and the median money in ${R.n>1?'each of the '+R.n+' regions':'the region'} the borders cut out — ${regionAvg?'in gold: averaged over the last ⅔ of the run since a setting changed; the button regions switches back':
+// with a grid of countries: the mean wealth of the regions and its standard deviation between them, each taken every
+// round and averaged over the last ⅔ of the run since a setting or the borders changed (ravRecord)
+function gridNote(R){
+  if(!P.borders.some(b=>b.grid))return '';
+  const av=ravWindow(R), g=v=>Math.abs(v)>=100?v.toFixed(0):String(+v.toPrecision(3));
+  let K=0; for(let k=0;k<R.n;k++)if(bigRegion(R,k))K++;
+  return `<span>${K} regions, ${av?`averaged over rounds ${av.from}–${av.to}: mean wealth <b>${g(av.gm)}</b>, `+
+    `standard deviation between the regions <b>${g(av.gs)}</b>`:'no average yet'} (both taken every round from the `+
+    `regions' mean money)</span>`;
+}
+const regionNote=R=>gridNote(R)+`<span>numbers: the mean and the median money in ${R.n>1?'each of the '+R.n+' regions':'the region'} the borders cut out — ${regionAvg?'in gold: averaged over the last ⅔ of the run since a setting changed; the button regions switches back':
   'the button regions, lower right, switches to the average over the last ⅔ of the run'}</span>`;
 // is the pointer on the numbers of a region?
 function onRegionNumbers(ev){
@@ -2438,12 +2496,13 @@ function drawNet(at,cell,dpr){
       ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.lineTo(b[0]-h*Math.cos(ang-0.45),b[1]-h*Math.sin(ang-0.45));ctx.lineTo(b[0]-h*Math.cos(ang+0.45),b[1]-h*Math.sin(ang+0.45));ctx.fill()}
     const lab=[s.tax?Math.round(100*s.tax)+' %':'',s.tariff?'+'+s.tariff+'/unit':''].filter(Boolean).join(' ')+
       (s.prods&&(s.tax||s.tariff)?' on '+s.prods.map(i=>PNAME[i]).join(''):'');
-    if(lab){const [lx,ly,tx,ty]=polyAt(s.pts,0.3),o=at(lx,ly),q=at(lx-ty,ly+tx),
+    if(lab&&(!s.grid||s.gi===1)){const [lx,ly,tx,ty]=polyAt(s.pts,0.3),o=at(lx,ly),q=at(lx-ty,ly+tx),   // a grid: once each way
       dl=Math.hypot(q[0]-o[0],q[1]-o[1])||1,p=[o[0]+(q[0]-o[0])/dl*14*dpr,o[1]+(q[1]-o[1])/dl*14*dpr];ctx.font=`700 ${11*dpr}px -apple-system,Segoe UI,Roboto,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
       ctx.lineJoin='round';ctx.lineWidth=3*dpr;ctx.strokeStyle=dark?'rgba(0,0,0,.8)':'rgba(255,255,255,.85)';ctx.strokeText(lab,p[0],p[1]);  // readable on any map
       ctx.fillStyle=dark?'#fecdd3':'#be123c';ctx.fillText(lab,p[0],p[1])}
     ctx.globalAlpha=1};
-  P.roads.forEach(s=>road(s.pts,1)); P.borders.forEach(s=>border(s,1));
+  // a grid's border on the edge of a closed town changes nothing and is not drawn
+  P.roads.forEach(s=>road(s.pts,1)); P.borders.forEach(s=>{if(!(s.grid&&s.gi===0&&P.bc==='closed'))border(s,1)});
   if(toolDrag){const pts=[...toolDrag.pts,toolDrag.cur];       // the road or border being drawn, faded
     if(tool==='addRoad')road(pts,0.6); else border(drawnBorder(pts),0.6)}
 }
@@ -2642,19 +2701,21 @@ function draw3D(){
   if(!EXPORT_DPR)updateScales();
   const f=hlog?v=>HW*Math.log(1+v)/Math.log(1+V3.hmax):v=>HW*v/V3.hmax;
   const fm=hlog?v=>HM*Math.log(1+Math.max(0,v))/Math.log(1+V3.mmax):v=>HM*Math.max(0,v)/V3.mmax;
-  // scale bars at the left corner of the lattice: companies upward, money (if shown) upward or downward like the towers
+  // scale bars at the left corner of the lattice, in one line: the companies upward from the ground, and the money (if
+  // shown) in continuation of it, downward from the ground when it hangs below the plane, else on top of the companies
   const corners=[[-L/2,-L/2],[L/2,-L/2],[L/2,L/2],[-L/2,L/2]];
   const cl=corners.reduce((a,c)=>proj(c[0],c[1],0)[0]<proj(a[0],a[1],0)[0]?c:a);
   const bars=[];
   if(hlog){
     const ticks=[]; for(let v=1;v<=V3.hmax;v*=10)ticks.push(v);
-    bars.push({h:f(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,h:f(v)})),label:'units'});
-  }else{const v=niceNum(0.5*V3.hmax); bars.push({h:f(v),ticks:[{v,h:f(v)}],label:'units'})}
+    bars.push({z0:0,z1:f(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,z:f(v)})),label:'units (log)'});
+  }else{const v=niceNum(0.5*V3.hmax); bars.push({z0:0,z1:f(v),ticks:[{v,z:f(v)}],label:'units'})}
   if(money3!=='off'){
-    const sg=mDown?-1:1;
+    const sg=mDown?-1:1, z0=mDown?0:bars[0].z1;
     if(hlog){const ticks=[]; for(let v=1;v<=V3.mmax;v*=10)ticks.push(v);
-      if(ticks.length)bars.push({h:sg*fm(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,h:sg*fm(v)})),label:'money',gold:true})}
-    else{const v=niceNum(0.5*V3.mmax), h=sg*fm(v); bars.push({h,ticks:[{v,h}],label:'money',gold:true})}
+      if(ticks.length)bars.push({z0,z1:z0+sg*fm(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,z:z0+sg*fm(v)})),
+        label:'money',gold:true})}
+    else{const v=niceNum(0.5*V3.mmax), z=z0+sg*fm(v); bars.push({z0,z1:z,ticks:[{v,z}],label:'money',gold:true})}
   }
   // framing: the lattice with room for towers 1.15 times the height scale (and, with money below the plane, as deep), seen
   // from the camera. It does not depend on the towers of the moment, so it changes only when the scales are renewed or the
@@ -2731,24 +2792,31 @@ function draw3D(){
     if(hm>zminM)box(r,0.03,0,hm,GOLD,GOLD.line,true);
   }
   goldFlush();
-  // scale bars: thick lines, black on white and white on black, with their numbers to the left
-  const ink=dark?'#ffffff':'#000000', fs=11*dpr;
-  ctx.font=`600 ${fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`; ctx.textAlign='right';
+  // scale bars: thick lines, the companies' black on white and white on black, the money's golden and twice as thick;
+  // the numbers to the right: first the one at the end of each bar, with the name of the quantity, then the others
+  // where they do not run into a number already written (a small town on the log scale)
+  const ink=dark?'#ffffff':'#000000', fs=16.5*dpr;
   const fmtV=v=>v>=1e4?(v/1000).toFixed(0)+'k':v>=1?String(Math.round(v)):v.toPrecision(2);
-  bars.forEach((b,k)=>{
-    // at the left corner of the lattice, but never off the canvas (when zoomed in)
-    const base=P2(cl[0],cl[1],0), x=Math.max(base[0]-(12+k*26)*dpr,(66-26*k)*dpr), y0=base[1], y1=P2(cl[0],cl[1],b.h)[1];
-    const col=b.gold?(dark?'#e2b33c':'#a57a14'):ink;           // the money bar is golden, like the money
-    ctx.strokeStyle=col; ctx.lineWidth=3*dpr; ctx.lineCap='butt';
-    ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1); ctx.stroke();
-    ctx.lineWidth=2*dpr; ctx.beginPath();
-    b.ticks.forEach(t=>{const y=P2(cl[0],cl[1],t.h)[1]; ctx.moveTo(x-5*dpr,y); ctx.lineTo(x+5*dpr,y)}); ctx.moveTo(x-5*dpr,y0); ctx.lineTo(x+5*dpr,y0); ctx.stroke();
-    ctx.fillStyle=b.gold?(dark?'#f6d25c':'#8a6412'):ink;
-    ctx.textBaseline='middle';
-    b.ticks.forEach(t=>ctx.fillText(fmtV(t.v),x-8*dpr,P2(cl[0],cl[1],t.h)[1]));
-    ctx.textBaseline=b.h<0?'top':'bottom'; ctx.textAlign='center';
-    ctx.fillText(b.label+(hlog&&!b.gold?' (log)':''),x,y1+(b.h<0?6:-6)*dpr); ctx.textAlign='right';
+  // at the left corner of the lattice, but never off the canvas (when zoomed in)
+  const bx=Math.max(P2(cl[0],cl[1],0)[0]-12*dpr,14*dpr), by=z=>P2(cl[0],cl[1],z)[1], bw=b=>(b.gold?6:3)*dpr;
+  ctx.save(); ctx.font=`600 ${fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`;
+  ctx.lineCap='butt'; ctx.lineJoin='round'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  bars.forEach(b=>{
+    const w=bw(b);
+    ctx.strokeStyle=b.gold?(dark?'#efc864':'#c39424'):ink;       // golden like the money, a little lighter
+    ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(bx,by(b.z0)); ctx.lineTo(bx,by(b.z1)); ctx.stroke();
+    ctx.lineWidth=2*dpr; ctx.beginPath();                         // the ground (once) and the ticks
+    for(const z of [...(b.gold?[]:[b.z0]),...b.ticks.map(t=>t.z)]){
+      const y=by(z); ctx.moveTo(bx-w/2-3*dpr,y); ctx.lineTo(bx+w/2+3*dpr,y)}
+    ctx.stroke();
   });
+  ctx.lineWidth=3*dpr; ctx.strokeStyle=dark?'rgba(0,0,0,.75)':'rgba(255,255,255,.85)';      // readable over the town
+  const used=[], put=(b,t,s,end)=>{const y=by(t.z); if(!end&&used.some(u=>Math.abs(u-y)<1.1*fs))return;
+    used.push(y); ctx.fillStyle=b.gold?(dark?'#f6d25c':'#8a6412'):ink;
+    ctx.strokeText(s,bx+bw(b)/2+7*dpr,y); ctx.fillText(s,bx+bw(b)/2+7*dpr,y)};
+  bars.forEach(b=>{const t=b.ticks[b.ticks.length-1]; put(b,t,fmtV(t.v)+' '+b.label,true)});
+  bars.forEach(b=>b.ticks.slice(0,-1).forEach(t=>put(b,t,fmtV(t.v))));
+  ctx.restore();
   drawFlashes(r=>{const x=(r%L)+0.5-L/2,y=((r/L)|0)+0.5-L/2;
     return {cell:s,base:P2(x,y,0),top:size=>P2(x,y,f(size)),
       pillar:money3==='off'?null:m=>{const h=fm(m);return h>zmin?[P2(x,y,0),P2(x,y,mDown?-h:h)]:null}}});
@@ -2827,7 +2895,7 @@ $('bAvg').onclick=()=>{regionAvg=!regionAvg; draw()};
 function draw(){
   if(!E)return;
   if(!frozenAt)animT=performance.now();         // the time of this picture, for the flashes and sinking towers
-  syncAvgBtn();
+  syncAvgBtn(); syncGrid();
   regionBoxes=[];                                 // the numbers of the regions, where they are drawn this time
   if(view==='3d'){draw3D();return}
   const L=E.L, LL=L*L, N=E.N;
