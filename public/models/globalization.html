@@ -555,11 +555,11 @@
           in round 11, and its own B orders go to (0,4), since nobody buys from itself. Step: (0,2) sells only 51 and
           gives B up, and (0,4) sells 13. Step again: (0,4) is now the biggest B factory, so the cheapest, and
           sells 62. Then the same happens to it. Now press the slow-run button, ▶ with a small s, right of ▶ above the
-          town: it plays one round a frame, with 0.1 s between frames; press it again to pause. Watch B go round the
+          town: it plays one round a frame, with 0.1 s between frames (and sets the control panel so); press it again to pause. Watch B go round the
           town: from round 10 to round 1&nbsp;000 it changes hands 485 times, 457 of them after two rounds, and every
           time to the factory the old leader bought from.</li>
         <li><b>The bread, and no more chips.</b> Let the slow run go on. To go faster, pause, then press ▶ (or
-          <i>Run</i> in the control panel, or the space bar): it runs at the speed set in the control panel. Bread is
+          <i>Run</i> in the control panel, or the space bar): it runs 2 rounds a frame without delay, and the control panel goes back to that. Bread is
           dear to ship, and a big bakery bakes only a little more cheaply, so bread stays local. In most rounds two or
           three bakeries sell 10 loaves or more, the biggest about 27 of the 64. Its buyers live within three or four
           steps of it, while the biggest B factory sells to nearly everybody. Most agents keep a factory that sells
@@ -1013,13 +1013,13 @@
         <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down" selected>money ↓ below the plane</option></select>
       <span class="spacer"></span>
       <button class="tbtn stdbtn" id="bCost"
-        title="start costs of A, B and C: standard 2, 8, 20 · wide 2, 10, 50 · flat 2, 2, 2; click to switch"
+        title="start costs of A, B and C: standard 2, 8, 20 · wide 2, 10, 50 · flat 1 for every product; click to switch"
         >Cost standard</button>
       <button class="tbtn sobtn on" id="bSO2" data-tip="econ">free goods · n 1</button>
       <span class="stat">round <b id="tRound">0</b></span>
       <span class="bargrp"><button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
         <button class="tbtn run slow" id="bSlow2" aria-label="slow run"
-          title="slow run: one round a frame, 0.1 s between frames; press again to pause"><svg viewBox="0 0 14 14"
+          title="slow run: sets the control panel to one round a frame, 0.1 s between frames; press again to pause"><svg viewBox="0 0 14 14"
           aria-hidden="true"><path d="M2.5 1.2 L12.6 7 L2.5 12.8 Z"/><text x="3.4" y="9.7">s</text></svg></button>
         <button class="tbtn" id="bStep2" title="one round (key s)">step</button></span>
       <button class="tbtn" id="bReset2" title="reset">↺</button>
@@ -1294,7 +1294,7 @@
         <button class="btn sm tog" id="bDebt">bankrupt</button></div>
       <div class="row"><label>Lattice L</label>
         <select id="Lsel"><option>8</option><option>16</option><option>32</option><option>64</option><option>96</option>
-          <option selected>125</option><option>192</option><option>250</option></select></div>
+          <option selected>125</option><option>192</option><option>250</option><option>500</option></select></div>
       <div class="row"><label title="orders per agent per product per round: small n = few, noisy sales">Orders per person n</label>
         <select id="nSel"><option>0.05</option><option>0.1</option><option>0.2</option><option>0.5</option><option>1</option><option>2</option><option>5</option></select></div>
       <div class="row"><label title="the largest number of different products one agent may produce at the same time">Factories per agent, lim</label><select id="limSel"></select></div>
@@ -2036,12 +2036,14 @@ function buildProductUI(){
 // the column sales of the products table: Start counted in sales, Start/p₀, with p₀ = w·L²/(N·T) the price when all T
 // orders of each product are served (T = n·L², rounded); renewed when Start, n, w, L or the products change. From
 // 10 000 on in thousands (k), so that it fits the column; the title has the whole number
-// the start costs of A, B and C as one of three sets (the button left of the economy button); other values: custom
-const COSTS=[['standard',[2,8,20]],['wide',[2,10,50]],['flat',[2,2,2]]];
-const costNow=()=>COSTS.findIndex(([,c])=>c.every((v,i)=>!P.products[i]||P.products[i].start===v));
+// the start costs as one of three sets (the button left of the economy button): standard and wide set A, B and C (the
+// others keep theirs), flat sets every product to 1; other values: custom
+const COSTS=[['standard',[2,8,20]],['wide',[2,10,50]],['flat',null]];
+const costOf=(c,i)=>c?c[i]:1;                       // the start cost of product i in a set (undefined: not set)
+const costNow=()=>COSTS.findIndex(([,c])=>P.products.every((pr,i)=>costOf(c,i)===undefined||pr.start===costOf(c,i)));
 function syncCost(){const k=costNow(); $('bCost').textContent='Cost '+(k<0?'custom':COSTS[k][0])}
 $('bCost').onclick=()=>{const k=costNow(), c=COSTS[(k+1)%COSTS.length][1];
-  P.products.forEach((pr,i)=>{if(i<3)pr.start=c[i]});
+  P.products.forEach((pr,i)=>{if(costOf(c,i)!==undefined)pr.start=costOf(c,i)});
   buildProductUI(); E.computeMarkets(); draw()};
 function syncSales(){
   syncCost();
@@ -2517,12 +2519,19 @@ function drawNet(at,cell,dpr){
     if(tool==='addRoad')road(pts,0.6); else border(drawnBorder(pts),0.6)}
 }
 $('Lsel').onchange=restart;
-$('speed').oninput=e=>{$('speedV').textContent=e.target.value};
-// run (on) or pause; sl: a slow run, one round a frame with 0.1 s between frames, whatever the panel says (the button
-// ▶ with a small s, lit while it runs). A new run ends the loop of the old one (loopTok)
-let slow=false;
+$('speed').oninput=e=>{$('speedV').textContent=e.target.value; slowSet=false};
+$('delaySel').onchange=()=>{slowSet=false};
+// the panel's rounds per frame and delay per frame
+function setPace(k,d){$('speed').value=k; $('speedV').textContent=k; $('delaySel').value=String(d)}
+// run (on) or pause; sl: a slow run (the button ▶ with a small s, lit while it runs), which sets the panel to one round
+// a frame with 0.1 s between frames. A normal run (▶, Run or the space bar) after a slow run sets the panel back to
+// 2 rounds a frame without delay (slowSet: the panel still has the slow run's pace; moving the slider or choosing a
+// delay keeps one's own). A new run ends the loop of the old one (loopTok)
+let slow=false, slowSet=false;
 function setRun(on,sl){
   if(running&&!on)frozenAt=animT||performance.now();   // a pause: the flashes and sinking towers stop where they are
+  if(on&&sl){setPace(1,100); slowSet=true}
+  else if(on&&slowSet){setPace(2,0); slowSet=false}
   running=on; slow=on&&!!sl; $('bRun').textContent=on?'Pause':'Run'; $('bRun2').textContent=on?'❚❚':'▶';
   $('bSlow2').classList.toggle('on',slow);
   if(on){const t=++loopTok;requestAnimationFrame(()=>loop(t))}
@@ -2622,10 +2631,10 @@ function doStep(){
 }
 function loop(tok){
   if(!running||tok!==loopTok)return;
-  const k=slow?1:+$('speed').value, t0=performance.now();          // a slow run: one round a frame
+  const k=+$('speed').value, t0=performance.now();          // a slow run has set it to one round a frame
   for(let j=0;j<k;j++){doStep();if(performance.now()-t0>50)break}
   refresh();
-  const d=slow?100:+$('delaySel').value; // a pause between frames, to follow small systems round by round
+  const d=+$('delaySel').value; // a pause between frames, to follow small systems round by round
   if(d>0&&(flashes.length||sinking.size))kickFlash();     // let the flashes fade and the towers sink during the pause
   if(d>0)setTimeout(()=>requestAnimationFrame(()=>loop(tok)),d);
   else requestAnimationFrame(()=>loop(tok));
@@ -2715,18 +2724,12 @@ function draw3D(){
   // shown) in continuation of it, downward from the ground when it hangs below the plane, else on top of the companies
   const corners=[[-L/2,-L/2],[L/2,-L/2],[L/2,L/2],[-L/2,L/2]];
   const cl=corners.reduce((a,c)=>proj(c[0],c[1],0)[0]<proj(a[0],a[1],0)[0]?c:a);
-  const bars=[];
-  if(hlog){
-    const ticks=[]; for(let v=1;v<=V3.hmax;v*=10)ticks.push(v);
-    bars.push({z0:0,z1:f(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,z:f(v)})),label:'units (log)'});
-  }else{const v=niceNum(0.5*V3.hmax); bars.push({z0:0,z1:f(v),ticks:[{v,z:f(v)}],label:'units'})}
-  if(money3!=='off'){
-    const sg=mDown?-1:1, z0=mDown?0:bars[0].z1;
-    if(hlog){const ticks=[]; for(let v=1;v<=V3.mmax;v*=10)ticks.push(v);
-      if(ticks.length)bars.push({z0,z1:z0+sg*fm(ticks[ticks.length-1]),ticks:ticks.map(v=>({v,z:z0+sg*fm(v)})),
-        label:'money',gold:true})}
-    else{const v=niceNum(0.5*V3.mmax), z=z0+sg*fm(v); bars.push({z0,z1:z,ticks:[{v,z}],label:'money',gold:true})}
-  }
+  // (the round numbers vs; the heights are set where the bars are drawn, where a bar that would run off the canvas is
+  // made shorter)
+  const bars=[], decs=m=>{const t=[]; for(let v=1;v<=m;v*=10)t.push(v); return t};
+  bars.push({base:()=>0,sg:1,fz:f,vs:hlog?(V3.hmax>=1?decs(V3.hmax):[1]):[niceNum(0.5*V3.hmax)],label:hlog?'units (log)':'units'});
+  if(money3!=='off'){const vs=hlog?decs(V3.mmax):[niceNum(0.5*V3.mmax)];
+    if(vs.length)bars.push({base:()=>mDown?0:bars[0].z1,sg:mDown?-1:1,fz:fm,vs,label:'money',gold:true})}
   // framing: the lattice with room for towers 1.15 times the height scale (and, with money below the plane, as deep), seen
   // from the camera. It does not depend on the towers of the moment, so it changes only when the scales are renewed or the
   // view is turned
@@ -2809,6 +2812,16 @@ function draw3D(){
   const fmtV=v=>v>=1e4?(v/1000).toFixed(0)+'k':v>=1?String(Math.round(v)):v.toPrecision(2);
   // at the left corner of the lattice, but never off the canvas (when zoomed in)
   const bx=Math.max(P2(cl[0],cl[1],0)[0]-12*dpr,14*dpr), by=z=>P2(cl[0],cl[1],z)[1], bw=b=>(b.gold?6:3)*dpr;
+  // the heights of the bars: a bar whose end (and its number) would fall off the canvas, as the money hanging below the
+  // plane in a front view, ends at a smaller round number (5, 2, 1, 0.5 … on the linear scale, a decade less on the
+  // logarithmic one)
+  const inC=z=>{const y=by(z); return y>=0.7*fs&&y<=H-0.7*fs};
+  bars.forEach(b=>{
+    b.z0=b.base(); const zOf=v=>b.z0+b.sg*b.fz(v);
+    if(hlog)while(b.vs.length>1&&!inC(zOf(b.vs[b.vs.length-1])))b.vs.pop();
+    else for(let j=0;j<40&&!inC(zOf(b.vs[0]));j++)b.vs[0]=niceNum(0.45*b.vs[0]);
+    b.ticks=b.vs.map(v=>({v,z:zOf(v)})); b.z1=b.ticks[b.ticks.length-1].z;
+  });
   ctx.save(); ctx.font=`600 ${fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`;
   ctx.lineCap='butt'; ctx.lineJoin='round'; ctx.textAlign='left'; ctx.textBaseline='middle';
   bars.forEach(b=>{
@@ -3532,6 +3545,30 @@ function nearZero(D){return {cnt:new Float64Array(D),msum:new Float64Array(D),mh
 function nearProducts(){const pr=P.products; let ib=0; pr.forEach((q,i)=>{if(q.gamma<=pr[ib].gamma)ib=i});
   const order=pr.map((q,i)=>i).sort((a,b)=>pr[b].gamma-pr[a].gamma||a-b);
   return {ib,il:order[0],il2:order.length>1?order[1]:-1}}
+// the distance (E.pdist) from every agent to the nearest of the cells big: with few of them all are tried; with many
+// (early in a run) the town is cut into square buckets holding about one each, searched ring by ring from the agent's
+// own bucket outward until no farther bucket can hold a nearer one — the same distances, much faster in a large town
+function nearestDist(big,L,per){
+  const LL=L*L, dist=new Float64Array(LL);
+  if(big.length<=32){for(let r=0;r<LL;r++){let d=Infinity; for(const b of big){const q=E.pdist(b,r); if(q<d)d=q} dist[r]=d}
+    return dist}
+  const g=Math.max(2,Math.ceil(L/Math.sqrt(big.length))), G=Math.ceil(L/g), bk=Array.from({length:G*G},()=>[]);
+  for(const b of big)bk[((b/L|0)/g|0)*G+((b%L)/g|0)].push(b);
+  for(let r=0;r<LL;r++){
+    const bx=(r%L)/g|0, by=(r/L|0)/g|0; let d=Infinity;
+    for(let R=0;;R++){
+      for(let j=-R;j<=R;j++)for(let i=-R;i<=R;i+=(j===R||j===-R)?1:2*R){
+        let cx=bx+i, cy=by+j;
+        if(per){cx=(cx%G+G)%G; cy=(cy%G+G)%G} else if(cx<0||cy<0||cx>=G||cy>=G)continue;
+        for(const b of bk[cy*G+cx]){const q=E.pdist(b,r); if(q<d)d=q}
+      }
+      // a bucket of the next ring is more than (R − 1)·g cells away (one bucket may be cut short at the edge)
+      if(d<=(R-1)*g||(per?2*R+1>=G:R>=G))break;
+    }
+    dist[r]=d;
+  }
+  return dist;
+}
 function nearRecord(){
   const L=E.L, LL=L*L, D=NEAR.D, {ib,il,il2}=nearProducts(), S=E.sales[ib], F=E.F[ib];
   const key=[ib,il,il2].join(); if(key!==NEAR.key){NEAR.ring=[];NEAR.cum=nearZero(D);NEAR.snaps=[];NEAR.key=key}
@@ -3541,10 +3578,9 @@ function nearRecord(){
   const e={cnt:new Float32Array(D),msum:new Float32Array(D),mh:new Float32Array(D*NMB),
     ac:[0,1,2].map(()=>new Float32Array(D)),an:[0,1,2].map(()=>new Float32Array(D)),as:[0,1,2].map(()=>new Float32Array(D)),
     ib,il,il2};
-  const ls=[il,il2,ib!==il&&ib!==il2?ib:-1];
+  const ls=[il,il2,ib!==il&&ib!==il2?ib:-1], dd=nearestDist(big,L,P.bc!=='closed');
   for(let r=0;r<LL;r++){
-    let d=Infinity; for(const b of big){const q=E.pdist(b,r); if(q<d)d=q}
-    const k=Math.min(D-1,Math.floor(d)), v=E.money[r];
+    const d=dd[r], k=Math.min(D-1,Math.floor(d)), v=E.money[r];
     e.cnt[k]++; e.msum[k]+=v; if(v>0){const j=binOf(MB,v); if(j>=0&&j<NMB)e.mh[k*NMB+j]++}
     for(let q=0;q<3;q++){const i=ls[q]; if(i>=0&&E.F[i][r]){const s=E.sales[i][r]; e.ac[q][k]++; e.as[q][k]+=s;
       if(s>0)e.an[q][k]++}}
