@@ -778,9 +778,10 @@
         owner 0.01 a round, so saving 8 takes 800 rounds: after 4&nbsp;000 rounds half the cycles last over 650 rounds,
         a quarter under 330, a quarter the full 840 or more.
         The <i>decades</i> slider over this plot shows fewer decades of the y axis, to look closely at the common times.
-        On the right: the money of single agents, round by round. The plot follows the 5 richest agents (or 10 or 3),
-        or agents picked at random. The round button over the plot switches between 5 largest, 10 largest, 5 at random
-        and 10 at random; the buttons over the section let you choose freely, also 3. Each agent is drawn for its whole life:
+        On the right: the money of single agents, round by round. The plot follows the 2 richest agents (or the
+        richest alone, or 3, 5 or 10), or agents picked at random. The round button over the plot switches between 2
+        largest, the largest, 5 largest, 10 largest, 5 at random and 10 at random; the buttons over the section let you
+        choose freely, also 3. Each agent is drawn for its whole life:
         from its last bankruptcy (or the start of the run) until it goes bankrupt again, where a cross marks the end. One
         of the richest is also let go once its fortune is gone — its money back to the mean money of the town — where a
         circle marks the end. Then the richest agent not yet shown (or another one picked at random) takes its place,
@@ -803,9 +804,13 @@
         money it has — so P(τ) of the bankruptcies stays empty. Lives that end at money 0 remain: an agent whose factories
         fail saves 40 rounds for a bakery, then 160 rounds for a B factory (8), and so on, and P(τ) has peaks at 40 and
         160 rounds (about 41 % and 33 % of the lives).</p>
-      <p><b>Around the high-tech companies</b>: the mean and the median money of the agents, and the mean size of the
-        bread factories, of the ordinary (B) factories and of the chip factories themselves (at d = 0 the big ones),
-        against the distance d to the nearest big company of the most scalable product (one that sells
+      <p><b>Around the high-tech companies</b>: the mean and the median money of the agents, and the mean size — the
+        units sold — of the bread factories, of the ordinary (B) factories and of the chip factories themselves (at d = 0
+        the big ones), counting only factories that sold something, so that a size is at least 1. With <i>+ per
+        agent</i>, dashed lines also show the units sold per agent at that distance, 0 for every agent without such a
+        factory: a size times the chance that there is a working factory. Many factories sell nothing in a round (with
+        no upkeep idle ones stay open), which is why the dashed lines lie far below. The <i>decades</i> slider cuts the
+        lowest decades off a logarithmic axis. All this against the distance d to the nearest big company of the most scalable product (one that sells
         at least a tenth of what the biggest one sells), summed over the last 100 rounds or over the last two
         thirds of the run. Linear, log–lin (only the vertical axis logarithmic) or log–log; the slider shortens the distance
         axis, for instance to the first 20 cells, where most of the change happens. Close to a big chip company the mean money is high — its owner lives there — and the bakeries sell
@@ -1187,7 +1192,8 @@
       <div class="seg" id="fortSeg" title="follow the richest agents, or agents picked at random">
         <button data-m="rich" class="on">largest</button><button data-m="rand">at random</button></div>
       <div class="seg" id="fortNum" title="how many agents to follow">
-        <button data-n="10">10</button><button data-n="5" class="on">5</button><button data-n="3">3</button></div>
+        <button data-n="10">10</button><button data-n="5">5</button><button data-n="3">3</button><button data-n="2"
+        class="on">2</button><button data-n="1">1</button></div>
       <div class="seg" id="fortScale" title="money on a linear or a logarithmic scale">
         <button data-s="lin" class="on">lin</button><button data-s="log">log</button></div>
     </div>
@@ -1202,7 +1208,7 @@
       </div>
       <div>
         <div class="plotbar">
-          <button class="tgl" id="fortTgl" title="click to switch: 5 largest → 10 largest → 5 at random → 10 at random">5 largest</button>
+          <button class="tgl" id="fortTgl" title="click to switch: 2 largest → the largest → 5 largest → 10 largest → 5 at random → 10 at random">2 largest</button>
           <label class="win" title="the time window: from now back in time, in steps of a factor 1.5; at the right end, the whole run">window
             <input type="range" id="fortWin" min="0" max="0" step="1" value="0"><span id="fortWinV"></span></label>
           <span class="plotbtns"><button data-plot="fort" data-k="png" title="save the fortunes in time as a PNG picture, with title and axis labels">.png</button><button data-plot="fort" data-k="sq" title="save the fortunes in time in a square picture">sq</button></span></div>
@@ -1229,6 +1235,10 @@
       </div>
       <div>
         <div class="plotbar"><span class="plabel">factory size</span>
+          <div class="seg" id="nearAll" title="full lines: the mean units sold by the factories that sold something; with dashed lines too: the units sold per agent at that distance, counting 0 for every agent without such a factory (or with one that sold nothing)">
+            <button data-a="0" class="on">factories</button><button data-a="1">+ per agent</button></div>
+          <label class="win" title="how many decades of the y axis to show on a logarithmic axis: fewer cuts off the lowest ones">decades
+            <input type="range" id="nearDec" min="1" max="6" step="1" value="6"><span id="nearDecV">all</span></label>
           <span class="plotbtns"><button data-plot="nearS" data-k="png" title="save the factory size against distance as a PNG picture, with title and axis labels">.png</button><button data-plot="nearS" data-k="sq" title="save the factory size against distance in a square picture">sq</button></span></div>
         <div class="chartbox dist"><canvas id="cNearS"></canvas></div>
       </div>
@@ -1264,8 +1274,8 @@
       </div>
       <div class="row"><label>Factory colours</label>
         <select id="palSel"><option value="jet">jet</option><option value="spectral">spectral</option></select></div>
-      <p class="hint" id="monoHint">A more scalable product (lower γ) must cost more to start: Start increases as γ
-        decreases. Its α must not be smaller: α does not decrease as γ decreases. α is the production-cost factor, at
+      <p class="hint" id="monoHint">A more scalable product (lower γ) must not cost less to start: Start does not
+        decrease as γ decreases (all start costs equal is fine). Its α must not be smaller: α does not decrease as γ decreases. α is the production-cost factor, at
         least 1 (1 in the standard setup): a factory of size s makes a unit for α·s<sup>γ</sup> instead of
         s<sup>γ</sup>. A new product is added as the most scalable one, with the largest α. At least two products stay:
         going down to one makes twins, two products with the same numbers. Start, γ, β and α act at once; changing the
@@ -1944,14 +1954,14 @@ const alphaOf=pr=>pr.alpha>0?pr.alpha:1;
 function checkMono(){
   const pr=P.products, bad=new Set(), badA=new Set();
   for(let i=0;i<pr.length;i++)for(let j=0;j<pr.length;j++)if(pr[i].gamma<pr[j].gamma){
-    if(pr[i].start<=pr[j].start){bad.add(i);bad.add(j)}
+    if(pr[i].start<pr[j].start){bad.add(i);bad.add(j)}           // equal start costs are fine
     if(alphaOf(pr[i])<alphaOf(pr[j])){badA.add(i);badA.add(j)}
   }
   // an input that breaks a rule is marked, with the rule as its title (else its own title)
   const mark=(inp,on,rule)=>{inp.classList.toggle('bad',on); inp.title=on?rule:inp.dataset.t};
   document.querySelectorAll('#ptbody tr').forEach((tr,i)=>{
     tr.querySelectorAll('input[data-k=start],input[data-k=gamma]')
-      .forEach(inp=>mark(inp,bad.has(i),'Start should increase as γ decreases'));
+      .forEach(inp=>mark(inp,bad.has(i),'Start should not decrease as γ decreases'));
     tr.querySelectorAll('input[data-k=alpha]')
       .forEach(inp=>mark(inp,badA.has(i),'α should not decrease as γ decreases'));
   });
@@ -3206,7 +3216,7 @@ function histWindow(){         // summed over the last two thirds of the rounds 
 // the richest also makes room once its fortune is gone — its money back to the mean money of the town — its line
 // ending in a circle; without upkeep it would otherwise be followed for ever.
 const HREL=0.02, HABS=0.01, HMAX=64, HMAXR=4096;
-let AH=null, fortMode='rich', fortN=5, fortLog=false, lifeZero=false;
+let AH=null, fortMode='rich', fortN=2, fortLog=false, lifeZero=false;
 // the product an agent makes (its biggest seller); −1: no factory, or one it opened this very round — an owner who keeps
 // trying new factories after giving up a company shows as grey, not as a new colour every round
 function mainProduct(r){if(E.started[r]===E.t)return -1;
@@ -3515,8 +3525,9 @@ const NMB=nb(MB);
 // change of a parameter is a difference (snapshots every few rounds: at most NEARSNAP, thinned out as the run grows)
 function nearReset(){const D=Math.ceil(E.L*Math.SQRT2)+2;
   NEAR={ring:[],D,cum:nearZero(D),t:0,snaps:[],every:5,key:''}}
+// ac: the factories, an: those that sold something, as: their units sold
 function nearZero(D){return {cnt:new Float64Array(D),msum:new Float64Array(D),mh:new Float64Array(D*NMB),
-  ac:[0,1,2].map(()=>new Float64Array(D)),as:[0,1,2].map(()=>new Float64Array(D))}}
+  ac:[0,1,2].map(()=>new Float64Array(D)),an:[0,1,2].map(()=>new Float64Array(D)),as:[0,1,2].map(()=>new Float64Array(D))}}
 // the most scalable product (the lowest γ, the last of equals) and the two least scalable ones (the highest γ first)
 function nearProducts(){const pr=P.products; let ib=0; pr.forEach((q,i)=>{if(q.gamma<=pr[ib].gamma)ib=i});
   const order=pr.map((q,i)=>i).sort((a,b)=>pr[b].gamma-pr[a].gamma||a-b);
@@ -3528,21 +3539,24 @@ function nearRecord(){
   const big=[]; if(mx>0)for(let r=0;r<LL;r++)if(F[r]&&S[r]>=Math.max(1,0.1*mx))big.push(r);
   if(!big.length)return;
   const e={cnt:new Float32Array(D),msum:new Float32Array(D),mh:new Float32Array(D*NMB),
-    ac:[0,1,2].map(()=>new Float32Array(D)),as:[0,1,2].map(()=>new Float32Array(D)),ib,il,il2};
+    ac:[0,1,2].map(()=>new Float32Array(D)),an:[0,1,2].map(()=>new Float32Array(D)),as:[0,1,2].map(()=>new Float32Array(D)),
+    ib,il,il2};
   const ls=[il,il2,ib!==il&&ib!==il2?ib:-1];
   for(let r=0;r<LL;r++){
     let d=Infinity; for(const b of big){const q=E.pdist(b,r); if(q<d)d=q}
     const k=Math.min(D-1,Math.floor(d)), v=E.money[r];
     e.cnt[k]++; e.msum[k]+=v; if(v>0){const j=binOf(MB,v); if(j>=0&&j<NMB)e.mh[k*NMB+j]++}
-    for(let q=0;q<3;q++){const i=ls[q]; if(i>=0&&E.F[i][r]){e.ac[q][k]++; e.as[q][k]+=E.sales[i][r]}}
+    for(let q=0;q<3;q++){const i=ls[q]; if(i>=0&&E.F[i][r]){const s=E.sales[i][r]; e.ac[q][k]++; e.as[q][k]+=s;
+      if(s>0)e.an[q][k]++}}
   }
   NEAR.ring.push(e); if(NEAR.ring.length>NEARN)NEAR.ring.shift();
-  const c=NEAR.cum; for(let k=0;k<D;k++){c.cnt[k]+=e.cnt[k];c.msum[k]+=e.msum[k];for(let q=0;q<3;q++){c.ac[q][k]+=e.ac[q][k];c.as[q][k]+=e.as[q][k]}}
+  const c=NEAR.cum; for(let k=0;k<D;k++){c.cnt[k]+=e.cnt[k];c.msum[k]+=e.msum[k];
+    for(let q=0;q<3;q++){c.ac[q][k]+=e.ac[q][k];c.an[q][k]+=e.an[q][k];c.as[q][k]+=e.as[q][k]}}
   for(let j=0;j<D*NMB;j++)c.mh[j]+=e.mh[j];
   NEAR.t=E.t;
   if(E.t%NEAR.every===0){
     NEAR.snaps.push({t:E.t,cnt:Float64Array.from(c.cnt),msum:Float64Array.from(c.msum),mh:Float64Array.from(c.mh),
-      ac:c.ac.map(a=>Float64Array.from(a)),as:c.as.map(a=>Float64Array.from(a))});
+      ac:c.ac.map(a=>Float64Array.from(a)),an:c.an.map(a=>Float64Array.from(a)),as:c.as.map(a=>Float64Array.from(a))});
     if(NEAR.snaps.length>NEARSNAP){NEAR.snaps=NEAR.snaps.filter((x,k)=>k%2===1); NEAR.every*=2}
   }
 }
@@ -3550,14 +3564,15 @@ function nearRecord(){
 function nearSums(){
   const D=NEAR.D;
   if(nearWin==='r100'){const z=nearZero(D);
-    for(const e of NEAR.ring){for(let k=0;k<D;k++){z.cnt[k]+=e.cnt[k];z.msum[k]+=e.msum[k];for(let q=0;q<3;q++){z.ac[q][k]+=e.ac[q][k];z.as[q][k]+=e.as[q][k]}}
+    for(const e of NEAR.ring){for(let k=0;k<D;k++){z.cnt[k]+=e.cnt[k];z.msum[k]+=e.msum[k];
+        for(let q=0;q<3;q++){z.ac[q][k]+=e.ac[q][k];z.an[q][k]+=e.an[q][k];z.as[q][k]+=e.as[q][k]}}
       for(let j=0;j<D*NMB;j++)z.mh[j]+=e.mh[j]}
     return {...z,rounds:NEAR.ring.length,from:E.t-NEAR.ring.length+1}}
   const t0=DH?DH.t0:0, ta=t0+Math.floor((E.t-t0)/3); let a=null;
   for(const sn of NEAR.snaps)if(sn.t<=ta)a=sn;
   const c=NEAR.cum, sub=(x,y)=>y?x.map((v,k)=>v-y[k]):Float64Array.from(x);
   return {cnt:sub(c.cnt,a&&a.cnt),msum:sub(c.msum,a&&a.msum),mh:sub(c.mh,a&&a.mh),ac:c.ac.map((x,q)=>sub(x,a&&a.ac[q])),
-    as:c.as.map((x,q)=>sub(x,a&&a.as[q])),rounds:E.t-(a?a.t:0),from:(a?a.t:0)+1};
+    an:c.an.map((x,q)=>sub(x,a&&a.an[q])),as:c.as.map((x,q)=>sub(x,a&&a.as[q])),rounds:E.t-(a?a.t:0),from:(a?a.t:0)+1};
 }
 // the length of the distance axis: nice lengths up to the largest distance with agents; at the right end of the slider
 // all of it
@@ -3570,7 +3585,7 @@ $('nearX').oninput=e=>{nearXk=+e.target.value; nearXAll=nearXk>=+e.target.max; d
 // on), up to the length of the axis
 function nearData(){
   if(!NEAR||!NEAR.ring.length)return null;
-  const D=NEAR.D, z=nearSums(), {cnt,msum,mh,ac:acs,as:ass}=z;
+  const D=NEAR.D, z=nearSums(), {cnt,msum,mh,an:ans,as:ass}=z;
   let kmax=0; for(let k=0;k<D;k++)if(cnt[k]>0)kmax=k;
   const xr=nearXrange(kmax), km=Math.min(kmax,xr.dmax-1);
   const groups=[];
@@ -3578,23 +3593,27 @@ function nearData(){
       if(!cur||cur.j!==j){cur={j,lo:k,hi:k};groups.push(cur)} else cur.hi=k}
     groups.forEach(g=>g.x=Math.sqrt(g.lo*(g.hi+1)))}
   else{const wb=Math.max(1,Math.ceil((km+1)/30)); for(let k0=0;k0<=km;k0+=wb)groups.push({lo:k0,hi:Math.min(km,k0+wb-1),x:k0+wb/2})}
-  const mean=[], median=[], size=[[],[],[]];
+  // size: the mean units sold by the factories that sold something (at least 1); sizeAll: units sold per agent, 0 for
+  // the agents without such a factory (the dashed lines)
+  const mean=[], median=[], size=[[],[],[]], sizeAll=[[],[],[]];
   for(const g of groups){
-    let c=0,ms=0; const ac=[0,0,0], as=[0,0,0], h=new Float64Array(NMB);
-    for(let k=g.lo;k<=g.hi;k++){c+=cnt[k];ms+=msum[k];for(let q=0;q<3;q++){ac[q]+=acs[q][k];as[q]+=ass[q][k]}
+    let c=0,ms=0; const an=[0,0,0], as=[0,0,0], h=new Float64Array(NMB);
+    for(let k=g.lo;k<=g.hi;k++){c+=cnt[k];ms+=msum[k];for(let q=0;q<3;q++){an[q]+=ans[q][k];as[q]+=ass[q][k]}
       for(let j=0;j<NMB;j++)h[j]+=mh[k*NMB+j]}
     if(c>=20){mean.push([g.x,ms/c]);
       let need=c/2-(c-h.reduce((a,b)=>a+b,0)), med=0;
       for(let j=0;j<NMB&&need>0;j++){if(need<=h[j]){med=Math.pow(10,MB.lo+(j+need/h[j])/MB.per);break} need-=h[j]}
       if(med>0)median.push([g.x,med])}
-    for(let q=0;q<3;q++)if(ac[q]>=5)size[q].push([g.x,as[q]/ac[q]]);
+    for(let q=0;q<3;q++){if(an[q]>=5)size[q].push([g.x,as[q]/an[q]]); if(c>=20)sizeAll[q].push([g.x,as[q]/c])}
   }
   const last=NEAR.ring[NEAR.ring.length-1];
-  return {ib:last.ib,il:last.il,il2:last.il2,rounds:z.rounds,from:z.from,mean,median,size,xr,xmax:xr.dmax<Infinity?xr.dmax:0};
+  return {ib:last.ib,il:last.il,il2:last.il2,rounds:z.rounds,from:z.from,mean,median,size,sizeAll,xr,xmax:xr.dmax<Infinity?xr.dmax:0};
 }
-// y against x for a few series. series: [{c, t (legend), p: [[x,y], …]}]; o: {title, xl, yl, scale: lin | loglin (only
-// y logarithmic) | log (both), xmax: the end of the x axis (0: as far as the points go)}; out (a saved picture): {dpr,
-// sq: a square picture, for a paper — no title, and a left margin only as wide as the numbers need}
+// y against x for a few series. series: [{c, t (legend; none: not in it), p: [[x,y], …], dash: a dashed line without
+// dots}]; o: {title, xl, yl, scale: lin | loglin (only y logarithmic) | log (both), xmax: the end of the x axis (0: as
+// far as the points go), ydec: on a logarithmic y axis only this many decades from the top (0: all), leg: more legend
+// items}; out (a saved picture): {dpr, sq: a square picture, for a paper — no title, and a left margin only as wide as
+// the numbers need}. Returns the decades a logarithmic y axis needs for all the points (0 when linear)
 function xyPlot(canvas,series,o,out){
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d'), sq=out&&out.sq;
   if(!out)g.clearRect(0,0,W,H);
@@ -3608,7 +3627,9 @@ function xyPlot(canvas,series,o,out){
   let x0,x1,y0,y1;
   if(xl){x0=Math.floor(Math.min(...all.map(q=>fx(q[0]))));x1=o.xmax?fx(o.xmax):Math.ceil(Math.max(...all.map(q=>fx(q[0]))));if(x1<=x0)x1=x0+1}
   else{x0=0;x1=o.xmax||Math.max(...all.map(q=>q[0]))*1.02||1}
-  if(yl){y0=Math.floor(Math.min(...all.map(q=>fy(q[1]))));y1=Math.ceil(Math.max(...all.map(q=>fy(q[1]))));if(y1<=y0)y1=y0+1}
+  let decAll=0;
+  if(yl){y0=Math.floor(Math.min(...all.map(q=>fy(q[1]))));y1=Math.ceil(Math.max(...all.map(q=>fy(q[1]))));if(y1<=y0)y1=y0+1;
+    decAll=y1-y0; if(o.ydec>0&&o.ydec<decAll)y0=y1-o.ydec}                    // fewer decades: the lowest are cut off
   else{y0=0;y1=Math.max(...all.map(q=>q[1]))*1.08||1}
   const X=v=>pl+(fx(v)-x0)/(x1-x0)*w, Y=v=>pt+h-(fy(v)-y0)/(y1-y0)*h;
   const xt=[], yt=[], fyt=yl?sup10:fmtTick;
@@ -3620,11 +3641,13 @@ function xyPlot(canvas,series,o,out){
   if(o.yl){g.save();g.translate(8*z,pt+h/2);g.rotate(-Math.PI/2);g.textAlign='center';g.textBaseline='middle';g.fillText(o.yl,0,0);g.restore()}
   g.save(); g.beginPath(); g.rect(pl,pt-4*dpr,w+4*dpr,h+8*dpr); g.clip();
   for(const se of series){const q=se.p.filter(ok); if(!q.length)continue;
-    g.strokeStyle=se.c; g.fillStyle=se.c; g.lineWidth=1.8*dpr; g.lineJoin='round'; g.beginPath();
-    q.forEach((a,k)=>k?g.lineTo(X(a[0]),Y(a[1])):g.moveTo(X(a[0]),Y(a[1]))); g.stroke();
-    for(const a of q){g.beginPath();g.arc(X(a[0]),Y(a[1]),2.6*dpr,0,2*Math.PI);g.fill()}}
+    g.strokeStyle=se.c; g.fillStyle=se.c; g.lineWidth=1.8*dpr; g.lineJoin='round'; g.setLineDash(se.dash?[6*dpr,4*dpr]:[]);
+    g.beginPath(); q.forEach((a,k)=>k?g.lineTo(X(a[0]),Y(a[1])):g.moveTo(X(a[0]),Y(a[1]))); g.stroke(); g.setLineDash([]);
+    if(!se.dash)for(const a of q){g.beginPath();g.arc(X(a[0]),Y(a[1]),2.6*dpr,0,2*Math.PI);g.fill()}}
   g.restore();
-  const narrow=w<520*dpr; legendBox(g,series.map(se=>({c:se.c,t:se.t})),pl+w-4*z,pt+4*z,dpr,false,narrow?0.8:1);
+  const narrow=w<520*dpr;
+  legendBox(g,[...series.filter(se=>se.t).map(se=>({c:se.c,t:se.t})),...(o.leg||[])],pl+w-4*z,pt+4*z,dpr,false,narrow?0.8:1);
+  return decAll;
 }
 // the two plots: their data and labels, for the screen and the saved pictures
 function nearPlots(){
@@ -3637,10 +3660,13 @@ function nearPlots(){
     nearM:{series:[{c:'#c2410c',t:'mean wealth',p:d.mean},{c:'#2563eb',t:'median wealth',p:d.median}],
       o:{title:`wealth against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Wealth',scale:nearScale,xmax:d.xmax},
       title:`Mean and median wealth against the distance to the nearest big ${B} company`},
-    nearS:{series:[{c:PCOL[d.il]||'#16233b',t:`${A} factories`,p:d.size[0]},...(A2?[{c:PCOL[d.il2]||'#4a5872',t:`${A2} factories`,p:d.size[1]}]:[]),
-      ...(own?[{c:PCOL[d.ib]||'#be123c',t:`${B} factories`,p:d.size[2]}]:[])],
-      o:{title:`factory size against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Factory size',scale:nearScale,xmax:d.xmax},
-      title:`Mean size of the ${nameList} factories against the distance to the nearest big ${B} company`}};
+    nearS:{series:[...[[d.il,A,0,'#16233b'],[d.il2,A2,1,'#4a5872'],[d.ib,own?B:null,2,'#be123c']].filter(s=>s[1])
+        .flatMap(([i,nm,q,c0])=>[{c:PCOL[i]||c0,t:`${nm} factories`,p:d.size[q]},
+          ...(nearAll?[{c:PCOL[i]||c0,dash:true,p:d.sizeAll[q]}]:[])])],
+      o:{title:`factory size against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Factory size',
+        scale:nearScale,xmax:d.xmax,ydec:nearDecAll?0:nearDec,leg:nearAll?[{dash:'#4a5872',t:'per agent'}]:[]},
+      title:`Mean units sold by the ${nameList} factories that sold something`+(nearAll?' (dashed: per agent)':'')+
+        ` against the distance to the nearest big ${B} company`}};
 }
 function drawNear(){
   const q=nearPlots();
@@ -3648,8 +3674,17 @@ function drawNear(){
     $('nearNote').textContent='no big company of the most scalable product yet'; return}
   $('nearNote').textContent=q.note;
   const xr=q.d.xr, sl=$('nearX'); sl.max=xr.v.length; sl.value=xr.k; $('nearXV').textContent=xr.k<xr.v.length?String(xr.v[xr.k]):'all';
-  xyPlot($('cNearM'),q.nearM.series,q.nearM.o); xyPlot($('cNearS'),q.nearS.series,q.nearS.o);
+  xyPlot($('cNearM'),q.nearM.series,q.nearM.o);
+  const dec=xyPlot($('cNearS'),q.nearS.series,q.nearS.o), ds=$('nearDec');
+  ds.disabled=!dec; ds.max=Math.max(1,dec); ds.value=nearDecAll?ds.max:Math.min(nearDec,dec);
+  $('nearDecV').textContent=!dec?'log axis only':nearDecAll||nearDec>=dec?`all ${dec}`:String(nearDec);
 }
+// the factory sizes: the factories that sold something (full lines), and per agent too (dashed); how many decades of a
+// logarithmic y axis to show (the slider at its right end: all)
+let nearAll=false, nearDec=3, nearDecAll=true;
+document.querySelectorAll('#nearAll button').forEach(b=>b.onclick=()=>{nearAll=b.dataset.a==='1';
+  document.querySelectorAll('#nearAll button').forEach(x=>x.classList.toggle('on',x===b)); drawNear()});
+$('nearDec').oninput=e=>{nearDec=+e.target.value; nearDecAll=nearDec>=+e.target.max; drawNear()};
 document.querySelectorAll('#nearWin button').forEach(b=>b.onclick=()=>{
   nearWin=b.dataset.w; document.querySelectorAll('#nearWin button').forEach(x=>x.classList.toggle('on',x===b)); drawNear()});
 document.querySelectorAll('#nearScale button').forEach(b=>b.onclick=()=>{
@@ -3673,8 +3708,10 @@ function fortPlot(canvas,out){
     $('fortWinV').textContent=wnd.all?`all ${t1} rounds`:`last ${t1-t0} rounds`}
   const from=lifeZero?'since the last time its money was zero':'from its last bankruptcy on', sq=out&&out.sq;
   // a square picture (for a paper) has neither the title nor the legend: the plot alone, with its axes
-  const title=sq?'':out?(rich?`Money of the ${fortN} richest agents, each ${from}`:`Money of ${fortN} agents picked at random, each ${from}`)+' — round '+E.t
-    :(rich?`the ${fortN} largest fortunes`:`${fortN} agents at random`);
+  const one=fortN===1;
+  const title=sq?'':out?(rich?(one?`Money of the richest agent, ${from}`:`Money of the ${fortN} richest agents, each ${from}`)
+      :(one?`Money of an agent picked at random, ${from}`:`Money of ${fortN} agents picked at random, each ${from}`))+' — round '+E.t
+    :(rich?(one?'the largest fortune':`the ${fortN} largest fortunes`):(one?'1 agent at random':`${fortN} agents at random`));
   // the legend in a row of its own over the plot, beside the title if there is room: the lines end at the upper right
   const leg=[...P.products.map((q,i)=>({c:PCOL[i],t:'makes '+PNAME[i],ts:PNAME[i]})),{c:'#9aa3b5',t:'no factory, or a new one',ts:'none'},
     {t:lifeZero?'× money 0':'× bankrupt',ink:'#be123c'},...(rich&&!lifeZero?[{t:'○ fortune gone',ink:'#4a5872'}]:[])];
@@ -3746,10 +3783,10 @@ function fortPlot(canvas,out){
   for(const [x,y] of rings){g.beginPath();g.arc(x,y,m,0,2*Math.PI);g.stroke()}
   g.restore();
 }
-// which agents to follow: a button that switches between four settings, and the detailed choice above the section
-const FSTATES=[{m:'rich',n:5},{m:'rich',n:10},{m:'rand',n:5},{m:'rand',n:10}];
+// which agents to follow: a button that switches between six settings, and the detailed choice above the section
+const FSTATES=[{m:'rich',n:2},{m:'rich',n:1},{m:'rich',n:5},{m:'rich',n:10},{m:'rand',n:5},{m:'rand',n:10}];
 function syncFort(){
-  $('fortTgl').textContent=fortN+(fortMode==='rich'?' largest':' at random');
+  $('fortTgl').textContent=fortMode==='rich'?(fortN===1?'the largest':fortN+' largest'):fortN+' at random';
   document.querySelectorAll('#fortSeg button').forEach(x=>x.classList.toggle('on',x.dataset.m===fortMode));
   document.querySelectorAll('#fortNum button').forEach(x=>x.classList.toggle('on',+x.dataset.n===fortN));
 }
