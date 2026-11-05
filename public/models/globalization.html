@@ -354,8 +354,9 @@
       <p>Think of <b>A</b> as bread: a bakery is cheap to start, and a big bakery bakes only a little more cheaply than
         a small one. <b>B</b> lies in between: an ordinary industry, say bicycles. <b>C</b> is high tech, like computer
         chips: a chip factory is very expensive to build, but the bigger it is, the cheaper each chip becomes.</p>
-      <p>The town has edges, like an island. The <i>edges</i> menu in the upper right corner of the town can wrap it
-        around like a doughnut instead, so that walking off the right side brings you back on the left. The control
+      <p>The town has no edges: it is wrapped around like a doughnut, so that walking off the right side brings you back
+        on the left (periodic edges). The <i>edges</i> menu in the upper right corner of the town can close it
+        instead, like an island; the tiny town is closed. The control
         panel (the tab at the right edge of the window) has this and most other settings: there you can also change
         the products and add more of them. The button <i>tiny town</i> above the town loads a town of only 8 × 8
         agents, in which you can follow every agent by eye: see <i>A tiny town, step by step</i>.</p>
@@ -782,9 +783,9 @@
         owner 0.01 a round, so saving 8 takes 800 rounds: after 4&nbsp;000 rounds half the cycles last over 650 rounds,
         a quarter under 330, a quarter the full 840 or more.
         The <i>decades</i> slider over this plot shows fewer decades of the y axis, to look closely at the common times.
-        On the right: the money of single agents, round by round. The plot follows the 2 richest agents (or the
-        richest alone, or 3, 5 or 10), or agents picked at random. The round button over the plot switches between 2
-        largest, the largest, 5 largest, 10 largest, 5 at random and 10 at random; the buttons over the section let you
+        On the right: the money of single agents, round by round. The plot follows the richest agent (or the 2, 3, 5
+        or 10 richest), or agents picked at random. The round button over the plot switches between the largest, 2
+        largest, 5 largest, 10 largest, 5 at random and 10 at random; the buttons over the section let you
         choose freely, also 3. Each agent is drawn for its whole life:
         from its last bankruptcy (or the start of the run) until it goes bankrupt again, where a cross marks the end. One
         of the richest is also let go once its fortune is gone — its money back to the mean money of the town — where a
@@ -826,7 +827,8 @@
         shown, with a title; <b>sq</b> a square one for a paper, without a title and with narrow margins.</p>
 
       <h2 id="r-lessons">Lessons from the model</h2>
-      <p>The lessons come from the standard setup — the closed 125 × 125 town with free goods, the Income weight, n = 1,
+      <p>The lessons come from the standard setup as it was when they were written — the closed 125 × 125 town (the
+        standard town now has periodic edges; choose <i>edges closed</i> above the town to repeat them) with free goods, the Income weight, n = 1,
         patience 0, no upkeep and α = 1 — and from the same town when the buyers pay (gouging off, shopping debts
         bankrupt). They hold in both economies unless said; a number in parentheses is for buyers pay. A big chip
         company, or chip giant, sells at least 5 % of all chips. The most important come first. Most numbers are means
@@ -1198,7 +1200,7 @@
         <button data-m="rich" class="on">largest</button><button data-m="rand">at random</button></div>
       <div class="seg" id="fortNum" title="how many agents to follow">
         <button data-n="10">10</button><button data-n="5">5</button><button data-n="3">3</button><button data-n="2"
-        class="on">2</button><button data-n="1">1</button></div>
+        >2</button><button data-n="1" class="on">1</button></div>
       <div class="seg" id="fortScale" title="money on a linear or a logarithmic scale">
         <button data-s="lin" class="on">lin</button><button data-s="log">log</button></div>
     </div>
@@ -1213,7 +1215,7 @@
       </div>
       <div>
         <div class="plotbar">
-          <button class="tgl" id="fortTgl" title="click to switch: 2 largest → the largest → 5 largest → 10 largest → 5 at random → 10 at random">2 largest</button>
+          <button class="tgl" id="fortTgl" title="click to switch: the largest → 2 largest → 5 largest → 10 largest → 5 at random → 10 at random">the largest</button>
           <label class="win" title="the time window: from now back in time, in steps of a factor 1.5; at the right end, the whole run">window
             <input type="range" id="fortWin" min="0" max="0" step="1" value="0"><span id="fortWinV"></span></label>
           <span class="plotbtns"><button data-plot="fort" data-k="png" title="save the fortunes in time as a PNG picture, with title and axis labels">.png</button><button data-plot="fort" data-k="sq" title="save the fortunes in time in a square picture">sq</button></span></div>
@@ -1818,7 +1820,7 @@ const HELP={
     'upper right corner of the town lets the sellers charge the next-best offer instead; n, μ and patience κ have '+
     'their menus there too',
   std:'restore the standard setup: the three products A, B and C, free goods with the Income weight (gouging off, '+
-    'transport paid back, shopping debts bankrupt), n = 1, patience 0, wage 0.05, upkeep 0, a closed 125 × 125 town without roads or '+
+    'transport paid back, shopping debts bankrupt), n = 1, patience 0, wage 0.05, upkeep 0, a periodic 125 × 125 town (edges wrapped around) without roads or '+
     'borders',
   large:'the standard setup on a large 250 × 250 town: 62 500 agents, four times as many, so the rounds take longer',
   buyw:'who places the orders: picked ∝ last round\'s income (Income weight: the wage, the sales and, when the '+
@@ -1878,7 +1880,7 @@ function setPalette(){
   PSH=PRGB.map(c=>({top:shade(c.map(v=>v+(255-v)*0.18),1),a:shade(c,0.8),b:shade(c,0.6)}));
 }
 
-const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:0,buyw:'inc',M0:5,bc:'closed',tmul:1,roads:[],borders:[],
+const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:0,buyw:'inc',M0:5,bc:'periodic',tmul:1,roads:[],borders:[],
   econ:'so',gouge:false,forgive:false,lost:false,seed:1};
 // a grid of k × k countries: two-way borders taxing every product at j·L/k, j = 0 … k − 1, along each axis (the one at
 // 0 lies on the edge and counts only in a periodic town); grid: k − 1, the borders along each axis inside the town, gi:
@@ -1890,7 +1892,7 @@ const THREE=[{start:2,gamma:-0.3,beta:0.1},{start:8,gamma:-0.6,beta:0.05},{start
 const PRESETS={
   standard:{label:'Standard setup',note:'The standard setup. A: basic product, cheap to start, weak economy of scale, '+
     'costly to ship. B: ordinary industry. C: high tech, strong economy of scale and cheap to ship, but expensive '+
-    'to start. Free goods with the Income weight, n = 1, patience 0, wage 0.05, upkeep 0, a closed 125 × 125 town '+
+    'to start. Free goods with the Income weight, n = 1, patience 0, wage 0.05, upkeep 0, a periodic 125 × 125 town '+
     'without roads or borders. The golden button above the town switches to buyers pay; gouging, right of the '+
     'Income weight, then lets the sellers charge the next-best offer, and Shopping debts, under the Economy menu, '+
     'can forgive debts that come from shopping alone (both off in the standard setup).',
@@ -1899,17 +1901,17 @@ const PRESETS={
   large:{label:'Large town',note:'The standard setup on a large 250 × 250 town: 62 500 agents, four times as many as '+
     'in the standard 125 × 125 town, so the rounds take longer.',
     products:THREE,tmul:1,anneal:false,std:true,L:250},
-  // the standard rules on 8 × 8, with cheaper B and chip factories (Start 4 and 8 instead of 8 and 20) and dearer
+  // the standard rules on a closed 8 × 8 town (the tutorial was written for closed edges), with cheaper B and chip factories (Start 4 and 8 instead of 8 and 20) and dearer
   // transport (β 0.2, 0.1 and 0.05 instead of 0.1, 0.05 and 0.02): the tutorial of the pull-down starts it with a fixed
   // seed (startTinyTutorial)
-  tiny:{label:'Tiny town',note:'The standard rules on a tiny 8 × 8 town of 64 agents, small enough to follow each of '+
+  tiny:{label:'Tiny town',note:'The standard rules on a tiny closed 8 × 8 town of 64 agents, small enough to follow each of '+
     'them. The products keep their γ, but a B factory costs 4 and a chip factory 8 (instead of 8 and 20), and '+
     'transport is dearer: β is 0.2, 0.1 and 0.05 for A, B and C (instead of 0.1, 0.05 and 0.02). In the Agents view '+
     'every square shows the factory of its agent with the units it sold last round, and its money; hover over or tap '+
     'an agent to see where its money came from and went, and why it kept or changed its factory. Step through the '+
     'rounds with Step (key s), or run slowly with the button ▶ with a small s.',
     products:[{...THREE[0],beta:0.2},{...THREE[1],start:4,beta:0.1},{...THREE[2],start:8,beta:0.05}],tmul:1,
-    anneal:false,std:true,L:8},
+    anneal:false,std:true,L:8,bc:'closed'},
   twins:{label:'Twin products',note:'Two products with the numbers of the original one-product model (Start 5, γ −0.5, β 0.05) but different names. With a single product an owner whose sales fall has nothing to switch to, nobody pays a start cost again, and the money piles up without end; with twins an owner can switch.',
     products:[{start:5,gamma:-0.5,beta:0.05},{start:5,gamma:-0.5,beta:0.05}],tmul:1,anneal:false},
   glob:{label:'Globalization',note:'Transport starts 3× dearer and is lowered by e^−0.002 per round: local producers coarsen into a few big companies.',
@@ -1919,13 +1921,13 @@ const PRESETS={
 };
 let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=false, loopTok=0;
 
-// the model settings of the standard setup (the view and the colours are left as they are)
-const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:0,buyw:'inc',M0:5,bc:'closed',econ:'so',gouge:false,forgive:false,lost:false};
+// the model settings of the standard setup (the view and the colours are left as they are): periodic edges
+const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:0,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false};
 // a preset (a standard one on its own lattice size, L, if it has one); seed: a fixed seed, else one at random
 function applyPreset(k,seed){
   const pr=PRESETS[k];
-  if(pr.std){Object.assign(P,STD); $('Lsel').value=String(pr.L||STD.L); $('aRate').value='0.002'; circOn.clear();
-    bordOn.clear()}
+  if(pr.std){Object.assign(P,STD); if(pr.bc)P.bc=pr.bc; $('Lsel').value=String(pr.L||STD.L); $('aRate').value='0.002';
+    circOn.clear(); bordOn.clear()}
   // any other preset chosen in a tiny town (L ≤ 16, the tutorial) goes back to the standard size; P.L too, so that
   // restart keeps the preset's borders
   else if(+$('Lsel').value<=16){$('Lsel').value=String(STD.L); P.L=STD.L}
@@ -3259,7 +3261,7 @@ function histWindow(){         // summed over the last two thirds of the rounds 
 // the richest also makes room once its fortune is gone — its money back to the mean money of the town — its line
 // ending in a circle; without upkeep it would otherwise be followed for ever.
 const HREL=0.02, HABS=0.01, HMAX=64, HMAXR=4096;
-let AH=null, fortMode='rich', fortN=2, fortLog=false, lifeZero=false;
+let AH=null, fortMode='rich', fortN=1, fortLog=false, lifeZero=false;
 // the product an agent makes (its biggest seller); −1: no factory, or one it opened this very round — an owner who keeps
 // trying new factories after giving up a company shows as grey, not as a new colour every round
 function mainProduct(r){if(E.started[r]===E.t)return -1;
@@ -3672,11 +3674,11 @@ function nearData(){
       if(med>0)median.push([g.x,med])}
     for(let q=0;q<3;q++){if(an[q]>=5)size[q].push([g.x,as[q]/an[q]]); if(c>=20)sizeAll[q].push([g.x,as[q]/c])}
   }
-  const last=NEAR.ring[NEAR.ring.length-1];
-  return {ib:last.ib,il:last.il,il2:last.il2,rounds:z.rounds,from:z.from,mean,median,size,sizeAll,xr,xmax:xr.dmax<Infinity?xr.dmax:0};
+  const last=NEAR.ring[NEAR.ring.length-1], marks=[0,1,2].map(q=>curveMarksK(ans[q],ass[q],km));
+  return {ib:last.ib,il:last.il,il2:last.il2,rounds:z.rounds,from:z.from,mean,median,size,sizeAll,marks,xr,xmax:xr.dmax<Infinity?xr.dmax:0};
 }
 // y against x for a few series. series: [{c, t (legend; none: not in it), p: [[x,y], …], dash: a dashed line without
-// dots}]; o: {title, xl, yl, scale: lin | loglin (only y logarithmic) | log (both), xmax: the end of the x axis (0: as
+// dots, marks: {min, bend} points marked with a triangle and a square (curveMarks)}]; o: {title, xl, yl, scale: lin | loglin (only y logarithmic) | log (both), xmax: the end of the x axis (0: as
 // far as the points go), ydec: on a logarithmic y axis only this many decades from the top (0: all), leg: more legend
 // items}; out (a saved picture): {dpr, sq: a square picture, for a paper — no title, and a left margin only as wide as
 // the numbers need}. Returns the decades a logarithmic y axis needs for all the points (0 when linear)
@@ -3710,12 +3712,47 @@ function xyPlot(canvas,series,o,out){
     g.strokeStyle=se.c; g.fillStyle=se.c; g.lineWidth=1.8*dpr; g.lineJoin='round'; g.setLineDash(se.dash?[6*dpr,4*dpr]:[]);
     g.beginPath(); q.forEach((a,k)=>k?g.lineTo(X(a[0]),Y(a[1])):g.moveTo(X(a[0]),Y(a[1]))); g.stroke(); g.setLineDash([]);
     if(!se.dash)for(const a of q){g.beginPath();g.arc(X(a[0]),Y(a[1]),2.6*dpr,0,2*Math.PI);g.fill()}}
+  // marks (the factory sizes): a triangle at the lowest point, a square at the bend, in the colour of the curve with a
+  // white rim, over all the curves
+  g.lineWidth=1.4*dpr; g.strokeStyle='#fff';
+  for(const se of series){const m=se.marks; if(!m)continue; g.fillStyle=se.c;
+    if(m.min&&ok(m.min)){const x=X(m.min[0]), y=Y(m.min[1]), r=6*dpr;
+      g.beginPath(); g.moveTo(x,y-r); g.lineTo(x+0.9*r,y+0.6*r); g.lineTo(x-0.9*r,y+0.6*r); g.closePath(); g.fill(); g.stroke()}
+    if(m.bend&&ok(m.bend)){const x=X(m.bend[0]), y=Y(m.bend[1]), r=4.5*dpr; g.fillRect(x-r,y-r,2*r,2*r); g.strokeRect(x-r,y-r,2*r,2*r)}}
   g.restore();
   const narrow=w<520*dpr;
   legendBox(g,[...series.filter(se=>se.t).map(se=>({c:se.c,t:se.t})),...(o.leg||[])],pl+w-4*z,pt+4*z,dpr,false,narrow?0.8:1);
   return decAll;
 }
 // the two plots: their data and labels, for the screen and the saved pictures
+// the marks on a factory-size curve, from the sums per whole cell k = ⌊d⌋ (an: factories that sold, as: their units),
+// the same whatever the scale and bins of the plot: the size S(k) = Σas/Σan over k − 2 … k + 2 (enough factories, below;
+// k ≥ 1: the owners of the big companies, at d < 1, left out); min: the k of the lowest S, and bend: the k before it
+// where the second derivative (S(k − 2) − 2·S(k) + S(k + 2))/4 is largest (none if it is nowhere positive). The
+// distances are the middles of the cells, k + ½
+function curveMarksK(an,as,km){
+  const w=2, S=[], A=[];
+  for(let k=0;k<=km;k++){let a=0,t=0; for(let j=Math.max(1,k-w);j<=Math.min(km,k+w);j++){a+=an[j];t+=as[j]} A.push(a); S.push(t/a)}
+  // the sparse far end (a few factories in the corners farthest from the big companies) would decide the minimum by
+  // its noise: only windows with at least 20 factories and 5 % of those in the busiest window count
+  const amin=Math.max(20,0.05*Math.max(...A)); for(let k=0;k<=km;k++)if(k<1||A[k]<amin)S[k]=NaN;
+  let im=-1; for(let k=1;k<=km;k++)if(Number.isFinite(S[k])&&(im<0||S[k]<S[im]))im=k;
+  if(im<0)return null;
+  let ib=-1, best=0;
+  for(let k=1+w;k<im&&k+w<=km;k++){const a=S[k-w],b=S[k],c=S[k+w]; if(!(Number.isFinite(a)&&Number.isFinite(b)&&Number.isFinite(c)))continue;
+    const d2=(a-2*b+c)/(w*w); if(d2>best){best=d2;ib=k}}
+  return {min:im+0.5,bend:ib>0?ib+0.5:null};
+}
+// a mark at distance x on the plotted curve p: y interpolated between its neighbouring points (in logarithms where the
+// axis is logarithmic); beyond the ends, the end point
+function markOn(p,x,lx,ly){
+  const q=p.filter(a=>(!lx||a[0]>0)&&(!ly||a[1]>0)); if(!q.length)return null;
+  const X=v=>lx?Math.log(v):v, Yf=v=>ly?Math.log(v):v, Yb=v=>ly?Math.exp(v):v;
+  if(x<=q[0][0])return [x,q[0][1]]; if(x>=q[q.length-1][0])return [x,q[q.length-1][1]];
+  for(let k=1;k<q.length;k++)if(q[k][0]>=x){const a=q[k-1],b=q[k], t=(X(x)-X(a[0]))/(X(b[0])-X(a[0]));
+    return [x,Yb(Yf(a[1])+t*(Yf(b[1])-Yf(a[1])))]}
+  return null;
+}
 function nearPlots(){
   const d=nearData(); if(!d)return null;
   const B=PNAME[d.ib], A=PNAME[d.il], A2=d.il2>=0?PNAME[d.il2]:null, own=d.ib!==d.il&&d.ib!==d.il2;
@@ -3727,8 +3764,10 @@ function nearPlots(){
       o:{title:`wealth against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Wealth',scale:nearScale,xmax:d.xmax},
       title:`Mean and median wealth against the distance to the nearest big ${B} company`},
     nearS:{series:[...[[d.il,A,0,'#16233b'],[d.il2,A2,1,'#4a5872'],[d.ib,own?B:null,2,'#be123c']].filter(s=>s[1])
-        .flatMap(([i,nm,q,c0])=>[{c:PCOL[i]||c0,t:`${nm} factories`,p:d.size[q]},
-          ...(nearAll?[{c:PCOL[i]||c0,dash:true,p:d.sizeAll[q]}]:[])])],
+        .flatMap(([i,nm,q,c0])=>{const m=d.marks[q], lx=nearScale==='log', ly=nearScale!=='lin';
+          return [{c:PCOL[i]||c0,t:`${nm} factories`,p:d.size[q],nm,dm:m,
+            marks:m&&{min:markOn(d.size[q],m.min,lx,ly),bend:m.bend?markOn(d.size[q],m.bend,lx,ly):null}},
+          ...(nearAll?[{c:PCOL[i]||c0,dash:true,p:d.sizeAll[q]}]:[])]})],
       o:{title:`factory size against distance to big ${B}`,xl:`Distance to nearest ${B} company`,yl:'Factory size',
         scale:nearScale,xmax:d.xmax,ydec:nearDecAll?0:nearDec,leg:nearAll?[{dash:'#4a5872',t:'per agent'}]:[]},
       title:`Mean units sold by the ${nameList} factories that sold something`+(nearAll?' (dashed: per agent)':'')+
@@ -3738,7 +3777,10 @@ function drawNear(){
   const q=nearPlots();
   if(!q){for(const id of ['cNearM','cNearS']){const c=$(id); fitCanvas(c); c.getContext('2d').clearRect(0,0,c.width,c.height)}
     $('nearNote').textContent='no big company of the most scalable product yet'; return}
-  $('nearNote').textContent=q.note;
+  // the distances of the marks, product by product
+  const mk=q.nearS.series.filter(se=>se.dm).map(se=>`${se.nm} ${se.dm.min}`+(se.dm.bend?` (${se.dm.bend})`:''));
+  $('nearNote').textContent=q.note+(mk.length?' · factory size: ▲ the lowest point of each curve, ■ before it, where its '+
+    'second derivative against d is largest (both from the sizes per cell of d, summed over ±2 cells): d at ▲ (■) '+mk.join(', '):'');
   const xr=q.d.xr, sl=$('nearX'); sl.max=xr.v.length; sl.value=xr.k; $('nearXV').textContent=xr.k<xr.v.length?String(xr.v[xr.k]):'all';
   xyPlot($('cNearM'),q.nearM.series,q.nearM.o);
   const dec=xyPlot($('cNearS'),q.nearS.series,q.nearS.o), ds=$('nearDec');
@@ -3850,7 +3892,7 @@ function fortPlot(canvas,out){
   g.restore();
 }
 // which agents to follow: a button that switches between six settings, and the detailed choice above the section
-const FSTATES=[{m:'rich',n:2},{m:'rich',n:1},{m:'rich',n:5},{m:'rich',n:10},{m:'rand',n:5},{m:'rand',n:10}];
+const FSTATES=[{m:'rich',n:1},{m:'rich',n:2},{m:'rich',n:5},{m:'rich',n:10},{m:'rand',n:5},{m:'rand',n:10}];
 function syncFort(){
   $('fortTgl').textContent=fortMode==='rich'?(fortN===1?'the largest':fortN+' largest'):fortN+' at random';
   document.querySelectorAll('#fortSeg button').forEach(x=>x.classList.toggle('on',x.dataset.m===fortMode));
