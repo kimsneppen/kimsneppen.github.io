@@ -1197,7 +1197,7 @@
       </div>
       <div class="cornerbtns">
         <span class="inforow"><span class="frbtns"><button id="bBack" aria-label="one round back"
-          title="look back: the display a round earlier (kept: every round over the last 20, every 5th back to 300 rounds, then fewer over the whole run; a run pauses)">◀</button><span
+          title="look back: the display a round earlier (kept: every round over the last 20, every 5th back to 500 rounds, then fewer over the whole run; a run pauses)">◀</button><span
           id="frLab"></span><button id="bFwd" aria-label="one round forward"
           title="one round forward, back to the present round">▶</button></span><button id="bInfo"
           title="show or hide the legend and the read-out">legend ▴</button></span>
@@ -3209,7 +3209,7 @@ function drawLive(){
 // the last 20, then five, then frFarStep. A round of the past is
 // drawn by the same code as the present, with these arrays in place of the model's (frView); flashes and sinking towers
 // belong to the present and are left out. A new round, a run or a new town go back to the present.
-const FR_NEAR=20, FR_STEP=5, FR_FAR=300, FR_BYTES=300e6, FR_FARMAX=120; let FR=[], frBack=0, frPool=[], frFarStep=25;
+const FR_NEAR=20, FR_STEP=5, FR_FAR=500, FR_BYTES=300e6, FR_FARMAX=120; let FR=[], frBack=0, frPool=[], frFarStep=25;
 const frCap=()=>Math.max(FR_NEAR+2,Math.floor(FR_BYTES/(E.L*E.L*(9*E.N+8))));
 const frShown=()=>frBack>0&&FR.length>frBack?FR[FR.length-1-frBack]:null;
 const frT=()=>{const f=frShown(); return f?f.t:E.t};
@@ -4076,7 +4076,7 @@ function fortPlot(canvas,out){
   const xs=Math.max(1,niceNum(Math.max(1,t1-t0)/Math.max(4,Math.min(12,Math.floor(w/(40*dpr)))))), xt=[];
   for(let k=Math.ceil(t0/xs)*xs;k<=t1;k+=xs)xt.push([k,X(k)]);
   drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:v=>String(Math.round(v)),fy:fyt,linX:true,linY:!fortLog});
-  g.fillStyle='#4a5872'; g.textAlign='center'; g.textBaseline='bottom'; g.fillText('round',pl+w/2,H-2*dpr);
+  g.fillStyle='#4a5872'; g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time',pl+w/2,H-2*dpr);
   if(out){g.save();g.translate(8*z,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';
     g.fillText('money M of the agent'+(fortLog?', log scale':''),0,0);g.restore()}
   // each piece of line in the colour of the product made at its end, collected per colour
@@ -4364,7 +4364,7 @@ function ctPlot0(canvas,out){
   legendBox(g,[{c:col,t:`${nm}: D = (Σs)²/Σs²`}],pl+w-4*z,pt+4*z,dpr,false,w<520*dpr?0.8:1);
   const nar=w<520*dpr;
   legendBox(g,[{c:col,t:nar?`survived 1 round: ${cu1[n]}`:`survived 1 round of trade: ${cu1[n]}`},{dash:col,t:`survived 2 rounds: ${cu2[n]}`}],pl+4*z,pt2+4*z,dpr,true,nar?0.8:1);
-  if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time (rounds)',pl+w/2,H-4*dpr);
+  if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time',pl+w/2,H-4*dpr);
     for(const [y,t] of [[pt+hh/2,'D, effective number of companies'],[pt2+hh/2,`${nm} companies, cumulative`]]){
       g.save(); g.translate(8*z,y); g.rotate(-Math.PI/2); g.textBaseline='middle'; axisTitle(g,t,0,5.5*z,z,hh); g.restore()}}
   return true;
@@ -4437,7 +4437,7 @@ function netPlot0(canvas,out){
       `${vis} without a predecessor shown, ${d.orphans} of them started after the first round with none at all (where no company of ${nm} had collapsed since the start, or its market reached no further); `+
       `the largest sold ${Math.round(d.smax)} units in a round. A company's predecessor: the company that collapsed last where it started (in its market, or its own cell); one not shown is replaced by its nearest predecessor shown. `+
       (net3d?`3D: time along the floor; the companies as spheres placed across it by springs along the links and repulsion between those close in time (a spring layout, as in Kamada–Kawai), with their shadows on the floor; a company keeps its place from one view to the next, so a neighbourhood stays where it was; drag to turn, Shift + drag (or the right button) to move, wheel to zoom; ◀ back returns to the view before.`
-        :`Drag a box over the tree to zoom in on it (time and height), or Shift + wheel (time) and Alt + wheel (height) around the pointer; the bar left of the tree sets the height shown; ◀ back, ↔ full and ↕ full widen the view again. A click on the tree shows the display of that round below, b), c) and d) in turn (click a picture to choose which comes next, ✕ to remove it); the display keeps the shaded rounds (the last 300); drag a dashed line b, c or d to move it.`)+
+        :`Drag a box over the tree to zoom in on it (time and height), or Shift + wheel (time) and Alt + wheel (height) around the pointer; the bar left of the tree sets the height shown; ◀ back, ↔ full and ↕ full widen the view again. A click on the tree shows the display of that round below, b), c) and d) in turn (click a picture to choose which comes next, ✕ to remove it); the display keeps the shaded rounds (the last 500) and fewer further back; drag a dashed line b, c or d to move it.`)+
       (ok?'':' Too many companies for 3D: zoom in or choose fewer.')}
   return true;
 }
@@ -4445,6 +4445,8 @@ function netPlot0(canvas,out){
 // the numbers of a time axis: three round values, near its start, middle and end (the other ticks without numbers)
 // (the largest step of 1, 1.5, 2, 2.5, 3, 4 or 5 times a power of ten that gives three or more multiples in [a, b]; of more
 // than three, the first, the one nearest the middle and the last)
+// the text under the family tree (its time numbers and the label time): this share of the plots' text size
+const TREE_TS=0.65;
 function axis3(a,b){const span=Math.max(1e-9,b-a); let best=[a,b].map(Math.round);
   for(let e=Math.floor(Math.log10(span));e>=Math.floor(Math.log10(span))-3;e--)for(const m of [5,4,3,2.5,2,1.5,1]){const st=m*Math.pow(10,e), t=[];
     for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)t.push(+v.toFixed(6));
@@ -4452,13 +4454,14 @@ function axis3(a,b){const span=Math.max(1e-9,b-a); let best=[a,b].map(Math.round
   return best}
 function net2D(g,d,inY,r0,r1,o){
   const {W,H,dpr,z,out,col}=o, sq=out&&out.sq, rgb=(PRGB[CT.ic]||[190,18,60]).join(','), B=CT.birth, D=CT.death, S=CT.maxS, n=d.ks.length;
-  const pt=8*z, pb=(out?34:20)*z, pl=(out?20:13)*z, pr=14*z, w=W-pl-pr, h=H-pt-pb;
+  // (the numbers and the label under the tree at 65 % of the plots' text: TS)
+  const pt=8*z, pb=(out?24:14)*z, pl=(out?20:13)*z, pr=14*z, w=W-pl-pr, h=H-pt-pb;
   const rows=Math.max(1e-9,r1-r0+1), rpad=Math.min((out?12:10)*dpr,0.2*h), x0=d.na, x1=d.nb;
   const X=t=>pl+(t-x0)/Math.max(1,x1-x0)*w, Y=r=>pt+rpad+(r-r0+0.5)/rows*(h-2*rpad);
   if(!out){NETG={x0,x1,pl,w,pt,h,rpad,r0,rows}; netVPlace((pt+rpad)/dpr,(h-2*rpad)/dpr)}
   const xt=niceTicks(x0,x1,10).filter(t=>t>=x0&&t<=x1).map(t=>[t,X(t)]);
   drawAxes(g,{xt,yt:[],pl,pt,w,h,z,dpr,W,fx:()=>'',fy:()=>'',linX:true,linY:true});
-  g.font=pfont(11,z); g.fillStyle=PC('#6b7690','#9aa6bd'); g.textAlign='center'; g.textBaseline='top';
+  g.font=pfont(11*TREE_TS,z); g.fillStyle=PC('#6b7690','#9aa6bd'); g.textAlign='center'; g.textBaseline='top';
   for(const v of axis3(x0,x1)){const s=String(Math.round(v)), hw=g.measureText(s).width/2; g.fillText(s,Math.max(hw+2*dpr,Math.min(X(v),W-hw-2*dpr)),pt+h+6*dpr)}
   g.save(); g.beginPath(); g.rect(pl,pt,w+12*dpr,h); g.clip();
   // the rounds the display keeps (the pictures b, c, d can be taken there): shaded
@@ -4488,7 +4491,7 @@ function net2D(g,d,inY,r0,r1,o){
     g.save(); g.setLineDash([4*dpr,3*dpr]); g.strokeStyle=ink; g.lineWidth=1.3*dpr; g.beginPath(); g.moveTo(x,pt); g.lineTo(x,pt+h); g.stroke(); g.restore();
     g.font=pfont(11,z,true); const s=miniLetter(i)||'·', tw=g.measureText(s).width; g.fillStyle=PC('rgba(255,255,255,.9)','rgba(11,13,19,.85)');
     const ly=pt+h-10*dpr-13*z; g.fillRect(x-tw/2-3*dpr,ly,tw+6*dpr,13*z); g.fillStyle=ink; g.textAlign='center'; g.textBaseline='top'; g.fillText(s,x,ly)});
-  if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time (rounds)',pl+w/2,H-4*dpr)}
+  if(out){g.font=pfont(11*TREE_TS,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time',pl+w/2,H-3*dpr)}
 }
 // A zoom box dragged over the flat tree: the rounds under it, and (if it is more than a sliver high) the companies in its
 // rows, which are then laid out again to fill the height
@@ -4546,7 +4549,7 @@ function net2D(g,d,inY,r0,r1,o){
 // ---- b), c), d) (and e)): the display as it was in a round picked on the flat tree (a click), in the 3D front view, cut
 // tightly around what is drawn and pressed into a square (as the sq button of the display does), with the market areas
 // of the companies of the most scalable product (the dotted outlines of its markets button), from the display's memory (the
-// nearest round kept: every round over the last 20, every 5th back to 300, then every frFarStep-th over the whole run). Each picture is kept as it was drawn,
+// nearest round kept: every round over the last 20, every 5th back to 500, then every frFarStep-th over the whole run). Each picture is kept as it was drawn,
 // cut tightly around what is drawn; the next click fills the next place (miniNext, lit; a click on a place chooses it)
 // miniN places (3, or 4 with the switch); the letters b), c) … follow the rounds, the earliest first (miniLetter)
 const MINI=[null,null,null,null]; let miniNext=0, miniN=3;
@@ -4585,7 +4588,7 @@ function miniHint(){
     `<b>To see the town in a round: click or tap the flat tree</b> (2D) at that round — anywhere in the plot, or on its time axis. `+
     `The picture shows the main display as it was then, with the market areas of the ${nm} companies as dotted outlines; `+
     `it goes to the pictures in turn (the lit one is next: click a picture to choose it, ✕ to remove it; the switch below gives three or four), lettered b), c) … in the order of their rounds, and the round is marked on the tree by a dashed line with its letter, which you can drag. The pictures are the 3D front view, pressed into a square. `+
-    `The display keeps every round of the last 20, every 5th back to 300 (shaded on the tree) and ${far}; the small marks along the bottom of the tree are the rounds kept, and the nearest one is shown.`}
+    `The display keeps every round of the last 20, every 5th back to 500 (shaded on the tree) and ${far}; the small marks along the bottom of the tree are the rounds kept, and the nearest one is shown.`}
 let hintT=0;
 function miniHintFlash(){miniHint(); const h=$('miniHint'); h.classList.add('flash'); clearTimeout(hintT); hintT=setTimeout(()=>h.classList.remove('flash'),1600)}
 function miniDraw(){
@@ -4696,7 +4699,7 @@ function net3D(g,d,inY,nShow,o){
   let bx0=Infinity,bx1=-Infinity,by0=Infinity,by1=-Infinity; const ext=p=>{bx0=Math.min(bx0,p[0]);bx1=Math.max(bx1,p[0]);by0=Math.min(by0,p[1]);by1=Math.max(by1,p[1])};
   for(const [x,y] of corners)ext(proj(x,y,fl));
   for(let i=0;i<n;i++)ext(proj(L.X[i],L.Y[i],L.Z[i]+3));
-  const pb=(out?40:30)*z, sc=NET3.zoom*Math.min(W*0.94/Math.max(1e-6,bx1-bx0),(H-pt-pb)/Math.max(1e-6,by1-by0));
+  const pb=(out?28:22)*z, sc=NET3.zoom*Math.min(W*0.94/Math.max(1e-6,bx1-bx0),(H-pt-pb)/Math.max(1e-6,by1-by0));
   const ox=W/2-sc*(bx0+bx1)/2+NET3.px*dpr, oy=pt+(H-pt-pb)/2-sc*(by0+by1)/2+NET3.py*dpr;
   if(!out){NETG=null; netVPlace(pt/dpr,(H-pt-pb)/dpr)}
   const P2=(x,y,zz)=>{const p=proj(x,y,zz); return [ox+sc*p[0],oy+sc*p[1],p[2],p[3]]};
@@ -4705,7 +4708,7 @@ function net3D(g,d,inY,nShow,o){
   g.beginPath(); corners.forEach(([x,y],q)=>{const p=P2(x,y,fl); q?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])}); g.closePath();
   g.fillStyle=PC('#eef1f6','#161b26'); g.fill(); g.strokeStyle=PC('#c3cbdb','#3a4459'); g.lineWidth=dpr; g.stroke();
   const span=Math.max(1,d.nb-d.na), xs=t=>(t-d.na)/span*100-50, near=P2(0,fy0,fl)[2]>P2(0,fy1,fl)[2]?fy0:fy1;
-  g.font=pfont(11,z); g.fillStyle=PC('#6b7690','#9aa6bd'); g.textAlign='center'; g.textBaseline='top';
+  g.font=pfont(11*TREE_TS,z); g.fillStyle=PC('#6b7690','#9aa6bd'); g.textAlign='center'; g.textBaseline='top';
   g.strokeStyle=PC('rgba(131,145,171,.3)','rgba(200,210,230,.12)'); g.beginPath();
   const tks=niceTicks(d.na,d.nb,8).filter(t=>t>=d.na&&t<=d.nb);
   for(const t of tks){const a=P2(xs(t),fy0,fl), b=P2(xs(t),fy1,fl); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1])}
@@ -4735,7 +4738,7 @@ function net3D(g,d,inY,nShow,o){
     g.fillStyle=gr; g.beginPath(); g.arc(p[0],p[1],r,0,2*Math.PI); g.fill();
     if(alive){g.strokeStyle=col; g.lineWidth=Math.max(0.6,0.8*dpr); g.stroke()}}
   g.restore();
-  if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time (rounds) along the floor',W/2,H-4*dpr)}
+  if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.font=pfont(11*TREE_TS,z); g.fillText('time',W/2,H-3*dpr)}
   return true;
 }
 
