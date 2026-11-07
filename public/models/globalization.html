@@ -235,6 +235,9 @@
   .vrange .vh{position:absolute;left:0;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:var(--accent);
     border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);box-sizing:border-box;cursor:ns-resize}
   /* b), c), d): the display in rounds chosen on the tree */
+  .minihint{margin:10px 0 0;padding:7px 10px;border-radius:8px;background:var(--accent-soft);font-size:12.5px;color:var(--ink2);line-height:1.45}
+  .minihint b{color:var(--ink)}
+  .minihint.flash{background:#fef3c7;color:#7c2d12;transition:background .2s}
   .minis{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-top:10px}
   @media (min-width:700px){ .minis{grid-template-columns:repeat(3,minmax(0,1fr))} }
   .mini{border:1px solid var(--line);border-radius:10px;padding:6px 7px;cursor:pointer}
@@ -1192,7 +1195,7 @@
       </div>
       <div class="cornerbtns">
         <span class="inforow"><span class="frbtns"><button id="bBack" aria-label="one round back"
-          title="look back: the display a round earlier (kept: every round over the last 20, then every 5th back to 300 rounds; a run pauses)">◀</button><span
+          title="look back: the display a round earlier (kept: every round over the last 20, every 5th back to 300 rounds, then fewer over the whole run; a run pauses)">◀</button><span
           id="frLab"></span><button id="bFwd" aria-label="one round forward"
           title="one round forward, back to the present round">▶</button></span><button id="bInfo"
           title="show or hide the legend and the read-out">legend ▴</button></span>
@@ -1358,6 +1361,7 @@
     <div class="chartnote" id="netNote" style="margin-bottom:4px"></div>
     <div class="chartbox net"><canvas id="cNet"></canvas><div class="netbox" id="netBox"></div>
       <div class="vrange" id="netV" title="the part of the height shown: drag the upper and lower handles, or the bar between them"><div class="vsel"></div><div class="vh"></div><div class="vh"></div></div></div>
+    <div class="minihint" id="miniHint"></div>
     <div class="minis" id="minis">
       <div class="mini next"><div class="minihead"><button class="mx" title="remove this picture">✕</button><b>b)</b> <span class="mt">click the tree to show the display of that round</span></div><div class="minibox"><canvas></canvas></div></div>
       <div class="mini"><div class="minihead"><button class="mx" title="remove this picture">✕</button><b>c)</b> <span class="mt"></span></div><div class="minibox"><canvas></canvas></div></div>
@@ -3190,19 +3194,26 @@ function drawLive(){
 }
 // ---- the past of the display, to look back at: after every round the state the display draws (factories, units sold,
 // money, suppliers) is kept — every round over the last FR_NEAR rounds, then the rounds divisible by FR_STEP back to
-// FR_FAR rounds, at most FR_BYTES in all (in a big town the oldest go first); the arrows ◀ ▶ beside the legend button
-// step back and forth through them, one round at a time over the last 20, then five. A round of the past is
+// FR_FAR rounds, and further back the rounds divisible by frFarStep over the whole run (25 at first; when more than
+// FR_FARMAX of those are kept, every second goes and the step doubles), at most FR_BYTES in all (in a big town the
+// oldest go first); the arrows ◀ ▶ beside the legend button step back and forth through them, one round at a time over
+// the last 20, then five, then frFarStep. A round of the past is
 // drawn by the same code as the present, with these arrays in place of the model's (frView); flashes and sinking towers
 // belong to the present and are left out. A new round, a run or a new town go back to the present.
-const FR_NEAR=20, FR_STEP=5, FR_FAR=300, FR_BYTES=300e6; let FR=[], frBack=0, frPool=[];
+const FR_NEAR=20, FR_STEP=5, FR_FAR=300, FR_BYTES=300e6, FR_FARMAX=120; let FR=[], frBack=0, frPool=[], frFarStep=25;
 const frCap=()=>Math.max(FR_NEAR+2,Math.floor(FR_BYTES/(E.L*E.L*(9*E.N+8))));
 const frShown=()=>frBack>0&&FR.length>frBack?FR[FR.length-1-frBack]:null;
 const frT=()=>{const f=frShown(); return f?f.t:E.t};
-function frReset(){FR=[]; frPool=[]; frBack=0; frRecord(); MINI.fill(null); miniNext=0; miniDraw()}
+function frReset(){FR=[]; frPool=[]; frBack=0; frFarStep=25; frRecord(); MINI.fill(null); miniNext=0; miniDraw()}
 function frRecord(){
   const LL=E.L*E.L, N=E.N, cap=frCap(), t=E.t;
-  // a round that leaves the last FR_NEAR is kept only if divisible by FR_STEP, and not beyond FR_FAR rounds
-  FR=FR.filter(q=>{const keep=t-q.t<FR_NEAR||(q.t%FR_STEP===0&&t-q.t<=FR_FAR); if(!keep)frPool.push(q); return keep});
+  // a round that leaves the last FR_NEAR is kept only if divisible by FR_STEP up to FR_FAR rounds back, and beyond that
+  // only if divisible by frFarStep, which doubles while too many of those are kept
+  const keepQ=q=>t-q.t<FR_NEAR||(q.t%FR_STEP===0&&t-q.t<=FR_FAR)||q.t%frFarStep===0;
+  const farMax=Math.min(FR_FARMAX,Math.max(0,cap-(FR_NEAR+FR_FAR/FR_STEP+2)));
+  FR=FR.filter(q=>{const keep=keepQ(q); if(!keep)frPool.push(q); return keep});
+  while(frFarStep<1e7&&FR.reduce((n,q)=>n+(t-q.t>FR_FAR?1:0),0)>farMax){frFarStep*=2;
+    FR=FR.filter(q=>{const keep=keepQ(q); if(!keep)frPool.push(q); return keep})}
   while(FR.length>=cap)frPool.push(FR.shift());
   let f=frPool.pop()||null; if(frPool.length>3)frPool.length=3;
   if(!f||f.LL!==LL||f.N!==N)f={LL,N,F:E.F.map(()=>new Uint8Array(LL)),sales:E.F.map(()=>new Int32Array(LL)),
@@ -4234,7 +4245,7 @@ function syncNetBtns(){$('netBack').disabled=!netHist.length; $('netFullT').disa
   $('netFullY').disabled=!NV.sel&&NV.y0===0&&NV.y1===1000;
   $('netFam').textContent=netFam?'families only':'all companies';
   document.querySelectorAll('#net3dSeg button').forEach(b=>b.classList.toggle('on',(b.dataset.v==='3d')===net3d));
-  $('netBg').classList.toggle('on',netDark); $('cNet').parentNode.classList.toggle('d3',net3d)}
+  $('netBg').classList.toggle('on',netDark); $('cNet').parentNode.classList.toggle('d3',net3d); miniHint()}
 const netSync=dualRange('netRange',ctSpan,()=>[NV.a,NV.b],(a,b)=>{NV={...NV,a,b}; netSchedule()},netPush);
 // the height shown: a bar along the left edge of the tree with two handles, top and bottom (NV.y0, NV.y1: 0 … 1000 of the
 // whole height); dragging the bar between them moves both. It is laid along the plot after each drawing (netVPlace)
@@ -4420,7 +4431,10 @@ function net2D(g,d,inY,r0,r1,o){
   drawAxes(g,{xt,yt:[],pl,pt,w,h,z,dpr,W,fx:t=>String(Math.round(t)),fy:()=>'',linX:true,linY:true});
   g.save(); g.beginPath(); g.rect(pl,pt,w+12*dpr,h); g.clip();
   // the rounds the display keeps (the pictures b, c, d can be taken there): shaded
-  if(FR.length){const xa=X(Math.max(x0,FR[0].t)), xb=X(Math.min(x1,FR[FR.length-1].t)); if(xb>xa){g.fillStyle=PC('rgba(67,56,202,.07)','rgba(150,160,255,.09)'); g.fillRect(xa,pt,xb-xa,h)}}
+  if(FR.length){const tl=FR[FR.length-1].t, xa=X(Math.max(x0,tl-FR_FAR)), xb=X(Math.min(x1,tl));
+    if(xb>xa){g.fillStyle=PC('rgba(67,56,202,.07)','rgba(150,160,255,.09)'); g.fillRect(xa,pt,xb-xa,h)}
+    g.fillStyle=PC('rgba(67,56,202,.55)','rgba(170,180,255,.6)');
+    for(const q of FR)if(q.t>=x0&&q.t<=x1)g.fillRect(X(q.t)-0.5*dpr,pt+h-6*dpr,Math.max(1,dpr),6*dpr)}
   const lw=Math.max(0.6*dpr,Math.min(1.6*dpr,0.6*h/rows));
   g.lineWidth=Math.max(0.5*dpr,0.6*lw); g.strokeStyle=`rgba(${rgb},.45)`; g.beginPath();
   for(let j=0;j<n;j++)if(d.va[j]>=0&&(inY(j)||inY(d.va[j]))){const p=d.va[j]; g.moveTo(X(d.end(d.ks[p])),Y(d.y[p])); g.lineTo(X(B[d.ks[j]]),Y(d.y[j]))}
@@ -4469,7 +4483,9 @@ function net2D(g,d,inY,r0,r1,o){
       else{NET3.az=z0.az-(e.clientX-z0.x)*0.008; NET3.el=Math.max(0.03,Math.min(1.5,z0.el+(e.clientY-z0.y)*0.006))} netSchedule(); return}
     const [x,y]=pos(e); Object.assign(box.style,{display:'block',left:Math.min(x,z0.x)+'px',top:Math.min(y,z0.y)+'px',
       width:Math.abs(x-z0.x)+'px',height:Math.abs(y-z0.y)+'px'})});
-  const up=e=>{if(!z0)return; const s0=z0; z0=null; box.style.display='none'; if(s0.rot||!NETG||!NETD)return;
+  const up=e=>{if(!z0)return; const s0=z0; z0=null; box.style.display='none';
+    if(s0.rot){if(Math.abs(e.clientX-s0.x)<4&&Math.abs(e.clientY-s0.y)<4)miniHintFlash(); return}
+    if(!NETG||!NETD)return;
     // a line of b, c or d dragged: its picture taken anew in the round where it was let go (a click on it: chosen as next)
     if(s0.mark>=0){const q=MINI[s0.mark], t=q.drag; delete q.drag; if(s0.moved&&t!=null&&t!==q.t)miniSet(s0.mark,t); else{miniNext=s0.mark; miniDraw(); netRedraw()} return}
     const [x,y]=pos(e), G=NETG, dpr=window.devicePixelRatio||1, wx=Math.abs(x-s0.x), wy=Math.abs(y-s0.y);
@@ -4499,15 +4515,14 @@ function net2D(g,d,inY,r0,r1,o){
     netSchedule()},{passive:false});}
 // ---- b), c), d): the display as it was in a round picked on the flat tree (a click), with the market areas of the
 // companies of the most scalable product (the dotted outlines of its markets button), from the display's memory (the
-// nearest round kept: every round over the last 20, then every 5th back to 300). Each picture is kept as it was drawn,
+// nearest round kept: every round over the last 20, every 5th back to 300, then every frFarStep-th over the whole run). Each picture is kept as it was drawn,
 // cut tightly around what is drawn; the next click fills the next place (miniNext, lit; a click on a place chooses it)
 const MINI=[null,null,null]; let miniNext=0;
 function miniPick(t){const i=miniNext; miniNext=(miniNext+1)%3; miniSet(i,t)}
 // the picture i taken in round t (the nearest round kept)
 function miniSet(i,t){
   let f=null; for(const q of FR)if(!f||Math.abs(q.t-t)<Math.abs(f.t-t))f=q;
-  const near=f&&Math.abs(f.t-t)<=Math.ceil(FR_STEP/2);
-  MINI[i]=near?{t:f.t,c:miniRender(f),ask:t}:{t,miss:true,from:FR.length?FR[0].t:E.t,to:E.t};
+  MINI[i]=f?{t:f.t,c:miniRender(f),ask:t}:{t,miss:true,from:E.t,to:E.t};
   miniDraw(); netRedraw();
 }
 function miniRender(f){
@@ -4521,12 +4536,23 @@ function miniRender(f){
 // a picture drawn into a box (x, y, w, h) of a canvas, as large as fits, centred
 function fitImage(g,img,x,y,w,h){const k=Math.min(w/img.width,h/img.height), iw=img.width*k, ih=img.height*k;
   g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih)}
+// the instructions over the pictures: where to click, and what the pictures can show
+function miniHint(){
+  const nm=CT?PNAME[CT.ic]:'C', far=E?`every ${frFarStep}th round further back`:'fewer rounds further back';
+  $('miniHint').innerHTML=(net3d?'<b>Switch the tree to 2D to pick rounds</b> (in 3D a click turns the view). ':'')+
+    `<b>To see the town in a round: click or tap the flat tree</b> (2D) at that round — anywhere in the plot, or on its time axis. `+
+    `The picture shows the main display as it was then, with the market areas of the ${nm} companies as dotted outlines; `+
+    `it goes to b), c) and d) in turn (the lit one is next: click a picture to choose it, ✕ to remove it), and the round is marked on the tree by a dashed line, which you can drag. `+
+    `The display keeps every round of the last 20, every 5th back to 300 (shaded on the tree) and ${far}; the small marks along the bottom of the tree are the rounds kept, and the nearest one is shown.`}
+let hintT=0;
+function miniHintFlash(){miniHint(); const h=$('miniHint'); h.classList.add('flash'); clearTimeout(hintT); hintT=setTimeout(()=>h.classList.remove('flash'),1600)}
 function miniDraw(){
+  miniHint();
   document.querySelectorAll('#minis .mini').forEach((el,i)=>{const q=MINI[i], c=el.querySelector('canvas'), mt=el.querySelector('.mt');
     el.classList.toggle('next',i===miniNext); el.querySelector('.mx').style.visibility=q?'':'hidden';
     const dpr=fitCanvas(c), g=c.getContext('2d'); g.clearRect(0,0,c.width,c.height);
     if(!q){mt.textContent=i===miniNext?'click the tree to show the display of that round':''; return}
-    if(q.miss){mt.textContent=`round ${q.t} is not kept (the shaded rounds of the tree are)`; g.fillStyle='#8391ab'; g.font=pfont(11,dpr); g.textAlign='center'; g.textBaseline='middle';
+    if(q.miss){mt.textContent=`round ${q.t} is not kept`; g.fillStyle='#8391ab'; g.font=pfont(11,dpr); g.textAlign='center'; g.textBaseline='middle';
       g.fillText(`the display keeps rounds ${q.from}–${q.to}`,c.width/2,c.height/2); return}
     mt.textContent=`round ${q.t}`+(q.ask!==q.t?` (nearest kept to ${q.ask})`:'')+(CT?`, markets of ${PNAME[CT.ic]}`:'');
     fitImage(g,q.c,0,0,c.width,c.height)});
