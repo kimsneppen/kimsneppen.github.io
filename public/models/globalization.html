@@ -205,7 +205,9 @@
   /* a time range with two handles (from, to): two range inputs over one track, only their handles take the pointer */
   .dual{position:relative;display:inline-block;width:clamp(140px,34vw,340px);height:24px;flex:0 1 auto}
   .dual::before{content:'';position:absolute;left:7px;right:7px;top:10px;height:4px;border-radius:2px;background:var(--line)}
-  .dual .sel{position:absolute;top:10px;height:4px;border-radius:2px;background:var(--accent)}
+  /* the bar between the handles: a taller target, drawn 4 px thick; dragging it moves both handles */
+  .dual .sel{position:absolute;top:5px;height:14px;background:linear-gradient(var(--accent),var(--accent)) center/100% 4px no-repeat;
+    cursor:grab;touch-action:none}
   .dual input{position:absolute;left:0;top:0;width:100%;height:24px;margin:0;padding:0;background:none;pointer-events:none;
     -webkit-appearance:none;appearance:none}
   .dual input::-webkit-slider-runnable-track{height:24px;background:none}
@@ -225,6 +227,22 @@
   .nbtn{height:24px;min-width:28px;padding:0 8px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--accent);
     font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
   .nbtn:disabled{opacity:.4;cursor:default}
+  /* the height of the tree: a bar with two handles along its left edge */
+  .vrange{position:absolute;left:3px;width:16px;top:10px;height:200px;touch-action:none;z-index:2}
+  .vrange::before{content:'';position:absolute;left:6px;width:4px;top:0;bottom:0;border-radius:2px;background:var(--line)}
+  .vrange .vsel{position:absolute;left:1px;width:14px;cursor:grab;
+    background:linear-gradient(90deg,transparent 5px,var(--accent) 5px,var(--accent) 9px,transparent 9px)}
+  .vrange .vh{position:absolute;left:0;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:var(--accent);
+    border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);box-sizing:border-box;cursor:ns-resize}
+  /* b), c), d): the display in rounds chosen on the tree */
+  .minis{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-top:10px}
+  @media (min-width:700px){ .minis{grid-template-columns:repeat(3,minmax(0,1fr))} }
+  .mini{border:1px solid var(--line);border-radius:10px;padding:6px 7px;cursor:pointer}
+  .mini.next{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .minihead{font-size:12px;color:var(--ink2);margin-bottom:4px;min-height:1.4em}
+  .minihead b{color:var(--ink);font-size:13px}
+  .minibox{position:relative;width:100%;aspect-ratio:1/1}
+  .minibox canvas{position:absolute;inset:0;width:100%;height:100%}
   .nbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .plotbtns .pl{font-size:11.5px;color:var(--muted);align-self:center;margin-left:4px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
   .plotbtns button{height:22px;min-width:28px;padding:0 7px;font-size:11px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.9);
@@ -1172,7 +1190,7 @@
       </div>
       <div class="cornerbtns">
         <span class="inforow"><span class="frbtns"><button id="bBack" aria-label="one round back"
-          title="look back: the display one round earlier (the last 20 rounds are kept; a run pauses)">◀</button><span
+          title="look back: the display a round earlier (kept: every round over the last 20, then every 5th back to 300 rounds; a run pauses)">◀</button><span
           id="frLab"></span><button id="bFwd" aria-label="one round forward"
           title="one round forward, back to the present round">▶</button></span><button id="bInfo"
           title="show or hide the legend and the read-out">legend ▴</button></span>
@@ -1316,6 +1334,7 @@
     <div class="cardhead"><h2>Family tree of the companies</h2><span class="sub" id="netSub">the companies of the most
       scalable product, each linked to the company that collapsed before it where it started</span></div>
     <div class="chartbar">
+      <button class="nbtn" id="netRun" title="run / pause (space), as above the town">▶</button>
       <span class="lab">time</span>
       <div class="dual" id="netRange" title="the rounds shown: the companies alive at some time in them; drag the left handle for the start, the right one for the end (at the right end: up to the present round)"><span class="sel"></span><input type="range" id="netFrom" min="0" max="1000" step="1" value="0" aria-label="start of the time shown"><input type="range" id="netTo" min="0" max="1000" step="1" value="1000" aria-label="end of the time shown"></div>
       <span class="rangev" id="netRangeV"></span>
@@ -1325,8 +1344,6 @@
         data-k="3">≥ 3</button><button data-k="4">≥ 4</button><button data-k="5">≥ 5</button></div>
     </div>
     <div class="chartbar">
-      <span class="lab">height</span>
-      <div class="dual" id="netHRange" title="the part of the height shown, from the top (left handle) to the bottom (right handle)"><span class="sel"></span><input type="range" id="netHFrom" min="0" max="1000" step="1" value="0" aria-label="top of the part shown"><input type="range" id="netHTo" min="0" max="1000" step="1" value="1000" aria-label="bottom of the part shown"></div>
       <button class="nbtn" id="netBack" title="back to the view before the last change of time, height or zoom">◀ back</button>
       <button class="nbtn" id="netFullT" title="all the rounds">↔ full</button>
       <button class="nbtn" id="netFullY" title="the whole height: all the companies of the rounds shown again (also those a zoom left out)">↕ full</button>
@@ -1334,10 +1351,16 @@
       <div class="seg" id="net3dSeg" title="the tree flat, or in 3D: time along the floor, the companies as spheres placed by springs along the links and repulsion between them (drag to turn, wheel to zoom)">
         <button data-v="2d" class="on">2D</button><button data-v="3d">3D</button></div>
       <button class="nbtn" id="netBg" title="black / white background of the tree"><span class="bwcirc"></span></button>
-      <span class="plotbtns"><button data-plot="net" data-k="png" title="save the family tree as a PNG picture, with a title and axis label">.png</button><button data-plot="net" data-k="sq" title="save the family tree in a square picture for a paper: no title">sq</button></span>
+      <span class="plotbtns"><button data-plot="net" data-k="png" title="save the family tree as a PNG picture, with a title and axis label">.png</button><button data-plot="net" data-k="sq" title="save the family tree in a square picture for a paper: no title">sq</button><button data-plot="netall" data-k="png" title="save the tree a) as wide as the three pictures of the display under it, b), c) and d), in one PNG picture">a–d</button></span>
     </div>
     <div class="chartnote" id="netNote" style="margin-bottom:4px"></div>
-    <div class="chartbox net"><canvas id="cNet"></canvas><div class="netbox" id="netBox"></div></div>
+    <div class="chartbox net"><canvas id="cNet"></canvas><div class="netbox" id="netBox"></div>
+      <div class="vrange" id="netV" title="the part of the height shown: drag the upper and lower handles, or the bar between them"><div class="vsel"></div><div class="vh"></div><div class="vh"></div></div></div>
+    <div class="minis" id="minis">
+      <div class="mini next"><div class="minihead"><b>b)</b> <span class="mt">click the tree to show the display of that round</span></div><div class="minibox"><canvas></canvas></div></div>
+      <div class="mini"><div class="minihead"><b>c)</b> <span class="mt"></span></div><div class="minibox"><canvas></canvas></div></div>
+      <div class="mini"><div class="minihead"><b>d)</b> <span class="mt"></span></div><div class="minibox"><canvas></canvas></div></div>
+    </div>
   </section>
 </div>
 
@@ -2667,7 +2690,7 @@ function setRun(on,sl){
   if(on&&sl){setPace(1,100); slowSet=true}
   else if(on&&slowSet){setPace(2,0); slowSet=false}
   if(on&&frBack){frBack=0; syncFr()}     // a run starts from the present
-  running=on; slow=on&&!!sl; $('bRun').textContent=on?'Pause':'Run'; $('bRun2').textContent=on?'❚❚':'▶';
+  running=on; slow=on&&!!sl; $('bRun').textContent=on?'Pause':'Run'; $('bRun2').textContent=$('netRun').textContent=on?'❚❚':'▶';
   $('bSlow2').classList.toggle('on',slow);
   if(on){const t=++loopTok;requestAnimationFrame(()=>loop(t))}
 }
@@ -3163,20 +3186,23 @@ function drawLive(){
   drawFlashes(r=>({cell,base:[cx(r),cy(r)],top:()=>[cx(r),cy(r)],pillar:null}));
   $('legend').innerHTML=legend;
 }
-// ---- the last rounds of the display, to look back at: after every round the state the display draws (factories,
-// units sold, money, suppliers) is kept for the last FR_MAX rounds besides the present one (fewer in a big town, at most
-// FR_BYTES in all); the arrows ◀ ▶ beside the legend button step back and forth through them. A round of the past is
+// ---- the past of the display, to look back at: after every round the state the display draws (factories, units sold,
+// money, suppliers) is kept — every round over the last FR_NEAR rounds, then the rounds divisible by FR_STEP back to
+// FR_FAR rounds, at most FR_BYTES in all (in a big town the oldest go first); the arrows ◀ ▶ beside the legend button
+// step back and forth through them, one round at a time over the last 20, then five. A round of the past is
 // drawn by the same code as the present, with these arrays in place of the model's (frView); flashes and sinking towers
 // belong to the present and are left out. A new round, a run or a new town go back to the present.
-const FR_MAX=20, FR_BYTES=120e6; let FR=[], frBack=0;
-const frCap=()=>Math.max(2,Math.min(FR_MAX+1,Math.floor(FR_BYTES/(E.L*E.L*(9*E.N+8)))));
+const FR_NEAR=20, FR_STEP=5, FR_FAR=300, FR_BYTES=300e6; let FR=[], frBack=0, frPool=[];
+const frCap=()=>Math.max(FR_NEAR+2,Math.floor(FR_BYTES/(E.L*E.L*(9*E.N+8))));
 const frShown=()=>frBack>0&&FR.length>frBack?FR[FR.length-1-frBack]:null;
 const frT=()=>{const f=frShown(); return f?f.t:E.t};
-function frReset(){FR=[]; frBack=0; frRecord()}
+function frReset(){FR=[]; frPool=[]; frBack=0; frRecord(); MINI.fill(null); miniNext=0; miniDraw()}
 function frRecord(){
-  const LL=E.L*E.L, N=E.N, cap=frCap();
-  while(FR.length>cap)FR.shift();
-  let f=FR.length===cap?FR.shift():null;
+  const LL=E.L*E.L, N=E.N, cap=frCap(), t=E.t;
+  // a round that leaves the last FR_NEAR is kept only if divisible by FR_STEP, and not beyond FR_FAR rounds
+  FR=FR.filter(q=>{const keep=t-q.t<FR_NEAR||(q.t%FR_STEP===0&&t-q.t<=FR_FAR); if(!keep)frPool.push(q); return keep});
+  while(FR.length>=cap)frPool.push(FR.shift());
+  let f=frPool.pop()||null; if(frPool.length>3)frPool.length=3;
   if(!f||f.LL!==LL||f.N!==N)f={LL,N,F:E.F.map(()=>new Uint8Array(LL)),sales:E.F.map(()=>new Int32Array(LL)),
     sup:E.F.map(()=>new Int32Array(LL)),money:new Float64Array(LL)};
   for(let i=0;i<N;i++){f.F[i].set(E.F[i]); f.sales[i].set(E.sales[i]); f.sup[i].set(E.sup[i])}
@@ -3190,7 +3216,7 @@ function frView(f){
   return f.view;
 }
 function syncFr(){$('bBack').disabled=FR.length-1-frBack<=0; $('bFwd').disabled=frBack<=0;
-  $('frLab').textContent=frBack>0?'−'+frBack:''; $('frLab').title=frBack>0?`round ${frT()}, ${frBack} back`:''}
+  const k=E.t-frT(); $('frLab').textContent=frBack>0?'−'+k:''; $('frLab').title=frBack>0?`round ${frT()}, ${k} rounds back`:''}
 function frGo(k){
   if(k>0&&running)setRun(false);
   frBack=Math.max(0,Math.min(FR.length-1,frBack+k)); syncFr(); draw();
@@ -3202,7 +3228,7 @@ function draw(){
   if(!f){drawLive(); return}
   const live=E, nf=noFlash; E=frView(f); noFlash=true;
   try{drawLive()}finally{E=live; noFlash=nf}
-  $('legend').insertAdjacentHTML('afterbegin',`<span><b>round ${f.t}</b>, ${frBack} back: ▶ goes forward</span>`);
+  $('legend').insertAdjacentHTML('afterbegin',`<span><b>round ${f.t}</b>, ${live.t-f.t} rounds back: ▶ goes forward</span>`);
 }
 // the read-out of an agent in a round of the past: its money, what it made and sold, where it bought
 function readPast(r){
@@ -3210,7 +3236,7 @@ function readPast(r){
   for(let i=0;i<E.N;i++){if(E.F[i][r])made.push(`${X(i)} sold ${E.sales[i][r]}`);
     const s=E.sup[i][r]; buys.push(s<0?`${PNAME[i]} nowhere`:`${PNAME[i]} from (${s%L},${(s/L)|0}) at d = ${E.pdist(s,r).toFixed(1)}`)}
   const m=E.money[r];
-  $('readout').innerHTML=`round <b>${E.t}</b> (${frBack} back) · agent <b>(${r%L},${(r/L)|0})</b> · money <b>${Math.abs(m)<10?m.toFixed(2):m.toFixed(0)}</b><br>`+
+  $('readout').innerHTML=`round <b>${E.t}</b> (${FR[FR.length-1].t-E.t} rounds back) · agent <b>(${r%L},${(r/L)|0})</b> · money <b>${Math.abs(m)<10?m.toFixed(2):m.toFixed(0)}</b><br>`+
     `makes ${made.length?made.join(', '):'nothing'} · buys ${buys.join(' · ')}`;
 }
 // The read-out of an agent: its money, and how the last round changed it; its units sold this round and the round
@@ -4089,7 +4115,7 @@ const CTMAX=1<<20;
 let CT=null, ctA=null, ctB=null, netMin=0;
 function ctReset(){
   const LL=E.L*E.L, ic=nearProducts().ib, cap=4096;
-  NV={a:null,b:null,sel:null,y0:0,y1:1000}; netHist=[]; NET3.key=''; NETD=null;
+  NV={a:null,b:null,sel:null,y0:0,y1:1000}; netHist=[]; NET3.key=''; NET3.mem=new Map(); NETD=null; NETDk='';
   CT={t0:E.t,ic,LL,cur:new Int32Array(LL).fill(-1),lastArea:new Int32Array(LL).fill(-1),supB:Int32Array.from(E.sup[ic]),
     dying:new Uint8Array(LL),n:0,base:0,cap,birth:new Int32Array(cap),death:new Int32Array(cap),maxS:new Float32Array(cap),
     par:new Int32Array(cap),surv:new Int32Array(cap),t:[],D:[],c1:[],c2:[],nb:[],big:[]};
@@ -4142,6 +4168,13 @@ function dualRange(id,span,get,set,start){
     set(va<=0?null:Math.round(t0+va*d/1000), vb>=1000?null:Math.round(t0+vb*d/1000)); sync()};
   fr.oninput=()=>input(fr); to.oninput=()=>input(to);
   if(start)for(const i of [fr,to]){i.addEventListener('pointerdown',start); i.addEventListener('keydown',start)}
+  // the bar between the handles: dragged, it moves both (the width kept)
+  sel.addEventListener('pointerdown',e=>{e.preventDefault(); if(start)start(); sel.setPointerCapture(e.pointerId);
+    const b=box.getBoundingClientRect(), v0=+fr.value, v1=+to.value, x0=e.clientX;
+    const mv=ev=>{const dv=Math.round((ev.clientX-x0)/Math.max(1,b.width-14)*1000), w=v1-v0, a=Math.max(0,Math.min(1000-w,v0+dv));
+      fr.value=a; to.value=a+w; input(null)};
+    const end=()=>{sel.removeEventListener('pointermove',mv); sel.removeEventListener('pointerup',end); sel.removeEventListener('pointercancel',end)};
+    sel.addEventListener('pointermove',mv); sel.addEventListener('pointerup',end); sel.addEventListener('pointercancel',end)});
   // the handle nearer the pointer comes on top, so that two handles close together can both be caught
   box.addEventListener('pointermove',e=>{const b=box.getBoundingClientRect(), x=(e.clientX-b.left-7)/Math.max(1,b.width-14)*1000;
     const near=Math.abs(x-fr.value)<Math.abs(x-to.value)?fr:to; fr.style.zIndex=near===fr?2:1; to.style.zIndex=near===to?2:1});
@@ -4161,34 +4194,58 @@ const ctSync=dualRange('ctRange',ctSpan,()=>[ctA,ctB],(a,b)=>{ctA=a;ctB=b;drawCT
 // companies a zoom box kept (a Set of ids; null: all); y0, y1: the part of the height shown, 0 … 1000 from the top}.
 // Every change (a handle taken, a zoom box, as above, ↔ full, ↕ full) first puts the view on netHist, and ◀ back
 // takes it back, so that a view can always be widened again
-let NV={a:null,b:null,sel:null,y0:0,y1:1000}, netHist=[], netFam=false, net3d=false, netDark=false, NETD=null, NETG=null;
-const NET3={az:-0.55,el:0.42,zoom:1,key:'',P:null};
-function netPush(){const q=netHist[netHist.length-1];
-  if(!q||q.a!==NV.a||q.b!==NV.b||q.sel!==NV.sel||q.y0!==NV.y0||q.y1!==NV.y1)netHist.push({...NV});
+// (the memory holds the 3D view too: 2D or 3D, and the turn, tilt, zoom and shift of the camera)
+let NV={a:null,b:null,sel:null,y0:0,y1:1000}, netHist=[], netFam=false, net3d=false, netDark=false, NETD=null, NETG=null, NETDk='';
+const NET3={az:-0.55,el:0.42,zoom:1,px:0,py:0,key:'',P:null,mem:new Map()};
+const netState=()=>({a:NV.a,b:NV.b,sel:NV.sel,y0:NV.y0,y1:NV.y1,d3:net3d,cam:[NET3.az,NET3.el,NET3.zoom,NET3.px,NET3.py]});
+function netPush(){const q=netHist[netHist.length-1], c=netState();
+  if(!q||['a','b','sel','y0','y1','d3'].some(k=>q[k]!==c[k])||q.cam.some((v,i)=>v!==c.cam[i]))netHist.push(c);
   if(netHist.length>80)netHist.shift(); syncNetBtns()}
+// a wheel turned in one go is one change in the memory
+let netWheelT=0; const netWheelPush=()=>{const t=performance.now(); if(t-netWheelT>700)netPush(); netWheelT=t};
+// the tree redrawn at the next frame (handles dragged, wheel)
+let netRAF=0; function netSchedule(){if(netRAF)return; netRAF=requestAnimationFrame(()=>{netRAF=0; netRedraw()})}
+function netRedraw(){if(!E||!CT)return; netSync(); netVSync(); syncNetBtns(); const [na,nb]=winOf2(NV.a,NV.b);
+  $('netRangeV').textContent=`rounds ${na}–${nb}`; netPlot($('cNet'))}
 function syncNetBtns(){$('netBack').disabled=!netHist.length; $('netFullT').disabled=NV.a===null&&NV.b===null;
   $('netFullY').disabled=!NV.sel&&NV.y0===0&&NV.y1===1000;
   $('netFam').textContent=netFam?'families only':'all companies';
   document.querySelectorAll('#net3dSeg button').forEach(b=>b.classList.toggle('on',(b.dataset.v==='3d')===net3d));
   $('netBg').classList.toggle('on',netDark); $('cNet').parentNode.classList.toggle('d3',net3d)}
-const netSync=dualRange('netRange',ctSpan,()=>[NV.a,NV.b],(a,b)=>{NV.a=a;NV.b=b;drawCT(true)},netPush);
-const netHSync=dualRange('netHRange',()=>[0,1000],()=>[NV.y0>0?NV.y0:null,NV.y1<1000?NV.y1:null],
-  (a,b)=>{NV.y0=a===null?0:a; NV.y1=b===null?1000:b; drawCT(true)},netPush);
+const netSync=dualRange('netRange',ctSpan,()=>[NV.a,NV.b],(a,b)=>{NV={...NV,a,b}; netSchedule()},netPush);
+// the height shown: a bar along the left edge of the tree with two handles, top and bottom (NV.y0, NV.y1: 0 … 1000 of the
+// whole height); dragging the bar between them moves both. It is laid along the plot after each drawing (netVPlace)
+{const V=$('netV'), [h0,h1]=V.querySelectorAll('.vh'), vs=V.querySelector('.vsel');
+  const frac=e=>{const b=V.getBoundingClientRect(); return Math.round(1000*(e.clientY-b.top)/Math.max(1,b.height))};
+  const grab=which=>e=>{e.preventDefault(); e.stopPropagation(); netPush(); const el=e.currentTarget; el.setPointerCapture(e.pointerId);
+    const f0=frac(e), y0=NV.y0, y1=NV.y1;
+    const mv=ev=>{const q=frac(ev); let a=y0, b=y1;
+      if(which===0)a=Math.max(0,Math.min(y1-5,q)); else if(which===1)b=Math.min(1000,Math.max(y0+5,q));
+      else{const w=y1-y0; a=Math.max(0,Math.min(1000-w,y0+q-f0)); b=a+w}
+      NV={...NV,y0:a,y1:b}; netSchedule()};
+    const end=()=>{el.removeEventListener('pointermove',mv); el.removeEventListener('pointerup',end); el.removeEventListener('pointercancel',end)};
+    el.addEventListener('pointermove',mv); el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end)};
+  h0.addEventListener('pointerdown',grab(0)); h1.addEventListener('pointerdown',grab(1)); vs.addEventListener('pointerdown',grab(2))}
+function netVSync(){const V=$('netV'), [h0,h1]=V.querySelectorAll('.vh'), vs=V.querySelector('.vsel');
+  h0.style.top=NV.y0/10+'%'; h1.style.top=NV.y1/10+'%'; vs.style.top=NV.y0/10+'%'; vs.style.height=(NV.y1-NV.y0)/10+'%'}
+const netVPlace=(top,h)=>{const V=$('netV'); V.style.top=top+'px'; V.style.height=Math.max(20,h)+'px'};
+$('netRun').onclick=()=>setRun(!running);
 document.querySelectorAll('#netSurv button').forEach(b=>b.onclick=()=>{netMin=+b.dataset.k;
   document.querySelectorAll('#netSurv button').forEach(x=>x.classList.toggle('on',x===b)); drawCT(true)});
-$('netBack').onclick=()=>{if(!netHist.length)return; NV=netHist.pop(); drawCT(true)};
+$('netBack').onclick=()=>{if(!netHist.length)return; const q=netHist.pop();
+  NV={a:q.a,b:q.b,sel:q.sel,y0:q.y0,y1:q.y1}; net3d=q.d3; [NET3.az,NET3.el,NET3.zoom,NET3.px,NET3.py]=q.cam; netRedraw()};
 $('netFullT').onclick=()=>{netPush(); NV={...NV,a:null,b:null}; drawCT(true)};
 $('netFullY').onclick=()=>{netPush(); NV={...NV,sel:null,y0:0,y1:1000}; drawCT(true)};
 $('netAbove').onclick=()=>{netPush(); NV={...NV,a:ctA,b:ctB}; drawCT(true)};
 $('netFam').onclick=()=>{netFam=!netFam; drawCT(true)};
-document.querySelectorAll('#net3dSeg button').forEach(b=>b.onclick=()=>{net3d=b.dataset.v==='3d'; drawCT(true)});
+document.querySelectorAll('#net3dSeg button').forEach(b=>b.onclick=()=>{const v=b.dataset.v==='3d'; if(v!==net3d){netPush(); net3d=v} netRedraw()});
 $('netBg').onclick=()=>{netDark=!netDark; drawCT(true)};
 // a plot is drawn only when it can be seen (or when asked for: force), since the tree can hold many companies
 const onScreen=c=>{const r=c.getBoundingClientRect(); return r.bottom>0&&r.top<window.innerHeight&&r.width>0};
 let netT=0;
 function drawCT(force){
   if(!E||!CT)return;
-  ctSync(); netSync(); netHSync(); syncNetBtns();
+  ctSync(); netSync(); netVSync(); syncNetBtns();
   const [ta,tb]=winOf2(ctA,ctB), [na,nb]=winOf2(NV.a,NV.b), nm=PNAME[CT.ic];
   $('ctRangeV').textContent=`rounds ${ta}–${tb}`; $('netRangeV').textContent=`rounds ${na}–${nb}`;
   $('ctSub').textContent=`the companies of ${nm}, the most scalable product: how many share its market, and how many of the new ones last`;
@@ -4263,6 +4320,11 @@ function ctPlot0(canvas,out){
 // the predecessor in ks; −1: none), y (row), rows, roots, smax, nAll (alive in the rounds shown)}. Rows: a depth-first
 // walk; a company without followers takes the next row, one with followers sits in the middle of theirs
 function netData(){
+  const key=[NV.a,NV.b,netMin,netFam,CT.n,CT.base,E.t,CT.ic].join(':');
+  if(NETD&&NETDk===key&&NETD.sel===NV.sel)return NETD;
+  const r=netData0(); r.sel=NV.sel; NETDk=key; return r;
+}
+function netData0(){
   const [na,nb]=winOf2(NV.a,NV.b), base=CT.base, m=CT.n-base, B=CT.birth, D=CT.death, SV=CT.surv, S=CT.maxS, now=E.t;
   let lo=0,hi=m; while(lo<hi){const q=(lo+hi)>>1; if(B[q]<=nb)lo=q+1; else hi=q} const k1=lo-1;
   const end=k=>D[k]<0?now:D[k];
@@ -4301,7 +4363,7 @@ function netPlot0(canvas,out){
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d'), z=dpr*FZ;
   if(!out){g.clearRect(0,0,W,H); if(PDK){g.fillStyle='#0b0d13'; g.fillRect(0,0,W,H)}}
   const ic=CT.ic, col=PCOL[ic]||'#be123c', nm=PNAME[ic], sq=out&&out.sq;
-  const d=netData(); NETD=d; NETG=null;
+  const d=netData(); NETD=d; if(!out)NETG=null;
   g.font=pfont(11,z);
   const empty=t=>{g.fillStyle='#8391ab'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(t,12*z,H/2); if(!out)$('netNote').textContent=''; return false};
   if(!d.ks.length)return empty(`No company of ${nm} to show in rounds ${d.na}–${d.nb}${netMin?` that survived ${netMin} round${netMin>1?'s':''} of trade`:''}.`);
@@ -4319,18 +4381,18 @@ function netPlot0(canvas,out){
       `${netMin?`, those that survived at least ${netMin} round${netMin>1?'s':''} of trade`:''}${NV.sel?', within the last zoom box':''}${netFam?', families only':''}; `+
       `${vis} without a predecessor shown, ${d.orphans} of them started after the first round with none at all (where no company of ${nm} had collapsed since the start, or its market reached no further); `+
       `the largest sold ${Math.round(d.smax)} units in a round. A company's predecessor: the company that collapsed last where it started (in its market, or its own cell); one not shown is replaced by its nearest predecessor shown. `+
-      (net3d?`3D: time along the floor; the companies as spheres placed across it by springs along the links and repulsion between those close in time (a spring layout, as in Kamada–Kawai), with their shadows on the floor; drag to turn, wheel to zoom.`
-        :`Drag a box over the tree to zoom in on it (time and height); ◀ back, ↔ full and ↕ full widen the view again.`)+
+      (net3d?`3D: time along the floor; the companies as spheres placed across it by springs along the links and repulsion between those close in time (a spring layout, as in Kamada–Kawai), with their shadows on the floor; a company keeps its place from one view to the next, so a neighbourhood stays where it was; drag to turn, Shift + drag (or the right button) to move, wheel to zoom; ◀ back returns to the view before.`
+        :`Drag a box over the tree to zoom in on it (time and height), or Shift + wheel (time) and Alt + wheel (height) around the pointer; the bar left of the tree sets the height shown; ◀ back, ↔ full and ↕ full widen the view again. A click on the tree shows the display of that round below, b), c) and d) in turn (click a picture to choose which comes next).`)+
       (ok?'':' Too many companies for 3D: zoom in or choose fewer.')}
   return true;
 }
 // the tree flat: time to the right, a row for each line of descent
 function net2D(g,d,inY,r0,r1,o){
   const {W,H,dpr,z,out,col,legOn,leg}=o, sq=out&&out.sq, rgb=(PRGB[CT.ic]||[190,18,60]).join(','), B=CT.birth, D=CT.death, S=CT.maxS, n=d.ks.length;
-  const pt=(out?(sq?26:48):legOn?26:8)*z, pb=(out?34:20)*z, pl=(out?20:10)*z, pr=14*z, w=W-pl-pr, h=H-pt-pb;
+  const pt=(out?(sq?26:48):legOn?26:8)*z, pb=(out?34:20)*z, pl=(out?20:13)*z, pr=14*z, w=W-pl-pr, h=H-pt-pb;
   const rows=Math.max(1e-9,r1-r0+1), rpad=Math.min((out?12:10)*dpr,0.2*h), x0=d.na, x1=d.nb;
   const X=t=>pl+(t-x0)/Math.max(1,x1-x0)*w, Y=r=>pt+rpad+(r-r0+0.5)/rows*(h-2*rpad);
-  NETG={x0,x1,pl,w,pt,h,rpad,r0,rows};
+  if(!out){NETG={x0,x1,pl,w,pt,h,rpad,r0,rows}; netVPlace((pt+rpad)/dpr,(h-2*rpad)/dpr)}
   const xt=niceTicks(x0,x1,10).filter(t=>t>=x0&&t<=x1).map(t=>[t,X(t)]);
   drawAxes(g,{xt,yt:[],pl,pt,w,h,z,dpr,W,fx:t=>String(Math.round(t)),fy:()=>'',linX:true,linY:true});
   g.save(); g.beginPath(); g.rect(pl,pt,w+12*dpr,h); g.clip();
@@ -4350,6 +4412,12 @@ function net2D(g,d,inY,r0,r1,o){
     if(D[k]<0){g.fillStyle=bg; g.fill(); g.strokeStyle=col; g.stroke()}
     else{g.fillStyle=col; g.fill(); if(r>2.5*dpr){g.strokeStyle=bg; g.stroke()}}}
   g.restore();
+  // the rounds of the pictures b), c), d): dashed lines with their letters
+  const ink=PC('#16233b','#e8ecf5');
+  MINI.forEach((q,i)=>{if(!q||q.t<x0||q.t>x1)return; const x=X(q.t);
+    g.save(); g.setLineDash([4*dpr,3*dpr]); g.strokeStyle=ink; g.lineWidth=1.3*dpr; g.beginPath(); g.moveTo(x,pt); g.lineTo(x,pt+h); g.stroke(); g.restore();
+    g.font=pfont(11,z,true); const s='bcd'[i], tw=g.measureText(s).width; g.fillStyle=PC('rgba(255,255,255,.9)','rgba(11,13,19,.85)');
+    g.fillRect(x-tw/2-3*dpr,pt+2*dpr,tw+6*dpr,13*z); g.fillStyle=ink; g.textAlign='center'; g.textBaseline='top'; g.fillText(s,x,pt+2*dpr)});
   if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time (rounds)',pl+w/2,H-4*dpr)}
   if(legOn)legendRow(g,leg,pl+w/2,pt-20*z,dpr,w);
 }
@@ -4357,17 +4425,22 @@ function net2D(g,d,inY,r0,r1,o){
 // rows, which are then laid out again to fill the height
 {const cv=$('cNet'), box=$('netBox'); let z0=null;
   const pos=e=>{const b=cv.getBoundingClientRect(); return [e.clientX-b.left,e.clientY-b.top]};
-  cv.addEventListener('pointerdown',e=>{if(e.button)return;
-    if(net3d){z0={x:e.clientX,y:e.clientY,az:NET3.az,el:NET3.el,rot:true}; cv.setPointerCapture(e.pointerId); return}
+  cv.addEventListener('contextmenu',e=>{if(net3d)e.preventDefault()});
+  cv.addEventListener('pointerdown',e=>{
+    if(net3d){if(e.button!==0&&e.button!==2)return; netPush();
+      z0={x:e.clientX,y:e.clientY,az:NET3.az,el:NET3.el,px:NET3.px,py:NET3.py,rot:true,pan:e.button===2||e.shiftKey}; cv.setPointerCapture(e.pointerId); return}
+    if(e.button)return;
     if(!NETG)return; const [x,y]=pos(e); z0={x,y}; cv.setPointerCapture(e.pointerId)});
   cv.addEventListener('pointermove',e=>{if(!z0)return;
-    if(z0.rot){NET3.az=z0.az-(e.clientX-z0.x)*0.008; NET3.el=Math.max(0.03,Math.min(1.5,z0.el+(e.clientY-z0.y)*0.006)); netPlot(cv); return}
+    if(z0.rot){if(z0.pan){NET3.px=z0.px+(e.clientX-z0.x); NET3.py=z0.py+(e.clientY-z0.y)}
+      else{NET3.az=z0.az-(e.clientX-z0.x)*0.008; NET3.el=Math.max(0.03,Math.min(1.5,z0.el+(e.clientY-z0.y)*0.006))} netSchedule(); return}
     const [x,y]=pos(e); Object.assign(box.style,{display:'block',left:Math.min(x,z0.x)+'px',top:Math.min(y,z0.y)+'px',
       width:Math.abs(x-z0.x)+'px',height:Math.abs(y-z0.y)+'px'})});
   const up=e=>{if(!z0)return; const s0=z0; z0=null; box.style.display='none'; if(s0.rot||!NETG||!NETD)return;
     const [x,y]=pos(e), G=NETG, dpr=window.devicePixelRatio||1, wx=Math.abs(x-s0.x), wy=Math.abs(y-s0.y);
-    if(wx<8&&wy<8)return;
     const tOf=px=>G.x0+(px*dpr-G.pl)/G.w*(G.x1-G.x0), rOf=py=>G.r0+(py*dpr-G.pt-G.rpad)/(G.h-2*G.rpad)*G.rows-0.5;
+    // a click: the display of that round below (b, c, d in turn)
+    if(wx<8&&wy<8){const t=Math.round(tOf(x)); if(t>=G.x0&&t<=G.x1)miniPick(t); return}
     const ta=Math.round(Math.max(G.x0,tOf(Math.min(x,s0.x)))), tb=Math.round(Math.min(G.x1,tOf(Math.max(x,s0.x))));
     netPush(); const nv={...NV};
     if(wx>=8&&tb>ta){nv.a=ta; nv.b=tb}
@@ -4376,14 +4449,76 @@ function net2D(g,d,inY,r0,r1,o){
       if(sel.size){nv.sel=sel; nv.y0=0; nv.y1=1000}}
     NV=nv; drawCT(true)};
   cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',()=>{z0=null; box.style.display='none'});
-  cv.addEventListener('wheel',e=>{if(!net3d)return; e.preventDefault();
-    NET3.zoom=Math.max(0.3,Math.min(8,NET3.zoom*Math.exp(-e.deltaY*0.0012))); netPlot(cv)},{passive:false});}
+  // the wheel: in 3D the zoom; flat, with Shift the time and with Alt the height, around the pointer (else the page scrolls)
+  cv.addEventListener('wheel',e=>{const dl=e.deltaY||e.deltaX;
+    if(net3d){e.preventDefault(); netWheelPush(); NET3.zoom=Math.max(0.3,Math.min(12,NET3.zoom*Math.exp(-dl*0.0012))); netSchedule(); return}
+    if(!(e.shiftKey||e.altKey)||!NETG)return; e.preventDefault(); netWheelPush();
+    const G=NETG, dpr=window.devicePixelRatio||1, [x,y]=pos(e), k=Math.exp(dl*0.0015);
+    if(e.shiftKey){const [t0,t1]=ctSpan(), [a,b]=winOf2(NV.a,NV.b), tp=Math.max(a,Math.min(b,a+(x*dpr-G.pl)/G.w*(b-a)));
+      let na=Math.round(tp-(tp-a)*k), nb=Math.round(tp+(b-tp)*k); if(nb-na<2){na=Math.round(tp)-1; nb=na+2}
+      NV={...NV,a:na<=t0?null:na,b:nb>=t1?null:nb}}
+    else{const fy=NV.y0+Math.max(0,Math.min(1,(y*dpr-G.pt-G.rpad)/(G.h-2*G.rpad)))*(NV.y1-NV.y0);
+      let a=fy-(fy-NV.y0)*k, b=fy+(NV.y1-fy)*k; a=Math.max(0,a); b=Math.min(1000,b); if(b-a<5){a=Math.max(0,fy-2.5); b=Math.min(1000,a+5)}
+      NV={...NV,y0:Math.round(a),y1:Math.round(b)}}
+    netSchedule()},{passive:false});}
+// ---- b), c), d): the display as it was in a round picked on the flat tree (a click), with the market areas of the
+// companies of the most scalable product (the dotted outlines of its markets button), from the display's memory (the
+// nearest round kept: every round over the last 20, then every 5th back to 300). Each picture is kept as it was drawn,
+// cut tightly around what is drawn; the next click fills the next place (miniNext, lit; a click on a place chooses it)
+const MINI=[null,null,null]; let miniNext=0;
+function miniPick(t){
+  let f=null; for(const q of FR)if(!f||Math.abs(q.t-t)<Math.abs(f.t-t))f=q;
+  const near=f&&Math.abs(f.t-t)<=Math.ceil(FR_STEP/2);
+  MINI[miniNext]=near?{t:f.t,c:miniRender(f),ask:t}:{t,miss:true,from:FR.length?FR[0].t:E.t,to:E.t};
+  miniNext=(miniNext+1)%3; miniDraw(); netRedraw();
+}
+function miniRender(f){
+  const kb=frBack, kd=[...domOn], hv=hoverR, nf=noFlash, sc=Math.max(2,Math.min(5,1400/Math.max(1,cv.clientWidth))); let c=null; noFlash=true;
+  frBack=FR.length-1-FR.indexOf(f); domOn.clear(); if(CT)domOn.add(CT.ic); EXPORT_DPR=sc; hoverR=-1;
+  try{draw(); const b=contentBox(), m=Math.round(4*sc); c=document.createElement('canvas'); c.width=b.w+2*m; c.height=b.h+2*m;
+    const o=c.getContext('2d'); o.fillStyle=dark?'#0b0d13':'#ffffff'; o.fillRect(0,0,c.width,c.height); o.drawImage(cv,b.x,b.y,b.w,b.h,m,m,b.w,b.h)}
+  finally{EXPORT_DPR=0; hoverR=hv; noFlash=nf; frBack=kb; domOn.clear(); kd.forEach(i=>domOn.add(i)); draw(); syncFr()}
+  return c;
+}
+// a picture drawn into a box (x, y, w, h) of a canvas, as large as fits, centred
+function fitImage(g,img,x,y,w,h){const k=Math.min(w/img.width,h/img.height), iw=img.width*k, ih=img.height*k;
+  g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih)}
+function miniDraw(){
+  document.querySelectorAll('#minis .mini').forEach((el,i)=>{const q=MINI[i], c=el.querySelector('canvas'), mt=el.querySelector('.mt');
+    el.classList.toggle('next',i===miniNext);
+    const dpr=fitCanvas(c), g=c.getContext('2d'); g.clearRect(0,0,c.width,c.height);
+    if(!q){mt.textContent=i===miniNext?'click the tree to show the display of that round':''; return}
+    if(q.miss){mt.textContent=`round ${q.t} is not kept`; g.fillStyle='#8391ab'; g.font=pfont(11,dpr); g.textAlign='center'; g.textBaseline='middle';
+      g.fillText(`the display keeps rounds ${q.from}–${q.to}`,c.width/2,c.height/2); return}
+    mt.textContent=`round ${q.t}`+(q.ask!==q.t?` (nearest kept to ${q.ask})`:'')+(CT?`, markets of ${PNAME[CT.ic]}`:'');
+    fitImage(g,q.c,0,0,c.width,c.height)});
+}
+document.querySelectorAll('#minis .mini').forEach((el,i)=>el.onclick=()=>{miniNext=i; miniDraw()});
+new ResizeObserver(()=>miniDraw()).observe($('minis'));
+// one picture: the tree, a), as wide as the three pictures b), c), d) under it
+function exportAll(btn){
+  const S=600, gap=24, pad=20, lab=46, W=3*S+2*gap+2*pad, NH=Math.round(0.42*W), bg=netDark?'#0b0d13':'#ffffff', ink=netDark?'#e8ecf5':'#16233b';
+  const c=document.createElement('canvas'); c.width=W; c.height=pad+lab+NH+gap+lab+S+pad;
+  const g=c.getContext('2d'); g.fillStyle=bg; g.fillRect(0,0,W,c.height);
+  const tr=document.createElement('canvas'); tr.width=W-2*pad; tr.height=NH; const tg=tr.getContext('2d'); tg.fillStyle=bg; tg.fillRect(0,0,tr.width,NH);
+  netPlot(tr,{dpr:2,sq:true});
+  const label=(s,sub,x,y)=>{g.fillStyle=ink; g.textAlign='left'; g.textBaseline='top'; g.font=`700 34px ${PFONT}`; g.fillText(s,x,y);
+    if(sub){const w=g.measureText(s).width; g.font=`23px ${PFONT}`; g.fillStyle=netDark?'#aeb8cc':'#4a5872'; g.fillText(sub,x+w+14,y+8)}};
+  label('a)',CT?`family tree of the ${PNAME[CT.ic]} companies`:'',pad,pad); g.drawImage(tr,pad,pad+lab);
+  const y0=pad+lab+NH+gap;
+  MINI.forEach((q,i)=>{const x=pad+i*(S+gap);
+    label('bcd'[i]+')',q&&!q.miss?`round ${q.t}`:'',x,y0);
+    if(q&&!q.miss)fitImage(g,q.c,x,y0+lab,S,S);
+    else{g.strokeStyle=netDark?'#3a4459':'#c3cbdb'; g.setLineDash([6,5]); g.strokeRect(x+0.5,y0+lab+0.5,S-1,S-1); g.setLineDash([])}});
+  savePicture(c,`globalization_tree_and_display_${CT?PNAME[CT.ic]:''}_t${E.t}.png`,btn);
+}
 // ---- the tree in 3D: time along x on the floor (100 units across the rounds shown); each company a sphere at its
 // collapse (alive: at the present round) at (x, y, z), its life a line back to its start, a thin line from its
 // predecessor's sphere. y and z come from a spring layout across time: springs (rest length 4) along the links pull a
 // company and its predecessor together, companies close to each other (in x, y and z) push apart, and a weak pull holds
-// the whole near the axis; the rows of the flat tree are the start, 160 steps with a falling step size. Kept for the
-// same companies (NET3.key). At most NET3MAX companies
+// the whole near the axis; the rows of the flat tree are the start, 160 steps with a falling step size (50 smaller ones when most companies
+// have a place from an earlier view: a company keeps its place, NET3.mem, held there by a weak spring). Kept for the same companies (NET3.key). At
+// most NET3MAX companies
 const NET3MAX=4000;
 function netLayout3(d,idx){
   const key=[d.na,d.nb,netMin,netFam,idx.length,idx[0],idx[idx.length-1],NV.y0,NV.y1,NV.sel?NV.sel.size:0].join(':');
@@ -4391,12 +4526,20 @@ function netLayout3(d,idx){
   const n=idx.length, X=new Float64Array(n), Xb=new Float64Array(n), Yp=new Float64Array(n), Zp=new Float64Array(n), at=new Map();
   const span=Math.max(1,d.nb-d.na), xs=t=>(t-d.na)/span*100-50;
   let ylo=Infinity,yhi=-Infinity; for(const j of idx){if(d.y[j]<ylo)ylo=d.y[j]; if(d.y[j]>yhi)yhi=d.y[j]}
-  idx.forEach((j,i)=>{const k=d.ks[j]; at.set(j,i); X[i]=xs(d.end(k)); Xb[i]=xs(CT.birth[k]);
-    Yp[i]=((d.y[j]-ylo)/Math.max(1,yhi-ylo)-0.5)*Math.min(60,2+0.6*Math.sqrt(n)*3); Zp[i]=(((k*2654435761)>>>0)%1000/1000-0.5)*4});
+  // a company that had a place in an earlier 3D view starts from it (NET3.mem, by id), so that a neighbourhood stays
+  // where it was; a new one starts near its predecessor's place if that is known, else from its row of the flat tree
+  const mem=NET3.mem, base=CT.base, had=new Uint8Array(n), Y0=new Float64Array(n), Z0=new Float64Array(n); let seeded=0;
+  idx.forEach((j,i)=>{const k=d.ks[j]; at.set(j,i); X[i]=xs(d.end(k)); Xb[i]=xs(CT.birth[k])});
+  idx.forEach((j,i)=>{const k=d.ks[j], h=((k*2654435761)>>>0)%1000/1000-0.5, m=mem.get(k+base);
+    if(m){Yp[i]=Y0[i]=m[0]; Zp[i]=Z0[i]=m[1]; had[i]=1; seeded++; return}
+    const p=d.va[j], mp=p>=0?mem.get(d.ks[p]+base):null;
+    if(mp){Yp[i]=mp[0]+3*h; Zp[i]=mp[1]+3*(((k*40503)>>>0)%1000/1000-0.5); return}
+    Yp[i]=((d.y[j]-ylo)/Math.max(1,yhi-ylo)-0.5)*Math.min(60,2+0.6*Math.sqrt(n)*3); Zp[i]=h*4});
   const links=[]; idx.forEach((j,i)=>{const p=d.va[j]; if(p>=0&&at.has(p))links.push(i,at.get(p))});
+  const warm=seeded>0.8*n, steps=warm?50:160, T0=warm?0.6:seeded>0.3*n?1.2:3;
   const c=10, fy=new Float64Array(n), fz=new Float64Array(n), cell=new Map();
-  for(let it=0;it<160;it++){
-    const T=3*(1-it/160)+0.08; fy.fill(0); fz.fill(0); cell.clear();
+  for(let it=0;it<steps;it++){
+    const T=T0*(1-it/steps)+0.08; fy.fill(0); fz.fill(0); cell.clear();
     for(let i=0;i<n;i++){const key=Math.floor(X[i]/c)*1e6+Math.floor(Yp[i]/c)*1e3+Math.floor(Zp[i]/c); let a=cell.get(key); if(!a)cell.set(key,a=[]); a.push(i)}
     for(let i=0;i<n;i++){const cx=Math.floor(X[i]/c), cy=Math.floor(Yp[i]/c), cz=Math.floor(Zp[i]/c);
       for(let ax=-1;ax<=1;ax++)for(let ay=-1;ay<=1;ay++)for(let az=-1;az<=1;az++){const a=cell.get((cx+ax)*1e6+(cy+ay)*1e3+(cz+az)); if(!a)continue;
@@ -4405,8 +4548,9 @@ function netLayout3(d,idx){
           const fr=30/(d2+1); fy[i]+=fr*dy/q; fz[i]+=fr*dz/q; fy[j]-=fr*dy/q; fz[j]-=fr*dz/q}}}
     for(let l=0;l<links.length;l+=2){const i=links[l], j=links[l+1], dy=Yp[j]-Yp[i], dz=Zp[j]-Zp[i], q=Math.hypot(dy,dz)||1e-6, fs=0.3*(q-4);
       fy[i]+=fs*dy/q; fz[i]+=fs*dz/q; fy[j]-=fs*dy/q; fz[j]-=fs*dz/q}
-    for(let i=0;i<n;i++){fy[i]-=0.004*Yp[i]; fz[i]-=0.004*Zp[i]; const m=Math.hypot(fy[i],fz[i]), k=m>T?T/m:1; Yp[i]+=fy[i]*k; Zp[i]+=fz[i]*k}
+    for(let i=0;i<n;i++){fy[i]-=0.004*Yp[i]; fz[i]-=0.004*Zp[i]; if(had[i]){fy[i]-=0.08*(Yp[i]-Y0[i]); fz[i]-=0.08*(Zp[i]-Z0[i])} const m=Math.hypot(fy[i],fz[i]), k=m>T?T/m:1; Yp[i]+=fy[i]*k; Zp[i]+=fz[i]*k}
   }
+  idx.forEach((j,i)=>mem.set(d.ks[j]+base,[Yp[i],Zp[i]])); if(mem.size>300000)NET3.mem=new Map();
   NET3.key=key; NET3.P={idx,X,Xb,Y:Yp,Z:Zp,at};
   return NET3.P;
 }
@@ -4427,7 +4571,8 @@ function net3D(g,d,inY,nShow,o){
   for(const [x,y] of corners)ext(proj(x,y,fl));
   for(let i=0;i<n;i++)ext(proj(L.X[i],L.Y[i],L.Z[i]+3));
   const pb=(out?40:30)*z, sc=NET3.zoom*Math.min(W*0.94/Math.max(1e-6,bx1-bx0),(H-pt-pb)/Math.max(1e-6,by1-by0));
-  const ox=W/2-sc*(bx0+bx1)/2, oy=pt+(H-pt-pb)/2-sc*(by0+by1)/2;
+  const ox=W/2-sc*(bx0+bx1)/2+NET3.px*dpr, oy=pt+(H-pt-pb)/2-sc*(by0+by1)/2+NET3.py*dpr;
+  if(!out){NETG=null; netVPlace(pt/dpr,(H-pt-pb)/dpr)}
   const P2=(x,y,zz)=>{const p=proj(x,y,zz); return [ox+sc*p[0],oy+sc*p[1],p[2],p[3]]};
   // the floor, the time on it, the shadows
   g.save();
@@ -4469,6 +4614,7 @@ function net3D(g,d,inY,nShow,o){
 // ---------- pictures of the plots: .png in the shape shown, with a title; sq in a square, for a paper: no title, and
 // the margins only as wide as the numbers need; both with axis labels ----------
 function exportPlot(which,kind,btn){
+  if(which==='netall'){exportAll(btn);return}
   const src=$({chart:'chart',money:'cMoney',size:'cSize',surv:'cSurv',fort:'cFort',nearM:'cNearM',nearS:'cNearS',ct:'cCT',net:'cNet'}[which]), r=src.getBoundingClientRect();
   // (the two plots after a collapse are always saved in a square, one above the other)
   const sq=kind==='sq', sqd=sq||which==='ct', dpr=2, W=sqd?1000:Math.round(Math.max(r.width,420)*dpr), H=sqd?1000:Math.round(Math.max(r.height+60,300)*dpr);
