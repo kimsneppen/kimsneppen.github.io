@@ -217,6 +217,15 @@
   .rangev{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:9em}
   .chartbox.ct{height:min(640px,max(420px,92vw))}
   .chartbox.net{height:min(680px,max(440px,100vw))}
+  .chartbox.net canvas{touch-action:pan-y;cursor:crosshair}
+  .chartbox.net.d3 canvas{touch-action:none;cursor:grab}
+  /* the zoom box drawn on the tree */
+  .netbox{position:absolute;display:none;border:1.5px dashed var(--accent);background:rgba(67,56,202,.08);pointer-events:none}
+  /* small buttons of the plots after a collapse */
+  .nbtn{height:24px;min-width:28px;padding:0 8px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--accent);
+    font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .nbtn:disabled{opacity:.4;cursor:default}
+  .nbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .plotbtns .pl{font-size:11.5px;color:var(--muted);align-self:center;margin-left:4px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
   .plotbtns button{height:22px;min-width:28px;padding:0 7px;font-size:11px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.9);
     color:var(--accent);font-weight:700;cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
@@ -1295,6 +1304,9 @@
       <span class="lab">time</span>
       <div class="dual" id="ctRange" title="the time shown: drag the left handle for the start, the right one for the end (at the right end: up to the present round)"><span class="sel"></span><input type="range" id="ctFrom" min="0" max="1000" step="1" value="0" aria-label="start of the time shown"><input type="range" id="ctTo" min="0" max="1000" step="1" value="1000" aria-label="end of the time shown"></div>
       <span class="rangev" id="ctRangeV"></span>
+      <label class="win" title="the top of the y axis of D: lower it to see small values (the start of a run has many companies)">D up to
+        <input type="range" id="ctY" min="0" max="12" step="1" value="0"><span id="ctYV">all</span></label>
+      <button class="nbtn" id="ctBg" title="black / white background of the plots"><span class="bwcirc"></span></button>
       <span class="plotbtns"><button data-plot="ct" data-k="png" title="save both plots, one above the other, as a square PNG picture with a title and axis labels">.png</button><button data-plot="ct" data-k="sq" title="save both plots, one above the other, as a square picture for a paper: axis labels, no title">sq</button></span>
     </div>
     <div class="chartnote" id="ctNote" style="margin-bottom:4px"></div>
@@ -1304,16 +1316,28 @@
     <div class="cardhead"><h2>Family tree of the companies</h2><span class="sub" id="netSub">the companies of the most
       scalable product, each linked to the company that collapsed before it where it started</span></div>
     <div class="chartbar">
-      <span class="lab">started</span>
-      <div class="dual" id="netRange" title="the companies shown: those that started in this time; drag the left handle for the start, the right one for the end (at the right end: up to the present round)"><span class="sel"></span><input type="range" id="netFrom" min="0" max="1000" step="1" value="0" aria-label="start of the time shown"><input type="range" id="netTo" min="0" max="1000" step="1" value="1000" aria-label="end of the time shown"></div>
+      <span class="lab">time</span>
+      <div class="dual" id="netRange" title="the rounds shown: the companies alive at some time in them; drag the left handle for the start, the right one for the end (at the right end: up to the present round)"><span class="sel"></span><input type="range" id="netFrom" min="0" max="1000" step="1" value="0" aria-label="start of the time shown"><input type="range" id="netTo" min="0" max="1000" step="1" value="1000" aria-label="end of the time shown"></div>
       <span class="rangev" id="netRangeV"></span>
+      <button class="nbtn" id="netAbove" title="the rounds of the plots above (◀ back returns)">as above</button>
       <div class="seg" id="netSurv" title="which companies to show: all that appeared, or those that survived at least 1, 2, 3, 4 or 5 rounds of trade (sold something and were still open after it)">
         <button data-k="0" class="on">all</button><button data-k="1">≥ 1</button><button data-k="2">≥ 2</button><button
         data-k="3">≥ 3</button><button data-k="4">≥ 4</button><button data-k="5">≥ 5</button></div>
+    </div>
+    <div class="chartbar">
+      <span class="lab">height</span>
+      <div class="dual" id="netHRange" title="the part of the height shown, from the top (left handle) to the bottom (right handle)"><span class="sel"></span><input type="range" id="netHFrom" min="0" max="1000" step="1" value="0" aria-label="top of the part shown"><input type="range" id="netHTo" min="0" max="1000" step="1" value="1000" aria-label="bottom of the part shown"></div>
+      <button class="nbtn" id="netBack" title="back to the view before the last change of time, height or zoom">◀ back</button>
+      <button class="nbtn" id="netFullT" title="all the rounds">↔ full</button>
+      <button class="nbtn" id="netFullY" title="the whole height: all the companies of the rounds shown again (also those a zoom left out)">↕ full</button>
+      <button class="tgl" id="netFam" title="click to switch: all the companies, or only those in families (with a predecessor or a follower among those shown)">all companies</button>
+      <div class="seg" id="net3dSeg" title="the tree flat, or in 3D: time along the floor, the companies as spheres placed by springs along the links and repulsion between them (drag to turn, wheel to zoom)">
+        <button data-v="2d" class="on">2D</button><button data-v="3d">3D</button></div>
+      <button class="nbtn" id="netBg" title="black / white background of the tree"><span class="bwcirc"></span></button>
       <span class="plotbtns"><button data-plot="net" data-k="png" title="save the family tree as a PNG picture, with a title and axis label">.png</button><button data-plot="net" data-k="sq" title="save the family tree in a square picture for a paper: no title">sq</button></span>
     </div>
     <div class="chartnote" id="netNote" style="margin-bottom:4px"></div>
-    <div class="chartbox net"><canvas id="cNet"></canvas></div>
+    <div class="chartbox net"><canvas id="cNet"></canvas><div class="netbox" id="netBox"></div></div>
   </section>
 </div>
 
@@ -3493,11 +3517,13 @@ function fillSlots(){
 // The text of the plots under the display is drawn FZ times the base size (base: 11 px numbers, 11.5 px titles).
 const FZ=2, PFONT='-apple-system,Segoe UI,Roboto,sans-serif';
 const pfont=(px,z,bold)=>`${bold?'600 ':''}${px*z}px ${PFONT}`;
+// the colours of a plot on a white (PDK false) or a black background (the plots after a collapse can be black)
+let PDK=false; const PC=(l,d)=>PDK?d:l;
 // a title: the font made smaller if needed so it fits in maxW
 function plotTitle(g,text,x,y,z,maxW){
   let sz=11.5; g.font=pfont(sz,z,true); const tw=g.measureText(text).width;
   if(tw>maxW){sz*=maxW/tw; g.font=pfont(sz,z,true)}
-  g.textAlign='left'; g.textBaseline='top'; g.fillStyle='#16233b'; g.fillText(text,x,y); return sz*z;
+  g.textAlign='left'; g.textBaseline='top'; g.fillStyle=PC('#16233b','#e8ecf5'); g.fillText(text,x,y); return sz*z;
 }
 // an axis title centred at x, made smaller if needed so it fits in maxW
 function axisTitle(g,text,x,y,z,maxW){
@@ -3520,14 +3546,14 @@ function tickLabels(ticks,need,lin){
 // position], pl, pt, w, h, z (text scale), dpr, W, fx, fy (value → text), linX, linY}
 function drawAxes(g,a){
   const {xt,yt,pl,pt,w,h,z,dpr,W}=a, fs=11*z;
-  g.lineWidth=dpr; g.strokeStyle='#dde3ec';
+  g.lineWidth=dpr; g.strokeStyle=PC('#dde3ec','#262d3b');
   for(const [,x] of xt){g.beginPath();g.moveTo(x,pt);g.lineTo(x,pt+h);g.stroke()}
   for(const [,y] of yt){g.beginPath();g.moveTo(pl,y);g.lineTo(pl+w,y);g.stroke()}
-  g.strokeStyle='#9aa3b5'; g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h);
+  g.strokeStyle=PC('#9aa3b5','#5b6578'); g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h);
   for(const [,x] of xt){g.moveTo(x,pt+h);g.lineTo(x,pt+h+5*dpr)}
   for(const [,y] of yt){g.moveTo(pl,y);g.lineTo(pl-5*dpr,y)}
   g.stroke();
-  g.font=pfont(11,z); g.fillStyle='#6b7690'; g.textAlign='center'; g.textBaseline='top';
+  g.font=pfont(11,z); g.fillStyle=PC('#6b7690','#9aa6bd'); g.textAlign='center'; g.textBaseline='top';
   const xw=Math.max(1,...xt.map(([v])=>g.measureText(a.fx(v)).width));
   for(const [v,x] of tickLabels(xt,xw+(a.linX?2.5:1.2)*fs,a.linX)){const t=a.fx(v), hw=g.measureText(t).width/2;
     g.fillText(t,Math.max(hw+2*dpr,Math.min(x,W-hw-2*dpr)),pt+h+6*dpr)}
@@ -3542,8 +3568,8 @@ function legendBox(g,items,x,y,dpr,left,sc){
   g.textAlign='right'; g.textBaseline='top';
   const tw=Math.max(...items.map(l=>{g.font=font(l);return g.measureText(l.t).width+(l.c?14*z:l.dash?20*z:0)}));
   if(left)x+=tw+6*z;
-  g.fillStyle='rgba(255,255,255,.86)'; g.fillRect(x-tw-6*z,y-3*z,tw+9*z,items.length*15*z+4*z);
-  items.forEach((l,k)=>{const yy=y+k*15*z; g.font=font(l); g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,x,yy);
+  g.fillStyle=PC('rgba(255,255,255,.86)','rgba(11,13,19,.82)'); g.fillRect(x-tw-6*z,y-3*z,tw+9*z,items.length*15*z+4*z);
+  items.forEach((l,k)=>{const yy=y+k*15*z; g.font=font(l); g.fillStyle=l.ink||PC('#16233b','#e8ecf5'); g.fillText(l.t,x,yy);
     if(l.c){const w=g.measureText(l.t).width; g.fillStyle=l.c; g.fillRect(x-w-14*z,yy+1*z,9*z,9*z)}
     else if(l.dash){const w=g.measureText(l.t).width; g.strokeStyle=l.dash; g.lineWidth=0.8*z; g.setLineDash([3*z,2*z]);
       g.beginPath(); g.moveTo(x-w-19*z,yy+5.5*z); g.lineTo(x-w-4*z,yy+5.5*z); g.stroke(); g.setLineDash([])}});
@@ -3554,10 +3580,10 @@ function legendRow(g,items,x,y,dpr,maxW){
   let z=dpr*FZ; const iw=l=>{g.font=pfont(11,z); return g.measureText(l.t).width+(l.c?14*z:0)};
   const tw0=items.reduce((a,l)=>a+iw(l),0)+12*z*(items.length-1); if(tw0>maxW)z*=maxW/tw0;
   const tw=Math.min(tw0,maxW); let xx=x-tw/2;
-  g.fillStyle='rgba(255,255,255,.86)'; g.fillRect(xx-5*z,y-3*z,tw+10*z,16*z);
+  g.fillStyle=PC('rgba(255,255,255,.86)','rgba(11,13,19,.82)'); g.fillRect(xx-5*z,y-3*z,tw+10*z,16*z);
   g.textAlign='left'; g.textBaseline='top';
   for(const l of items){const w=iw(l); if(l.c){g.fillStyle=l.c; g.fillRect(xx,y+1*z,9*z,9*z)}
-    g.fillStyle=l.ink||'#16233b'; g.fillText(l.t,xx+(l.c?14*z:0),y); xx+=w+12*z}
+    g.fillStyle=l.ink||PC('#16233b','#e8ecf5'); g.fillText(l.t,xx+(l.c?14*z:0),y); xx+=w+12*z}
 }
 function sup10(k){const s={'-':'⁻',0:'⁰',1:'¹',2:'²',3:'³',4:'⁴',5:'⁵',6:'⁶',7:'⁷',8:'⁸',9:'⁹'};
   return k===0?'1':k===1?'10':'10'+String(k).split('').map(c=>s[c]).join('')}
@@ -4060,9 +4086,10 @@ document.querySelectorAll('#lifeSeg button').forEach(b=>b.onclick=()=>setLife(b.
 // its predecessor (par): the company that collapsed last where it started. Up to CTMAX companies are kept; beyond, the
 // oldest half is dropped (base: the number dropped). ----
 const CTMAX=1<<20;
-let CT=null, ctA=null, ctB=null, netA=null, netB=null, netMin=0;
+let CT=null, ctA=null, ctB=null, netMin=0;
 function ctReset(){
   const LL=E.L*E.L, ic=nearProducts().ib, cap=4096;
+  NV={a:null,b:null,sel:null,y0:0,y1:1000}; netHist=[]; NET3.key=''; NETD=null;
   CT={t0:E.t,ic,LL,cur:new Int32Array(LL).fill(-1),lastArea:new Int32Array(LL).fill(-1),supB:Int32Array.from(E.sup[ic]),
     dying:new Uint8Array(LL),n:0,base:0,cap,birth:new Int32Array(cap),death:new Int32Array(cap),maxS:new Float32Array(cap),
     par:new Int32Array(cap),surv:new Int32Array(cap),t:[],D:[],c1:[],c2:[],nb:[],big:[]};
@@ -4101,9 +4128,10 @@ function ctRecord(){
   if(CT.t.length>200000)for(const k of ['t','D','c1','c2','nb'])CT[k].splice(0,50000);
   if(CT.big.length>20000)CT.big.splice(0,5000);
 }
-// a time range with two handles: the start and the end as rounds (null: the first round kept / the present one); the
-// handles follow when the run grows. span(): [first, last] round there is; set(a, b) keeps a choice
-function dualRange(id,span,get,set){
+// a range with two handles: the start and the end (null: the first / the last there is); the handles follow when the
+// run grows. span(): [first, last] there is; set(a, b) keeps a choice; start(): called as a handle is taken (for the
+// memory of the tree's views)
+function dualRange(id,span,get,set,start){
   const box=$(id), [fr,to]=box.querySelectorAll('input'), sel=box.querySelector('.sel');
   const sync=()=>{const [t0,t1]=span(), [a,b]=get(), d=Math.max(1,t1-t0), va=a===null?0:Math.round(1000*(a-t0)/d),
       vb=b===null?1000:Math.round(1000*(b-t0)/d);
@@ -4113,6 +4141,7 @@ function dualRange(id,span,get,set){
     if(vb-va<5){if(w===fr)va=Math.max(0,vb-5); else vb=Math.min(1000,va+5)}
     set(va<=0?null:Math.round(t0+va*d/1000), vb>=1000?null:Math.round(t0+vb*d/1000)); sync()};
   fr.oninput=()=>input(fr); to.oninput=()=>input(to);
+  if(start)for(const i of [fr,to]){i.addEventListener('pointerdown',start); i.addEventListener('keydown',start)}
   // the handle nearer the pointer comes on top, so that two handles close together can both be caught
   box.addEventListener('pointermove',e=>{const b=box.getBoundingClientRect(), x=(e.clientX-b.left-7)/Math.max(1,b.width-14)*1000;
     const near=Math.abs(x-fr.value)<Math.abs(x-to.value)?fr:to; fr.style.zIndex=near===fr?2:1; to.style.zIndex=near===to?2:1});
@@ -4122,17 +4151,45 @@ function dualRange(id,span,get,set){
 function ctSpan(){return CT&&CT.t.length?[CT.t[0]-1,CT.t[CT.t.length-1]]:[0,E?E.t:0]}
 function winOf2(a,b){const [t0,t1]=ctSpan(); let ta=a===null?t0:Math.max(t0,Math.min(t1,a)), tb=b===null?t1:Math.max(t0,Math.min(t1,b));
   if(tb<=ta){if(b===null||tb>=t1)ta=Math.max(t0,tb-1); else tb=Math.min(t1,ta+1)} return [ta,tb]}
+// the tops of D's axis, as fractions of all of it (the slider D up to), and the background of the two plots
+const CTY=[1,0.5,0.2,0.1,0.05,0.02,0.01,0.005,0.002,0.001,5e-4,2e-4,1e-4];
+let ctYk=0, ctDark=false;
+$('ctY').oninput=e=>{ctYk=+e.target.value; drawCT(true)};
+$('ctBg').onclick=()=>{ctDark=!ctDark; $('ctBg').classList.toggle('on',ctDark); drawCT(true)};
 const ctSync=dualRange('ctRange',ctSpan,()=>[ctA,ctB],(a,b)=>{ctA=a;ctB=b;drawCT(true)});
-const netSync=dualRange('netRange',ctSpan,()=>[netA,netB],(a,b)=>{netA=a;netB=b;drawCT(true)});
+// ---- the view of the tree: NV = {a, b: the rounds shown (null: from the first kept / to the present); sel: the
+// companies a zoom box kept (a Set of ids; null: all); y0, y1: the part of the height shown, 0 … 1000 from the top}.
+// Every change (a handle taken, a zoom box, as above, ↔ full, ↕ full) first puts the view on netHist, and ◀ back
+// takes it back, so that a view can always be widened again
+let NV={a:null,b:null,sel:null,y0:0,y1:1000}, netHist=[], netFam=false, net3d=false, netDark=false, NETD=null, NETG=null;
+const NET3={az:-0.55,el:0.42,zoom:1,key:'',P:null};
+function netPush(){const q=netHist[netHist.length-1];
+  if(!q||q.a!==NV.a||q.b!==NV.b||q.sel!==NV.sel||q.y0!==NV.y0||q.y1!==NV.y1)netHist.push({...NV});
+  if(netHist.length>80)netHist.shift(); syncNetBtns()}
+function syncNetBtns(){$('netBack').disabled=!netHist.length; $('netFullT').disabled=NV.a===null&&NV.b===null;
+  $('netFullY').disabled=!NV.sel&&NV.y0===0&&NV.y1===1000;
+  $('netFam').textContent=netFam?'families only':'all companies';
+  document.querySelectorAll('#net3dSeg button').forEach(b=>b.classList.toggle('on',(b.dataset.v==='3d')===net3d));
+  $('netBg').classList.toggle('on',netDark); $('cNet').parentNode.classList.toggle('d3',net3d)}
+const netSync=dualRange('netRange',ctSpan,()=>[NV.a,NV.b],(a,b)=>{NV.a=a;NV.b=b;drawCT(true)},netPush);
+const netHSync=dualRange('netHRange',()=>[0,1000],()=>[NV.y0>0?NV.y0:null,NV.y1<1000?NV.y1:null],
+  (a,b)=>{NV.y0=a===null?0:a; NV.y1=b===null?1000:b; drawCT(true)},netPush);
 document.querySelectorAll('#netSurv button').forEach(b=>b.onclick=()=>{netMin=+b.dataset.k;
   document.querySelectorAll('#netSurv button').forEach(x=>x.classList.toggle('on',x===b)); drawCT(true)});
+$('netBack').onclick=()=>{if(!netHist.length)return; NV=netHist.pop(); drawCT(true)};
+$('netFullT').onclick=()=>{netPush(); NV={...NV,a:null,b:null}; drawCT(true)};
+$('netFullY').onclick=()=>{netPush(); NV={...NV,sel:null,y0:0,y1:1000}; drawCT(true)};
+$('netAbove').onclick=()=>{netPush(); NV={...NV,a:ctA,b:ctB}; drawCT(true)};
+$('netFam').onclick=()=>{netFam=!netFam; drawCT(true)};
+document.querySelectorAll('#net3dSeg button').forEach(b=>b.onclick=()=>{net3d=b.dataset.v==='3d'; drawCT(true)});
+$('netBg').onclick=()=>{netDark=!netDark; drawCT(true)};
 // a plot is drawn only when it can be seen (or when asked for: force), since the tree can hold many companies
 const onScreen=c=>{const r=c.getBoundingClientRect(); return r.bottom>0&&r.top<window.innerHeight&&r.width>0};
 let netT=0;
 function drawCT(force){
   if(!E||!CT)return;
-  ctSync(); netSync();
-  const [ta,tb]=winOf2(ctA,ctB), [na,nb]=winOf2(netA,netB), nm=PNAME[CT.ic];
+  ctSync(); netSync(); netHSync(); syncNetBtns();
+  const [ta,tb]=winOf2(ctA,ctB), [na,nb]=winOf2(NV.a,NV.b), nm=PNAME[CT.ic];
   $('ctRangeV').textContent=`rounds ${ta}–${tb}`; $('netRangeV').textContent=`rounds ${na}–${nb}`;
   $('ctSub').textContent=`the companies of ${nm}, the most scalable product: how many share its market, and how many of the new ones last`;
   $('netSub').textContent=`the companies of ${nm}, each linked to the company that collapsed before it where it started`;
@@ -4148,9 +4205,10 @@ const ctIdx=t=>{let lo=0,hi=CT.t.length; while(lo<hi){const m=(lo+hi)>>1; if(CT.
 // counted from the start of the time shown, that survived their first round of trade (full line) and their second
 // (dashed); grey dashed lines: the 30 largest collapses in the time shown (largest size at least a quarter of the
 // largest that collapsed in it). out: {dpr, sq} for a picture (a square; sq: no title). Returns false with nothing to draw
-function ctPlot(canvas,out){
+function ctPlot(canvas,out){const p=PDK; PDK=ctDark; try{return ctPlot0(canvas,out)}finally{PDK=p}}
+function ctPlot0(canvas,out){
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d'), z=dpr*FZ;
-  if(!out)g.clearRect(0,0,W,H);
+  if(!out){g.clearRect(0,0,W,H); if(PDK){g.fillStyle='#0b0d13'; g.fillRect(0,0,W,H)}}
   const ic=CT.ic, col=PCOL[ic]||'#be123c', nm=PNAME[ic], sq=out&&out.sq;
   g.font=pfont(11,z);
   const [ta,tb]=winOf2(ctA,ctB), i0=ctIdx(ta+1), i1=ctIdx(tb+1)-1;
@@ -4166,9 +4224,9 @@ function ctPlot(canvas,out){
   const n=i1-i0+1, cu1=new Float64Array(n+1), cu2=new Float64Array(n+1), tt=new Float64Array(n+1); tt[0]=ta;
   for(let k=0;k<n;k++){cu1[k+1]=cu1[k]+CT.c1[i0+k]; cu2[k+1]=cu2[k]+CT.c2[i0+k]; tt[k+1]=CT.t[i0+k]}
   const cmax=Math.max(cu1[n],cu2[n],1);
-  if(!out)g.clearRect(0,0,W,H);
   if(out&&!sq)plotTitle(g,`${nm} companies: diversity D and the new companies that last — Globalization in a nutshell, round ${E.t}`,6*dpr,6*z,z,W-12*dpr);
-  const top1=Math.max(dmax*1.08,1), top2=cmax*1.08, yt1=niceTicks(0,top1,5), yt2=niceTicks(0,top2,5);
+  // the top of D's axis: all of it, or lowered by the slider D up to (the curve is cut at the top)
+  const top1=Math.max(dmax*1.08*CTY[ctYk],0.5), top2=cmax*1.08, yt1=niceTicks(0,top1,5), yt2=niceTicks(0,top2,5);
   if(sq||out){g.font=pfont(11,z); pl=Math.max(30*z,Math.max(...[...yt1,...yt2].map(v=>g.measureText(fmtTick(v)).width))+8*dpr+(out?17:0)*z)}
   const w=W-pl-pr, X=t=>pl+(t-ta)/Math.max(1,tb-ta)*w, Y1=v=>pt+hh-v/top1*hh, Y2=v=>pt2+hh-v/top2*hh;
   const xt=niceTicks(ta,tb,10).filter(t=>t>=ta&&t<=tb).map(t=>[t,X(t)]);
@@ -4181,9 +4239,11 @@ function ctPlot(canvas,out){
   g.stroke(); g.restore();
   const step=Math.max(1,Math.floor(n/(w/dpr)));
   g.lineWidth=1.6*dpr; g.lineJoin='round'; g.strokeStyle=col;
+  if(!out){$('ctY').max=CTY.length-1; $('ctY').value=ctYk; $('ctYV').textContent=ctYk?fmtTick(top1):'all'}
+  g.save(); g.beginPath(); g.rect(pl,pt-dpr,w,hh+2*dpr); g.clip();
   g.beginPath(); let on=false;
   for(let k=i0;k<=i1;k+=step){const v=CT.D[k]; if(!Number.isFinite(v)){on=false;continue} const x=X(CT.t[k]), y=Y1(v); on?g.lineTo(x,y):g.moveTo(x,y); on=true}
-  g.stroke();
+  g.stroke(); g.restore();
   for(const [cu,dash] of [[cu1,false],[cu2,true]]){g.setLineDash(dash?[6*dpr,4*dpr]:[]); g.beginPath();
     for(let k=0;k<=n;k+=Math.min(step,Math.max(1,n-k)))k?g.lineTo(X(tt[k]),Y2(cu[k])):g.moveTo(X(tt[k]),Y2(cu[k]));
     g.stroke()}
@@ -4191,79 +4251,218 @@ function ctPlot(canvas,out){
   legendBox(g,[{c:col,t:`${nm}: D = (Σs)²/Σs²`}],pl+w-4*z,pt+4*z,dpr,false,w<520*dpr?0.8:1);
   const nar=w<520*dpr;
   legendBox(g,[{c:col,t:nar?`survived 1 round: ${cu1[n]}`:`survived 1 round of trade: ${cu1[n]}`},{dash:col,t:`survived 2 rounds: ${cu2[n]}`}],pl+4*z,pt2+4*z,dpr,true,nar?0.8:1);
-  if(out){g.font=pfont(11,z); g.fillStyle='#4a5872'; g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time (rounds)',pl+w/2,H-4*dpr);
+  if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time (rounds)',pl+w/2,H-4*dpr);
     for(const [y,t] of [[pt+hh/2,'D, effective number of companies'],[pt2+hh/2,`${nm} companies, cumulative`]]){
       g.save(); g.translate(8*z,y); g.rotate(-Math.PI/2); g.textBaseline='middle'; axisTitle(g,t,0,5.5*z,z,hh); g.restore()}}
   return true;
 }
-// The family tree: the companies that started in the time shown and survived at least netMin rounds of trade, each a
-// line from its start to its collapse (the length is its life) ending in a circle of area ∝ the largest number of
-// units it sold in a round (an open circle: still alive), joined by a thin line to its predecessor's circle — the
-// company that had collapsed last where it started (a predecessor not shown is replaced by its nearest shown one). The
-// time runs to the right, to the last collapse of the companies shown; every line without companies after it has a row
-// of its own, a company with followers sits in the middle of theirs, so the height holds all of them.
-function netPlot(canvas,out){
-  const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d'), z=dpr*FZ;
-  if(!out)g.clearRect(0,0,W,H);
-  const ic=CT.ic, col=PCOL[ic]||'#be123c', rgb=(PRGB[ic]||[190,18,60]).join(','), nm=PNAME[ic], sq=out&&out.sq;
-  const [na,nb]=winOf2(netA,netB), base=CT.base, m=CT.n-base, B=CT.birth;
-  let lo=0,hi=m; while(lo<hi){const q=(lo+hi)>>1; if(B[q]<na)lo=q+1; else hi=q} const k0b=lo;     // started in rounds na … nb
-  lo=k0b; hi=m; while(lo<hi){const q=(lo+hi)>>1; if(B[q]<=nb)lo=q+1; else hi=q} const k1=lo-1;
-  const n=k1-k0b+1;
-  g.font=pfont(11,z);
-  const empty=t=>{g.fillStyle='#8391ab'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(t,12*z,H/2); if(!out)$('netNote').textContent=''; return false};
-  if(n<=0)return empty('No companies of '+nm+' started in this time.');
-  const vis=new Uint8Array(n), va=new Int32Array(n).fill(-1), S=CT.maxS, D=CT.death, SV=CT.surv;
-  let nv=0, smax=1;
-  for(let j=0;j<n;j++){const k=k0b+j; if(SV[k]>=netMin){vis[j]=1; nv++; if(S[k]>smax)smax=S[k]}
-    const p=CT.par[k]-base-k0b; if(p>=0&&p<j)va[j]=vis[p]?p:va[p]}
-  if(!nv)return empty(`No company of ${nm} started in this time survived ${netMin} round${netMin>1?'s':''} of trade.`);
-  // the followers of each company shown (in order of start), the companies without predecessor shown (roots)
-  const cnt=new Int32Array(n+1), roots=[];
-  for(let j=0;j<n;j++)if(vis[j]){if(va[j]>=0)cnt[va[j]+1]++; else roots.push(j)}
+// ---- The family tree. The companies shown: alive at some time in the rounds shown, survived at least netMin rounds of
+// trade, among those a zoom box kept, and (families only) with a predecessor or a follower among those shown. Each is
+// joined to its predecessor — the company that had collapsed last where it started — or, when that one is not shown,
+// to its nearest shown predecessor in the rounds shown. netData: {na, nb, ks (places in the CT arrays), va (the place of
+// the predecessor in ks; −1: none), y (row), rows, roots, smax, nAll (alive in the rounds shown)}. Rows: a depth-first
+// walk; a company without followers takes the next row, one with followers sits in the middle of theirs
+function netData(){
+  const [na,nb]=winOf2(NV.a,NV.b), base=CT.base, m=CT.n-base, B=CT.birth, D=CT.death, SV=CT.surv, S=CT.maxS, now=E.t;
+  let lo=0,hi=m; while(lo<hi){const q=(lo+hi)>>1; if(B[q]<=nb)lo=q+1; else hi=q} const k1=lo-1;
+  const end=k=>D[k]<0?now:D[k];
+  let ks=[], at=new Map(), nAll=0;
+  for(let k=0;k<=k1;k++){if(end(k)<na)continue; nAll++;
+    if(SV[k]<netMin||(NV.sel&&!NV.sel.has(k+base)))continue; at.set(k,ks.length); ks.push(k)}
+  // the predecessors: up the chain past those not shown, while still alive in the rounds shown (memo: the answer for a
+  // company not shown)
+  let va=new Int32Array(ks.length).fill(-1); const memo=new Map();
+  for(let j=0;j<ks.length;j++){let p=CT.par[ks[j]]-base; const path=[]; let ans=-1;
+    while(p>=0){const q=at.get(p); if(q!==undefined){ans=q;break} if(memo.has(p)){ans=memo.get(p);break}
+      if(end(p)<na)break; path.push(p); p=CT.par[p]-base}
+    for(const h of path)memo.set(h,ans); va[j]=ans}
+  // families only: those with a predecessor or a follower
+  if(netFam){const kid=new Uint8Array(ks.length); for(let j=0;j<ks.length;j++)if(va[j]>=0)kid[va[j]]=1;
+    const keep=[], nw=new Int32Array(ks.length).fill(-1);
+    for(let j=0;j<ks.length;j++)if(va[j]>=0||kid[j]){nw[j]=keep.length; keep.push(j)}
+    ks=keep.map(j=>ks[j]); va=Int32Array.from(keep.map(j=>va[j]>=0?nw[va[j]]:-1))}
+  const n=ks.length, cnt=new Int32Array(n+1), roots=[];
+  let smax=1; for(const k of ks)if(S[k]>smax)smax=S[k];
+  for(let j=0;j<n;j++){if(va[j]>=0)cnt[va[j]+1]++; else roots.push(j)}
   for(let j=0;j<n;j++)cnt[j+1]+=cnt[j];
   const kids=new Int32Array(Math.max(1,cnt[n])), fill=cnt.slice(0,n);
-  for(let j=0;j<n;j++)if(vis[j]&&va[j]>=0)kids[fill[va[j]]++]=j;
-  // rows: a depth-first walk; a company without followers takes the next row, one with followers the middle of theirs
-  const y=new Float64Array(n); let rows=0;
-  const stack=[];
+  for(let j=0;j<n;j++)if(va[j]>=0)kids[fill[va[j]]++]=j;
+  const y=new Float64Array(n); let rows=0; const stack=[];
   for(const r0 of roots){stack.push(r0,cnt[r0]);
     while(stack.length){const c=stack[stack.length-1], j=stack[stack.length-2];
       if(c<cnt[j+1]){stack[stack.length-1]=c+1; stack.push(kids[c],cnt[kids[c]])}
       else{stack.length-=2; y[j]=cnt[j+1]>cnt[j]?(y[kids[cnt[j]]]+y[kids[cnt[j+1]-1]])/2:rows++}}}
-  const now=E.t, endOf=j=>{const d=D[k0b+j]; return d<0?now:d};
-  let x1=nb; for(let j=0;j<n;j++)if(vis[j]){const e=endOf(j); if(e>x1)x1=e}
-  const x0=Math.max(ctSpan()[0],na);
-  if(out&&!sq)plotTitle(g,`Family tree of the ${nm} companies that started in rounds ${na}–${nb}${netMin?`, survived at least ${netMin} round${netMin>1?'s':''} of trade`:''} — round ${E.t}`,6*dpr,6*z,z,W-12*dpr);
-  const legOn=!!out||W>=900*dpr, pt=(out?(sq?26:48):legOn?26:8)*z, pb=(out?34:20)*z, pl=(out?20:10)*z, pr=14*z, w=W-pl-pr, h=H-pt-pb;
-  const rpad=Math.min((out?12:10)*dpr,0.2*h), X=t=>pl+(t-x0)/Math.max(1,x1-x0)*w, Y=r=>pt+rpad+(r+0.5)/rows*(h-2*rpad);
+  // roots that started after the first round kept with no predecessor at all (not only none shown)
+  let orphans=0; for(const j of roots){const k=ks[j]; if(B[k]>ctSpan()[0]&&CT.par[k]<0)orphans++}
+  return {na,nb,ks,va,y,rows:Math.max(1,rows),roots,smax,nAll,orphans,end};
+}
+function netPlot(canvas,out){const p=PDK; PDK=netDark; try{return netPlot0(canvas,out)}finally{PDK=p}}
+function netPlot0(canvas,out){
+  const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d'), z=dpr*FZ;
+  if(!out){g.clearRect(0,0,W,H); if(PDK){g.fillStyle='#0b0d13'; g.fillRect(0,0,W,H)}}
+  const ic=CT.ic, col=PCOL[ic]||'#be123c', nm=PNAME[ic], sq=out&&out.sq;
+  const d=netData(); NETD=d; NETG=null;
+  g.font=pfont(11,z);
+  const empty=t=>{g.fillStyle='#8391ab'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(t,12*z,H/2); if(!out)$('netNote').textContent=''; return false};
+  if(!d.ks.length)return empty(`No company of ${nm} to show in rounds ${d.na}–${d.nb}${netMin?` that survived ${netMin} round${netMin>1?'s':''} of trade`:''}.`);
+  // the part of the height shown: rows r0 … r1; the companies in it
+  const r0=NV.y0/1000*d.rows-0.5, r1=NV.y1/1000*d.rows-0.5, inY=j=>d.y[j]>=r0-1e-9&&d.y[j]<=r1+1e-9;
+  let nShow=0; for(let j=0;j<d.ks.length;j++)if(inY(j))nShow++;
+  if(out&&!sq)plotTitle(g,`Family tree of the ${nm} companies in rounds ${d.na}–${d.nb}${netMin?`, survived at least ${netMin} round${netMin>1?'s':''} of trade`:''}${net3d?' (3D)':''} — round ${E.t}`,6*dpr,6*z,z,W-12*dpr);
+  const legOn=!!out||W>=900*dpr;
+  const leg=[{c:col,t:`${nm}: ${net3d?'sphere':'circle'} area ∝ largest size (${net3d?'white':'open'}: alive)`},{t:'line: its life'},{t:'thin line: from its predecessor'}];
+  let ok=true;
+  if(net3d)ok=net3D(g,d,inY,nShow,{W,H,dpr,z,out,col,legOn,leg});
+  else net2D(g,d,inY,r0,r1,{W,H,dpr,z,out,col,legOn,leg});
+  if(!out){const vis=d.roots.length;
+    $('netNote').textContent=`${nShow} companies of ${nm} shown (${d.ks.length} in the whole height; ${d.nAll} alive in rounds ${d.na}–${d.nb})`+
+      `${netMin?`, those that survived at least ${netMin} round${netMin>1?'s':''} of trade`:''}${NV.sel?', within the last zoom box':''}${netFam?', families only':''}; `+
+      `${vis} without a predecessor shown, ${d.orphans} of them started after the first round with none at all (where no company of ${nm} had collapsed since the start, or its market reached no further); `+
+      `the largest sold ${Math.round(d.smax)} units in a round. A company's predecessor: the company that collapsed last where it started (in its market, or its own cell); one not shown is replaced by its nearest predecessor shown. `+
+      (net3d?`3D: time along the floor; the companies as spheres placed across it by springs along the links and repulsion between those close in time (a spring layout, as in Kamada–Kawai), with their shadows on the floor; drag to turn, wheel to zoom.`
+        :`Drag a box over the tree to zoom in on it (time and height); ◀ back, ↔ full and ↕ full widen the view again.`)+
+      (ok?'':' Too many companies for 3D: zoom in or choose fewer.')}
+  return true;
+}
+// the tree flat: time to the right, a row for each line of descent
+function net2D(g,d,inY,r0,r1,o){
+  const {W,H,dpr,z,out,col,legOn,leg}=o, sq=out&&out.sq, rgb=(PRGB[CT.ic]||[190,18,60]).join(','), B=CT.birth, D=CT.death, S=CT.maxS, n=d.ks.length;
+  const pt=(out?(sq?26:48):legOn?26:8)*z, pb=(out?34:20)*z, pl=(out?20:10)*z, pr=14*z, w=W-pl-pr, h=H-pt-pb;
+  const rows=Math.max(1e-9,r1-r0+1), rpad=Math.min((out?12:10)*dpr,0.2*h), x0=d.na, x1=d.nb;
+  const X=t=>pl+(t-x0)/Math.max(1,x1-x0)*w, Y=r=>pt+rpad+(r-r0+0.5)/rows*(h-2*rpad);
+  NETG={x0,x1,pl,w,pt,h,rpad,r0,rows};
   const xt=niceTicks(x0,x1,10).filter(t=>t>=x0&&t<=x1).map(t=>[t,X(t)]);
   drawAxes(g,{xt,yt:[],pl,pt,w,h,z,dpr,W,fx:t=>String(Math.round(t)),fy:()=>'',linX:true,linY:true});
-  if(nb<x1){const xb=X(nb); g.fillStyle='rgba(131,145,171,.08)'; g.fillRect(xb,pt,pl+w-xb,h)}      // after the time shown
-  g.save(); g.beginPath(); g.rect(pl,pt-12*dpr,w+12*dpr,h+24*dpr); g.clip();
-  // links to the predecessors, then the lives, then the circles (the biggest first, so that small ones stay seen)
+  g.save(); g.beginPath(); g.rect(pl,pt,w+12*dpr,h); g.clip();
   const lw=Math.max(0.6*dpr,Math.min(1.6*dpr,0.6*h/rows));
-  g.lineWidth=Math.max(0.5*dpr,0.6*lw); g.strokeStyle=`rgba(${rgb},.4)`; g.beginPath();
-  for(let j=0;j<n;j++)if(vis[j]&&va[j]>=0){const p=va[j]; g.moveTo(X(endOf(p)),Y(y[p])); g.lineTo(X(B[k0b+j]),Y(y[j]))}
+  g.lineWidth=Math.max(0.5*dpr,0.6*lw); g.strokeStyle=`rgba(${rgb},.45)`; g.beginPath();
+  for(let j=0;j<n;j++)if(d.va[j]>=0&&(inY(j)||inY(d.va[j]))){const p=d.va[j]; g.moveTo(X(d.end(d.ks[p])),Y(d.y[p])); g.lineTo(X(B[d.ks[j]]),Y(d.y[j]))}
   g.stroke();
   g.lineWidth=lw; g.strokeStyle=`rgba(${rgb},.85)`; g.beginPath();
-  for(let j=0;j<n;j++)if(vis[j]){const yy=Y(y[j]); g.moveTo(X(B[k0b+j]),yy); g.lineTo(Math.max(X(B[k0b+j])+0.5*dpr,X(endOf(j))),yy)}
+  for(let j=0;j<n;j++)if(inY(j)){const k=d.ks[j], yy=Y(d.y[j]); g.moveTo(X(B[k]),yy); g.lineTo(Math.max(X(B[k])+0.5*dpr,X(d.end(k))),yy)}
   g.stroke();
   const rmax=(out?12:10)*dpr, rmin=Math.min(1.6*dpr,Math.max(0.7*dpr,0.45*h/rows)), order=[];
-  for(let j=0;j<n;j++)if(vis[j])order.push(j);
-  order.sort((a,b)=>S[k0b+b]-S[k0b+a]);
-  g.lineWidth=Math.max(0.6,0.8*dpr);
-  for(const j of order){const k=k0b+j, r=Math.max(rmin,rmax*Math.sqrt(S[k]/smax)), x=X(endOf(j)), yy=Y(y[j]);
+  for(let j=0;j<n;j++)if(inY(j))order.push(j);
+  order.sort((a,b)=>S[d.ks[b]]-S[d.ks[a]]);
+  g.lineWidth=Math.max(0.6,0.8*dpr); const bg=PC('#fff','#0b0d13');
+  for(const j of order){const k=d.ks[j], r=Math.max(rmin,rmax*Math.sqrt(S[k]/d.smax)), x=X(d.end(k)), yy=Y(d.y[j]);
     g.beginPath(); g.arc(x,yy,r,0,2*Math.PI);
-    if(D[k]<0){g.fillStyle='#fff'; g.fill(); g.strokeStyle=col; g.stroke()}
-    else{g.fillStyle=col; g.fill(); if(r>2.5*dpr){g.strokeStyle='#fff'; g.stroke()}}}
+    if(D[k]<0){g.fillStyle=bg; g.fill(); g.strokeStyle=col; g.stroke()}
+    else{g.fillStyle=col; g.fill(); if(r>2.5*dpr){g.strokeStyle=bg; g.stroke()}}}
   g.restore();
-  if(out){g.font=pfont(11,z); g.fillStyle='#4a5872'; g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time (rounds)',pl+w/2,H-4*dpr)}
-  if(legOn)legendRow(g,[{c:col,t:`${nm}: circle area ∝ largest size (open: alive)`},{t:'line: its life'},{t:'thin line: from its predecessor'}],pl+w/2,pt-20*z,dpr,w);
-  if(!out){const rt=roots.length, big=Math.round(smax);
-    $('netNote').textContent=`${nv} companies of ${nm} that started in rounds ${na}–${nb}${netMin?` and survived at least ${netMin} round${netMin>1?'s':''} of trade`:''}`+
-      ` (of ${n} that started), ${rt} without a predecessor among them; the largest sold ${big} units in a round. A company's predecessor: the company that collapsed last `+
-      `where it started (in its market, or its own cell); one not shown is replaced by its nearest predecessor shown. Each line is a company's life, from its start to its collapse, ending in a circle of area ∝ the most units it sold in a round (open: still alive); a thin line joins it to its predecessor. The shaded part: after the time shown.`}
+  if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time (rounds)',pl+w/2,H-4*dpr)}
+  if(legOn)legendRow(g,leg,pl+w/2,pt-20*z,dpr,w);
+}
+// A zoom box dragged over the flat tree: the rounds under it, and (if it is more than a sliver high) the companies in its
+// rows, which are then laid out again to fill the height
+{const cv=$('cNet'), box=$('netBox'); let z0=null;
+  const pos=e=>{const b=cv.getBoundingClientRect(); return [e.clientX-b.left,e.clientY-b.top]};
+  cv.addEventListener('pointerdown',e=>{if(e.button)return;
+    if(net3d){z0={x:e.clientX,y:e.clientY,az:NET3.az,el:NET3.el,rot:true}; cv.setPointerCapture(e.pointerId); return}
+    if(!NETG)return; const [x,y]=pos(e); z0={x,y}; cv.setPointerCapture(e.pointerId)});
+  cv.addEventListener('pointermove',e=>{if(!z0)return;
+    if(z0.rot){NET3.az=z0.az-(e.clientX-z0.x)*0.008; NET3.el=Math.max(0.03,Math.min(1.5,z0.el+(e.clientY-z0.y)*0.006)); netPlot(cv); return}
+    const [x,y]=pos(e); Object.assign(box.style,{display:'block',left:Math.min(x,z0.x)+'px',top:Math.min(y,z0.y)+'px',
+      width:Math.abs(x-z0.x)+'px',height:Math.abs(y-z0.y)+'px'})});
+  const up=e=>{if(!z0)return; const s0=z0; z0=null; box.style.display='none'; if(s0.rot||!NETG||!NETD)return;
+    const [x,y]=pos(e), G=NETG, dpr=window.devicePixelRatio||1, wx=Math.abs(x-s0.x), wy=Math.abs(y-s0.y);
+    if(wx<8&&wy<8)return;
+    const tOf=px=>G.x0+(px*dpr-G.pl)/G.w*(G.x1-G.x0), rOf=py=>G.r0+(py*dpr-G.pt-G.rpad)/(G.h-2*G.rpad)*G.rows-0.5;
+    const ta=Math.round(Math.max(G.x0,tOf(Math.min(x,s0.x)))), tb=Math.round(Math.min(G.x1,tOf(Math.max(x,s0.x))));
+    netPush(); const nv={...NV};
+    if(wx>=8&&tb>ta){nv.a=ta; nv.b=tb}
+    if(wy>=8){const ra=rOf(Math.min(y,s0.y)), rb=rOf(Math.max(y,s0.y)), sel=new Set(), d=NETD, a=wx>=8?ta:-Infinity, b=wx>=8?tb:Infinity;
+      for(let j=0;j<d.ks.length;j++){const k=d.ks[j]; if(d.y[j]>=ra&&d.y[j]<=rb&&CT.birth[k]<=b&&d.end(k)>=a)sel.add(k+CT.base)}
+      if(sel.size){nv.sel=sel; nv.y0=0; nv.y1=1000}}
+    NV=nv; drawCT(true)};
+  cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',()=>{z0=null; box.style.display='none'});
+  cv.addEventListener('wheel',e=>{if(!net3d)return; e.preventDefault();
+    NET3.zoom=Math.max(0.3,Math.min(8,NET3.zoom*Math.exp(-e.deltaY*0.0012))); netPlot(cv)},{passive:false});}
+// ---- the tree in 3D: time along x on the floor (100 units across the rounds shown); each company a sphere at its
+// collapse (alive: at the present round) at (x, y, z), its life a line back to its start, a thin line from its
+// predecessor's sphere. y and z come from a spring layout across time: springs (rest length 4) along the links pull a
+// company and its predecessor together, companies close to each other (in x, y and z) push apart, and a weak pull holds
+// the whole near the axis; the rows of the flat tree are the start, 160 steps with a falling step size. Kept for the
+// same companies (NET3.key). At most NET3MAX companies
+const NET3MAX=4000;
+function netLayout3(d,idx){
+  const key=[d.na,d.nb,netMin,netFam,idx.length,idx[0],idx[idx.length-1],NV.y0,NV.y1,NV.sel?NV.sel.size:0].join(':');
+  if(NET3.key===key&&NET3.P)return NET3.P;
+  const n=idx.length, X=new Float64Array(n), Xb=new Float64Array(n), Yp=new Float64Array(n), Zp=new Float64Array(n), at=new Map();
+  const span=Math.max(1,d.nb-d.na), xs=t=>(t-d.na)/span*100-50;
+  let ylo=Infinity,yhi=-Infinity; for(const j of idx){if(d.y[j]<ylo)ylo=d.y[j]; if(d.y[j]>yhi)yhi=d.y[j]}
+  idx.forEach((j,i)=>{const k=d.ks[j]; at.set(j,i); X[i]=xs(d.end(k)); Xb[i]=xs(CT.birth[k]);
+    Yp[i]=((d.y[j]-ylo)/Math.max(1,yhi-ylo)-0.5)*Math.min(60,2+0.6*Math.sqrt(n)*3); Zp[i]=(((k*2654435761)>>>0)%1000/1000-0.5)*4});
+  const links=[]; idx.forEach((j,i)=>{const p=d.va[j]; if(p>=0&&at.has(p))links.push(i,at.get(p))});
+  const c=10, fy=new Float64Array(n), fz=new Float64Array(n), cell=new Map();
+  for(let it=0;it<160;it++){
+    const T=3*(1-it/160)+0.08; fy.fill(0); fz.fill(0); cell.clear();
+    for(let i=0;i<n;i++){const key=Math.floor(X[i]/c)*1e6+Math.floor(Yp[i]/c)*1e3+Math.floor(Zp[i]/c); let a=cell.get(key); if(!a)cell.set(key,a=[]); a.push(i)}
+    for(let i=0;i<n;i++){const cx=Math.floor(X[i]/c), cy=Math.floor(Yp[i]/c), cz=Math.floor(Zp[i]/c);
+      for(let ax=-1;ax<=1;ax++)for(let ay=-1;ay<=1;ay++)for(let az=-1;az<=1;az++){const a=cell.get((cx+ax)*1e6+(cy+ay)*1e3+(cz+az)); if(!a)continue;
+        for(const j of a){if(j<=i)continue; const dx=X[i]-X[j]; let dy=Yp[i]-Yp[j], dz=Zp[i]-Zp[j]; const d2=dx*dx+dy*dy+dz*dz; if(d2>c*c)continue;
+          let q=Math.hypot(dy,dz); if(q<1e-6){const an=(i*7+j*13)%628/100; dy=Math.cos(an); dz=Math.sin(an); q=1}
+          const fr=30/(d2+1); fy[i]+=fr*dy/q; fz[i]+=fr*dz/q; fy[j]-=fr*dy/q; fz[j]-=fr*dz/q}}}
+    for(let l=0;l<links.length;l+=2){const i=links[l], j=links[l+1], dy=Yp[j]-Yp[i], dz=Zp[j]-Zp[i], q=Math.hypot(dy,dz)||1e-6, fs=0.3*(q-4);
+      fy[i]+=fs*dy/q; fz[i]+=fs*dz/q; fy[j]-=fs*dy/q; fz[j]-=fs*dz/q}
+    for(let i=0;i<n;i++){fy[i]-=0.004*Yp[i]; fz[i]-=0.004*Zp[i]; const m=Math.hypot(fy[i],fz[i]), k=m>T?T/m:1; Yp[i]+=fy[i]*k; Zp[i]+=fz[i]*k}
+  }
+  NET3.key=key; NET3.P={idx,X,Xb,Y:Yp,Z:Zp,at};
+  return NET3.P;
+}
+function net3D(g,d,inY,nShow,o){
+  const {W,H,dpr,z,out,col,legOn,leg}=o, sq=out&&out.sq, rgb=PRGB[CT.ic]||[190,18,60], S=CT.maxS;
+  const idx=[]; for(let j=0;j<d.ks.length;j++)if(inY(j))idx.push(j);
+  if(idx.length>NET3MAX){g.fillStyle='#8391ab'; g.textAlign='left'; g.textBaseline='middle';
+    g.fillText(`${idx.length} companies: too many for 3D (at most ${NET3MAX}). Zoom in, or choose fewer.`,12*z,H/2); return false}
+  const L=netLayout3(d,idx), n=idx.length;
+  const pt=(out?(sq?26:48):legOn?26:8)*z;
+  const ca=Math.cos(NET3.az), sa=Math.sin(NET3.az), ce=Math.cos(NET3.el), se=Math.sin(NET3.el), Dc=320;
+  const proj=(x,y,zz)=>{const Xr=x*ca-y*sa, Yr=x*sa+y*ca, t=Yr*ce+zz*se, k=Dc/(Dc-t); return [Xr*k,(Yr*se-zz*ce)*k,t,k]};
+  let ylo=Infinity,yhi=-Infinity,zlo=Infinity,zhi=-Infinity;
+  for(let i=0;i<n;i++){ylo=Math.min(ylo,L.Y[i]); yhi=Math.max(yhi,L.Y[i]); zlo=Math.min(zlo,L.Z[i]); zhi=Math.max(zhi,L.Z[i])}
+  const fl=zlo-6, fy0=ylo-6, fy1=yhi+6, corners=[[-52,fy0],[52,fy0],[52,fy1],[-52,fy1]];
+  // fit: the floor and the spheres
+  let bx0=Infinity,bx1=-Infinity,by0=Infinity,by1=-Infinity; const ext=p=>{bx0=Math.min(bx0,p[0]);bx1=Math.max(bx1,p[0]);by0=Math.min(by0,p[1]);by1=Math.max(by1,p[1])};
+  for(const [x,y] of corners)ext(proj(x,y,fl));
+  for(let i=0;i<n;i++)ext(proj(L.X[i],L.Y[i],L.Z[i]+3));
+  const pb=(out?40:30)*z, sc=NET3.zoom*Math.min(W*0.94/Math.max(1e-6,bx1-bx0),(H-pt-pb)/Math.max(1e-6,by1-by0));
+  const ox=W/2-sc*(bx0+bx1)/2, oy=pt+(H-pt-pb)/2-sc*(by0+by1)/2;
+  const P2=(x,y,zz)=>{const p=proj(x,y,zz); return [ox+sc*p[0],oy+sc*p[1],p[2],p[3]]};
+  // the floor, the time on it, the shadows
+  g.save();
+  g.beginPath(); corners.forEach(([x,y],q)=>{const p=P2(x,y,fl); q?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])}); g.closePath();
+  g.fillStyle=PC('#eef1f6','#161b26'); g.fill(); g.strokeStyle=PC('#c3cbdb','#3a4459'); g.lineWidth=dpr; g.stroke();
+  const span=Math.max(1,d.nb-d.na), xs=t=>(t-d.na)/span*100-50, near=P2(0,fy0,fl)[2]>P2(0,fy1,fl)[2]?fy0:fy1;
+  g.font=pfont(11,z); g.fillStyle=PC('#6b7690','#9aa6bd'); g.textAlign='center'; g.textBaseline='top';
+  g.strokeStyle=PC('rgba(131,145,171,.3)','rgba(200,210,230,.12)'); g.beginPath();
+  const tks=niceTicks(d.na,d.nb,8).filter(t=>t>=d.na&&t<=d.nb);
+  for(const t of tks){const a=P2(xs(t),fy0,fl), b=P2(xs(t),fy1,fl); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1])}
+  g.stroke();
+  let lastX=-Infinity; for(const t of tks){const p=P2(xs(t),near+(near===fy0?-2:2),fl), s=String(Math.round(t)), w=g.measureText(s).width;
+    if(Math.abs(p[0]-lastX)>w+8*dpr){g.fillText(s,p[0],p[1]); lastX=p[0]}}
+  const rOf=k=>0.3+1.5*Math.sqrt(S[k]/d.smax);
+  for(let i=0;i<n;i++){const k=d.ks[L.idx[i]], p=P2(L.X[i],L.Y[i],fl), r=rOf(k)*sc*p[3]*1.1;
+    g.fillStyle=PC('rgba(22,35,59,.13)','rgba(0,0,0,.5)'); g.beginPath(); g.ellipse(p[0],p[1],r,Math.max(0.6,r*Math.max(0.2,se)),0,0,2*Math.PI); g.fill()}
+  // the lines: thin from the predecessor, then the lives
+  g.lineWidth=Math.max(0.5,0.7*dpr); g.strokeStyle=`rgba(${rgb.join(',')},.4)`; g.beginPath();
+  for(let i=0;i<n;i++){const p=d.va[L.idx[i]]; const q=p>=0?L.at.get(p):undefined; if(q===undefined)continue;
+    const a=P2(L.X[q],L.Y[q],L.Z[q]), b=P2(L.Xb[i],L.Y[i],L.Z[i]); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1])}
+  g.stroke();
+  g.lineWidth=Math.max(0.7,1.1*dpr); g.strokeStyle=`rgba(${rgb.join(',')},.8)`; g.beginPath();
+  for(let i=0;i<n;i++){const a=P2(L.Xb[i],L.Y[i],L.Z[i]), b=P2(L.X[i],L.Y[i],L.Z[i]); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1])}
+  g.stroke();
+  // the spheres, the farthest first: lit from the upper left; alive ones white
+  const ord=Array.from({length:n},(_,i)=>i).map(i=>[i,P2(L.X[i],L.Y[i],L.Z[i])]).sort((a,b)=>a[1][2]-b[1][2]);
+  const lt=c=>c.map(v=>Math.round(v+(255-v)*0.65)).join(','), dk=c=>c.map(v=>Math.round(v*0.45)).join(',');
+  for(const [i,p] of ord){const k=d.ks[L.idx[i]], r=Math.max(0.8*dpr,rOf(k)*sc*p[3]), alive=CT.death[k]<0;
+    const base=alive?[236,240,246]:rgb, gr=g.createRadialGradient(p[0]-0.35*r,p[1]-0.4*r,0.1*r,p[0],p[1],r);
+    gr.addColorStop(0,`rgb(${lt(base)})`); gr.addColorStop(0.55,`rgb(${base.join(',')})`); gr.addColorStop(1,`rgb(${dk(base)})`);
+    g.fillStyle=gr; g.beginPath(); g.arc(p[0],p[1],r,0,2*Math.PI); g.fill();
+    if(alive){g.strokeStyle=col; g.lineWidth=Math.max(0.6,0.8*dpr); g.stroke()}}
+  g.restore();
+  if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time (rounds) along the floor',W/2,H-4*dpr)}
+  if(legOn)legendRow(g,leg,W/2,pt-20*z,dpr,W-30*z);
   return true;
 }
 
@@ -4274,7 +4473,7 @@ function exportPlot(which,kind,btn){
   // (the two plots after a collapse are always saved in a square, one above the other)
   const sq=kind==='sq', sqd=sq||which==='ct', dpr=2, W=sqd?1000:Math.round(Math.max(r.width,420)*dpr), H=sqd?1000:Math.round(Math.max(r.height+60,300)*dpr);
   const c=document.createElement('canvas'); c.width=W; c.height=H;
-  const g=c.getContext('2d'); g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
+  const g=c.getContext('2d'); g.fillStyle=(which==='ct'&&ctDark)||(which==='net'&&netDark)?'#0b0d13':'#ffffff'; g.fillRect(0,0,W,H);
   if(which==='chart')drawChart({canvas:c,dpr,sq});
   else if(which==='ct'){if(!ctPlot(c,{dpr,sq}))return}
   else if(which==='net'){if(!netPlot(c,{dpr,sq}))return}
