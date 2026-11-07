@@ -241,6 +241,8 @@
   .mini.next{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
   .minihead{font-size:12px;color:var(--ink2);margin-bottom:4px;min-height:1.4em}
   .minihead b{color:var(--ink);font-size:13px}
+  .minihead .mx{float:right;border:0;background:none;color:var(--muted);font-size:13px;cursor:pointer;padding:0 2px;line-height:1.2}
+  .minihead .mx:hover{color:var(--ink)}
   .minibox{position:relative;width:100%;aspect-ratio:1/1}
   .minibox canvas{position:absolute;inset:0;width:100%;height:100%}
   .nbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -1357,9 +1359,9 @@
     <div class="chartbox net"><canvas id="cNet"></canvas><div class="netbox" id="netBox"></div>
       <div class="vrange" id="netV" title="the part of the height shown: drag the upper and lower handles, or the bar between them"><div class="vsel"></div><div class="vh"></div><div class="vh"></div></div></div>
     <div class="minis" id="minis">
-      <div class="mini next"><div class="minihead"><b>b)</b> <span class="mt">click the tree to show the display of that round</span></div><div class="minibox"><canvas></canvas></div></div>
-      <div class="mini"><div class="minihead"><b>c)</b> <span class="mt"></span></div><div class="minibox"><canvas></canvas></div></div>
-      <div class="mini"><div class="minihead"><b>d)</b> <span class="mt"></span></div><div class="minibox"><canvas></canvas></div></div>
+      <div class="mini next"><div class="minihead"><button class="mx" title="remove this picture">✕</button><b>b)</b> <span class="mt">click the tree to show the display of that round</span></div><div class="minibox"><canvas></canvas></div></div>
+      <div class="mini"><div class="minihead"><button class="mx" title="remove this picture">✕</button><b>c)</b> <span class="mt"></span></div><div class="minibox"><canvas></canvas></div></div>
+      <div class="mini"><div class="minihead"><button class="mx" title="remove this picture">✕</button><b>d)</b> <span class="mt"></span></div><div class="minibox"><canvas></canvas></div></div>
     </div>
   </section>
 </div>
@@ -4109,24 +4111,45 @@ document.querySelectorAll('#lifeSeg button').forEach(b=>b.onclick=()=>setLife(b.
 // dashed line of the factories in time), the companies that survived their first round of trade this round (c1) and
 // those that survived their second (c2), not counting the companies there at the start of the run (t0). When a company dies, the cells of its market in the round just played (the
 // buyers that bought from it, and its own cell) remember it (lastArea); a company born later in such a cell has it as
-// its predecessor (par): the company that collapsed last where it started. Up to CTMAX companies are kept; beyond, the
-// oldest half is dropped (base: the number dropped). ----
-const CTMAX=1<<20;
+// its predecessor (par): the company that collapsed last where it started. Every company has an id (in the order of
+// birth); the arrays hold the companies kept, in that order (CT.len of them, CT.id their ids; ctIx: the place of an id).
+// Up to CTMAX companies are kept; when that is full a quarter of them goes (ctCompact): first the oldest of those that
+// collapsed without surviving a round of trade, then the oldest of the other dead ones — so that the whole run keeps
+// its companies that lasted — and a company whose predecessor went is linked to that one's nearest kept predecessor. ----
+const CTMAX=1<<21;
 let CT=null, ctA=null, ctB=null, netMin=0;
 function ctReset(){
   const LL=E.L*E.L, ic=nearProducts().ib, cap=4096;
   NV={a:null,b:null,sel:null,y0:0,y1:1000}; netHist=[]; NET3.key=''; NET3.mem=new Map(); NETD=null; NETDk='';
   CT={t0:E.t,ic,LL,cur:new Int32Array(LL).fill(-1),lastArea:new Int32Array(LL).fill(-1),supB:Int32Array.from(E.sup[ic]),
-    dying:new Uint8Array(LL),n:0,base:0,cap,birth:new Int32Array(cap),death:new Int32Array(cap),maxS:new Float32Array(cap),
-    par:new Int32Array(cap),surv:new Int32Array(cap),t:[],D:[],c1:[],c2:[],nb:[],big:[]};
+    dying:new Uint8Array(LL),len:0,next:0,ver:0,cap,id:new Int32Array(cap),birth:new Int32Array(cap),death:new Int32Array(cap),
+    maxS:new Float32Array(cap),par:new Int32Array(cap),surv:new Int32Array(cap),t:[],D:[],c1:[],c2:[],nb:[],big:[]};
   for(let r=0;r<LL;r++)if(E.F[ic][r])ctNew(r,E.t);
 }
+const CTARR=['id','birth','death','maxS','par','surv'];
 function ctNew(r,t){
-  if(CT.n-CT.base>=CT.cap){
-    if(CT.cap<CTMAX){const c=2*CT.cap; for(const k of ['birth','death','maxS','par','surv']){const a=new CT[k].constructor(c); a.set(CT[k]); CT[k]=a} CT.cap=c}
-    else{const h=CT.cap>>1; for(const k of ['birth','death','maxS','par','surv'])CT[k].copyWithin(0,h); CT.base+=h}}
-  const id=CT.n++, k=id-CT.base, p=CT.lastArea[r];
-  CT.birth[k]=t; CT.death[k]=-1; CT.maxS[k]=0; CT.surv[k]=0; CT.par[k]=p>=CT.base?p:-1; CT.cur[r]=id;
+  if(CT.len>=CT.cap){
+    if(CT.cap<CTMAX){const c=2*CT.cap; for(const k of CTARR){const a=new CT[k].constructor(c); a.set(CT[k]); CT[k]=a} CT.cap=c}
+    else ctCompact()}
+  const k=CT.len++, id=CT.next++;
+  CT.id[k]=id; CT.birth[k]=t; CT.death[k]=-1; CT.maxS[k]=0; CT.surv[k]=0; CT.par[k]=CT.lastArea[r]; CT.cur[r]=id;
+}
+// the place of a company in the arrays (−1: not kept)
+function ctIx(id){if(id<0)return -1; const a=CT.id; let lo=0,hi=CT.len;
+  while(lo<hi){const m=(lo+hi)>>1; if(a[m]<id)lo=m+1; else hi=m} return lo<CT.len&&a[lo]===id?lo:-1}
+function ctCompact(){
+  const n=CT.len, keep=new Uint8Array(n).fill(1), need=n>>2; let freed=0;
+  for(let k=0;k<n&&freed<need;k++)if(CT.death[k]>=0&&CT.surv[k]===0){keep[k]=0; freed++}
+  for(let k=0;k<n&&freed<need;k++)if(keep[k]&&CT.death[k]>=0){keep[k]=0; freed++}
+  // the nearest kept predecessor of each company that goes (a predecessor is always older, so it is known already)
+  const up=new Int32Array(n).fill(-1);
+  const res=id=>{const i=ctIx(id); return i<0?-1:keep[i]?id:up[i]};
+  for(let k=0;k<n;k++)if(!keep[k])up[k]=res(CT.par[k]);
+  const par=new Int32Array(n); for(let k=0;k<n;k++)if(keep[k])par[k]=res(CT.par[k]);
+  const la=CT.lastArea; for(let r=0;r<la.length;r++)if(la[r]>=0)la[r]=res(la[r]);
+  let j=0;
+  for(let k=0;k<n;k++)if(keep[k]){for(const a of CTARR)CT[a][j]=CT[a][k]; CT.par[j]=par[k]; j++}
+  CT.len=j; CT.ver++;
 }
 // the market the round will be played with: the model would recompute it first if a parameter changed (E.step)
 function ctBefore(){
@@ -4139,7 +4162,7 @@ function ctRecord(){
   if(!CT||CT.LL!==LL||CT.ic!==nearProducts().ib||CT.ic>=E.N){ctReset(); return}
   const ic=CT.ic, F=E.F[ic], sold=E.sold[ic], t=E.t, cur=CT.cur, dying=CT.dying;
   let c1=0, c2=0, nb=0, any=false;
-  for(let r=0;r<LL;r++){const id=cur[r]; if(id<0)continue; const k=id-CT.base;
+  for(let r=0;r<LL;r++){const id=cur[r]; if(id<0)continue; const k=ctIx(id);
     const alive=F[r]&&E.opened[r]!==ic;            // closed, or closed and opened anew (a bankrupt owner)
     if(k<0){if(!alive)cur[r]=-1; continue}
     const v=sold[r]; if(v>CT.maxS[k])CT.maxS[k]=v;
@@ -4320,23 +4343,23 @@ function ctPlot0(canvas,out){
 // the predecessor in ks; −1: none), y (row), rows, roots, smax, nAll (alive in the rounds shown)}. Rows: a depth-first
 // walk; a company without followers takes the next row, one with followers sits in the middle of theirs
 function netData(){
-  const key=[NV.a,NV.b,netMin,netFam,CT.n,CT.base,E.t,CT.ic].join(':');
+  const key=[NV.a,NV.b,netMin,netFam,CT.next,CT.ver,E.t,CT.ic].join(':');
   if(NETD&&NETDk===key&&NETD.sel===NV.sel)return NETD;
   const r=netData0(); r.sel=NV.sel; NETDk=key; return r;
 }
 function netData0(){
-  const [na,nb]=winOf2(NV.a,NV.b), base=CT.base, m=CT.n-base, B=CT.birth, D=CT.death, SV=CT.surv, S=CT.maxS, now=E.t;
+  const [na,nb]=winOf2(NV.a,NV.b), m=CT.len, B=CT.birth, D=CT.death, SV=CT.surv, S=CT.maxS, now=E.t;
   let lo=0,hi=m; while(lo<hi){const q=(lo+hi)>>1; if(B[q]<=nb)lo=q+1; else hi=q} const k1=lo-1;
   const end=k=>D[k]<0?now:D[k];
   let ks=[], at=new Map(), nAll=0;
   for(let k=0;k<=k1;k++){if(end(k)<na)continue; nAll++;
-    if(SV[k]<netMin||(NV.sel&&!NV.sel.has(k+base)))continue; at.set(k,ks.length); ks.push(k)}
+    if(SV[k]<netMin||(NV.sel&&!NV.sel.has(CT.id[k])))continue; at.set(k,ks.length); ks.push(k)}
   // the predecessors: up the chain past those not shown, while still alive in the rounds shown (memo: the answer for a
   // company not shown)
   let va=new Int32Array(ks.length).fill(-1); const memo=new Map();
-  for(let j=0;j<ks.length;j++){let p=CT.par[ks[j]]-base; const path=[]; let ans=-1;
+  for(let j=0;j<ks.length;j++){let p=ctIx(CT.par[ks[j]]); const path=[]; let ans=-1;
     while(p>=0){const q=at.get(p); if(q!==undefined){ans=q;break} if(memo.has(p)){ans=memo.get(p);break}
-      if(end(p)<na)break; path.push(p); p=CT.par[p]-base}
+      if(end(p)<na)break; path.push(p); p=ctIx(CT.par[p])}
     for(const h of path)memo.set(h,ans); va[j]=ans}
   // families only: those with a predecessor or a follower
   if(netFam){const kid=new Uint8Array(ks.length); for(let j=0;j<ks.length;j++)if(va[j]>=0)kid[va[j]]=1;
@@ -4382,7 +4405,7 @@ function netPlot0(canvas,out){
       `${vis} without a predecessor shown, ${d.orphans} of them started after the first round with none at all (where no company of ${nm} had collapsed since the start, or its market reached no further); `+
       `the largest sold ${Math.round(d.smax)} units in a round. A company's predecessor: the company that collapsed last where it started (in its market, or its own cell); one not shown is replaced by its nearest predecessor shown. `+
       (net3d?`3D: time along the floor; the companies as spheres placed across it by springs along the links and repulsion between those close in time (a spring layout, as in Kamada–Kawai), with their shadows on the floor; a company keeps its place from one view to the next, so a neighbourhood stays where it was; drag to turn, Shift + drag (or the right button) to move, wheel to zoom; ◀ back returns to the view before.`
-        :`Drag a box over the tree to zoom in on it (time and height), or Shift + wheel (time) and Alt + wheel (height) around the pointer; the bar left of the tree sets the height shown; ◀ back, ↔ full and ↕ full widen the view again. A click on the tree shows the display of that round below, b), c) and d) in turn (click a picture to choose which comes next).`)+
+        :`Drag a box over the tree to zoom in on it (time and height), or Shift + wheel (time) and Alt + wheel (height) around the pointer; the bar left of the tree sets the height shown; ◀ back, ↔ full and ↕ full widen the view again. A click on the tree shows the display of that round below, b), c) and d) in turn (click a picture to choose which comes next, ✕ to remove it); the display keeps the shaded rounds (the last 300); drag a dashed line b, c or d to move it.`)+
       (ok?'':' Too many companies for 3D: zoom in or choose fewer.')}
   return true;
 }
@@ -4396,6 +4419,8 @@ function net2D(g,d,inY,r0,r1,o){
   const xt=niceTicks(x0,x1,10).filter(t=>t>=x0&&t<=x1).map(t=>[t,X(t)]);
   drawAxes(g,{xt,yt:[],pl,pt,w,h,z,dpr,W,fx:t=>String(Math.round(t)),fy:()=>'',linX:true,linY:true});
   g.save(); g.beginPath(); g.rect(pl,pt,w+12*dpr,h); g.clip();
+  // the rounds the display keeps (the pictures b, c, d can be taken there): shaded
+  if(FR.length){const xa=X(Math.max(x0,FR[0].t)), xb=X(Math.min(x1,FR[FR.length-1].t)); if(xb>xa){g.fillStyle=PC('rgba(67,56,202,.07)','rgba(150,160,255,.09)'); g.fillRect(xa,pt,xb-xa,h)}}
   const lw=Math.max(0.6*dpr,Math.min(1.6*dpr,0.6*h/rows));
   g.lineWidth=Math.max(0.5*dpr,0.6*lw); g.strokeStyle=`rgba(${rgb},.45)`; g.beginPath();
   for(let j=0;j<n;j++)if(d.va[j]>=0&&(inY(j)||inY(d.va[j]))){const p=d.va[j]; g.moveTo(X(d.end(d.ks[p])),Y(d.y[p])); g.lineTo(X(B[d.ks[j]]),Y(d.y[j]))}
@@ -4414,7 +4439,7 @@ function net2D(g,d,inY,r0,r1,o){
   g.restore();
   // the rounds of the pictures b), c), d): dashed lines with their letters
   const ink=PC('#16233b','#e8ecf5');
-  MINI.forEach((q,i)=>{if(!q||q.t<x0||q.t>x1)return; const x=X(q.t);
+  MINI.forEach((q,i)=>{const tq=q&&(q.drag!=null?q.drag:q.t); if(!q||tq<x0||tq>x1)return; const x=X(tq);
     g.save(); g.setLineDash([4*dpr,3*dpr]); g.strokeStyle=ink; g.lineWidth=1.3*dpr; g.beginPath(); g.moveTo(x,pt); g.lineTo(x,pt+h); g.stroke(); g.restore();
     g.font=pfont(11,z,true); const s='bcd'[i], tw=g.measureText(s).width; g.fillStyle=PC('rgba(255,255,255,.9)','rgba(11,13,19,.85)');
     g.fillRect(x-tw/2-3*dpr,pt+2*dpr,tw+6*dpr,13*z); g.fillStyle=ink; g.textAlign='center'; g.textBaseline='top'; g.fillText(s,x,pt+2*dpr)});
@@ -4430,22 +4455,33 @@ function net2D(g,d,inY,r0,r1,o){
     if(net3d){if(e.button!==0&&e.button!==2)return; netPush();
       z0={x:e.clientX,y:e.clientY,az:NET3.az,el:NET3.el,px:NET3.px,py:NET3.py,rot:true,pan:e.button===2||e.shiftKey}; cv.setPointerCapture(e.pointerId); return}
     if(e.button)return;
-    if(!NETG)return; const [x,y]=pos(e); z0={x,y}; cv.setPointerCapture(e.pointerId)});
-  cv.addEventListener('pointermove',e=>{if(!z0)return;
+    if(!NETG)return; const [x,y]=pos(e), mk=markAt(x,y);
+    z0={x,y,mark:mk}; cv.setPointerCapture(e.pointerId)});
+  // the line of a picture b, c or d under the pointer (its place in MINI, −1: none)
+  const markAt=(x,y)=>{const G=NETG, dpr=window.devicePixelRatio||1; if(!G)return -1;
+    if(y*dpr<G.pt||y*dpr>G.pt+G.h)return -1; let best=-1, bd=7;
+    MINI.forEach((q,i)=>{if(!q)return; const d=Math.abs(x-(G.pl+(q.t-G.x0)/Math.max(1,G.x1-G.x0)*G.w)/dpr); if(d<bd){bd=d; best=i}}); return best};
+  const tAt=x=>{const G=NETG, dpr=window.devicePixelRatio||1; return Math.round(Math.max(G.x0,Math.min(G.x1,G.x0+(x*dpr-G.pl)/G.w*(G.x1-G.x0))))};
+  cv.addEventListener('pointermove',e=>{
+    if(!z0){if(!net3d&&e.pointerType==='mouse'){const [x,y]=pos(e); cv.style.cursor=markAt(x,y)>=0?'ew-resize':''} return}
+    if(z0.mark>=0){const [x]=pos(e); MINI[z0.mark].drag=tAt(x); z0.moved=true; netSchedule(); return}
     if(z0.rot){if(z0.pan){NET3.px=z0.px+(e.clientX-z0.x); NET3.py=z0.py+(e.clientY-z0.y)}
       else{NET3.az=z0.az-(e.clientX-z0.x)*0.008; NET3.el=Math.max(0.03,Math.min(1.5,z0.el+(e.clientY-z0.y)*0.006))} netSchedule(); return}
     const [x,y]=pos(e); Object.assign(box.style,{display:'block',left:Math.min(x,z0.x)+'px',top:Math.min(y,z0.y)+'px',
       width:Math.abs(x-z0.x)+'px',height:Math.abs(y-z0.y)+'px'})});
   const up=e=>{if(!z0)return; const s0=z0; z0=null; box.style.display='none'; if(s0.rot||!NETG||!NETD)return;
+    // a line of b, c or d dragged: its picture taken anew in the round where it was let go (a click on it: chosen as next)
+    if(s0.mark>=0){const q=MINI[s0.mark], t=q.drag; delete q.drag; if(s0.moved&&t!=null&&t!==q.t)miniSet(s0.mark,t); else{miniNext=s0.mark; miniDraw(); netRedraw()} return}
     const [x,y]=pos(e), G=NETG, dpr=window.devicePixelRatio||1, wx=Math.abs(x-s0.x), wy=Math.abs(y-s0.y);
     const tOf=px=>G.x0+(px*dpr-G.pl)/G.w*(G.x1-G.x0), rOf=py=>G.r0+(py*dpr-G.pt-G.rpad)/(G.h-2*G.rpad)*G.rows-0.5;
     // a click: the display of that round below (b, c, d in turn)
-    if(wx<8&&wy<8){const t=Math.round(tOf(x)); if(t>=G.x0&&t<=G.x1)miniPick(t); return}
+    if(wx<4&&wy<4){const t=Math.round(tOf(x)); if(t>=G.x0&&t<=G.x1)miniPick(t); return}
+    if(wx<8&&wy<8)return;
     const ta=Math.round(Math.max(G.x0,tOf(Math.min(x,s0.x)))), tb=Math.round(Math.min(G.x1,tOf(Math.max(x,s0.x))));
     netPush(); const nv={...NV};
     if(wx>=8&&tb>ta){nv.a=ta; nv.b=tb}
     if(wy>=8){const ra=rOf(Math.min(y,s0.y)), rb=rOf(Math.max(y,s0.y)), sel=new Set(), d=NETD, a=wx>=8?ta:-Infinity, b=wx>=8?tb:Infinity;
-      for(let j=0;j<d.ks.length;j++){const k=d.ks[j]; if(d.y[j]>=ra&&d.y[j]<=rb&&CT.birth[k]<=b&&d.end(k)>=a)sel.add(k+CT.base)}
+      for(let j=0;j<d.ks.length;j++){const k=d.ks[j]; if(d.y[j]>=ra&&d.y[j]<=rb&&CT.birth[k]<=b&&d.end(k)>=a)sel.add(CT.id[k])}
       if(sel.size){nv.sel=sel; nv.y0=0; nv.y1=1000}}
     NV=nv; drawCT(true)};
   cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',()=>{z0=null; box.style.display='none'});
@@ -4466,11 +4502,13 @@ function net2D(g,d,inY,r0,r1,o){
 // nearest round kept: every round over the last 20, then every 5th back to 300). Each picture is kept as it was drawn,
 // cut tightly around what is drawn; the next click fills the next place (miniNext, lit; a click on a place chooses it)
 const MINI=[null,null,null]; let miniNext=0;
-function miniPick(t){
+function miniPick(t){const i=miniNext; miniNext=(miniNext+1)%3; miniSet(i,t)}
+// the picture i taken in round t (the nearest round kept)
+function miniSet(i,t){
   let f=null; for(const q of FR)if(!f||Math.abs(q.t-t)<Math.abs(f.t-t))f=q;
   const near=f&&Math.abs(f.t-t)<=Math.ceil(FR_STEP/2);
-  MINI[miniNext]=near?{t:f.t,c:miniRender(f),ask:t}:{t,miss:true,from:FR.length?FR[0].t:E.t,to:E.t};
-  miniNext=(miniNext+1)%3; miniDraw(); netRedraw();
+  MINI[i]=near?{t:f.t,c:miniRender(f),ask:t}:{t,miss:true,from:FR.length?FR[0].t:E.t,to:E.t};
+  miniDraw(); netRedraw();
 }
 function miniRender(f){
   const kb=frBack, kd=[...domOn], hv=hoverR, nf=noFlash, sc=Math.max(2,Math.min(5,1400/Math.max(1,cv.clientWidth))); let c=null; noFlash=true;
@@ -4485,15 +4523,16 @@ function fitImage(g,img,x,y,w,h){const k=Math.min(w/img.width,h/img.height), iw=
   g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(img,x+(w-iw)/2,y+(h-ih)/2,iw,ih)}
 function miniDraw(){
   document.querySelectorAll('#minis .mini').forEach((el,i)=>{const q=MINI[i], c=el.querySelector('canvas'), mt=el.querySelector('.mt');
-    el.classList.toggle('next',i===miniNext);
+    el.classList.toggle('next',i===miniNext); el.querySelector('.mx').style.visibility=q?'':'hidden';
     const dpr=fitCanvas(c), g=c.getContext('2d'); g.clearRect(0,0,c.width,c.height);
     if(!q){mt.textContent=i===miniNext?'click the tree to show the display of that round':''; return}
-    if(q.miss){mt.textContent=`round ${q.t} is not kept`; g.fillStyle='#8391ab'; g.font=pfont(11,dpr); g.textAlign='center'; g.textBaseline='middle';
+    if(q.miss){mt.textContent=`round ${q.t} is not kept (the shaded rounds of the tree are)`; g.fillStyle='#8391ab'; g.font=pfont(11,dpr); g.textAlign='center'; g.textBaseline='middle';
       g.fillText(`the display keeps rounds ${q.from}–${q.to}`,c.width/2,c.height/2); return}
     mt.textContent=`round ${q.t}`+(q.ask!==q.t?` (nearest kept to ${q.ask})`:'')+(CT?`, markets of ${PNAME[CT.ic]}`:'');
     fitImage(g,q.c,0,0,c.width,c.height)});
 }
-document.querySelectorAll('#minis .mini').forEach((el,i)=>el.onclick=()=>{miniNext=i; miniDraw()});
+document.querySelectorAll('#minis .mini').forEach((el,i)=>{el.onclick=()=>{miniNext=i; miniDraw()};
+  el.querySelector('.mx').onclick=e=>{e.stopPropagation(); MINI[i]=null; miniNext=i; miniDraw(); netRedraw()}});
 new ResizeObserver(()=>miniDraw()).observe($('minis'));
 // one picture: the tree, a), as wide as the three pictures b), c), d) under it
 function exportAll(btn){
@@ -4528,11 +4567,11 @@ function netLayout3(d,idx){
   let ylo=Infinity,yhi=-Infinity; for(const j of idx){if(d.y[j]<ylo)ylo=d.y[j]; if(d.y[j]>yhi)yhi=d.y[j]}
   // a company that had a place in an earlier 3D view starts from it (NET3.mem, by id), so that a neighbourhood stays
   // where it was; a new one starts near its predecessor's place if that is known, else from its row of the flat tree
-  const mem=NET3.mem, base=CT.base, had=new Uint8Array(n), Y0=new Float64Array(n), Z0=new Float64Array(n); let seeded=0;
+  const mem=NET3.mem, had=new Uint8Array(n), Y0=new Float64Array(n), Z0=new Float64Array(n); let seeded=0;
   idx.forEach((j,i)=>{const k=d.ks[j]; at.set(j,i); X[i]=xs(d.end(k)); Xb[i]=xs(CT.birth[k])});
-  idx.forEach((j,i)=>{const k=d.ks[j], h=((k*2654435761)>>>0)%1000/1000-0.5, m=mem.get(k+base);
+  idx.forEach((j,i)=>{const k=d.ks[j], h=((CT.id[k]*2654435761)>>>0)%1000/1000-0.5, m=mem.get(CT.id[k]);
     if(m){Yp[i]=Y0[i]=m[0]; Zp[i]=Z0[i]=m[1]; had[i]=1; seeded++; return}
-    const p=d.va[j], mp=p>=0?mem.get(d.ks[p]+base):null;
+    const p=d.va[j], mp=p>=0?mem.get(CT.id[d.ks[p]]):null;
     if(mp){Yp[i]=mp[0]+3*h; Zp[i]=mp[1]+3*(((k*40503)>>>0)%1000/1000-0.5); return}
     Yp[i]=((d.y[j]-ylo)/Math.max(1,yhi-ylo)-0.5)*Math.min(60,2+0.6*Math.sqrt(n)*3); Zp[i]=h*4});
   const links=[]; idx.forEach((j,i)=>{const p=d.va[j]; if(p>=0&&at.has(p))links.push(i,at.get(p))});
@@ -4550,7 +4589,7 @@ function netLayout3(d,idx){
       fy[i]+=fs*dy/q; fz[i]+=fs*dz/q; fy[j]-=fs*dy/q; fz[j]-=fs*dz/q}
     for(let i=0;i<n;i++){fy[i]-=0.004*Yp[i]; fz[i]-=0.004*Zp[i]; if(had[i]){fy[i]-=0.08*(Yp[i]-Y0[i]); fz[i]-=0.08*(Zp[i]-Z0[i])} const m=Math.hypot(fy[i],fz[i]), k=m>T?T/m:1; Yp[i]+=fy[i]*k; Zp[i]+=fz[i]*k}
   }
-  idx.forEach((j,i)=>mem.set(d.ks[j]+base,[Yp[i],Zp[i]])); if(mem.size>300000)NET3.mem=new Map();
+  idx.forEach((j,i)=>mem.set(CT.id[d.ks[j]],[Yp[i],Zp[i]])); if(mem.size>300000)NET3.mem=new Map();
   NET3.key=key; NET3.P={idx,X,Xb,Y:Yp,Z:Zp,at};
   return NET3.P;
 }
