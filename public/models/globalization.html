@@ -1238,6 +1238,9 @@
       </select>
       <div class="seg" id="chartScale" title="the vertical axis linear or logarithmic">
         <button data-s="lin">lin</button><button data-s="log" class="on">log</button></div>
+      <button class="nbtn" id="bMedF" title="the median money multiplied by f, to follow it beside the mean: click to switch f = 1, 2, 5, 10, 20, 50">median ×1</button>
+      <label class="win" title="the top of the y axis, as a share of what the curves need (the curves are cut at the top); also for the other quantities">y up to
+        <input type="range" id="chartY" min="0" max="9" step="1" value="3"><span id="chartYV">all</span></label>
       <button class="nbtn" id="bRegBand" title="mean money: a grey band of the mean ± the standard deviation between the regions' mean money (from region to region, not the error of the mean), round by round, instead of the golden area; only with borders">regions ± SD</button>
       <label class="win" title="the time window: from now back in time, in steps of a factor 1.5; at the right end, the whole run">window
         <input type="range" id="chartWin" min="0" max="0" step="1" value="0"><span id="chartWinV"></span></label>
@@ -1577,7 +1580,9 @@ function buildEcon(P){
   const roadF=new Float32Array(LL); let taxMs=[], taxAs=[];
   let netKey='', taxOff=0;
   E.bshift=[1.414e-7,1.047e-7];          // how far the borders are moved for the crossing test (buildNet)
-  E.useGraph=()=>(P.roads&&P.roads.length)||(P.borders&&P.borders.length);
+  // (borders without tax or tariff change no cost: the town is then searched as without them, so that borders with no
+  // tax are the same as no borders)
+  E.useGraph=()=>(P.roads&&P.roads.length)||(P.borders||[]).some(b=>(b.tax||0)>0||(b.tariff||0)>0);
   function buildNet(){
     const key=JSON.stringify([P.roads,P.borders,P.bc]); if(key===netKey)return; netKey=key;
     taxOff=(P.borders||[]).some(b=>(b.tax||0)>0)?1:0;          // a taxed border: offers start from 1 + α·s^γ (below)
@@ -2443,6 +2448,10 @@ function setGrid(n){
 }
 document.querySelectorAll('#gridN button').forEach(b=>b.onclick=()=>setGrid(+b.dataset.n));
 // the number of the grid in place lit in the border menu (0 without one)
+// the tax and the tariff of the menu also hold for the grid of countries already laid out (a new tax, e.g. none, acts
+// at once; the circle and the borders drawn keep theirs)
+for(const id of ['taxSel','tarSel'])$(id).addEventListener('change',()=>{const g=P.borders.filter(b=>b.grid); if(!g.length)return;
+  for(const b of g){b.tax=+$('taxSel').value; b.tariff=+$('tarSel').value} netChanged()});
 function syncGrid(){const g=P.borders.find(b=>b.grid), n=g?g.grid:0;
   document.querySelectorAll('#gridN button').forEach(b=>b.classList.toggle('on',+b.dataset.n===n))}
 // a straight road from the centre to a corner of the lattice
@@ -4194,7 +4203,7 @@ function ctReset(){
     dying:new Uint8Array(LL),len:0,next:0,ver:0,cap,id:new Int32Array(cap),birth:new Int32Array(cap),death:new Int32Array(cap),
     maxS:new Float32Array(cap),par:new Int32Array(cap),surv:new Int32Array(cap),pos:new Int32Array(cap),own:new Int32Array(cap),
     lastAt:new Int32Array(LL).fill(-1),zeroAt:new Int32Array(LL).fill(-1),t:[],D:[],c1:[],c2:[],nb:[],big:[],
-    n1b:[],n2b:[],na:[],ev:[]};
+    n1b:[],n2b:[],na:[],ev:[],evb:[]};
   AP=null;
   for(let r=0;r<LL;r++)if(E.F[ic][r])ctNew(r,E.t);
 }
@@ -4239,7 +4248,7 @@ function ctRecord(){
   const ic=CT.ic, F=E.F[ic], sold=E.sold[ic], t=E.t, cur=CT.cur, dying=CT.dying;
   // (n1b, n2b: the companies that survived their first / second round of trade, by the round they started; ev: the
   // cells where a company started or collapsed this round)
-  let c1=0, c2=0, nb=0, any=false; const ev=[], byBirth=(key,b)=>{const i=b-CT.t[0]; if(i>=0&&i<CT[key].length)CT[key][i]++};
+  let c1=0, c2=0, nb=0, any=false; const ev=[], evb=[], byBirth=(key,b)=>{const i=b-CT.t[0]; if(i>=0&&i<CT[key].length)CT[key][i]++};
   for(let r=0;r<LL;r++){const id=cur[r]; if(id<0)continue; const k=ctIx(id);
     const alive=F[r]&&E.opened[r]!==ic;            // closed, or closed and opened anew (a bankrupt owner)
     if(k<0){if(!alive)cur[r]=-1; continue}
@@ -4250,11 +4259,11 @@ function ctRecord(){
     for(let q=0;q<LL;q++){const s=sb[q]; if(s>=0&&dying[s])la[q]=cur[s]}
     for(let r=0;r<LL;r++)if(dying[r]){la[r]=cur[r]; cur[r]=-1; dying[r]=0}}
   for(let r=0;r<LL;r++)if(E.fate[r]>0||E.money[r]<=0)CT.zeroAt[r]=t;
-  for(let r=0;r<LL;r++)if(F[r]&&cur[r]<0){ctNew(r,t); nb++; ev.push(r)}
+  for(let r=0;r<LL;r++)if(F[r]&&cur[r]<0){ctNew(r,t); nb++; ev.push(r); evb.push(r)}
   const H=E.hist[E.hist.length-1];
   CT.t.push(t); CT.D.push(H&&H.neff?H.neff[ic]:NaN); CT.c1.push(c1); CT.c2.push(c2); CT.nb.push(nb);
-  CT.n1b.push(0); CT.n2b.push(0); CT.na.push(H?Math.round(H.starts*LL):0); CT.ev.push(Int32Array.from(ev));
-  if(CT.t.length>200000)for(const k of ['t','D','c1','c2','nb','n1b','n2b','na','ev'])CT[k].splice(0,50000);
+  CT.n1b.push(0); CT.n2b.push(0); CT.na.push(H?Math.round(H.starts*LL):0); CT.ev.push(Int32Array.from(ev)); CT.evb.push(Int32Array.from(evb));
+  if(CT.t.length>200000)for(const k of ['t','D','c1','c2','nb','n1b','n2b','na','ev','evb'])CT[k].splice(0,50000);
   if(CT.big.length>20000)CT.big.splice(0,5000);
 }
 // a range with two handles: the start and the end (null: the first / the last there is); the handles follow when the
@@ -4860,9 +4869,12 @@ function apPeriods(D){
     if(act){if(s<0)s=i} else if(s>=0){if(s>0)list.push(apMake(s,i-1)); s=-1}}
   AP={key,list}; return list;
 }
-function apMake(i0,i1){let Nc=0,N1=0,N2=0,Na=0; const seen=new Set();
-  for(let i=i0;i<=i1;i++){Nc+=CT.nb[i]; N1+=CT.n1b[i]; N2+=CT.n2b[i]; Na+=CT.na[i]; for(const r of CT.ev[i])seen.add(r)}
-  return {i0,i1,Nc,N1,N2,Na,sites:seen.size}}
+// (each site counted once in a period, however often companies started or collapsed there: sitesB, the sites where a
+// company started; sites, where one started or collapsed)
+function apMake(i0,i1){let Nc=0,N1=0,N2=0,Na=0; const seen=new Set(), seenB=new Set();
+  for(let i=i0;i<=i1;i++){Nc+=CT.nb[i]; N1+=CT.n1b[i]; N2+=CT.n2b[i]; Na+=CT.na[i]; for(const r of CT.ev[i])seen.add(r);
+    if(CT.evb[i])for(const r of CT.evb[i])seenB.add(r)}
+  return {i0,i1,Nc,N1,N2,Na,sites:seen.size,sitesB:seenB.size}}
 // the probability density of the values, per unit: logarithmic bins (4 a decade, whole numbers) on a logarithmic x
 // axis, about 20 even ones on a linear one; points at the middle of each bin
 function apHist(vals,logx){const v=vals.filter(x=>logx?x>0:x>=0); if(!v.length)return []; const tot=v.length, cnt=new Map();
@@ -4876,16 +4888,19 @@ function apFitLine(p,f,lx,ly){if(!f.on||!p.length||!(f.x0>0))return null; const 
   const x1=p[p.length-1][0]; if(x1<=f.x0)return null; const pts=[];
   for(let k=0;k<=40;k++){const x=lx?f.x0*Math.pow(x1/f.x0,k/40):f.x0+(x1-f.x0)*k/40; pts.push([x,m[1]*Math.pow(x/f.x0,f.sl)])}
   return {c:PC('#16233b','#e8ecf5'),dash:true,t:`fit: P(${fmtTick(f.x0)})·(x/${fmtTick(f.x0)})^${f.sl.toFixed(1).replace('-','−')}`,p:pts}}
+// the plots take the active periods that start in the last two thirds of the run (the first third is left out, where
+// the town is still settling)
 function apPlots(){
-  const nm=PNAME[CT.ic], col=PCOL[CT.ic]||'#be123c', per=apPeriods(apDiff), lx=apScale==='log', ly=apScale!=='lin';
+  const nm=PNAME[CT.ic], col=PCOL[CT.ic]||'#be123c', lx=apScale==='log', ly=apScale!=='lin';
+  const n=CT.t.length, tA=n?CT.t[0]-1:0, tB=n?CT.t[n-1]:0, tFrom=tA+(tB-tA)/3, per=apPeriods(apDiff).filter(p=>CT.t[p.i0]>=tFrom);
   const H=v=>apHist(per.map(v),lx), mk=(k,series,xl,yl,title)=>{const f=apFitLine(series[0].p,AP_FIT[k],lx,ly); if(f)series.push(f);
     return {series,o:{xl,yl,scale:apScale},title}};
-  return {per,
+  return {per,tFrom:Math.ceil(tFrom),tB,
     apN:mk(0,[{c:col,t:`${nm} companies started, Nc`,p:H(q=>q.Nc)},{c:'#16233b',dash:true,t:'companies of every product started',p:H(q=>q.Na)}],
       'Nc: companies started in an active period','probability density P(Nc)',`P(Nc): companies started in an active period (Diff ${apDiff})`),
     apS:mk(1,[{c:col,t:'survived ≥ 1 round of trade',p:H(q=>q.N1)},{c:'#7c2d12',t:'survived ≥ 2 rounds',p:H(q=>q.N2)}],
       `${nm} companies started in an active period that lasted`,'probability density',`${nm} companies that lasted, per active period (Diff ${apDiff})`),
-    apX:mk(2,[{c:col,t:`sites where a ${nm} company started or collapsed`,p:H(q=>q.sites)}],
+    apX:mk(2,[{c:col,t:`sites where a ${nm} company started`,p:H(q=>q.sitesB)},{c:'#16233b',dash:true,t:'… started or collapsed',p:H(q=>q.sites)}],
       'sites in an active period','probability density',`Sites with a start or collapse, per active period (Diff ${apDiff})`)};
 }
 function apDraw(force){
@@ -4894,10 +4909,10 @@ function apDraw(force){
   for(const [id,k] of [['cApN','apN'],['cApS','apS'],['cApX','apX']])xyPlot($(id),q[k].series,q[k].o);
   const per=q.per, med=a=>{const b=a.slice().sort((x,y)=>x-y); return b.length?b[b.length>>1]:0};
   $('apSub').textContent=`how many companies of ${nm}, the most scalable product, start in one burst of turbulence`;
-  $('apNote').textContent=`${per.length} active periods for Diff ${apDiff}`+(per.length?` (median length ${med(per.map(p=>p.i1-p.i0+1))} rounds, median Nc ${med(per.map(p=>p.Nc))}, largest ${Math.max(...per.map(p=>p.Nc))})`:'')+
+  $('apNote').textContent=`${per.length} active periods for Diff ${apDiff} in the last ⅔ of the run (rounds ${q.tFrom}–${q.tB})`+(per.length?` (median length ${med(per.map(p=>p.i1-p.i0+1))} rounds, median Nc ${med(per.map(p=>p.Nc))}, largest ${Math.max(...per.map(p=>p.Nc))})`:'')+
     `. A round of trade is passive when the new ${nm} companies that survived their first round of trade in it and those that survived their second differ by at most Diff; `+
     `an active period is a run of rounds between passive ones, counted 2 rounds back, when those companies started (yellow in the plots After a collapse). `+
-    `Dashed: the companies of every product started in the period (with equal start costs, as in Cost flat or ultra flat, the money spent on starting them). Fit: P(x₀)·(x/x₀)^slope through the curve at x₀.`;
+    `Dashed: the companies of every product started in the period (with equal start costs, as in Cost flat or ultra flat, the money spent on starting them). Sites: each counted once in a period (full: where a company started; dashed: started or collapsed). Fit: P(x₀)·(x/x₀)^slope through the curve at x₀.`;
 }
 // Diff (0 … 10), its menus, the scales, the fits
 {const opts=Array.from({length:11},(_,k)=>`<option value="${k}">${k}</option>`).join('');
@@ -4951,18 +4966,21 @@ function medianOf(a){if(!MEDBUF||MEDBUF.length!==a.length)MEDBUF=new Float64Arra
 // red line with the old words before it and the new ones after it. (The transport factor is left out while it is
 // lowered every round, with "Globalization".) A new run starts the list anew
 let CHG={last:null,list:[]};
-function bordersDesc(){const bs=P.borders; if(!bs.length)return 'No borders';
-  const pc=v=>Math.round(100*v)+' %', g=bs.find(b=>b.grid), parts=[];
-  if(g)parts.push(`${g.grid} × ${g.grid} borders, ${pc(g.tax)}`+(g.tariff?`, tariff ${g.tariff}`:''));
+// the borders in words, in two parts, so that a change of the tax alone shows as "tax 0 %" | "tax 100 %": where they
+// are (a grid by the distance between its borders, e.g. 50 for 5 × 5 borders on a periodic 250 × 250 town; other
+// borders by their number) and their tax (and tariff)
+function bordersDesc(){const bs=P.borders; if(!bs.length)return {geom:'No borders'};
+  const pc=v=>Math.round(100*v)+' %', g=bs.find(b=>b.grid), geom=[], tax=[];
+  if(g){const k=P.bc==='periodic'?g.grid:g.grid+1; geom.push(`border distance ${+(P.L/k).toFixed(1)}`); tax.push(`tax ${pc(g.tax)}`+(g.tariff?`, tariff ${g.tariff}`:''))}
   const o=bs.filter(b=>!b.grid);
-  if(o.length){const taxes=[...new Set(o.map(b=>pc(b.tax||0)+(b.tariff?` + ${b.tariff}`:'')))];
-    parts.push(`${o.length} border${o.length>1?'s':''}, ${taxes.join(' / ')}`)}
-  return parts.join('; ')}
+  if(o.length){geom.push(`${o.length} border${o.length>1?'s':''}`);
+    tax.push(...new Set(o.map(b=>`tax ${pc(b.tax||0)}`+(b.tariff?`, tariff ${b.tariff}`:''))))}
+  return {geom:geom.join('; '),tax:[...new Set(tax)].join(' / ')}}
 function chgParts(){const q={
   econ:P.econ==='pay'?'buyers pay':'free goods', gouge:P.gouge?'gouging':'no gouging', lost:P.lost?'transport lost':'transport back',
   debt:P.forgive?'shopping debts forgiven':'shopping debts bankrupt', buyw:BUYW_LABEL[P.buyw]||P.buyw, n:`n = ${P.n}`,
   mu:`μ = ${P.upkeep}`, kappa:`κ = ${P.kappa}`, wage:`wage ${P.wage}`, lim:`lim ${P.lim}`, edges:`${P.bc} edges`,
-  borders:bordersDesc(), roads:P.roads.length?`${P.roads.length} road${P.roads.length>1?'s':''}`:'No roads'};
+  bgeom:bordersDesc().geom, btax:bordersDesc().tax, roads:P.roads.length?`${P.roads.length} road${P.roads.length>1?'s':''}`:'No roads'};
   if(!$('anneal').checked)q.transport=`transport ×${fmt(P.tmul)}`;
   P.products.forEach((p,i)=>{q['p'+i]=`${PNAME[i]}: Start ${p.start}, γ ${String(p.gamma).replace('-','−')}, β ${p.beta}${alphaOf(p)!==1?', α '+alphaOf(p):''}`});
   return q}
@@ -4972,7 +4990,10 @@ function chgCheck(){if(!E)return; const q=chgParts();
     if(before.length||after.length){CHG.list.push({t:E.t,before,after}); if(CHG.list.length>500)CHG.list.shift()}}
   CHG.last=q}
 // the band of the regions in the plot of the mean money (the button regions ± SD)
-let regBand=false;
+let regBand=false, medF=1;
+const MEDF=[1,2,5,10,20,50], CHY=[3,2,1.5,1,0.7,0.5,0.3,0.2,0.1,0.05], chartYk={};
+$('bMedF').onclick=()=>{medF=MEDF[(MEDF.indexOf(medF)+1)%MEDF.length]; $('bMedF').textContent='median ×'+medF; drawChart()};
+$('chartY').oninput=e=>{chartYk[$('metric').value]=+e.target.value; drawChart()};
 $('bRegBand').onclick=()=>{regBand=!regBand; drawChart()};
 function drawChart(out){
   if(!E)return;
@@ -4989,8 +5010,8 @@ function drawChart(out){
   }
   // the product whose two curves (factories and effective size) enclose a shaded band: the most scalable one
   let ic=0; P.products.forEach((q,i)=>{if(q.gamma<=P.products[ic].gamma)ic=i});
-  if(!out){$('bRegBand').style.display=m==='money'?'':'none'; $('bRegBand').classList.toggle('on',regBand)}
-  if(!out)$('chartNote').textContent=m==='money'?'golden: the mean money per agent; black dashed: the median money of all agents'+
+  if(!out){$('bRegBand').style.display=$('bMedF').style.display=m==='money'?'':'none'; $('bRegBand').classList.toggle('on',regBand)}
+  if(!out)$('chartNote').textContent=m==='money'?'golden: the mean money per agent; black dashed: the median money of all agents'+(medF!==1?` × ${medF}`:'')+
     (regBand?'; grey: the mean ± the standard deviation between the regions\' mean money (region to region; without borders the band is a line)':'')+'; red lines: changes of the settings':
     m==='prod'?`solid: the number of factories; dashed: their effective size (Σs)²/Σs², s = units a factory sells; shaded between the two ${PNAME[ic]} curves`:m==='active'?'per round — black: agents with sales, orange: starts, red: bankruptcies':'';
   if(hist.length<2){cctx.textAlign='left';cctx.textBaseline='middle';cctx.fillText('Run the model to see the time series.',pl,pt+h/2);return}
@@ -5000,7 +5021,7 @@ function drawChart(out){
   // (with the band of the regions, no golden area: only the grey band around the mean; the band itself is two hidden
   // series, so that the vertical axis holds it)
   else if(m==='money'){series.push({c:'#a8790f',v:hist.map(q=>q.money),fill:regBand?null:'rgba(222,176,46,.45)'});
-    series.push({c:'#000000',v:hist.map(q=>q.median!=null?q.median:NaN),dash:2});
+    series.push({c:'#000000',v:hist.map(q=>q.median!=null?q.median*medF:NaN),dash:2});
     if(regBand){series.push({hide:true,band:'hi',v:hist.map(q=>q.money+(q.regSD||0))},{hide:true,band:'lo',v:hist.map(q=>q.money-(q.regSD||0))})}}
   else if(m==='price')series.push({c:'#16233b',v:hist.map(q=>q.price)});
   else for(let i=0;i<N;i++){series.push({c:PCOL[i],v:hist.map(q=>q[m][i])});
@@ -5019,12 +5040,15 @@ function drawChart(out){
   if(!Number.isFinite(lo)){lo=0;hi=1}
   // the legend of a saved picture: one row at the top inside the plot — the products by their γ (what the dashed curves
   // are belongs in the caption), or the three counts of the activity; the vertical axis leaves room for it
-  const leg=!out||m==='price'?[]:m==='money'?[{c:'#a8790f',t:'mean money'},{c:'#000000',t:'median (dashed)'},...(regBand?[{c:'rgba(100,116,139,.55)',t:'± SD between regions'}]:[])]:
+  const leg=!out||m==='price'?[]:m==='money'?[{c:'#a8790f',t:'mean money'},{c:'#000000',t:medF===1?'median (dashed)':`median × ${medF} (dashed)`},...(regBand?[{c:'rgba(100,116,139,.55)',t:'± SD between regions'}]:[])]:
     m==='active'?[{c:'#16233b',t:'agents with sales'},{c:'#c2410c',t:'starts'},{c:'#be123c',t:'bankruptcies'}]:
     P.products.map((p,i)=>({c:PCOL[i],t:'γ = '+String(p.gamma).replace('-','−')}));
   const strip=leg.length?22*z:0, vmax=hi;
   if(logy){lo=Math.floor(lo);hi=Math.max(lo+1,Math.ceil(hi)); if(strip&&(hi-vmax)/(hi-lo)*h<strip)hi++}
   else{lo=0;hi=Math.max(hi*1.05,m==='dist'?1:0.05,strip?vmax*h/(h-strip):0)}
+  // the top of the y axis made higher or lower (the slider y up to; the curves are cut at the top of the plot)
+  {const k=CHY[chartYk[m]!=null?chartYk[m]:3]; if(k!==1){if(logy)hi=Math.max(lo+1,Math.ceil(hi+Math.log10(k)-1e-9)); else hi*=k}
+    if(!out){$('chartY').value=chartYk[m]!=null?chartYk[m]:3; $('chartYV').textContent=k===1?'all':'×'+k}}
   const X=t=>pl+(t-t0)/Math.max(1,t1-t0)*w, Y=v=>pt+h-(tz(v)-lo)/(hi-lo)*h;
   const ytv=logy?Array.from({length:hi-lo+1},(_,k)=>lo+k):niceTicks(lo,hi,8), xtv=niceTicks(t0,t1,12).filter(t=>t>=t0&&t<=t1);
   const fyt=v=>logy?String(+Math.pow(10,v).toPrecision(1)):fmtTick(v);
@@ -5032,6 +5056,7 @@ function drawChart(out){
   drawAxes(cctx,{xt:xtv.map(t=>[t,X(t)]),yt:ytv.map(v=>[v,pt+h-(v-lo)/(hi-lo)*h]),pl,pt,w,h,z,dpr,W,
     fx:t=>String(Math.round(t)),fy:fyt,linX:true,linY:!logy});
   const step=Math.max(1,Math.floor((hist.length-i0)/(w/dpr)));
+  cctx.save(); cctx.beginPath(); cctx.rect(pl,pt,w,h); cctx.clip();          // the curves inside the plot
   // the band between the two curves of the most scalable product, in its colour, under all the curves
   if(m==='prod'&&PRGB[ic]){const a=series[2*ic].v, b=series[2*ic+1].v, up=[], dn=[];
     cctx.fillStyle=`rgba(${PRGB[ic].join(',')},0.22)`;
@@ -5061,7 +5086,7 @@ function drawChart(out){
     for(let k=i0;k<hist.length;k+=step){const v=s.v[k]; if(!Number.isFinite(tz(v))){on=false;continue}
       const x=X(hist[k].t),y=Y(v); if(on)cctx.lineTo(x,y); else{cctx.moveTo(x,y);on=true}}
     cctx.stroke()});
-  cctx.setLineDash([]);
+  cctx.setLineDash([]); cctx.restore();
   // the changes of the settings: a red line at the round, the old words before it, the new ones after it (two rows of
   // places, taken in turn, so that close changes overlap less)
   {const ch=CHG.list.filter(c=>c.t>=t0&&c.t<=t1), fs=w<520*dpr?7.5:9.5, lh=fs*1.26*z; cctx.save(); cctx.font=pfont(fs,z); cctx.textBaseline='top';
