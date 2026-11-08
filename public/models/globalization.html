@@ -218,6 +218,14 @@
     border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);cursor:pointer}
   .rangev{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:9em}
   .chartbox.ct{height:min(640px,max(420px,92vw))}
+  /* Diff: in the upper left corner of the survivors plot, and over the plots of the active periods */
+  .diffpill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--ink2);
+    background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:2px 4px 2px 10px}
+  .diffpill select{border:0;background:transparent;font:inherit;color:var(--accent);font-weight:700;cursor:pointer}
+  .chartbox.ct .diffpill{position:absolute;z-index:2}
+  .apfit{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink2)}
+  .apfit input[type=number]{width:4.6em;padding:2px 4px;border:1px solid var(--line);border-radius:6px;font:inherit}
+  .apfit select{padding:2px 2px;border:1px solid var(--line);border-radius:6px;font:inherit}
   .chartbox.net{height:min(680px,max(440px,100vw))}
   .chartbox.net canvas{touch-action:pan-y;cursor:crosshair}
   .chartbox.net.d3 canvas{touch-action:none;cursor:grab}
@@ -711,14 +719,13 @@
         while a chip giant's owner has a few hundred. Three times in four it builds a new chip giant within 80 rounds,
         and such owners together keep most of their money; the other times it loses nearly all of it within 20
         rounds (lesson 4). So a golden money column in the 3D picture either stays for a while or melts away fast.</p>
-      <p>Spending on new factories needs a second product. With a single product an owner whose sales fall has nothing
-        to switch to, so it keeps its factory and never pays a start cost again. Then, with free goods and without
-        upkeep, nothing ever leaves: on a 125 × 125 town the money grows by twice the wages, about 1&nbsp;560 a round,
-        without end, and after 1&nbsp;500 rounds the richest 1 % own a third of it. The preset <i>Twin products</i>
-        therefore has two products with the same numbers (Start 5, γ −0.5, β 0.05) but different names. Owners can
-        switch between them, about 310 times a round, and their start costs use up nearly all the new money: after the
-        first few hundred rounds the money grows by only about 10 a round, and the richest 1 % own about a tenth of
-        it.</p>
+      <p>With a single product an owner whose sales fall gives its factory up and opens a new one in its place, paying
+        the start cost again, just as an owner of several products switches to another one (the preset <i>One
+        product</i>; the − product button goes down to one). That is the simplest model of companies that collapse
+        and start anew. The preset <i>Twin products</i> has two products with the same numbers (Start 5, γ −0.5,
+        β 0.05) but different names. Owners switch between them, about 310 times a round, and their start costs use
+        up nearly all the new money: after the first few hundred rounds the money grows by only about 10 a round, and
+        the richest 1 % own about a tenth of it.</p>
 
       <h2 id="r-geo">Roads, borders, taxes and tariffs</h2>
       <p>With the buttons in the upper left corner you draw on the town: choose one, then press, drag and let go.</p>
@@ -1335,7 +1342,9 @@
       <span class="plotbtns"><button data-plot="ct" data-k="png" title="save both plots, one above the other, as a square PNG picture with a title and axis labels">.png</button><button data-plot="ct" data-k="sq" title="save both plots, one above the other, as a square picture for a paper: axis labels, no title">sq</button></span>
     </div>
     <div class="chartnote" id="ctNote" style="margin-bottom:4px"></div>
-    <div class="chartbox ct"><canvas id="cCT"></canvas></div>
+    <div class="chartbox ct"><canvas id="cCT"></canvas>
+      <label class="diffpill" id="ctDiffPill" title="Diff: a round is passive when the new companies that survived their first round of trade and those that survived their second differ by at most Diff; the rounds between passive ones are active (yellow), counted 2 rounds back, when those companies started">Diff
+        <select class="diffSel"></select></label></div>
   </section>
   <section class="display">
     <div class="cardhead"><h2>Family tree of the companies</h2><span class="sub" id="netSub">the companies of the most
@@ -1377,6 +1386,36 @@
       <div class="mini m4"><div class="minihead"><button class="mx" title="remove this picture">✕</button><b>e)</b> <span class="mt"></span></div><div class="minibox"><canvas></canvas></div></div>
     </div>
   </section>
+  <section class="display">
+    <div class="cardhead"><h2>Active periods</h2><span class="sub" id="apSub">how many companies of the most scalable product start in one burst of turbulence</span></div>
+    <div class="chartbar">
+      <label class="diffpill" title="Diff: a round is passive when the new companies that survived their first round of trade and those that survived their second differ by at most Diff; the rounds between passive ones are active, counted 2 rounds back, when those companies started">Diff
+        <select class="diffSel"></select></label>
+      <div class="seg" id="apScale" title="both axes logarithmic, only the vertical one, or neither">
+        <button data-s="log" class="on">log–log</button><button data-s="loglin">log–lin</button><button data-s="lin">lin–lin</button></div>
+    </div>
+    <div class="chartnote" id="apNote" style="margin-bottom:4px"></div>
+    <div class="distgrid">
+      <div>
+        <div class="plotbar"><span class="plabel">started</span>
+          <span class="apfit" data-k="0"><label><input type="checkbox"> fit</label> from <input type="number" min="0" step="any" value="10"> slope <select></select></span>
+          <span class="plotbtns"><button data-plot="apN" data-k="png" title="save as a PNG picture, with title and axis labels">.png</button><button data-plot="apN" data-k="sq" title="save in a square picture">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cApN"></canvas></div>
+      </div>
+      <div>
+        <div class="plotbar"><span class="plabel">lasted</span>
+          <span class="apfit" data-k="1"><label><input type="checkbox"> fit</label> from <input type="number" min="0" step="any" value="10"> slope <select></select></span>
+          <span class="plotbtns"><button data-plot="apS" data-k="png" title="save as a PNG picture, with title and axis labels">.png</button><button data-plot="apS" data-k="sq" title="save in a square picture">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cApS"></canvas></div>
+      </div>
+      <div>
+        <div class="plotbar"><span class="plabel">sites</span>
+          <span class="apfit" data-k="2"><label><input type="checkbox"> fit</label> from <input type="number" min="0" step="any" value="10"> slope <select></select></span>
+          <span class="plotbtns"><button data-plot="apX" data-k="png" title="save as a PNG picture, with title and axis labels">.png</button><button data-plot="apX" data-k="sq" title="save in a square picture">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cApX"></canvas></div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <!-- =============== control panel (drawer) =============== -->
@@ -1403,7 +1442,7 @@
         <tbody id="ptbody"></tbody>
       </table>
       <div class="presets" style="margin-top:8px">
-        <button class="btn sm" id="pAdd">+ product</button><button class="btn sm" id="pDel" title="remove the last product; with two left, both become copies of the first (twins), since one product alone has nothing to switch to">− product</button>
+        <button class="btn sm" id="pAdd">+ product</button><button class="btn sm" id="pDel" title="remove the last product, down to one: with a single product an owner whose sales fall gives its factory up and opens a new one in its place, paying the start cost again">− product</button>
       </div>
       <div class="row"><label>Factory colours</label>
         <select id="palSel"><option value="jet">jet</option><option value="spectral">spectral</option></select></div>
@@ -1501,6 +1540,7 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 // Start·p/p₀ to open and μ·Start·p/p₀ a round, with p₀ = w·L²/(N·T) (T = n·L² orders a product) the price when every
 // order is served at m = 1, and an owner judges its business by its units sold net of upkeep, so that a change of the
 // common p is no reason to give up.
+// With a single product an owner who would explore gives its factory up and opens a new one in its place (paying Start).
 // A bankrupt agent (money < 0) closes its weakest factory, its debts are written off, and it starts again from money w;
 // with forgive, a debt that its shopping alone ran up is written off and its factories stay.
 function buildEcon(P){
@@ -1891,7 +1931,9 @@ function buildEcon(P){
       if(why){
         const drop=nf>=lim?weakest(r):-1;
         let nc=0;
-        for(let i=0;i<N;i++)if(!E.F[i][r]&&P.products[i].start*sc<=E.money[r])cand[nc++]=i;
+        // (with a single product the owner can only give its factory up and open a new one of the same product in its
+        // place, paying Start again: the company collapses and starts anew)
+        for(let i=0;i<N;i++)if((!E.F[i][r]||(N===1&&i===drop))&&P.products[i].start*sc<=E.money[r])cand[nc++]=i;
         if(nc){
           const j=cand[(rng()*nc)|0], c=P.products[j].start*sc;
           // a factory closed because its owner changes product: recorded with its size (units sold) for the display
@@ -2046,8 +2088,12 @@ const PRESETS={
     'rounds with Step (key s), or run slowly with the button ▶ with a small s.',
     products:[{...THREE[0],beta:0.2},{...THREE[1],start:4,beta:0.1},{...THREE[2],start:8,beta:0.05}],tmul:1,
     anneal:false,std:true,L:8,bc:'closed'},
-  twins:{label:'Twin products',note:'Two products with the numbers of the original one-product model (Start 5, γ −0.5, β 0.05) but different names. With a single product an owner whose sales fall has nothing to switch to, nobody pays a start cost again, and the money piles up without end; with twins an owner can switch.',
+  twins:{label:'Twin products',note:'Two products with the numbers of the original one-product model (Start 5, γ −0.5, β 0.05) but different names. With twins an owner whose sales fall switches to the other product (with a single product it gives its factory up and opens a new one in its place).',
     products:[{start:5,gamma:-0.5,beta:0.05},{start:5,gamma:-0.5,beta:0.05}],tmul:1,anneal:false},
+  // a single product (C of the standard setup): an owner whose sales fall gives its factory up and opens a new one in
+  // its place, paying Start again — the simplest model of companies that collapse and start anew
+  single:{label:'One product',note:'A single product, the high-tech C of the standard setup (Start 20, γ −0.9, β 0.02). An owner whose sales fall gives its factory up and opens a new one in its place, paying the start cost again, as owners of several products switch: the simplest model of companies that collapse and start anew. The sections After a collapse, Family tree and Active periods follow its companies.',
+    products:[{start:20,gamma:-0.9,beta:0.02}],tmul:1,anneal:false},
   glob:{label:'Globalization',note:'Transport starts 3× dearer and is lowered by e^−0.002 per round: local producers coarsen into a few big companies.',
     products:THREE,tmul:3,anneal:true},
   borders:{label:'Borders',note:'Cheap transport (factor 0.2), but 3 × 3 countries: crossing a border costs 20 % of the value of the goods. It is the grid of countries in the border menu with n = 3 in a periodic town (one border on the edge) or n = 2 in a closed one.',
@@ -2138,7 +2184,7 @@ function buildProductUI(){
     tr.querySelectorAll('input').forEach(inp=>{inp.dataset.t=inp.title;inp.addEventListener('input',()=>{
       const v=parseFloat(inp.value), k=inp.dataset.k; if(!isFinite(v))return;
       pr[k]=k==='gamma'?v:Math.max(k==='alpha'?1:0,v); checkMono(); syncSales(); E.computeMarkets(); draw();
-      $('pDel').disabled=P.products.length<=1||isTwins();          // the new value may make or break twins
+      $('pDel').disabled=P.products.length<=1;
     });
     // once typed (Enter, or leaving the field), the field shows the value the model uses: Start, β ≥ 0, α ≥ 1; a
     // field left empty shows it again
@@ -2181,7 +2227,7 @@ function buildProductUI(){
   });
   pt.classList.toggle('dis',view==='3d'||view==='agents'||view==='money'||P.products.length<2);
   $('hSeg').style.display=$('moneySel').style.display=$('viewMenu').style.display=view==='3d'?'':'none';
-  $('pAdd').disabled=P.products.length>=PNAME.length; $('pDel').disabled=P.products.length<=1||isTwins();
+  $('pAdd').disabled=P.products.length>=PNAME.length; $('pDel').disabled=P.products.length<=1;
   const ls=$('limSel'); P.lim=Math.max(1,Math.min(P.products.length,P.lim));
   ls.innerHTML=P.products.map((_,k)=>`<option value="${k+1}">${k+1}${k+1===P.products.length?' (all)':''}</option>`).join('');
   ls.value=String(P.lim);
@@ -2322,12 +2368,11 @@ $('moneySel').onchange=e=>{money3=e.target.value;draw()};
 $('bBg').onclick=()=>{dark=!dark;document.querySelector('.display').classList.toggle('darkbg',dark);setFlashMode(flashMode)};
 $('bPng').onclick=()=>exportPNG('png');
 $('bSq').onclick=()=>exportPNG('sq');
-// fewer products: at least two stay. Going down to one makes twins instead — two products with the numbers of the
-// first — because with a single product an owner has nothing to switch to, and the money of the big companies piles up
+// fewer products, down to one (whose owners give their factory up and open it anew when their sales fall)
 const isTwins=()=>P.products.length===2&&['start','gamma','beta'].every(k=>P.products[0][k]===P.products[1][k])&&
   alphaOf(P.products[0])===alphaOf(P.products[1]);          // α absent counts as 1 (the twins of pDel copy it)
 $('pDel').onclick=()=>{const pr=P.products;
-  if(pr.length>2)pr.pop(); else if(pr.length===2&&!isTwins())P.products=[{...pr[0]},{...pr[0]}]; else return;
+  if(pr.length>1)pr.pop(); else return;
   // a border that taxes some products forgets the one removed, and goes when it taxed only that one
   for(const b of P.borders)if(b.prods)b.prods=b.prods.filter(k=>k<P.products.length);
   P.borders=P.borders.filter(b=>!b.prods||b.prods.length);
@@ -3934,7 +3979,7 @@ function xyPlot(canvas,series,o,out){
     if(m.bend&&ok(m.bend)){const x=X(m.bend[0]), y=Y(m.bend[1]), r=4.5*dpr; g.fillRect(x-r,y-r,2*r,2*r); g.strokeRect(x-r,y-r,2*r,2*r)}}
   g.restore();
   const narrow=w<520*dpr;
-  legendBox(g,[...series.filter(se=>se.t).map(se=>({c:se.c,t:se.t})),...(o.leg||[])],pl+w-4*z,pt+4*z,dpr,false,narrow?0.8:1);
+  legendBox(g,[...series.filter(se=>se.t).map(se=>se.dash?{dash:se.c,t:se.t}:{c:se.c,t:se.t}),...(o.leg||[])],pl+w-4*z,pt+4*z,dpr,false,narrow?0.8:1);
   return decAll;
 }
 // the two plots: their data and labels, for the screen and the saved pictures
@@ -4144,7 +4189,9 @@ function ctReset(){
   CT={t0:E.t,ic,LL,cur:new Int32Array(LL).fill(-1),lastArea:new Int32Array(LL).fill(-1),supB:Int32Array.from(E.sup[ic]),
     dying:new Uint8Array(LL),len:0,next:0,ver:0,cap,id:new Int32Array(cap),birth:new Int32Array(cap),death:new Int32Array(cap),
     maxS:new Float32Array(cap),par:new Int32Array(cap),surv:new Int32Array(cap),pos:new Int32Array(cap),own:new Int32Array(cap),
-    lastAt:new Int32Array(LL).fill(-1),zeroAt:new Int32Array(LL).fill(-1),t:[],D:[],c1:[],c2:[],nb:[],big:[]};
+    lastAt:new Int32Array(LL).fill(-1),zeroAt:new Int32Array(LL).fill(-1),t:[],D:[],c1:[],c2:[],nb:[],big:[],
+    n1b:[],n2b:[],na:[],ev:[]};
+  AP=null;
   for(let r=0;r<LL;r++)if(E.F[ic][r])ctNew(r,E.t);
 }
 const CTARR=['id','birth','death','maxS','par','surv','pos','own'];
@@ -4186,21 +4233,24 @@ function ctRecord(){
   const LL=E.L*E.L;
   if(!CT||CT.LL!==LL||CT.ic!==nearProducts().ib||CT.ic>=E.N){ctReset(); return}
   const ic=CT.ic, F=E.F[ic], sold=E.sold[ic], t=E.t, cur=CT.cur, dying=CT.dying;
-  let c1=0, c2=0, nb=0, any=false;
+  // (n1b, n2b: the companies that survived their first / second round of trade, by the round they started; ev: the
+  // cells where a company started or collapsed this round)
+  let c1=0, c2=0, nb=0, any=false; const ev=[], byBirth=(key,b)=>{const i=b-CT.t[0]; if(i>=0&&i<CT[key].length)CT[key][i]++};
   for(let r=0;r<LL;r++){const id=cur[r]; if(id<0)continue; const k=ctIx(id);
     const alive=F[r]&&E.opened[r]!==ic;            // closed, or closed and opened anew (a bankrupt owner)
     if(k<0){if(!alive)cur[r]=-1; continue}
     const v=sold[r]; if(v>CT.maxS[k])CT.maxS[k]=v;
-    if(alive){if(v>0){const n=++CT.surv[k]; if(CT.birth[k]>CT.t0){if(n===1)c1++; else if(n===2)c2++}}}
-    else{CT.death[k]=t; dying[r]=1; any=true; CT.lastAt[r]=id; if(CT.maxS[k]>=10)CT.big.push([t,CT.maxS[k]])}}
+    if(alive){if(v>0){const n=++CT.surv[k]; if(CT.birth[k]>CT.t0){if(n===1){c1++; byBirth('n1b',CT.birth[k])} else if(n===2){c2++; byBirth('n2b',CT.birth[k])}}}}
+    else{CT.death[k]=t; dying[r]=1; any=true; CT.lastAt[r]=id; ev.push(r); if(CT.maxS[k]>=10)CT.big.push([t,CT.maxS[k]])}}
   if(any){const sb=CT.supB, la=CT.lastArea;
     for(let q=0;q<LL;q++){const s=sb[q]; if(s>=0&&dying[s])la[q]=cur[s]}
     for(let r=0;r<LL;r++)if(dying[r]){la[r]=cur[r]; cur[r]=-1; dying[r]=0}}
   for(let r=0;r<LL;r++)if(E.fate[r]>0||E.money[r]<=0)CT.zeroAt[r]=t;
-  for(let r=0;r<LL;r++)if(F[r]&&cur[r]<0){ctNew(r,t); nb++}
+  for(let r=0;r<LL;r++)if(F[r]&&cur[r]<0){ctNew(r,t); nb++; ev.push(r)}
   const H=E.hist[E.hist.length-1];
   CT.t.push(t); CT.D.push(H&&H.neff?H.neff[ic]:NaN); CT.c1.push(c1); CT.c2.push(c2); CT.nb.push(nb);
-  if(CT.t.length>200000)for(const k of ['t','D','c1','c2','nb'])CT[k].splice(0,50000);
+  CT.n1b.push(0); CT.n2b.push(0); CT.na.push(H?Math.round(H.starts*LL):0); CT.ev.push(Int32Array.from(ev));
+  if(CT.t.length>200000)for(const k of ['t','D','c1','c2','nb','n1b','n2b','na','ev'])CT[k].splice(0,50000);
   if(CT.big.length>20000)CT.big.splice(0,5000);
 }
 // a range with two handles: the start and the end (null: the first / the last there is); the handles follow when the
@@ -4309,6 +4359,7 @@ function drawCT(force){
   if(force||onScreen($('cCT')))ctPlot($('cCT'));
   // the tree: at most every second while a run goes on
   if(force||(onScreen($('cNet'))&&(!running||performance.now()-netT>1000))){netT=performance.now(); netPlot($('cNet'))}
+  if(!running||performance.now()-netT<50)apDraw(force);
 }
 new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)&&!running)drawCT()}).observe($('cNet'));
 new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)&&!running)drawCT()}).observe($('cCT'));
@@ -4328,7 +4379,7 @@ function ctPlot0(canvas,out){
   if(!out)$('ctNote').textContent=`${nm}: the most scalable product (the lowest γ). A company is one of its factories, from the round it opens to the round it closes; `+
     `it survives a round of trade when it sells something in it and is still open after it. Above: D = (Σs)²/Σs², s = units a factory sold in the round. `+
     `Below: the companies that survived their first round of trade (full) and their second (dashed), counted from round ${ta}`+
-    ` (the companies there at the start of the run left out) · grey dashed: the 30 largest collapses of ${nm} companies in the time shown (at least ¼ of the largest)`;
+    ` (the companies there at the start of the run left out) · grey dashed: the 30 largest collapses of ${nm} companies in the time shown (at least ¼ of the largest) · yellow: the active periods for Diff ${apDiff} (see Active periods below)`;
   if(i1<i0){g.fillStyle='#8391ab'; g.textAlign='left'; g.textBaseline='middle'; g.fillText('Run the model to see the companies after a collapse.',12*z,H/2); return false}
   const pt=(sq?8:out?28:8)*z, pb=(out?34:20)*z, pr=10*z, gap=(out?16:12)*z, hh=(H-pt-pb-gap)/2, pt2=pt+hh+gap;
   let pl=(out?52:40)*z;
@@ -4345,6 +4396,11 @@ function ctPlot0(canvas,out){
   const xt=niceTicks(ta,tb,10).filter(t=>t>=ta&&t<=tb).map(t=>[t,X(t)]);
   drawAxes(g,{xt,yt:yt1.filter(v=>v<=top1).map(v=>[v,Y1(v)]),pl,pt,w,h:hh,z,dpr,W,fx:()=>'',fy:fmtTick,linX:true,linY:true});
   drawAxes(g,{xt,yt:yt2.filter(v=>v<=top2).map(v=>[v,Y2(v)]),pl,pt:pt2,w,h:hh,z,dpr,W,fx:t=>String(Math.round(t)),fy:fmtTick,linX:true,linY:true});
+  // the active periods (yellow bands)
+  g.fillStyle=PC('rgba(250,204,21,.30)','rgba(250,204,21,.22)');
+  for(const q of apPeriods(apDiff)){const a=CT.t[q.i0]-0.5, b=CT.t[q.i1]+0.5; if(b<ta||a>tb)continue;
+    const xa=X(Math.max(ta,a)), xb=X(Math.min(tb,b)), ww=Math.max(1,xb-xa); g.fillRect(xa,pt,ww,hh); g.fillRect(xa,pt2,ww,hh)}
+  if(!out){const pill=$('ctDiffPill'); pill.style.left=(pl/dpr+6)+'px'; pill.style.top=(pt2/dpr+5)+'px'}
   // the collapses of big companies in the window
   const bigs=CT.big.filter(([t])=>t>ta&&t<=tb).sort((a,b)=>b[1]-a[1]), cut=bigs.length?Math.max(0.25*bigs[0][1],bigs[Math.min(29,bigs.length-1)][1]):Infinity;
   g.save(); g.setLineDash([3*dpr,4*dpr]); g.strokeStyle='rgba(100,116,139,.55)'; g.lineWidth=1.2*dpr; g.beginPath();
@@ -4363,7 +4419,8 @@ function ctPlot0(canvas,out){
   g.setLineDash([]);
   legendBox(g,[{c:col,t:`${nm}: D = (Σs)²/Σs²`}],pl+w-4*z,pt+4*z,dpr,false,w<520*dpr?0.8:1);
   const nar=w<520*dpr;
-  legendBox(g,[{c:col,t:nar?`survived 1 round: ${cu1[n]}`:`survived 1 round of trade: ${cu1[n]}`},{dash:col,t:`survived 2 rounds: ${cu2[n]}`}],pl+4*z,pt2+4*z,dpr,true,nar?0.8:1);
+  // (the legend in the lower right corner: the Diff pill takes the upper left one)
+  legendBox(g,[{c:col,t:nar?`survived 1 round: ${cu1[n]}`:`survived 1 round of trade: ${cu1[n]}`},{dash:col,t:`survived 2 rounds: ${cu2[n]}`}],pl+w-4*z,pt2+hh-(30+8)*z*(nar?0.8:1),dpr,false,nar?0.8:1);
   if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time',pl+w/2,H-4*dpr);
     for(const [y,t] of [[pt+hh/2,'D, effective number of companies'],[pt2+hh/2,`${nm} companies, cumulative`]]){
       g.save(); g.translate(8*z,y); g.rotate(-Math.PI/2); g.textBaseline='middle'; axisTitle(g,t,0,5.5*z,z,hh); g.restore()}}
@@ -4459,7 +4516,7 @@ function axis3(a,b){const span=Math.max(1e-9,b-a); let best=[a,b].map(Math.round
 function net2D(g,d,inY,r0,r1,o){
   const {W,H,dpr,z,out,col}=o, sq=out&&out.sq, rgb=(PRGB[CT.ic]||[190,18,60]).join(','), B=CT.birth, D=CT.death, S=CT.maxS, n=d.ks.length;
   // (the numbers and the label under the tree at 65 % of the plots' text: TS)
-  const pt=8*z, pb=(out?26:17)*z*Math.max(1,NET_TXK), pl=(out?20:13)*z, pr=14*z, w=W-pl-pr, h=H-pt-pb;
+  const pt=8*z, pb=(out?30:22)*z*Math.max(1,NET_TXK), pl=(out?20:13)*z, pr=14*z, w=W-pl-pr, h=H-pt-pb;
   const rows=Math.max(1e-9,r1-r0+1), rpad=Math.min((out?12:10)*dpr,0.2*h), x0=d.na, x1=d.nb;
   const X=t=>pl+(t-x0)/Math.max(1,x1-x0)*w, Y=r=>pt+rpad+(r-r0+0.5)/rows*(h-2*rpad);
   if(!out){NETG={x0,x1,pl,w,pt,h,rpad,r0,rows}; netVPlace((pt+rpad)/dpr,(h-2*rpad)/dpr)}
@@ -4499,7 +4556,9 @@ function net2D(g,d,inY,r0,r1,o){
     g.save(); g.setLineDash([4*dpr,3*dpr]); g.strokeStyle=ink; g.lineWidth=1.3*dpr; g.beginPath(); g.moveTo(x,pt); g.lineTo(x,pt+h); g.stroke(); g.restore();
     g.font=pfont(11*treeK(),z,true); const s=miniLetter(i)||'·', tw=g.measureText(s).width; g.fillStyle=PC('rgba(255,255,255,.9)','rgba(11,13,19,.85)');
     const ly=pt+h-10*dpr-13*z*treeK(); g.fillRect(x-tw/2-3*dpr,ly,tw+6*dpr,13*z*treeK()); g.fillStyle=ink; g.textAlign='center'; g.textBaseline='top'; g.fillText(s,x,ly)});
-  if(out){g.font=pfont(11*treeTS(),z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time',pl+w/2,H-3*dpr)}
+  // the label time just under the numbers of the time axis
+  g.font=pfont(11*treeTS(),z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='top';
+  g.fillText('time',pl+w/2,pt+h+4*dpr+7.6*dpr*treeK()+13*treeTS()*z);
 }
 // A zoom box dragged over the flat tree: the rounds under it, and (if it is more than a sliver high) the companies in its
 // rows, which are then laid out again to fill the height
@@ -4633,9 +4692,9 @@ new ResizeObserver(()=>miniDraw()).observe($('minis'));
 function exportAll(btn){
   const S=600, gap=24, pad=20, bg=netDark?'#0b0d13':'#ffffff', ink=netDark?'#e8ecf5':'#16233b', four=miniN===4;
   const ord=miniOrder(), slots=[...ord,...Array(miniN-ord.length).fill(-1)];        // by round; empty places last
-  // the panel letters 44 px (30 % larger than they were), the tree's text and the times 50 % larger than on the screen (NET_TXK)
-  const letter=(g,s,x,y)=>{g.fillStyle=ink; g.textAlign='left'; g.textBaseline='top'; g.font=`900 44px ${PFONT}`; g.fillText(s,x,y)};
-  const k0=NET_TXK; NET_TXK=1.5; try{
+  // the panel letters 48 px, the tree's text and the times 65 % larger than on the screen (NET_TXK)
+  const letter=(g,s,x,y)=>{g.fillStyle=ink; g.textAlign='left'; g.textBaseline='top'; g.font=`900 48px ${PFONT}`; g.fillText(s,x,y)};
+  const k0=NET_TXK; NET_TXK=1.65; try{
   const pic=(g,k,x,y)=>{const i=slots[k], q=i>=0?MINI[i]:null;
     // the time in the font of the tree's label time (as the tree is drawn here: dpr 2)
     if(q){fitImage(g,q.c,x,y,S,S); g.font=pfont(11*treeTS(),2*FZ); g.fillStyle=netDark?'#aeb8cc':'#4a5872'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText(`time ${q.t}`,x+S-6,y+S-4)}
@@ -4770,15 +4829,90 @@ function net3D(g,d,inY,nShow,o){
     g.fillStyle=gr; g.beginPath(); g.arc(p[0],p[1],r,0,2*Math.PI); g.fill();
     if(alive){g.strokeStyle=col; g.lineWidth=Math.max(0.6,0.8*dpr); g.stroke()}}
   g.restore();
-  if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.font=pfont(11*treeTS(),z); g.fillText('time',W/2,H-3*dpr)}
+  // the label time along the front edge of the floor, just beyond its numbers (upright)
+  {const a=P2(-50,near,fl), b=P2(50,near,fl), m=P2(0,near+(near===fy0?-10:10),fl); let ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
+    if(ang>Math.PI/2)ang-=Math.PI; else if(ang<-Math.PI/2)ang+=Math.PI;
+    g.save(); g.translate(m[0],m[1]); g.rotate(ang); g.font=pfont(11*treeTS(),z); g.fillStyle=PC('#4a5872','#aeb8cc');
+    g.textAlign='center'; g.textBaseline='middle'; g.fillText('time',0,0); g.restore()}
   return true;
 }
+
+// ---- Active periods. A round of trade t is passive when the new companies of the most scalable product that survived
+// their first round of trade in it (c1) and those that survived their second (c2) differ by at most Diff; the
+// companies behind those counts started 1 and 2 rounds before, so a round i of starts is active when |c1 − c2| > Diff
+// in round i + 2 (a passive time is known only two rounds after it ended). An active period is a run of active rounds
+// between passive ones (one still open at the end, or begun at the first round kept, is left out). For each: Nc, the
+// companies of the product started in it; Nc1, Nc2, those of them that survived 1 and 2 rounds of trade; Na, the new
+// companies of every product; sites, the cells where a company of the product started or collapsed in it. Diff can be
+// changed at any time: the counts of every round are kept (CT.nb, n1b, n2b, na, ev)
+let apDiff=1, apScale='log', AP=null;
+const AP_FIT=[{on:false,x0:10,sl:-1.5},{on:false,x0:10,sl:-1.5},{on:false,x0:10,sl:-1.5}];
+function apPeriods(D){
+  if(!CT)return [];
+  const n=CT.t.length, key=D+':'+n+':'+CT.t[n-1]+':'+CT.ver;
+  if(AP&&AP.key===key)return AP.list;
+  const list=[]; let s=-1;
+  for(let i=0;i+2<n;i++){const act=Math.abs(CT.c1[i+2]-CT.c2[i+2])>D;
+    if(act){if(s<0)s=i} else if(s>=0){if(s>0)list.push(apMake(s,i-1)); s=-1}}
+  AP={key,list}; return list;
+}
+function apMake(i0,i1){let Nc=0,N1=0,N2=0,Na=0; const seen=new Set();
+  for(let i=i0;i<=i1;i++){Nc+=CT.nb[i]; N1+=CT.n1b[i]; N2+=CT.n2b[i]; Na+=CT.na[i]; for(const r of CT.ev[i])seen.add(r)}
+  return {i0,i1,Nc,N1,N2,Na,sites:seen.size}}
+// the probability density of the values, per unit: logarithmic bins (4 a decade, whole numbers) on a logarithmic x
+// axis, about 20 even ones on a linear one; points at the middle of each bin
+function apHist(vals,logx){const v=vals.filter(x=>logx?x>0:x>=0); if(!v.length)return []; const tot=v.length, cnt=new Map();
+  if(logx){for(const x of v){const k=Math.floor(Math.log10(x)*4+1e-9); cnt.set(k,(cnt.get(k)||0)+1)}
+    return [...cnt.keys()].sort((a,b)=>a-b).map(k=>{const a=Math.ceil(Math.pow(10,k/4)-1e-9), b=Math.max(a,Math.ceil(Math.pow(10,(k+1)/4)-1e-9)-1);
+      return [Math.sqrt(a*b),cnt.get(k)/(tot*(b-a+1))]})}
+  const bw=Math.max(1,niceNum(Math.max(...v)/20)); for(const x of v){const k=Math.floor(x/bw); cnt.set(k,(cnt.get(k)||0)+1)}
+  return [...cnt.keys()].sort((a,b)=>a-b).map(k=>[(k+0.5)*bw,cnt.get(k)/(tot*bw)])}
+// a power law through the curve p at x0: P(x0)·(x/x0)^slope, from x0 to the last point
+function apFitLine(p,f,lx,ly){if(!f.on||!p.length||!(f.x0>0))return null; const m=markOn(p,f.x0,lx,ly); if(!m)return null;
+  const x1=p[p.length-1][0]; if(x1<=f.x0)return null; const pts=[];
+  for(let k=0;k<=40;k++){const x=lx?f.x0*Math.pow(x1/f.x0,k/40):f.x0+(x1-f.x0)*k/40; pts.push([x,m[1]*Math.pow(x/f.x0,f.sl)])}
+  return {c:PC('#16233b','#e8ecf5'),dash:true,t:`fit: P(${fmtTick(f.x0)})·(x/${fmtTick(f.x0)})^${f.sl.toFixed(1).replace('-','−')}`,p:pts}}
+function apPlots(){
+  const nm=PNAME[CT.ic], col=PCOL[CT.ic]||'#be123c', per=apPeriods(apDiff), lx=apScale==='log', ly=apScale!=='lin';
+  const H=v=>apHist(per.map(v),lx), mk=(k,series,xl,yl,title)=>{const f=apFitLine(series[0].p,AP_FIT[k],lx,ly); if(f)series.push(f);
+    return {series,o:{xl,yl,scale:apScale},title}};
+  return {per,
+    apN:mk(0,[{c:col,t:`${nm} companies started, Nc`,p:H(q=>q.Nc)},{c:'#16233b',dash:true,t:'companies of every product started',p:H(q=>q.Na)}],
+      'Nc: companies started in an active period','probability density P(Nc)',`P(Nc): companies started in an active period (Diff ${apDiff})`),
+    apS:mk(1,[{c:col,t:'survived ≥ 1 round of trade',p:H(q=>q.N1)},{c:'#7c2d12',t:'survived ≥ 2 rounds',p:H(q=>q.N2)}],
+      `${nm} companies started in an active period that lasted`,'probability density',`${nm} companies that lasted, per active period (Diff ${apDiff})`),
+    apX:mk(2,[{c:col,t:`sites where a ${nm} company started or collapsed`,p:H(q=>q.sites)}],
+      'sites in an active period','probability density',`Sites with a start or collapse, per active period (Diff ${apDiff})`)};
+}
+function apDraw(force){
+  if(!CT||!(force||['cApN','cApS','cApX'].some(id=>onScreen($(id)))))return;
+  const q=apPlots(), nm=PNAME[CT.ic];
+  for(const [id,k] of [['cApN','apN'],['cApS','apS'],['cApX','apX']])xyPlot($(id),q[k].series,q[k].o);
+  const per=q.per, med=a=>{const b=a.slice().sort((x,y)=>x-y); return b.length?b[b.length>>1]:0};
+  $('apSub').textContent=`how many companies of ${nm}, the most scalable product, start in one burst of turbulence`;
+  $('apNote').textContent=`${per.length} active periods for Diff ${apDiff}`+(per.length?` (median length ${med(per.map(p=>p.i1-p.i0+1))} rounds, median Nc ${med(per.map(p=>p.Nc))}, largest ${Math.max(...per.map(p=>p.Nc))})`:'')+
+    `. A round of trade is passive when the new ${nm} companies that survived their first round of trade in it and those that survived their second differ by at most Diff; `+
+    `an active period is a run of rounds between passive ones, counted 2 rounds back, when those companies started (yellow in the plots After a collapse). `+
+    `Dashed: the companies of every product started in the period (with equal start costs, as in Cost flat or ultra flat, the money spent on starting them). Fit: P(x₀)·(x/x₀)^slope through the curve at x₀.`;
+}
+// Diff (0 … 10), its menus, the scales, the fits
+{const opts=Array.from({length:11},(_,k)=>`<option value="${k}">${k}</option>`).join('');
+  document.querySelectorAll('.diffSel').forEach(sel=>{sel.innerHTML=opts; sel.value=String(apDiff);
+    sel.onchange=()=>{apDiff=+sel.value; document.querySelectorAll('.diffSel').forEach(x=>x.value=String(apDiff)); drawCT(true); apDraw(true)}});
+  document.querySelectorAll('#apScale button').forEach(b=>b.onclick=()=>{apScale=b.dataset.s;
+    document.querySelectorAll('#apScale button').forEach(x=>x.classList.toggle('on',x===b)); apDraw(true)});
+  const sl=Array.from({length:31},(_,k)=>{const v=-k/10; return `<option value="${v}">${v.toFixed(1).replace('-','−')}</option>`}).join('');
+  document.querySelectorAll('.apfit').forEach(el=>{const k=+el.dataset.k, [cb,x0,se]=[el.querySelector('input[type=checkbox]'),el.querySelector('input[type=number]'),el.querySelector('select')];
+    se.innerHTML=sl; se.value=String(AP_FIT[k].sl);
+    const upd=()=>{AP_FIT[k]={on:cb.checked,x0:+x0.value||0,sl:+se.value}; apDraw(true)};
+    cb.onchange=upd; x0.oninput=upd; se.onchange=upd})}
+new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)&&!running)apDraw(true)}).observe($('cApN'));
 
 // ---------- pictures of the plots: .png in the shape shown, with a title; sq in a square, for a paper: no title, and
 // the margins only as wide as the numbers need; both with axis labels ----------
 function exportPlot(which,kind,btn){
   if(which==='netall'){exportAll(btn);return}
-  const src=$({chart:'chart',money:'cMoney',size:'cSize',surv:'cSurv',fort:'cFort',nearM:'cNearM',nearS:'cNearS',ct:'cCT',net:'cNet'}[which]), r=src.getBoundingClientRect();
+  const src=$({chart:'chart',money:'cMoney',size:'cSize',surv:'cSurv',fort:'cFort',nearM:'cNearM',nearS:'cNearS',ct:'cCT',net:'cNet',apN:'cApN',apS:'cApS',apX:'cApX'}[which]), r=src.getBoundingClientRect();
   // (the two plots after a collapse are always saved in a square, one above the other)
   const sq=kind==='sq', sqd=sq||which==='ct', dpr=2, W=sqd?1000:Math.round(Math.max(r.width,420)*dpr);
   // (the tree in the shape shown, as long as it is)
@@ -4789,6 +4923,8 @@ function exportPlot(which,kind,btn){
   else if(which==='ct'){if(!ctPlot(c,{dpr,sq}))return}
   else if(which==='net'){if(!netPlot(c,{dpr,sq}))return}
   else if(which==='fort')fortPlot(c,{dpr,sq});
+  else if(which==='apN'||which==='apS'||which==='apX'){const e=apPlots()[which];
+    xyPlot(c,e.series,{...e.o,title:sq?'':e.title+' — round '+E.t},{dpr,sq})}
   else if(which==='nearM'||which==='nearS'){const q=nearPlots(); if(!q)return; const e=q[which];
     xyPlot(c,e.series,{...e.o,title:sq?'':e.title+' — round '+E.t},{dpr,sq})}
   else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,sq?'':q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl,sq},q.opt)}
