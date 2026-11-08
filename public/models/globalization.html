@@ -1238,6 +1238,7 @@
       </select>
       <div class="seg" id="chartScale" title="the vertical axis linear or logarithmic">
         <button data-s="lin">lin</button><button data-s="log" class="on">log</button></div>
+      <button class="nbtn" id="bRegBand" title="mean money: a grey band of the mean ± the standard deviation between the regions' mean money (from region to region, not the error of the mean), round by round, instead of the golden area; only with borders">regions ± SD</button>
       <label class="win" title="the time window: from now back in time, in steps of a factor 1.5; at the right end, the whole run">window
         <input type="range" id="chartWin" min="0" max="0" step="1" value="0"><span id="chartWinV"></span></label>
       <span class="chartnote" id="chartNote"></span>
@@ -2625,6 +2626,8 @@ function ravRecord(){
   let K=0,gm=0,gs=0;
   for(let k=0;k<R.n;k++)if(bigRegion(R,k)){K++;gm+=mean[k]}
   if(K){gm/=K; for(let k=0;k<R.n;k++)if(bigRegion(R,k))gs+=(mean[k]-gm)**2; gs=Math.sqrt(gs/K)}
+  // this round's spread between the regions (the standard deviation of their mean money) goes with its record in time
+  {const H=E.hist[E.hist.length-1]; if(H&&H.t===E.t){H.regSD=gs; H.regMean=gm; H.regN=K}}
   if(!RAV||RAV.key!==R.key)RAV={key:R.key,rec:[{t:E.t-1,m:new Float64Array(R.n),d:new Float64Array(R.n),gm:0,gs:0}]};
   const last=RAV.rec[RAV.rec.length-1];
   RAV.rec.push({t:E.t,m:last.m.map((v,k)=>v+mean[k]),d:last.d.map((v,k)=>v+med[k]),gm:last.gm+gm,gs:last.gs+gs});
@@ -2817,7 +2820,8 @@ function doStep(){
     $('tmR').value=Math.log10(P.tmul);$('tmV').textContent=fmt(P.tmul);
     E.stale=true;                         // the markets must be recomputed with the new transport costs
   }
-  ctBefore(); E.step();
+  chgCheck(); ctBefore(); E.step();
+  {const H=E.hist[E.hist.length-1]; if(H)H.median=medianOf(E.money)}      // the median money, with the round's record
   agRecord(); distRecord(); nearRecord(); ravRecord(); frRecord(); ctRecord();
   // the time a round takes on the screen: a closed company's tower sinks to zero over that time
   const now0=performance.now(); if(lastStepT)stepMs=0.8*stepMs+0.2*Math.min(2000,now0-lastStepT); lastStepT=now0;
@@ -3458,7 +3462,7 @@ function exportPNG(kind){
 const MB={lo:-3,hi:7,per:4}, SB={lo:0,hi:7,per:4}, LB={lo:0,hi:5,per:4,int:true};   // money, company size, survival (whole rounds)
 const nb=B=>(B.hi-B.lo)*B.per, binOf=(B,v)=>Math.floor((Math.log10(v)-B.lo)*B.per);
 let DH=null, distMode='now';
-function distReset(){agReset(); nearReset(); ctReset(); RAV=null; DH={t0:0,rec:[{t:0,m:new Float64Array(nb(MB)),s:P.products.map(()=>new Float64Array(nb(SB))),b:new Float64Array(nb(LB)),z:new Float64Array(nb(LB))}]}}
+function distReset(){agReset(); nearReset(); ctReset(); RAV=null; CHG={last:null,list:[]}; DH={t0:0,rec:[{t:0,m:new Float64Array(nb(MB)),s:P.products.map(()=>new Float64Array(nb(SB))),b:new Float64Array(nb(LB)),z:new Float64Array(nb(LB))}]}}
 function distMark(){if(E&&DH)DH.t0=E.t}
 function histNow(){
   const LL=E.L*E.L, m=new Float64Array(nb(MB)), s=P.products.map(()=>new Float64Array(nb(SB)));
@@ -4939,6 +4943,37 @@ const CHART_Y={prod:'factories of each product',share:"largest company's market 
   active:'fraction of the agents per round',money:'mean money per agent',price:'price per unit'};
 // out (for a saved picture): {canvas, dpr, sq} — the canvas is already sized; axis labels and a legend are added, and
 // a title unless the picture is square (sq: for a paper, the left margin only as wide as the numbers need)
+// the median of an array (the middle value; of an even number, the upper of the two middle ones)
+let MEDBUF=null;
+function medianOf(a){if(!MEDBUF||MEDBUF.length!==a.length)MEDBUF=new Float64Array(a.length); MEDBUF.set(a); MEDBUF.sort(); return MEDBUF[a.length>>1]}
+// ---- the changes of the conditions during a run: before every round the settings are described in words (chgParts),
+// part by part; a part that differs from the round before is a change at that round, shown in the plots in time as a
+// red line with the old words before it and the new ones after it. (The transport factor is left out while it is
+// lowered every round, with "Globalization".) A new run starts the list anew
+let CHG={last:null,list:[]};
+function bordersDesc(){const bs=P.borders; if(!bs.length)return 'No borders';
+  const pc=v=>Math.round(100*v)+' %', g=bs.find(b=>b.grid), parts=[];
+  if(g)parts.push(`${g.grid} × ${g.grid} borders, ${pc(g.tax)}`+(g.tariff?`, tariff ${g.tariff}`:''));
+  const o=bs.filter(b=>!b.grid);
+  if(o.length){const taxes=[...new Set(o.map(b=>pc(b.tax||0)+(b.tariff?` + ${b.tariff}`:'')))];
+    parts.push(`${o.length} border${o.length>1?'s':''}, ${taxes.join(' / ')}`)}
+  return parts.join('; ')}
+function chgParts(){const q={
+  econ:P.econ==='pay'?'buyers pay':'free goods', gouge:P.gouge?'gouging':'no gouging', lost:P.lost?'transport lost':'transport back',
+  debt:P.forgive?'shopping debts forgiven':'shopping debts bankrupt', buyw:BUYW_LABEL[P.buyw]||P.buyw, n:`n = ${P.n}`,
+  mu:`μ = ${P.upkeep}`, kappa:`κ = ${P.kappa}`, wage:`wage ${P.wage}`, lim:`lim ${P.lim}`, edges:`${P.bc} edges`,
+  borders:bordersDesc(), roads:P.roads.length?`${P.roads.length} road${P.roads.length>1?'s':''}`:'No roads'};
+  if(!$('anneal').checked)q.transport=`transport ×${fmt(P.tmul)}`;
+  P.products.forEach((p,i)=>{q['p'+i]=`${PNAME[i]}: Start ${p.start}, γ ${String(p.gamma).replace('-','−')}, β ${p.beta}${alphaOf(p)!==1?', α '+alphaOf(p):''}`});
+  return q}
+function chgCheck(){if(!E)return; const q=chgParts();
+  if(CHG.last){const before=[], after=[];
+    for(const k of new Set([...Object.keys(CHG.last),...Object.keys(q)]))if(CHG.last[k]!==q[k]){if(CHG.last[k])before.push(CHG.last[k]); if(q[k])after.push(q[k])}
+    if(before.length||after.length){CHG.list.push({t:E.t,before,after}); if(CHG.list.length>500)CHG.list.shift()}}
+  CHG.last=q}
+// the band of the regions in the plot of the mean money (the button regions ± SD)
+let regBand=false;
+$('bRegBand').onclick=()=>{regBand=!regBand; drawChart()};
 function drawChart(out){
   if(!E)return;
   const cv2=out?out.canvas:ch, cctx=cv2.getContext('2d');
@@ -4954,12 +4989,19 @@ function drawChart(out){
   }
   // the product whose two curves (factories and effective size) enclose a shaded band: the most scalable one
   let ic=0; P.products.forEach((q,i)=>{if(q.gamma<=P.products[ic].gamma)ic=i});
-  if(!out)$('chartNote').textContent=m==='prod'?`solid: the number of factories; dashed: their effective size (Σs)²/Σs², s = units a factory sells; shaded between the two ${PNAME[ic]} curves`:m==='active'?'per round — black: agents with sales, orange: starts, red: bankruptcies':'';
+  if(!out){$('bRegBand').style.display=m==='money'?'':'none'; $('bRegBand').classList.toggle('on',regBand)}
+  if(!out)$('chartNote').textContent=m==='money'?'golden: the mean money per agent; black dashed: the median money of all agents'+
+    (regBand?'; grey: the mean ± the standard deviation between the regions\' mean money (region to region; without borders the band is a line)':'')+'; red lines: changes of the settings':
+    m==='prod'?`solid: the number of factories; dashed: their effective size (Σs)²/Σs², s = units a factory sells; shaded between the two ${PNAME[ic]} curves`:m==='active'?'per round — black: agents with sales, orange: starts, red: bankruptcies':'';
   if(hist.length<2){cctx.textAlign='left';cctx.textBaseline='middle';cctx.fillText('Run the model to see the time series.',pl,pt+h/2);return}
   const series=[];
   if(m==='active'){series.push({c:'#16233b',v:hist.map(q=>q.active)});series.push({c:'#c2410c',v:hist.map(q=>q.starts)});series.push({c:'#be123c',v:hist.map(q=>q.bankrupt)})}
   // the mean money: a golden curve with the area under it filled, like the money in the 3D view
-  else if(m==='money')series.push({c:'#a8790f',v:hist.map(q=>q.money),fill:'rgba(222,176,46,.45)'});
+  // (with the band of the regions, no golden area: only the grey band around the mean; the band itself is two hidden
+  // series, so that the vertical axis holds it)
+  else if(m==='money'){series.push({c:'#a8790f',v:hist.map(q=>q.money),fill:regBand?null:'rgba(222,176,46,.45)'});
+    series.push({c:'#000000',v:hist.map(q=>q.median!=null?q.median:NaN),dash:2});
+    if(regBand){series.push({hide:true,band:'hi',v:hist.map(q=>q.money+(q.regSD||0))},{hide:true,band:'lo',v:hist.map(q=>q.money-(q.regSD||0))})}}
   else if(m==='price')series.push({c:'#16233b',v:hist.map(q=>q.price)});
   else for(let i=0;i<N;i++){series.push({c:PCOL[i],v:hist.map(q=>q[m][i])});
     if(m==='prod')series.push({c:PCOL[i],v:hist.map(q=>q.neff?q.neff[i]:NaN),dash:true})}
@@ -4977,7 +5019,7 @@ function drawChart(out){
   if(!Number.isFinite(lo)){lo=0;hi=1}
   // the legend of a saved picture: one row at the top inside the plot — the products by their γ (what the dashed curves
   // are belongs in the caption), or the three counts of the activity; the vertical axis leaves room for it
-  const leg=!out||m==='money'||m==='price'?[]:
+  const leg=!out||m==='price'?[]:m==='money'?[{c:'#a8790f',t:'mean money'},{c:'#000000',t:'median (dashed)'},...(regBand?[{c:'rgba(100,116,139,.55)',t:'± SD between regions'}]:[])]:
     m==='active'?[{c:'#16233b',t:'agents with sales'},{c:'#c2410c',t:'starts'},{c:'#be123c',t:'bankruptcies'}]:
     P.products.map((p,i)=>({c:PCOL[i],t:'γ = '+String(p.gamma).replace('-','−')}));
   const strip=leg.length?22*z:0, vmax=hi;
@@ -4998,6 +5040,15 @@ function drawChart(out){
     for(let k=i0;k<hist.length;k+=step){if(!Number.isFinite(tz(a[k]))||!Number.isFinite(tz(b[k]))){fill();continue}
       const x=X(hist[k].t); up.push([x,Y(a[k])]); dn.push([x,Y(b[k])])}
     fill()}
+  // the band of the regions: the mean ± the standard deviation between the regions' mean money, grey and transparent
+  {const hiS=series.find(q=>q.band==='hi'), loS=series.find(q=>q.band==='lo');
+    if(hiS&&loS){cctx.fillStyle='rgba(100,116,139,.30)'; const up=[], dn=[];
+      const fill=()=>{if(up.length>1){cctx.beginPath(); up.forEach(([x,y],j)=>j?cctx.lineTo(x,y):cctx.moveTo(x,y));
+        for(let j=dn.length-1;j>=0;j--)cctx.lineTo(dn[j][0],dn[j][1]); cctx.closePath(); cctx.fill()} up.length=dn.length=0};
+      for(let k=i0;k<hist.length;k+=step){const a=hiS.v[k]; let b=loS.v[k]; if(!Number.isFinite(tz(a))){fill();continue}
+        if(!Number.isFinite(tz(b)))b=Math.pow(10,lo);                // (on a logarithmic axis: down to its bottom)
+        const x=X(hist[k].t); up.push([x,Math.max(pt,Y(a))]); dn.push([x,Math.min(pt+h,Y(b))])}
+      fill()}}
   // a filled series: the area between its curve and the bottom of the plot (pieces split where it has no value)
   series.forEach(s=>{if(!s.fill)return; cctx.fillStyle=s.fill; const pts=[];
     const fill=()=>{if(pts.length>1){cctx.beginPath(); cctx.moveTo(pts[0][0],pt+h); pts.forEach(([x,y])=>cctx.lineTo(x,y));
@@ -5006,11 +5057,24 @@ function drawChart(out){
       pts.push([X(hist[k].t),Math.min(pt+h,Y(v))])}
     fill()});
   cctx.lineWidth=1.6*dpr;cctx.lineJoin='round';
-  series.forEach(s=>{cctx.strokeStyle=s.c;cctx.setLineDash(s.dash?[5*z,3*z]:[]);cctx.beginPath(); let on=false;
+  series.forEach(s=>{if(s.hide)return; cctx.strokeStyle=s.c;cctx.setLineDash(s.dash===2?[2.4*z,1.8*z]:s.dash?[5*z,3*z]:[]);cctx.beginPath(); let on=false;
     for(let k=i0;k<hist.length;k+=step){const v=s.v[k]; if(!Number.isFinite(tz(v))){on=false;continue}
       const x=X(hist[k].t),y=Y(v); if(on)cctx.lineTo(x,y); else{cctx.moveTo(x,y);on=true}}
     cctx.stroke()});
   cctx.setLineDash([]);
+  // the changes of the settings: a red line at the round, the old words before it, the new ones after it (two rows of
+  // places, taken in turn, so that close changes overlap less)
+  {const ch=CHG.list.filter(c=>c.t>=t0&&c.t<=t1), fs=w<520*dpr?7.5:9.5, lh=fs*1.26*z; cctx.save(); cctx.font=pfont(fs,z); cctx.textBaseline='top';
+    ch.forEach((c,j)=>{const x=X(c.t); cctx.strokeStyle='rgba(220,38,38,.85)'; cctx.lineWidth=1.4*dpr; cctx.beginPath(); cctx.moveTo(x,pt); cctx.lineTo(x,pt+h); cctx.stroke();
+      const y0=pt+(leg.length?24:4)*z+(j%2)*(Math.max(c.before.length,c.after.length)+0.4)*lh;
+      // (kept inside the plot: near an edge the old and the new words move in together, the line between them kept)
+      const mw=a=>Math.max(0,...a.map(t=>cctx.measureText(t).width)), dxl=4*dpr;
+      const sh=Math.max(0,x+dxl+mw(c.after)-(pl+w-2*dpr))-Math.max(0,(pl+2*dpr)-(x-dxl-mw(c.before)));
+      const put=(txt,al,dx)=>txt.forEach((t,k)=>{cctx.textAlign='left'; const tw=cctx.measureText(t).width,
+          xx=al==='right'?Math.max(pl+2*dpr,x-dx-tw-sh):Math.min(pl+w-tw-2*dpr,x+dx-sh);
+        cctx.fillStyle='rgba(255,255,255,.82)'; cctx.fillRect(xx-1.5*dpr,y0+k*lh-1*dpr,tw+3*dpr,lh); cctx.fillStyle='#b91c1c'; cctx.fillText(t,xx,y0+k*lh)});
+      put(c.before,'right',4*dpr); put(c.after,'left',4*dpr)});
+    cctx.restore()}
   if(out){                                     // axis labels and legend of the saved picture, over the lines
     cctx.font=pfont(11,z); cctx.fillStyle='#4a5872'; cctx.textAlign='center'; cctx.textBaseline='bottom';
     cctx.fillText('time',pl+w/2,H-4*dpr);
