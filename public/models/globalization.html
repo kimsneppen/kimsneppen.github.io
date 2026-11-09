@@ -1347,7 +1347,7 @@
     </div>
     <div class="chartnote" id="ctNote" style="margin-bottom:4px"></div>
     <div class="chartbox ct"><canvas id="cCT"></canvas>
-      <label class="diffpill" id="ctDiffPill" title="Diff: a round is passive when the new companies that survived their first round of trade and those that survived their second differ by at most Diff; the rounds between passive ones are active (yellow), counted 2 rounds back, when those companies started">Diff
+      <label class="diffpill" id="ctDiffPill" title="Diff: a round is active (yellow) when, of the companies started in it, more than Diff did not survive their first round of trade; an active period is a run of active rounds">Diff
         <select class="diffSel"></select></label></div>
   </section>
   <section class="display">
@@ -1393,7 +1393,7 @@
   <section class="display">
     <div class="cardhead"><h2>Active periods</h2><span class="sub" id="apSub">how many companies of the most scalable product start in one burst of turbulence</span></div>
     <div class="chartbar">
-      <label class="diffpill" title="Diff: a round is passive when the new companies that survived their first round of trade and those that survived their second differ by at most Diff; the rounds between passive ones are active, counted 2 rounds back, when those companies started">Diff
+      <label class="diffpill" title="Diff: a round is active when, of the companies started in it, more than Diff did not survive their first round of trade; an active period is a run of active rounds">Diff
         <select class="diffSel"></select></label>
       <div class="seg" id="apScale" title="both axes logarithmic, only the vertical one, or neither">
         <button data-s="log" class="on">log–log</button><button data-s="loglin">log–lin</button><button data-s="lin">lin–lin</button></div>
@@ -2051,7 +2051,8 @@ const PAL={
 let palName='jet', PCOL=[], PRGB=[], PSH=[], PTXT=[];
 function setPalette(){
   const N=P.products.length;
-  PRGB=Array.from({length:N},(_,i)=>PAL[palName](N===1?0.15:0.08+0.84*i/(N-1)));
+  // (a single product is red, whatever the palette)
+  PRGB=N===1?[[220,38,38]]:Array.from({length:N},(_,i)=>PAL[palName](0.08+0.84*i/(N-1)));
   PCOL=PRGB.map(c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join(''));
   PTXT=PRGB.map(c=>0.299*c[0]+0.587*c[1]+0.114*c[2]>150?'#16233b':'#fff');
   PSH=PRGB.map(c=>({top:shade(c.map(v=>v+(255-v)*0.18),1),a:shade(c,0.8),b:shade(c,0.6)}));
@@ -3625,6 +3626,8 @@ const FZ=2, PFONT='-apple-system,Segoe UI,Roboto,sans-serif';
 const pfont=(px,z,bold)=>`${bold?'600 ':''}${px*z}px ${PFONT}`;
 // the colours of a plot on a white (PDK false) or a black background (the plots after a collapse can be black)
 let PDK=false; const PC=(l,d)=>PDK?d:l;
+// the ink of the axes (black lines, twice as thick as the grid), of their numbers and of the axis titles
+const AXC=()=>PC('#000000','#e8ecf5'), NUMC=()=>PC('#1a1d24','#d5dbe7'), LABC=()=>PC('#111318','#e2e7f0');
 // a title: the font made smaller if needed so it fits in maxW
 function plotTitle(g,text,x,y,z,maxW){
   let sz=11.5; g.font=pfont(sz,z,true); const tw=g.measureText(text).width;
@@ -3655,11 +3658,11 @@ function drawAxes(g,a){
   g.lineWidth=dpr; g.strokeStyle=PC('#dde3ec','#262d3b');
   for(const [,x] of xt){g.beginPath();g.moveTo(x,pt);g.lineTo(x,pt+h);g.stroke()}
   for(const [,y] of yt){g.beginPath();g.moveTo(pl,y);g.lineTo(pl+w,y);g.stroke()}
-  g.strokeStyle=PC('#9aa3b5','#5b6578'); g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h);
+  g.strokeStyle=AXC(); g.lineWidth=2*dpr; g.lineCap='square'; g.beginPath(); g.moveTo(pl,pt); g.lineTo(pl,pt+h); g.lineTo(pl+w,pt+h);
   for(const [,x] of xt){g.moveTo(x,pt+h);g.lineTo(x,pt+h+5*dpr)}
   for(const [,y] of yt){g.moveTo(pl,y);g.lineTo(pl-5*dpr,y)}
-  g.stroke();
-  g.font=pfont(11,z); g.fillStyle=PC('#6b7690','#9aa6bd'); g.textAlign='center'; g.textBaseline='top';
+  g.stroke(); g.lineWidth=dpr; g.lineCap='butt';
+  g.font=pfont(11,z); g.fillStyle=NUMC(); g.textAlign='center'; g.textBaseline='top';
   const xw=Math.max(1,...xt.map(([v])=>g.measureText(a.fx(v)).width));
   for(const [v,x] of tickLabels(xt,xw+(a.linX?2.5:1.2)*fs,a.linX)){const t=a.fx(v), hw=g.measureText(t).width/2;
     g.fillText(t,Math.max(hw+2*dpr,Math.min(x,W-hw-2*dpr)),pt+h+6*dpr)}
@@ -3724,7 +3727,7 @@ function logPlot(canvas,series,B,xlabel,title,legend,out,opt){
   const xs=Math.max(1,Math.ceil((x1-x0)/6)), ys=Math.max(1,Math.ceil((y1-y0)/5)), xt=[], yt=[];
   for(let k=x0;k<=x1;k+=xs)xt.push([k,X(k)]); for(let k=y0;k<=y1;k+=ys)yt.push([k,Y(k)]);
   drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:sup10,fy:sup10,linX:false,linY:false});
-  g.fillStyle='#4a5872'; axisTitle(g,xlabel,W/2,H-2*dpr,z,W-8*dpr);
+  g.fillStyle=LABC(); axisTitle(g,xlabel,W/2,H-2*dpr,z,W-8*dpr);
   if(out&&out.ylabel){g.save();g.translate(8*z,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';g.fillText(out.ylabel,0,0);g.restore()}
   g.save(); g.beginPath(); g.rect(pl,pt-4*dpr,w+4*dpr,h+8*dpr); g.clip();     // curves and fits inside the frame
   for(const mk of opt.marks||[])if(mk.x>0){const lx=Math.log10(mk.x); if(lx<x0||lx>x1)continue;
@@ -3976,7 +3979,7 @@ function xyPlot(canvas,series,o,out){
   if(sq){pl=Math.max(30*z,Math.max(...yt.map(([v])=>g.measureText(fyt(v)).width))+8*dpr+17*z); w=W-pl-pr}
   if(xl)for(let k=x0;k<=x1;k++)xt.push([k,pl+(k-x0)/(x1-x0)*w]); else for(const v of niceTicks(x0,x1,10))xt.push([v,X(v)]);
   drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:xl?sup10:fmtTick,fy:fyt,linX:!xl,linY:!yl});
-  const xc=sq?pl+w/2:W/2; g.fillStyle='#4a5872'; axisTitle(g,o.xl,xc,H-2*dpr,z,2*Math.min(xc,W-xc)-8*dpr);
+  const xc=sq?pl+w/2:W/2; g.fillStyle=LABC(); axisTitle(g,o.xl,xc,H-2*dpr,z,2*Math.min(xc,W-xc)-8*dpr);
   if(o.yl){g.save();g.translate(8*z,pt+h/2);g.rotate(-Math.PI/2);g.textAlign='center';g.textBaseline='middle';g.fillText(o.yl,0,0);g.restore()}
   g.save(); g.beginPath(); g.rect(pl,pt-4*dpr,w+4*dpr,h+8*dpr); g.clip();
   for(const se of series){const q=se.p.filter(ok); if(!q.length)continue;
@@ -4134,7 +4137,7 @@ function fortPlot(canvas,out){
   const xs=Math.max(1,niceNum(Math.max(1,t1-t0)/Math.max(4,Math.min(12,Math.floor(w/(40*dpr)))))), xt=[];
   for(let k=Math.ceil(t0/xs)*xs;k<=t1;k+=xs)xt.push([k,X(k)]);
   drawAxes(g,{xt,yt,pl,pt,w,h,z,dpr,W,fx:v=>String(Math.round(v)),fy:fyt,linX:true,linY:!fortLog});
-  g.fillStyle='#4a5872'; g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time',pl+w/2,H-2*dpr);
+  g.fillStyle=LABC(); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time',pl+w/2,H-2*dpr);
   if(out){g.save();g.translate(8*z,pt+h/2);g.rotate(-Math.PI/2);g.textBaseline='middle';
     g.fillText('money M of the agent'+(fortLog?', log scale':''),0,0);g.restore()}
   // each piece of line in the colour of the product made at its end, collected per colour
@@ -4434,7 +4437,7 @@ function ctPlot0(canvas,out){
   const nar=w<520*dpr;
   // (the legend in the lower right corner: the Diff pill takes the upper left one)
   legendBox(g,[{c:col,t:nar?`survived 1 round: ${cu1[n]}`:`survived 1 round of trade: ${cu1[n]}`},{dash:col,t:`survived 2 rounds: ${cu2[n]}`}],pl+w-4*z,pt2+hh-(30+8)*z*(nar?0.8:1),dpr,false,nar?0.8:1);
-  if(out){g.font=pfont(11,z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time',pl+w/2,H-4*dpr);
+  if(out){g.font=pfont(11,z); g.fillStyle=LABC(); g.textAlign='center'; g.textBaseline='bottom'; g.fillText('time',pl+w/2,H-4*dpr);
     for(const [y,t] of [[pt+hh/2,'D, effective number of companies'],[pt2+hh/2,`${nm} companies, cumulative`]]){
       g.save(); g.translate(8*z,y); g.rotate(-Math.PI/2); g.textBaseline='middle'; axisTitle(g,t,0,5.5*z,z,hh); g.restore()}}
   return true;
@@ -4535,7 +4538,7 @@ function net2D(g,d,inY,r0,r1,o){
   if(!out){NETG={x0,x1,pl,w,pt,h,rpad,r0,rows}; netVPlace((pt+rpad)/dpr,(h-2*rpad)/dpr)}
   const xt=niceTicks(x0,x1,10).filter(t=>t>=x0&&t<=x1).map(t=>[t,X(t)]);
   drawAxes(g,{xt,yt:[],pl,pt,w,h,z,dpr,W,fx:()=>'',fy:()=>'',linX:true,linY:true});
-  g.font=pfont(11*treeTS(),z); g.fillStyle=PC('#6b7690','#9aa6bd'); g.textAlign='center'; g.textBaseline='top';
+  g.font=pfont(11*treeTS(),z); g.fillStyle=NUMC(); g.textAlign='center'; g.textBaseline='top';
   for(const v of axis3(x0,x1)){const s=String(Math.round(v)), hw=g.measureText(s).width/2; g.fillText(s,Math.max(hw+2*dpr,Math.min(X(v),W-hw-2*dpr)),pt+h+3*dpr+7.6*dpr*treeK())}      // under the markers
   // small markers on the time axis at the times of the pictures of the town: triangles pointing up at the axis line
   {const r=4.5*dpr*treeK(); g.fillStyle=PC('#16233b','#e8ecf5');
@@ -4570,7 +4573,7 @@ function net2D(g,d,inY,r0,r1,o){
     g.font=pfont(11*treeK(),z,true); const s=miniLetter(i)||'·', tw=g.measureText(s).width; g.fillStyle=PC('rgba(255,255,255,.9)','rgba(11,13,19,.85)');
     const ly=pt+h-10*dpr-13*z*treeK(); g.fillRect(x-tw/2-3*dpr,ly,tw+6*dpr,13*z*treeK()); g.fillStyle=ink; g.textAlign='center'; g.textBaseline='top'; g.fillText(s,x,ly)});
   // the label time just under the numbers of the time axis
-  g.font=pfont(11*treeTS(),z); g.fillStyle=PC('#4a5872','#aeb8cc'); g.textAlign='center'; g.textBaseline='top';
+  g.font=pfont(11*treeTS(),z); g.fillStyle=LABC(); g.textAlign='center'; g.textBaseline='top';
   g.fillText('time',pl+w/2,pt+h+4*dpr+7.6*dpr*treeK()+13*treeTS()*z);
 }
 // A zoom box dragged over the flat tree: the rounds under it, and (if it is more than a sliver high) the companies in its
@@ -4808,7 +4811,7 @@ function net3D(g,d,inY,nShow,o){
   g.beginPath(); corners.forEach(([x,y],q)=>{const p=P2(x,y,fl); q?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])}); g.closePath();
   g.fillStyle=PC('#eef1f6','#161b26'); g.fill(); g.strokeStyle=PC('#c3cbdb','#3a4459'); g.lineWidth=dpr; g.stroke();
   const span=Math.max(1,d.nb-d.na), xs=t=>(t-d.na)/span*100-50, near=P2(0,fy0,fl)[2]>P2(0,fy1,fl)[2]?fy0:fy1;
-  g.font=pfont(11*treeTS(),z); g.fillStyle=PC('#6b7690','#9aa6bd'); g.textAlign='center'; g.textBaseline='top';
+  g.font=pfont(11*treeTS(),z); g.fillStyle=NUMC(); g.textAlign='center'; g.textBaseline='top';
   g.strokeStyle=PC('rgba(131,145,171,.3)','rgba(200,210,230,.12)'); g.beginPath();
   const tks=niceTicks(d.na,d.nb,8).filter(t=>t>=d.na&&t<=d.nb);
   for(const t of tks){const a=P2(xs(t),fy0,fl), b=P2(xs(t),fy1,fl); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1])}
@@ -4845,15 +4848,15 @@ function net3D(g,d,inY,nShow,o){
   // the label time along the front edge of the floor, just beyond its numbers (upright)
   {const a=P2(-50,near,fl), b=P2(50,near,fl), m=P2(0,near+(near===fy0?-10:10),fl); let ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
     if(ang>Math.PI/2)ang-=Math.PI; else if(ang<-Math.PI/2)ang+=Math.PI;
-    g.save(); g.translate(m[0],m[1]); g.rotate(ang); g.font=pfont(11*treeTS(),z); g.fillStyle=PC('#4a5872','#aeb8cc');
+    g.save(); g.translate(m[0],m[1]); g.rotate(ang); g.font=pfont(11*treeTS(),z); g.fillStyle=LABC();
     g.textAlign='center'; g.textBaseline='middle'; g.fillText('time',0,0); g.restore()}
   return true;
 }
 
-// ---- Active periods. A round of trade t is passive when the new companies of the most scalable product that survived
-// their first round of trade in it (c1) and those that survived their second (c2) differ by at most Diff; the
-// companies behind those counts started 1 and 2 rounds before, so a round i of starts is active when |c1 − c2| > Diff
-// in round i + 2 (a passive time is known only two rounds after it ended). An active period is a run of active rounds
+// ---- Active periods. A round i is active when, of the companies of the most scalable product started in it (nb), more
+// than Diff did not survive their first round of trade: nb − n1b > Diff (n1b: those of them that survived it). The
+// companies start in round i and are judged in the rounds after it, but the activity belongs to round i; the last
+// round is left out, its companies not judged yet. An active period is a run of active rounds
 // between passive ones (one still open at the end, or begun at the first round kept, is left out). For each: Nc, the
 // companies of the product started in it; Nc1, Nc2, those of them that survived 1 and 2 rounds of trade; Na, the new
 // companies of every product; sites, the cells where a company of the product started or collapsed in it. Diff can be
@@ -4865,7 +4868,7 @@ function apPeriods(D){
   const n=CT.t.length, key=D+':'+n+':'+CT.t[n-1]+':'+CT.ver;
   if(AP&&AP.key===key)return AP.list;
   const list=[]; let s=-1;
-  for(let i=0;i+2<n;i++){const act=Math.abs(CT.c1[i+2]-CT.c2[i+2])>D;
+  for(let i=0;i+1<n;i++){const act=CT.nb[i]-CT.n1b[i]>D;
     if(act){if(s<0)s=i} else if(s>=0){if(s>0)list.push(apMake(s,i-1)); s=-1}}
   AP={key,list}; return list;
 }
@@ -4897,9 +4900,9 @@ function apPlots(){
     return {series,o:{xl,yl,scale:apScale},title}};
   return {per,tFrom:Math.ceil(tFrom),tB,
     apN:mk(0,[{c:col,t:`${nm} companies started, Nc`,p:H(q=>q.Nc)},{c:'#16233b',dash:true,t:'companies of every product started',p:H(q=>q.Na)}],
-      'Nc: companies started in an active period','probability density P(Nc)',`P(Nc): companies started in an active period (Diff ${apDiff})`),
+      'Collapse activity, All','probability density P(Nc)',`P(Nc): companies started in an active period (Diff ${apDiff})`),
     apS:mk(1,[{c:col,t:'survived ≥ 1 round of trade',p:H(q=>q.N1)},{c:'#7c2d12',t:'survived ≥ 2 rounds',p:H(q=>q.N2)}],
-      `${nm} companies started in an active period that lasted`,'probability density',`${nm} companies that lasted, per active period (Diff ${apDiff})`),
+      'Collapse activity, Lasting','probability density',`${nm} companies that lasted, per active period (Diff ${apDiff})`),
     apX:mk(2,[{c:col,t:`sites where a ${nm} company started`,p:H(q=>q.sitesB)},{c:'#16233b',dash:true,t:'… started or collapsed',p:H(q=>q.sites)}],
       'sites in an active period','probability density',`Sites with a start or collapse, per active period (Diff ${apDiff})`)};
 }
@@ -4910,12 +4913,12 @@ function apDraw(force){
   const per=q.per, med=a=>{const b=a.slice().sort((x,y)=>x-y); return b.length?b[b.length>>1]:0};
   $('apSub').textContent=`how many companies of ${nm}, the most scalable product, start in one burst of turbulence`;
   $('apNote').textContent=`${per.length} active periods for Diff ${apDiff} in the last ⅔ of the run (rounds ${q.tFrom}–${q.tB})`+(per.length?` (median length ${med(per.map(p=>p.i1-p.i0+1))} rounds, median Nc ${med(per.map(p=>p.Nc))}, largest ${Math.max(...per.map(p=>p.Nc))})`:'')+
-    `. A round of trade is passive when the new ${nm} companies that survived their first round of trade in it and those that survived their second differ by at most Diff; `+
-    `an active period is a run of rounds between passive ones, counted 2 rounds back, when those companies started (yellow in the plots After a collapse). `+
+    `. A round is active when, of the new ${nm} companies started in it, more than Diff did not survive their first round of trade (started − survived 1 round > Diff, counted in the round they started); `+
+    `an active period is a run of active rounds (yellow in the plots After a collapse). `+
     `Dashed: the companies of every product started in the period (with equal start costs, as in Cost flat or ultra flat, the money spent on starting them). Sites: each counted once in a period (full: where a company started; dashed: started or collapsed). Fit: P(x₀)·(x/x₀)^slope through the curve at x₀.`;
 }
-// Diff (0 … 10), its menus, the scales, the fits
-{const opts=Array.from({length:11},(_,k)=>`<option value="${k}">${k}</option>`).join('');
+// Diff (0 … 100: about 15 starts fail in a typical round of the standard setup), its menus, the scales, the fits
+{const opts=[0,1,2,3,4,5,6,7,8,9,10,12,15,20,25,30,40,50,75,100].map(k=>`<option value="${k}">${k}</option>`).join('');
   document.querySelectorAll('.diffSel').forEach(sel=>{sel.innerHTML=opts; sel.value=String(apDiff);
     sel.onchange=()=>{apDiff=+sel.value; document.querySelectorAll('.diffSel').forEach(x=>x.value=String(apDiff)); drawCT(true); apDraw(true)}});
   document.querySelectorAll('#apScale button').forEach(b=>b.onclick=()=>{apScale=b.dataset.s;
@@ -5101,7 +5104,7 @@ function drawChart(out){
       put(c.before,'right',4*dpr); put(c.after,'left',4*dpr)});
     cctx.restore()}
   if(out){                                     // axis labels and legend of the saved picture, over the lines
-    cctx.font=pfont(11,z); cctx.fillStyle='#4a5872'; cctx.textAlign='center'; cctx.textBaseline='bottom';
+    cctx.font=pfont(11,z); cctx.fillStyle=LABC(); cctx.textAlign='center'; cctx.textBaseline='bottom';
     cctx.fillText('time',pl+w/2,H-4*dpr);
     cctx.save(); cctx.translate(8*z,pt+h/2); cctx.rotate(-Math.PI/2); cctx.textBaseline='middle';
     cctx.fillText(CHART_Y[m]+(logy?' (log)':''),0,0); cctx.restore();
