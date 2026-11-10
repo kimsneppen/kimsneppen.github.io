@@ -248,7 +248,7 @@
      however many rows it wraps into (--barB is set by the script; the fixed tops are fallbacks) */
   .canvas-wrap .rdout,.canvas-wrap .wfctl,.canvas-wrap .diverged{top:var(--barB, 48px)}
   /* clean-picture buttons: lower right corner of the display */
-  .cornerpng{position:absolute;right:12px;bottom:10px;display:flex;gap:5px;z-index:3}
+  .cornerpng{position:absolute;right:12px;bottom:10px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;max-width:calc(100% - 24px);z-index:3}
   .cornerpng button{
     padding:4px 9px;font-size:11.5px;border-radius:8px;border:1px solid var(--line);
     background:rgba(255,255,255,.88);color:var(--accent);font-weight:700;cursor:pointer;
@@ -264,6 +264,26 @@
   .display.darkbg .cornerpng button.runbtn.paused{background:rgba(16,19,28,.85)}
   .cornerpng button.rstbtn{font-size:16px;color:var(--ink2)}
   .cornerpng .cgap{width:6px}
+  /* 3D: the rotation speed of the cube (lower right), the x cut (a bar along the bottom) and the
+     transparency threshold (under the free / fixed switch of the colour scale) */
+  .cornerpng .rotctl{display:flex;align-items:center;gap:5px;height:28px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.88);font-size:12px;color:var(--ink2);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700}
+  .cornerpng .rotctl input{width:72px;accent-color:var(--accent)}
+  .cornerpng .rotctl b{font-size:10.5px;min-width:38px;text-align:right}
+  .cornerpng .rotctl[hidden],.cornerpng .lseg[hidden]{display:none}
+  .display.darkbg .cornerpng .rotctl{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
+  .cutx{position:absolute;left:12px;right:12px;bottom:46px;display:flex;align-items:center;gap:8px;z-index:2;font-size:11px;color:var(--ink2);pointer-events:none}
+  .cutx[hidden]{display:none}
+  .cutx input{flex:1;min-width:60px;accent-color:var(--accent);pointer-events:auto}
+  .cutx span,.cutx b{background:rgba(255,255,255,.8);border-radius:6px;padding:2px 6px;pointer-events:auto;white-space:nowrap}
+  .cutx b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;min-width:48px;text-align:center}
+  .display.darkbg .cutx span,.display.darkbg .cutx b{background:rgba(16,19,28,.8);color:#c7d2fe}
+  .cutv{position:absolute;top:var(--barB,48px);left:var(--cutL,50%);display:flex;align-items:center;gap:6px;z-index:3;font-size:11px;color:var(--ink2);background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:8px;padding:3px 8px;backdrop-filter:blur(2px);white-space:nowrap}
+  .cutv[hidden]{display:none}
+  .cutv input{width:90px;accent-color:var(--accent)}
+  .cutv b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;min-width:34px}
+  .display.darkbg .cutv{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
+  #rowSize[hidden]{display:none !important}
+  .seg button:disabled{opacity:.35;cursor:default}
   /* the L switch: 64 | 128 | 256, the one in use lit; crossed out when the run uses another L */
   .cornerpng .lseg{position:relative;display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:rgba(255,255,255,.88)}
   .cornerpng .lseg button{border:0;border-radius:0;background:transparent;padding:0 7px;height:28px;font-size:11px;line-height:26px;color:var(--ink2);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700}
@@ -565,6 +585,8 @@
     .rdout{top:46px;right:8px;font-size:11px;gap:2px 8px;padding:3px 8px;max-width:calc(100% - 16px)}
     .presets{left:8px;bottom:8px}
     .cornerpng{right:8px;bottom:8px}
+    .cutx{left:8px;right:8px;bottom:52px}
+    .cornerpng .rotctl{height:34px}
     .cornerpng button{padding:7px 11px;font-size:12.5px}
     .cornerpng button.runbtn,.cornerpng button.rstbtn{width:36px;height:34px;line-height:32px;padding:0}
     .cornerpng .lseg button{height:34px;line-height:32px;padding:0 8px;font-size:12px}
@@ -627,6 +649,10 @@
     /* narrow: the corner row wraps into two right-aligned lines beside the presets title */
     .cornerpng{flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 118px);row-gap:5px}
     .cornerpng .cgap{display:none}
+    .cornerpng .rotctl{height:32px}
+    .cornerpng .rotctl input{width:60px}
+    .cutx{bottom:86px}
+    .cutv{left:8px;z-index:2}
     .cornerpng .lseg button{height:32px;line-height:30px;padding:0 6px;font-size:11px}
     .lyaphead .ttl{width:100%}
     #cbTopCan{width:64px}
@@ -1385,12 +1411,22 @@
           <div class="lseg" id="segL2" title="box length L (the control panel's setting; crossed out when the run uses another L — a click still starts that L)">
             <button data-v="64">64</button><button data-v="128">128</button><button data-v="256">256</button><button data-v="512">512</button>
           </div>
+          <div class="lseg" id="segL3" hidden title="side L of the 3D cube (the control panel's setting; crossed out when the run uses another L — a click still starts that L)">
+            <button data-v="8">8</button><button data-v="16">16</button><button data-v="32">32</button><button data-v="64">64</button>
+          </div>
+          <span class="rotctl" id="rotCtl" hidden title="rotation of the cube in degrees per second — 0 stops it; then the tilt / rot / dist sliders of the view menu, and dragging on the cube, set the viewpoint">&#8635;<input type="range" id="rngSpin" min="0" max="10" step="1" value="3"><b id="spinVal">6&deg;/s</b></span>
           <span class="cgap"></span>
           <button id="bPngClean" title="save only the surface — no axes, labels, frame or colour bar — as a PNG (key c)">.png</button>
           <button id="bPngSq" title="the clean picture cut to the drawing itself and compressed into a square (key s)">sq</button>
           <button id="bFlip" class="sqbtn" title="plot −h instead of h (slope and curvature flip with it; |∇h| and the λ densities do not). The equation itself is unchanged.">±</button>
         </div>
         <div class="diverged" id="divergedMsg">Diverged — reduce dt, then Reset</div>
+        <div class="cutv" id="cutV" hidden title="transparency threshold of the cube: every lattice point whose coloured value lies below this fraction of the colour scale (from the lower end of the colour bar to the upper) is transparent — 0 % shows the whole cube, 100 % keeps only the ridges, the points that are a local maximum of the coloured variable along the x, the y or the z line through them">
+          <span>below</span><input type="range" id="rngCutV" min="0" max="100" step="1" value="0"><b id="cutVVal">0 %</b>
+        </div>
+        <div class="cutx" id="cutX" hidden title="vertical cut: the part of the cube beyond this distance from its x = 0 face is drawn 90 % transparent">
+          <span>cut x</span><input type="range" id="rngCutX" min="0" max="100" step="1" value="100"><b id="cutXVal">none</b>
+        </div>
         <div class="wfctl v3 folded" id="viewBox">
           <div><span>mode</span><select id="dispmode" title="display mode"></select></div>
           <div class="yrow"><span>plot</span>
@@ -1419,24 +1455,29 @@
           <div><span>tilt</span><input type="range" id="rngTilt" min="0" max="85" step="1" value="62"><b class="sv" id="v3TiltVal">62&deg;</b></div>
           <div><span>rot</span><input type="range" id="rngRot" min="0" max="360" step="5" value="0"><b class="sv" id="v3RotVal">0&deg;</b></div>
           <div><span>dist</span><input type="range" id="rngDist" min="1.1" max="10" step="0.1" value="5"><b class="sv" id="v3DistVal">5.0&middot;L</b></div>
+          <div id="rowSize" hidden title="size of the cube in the display"><span>size</span><input type="range" id="rngSize" min="0.3" max="1.6" step="0.05" value="1"><b class="sv" id="v3SizeVal">&times;1.0</b></div>
         </div>
         </div>
         <div class="presets" id="presetBox">
           <div class="prow">
             <button id="bPre1" title="1D KS: periodic, L=128, dx=0.5 (256 points), dt=0.1, jet &minus;&nabla;&sup2;h">KS 1D</button>
             <button id="bPre2" title="2D KS: L=128, dx=0.5 (256&sup2; points), surface 3D, flames &nabla;&sup2;h, tilt 62&deg;">KS 2D</button>
+            <button id="bPre3" title="3D KS: periodic cube, L = 32, dx = 0.5 (64&sup3; points), dt = 0.1, coloured by h&minus;&lang;h&rang; in jet, slowly rotating">KS 3D</button>
           </div>
           <div class="prow">
             <button id="bPre1a" title="KS 1D with &alpha; = 1 (extra &alpha;|&nabla;h| growth), dt = 0.1">KS 1D abs1</button>
             <button id="bPre2a" title="KS 2D with &alpha; = 1.5, dt = 0.1">KS 2D abs1</button>
+            <button id="bPre3a" title="KS 3D with &alpha; = 1.5, dt = 0.1">KS 3D abs1</button>
           </div>
           <div class="prow">
             <button id="bPre1n" title="KS 1D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.05">KS 1D nnl</button>
             <button id="bPre2n" title="KS 2D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.1">KS 2D nnl</button>
+            <button id="bPre3n" title="KS 3D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.1">KS 3D nnl</button>
           </div>
           <div class="prow">
             <button id="bPreK1" title="0.1&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2;: the &Lambda; = 0.1 equation with the standard KS nonlinearity, 1D, periodic, L = 128, dx = 0.5, dt = 0.1 — the view, colours, time step and line density of KS 1D">KKS 1D</button>
             <button id="bPreK2" title="0.1&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 2D: L = 128, dx = 0.5 (256&sup2; points), dt = 0.2 — surface 3D, flames &nabla;&sup2;h, tilt 62&deg;, time step as KS 2D">KKS 2D</button>
+            <button id="bPreK3" title="0.1&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 3D: L = 32, dx = 0.5 (64&sup3; points), dt = 0.2, the rotating cube of KS 3D">KKS 3D</button>
           </div>
           <div class="prow">
             <button id="bPreBeauty" data-pre="beauty" title="Beauty — Art 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 62&deg;, rot 0&deg;, dist 5&middot;L)">Art 2D</button>
@@ -1524,7 +1565,7 @@
         <div class="sect">
           <div class="row"><label>dimension</label>
             <div class="seg" id="segDim">
-              <button data-v="1" class="on">1D</button><button data-v="2">2D</button>
+              <button data-v="1" class="on">1D</button><button data-v="2">2D</button><button data-v="3" title="h(x, y, z, t) in a periodic cube: L = 8, 16, 32 or 64, at most 64&sup3; lattice points (dx is raised if needed)">3D</button>
             </div>
           </div>
           <div class="row"><label>boundary</label>
@@ -1583,7 +1624,7 @@
           <div class="hint">ETDRK4 integrates the stiff linear part exactly; dt is limited only by the
           nonlinearity. dt = 0.1 is accurate; dt = 0.25 is usually still stable. Space is spectral, so
           dx = 1 costs no accuracy; the dx control sets the lattice spacing, and the box of
-          length L is resolved with L/dx points (in 2D at most 1024&sup2;: a finer dx is
+          length L is resolved with L/dx points (in 2D at most 1024&sup2; and in 3D at most 64&sup3;: a finer dx is
           raised automatically). The time step picks itself from
           the strength of the nonlinear terms — 0.1 for plain KS, 0.02 up to |&beta;| = 2,
           0.01 for 2 &lt; |&beta;| &le; 3.5 and 0.005 beyond (in 2D, where one step costs L
@@ -1792,11 +1833,24 @@
           distance 5&thinsp;L). Changing any parameter by hand returns the button to <i>off</i>.</p>
 
           <h3>Model menu</h3>
-          <p><b>Dimension and box.</b> 1D or 2D, the physical length L of the box (default 128;
+          <p><b>Dimension and box.</b> 1D, 2D or 3D, the physical length L of the box (default 128;
           the lattice has L/dx points per direction, dx = 0.5 unless changed under Numerics),
           periodic or open boundaries. Periodic means the surface wraps
           around; open means a flat wall at each end (realised by mirroring the surface, so the
-          slope is zero at the walls). Open runs cost 2&times; (1D) or 4&times; (2D) the work.</p>
+          slope is zero at the walls). Open runs cost 2&times; (1D) or 4&times; (2D) the work.
+          In 3D the field h(x, y, z, t) lives in a periodic cube of side L = 8, 16, 32 or 64 with at
+          most 64&sup3; lattice points (dx is raised to keep it there: L = 64 runs at dx = 1), always
+          periodic; the equation is the same with &nabla; the three-dimensional gradient. The cube is
+          drawn as a volume: every lattice point is a small block in the colour of the chosen
+          quantity, and the cube turns slowly (the speed, down to 0, in the lower right corner; at 0
+          the tilt / rot / dist sliders of the view menu and dragging set the viewpoint, and a size
+          slider scales the cube). Two cuts look inside: the bar along the bottom cuts the cube by a
+          vertical plane x = const and draws everything beyond it 90 % transparent, and the
+          threshold under the free / fixed switch of the colour scale makes every point whose value
+          lies below the given fraction of the colour scale transparent — at 100 % only the ridges
+          remain, the points that are a local maximum of the coloured variable along the x, the y
+          or the z line through them. A step of the 3D equation costs L&sup3;/dx&sup3; transforms
+          of a 64&sup3; cube at L = 32: a few steps per second; L = 8 and 16 run at the pace of 2D.</p>
           <p><b>Initial condition.</b> A standing wave that fits the box: n full waves (periodic)
           or n half waves (open) of amplitude A; in 2D the product of the x- and y-waves. Waves
           with k &lt; 1 grow, so with A = 0.01 you can watch the clean exponential growth before
@@ -2148,6 +2202,20 @@ function fft2(re, im, nx, ny, inv, sr, si){   // rows then columns, no sub-array
   }
 }
 
+/* 3D: every z plane transformed with fft2 (on a view of the arrays), then the z lines — all
+   nx·ny of them at once with fftCols (stride nx·ny) when nz is a power of two, else one at a
+   time through the scratch pair tr, ti */
+function fft3(re, im, nx, ny, nz, inv, sr, si, tr, ti){
+  const P = nx*ny;
+  for(let z=0; z<nz; z++){ const o = z*P; fft2(re.subarray(o, o+P), im.subarray(o, o+P), nx, ny, inv, sr, si); }
+  if(!(nz & (nz-1))){ fftCols(re, im, P, nz, inv); return; }
+  for(let x=0; x<P; x++){
+    for(let z=0, p=x; z<nz; z++, p+=P){ tr[z]=re[p]; ti[z]=im[p]; }
+    fftRange(tr, ti, 0, nz, inv);
+    for(let z=0, p=x; z<nz; z++, p+=P){ re[p]=tr[z]; im[p]=ti[z]; }
+  }
+}
+
 /* the Λ∇²h + ∇⁴h + ∇⁶h equation (order 246): the +∇⁴h + ∇⁶h equation with a diffusion of
    strength Λ added. A wave grows at −Λk² + k⁴ − k⁶; the band exists only for Λ < 1/4, and the
    fastest growth, at k² = (1 + √(1−3Λ))/3, is at most 4/27 (Λ → 0): 0.135 at Λ = 0.02, 0.107 at
@@ -2169,30 +2237,38 @@ function cdivRe(ar, ai, br, bi){ return (ar*br + ai*bi)/(br*br + bi*bi); }
 const nl2Code = v => v === 2 ? 2 : (v === undefined || v) ? 1 : 0;
 
 function buildSim(P){
-  const mirror = P.bc === 'open';
+  const mirror = P.bc === 'open' && P.dim !== 3;   // 3D runs are periodic (mirroring a cube would cost 8×)
   const dxp = P.dx || 1;                    // lattice spacing: physical length = N*dx
   const N = P.N || Math.max(2, Math.round(P.L/dxp));
   const nx = mirror ? 2*N : N;
-  const ny = P.dim === 2 ? nx : 1;
-  const M  = nx*ny;
-  const physNx = N, physNy = P.dim === 2 ? N : 1;
+  const ny = P.dim >= 2 ? nx : 1;
+  const nz = P.dim === 3 ? nx : 1;          // 3D: a cube of nx³ points, index p = (k·ny + j)·nx + i
+  const M  = nx*ny*nz;
+  const physNx = N, physNy = P.dim >= 2 ? N : 1, physNz = P.dim === 3 ? N : 1;
+  const ROWS = ny*nz, PROWS = physNy*physNz;   // rows of nx points in the lattice, and in the physical domain
 
   // --- mode tables: wavenumbers, linear operator, dealias mask ---
   const KX = new Float64Array(M), KY = new Float64Array(M), K2 = new Float64Array(M);
+  const KZ = nz > 1 ? new Float64Array(M) : null;
   const LIN = new Float64Array(M), mask = new Float64Array(M);
-  const mlx = Math.floor(nx/3), mly = Math.floor(ny/3);
-  for(let j=0; j<ny; j++){
-    const mj = (j <= ny/2) ? j : j-ny;
-    const ky = (ny === 1) ? 0 : 2*Math.PI*mj/(ny*dxp);
-    for(let i=0; i<nx; i++){
-      const mi = (i <= nx/2) ? i : i-nx;
-      const kx = 2*Math.PI*mi/(nx*dxp);
-      const p = j*nx+i;
-      KX[p] = (2*Math.abs(mi) === nx) ? 0 : kx;   // zero Nyquist in derivatives
-      KY[p] = (ny > 1 && 2*Math.abs(mj) === ny) ? 0 : ky;
-      const k2 = kx*kx + ky*ky;
-      K2[p] = k2;
-      mask[p] = (Math.abs(mi) <= mlx && (ny === 1 || Math.abs(mj) <= mly)) ? 1 : 0;
+  const mlx = Math.floor(nx/3), mly = Math.floor(ny/3), mlz = Math.floor(nz/3);
+  for(let k=0; k<nz; k++){
+    const mk = (k <= nz/2) ? k : k-nz;
+    const kz = (nz === 1) ? 0 : 2*Math.PI*mk/(nz*dxp);
+    for(let j=0; j<ny; j++){
+      const mj = (j <= ny/2) ? j : j-ny;
+      const ky = (ny === 1) ? 0 : 2*Math.PI*mj/(ny*dxp);
+      for(let i=0; i<nx; i++){
+        const mi = (i <= nx/2) ? i : i-nx;
+        const kx = 2*Math.PI*mi/(nx*dxp);
+        const p = (k*ny + j)*nx + i;
+        KX[p] = (2*Math.abs(mi) === nx) ? 0 : kx;   // zero Nyquist in derivatives
+        KY[p] = (ny > 1 && 2*Math.abs(mj) === ny) ? 0 : ky;
+        if(KZ) KZ[p] = (2*Math.abs(mk) === nz) ? 0 : kz;
+        const k2 = kx*kx + ky*ky + kz*kz;
+        K2[p] = k2;
+        mask[p] = (Math.abs(mi) <= mlx && (ny === 1 || Math.abs(mj) <= mly) && (nz === 1 || Math.abs(mk) <= mlz)) ? 1 : 0;
+      }
     }
   }
 
@@ -2253,9 +2329,10 @@ function buildSim(P){
   const g1r=A(), g1i=A();
   const hr=A(), hi=A();
   const csr = new Float64Array(ny), csi = new Float64Array(ny);
+  const czr = new Float64Array(nz), czi = new Float64Array(nz);
   const h = A();                                         // real field for display
 
-  const FT = (re,im,inv) => { if(ny===1) fftCore(re,im,inv); else fft2(re,im,nx,ny,inv,csr,csi); };
+  const FT = (re,im,inv) => { if(nz>1) fft3(re,im,nx,ny,nz,inv,csr,csi,czr,czi); else if(ny===1) fftCore(re,im,inv); else fft2(re,im,nx,ny,inv,csr,csi); };
 
   /* nonlinearity: N = NL(grad h) + ALPHA*|grad h| + BETA*(grad h)^4 + SIGMA*(lap h)^2 + …, where the KS term NL is
      chosen in the header: NL2 = 1 the standard (∇h)², NL2 = 2 the exact growth along the normal
@@ -2270,12 +2347,18 @@ function buildSim(P){
   /* partner index q(p) = (-kx,-ky): Hermitian projection and the unpacking of two
      real fields transformed together; built once so the hot loops have no modulo */
   const PART = new Uint32Array(M);
-  for(let j=0;j<ny;j++){
-    const jc = (ny-j)%ny;
-    for(let i=0;i<nx;i++) PART[j*nx+i] = jc*nx + ((nx-i)%nx);
+  for(let k=0;k<nz;k++){
+    const kc = (nz-k)%nz;
+    for(let j=0;j<ny;j++){
+      const jc = (ny-j)%ny;
+      for(let i=0;i<nx;i++) PART[(k*ny+j)*nx+i] = (kc*ny+jc)*nx + ((nx-i)%nx);
+    }
   }
   const lpr=A(), lpi=A(), zr=A(), zi=A();          // Laplacian; packed transform for the γ term
   const fxr=A(), fxi=A();                          // the curvature-correction flux of order 40
+  const three = nz > 1;
+  const g2r = three ? A() : null, g2i = three ? A() : null;   // 3D: ∂z h in the real, ∇²h in the imaginary part
+  const fzr = three ? A() : null, fzi = three ? A() : null;   // 3D: the z component of the order-40 flux
 
   /* Nonlinearity N = NL2·(∇h)² + α|∇h| + β(∇h)⁴ + δ∇²h·(∇h)² + σ(∇²h)² + γ∇²[(∇h)²].
      σ(∇²h)²: the square of the curvature, the local term of second order in the
@@ -2290,7 +2373,15 @@ function buildSim(P){
   function nonlin(inr, ini, outr, outi){                 // dealiased pseudospectral N(v)
     const dOn = DELTA !== 0, gOn = GAMMA !== 0, sOn = SIGMA !== 0, lOn = dOn || sOn;   // lOn: ∇²h is needed in x-space
     let lap = null;
-    if(ny > 1){
+    if(three){
+      /* 3D: ∂x h + i·∂y h in one transform, ∂z h + i·∇²h in a second (∇²h is then always at hand) */
+      for(let p=0;p<M;p++){
+        const kx = KX[p], ky = KY[p], kz = KZ[p], k2 = K2[p], r = inr[p], i = ini[p];
+        g1r[p] = -kx*i - ky*r;  g1i[p] = kx*r - ky*i;
+        g2r[p] = (k2 - kz)*i;   g2i[p] = (kz - k2)*r;
+      }
+      FT(g1r, g1i, true); FT(g2r, g2i, true); lap = g2i;
+    } else if(ny > 1){
       for(let p=0;p<M;p++){
         const kx = KX[p], ky = KY[p], r = inr[p], i = ini[p];
         g1r[p] = -kx*i - ky*r;
@@ -2309,13 +2400,14 @@ function buildSim(P){
     }
     const two = ny > 1, tr = gOn ? zr : outr, ti = gOn ? zi : outi;
     if(ALPHA === 0 && BETA === 0 && NL2 === 1 && !dOn && !gOn && !sOn){
-      if(two) for(let p=0;p<M;p++){ const a = g1r[p], b = g1i[p]; outr[p] = a*a + b*b; outi[p] = 0; }
+      if(three)   for(let p=0;p<M;p++){ const a = g1r[p], b = g1i[p], c = g2r[p]; outr[p] = a*a + b*b + c*c; outi[p] = 0; }
+      else if(two) for(let p=0;p<M;p++){ const a = g1r[p], b = g1i[p]; outr[p] = a*a + b*b; outi[p] = 0; }
       else    for(let p=0;p<M;p++){ outr[p] = g1r[p]*g1r[p]; outi[p] = 0; }
     } else {
       for(let p=0;p<M;p++){
-        const a = g1r[p], b = two ? g1i[p] : 0, g = a*a + b*b;
+        const a = g1r[p], b = two ? g1i[p] : 0, c = three ? g2r[p] : 0, g = a*a + b*b + c*c;
         let n = (NL2 === 1 ? g : NL2 === 2 ? 2*(Math.sqrt(1 + g) - 1) : 0) + BETA*g*g;
-        if(ALPHA !== 0) n += ALPHA*((two && ABS_SUM) ? ((a<0?-a:a) + (b<0?-b:b)) : Math.sqrt(g));
+        if(ALPHA !== 0) n += ALPHA*((two && ABS_SUM) ? ((a<0?-a:a) + (b<0?-b:b) + (c<0?-c:c)) : Math.sqrt(g));
         if(dOn) n += DELTA*lap[p]*g;
         if(sOn){ const l = lap[p]; n += SIGMA*l*l; }
         tr[p] = n; ti[p] = gOn ? g : 0;                  // g packed into the imaginary part
@@ -2333,15 +2425,26 @@ function buildSim(P){
     } else {
       for(let p=0;p<M;p++){ outr[p]*=mask[p]; outi[p]*=mask[p]; }
     }
-    if(GEO) geoCorrection(g1r, g1i, outr, outi);
+    if(GEO) geoCorrection(g1r, g1i, g2r, outr, outi);
   }
   /* order 40, the mean-curvature form −∇·(∇h/√(1+|∇h|²)) − ∇⁴h of the KS operator: the exactly
      integrated linear part keeps −∇²h, and the difference ∇·(∇h·w), w = 1 − 1/√(1+|∇h|²), is added
      to N here — of order |∇h|³ on gentle slopes, and cancelling the instability on steep ones. In 2D
      the flux (Fx, Fy) rides in one complex transform and is unpacked with the Hermitian symmetry;
      the divergence is taken spectrally and dealiased. hx, hy: ∇h in x-space. */
-  function geoCorrection(hx, hy, outr, outi){
+  function geoCorrection(hx, hy, hz, outr, outi){
     const two = ny > 1;
+    if(three){                                   // 3D: (Fx + iFy) in one transform, Fz in a second
+      for(let p=0;p<M;p++){ const a = hx[p], b = hy[p], c = hz[p], w = 1 - 1/Math.sqrt(1 + a*a + b*b + c*c); fxr[p] = a*w; fxi[p] = b*w; fzr[p] = c*w; fzi[p] = 0; }
+      FT(fxr, fxi, false); FT(fzr, fzi, false);
+      for(let p=0;p<M;p++){
+        const q = PART[p], zrp = fxr[p], zip = fxi[p], zrq = fxr[q], ziq = fxi[q];
+        const ar = 0.5*(zrp + zrq), ai = 0.5*(zip - ziq), br = 0.5*(zip + ziq), bi = 0.5*(zrq - zrp);
+        const kx = KX[p], ky = KY[p], kz = KZ[p], m = mask[p];
+        outr[p] += (-kx*ai - ky*bi - kz*fzi[p])*m; outi[p] += (kx*ar + ky*br + kz*fzr[p])*m;
+      }
+      return;
+    }
     for(let p=0;p<M;p++){ const a = hx[p], b = two ? hy[p] : 0, w = 1 - 1/Math.sqrt(1 + a*a + b*b); fxr[p] = a*w; fxi[p] = two ? b*w : 0; }
     FT(fxr, fxi, false);
     if(two){
@@ -2356,7 +2459,7 @@ function buildSim(P){
     }
   }
 
-  const s = { P, nx, ny, M, N, dx:dxp, L:N*dxp, physNx, physNy, mirror, t:0, meanH:0, h, W:0, hmax:0 };
+  const s = { P, nx, ny, nz, M, N, dx:dxp, L:N*dxp, physNx, physNy, physNz, mirror, t:0, meanH:0, h, W:0, hmax:0 };
 
   const HP = ny > 1 ? PART : null;
   function hermitize(xr, xi){
@@ -2403,7 +2506,7 @@ function buildSim(P){
      ε along the same direction.  The direction converges to the Lyapunov
      vector — the most unstable perturbation of the current state. ---- */
   const wr=A(), wi=A(), dr=A(), di=A();
-  const NP = physNx*physNy;
+  const NP = physNx*physNy*physNz;
   /* mode 'renorm': Benettin, twin pulled back to ε after every frame (λ = running
      average).  mode 'free': the twin is never pulled back; |δh|(t) is recorded
      until it saturates at √2·W — two completely diverged interfaces — and λ is
@@ -2545,11 +2648,21 @@ function buildSim(P){
       FT(t5r, t5i, true);
     }
   }
+  /* 3D: only the total is evaluated — δh·∂tδh with ∂tδh = L δh + N(w) − N(h), exactly as the
+     integrator sees it (dealiased, the k = 0 mode removed); the single terms are not separated,
+     so their fields stay zero and the whole of λ(x) sits in the first slot */
+  function budgetFields3D(){
+    nonlin(wr, wi, t2r, t2i); nonlin(vr, vi, t3r, t3i);
+    for(let p=0;p<M;p++){ const l = LIN[p]; t1r[p] = l*dr[p] + t2r[p] - t3r[p]; t1i[p] = l*di[p] + t2i[p] - t3i[p]; }
+    t1r[0] = 0; t1i[0] = 0;
+    FT(t1r, t1i, true);
+    t1i.fill(0); t2r.fill(0); t2i.fill(0); t4r.fill(0); t4i.fill(0); t5r.fill(0); t9r.fill(0);
+  }
   /* step 2, with dr = δh(x) real and norm2 = ⟨δh²⟩ over the physical domain */
   function budgetDensities(norm2, dtSeg){
     const inv = 1/norm2, F = budget.fld;
     let sL1=0, sL2=0, sN=0, sA=0, sB=0, sG=0, sD=0, sS=0;
-    for(let j=0;j<physNy;j++){
+    for(let j=0;j<PROWS;j++){
       const row=j*nx;
       for(let i=0;i<physNx;i++){
         const p=row+i, d=dr[p]*inv;
@@ -2580,10 +2693,10 @@ function buildSim(P){
      physical domain (mirrored into the extension for open boundaries) */
   function seedTwin(){
     let sum2 = 0;
-    for(let j=0;j<physNy;j++){ const row=j*nx; for(let i=0;i<physNx;i++){ const d=dr[row+i]; sum2+=d*d; } }
+    for(let j=0;j<PROWS;j++){ const row=j*nx; for(let i=0;i<physNx;i++){ const d=dr[row+i]; sum2+=d*d; } }
     const f = lyap.eps/Math.sqrt(sum2/NP);
-    for(let j=0;j<ny;j++){
-      const jp = j < physNy ? j : ny-1-j, row = j*nx, prow = jp*nx;
+    for(let j=0;j<ROWS;j++){
+      const jp = j < PROWS ? j : ny-1-j, row = j*nx, prow = jp*nx;
       for(let i=0;i<nx;i++){
         const ip = i < physNx ? i : nx-1-i;
         wr[row+i] = h[row+i] + f*dr[prow+ip]; wi[row+i] = 0;
@@ -2623,10 +2736,10 @@ function buildSim(P){
     }
     if(!(n2 > 0) || !isFinite(n2)){ s.lyapReset(true); return; }
     lyap.kbar = Math.sqrt(kk/n2);
-    budgetFields();                                   // term fields from the spectral δv̂
+    if(three) budgetFields3D(); else budgetFields();  // term fields from the spectral δv̂
     FT(dr, di, true);                                 // dr = δh(x)
     let sum2=0, mx=0, node=0;
-    for(let j=0;j<physNy;j++){
+    for(let j=0;j<PROWS;j++){
       const row=j*nx;
       for(let i=0;i<physNx;i++){
         const d=dr[row+i]; sum2+=d*d;
@@ -2681,7 +2794,7 @@ function buildSim(P){
        (Benettin) or the whole run since the seed (free run) */
     lyap.span = lyap.mode === 'free' ? s.t - lyap.tStart : dtSeg;
     const inv = 1/mx;
-    for(let j=0;j<physNy;j++){ const row=j*nx; for(let i=0;i<physNx;i++) lyap.vec[row+i] = dr[row+i]*inv; }
+    for(let j=0;j<PROWS;j++){ const row=j*nx; for(let i=0;i<physNx;i++) lyap.vec[row+i] = dr[row+i]*inv; }
     lyap.node = node; lyap.ready = true;
     if(lyap.mode !== 'free') seedTwin();              // back to distance ε, same direction
     else if(mirror){
@@ -2741,7 +2854,7 @@ function buildSim(P){
     const key = (kind === 'lydiv' || kind === 'nlydiv') ? 'tot' : kind, F = budget.fld[key];
     if(!lyap.on || !lyap.ready || !budget.ready || !F){ out.fill(0); return; }
     const sg = kind === 'nlydiv' ? -1 : 1;
-    for(let j=0;j<physNy;j++){
+    for(let j=0;j<PROWS;j++){
       const row = j*nx;
       for(let i=0;i<physNx;i++) out[row+i] = sg*F[row+i];
     }
@@ -2758,6 +2871,17 @@ function buildSim(P){
     const inv = 1/(M*M);
     if(ny === 1){
       for(let i=0;i<nkBins;i++){ const pw = (vr[i]*vr[i] + vi[i]*vi[i])*inv; acc[i] += (i === 0 || i === nx>>1) ? pw : 2*pw; }
+    } else if(three){
+      for(let k=0;k<nz;k++){
+        const mk = (k <= nz/2) ? k : k-nz;
+        for(let j=0;j<ny;j++){
+          const mj = (j <= ny/2) ? j : j-ny;
+          for(let i=0;i<nx;i++){
+            const mi = (i <= nx/2) ? i : i-nx, m = Math.round(Math.sqrt(mi*mi + mj*mj + mk*mk));
+            if(m < nkBins){ const p = (k*ny+j)*nx+i; acc[m] += (vr[p]*vr[p] + vi[p]*vi[p])*inv; }
+          }
+        }
+      }
     } else {
       for(let j=0;j<ny;j++){
         const mj = (j <= ny/2) ? j : j-ny;
@@ -2801,13 +2925,13 @@ function buildSim(P){
       s.meanH += vr[0]/M; vr[0]=0; vi[0]=0;
     } else h.set(hr);
     let sum2=0, mx=0;
-    for(let j=0;j<physNy;j++){
+    for(let j=0;j<PROWS;j++){
       const row = j*nx;
       for(let i=0;i<physNx;i++){
         const x=h[row+i]; sum2+=x*x; const a=x<0?-x:x; if(a>mx) mx=a;
       }
     }
-    s.W = Math.sqrt(sum2/(physNx*physNy)); s.hmax = mx;
+    s.W = Math.sqrt(sum2/NP); s.hmax = mx;
   };
 
   s.frame = function(n){ for(let i=0;i<n;i++) s.step(); s.sync(); };
@@ -2840,6 +2964,15 @@ function buildSim(P){
       for(let p=0;p<M;p++){ const a=g1r[p]; out[p] = a<0?-a:a; }
       return;
     }
+    if(three){                                // |∇h| = √(hx²+hy²+hz²): two transforms
+      for(let p=0;p<M;p++){
+        const kx = KX[p], ky = KY[p], kz = KZ[p], r = vr[p], i = vi[p];
+        g1r[p] = -kx*i - ky*r; g1i[p] = kx*r - ky*i; g2r[p] = -kz*i; g2i[p] = kz*r;
+      }
+      FT(g1r, g1i, true); FT(g2r, g2i, true);
+      for(let p=0;p<M;p++){ const a=g1r[p], b=g1i[p], c=g2r[p]; out[p] = Math.sqrt(a*a+b*b+c*c); }
+      return;
+    }
     for(let p=0;p<M;p++){                     // both components in one transform
       const kx = KX[p], ky = KY[p], r = vr[p], i = vi[p];
       g1r[p] = -kx*i - ky*r;
@@ -2847,6 +2980,14 @@ function buildSim(P){
     }
     FT(g1r, g1i, true);
     for(let p=0;p<M;p++){ const a=g1r[p], b=g1i[p]; out[p] = Math.sqrt(a*a+b*b); }
+  };
+
+  /* replace the field by a given real array on the whole lattice (tests, external drivers) */
+  s.setField = function(f){
+    hr.set(f); hi.fill(0); FT(hr, hi, false);
+    vr.set(hr); vi.set(hi);
+    s.meanH = vr[0]/M; vr[0]=0; vi[0]=0;
+    s.sync();
   };
 
   /* localized disturbance at TWO places, strongly asymmetric:
@@ -2859,8 +3000,8 @@ function buildSim(P){
       const a = Math.floor(f*N/32);
       return [a, Math.max(a+1, Math.floor((f+1)*N/32))];
     };
-    const add = (i, j) => {
-      hr[j*nx+i] += eps;
+    const add = (i, j, k) => {
+      hr[((k|0)*ny+j)*nx+i] += eps;
       if(mirror){
         hr[j*nx+(nx-1-i)] += eps;
         if(ny > 1){ hr[(ny-1-j)*nx+i] += eps; hr[(ny-1-j)*nx+(nx-1-i)] += eps; }
@@ -2871,6 +3012,11 @@ function buildSim(P){
         const [a,b] = seg(f);
         for(let i=a; i<b; i++) add(i, 0);
       }
+    } else if(three){                        // 3D: two small cubes, x,y,z = 8–9 L/32 and x = 11–12, y = 23–24, z = 17–18 L/32
+      let [a,b] = seg(8), [c,d] = seg(8), [e,f] = seg(8);
+      for(let k=e;k<f;k++) for(let j=c;j<d;j++) for(let i=a;i<b;i++) add(i, j, k);
+      [a,b] = seg(11); [c,d] = seg(23); [e,f] = seg(17);
+      for(let k=e;k<f;k++) for(let j=c;j<d;j++) for(let i=a;i<b;i++) add(i, j, k);
     } else {
       let [a,b] = seg(8), [c,d] = seg(8);
       for(let j=c;j<d;j++) for(let i=a;i<b;i++) add(i, j);
@@ -2886,17 +3032,19 @@ function buildSim(P){
 
   // --- initial condition: standing wave matched to the boundary condition ---
   (function init(){
-    const Lp = N, a = P.amp;                // the standing wave is set on the N lattice points
-    for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){
+    const Lp = N, a = P.amp, nwz = P.nwz || P.nwy;   // the standing wave is set on the N lattice points
+    for(let k=0;k<nz;k++) for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){
       let f;
       if(!mirror){
         f = Math.sin(2*Math.PI*P.nwx*i/Lp);
         if(ny > 1) f *= Math.sin(2*Math.PI*P.nwy*j/Lp);
+        if(nz > 1) f *= Math.sin(2*Math.PI*nwz*k/Lp);
       } else {                                // cosine: flat (all odd derivs = 0) at walls
         f = Math.cos(Math.PI*P.nwx*(i+0.5)/Lp);
         if(ny > 1) f *= Math.cos(Math.PI*P.nwy*(j+0.5)/Lp);
       }
-      hr[j*nx+i] = a*f; hi[j*nx+i] = 0;
+      const p = (k*ny+j)*nx+i;
+      hr[p] = a*f; hi[p] = 0;
     }
     /* optional random component (systematic scans over several initial
        conditions): uniform noise of amplitude P.noise, seeded by P.seed */
@@ -3030,8 +3178,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const latticeN = () => Math.max(2, Math.round(params.L/params.dx));
   function clampDx(){
     dxClamped = false;
-    if(params.dim !== 2) return;
-    while(latticeN() > 1024){
+    if(params.dim === 1) return;
+    const cap = params.dim === 3 ? 64 : 1024;          // 3D: at most 64³ points (memory and time)
+    while(latticeN() > cap){
       const i = DXV.indexOf(params.dx);
       if(i < 0 || i >= DXV.length-1) break;
       params.dx = DXV[i+1]; dxClamped = true;
@@ -3044,12 +3193,12 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      height of the 3D surface, and the coloured field of the map */
   let yvar = 'h';
   const YCYCLE = ['h','dx','absdx','lap'];
-  const geoKindOf = () => (params.dim === 2 ? (YCYCLE.includes(yvar) ? yvar : 'h') : (yvar === 'dx' ? 'dx' : 'h'));
+  const geoKindOf = () => (params.dim === 3 ? 'h' : params.dim === 2 ? (YCYCLE.includes(yvar) ? yvar : 'h') : (yvar === 'dx' ? 'dx' : 'h'));
   let sim = null, running = false, diverged = false;
   let profScale = 1e-6;
   let stamp = 0;
   let qkind = 'plain';
-  const modeSel = { 1:'wf3dsw', 2:'map' };
+  const modeSel = { 1:'wf3dsw', 2:'map', 3:'cube' };
   const view = { tilt:62, rot:0, dist:5 };   // default viewpoint of the 2D surface: tilt 62°
   let snapshots = [], nextSnap = 0;
   let wfSepAuto = true, wfSep = 2;
@@ -3205,16 +3354,17 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const qwin = {};
   function absMax(q){
     let mx = 0;
-    for(let j=0;j<sim.physNy;j++) for(let i=0;i<sim.physNx;i++){ const a = Math.abs(q[j*sim.nx+i]); if(a>mx) mx = a; }
+    const rows = sim.physNy*sim.physNz;
+    for(let j=0;j<rows;j++) for(let i=0;i<sim.physNx;i++){ const a = Math.abs(q[j*sim.nx+i]); if(a>mx) mx = a; }
     return mx;
   }
   /* 98th percentile of |q| over the physical domain (a sort of the |values|) */
   let pctBuf = null;
   function robustMax(q){
-    const N = sim.physNx*sim.physNy;
+    const rows = sim.physNy*sim.physNz, N = sim.physNx*rows;
     if(!pctBuf || pctBuf.length !== N) pctBuf = new Float64Array(N);
     let m = 0;
-    for(let j=0;j<sim.physNy;j++) for(let i=0;i<sim.physNx;i++) pctBuf[m++] = Math.abs(q[j*sim.nx+i]);
+    for(let j=0;j<rows;j++) for(let i=0;i<sim.physNx;i++) pctBuf[m++] = Math.abs(q[j*sim.nx+i]);
     pctBuf.sort();
     return pctBuf[Math.min(N-1, Math.floor(0.98*(N-1)))];
   }
@@ -3287,13 +3437,12 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   /* the scales of the two halves in 'grey λ<0' mode (P: λ > 0, N: λ < 0); a fixed scale serves both */
   const splitS = (kind, P) => fixedOf(kind) || (P ? qscalesP[kind] : qscalesN[kind]);
   function kindLabel(kind){
-    const two = params.dim === 2;
     if(isTermKind(kind)) return 'λ(' + termLabel(kind) + ')';
     if(flipSign && flips(kind)) return kind === 'h' ? '−(h−⟨h⟩)' : '−' + kindLabel0(kind);
     return kindLabel0(kind);
   }
   function kindLabel0(kind){
-    const two = params.dim === 2;
+    const two = params.dim >= 2;
     return { h:'h−⟨h⟩', dx: two?'∂h/∂x':'dh/dx', absdx: two?'|∇h|':'|dh/dx|',
              lap: two?'∇²h':'d²h/dx²', nlap: two?'−∇²h':'−d²h/dx²',
              lydiv:'λ(x)', nlydiv:'−λ(x)' }[kind];
@@ -3501,8 +3650,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     setTxt('lK', 'k', ok && isFinite(ly.kbar) ? ly.kbar.toFixed(2) : '—');
     let nd = '—';
     if(ok){
-      const i = ly.node % sim.nx, j = (ly.node - i)/sim.nx, dxp = params.dx;
+      const nxy = sim.nx*sim.ny, k = Math.floor(ly.node/nxy), rem = ly.node - k*nxy, i = rem % sim.nx, j = (rem - i)/sim.nx, dxp = params.dx;
       nd = params.dim === 1 ? 'x = ' + fmt(i*dxp)
+         : params.dim === 3 ? '(x, y, z) = (' + fmt(i*dxp) + ', ' + fmt(j*dxp) + ', ' + fmt(k*dxp) + ')'
                             : '(x, y) = (' + fmt(i*dxp) + ', ' + fmt(j*dxp) + ')';
     }
     setTxt('lNode', 'node', nd);
@@ -4283,6 +4433,183 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
 
   /* width of the right-hand margin occupied by a colour bar, so the PNG stamp
      can keep clear of it */
+  /* ---------------- 3D: the cube ----------------
+     h(x, y, z) in a periodic cube, drawn as a volume: every lattice point is a block in the
+     colour of the chosen quantity (cidx, as on the 2D map) with one of three opacities — 0
+     (transparent), 10 % (beyond the x cut) or 1 (opaque). The picture is ray-cast into an
+     off-screen image of R×R pixels: one ray per pixel walks the blocks it crosses
+     (Amanatides & Woo) and composites them front to back, stopping at the first opaque block
+     or when little light is left; the image is then scaled onto the display. R follows the
+     time a frame takes. The camera is that of the 2D surface — rotation about the vertical
+     z axis, tilt (0 = seen from above), perspective distance — with its own viewpoint. */
+  const view3 = { tilt:60, rot:35, dist:5 };
+  const curView = () => params.dim === 3 ? view3 : view;
+  const cube = { spin:3, size:1, cutX:100, cutV:0, R:200, msR:0, lastDraw:0 };   // spin: the cube turns 2·spin degrees per second
+  const vol = { can:document.createElement('canvas'), ctx:null, img:null, ci:null, al:null, key:'' };
+  vol.ctx = vol.can.getContext('2d');
+  /* colour index and opacity class of every lattice point for the colouring `kind` (cached per frame) */
+  function volFields(kind){
+    const n = sim.physNx, M = sim.M, S = scaleFor(kind), q = getQ(kind);
+    const key = [stamp, kind, S, lutName, lySplit, cube.cutX, cube.cutV, flipSign, dispGain].join('|');
+    if(vol.key === key && vol.ci && vol.ci.length === M) return;
+    vol.key = key;
+    if(!vol.ci || vol.ci.length !== M){ vol.ci = new Uint16Array(M); vol.al = new Uint8Array(M); }
+    const ci = vol.ci, al = vol.al, pct = cube.cutV, n2 = n*n;
+    for(let p=0;p<M;p++) ci[p] = cidx(kind, q[p], S);
+    if(pct >= 100){
+      /* ridges: the points that are a local maximum of the quantity along the x, the y or the z line through them */
+      for(let k=0;k<n;k++){
+        const k0 = k*n2, km = ((k+n-1)%n)*n2, kp = ((k+1)%n)*n2;
+        for(let j=0;j<n;j++){
+          const row = k0 + j*n, rjm = k0 + ((j+n-1)%n)*n, rjp = k0 + ((j+1)%n)*n, rkm = km + j*n, rkp = kp + j*n;
+          for(let i=0;i<n;i++){
+            const v = q[row+i];
+            al[row+i] = ((v > q[row + (i+n-1)%n] && v > q[row + (i+1)%n]) || (v > q[rjm+i] && v > q[rjp+i]) || (v > q[rkm+i] && v > q[rkp+i])) ? 2 : 0;
+          }
+        }
+      }
+    } else if(pct <= 0) al.fill(2);
+    else {
+      /* the threshold in per cent of the colour scale, from the lower end of the colour bar to the upper */
+      const lo = kind === 'absdx' ? 0 : -S, thr = lo + pct/100*(S - lo);
+      for(let p=0;p<M;p++) al[p] = q[p] >= thr ? 2 : 0;
+    }
+    const cx = Math.round(cube.cutX/100*n);                 // beyond the cut, i ≥ cx: 10 %
+    if(cx < n) for(let k=0;k<n;k++) for(let j=0;j<n;j++){ const row = k*n2 + j*n; for(let i=cx;i<n;i++) if(al[row+i]) al[row+i] = 1; }
+  }
+  /* the camera: unit vectors of screen x, screen y and depth (toward the eye) in cube coordinates,
+     and the eye's distance in cube sides (Infinity: no perspective) */
+  function camBasis(){
+    const vw = curView(), rot = vw.rot*Math.PI/180, tilt = vw.tilt*Math.PI/180;
+    const cA = Math.cos(rot), sA = Math.sin(rot), cT = Math.cos(tilt), sT = Math.sin(tilt);
+    return { eu:[cA, sA, 0], ev:[-sA*cT, cA*cT, sT], ed:[sA*sT, -cA*sT, cT], d: vw.dist >= 10 ? Infinity : vw.dist };
+  }
+  /* the picture spans this many cube sides: the bounding sphere, enlarged by the perspective of its nearest point */
+  const cubeSpan = C => Math.sqrt(3)*(isFinite(C.d) ? C.d/(C.d - Math.sqrt(3)/2) : 1)*1.02/cube.size;
+  function renderVolume(R){
+    const n = sim.physNx, ci = vol.ci, al = vol.al, L3 = LUT, n2 = n*n;
+    if(vol.can.width !== R){ vol.can.width = vol.can.height = R; vol.img = vol.ctx.createImageData(R, R); }
+    const d = vol.img.data;
+    const C = camBasis(), eu = C.eu, ev = C.ev, ed = C.ed, dcam = C.d, persp = isFinite(dcam), span = cubeSpan(C);
+    const bg = hex2rgb(TH.bg), bgr = bg[0], bgg = bg[1], bgb = bg[2];
+    /* light from the upper left front, fixed to the eye: the brightness of the six block faces −x +x −y +y −z +z */
+    let lx = 0.35*eu[0] + 0.45*ev[0] + 0.82*ed[0], ly = 0.35*eu[1] + 0.45*ev[1] + 0.82*ed[1], lz = 0.35*eu[2] + 0.45*ev[2] + 0.82*ed[2];
+    const ln = 1/Math.sqrt(lx*lx + ly*ly + lz*lz); lx *= ln; ly *= ln; lz *= ln;
+    const sh = dot => 0.55 + 0.45*Math.max(0, dot);
+    const S0 = sh(-lx), S1 = sh(lx), S2 = sh(-ly), S3 = sh(ly), S4 = sh(-lz), S5 = sh(lz);
+    const SH = [S0, S1, S2, S3, S4, S5];
+    const ex = persp ? dcam*ed[0] : 0, ey = persp ? dcam*ed[1] : 0, ez = persp ? dcam*ed[2] : 0;
+    let o = 0;
+    for(let py=0; py<R; py++){
+      const v = -((py + 0.5)/R - 0.5)*span;
+      for(let px=0; px<R; px++, o+=4){
+        const u = ((px + 0.5)/R - 0.5)*span;
+        const Px = u*eu[0] + v*ev[0], Py = u*eu[1] + v*ev[1], Pz = u*eu[2] + v*ev[2];   // the pixel's point on the depth-0 plane
+        let ox, oy, oz, dx, dy, dz;
+        if(persp){ ox = ex; oy = ey; oz = ez; dx = Px - ox; dy = Py - oy; dz = Pz - oz; }
+        else { ox = Px + 4*ed[0]; oy = Py + 4*ed[1]; oz = Pz + 4*ed[2]; dx = -ed[0]; dy = -ed[1]; dz = -ed[2]; }
+        /* lattice coordinates: the cube is [0, n)³ */
+        ox = (ox + 0.5)*n; oy = (oy + 0.5)*n; oz = (oz + 0.5)*n; dx *= n; dy *= n; dz *= n;
+        /* where the ray enters and leaves the cube */
+        let t0 = -Infinity, t1 = Infinity, face = -1, miss = false;
+        if(Math.abs(dx) < 1e-12){ if(ox < 0 || ox >= n) miss = true; }
+        else { let ta = -ox/dx, tb = (n - ox)/dx; if(ta > tb){ const t = ta; ta = tb; tb = t; } if(ta > t0){ t0 = ta; face = dx > 0 ? 0 : 1; } if(tb < t1) t1 = tb; }
+        if(!miss){ if(Math.abs(dy) < 1e-12){ if(oy < 0 || oy >= n) miss = true; }
+          else { let ta = -oy/dy, tb = (n - oy)/dy; if(ta > tb){ const t = ta; ta = tb; tb = t; } if(ta > t0){ t0 = ta; face = dy > 0 ? 2 : 3; } if(tb < t1) t1 = tb; } }
+        if(!miss){ if(Math.abs(dz) < 1e-12){ if(oz < 0 || oz >= n) miss = true; }
+          else { let ta = -oz/dz, tb = (n - oz)/dz; if(ta > tb){ const t = ta; ta = tb; tb = t; } if(ta > t0){ t0 = ta; face = dz > 0 ? 4 : 5; } if(tb < t1) t1 = tb; } }
+        if(miss || t1 <= t0 || face < 0){ d[o] = bgr; d[o+1] = bgg; d[o+2] = bgb; d[o+3] = 255; continue; }
+        /* the first block and the walk */
+        const x = ox + dx*t0, y = oy + dy*t0, z = oz + dz*t0;
+        let ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
+        if(ix < 0) ix = 0; else if(ix >= n) ix = n-1;
+        if(iy < 0) iy = 0; else if(iy >= n) iy = n-1;
+        if(iz < 0) iz = 0; else if(iz >= n) iz = n-1;
+        const sx = dx > 0 ? 1 : -1, sy = dy > 0 ? 1 : -1, sz = dz > 0 ? 1 : -1;
+        const dtx = dx !== 0 ? Math.abs(1/dx) : Infinity, dty = dy !== 0 ? Math.abs(1/dy) : Infinity, dtz = dz !== 0 ? Math.abs(1/dz) : Infinity;
+        let tmx = dx !== 0 ? (ix + (sx > 0 ? 1 : 0) - ox)/dx : Infinity;
+        let tmy = dy !== 0 ? (iy + (sy > 0 ? 1 : 0) - oy)/dy : Infinity;
+        let tmz = dz !== 0 ? (iz + (sz > 0 ? 1 : 0) - oz)/dz : Infinity;
+        let T = 1, cr = 0, cg = 0, cb = 0;
+        for(;;){
+          const p = iz*n2 + iy*n + ix, a = al[p];
+          if(a){
+            const w = a === 2 ? T : 0.1*T, c = 3*ci[p], s = SH[face];
+            cr += w*L3[c]*s; cg += w*L3[c+1]*s; cb += w*L3[c+2]*s; T -= w;
+            if(T < 0.02) break;
+          }
+          if(tmx < tmy){
+            if(tmx < tmz){ ix += sx; if(ix < 0 || ix >= n) break; tmx += dtx; face = sx > 0 ? 0 : 1; }
+            else { iz += sz; if(iz < 0 || iz >= n) break; tmz += dtz; face = sz > 0 ? 4 : 5; }
+          } else {
+            if(tmy < tmz){ iy += sy; if(iy < 0 || iy >= n) break; tmy += dty; face = sy > 0 ? 2 : 3; }
+            else { iz += sz; if(iz < 0 || iz >= n) break; tmz += dtz; face = sz > 0 ? 4 : 5; }
+          }
+        }
+        d[o] = cr + T*bgr; d[o+1] = cg + T*bgg; d[o+2] = cb + T*bgb; d[o+3] = 255;
+      }
+    }
+    vol.ctx.putImageData(vol.img, 0, 0);
+  }
+  function drawCube(w, h){
+    const kind = effKind(); ensureScale(kind); volFields(kind);
+    const m = clean ? 0 : 8, x0 = m, y0 = m, x1 = w - m, y1 = h - m;
+    const side = Math.max(20, Math.min(x1 - x0, y1 - y0));
+    let R;
+    if(onScreen){
+      const Rmax = Math.min(Math.round(side*(window.devicePixelRatio || 1)), 640);
+      /* the resolution follows the time of the last frame: finer while cheap, coarser when a frame exceeds 60 ms */
+      if(cube.msR > 60) cube.R = Math.round(cube.R*0.85); else if(cube.msR > 0 && cube.msR < 25) cube.R = Math.round(cube.R*1.12);
+      cube.R = Math.max(80, Math.min(Rmax, cube.R)); R = cube.R;
+    } else R = Math.min(Math.round(side*2), 900);
+    const t0 = performance.now();
+    renderVolume(R);
+    if(onScreen) cube.msR = performance.now() - t0;
+    const cx = (x0 + x1)/2, cy = (y0 + y1)/2;
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'medium';
+    ctx.drawImage(vol.can, cx - side/2, cy - side/2, side, side);
+    /* the edges of the visible faces, the cut plane and the axis letters */
+    const C = camBasis(), persp = isFinite(C.d), span = cubeSpan(C);
+    const proj = (X, Y, Z) => {
+      const u = X*C.eu[0] + Y*C.eu[1] + Z*C.eu[2], v = X*C.ev[0] + Y*C.ev[1] + Z*C.ev[2], dp = X*C.ed[0] + Y*C.ed[1] + Z*C.ed[2];
+      const pf = persp ? C.d/(C.d - dp) : 1;
+      return [cx + u*pf/span*side, cy - v*pf/span*side];
+    };
+    const vis = [];                                           // faces −x +x −y +y −z +z seen from the eye
+    for(let a=0;a<3;a++) for(const s of [-1, 1]) vis[2*a + (s > 0 ? 1 : 0)] = persp ? C.d*C.ed[a]*s - 0.5 > 0 : C.ed[a]*s > 0;
+    ctx.strokeStyle = darkBG ? 'rgba(200,210,235,.55)' : 'rgba(60,70,90,.55)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for(let e=0;e<3;e++){                                     // the 12 edges: along axis e, at the corners of the other two
+      const a = (e+1)%3, b = (e+2)%3;
+      for(const sa of [-1, 1]) for(const sb of [-1, 1]){
+        if(!vis[2*a + (sa > 0 ? 1 : 0)] && !vis[2*b + (sb > 0 ? 1 : 0)]) continue;
+        const P = [0,0,0], Q = [0,0,0]; P[a] = Q[a] = 0.5*sa; P[b] = Q[b] = 0.5*sb; P[e] = -0.5; Q[e] = 0.5;
+        const p0 = proj(P[0], P[1], P[2]), p1 = proj(Q[0], Q[1], Q[2]);
+        ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]);
+      }
+    }
+    ctx.stroke();
+    if(cube.cutX < 100){                                     // the cut plane x = const, dashed
+      const X = cube.cutX/100 - 0.5;
+      const c = [proj(X,-0.5,-0.5), proj(X,0.5,-0.5), proj(X,0.5,0.5), proj(X,-0.5,0.5)];
+      ctx.save(); ctx.setLineDash([5, 4]); ctx.strokeStyle = 'rgba(220,38,38,.9)'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(c[0][0], c[0][1]); for(let i=1;i<4;i++) ctx.lineTo(c[i][0], c[i][1]); ctx.closePath(); ctx.stroke(); ctx.restore();
+    }
+    if(!clean){
+      /* the axis letters beside the three edges that meet in the bottom corner nearest the eye */
+      axisFont(); ctx.fillStyle = TH.label; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      let sx = 0.5, sy = 0.5, best = -Infinity;
+      for(const a of [-0.5, 0.5]) for(const b of [-0.5, 0.5]){ const dp = a*C.ed[0] + b*C.ed[1] - 0.5*C.ed[2]; if(dp > best){ best = dp; sx = a; sy = b; } }
+      for(const [lab, P] of [['x', proj(0, sy*1.14, -0.57)], ['y', proj(sx*1.14, 0, -0.57)], ['z', proj(sx*1.14, sy*1.14, 0)]]) ctx.fillText(lab, P[0], P[1]);
+      /* the caption (exported pictures only — on screen the corner boxes hold this), top left */
+      if(!onScreen){
+        ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+        ctx.fillText('L = ' + fmt(params.L) + ',  ' + sim.physNx + '³ points' + (cube.cutV >= 100 ? ',  ridges of ' + kindLabel(kind) : cube.cutV > 0 ? ',  ' + kindLabel(kind) + ' above ' + cube.cutV + ' % of the scale' : '') + (cube.cutX < 100 ? ',  cut at x = ' + fmt(cube.cutX/100*params.L) : ''), x0 + 6, y0 + 6);
+      }
+    }
+    hbarPx = 0; xbarPx = 0;
+  }
+
   let rightInset = 0;
   /* pixels (CSS) per unit of height in the last drawing, at the top of the view; 0 when the
      height is not drawn vertically (colour maps, slope plots) — for the scale bar of the clean pictures */
@@ -4302,7 +4629,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       else if(mode === 'profiles') drawWaterfall(w, h);
       else if(is3dMode(mode)) drawWaterfall3D(w, h, isSweep(mode), mode === 'wf3dsc');
       else drawProfile(w, h);
-    } else {
+    } else if(params.dim === 3) drawCube(w, h);
+    else {
       linSync();
       if(mode === 'surface') drawSurface(w, h);
       else drawField2D(w, h);
@@ -4328,7 +4656,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function setLab(id, key, obj, txt){ if(obj[key] !== txt){ obj[key] = txt; $(id).textContent = txt; } }
   function updateColourBars(){
     /* colours are in use unless a 1D curve view is drawn plain */
-    const used = qkind !== 'plain' || params.dim === 2 || modeSel[1] === 'spacetime';
+    const used = qkind !== 'plain' || params.dim >= 2 || modeSel[1] === 'spacetime';
     if(CB.off !== !used){
       CB.off = !used;
       $('cbTop').classList.toggle('off', !used); $('cbLy').classList.toggle('off', !used); $('cbFix').classList.toggle('off', !used);
@@ -4349,7 +4677,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     }
     /* the standard / grey-λ<0 switch: a button in 2D, the bar itself in 1D */
     const canSplit = isLyKind(kind);
-    const showBtn = canSplit && params.dim === 2;
+    const showBtn = canSplit && params.dim >= 2;
     if(CB.split !== (showBtn ? lySplit : null)){
       CB.split = showBtn ? lySplit : null;
       $('bSplit').hidden = !showBtn;
@@ -4391,7 +4719,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      and the panel grows to keep each map large enough to read */
   const lyStacked = w => w < 480;
   function vecPlotHeight(w){
-    if(params.dim !== 2) return 150;
+    if(params.dim === 1) return 150;
     if(lyStacked(w)){ const side = Math.min(200, w - 34 - 58 - 14); return 2*(side + 26) + 16; }
     return Math.round(Math.min(260, Math.max(170, w*0.42)));
   }
@@ -4416,7 +4744,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const side = Math.max(60, Math.min(190, (w - x0 - 8 - (cols-1)*gap)/cols));
     return { keys, cols, rows, side, gap, x0, cap, height: rows*(side + cap) + 10 };
   }
-  const termsHeight = w => lyTerms && lyMode !== 'free'
+  const termsHeight = w => lyTerms && lyMode !== 'free' && params.dim !== 3
     ? (params.dim === 1 ? TOPPAD + (activeTermKeys().length + 1)*STRIP + CUMH + wfHeight() + 10 : termGrid(w).height + wfHeight()) : 0;
   function lyapHeight(){
     const wrap = lc.parentElement;
@@ -4455,7 +4783,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
           drawDivergence(w, h-ht, ly);
           ctx.restore();
         }
-      } else if(lyTerms){
+      } else if(lyTerms && params.dim !== 3){
         /* Benettin with the term budget: vector plot on top, one plot per term underneath */
         const ht = Math.min(h, vecPlotHeight(w));
         ctx.save(); ctx.beginPath(); ctx.rect(0,0,w,ht); ctx.clip();
@@ -4840,6 +5168,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   let lyImg2 = null, lamBuf = null;
   function drawLyap2D(w, h, ly){
     const n = sim.physNx, nx = sim.nx;
+    /* 3D: the z plane through the most unstable point */
+    const zo = params.dim === 3 ? Math.floor(ly.node/(nx*n))*nx*n : 0;
     if(lyFld.width !== n){ lyFld.width = n; lyFld.height = n; lyImg = lyFldCtx.createImageData(n, n); }
     if(lyFld2.width !== n){ lyFld2.width = n; lyFld2.height = n; lyImg2 = lyFld2Ctx.createImageData(n, n); }
     /* ---- left map: the vector δh/max|δh|, or λ(x,y) in the display's colours ---- */
@@ -4849,7 +5179,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     if(linked){ ensureScale(qkind); Sq = scaleFor(qkind); q = getQ(qkind); LT = LUT; }
     const iSq = linked ? 1/Sq : 0;
     for(let j=0;j<n;j++){
-      const row = j*nx, orow = j*n*4;
+      const row = zo + j*nx, orow = j*n*4;
       for(let i=0;i<n;i++){
         const c = 3*(linked ? cidx(qkind, q[row+i], Sq) : lutIdx((V[row+i]+1)*0.5)), o = orow + i*4;
         d[o]=LT[c]; d[o+1]=LT[c+1]; d[o+2]=LT[c+2]; d[o+3]=255;
@@ -4864,7 +5194,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const lmax = qscalesP.lydiv, lmin = -lmax;        // one scale for both signs
     const d2 = lyImg2.data, ipos = lmax > 0 ? 1/lmax : 0, ineg = lmin < 0 ? 1/lmin : 0;
     for(let j=0;j<n;j++){
-      const row = j*nx, orow = j*n*4;
+      const row = zo + j*nx, orow = j*n*4;
       for(let i=0;i<n;i++){
         const v = lam[row+i], o = orow + i*4;
         if(v > 0){
@@ -4894,7 +5224,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     }
     ctx.imageSmoothingEnabled = true;
     const Lbox = fmt(params.L);
-    const nodeI = ly.node % nx, nodeJ = (ly.node - nodeI)/nx;
+    const nodeI = (ly.node - zo) % nx, nodeJ = (ly.node - zo - nodeI)/nx;
     function square(px, py, fld, yAxis){
       ctx.save(); ctx.translate(px, py+side); ctx.scale(1,-1);
       ctx.drawImage(fld, 0, 0, side, side); ctx.restore();
@@ -4953,6 +5283,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     ctx.fillText('+'+fmt(lmax), kx2+12, ky+8);
     ctx.fillText('0', kx2+12, ky+kh+3);
     ctx.fillText('−'+fmt(-lmin), kx2+12, ky+2*kh);
+    if(params.dim === 3){ ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; ctx.fillText('the plane z = ' + fmt(zo/(nx*n)*params.dx) + ' through the most unstable point', x0, h - 3); }
   }
 
   /* ---------------- PNG export ----------------
@@ -4961,14 +5292,14 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function eqLines(){
     const lin = params.order === 6 ? '+∇⁴h + ∇⁶h' : params.order === 246 ? params.lam + '·∇²h + ∇⁴h + ∇⁶h' : params.order === 40 ? '−∇·(∇h/√(1+(∇h)²)) − ∇⁴h' : '−∇²h − ∇⁴h';
     let eq = '∂h/∂t = ' + lin + (params.nl2 === 2 ? ' + 2(√(1+(∇h)²)−1)' : params.nl2 ? ' + (∇h)²' : '');
-    const absTxt = params.dim === 2 && params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·|∇h|';
+    const absTxt = params.dim >= 2 && params.absMode === 'sum' ? '·(|hₓ|+|hᵧ|)' : '·|∇h|';
     if(params.alpha !== 0) eq += (params.alpha > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.alpha)) + absTxt;
     if(params.beta  !== 0) eq += (params.beta  > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.beta))  + '·(∇h)⁴';
     if(params.gamma !== 0) eq += (params.gamma > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.gamma)) + '·∇²(∇h)²';
     if(params.delta !== 0) eq += (params.delta > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.delta)) + '·∇²h(∇h)²';
     if(params.sigma !== 0) eq += (params.sigma > 0 ? ' + ' : ' − ') + fmtTerm(Math.abs(params.sigma)) + '·(∇²h)²';
-    const geom = (params.dim === 1 ? '1+1 D' : '2+1 D') + ',  ' + params.bc +
-                 ',  L = ' + params.L + ',  dx = ' + params.dx + ' (' + sim.physNx + (params.dim === 2 ? '²' : '') + ' points)';
+    const geom = (params.dim === 1 ? '1+1 D' : params.dim === 3 ? '3+1 D' : '2+1 D') + ',  ' + params.bc +
+                 ',  L = ' + params.L + ',  dx = ' + params.dx + ' (' + sim.physNx + (params.dim === 2 ? '²' : params.dim === 3 ? '³' : '') + ' points)';
     const num  = 'dt = ' + params.dt + ',  ETDRK4 pseudospectral,  t = ' + sim.t.toFixed(1);
     const ly = sim.lyap, lamOK = ly.on && ly.ready && isFinite(ly.lam);
     const stat = (flipSign ? 'plotted −h,  ' : '') + '⟨h⟩ = ' + (SG()*sim.meanH).toFixed(2) + ',  W = ' + sim.W.toFixed(3) +
@@ -5045,8 +5376,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     return out;
   }
   /* the parameter part of the file names of pictures and films */
-  const fileTag = () => (params.dim === 1 ? 'KS1D' : 'KS2D') + (params.nl2 === 2 ? '_huy' : params.nl2 ? '' : '_nosq') +
-                (params.alpha ? '_a' + fmtTerm(params.alpha) + (params.dim === 2 && params.absMode === 'sum' ? 'sum' : '') : '') +
+  const fileTag = () => (params.dim === 1 ? 'KS1D' : params.dim === 3 ? 'KS3D' : 'KS2D') + (params.nl2 === 2 ? '_huy' : params.nl2 ? '' : '_nosq') +
+                (params.alpha ? '_a' + fmtTerm(params.alpha) + (params.dim >= 2 && params.absMode === 'sum' ? 'sum' : '') : '') +
                 (params.beta  ? '_b' + fmtTerm(params.beta)  : '') + (params.sigma ? '_s' + fmtTerm(params.sigma) : '') + '_L' + params.L + '_dx' + params.dx;
   /* white text with a faint dark halo: readable on the black background and still on a light one */
   function ovText(c, str, x, y, fs){
@@ -5071,7 +5402,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     c.textAlign = 'right'; c.textBaseline = 'alphabetic';
     ovText(c, eq, W - m, H - m, efs);
     /* the colour bar, upper right: left end, middle, right end, and the quantity */
-    if(qkind !== 'plain' || params.dim === 2 || modeSel[1] === 'spacetime'){
+    if(qkind !== 'plain' || params.dim >= 2 || modeSel[1] === 'spacetime'){
       const kind = effKind(); ensureScale(kind);
       const bw = Math.round(0.26*W), bh = Math.round(8*u), x1 = W - m, x0 = x1 - bw, y0 = m;
       for(let i=0;i<bw;i++){ c.fillStyle = CSS[barIdx(kind, i/(bw-1))]; c.fillRect(x0 + i, y0, 1.5, bh); }
@@ -5181,8 +5512,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     const r = cv.getBoundingClientRect();
     let w = Math.max(120, Math.round(r.width)), h = Math.max(120, Math.round(r.height));
     const scale = 2;
-    const isMap = params.dim === 2 && modeSel[2] === 'map';
-    if(kind !== 'stamp' && isMap){ w = h = Math.min(w, h); }   // the bare square field
+    const isMap = (params.dim === 2 && modeSel[2] === 'map') || params.dim === 3;
+    if(kind !== 'stamp' && isMap){ w = h = Math.min(w, h); }   // the bare square field (or the cube)
     let oc = renderTo(w, h, scale, kind !== 'stamp', kind === 'stamp');
     if(kind === 'sq') oc = cropToContent(oc, 6*scale);   // cut away the empty margin around the drawing
     let vfac = 1, hfac = 1;                             // vertical and horizontal squeeze of the sq picture
@@ -5262,7 +5593,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     /* the geometry of the sq picture: the display at its size on screen (2D map: the bare square) */
     const r = cv.getBoundingClientRect();
     let w = Math.max(120, Math.round(r.width)), h = Math.max(120, Math.round(r.height));
-    if(params.dim === 2 && modeSel[2] === 'map') w = h = Math.min(w, h);
+    if((params.dim === 2 && modeSel[2] === 'map') || params.dim === 3) w = h = Math.min(w, h);
     const scale = Math.min(2, Math.max(1, 720/Math.min(w, h)));
     const side = Math.min(1080, 2*Math.floor(Math.min(w, h)*scale/2));
     const fc = document.createElement('canvas'); fc.width = fc.height = side;
@@ -5361,19 +5692,29 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      is unchanged, and small lattices never reach the cap. */
   let msPerStep = 0;
   const FRAME_MS = 120;
+  let spinLast = 0;
   function tick(ts){
     if(fitDue || ts - lastFit > 500){
       lastFit = ts; fitDue = false;
       if(fitHeight() && !running) draw();   // track window growth as well as shrink
     }
+    /* 3D: the cube turns on its own (2·spin degrees per second), also while the run is paused */
+    let spun = false;
+    if(params.dim === 3 && cube.spin > 0 && !dragging){
+      const dts = spinLast ? Math.min(0.25, (ts - spinLast)/1000) : 0;
+      view3.rot = (view3.rot + 2*cube.spin*dts) % 360;
+      $('rngRot').value = Math.round(view3.rot); $('v3RotVal').textContent = Math.round(view3.rot) + '°';
+      spun = ts - cube.lastDraw > 40;
+    }
+    spinLast = ts;
     if(running && !diverged){
       const n = msPerStep > 0 ? Math.max(1, Math.min(stepsPerFrame, Math.floor(FRAME_MS/msPerStep))) : 1;
       const t0 = performance.now();
       advance(n);
       const ms = (performance.now() - t0)/n;
       msPerStep = msPerStep > 0 ? 0.8*msPerStep + 0.2*ms : ms;
-      draw();
-    }
+      draw(); cube.lastDraw = ts;
+    } else if(spun && !diverged){ draw(); cube.lastDraw = ts; }
     syncRun2();
     filmTick();
     requestAnimationFrame(tick);
@@ -5389,10 +5730,24 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       });
     });
   }
+  /* the box lengths offered: 32 … 512 in 1D and 2D, 8 … 64 for the 3D cube */
+  const LV = [32, 64, 128, 256, 512], L3V = [8, 16, 32, 64];
+  function fillL(){
+    const el = $('selL'), list = params.dim === 3 ? L3V : LV;
+    if(el.options.length !== list.length || +el.options[0].value !== list[0]){
+      el.innerHTML = '';
+      for(const v of list){ const o = document.createElement('option'); o.value = ''+v; o.textContent = ''+v; el.appendChild(o); }
+    }
+    el.value = ''+params.L;
+  }
   seg($('segDim'), ()=>''+params.dim, v=>{
     params.dim = +v;
-    params.sigma = nearest(SIGMAV(params.dim), params.sigma);   // σ is offered in a narrower window in 2D
-    if(!userSpf){ stepsPerFrame = params.dim === 2 ? 2 : 5; $('selSpf').value = ''+stepsPerFrame; noteSpfRef(); }   // default pace: 2 steps/frame in 2D, 5 in 1D
+    if(params.dim === 3){                                    // the cube: periodic, L from its own list
+      if(params.bc !== 'periodic'){ params.bc = 'periodic'; setSeg('segBC', 'periodic'); }
+      if(!L3V.includes(params.L)) params.L = 32;
+    } else if(!LV.includes(params.L)) params.L = 64;
+    params.sigma = nearest(SIGMAV(params.dim), params.sigma);   // σ is offered in a narrower window in 2D and 3D
+    if(!userSpf){ stepsPerFrame = params.dim === 3 ? 1 : params.dim === 2 ? 2 : 5; $('selSpf').value = ''+stepsPerFrame; noteSpfRef(); }   // default pace: 1 step/frame in 3D, 2 in 2D, 5 in 1D
     if(params.dim === 1 && yvar !== 'h' && yvar !== 'dx'){   // 1D plots only h or dh/dx
       yvar = 'h'; setSeg('segYvar', yvar); setSeg('segYvar2', yvar); setSeg('segYvar4', yvar);
     }
@@ -5455,6 +5810,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     /* 1D: the h / dh/dx switch; 2D: one button cycling h → ∂h/∂x → |∇h| → ∇²h */
     $('segYvar2').style.display = params.dim===1 ? 'flex' : 'none';
     $('bYvar2').hidden = params.dim !== 2;
+    document.querySelector('#viewBox .yrow').style.display = params.dim === 3 ? 'none' : '';   // 3D: the colour menu is the plotted field
     $('rowYvar1').style.display = params.dim===1 ? '' : 'none';
     $('rowYvar2').style.display = params.dim===2 ? '' : 'none';
     syncYvarBtn();
@@ -5462,11 +5818,12 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     $('wfCtl').style.display = wfMode ? 'flex' : 'none';
     document.querySelectorAll('.wfrow3d').forEach(el =>
       el.style.display = (wfMode && is3dMode(modeSel[1])) ? 'flex' : 'none');
-    $('v3Ctl').style.display = (params.dim===2 && modeSel[2]==='surface') ? 'flex' : 'none';
+    const turn = (params.dim===2 && modeSel[2]==='surface') || params.dim === 3;   // a view with tilt / rot / dist
+    $('v3Ctl').style.display = turn ? 'flex' : 'none';
     $('bLineage').hidden = params.dim !== 2;
     if(params.dim !== 2 && LIN.on) linToggle(false);
     cv.style.cursor = LIN.on && params.dim === 2 && modeSel[2] === 'map' ? 'crosshair' : '';
-    cv.style.touchAction = (params.dim===2 && modeSel[2]==='surface') ? 'none' : 'auto';
+    cv.style.touchAction = turn ? 'none' : 'auto';
     if(wfMode){
       if(is3dMode(modeSel[1])){
         $('rngSep').value = Math.log10(wfDt);
@@ -5483,11 +5840,28 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      1D 3D modes → dist 5L ⇄ ∞ */
   function placeViewTog(){
     const b = $('bViewTog');
-    const surf = params.dim===2 && modeSel[2]==='surface';
+    const surf = params.dim===2 && modeSel[2]==='surface', cub = params.dim === 3;
     const w3 = params.dim===1 && is3dMode(modeSel[1]);
-    b.style.display = (surf || w3) ? 'inline-block' : 'none';
-    b.title = surf ? 'switch viewpoint: tilt 62°, rot 0°, dist 5·L (default)  ⇄  tilt 45°, rot 45°, dist 3·L'
+    b.style.display = (surf || cub || w3) ? 'inline-block' : 'none';
+    b.title = cub ? 'switch viewpoint: tilt 60°, rot 35°, dist 5·L (default)  ⇄  tilt 40°, rot 20°, dist 3·L'
+            : surf ? 'switch viewpoint: tilt 62°, rot 0°, dist 5·L (default)  ⇄  tilt 45°, rot 45°, dist 3·L'
                    : 'switch viewpoint: dist 5·L  ⇄  ∞ (no perspective)';
+  }
+  /* the tilt / rot / dist sliders show the viewpoint of the display in use (2D surface or 3D cube) */
+  function syncViewSliders(){
+    const vw = curView(), dv = vw.dist >= 10 ? 10 : vw.dist;
+    $('rngTilt').value = Math.round(vw.tilt); $('v3TiltVal').textContent = Math.round(vw.tilt) + '°';
+    $('rngRot').value = Math.round(vw.rot); $('v3RotVal').textContent = Math.round(vw.rot) + '°';
+    $('rngDist').value = dv; $('v3DistVal').textContent = distTxt(dv);
+    $('rngRot').disabled = params.dim === 3 && cube.spin > 0;
+  }
+  /* the cube's own controls: rotation speed, size, the x cut and the transparency threshold */
+  function syncCubeUI(){
+    $('rngSpin').value = cube.spin; $('spinVal').textContent = cube.spin ? (2*cube.spin) + '°/s' : 'off';
+    $('rngSize').value = cube.size; $('v3SizeVal').textContent = '×' + (+cube.size.toFixed(2));
+    $('rngCutX').value = cube.cutX; $('cutXVal').textContent = cube.cutX >= 100 ? 'none' : 'x = ' + fmt(cube.cutX/100*params.L);
+    $('rngCutV').value = cube.cutV; $('cutVVal').textContent = cube.cutV >= 100 ? 'ridges' : cube.cutV + ' %';
+    syncViewSliders();
   }
   $('viewHead').addEventListener('click', ()=>{ const f = $('viewBox').classList.toggle('folded'); $('viewHead').classList.toggle('open', !f); });
   /* phones start compact, and fold again whenever the window becomes narrow */
@@ -5499,12 +5873,12 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   foldForWidth(); window.addEventListener('resize', ()=>setTimeout(foldForWidth, 0));
   $('bViewTog').addEventListener('click', ()=>{
-    if(params.dim===2 && modeSel[2]==='surface'){
-      const atDefault = Math.abs(view.tilt-62)<0.5 && (view.rot%360)<0.5 && view.dist>4.9;
-      view.tilt = atDefault ? 45 : 62; view.rot = atDefault ? 45 : 0; view.dist = atDefault ? 3 : 5;
-      $('rngTilt').value = view.tilt; $('v3TiltVal').textContent = view.tilt+'°';
-      $('rngRot').value = view.rot; $('v3RotVal').textContent = view.rot+'°';
-      $('rngDist').value = view.dist; $('v3DistVal').textContent = view.dist.toFixed(1)+'·L';
+    if((params.dim===2 && modeSel[2]==='surface') || params.dim === 3){
+      const vw = curView(), cub = params.dim === 3;
+      const def = cub ? { tilt:60, rot:35, dist:5 } : { tilt:62, rot:0, dist:5 }, alt = cub ? { tilt:40, rot:20, dist:3 } : { tilt:45, rot:45, dist:3 };
+      const atDefault = Math.abs(vw.tilt-def.tilt)<0.5 && (cub || Math.abs(vw.rot-def.rot)<0.5) && vw.dist>4.9;
+      Object.assign(vw, atDefault ? alt : def);
+      syncViewSliders();
     } else {
       wf3dDist = wf3dDist >= 10 ? 5 : 10;
       $('rngWfDist').value = wf3dDist; $('wfDistVal').textContent = distTxt(wf3dDist);
@@ -5514,11 +5888,11 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   window.addEventListener('resize', ()=>setTimeout(placeViewTog, 0));
 
   function applyDimUI(){
-    const is2 = params.dim === 2;
-    $('rowKeep').style.display = is2 ? 'none' : '';
+    const is2 = params.dim === 2, is3 = params.dim === 3, hi = params.dim >= 2;
+    $('rowKeep').style.display = hi ? 'none' : '';
     const dm = $('dispmode');
     dm.innerHTML = '';
-    const opts = is2
+    const opts = is3 ? [['cube','cube']] : is2
       ? [['map','map'],['surface','surface']]
       : [['profile','profile'],['profiles','profiles'],['wf3dsw','3D sw'],['wf3dsc','3D sw*'],['wf3d','3D'],['spacetime','x–t']];
     for(const [v,t] of opts){
@@ -5526,13 +5900,22 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     }
     dm.value = modeSel[params.dim];
     const qsel = $('qty');
-    qsel.querySelector('option[value="plain"]').hidden = is2;
-    $('lyapPanel').classList.toggle('two', is2);      // wider field for the (x, y) node
-    qsel.querySelector('option[value="dx"]').textContent    = is2?'∂h/∂x':'dh/dx';
-    qsel.querySelector('option[value="absdx"]').textContent = is2?'|∇h|':'|dh/dx|';
-    qsel.querySelector('option[value="lap"]').textContent   = is2?'∇²h':'d²h/dx²';
-    qsel.querySelector('option[value="nlap"]').textContent  = is2?'−∇²h':'−d²h/dx²';
-    if(is2 && qkind === 'plain'){ qkind = 'h'; qsel.value = 'h'; }
+    qsel.querySelector('option[value="plain"]').hidden = hi;
+    $('lyapPanel').classList.toggle('two', hi);      // wider field for the (x, y) node
+    qsel.querySelector('option[value="dx"]').textContent    = hi?'∂h/∂x':'dh/dx';
+    qsel.querySelector('option[value="absdx"]').textContent = hi?'|∇h|':'|dh/dx|';
+    qsel.querySelector('option[value="lap"]').textContent   = hi?'∇²h':'d²h/dx²';
+    qsel.querySelector('option[value="nlap"]').textContent  = hi?'−∇²h':'−d²h/dx²';
+    if(hi && qkind === 'plain'){ qkind = 'h'; qsel.value = 'h'; }
+    /* 3D: periodic only, L from its own list, and the cube's controls in the corners */
+    $('segBC').querySelector('button[data-v="open"]').disabled = is3;
+    $('segL2').hidden = is3; $('segL3').hidden = !is3; l2State = -1;
+    $('rotCtl').hidden = !is3; $('cutX').hidden = !is3; $('cutV').hidden = !is3; $('rowSize').hidden = !is3;
+    $('bLyTerms').hidden = is3;
+    if(is3 && lyTerms){ lyTerms = false; $('bLyTerms').classList.remove('on'); }
+    fillL();
+    syncCubeUI();
+    placeCutV(); placeCutX();
     syncEqHeader();
     updateOverlays();
     updateHint();
@@ -5543,15 +5926,16 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
 
   function updateHint(){
     const per = params.bc === 'periodic';
-    const k = per ? 2*Math.PI*params.n/params.L : Math.PI*params.n/params.L;
+    const k1 = per ? 2*Math.PI*params.n/params.L : Math.PI*params.n/params.L;
+    const k = k1*Math.sqrt(params.dim);                  // the product wave of 2D and 3D has |k| = √dim · k of one factor
     const om = params.order === 6 ? Math.pow(k,4)-Math.pow(k,6)
              : params.order === 246 ? -params.lam*k*k + Math.pow(k,4) - Math.pow(k,6) : k*k-Math.pow(k,4);
     const wave = per
-      ? (params.dim === 2 ? 'h₀ = A·sin(2πnx/L)·sin(2πny/L)' : 'h₀ = A·sin(2πn·x/L), n full waves')
+      ? (params.dim === 3 ? 'h₀ = A·sin(2πnx/L)·sin(2πny/L)·sin(2πnz/L)' : params.dim === 2 ? 'h₀ = A·sin(2πnx/L)·sin(2πny/L)' : 'h₀ = A·sin(2πn·x/L), n full waves')
       : (params.dim === 2 ? 'h₀ = A·cos(πnx/L)·cos(πny/L), flat walls' : 'h₀ = A·cos(πn·x/L), n half waves, flat walls');
     $('icHint').textContent = wave + ' (+ ε strip), k = ' + k.toFixed(3) +
       ', ω = ' + om.toFixed(3) + (om > 0 ? ' — grows' : ' — decays') +
-      '. Lattice: ' + latticeN() + (params.dim === 2 ? '²' : '') + ' points (L/dx)' + (dxClamped ? ' — dx raised to ' + params.dx + ' to keep the 2D lattice at ≤ 1024² points' : '');
+      '. Lattice: ' + latticeN() + (params.dim === 2 ? '²' : params.dim === 3 ? '³' : '') + ' points (L/dx)' + (dxClamped ? ' — dx raised to ' + params.dx + ' to keep the lattice at ≤ ' + (params.dim === 3 ? '64³' : '1024²') + ' points' : '');
   }
 
   let userSpf = false;
@@ -5590,7 +5974,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   /* the equation line: which terms are active, (∇h)² on or crossed out, and in
      2D the two readings of |∇h| on their toggle switch */
   function syncEqHeader(){
-    const is2 = params.dim === 2, aOn = params.alpha !== 0;
+    const is2 = params.dim >= 2, aOn = params.alpha !== 0;
     setTermSel('selAlpha', ALPHAV, params.alpha); setTermSel('selBeta', BETAV, params.beta);
     $('termA').classList.toggle('on', aOn);
     $('termB').classList.toggle('on', params.beta !== 0);
@@ -5628,7 +6012,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   seg($('segAbs'), ()=>params.absMode, v=>{ params.absMode = v; applyTerms(); if(!running) draw(); });
   /* α and β are chosen from fixed lists (pull-down menus in the header) */
-  const ALPHAV = [-5,-4,-3,-2,-1.5,-1.2,-1,-0.9,-0.7,-0.5,-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.5,1,1.5,1.7,1.8,1.9,2,2.5,3,4,5];
+  const ALPHAV = [-5,-4,-3,-2,-1.5,-1.2,-1,-0.9,-0.7,-0.5,-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.5,1,1.5,1.62,1.65,1.7,1.8,1.9,2,2.5,3,4,5];
   const BETAV  = [-5,-2,-1,-0.5,-0.25,-0.2,-0.15,-0.12,-0.1,-0.07,-0.05,-0.02,-0.01,0,0.2,0.5,1,1.5,2,3,4,5];   // also γ and δ
   const nearest = (list, v) => list.reduce((b, x) => Math.abs(x - v) < Math.abs(b - v) ? x : b, list[0]);
   function fillSel(id, list){
@@ -5641,7 +6025,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      The same two lists are the scan's fixed-coefficient menu and the scan range of σ. */
   const grid = (a, b, st) => Array.from({ length: Math.round((b - a)/st) + 1 }, (_, i) => +(a + i*st).toFixed(6));
   const SIGMAV1 = grid(-0.5, 1.5, 0.1), SIGMAV2 = grid(-0.5, 0.3, 0.05);
-  const SIGMAV = dim => dim === 2 ? SIGMAV2 : SIGMAV1;
+  const SIGMAV = dim => dim >= 2 ? SIGMAV2 : SIGMAV1;   // 3D takes the 2D window
   fillSel('selAlpha', ALPHAV); fillSel('selBeta', BETAV); fillSel('selGamma', BETAV); fillSel('selDelta', DELTAV); fillSel('selSigma', SIGMAV(params.dim));
   /* show a value in its menu (the nearest listed one) and mark non-zero terms */
   function setTermSel(id, list, v){ const el = $(id); el.value = ''+nearest(list, v); el.classList.toggle('on', v !== 0); }
@@ -5669,13 +6053,13 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      dt 0.1, 0.5 % / 0.2 % at 0.05, 0.17 % / 0.07 % at 0.02; ⟨W⟩ and speed converged at 0.1 already — so 2D
      runs at 0.05 (0.02 beyond |σ| = 0.5). Outside a narrow range the equation itself blows up in finite time
      at every dt: see the σ paragraph of the variant notes. */
-  const SIGMA_DT = (sg, dim) => { const a = Math.abs(sg); return dim === 2 ? (a > 0.5 ? 0.02 : 0.05) : (a > 1 ? 0.01 : 0.02); };
+  const SIGMA_DT = (sg, dim) => { const a = Math.abs(sg); return dim >= 2 ? (a > 0.5 ? 0.02 : 0.05) : (a > 1 ? 0.01 : 0.02); };
   function dtForTerms(){
     const b = Math.abs(params.beta);
     let dt;
-    if(b > 3.5) dt = params.dim === 2 ? 0.01 : 0.005;      // a 2D step costs L× more
+    if(b > 3.5) dt = params.dim >= 2 ? 0.01 : 0.005;      // a 2D step costs L× more (3D: L² more)
     else if(b > 2) dt = 0.01;
-    else if(b > 0) dt = params.dim === 2 ? 0.05 : 0.02;    // 2D: see the note below
+    else if(b > 0) dt = params.dim >= 2 ? 0.05 : 0.02;    // 2D: see the note below
     else if(Math.abs(params.alpha) > 2) dt = 0.05;         // steep facets at large |α|
     else dt = params.order === 6 ? 0.02 : 0.1;   // the Λ equation: as KS, see the KKS presets
     /* the two second-derivative nonlinearities: measured against dt = 0.002 over
@@ -5695,7 +6079,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   let spfRef = { dt: 0.1, spf: 5 };
   function noteSpfRef(){ spfRef = { dt: params.dt, spf: stepsPerFrame }; }
   function autoSpf(){
-    const cap = params.dim === 2 ? 8 : 20;
+    const cap = params.dim === 3 ? 4 : params.dim === 2 ? 8 : 20;
     const want = Math.min(cap, Math.max(1, spfRef.spf*spfRef.dt/Math.max(params.dt, 1e-9)));
     let pick = SPFV[0];
     for(const o of SPFV) if(o <= want + 1e-9) pick = o;
@@ -5770,17 +6154,34 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     wf3dDist = +e.target.value; $('wfDistVal').textContent = distTxt(wf3dDist); draw();
   });
 
-  // 3D view overlay sliders
+  // 3D view overlay sliders (the 2D surface, or the cube)
   $('rngTilt').addEventListener('input', e=>{
-    view.tilt = +e.target.value; $('v3TiltVal').textContent = Math.round(view.tilt)+'°'; draw();
+    const vw = curView(); vw.tilt = +e.target.value; $('v3TiltVal').textContent = Math.round(vw.tilt)+'°'; draw();
   });
   $('rngRot').addEventListener('input', e=>{
-    view.rot = +e.target.value; $('v3RotVal').textContent = Math.round(view.rot)+'°'; draw();
+    const vw = curView(); vw.rot = +e.target.value; $('v3RotVal').textContent = Math.round(vw.rot)+'°'; draw();
   });
   $('rngDist').addEventListener('input', e=>{
-    const v = +e.target.value;
-    view.dist = v >= 10 ? 1e9 : v; $('v3DistVal').textContent = distTxt(v); draw();
+    const v = +e.target.value, vw = curView();
+    vw.dist = v >= 10 ? 1e9 : v; $('v3DistVal').textContent = distTxt(v); draw();
   });
+  /* the cube: rotation speed (lower right), size (view menu), the x cut (bottom bar) and the transparency threshold */
+  $('rngSpin').addEventListener('input', e=>{ cube.spin = +e.target.value; syncCubeUI(); if(!running) draw(); });
+  $('rngSize').addEventListener('input', e=>{ cube.size = +e.target.value; syncCubeUI(); if(!running) draw(); });
+  $('rngCutX').addEventListener('input', e=>{ cube.cutX = +e.target.value; syncCubeUI(); if(!running) draw(); });
+  $('rngCutV').addEventListener('input', e=>{ cube.cutV = +e.target.value; syncCubeUI(); if(!running) draw(); });
+  /* the threshold bar hangs under the free / fixed switch; when the read-out box would cover it, it moves below that */
+  function placeCutV(){
+    const el = $('cutV'); if(el.hidden) return;
+    const wrap = el.offsetParent, fx = $('cbFix'); if(!wrap) return;
+    const W = wrap.clientWidth, left = Math.max(8, Math.min(fx.offsetLeft + 8, W - el.offsetWidth - 8));
+    wrap.style.setProperty('--cutL', left + 'px'); el.style.top = '';
+    const a = el.getBoundingClientRect(), r = $('rdout').getBoundingClientRect();
+    if(r.width && a.right > r.left - 6 && a.left < r.right + 6 && a.top < r.bottom + 4 && a.bottom > r.top - 4)
+      el.style.top = Math.round(r.bottom - wrap.getBoundingClientRect().top + 6) + 'px';
+  }
+  new ResizeObserver(()=>placeCutV()).observe($('rdout'));
+  window.addEventListener('resize', ()=>setTimeout(placeCutV, 0));
 
   $('cmap').addEventListener('change', e=>{ setLUT(e.target.value); draw(); });
   $('qty').addEventListener('change', e=>{
@@ -5864,14 +6265,14 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      term entries only for terms present in the equation, labels following the
      linear operator in use; a colouring that has disappeared falls back */
   function syncLyOptions(){
-    const qsel = $('qty');
+    const qsel = $('qty'), noTerms = params.dim === 3;     // 3D: only the total λ(x) is split off
     qsel.querySelectorAll('.lyopt').forEach(op => {
       const k = op.value, term = isTermKind(k);
-      op.hidden = !lyapOpen || (term && !termActive(k));
+      op.hidden = !lyapOpen || (term && (noTerms || !termActive(k)));
       if(term) op.textContent = kindLabel(k);
     });
-    if(isLyKind(qkind) && (!lyapOpen || (isTermKind(qkind) && !termActive(qkind)))){
-      qkind = lyapOpen ? 'lydiv' : (params.dim === 2 ? 'h' : 'plain'); qsel.value = qkind;
+    if(isLyKind(qkind) && (!lyapOpen || (isTermKind(qkind) && (noTerms || !termActive(qkind))))){
+      qkind = lyapOpen ? 'lydiv' : (params.dim >= 2 ? 'h' : 'plain'); qsel.value = qkind;
     }
     lyapHeight();
   }
@@ -5920,17 +6321,19 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   /* the L switch beside them: sets L like the control panel's menu (the run
      restarts with the new box, running state kept); the button of the L in use
      is lit, and a cross covers the switch while the run uses another L */
-  document.querySelectorAll('#segL2 button').forEach(b => b.addEventListener('click', ()=>{
+  document.querySelectorAll('#segL2 button, #segL3 button').forEach(b => b.addEventListener('click', ()=>{
     const L = +b.dataset.v; if(params.L === L) return;
-    params.L = L; $('selL').value = ''+L; updateHint(); rebuild();
+    params.L = L; fillL(); updateHint(); rebuild();
   }));
   let l2State = -1;
   function syncL2(){
     if(l2State === params.L) return;
     l2State = params.L;
-    const seg = $('segL2'); let any = false;
-    seg.querySelectorAll('button').forEach(b => { const on = +b.dataset.v === params.L; b.classList.toggle('on', on); any = any || on; });
-    seg.classList.toggle('other', !any);
+    for(const id of ['segL2', 'segL3']){
+      const seg = $(id); let any = false;
+      seg.querySelectorAll('button').forEach(b => { const on = +b.dataset.v === params.L; b.classList.toggle('on', on); any = any || on; });
+      seg.classList.toggle('other', !any);
+    }
   }
   let run2State = null;
   function syncRun2(){
@@ -5959,21 +6362,22 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   // drag to rotate the 3D surface (sliders follow)
   let dragging = false, dragX = 0, dragY = 0;
   cv.addEventListener('pointerdown', e=>{
-    if(params.dim===2 && modeSel[2]==='surface'){
+    if((params.dim===2 && modeSel[2]==='surface') || (params.dim === 3 && cube.spin === 0)){   // the cube: only while it is not turning by itself
       dragging = true; dragX = e.clientX; dragY = e.clientY;
       cv.setPointerCapture(e.pointerId);
     }
   });
   cv.addEventListener('pointermove', e=>{
     if(!dragging) return;
-    view.rot = (view.rot + (e.clientX - dragX)*0.4) % 360;
-    if(view.rot < 0) view.rot += 360;
-    view.tilt = Math.max(0, Math.min(85, view.tilt + (e.clientY - dragY)*0.3));
+    const vw = curView();
+    vw.rot = (vw.rot + (e.clientX - dragX)*0.4) % 360;
+    if(vw.rot < 0) vw.rot += 360;
+    vw.tilt = Math.max(0, Math.min(85, vw.tilt + (e.clientY - dragY)*0.3));
     dragX = e.clientX; dragY = e.clientY;
-    $('rngRot').value = Math.round(view.rot);
-    $('rngTilt').value = Math.round(view.tilt);
-    $('v3RotVal').textContent = Math.round(view.rot)+'°';
-    $('v3TiltVal').textContent = Math.round(view.tilt)+'°';
+    $('rngRot').value = Math.round(vw.rot);
+    $('rngTilt').value = Math.round(vw.tilt);
+    $('v3RotVal').textContent = Math.round(vw.rot)+'°';
+    $('v3TiltVal').textContent = Math.round(vw.tilt)+'°';
     if(!running) draw();
   });
   cv.addEventListener('pointerup', ()=>{ dragging = false; });
@@ -5995,7 +6399,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta); setSigmaSel();
   }
   /* the presets box: folds to its title line, which names the preset that is running */
-  const PRESET_NAME = { bPre1:'KS 1D', bPre2:'KS 2D', bPre1a:'KS 1D abs1', bPre2a:'KS 2D abs1', bPre1n:'KS 1D nnl', bPre2n:'KS 2D nnl', bPreK1:'KKS 1D', bPreK2:'KKS 2D', bPreBubble:'Bubble life' };
+  const PRESET_NAME = { bPre1:'KS 1D', bPre2:'KS 2D', bPre3:'KS 3D', bPre1a:'KS 1D abs1', bPre2a:'KS 2D abs1', bPre3a:'KS 3D abs1', bPre1n:'KS 1D nnl', bPre2n:'KS 2D nnl', bPre3n:'KS 3D nnl', bPreK1:'KKS 1D', bPreK2:'KKS 2D', bPreK3:'KKS 3D', bPreBubble:'Bubble life' };
   let curPreset = null;
   function setPresetLabel(id, text){
     curPreset = id;
@@ -6008,17 +6412,27 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function placePresets(){
     const box = $('presetBox'), cp = box.parentElement.querySelector('.cornerpng');
     box.style.bottom = '';
-    if(box.classList.contains('folded') || !cp) return;
+    if(box.classList.contains('folded') || !cp){ placeCutX(); return; }
     const a = box.getBoundingClientRect(), wrap = box.offsetParent; if(!wrap) return;
     const hit = [...cp.children].map(e => e.getBoundingClientRect()).filter(b => b.width && b.left < a.right + 6 && b.top < a.bottom + 6 && b.bottom > a.top - 6);
     if(hit.length) box.style.bottom = Math.ceil(wrap.getBoundingClientRect().bottom - Math.min(...hit.map(b => b.top)) + 6) + 'px';
+    placeCutX();
+  }
+  /* the x-cut bar of the cube runs along the bottom, just above whatever stands in the lower corners */
+  function placeCutX(){
+    const el = $('cutX'); if(el.hidden) return;
+    const wrap = el.offsetParent; if(!wrap) return;
+    const wb = wrap.getBoundingClientRect().bottom;
+    let top = Infinity;
+    for(const e of [wrap.querySelector('.cornerpng'), $('presetBox')]){ if(!e) continue; const r = e.getBoundingClientRect(); if(r.width && r.height) top = Math.min(top, r.top); }
+    el.style.bottom = isFinite(top) ? Math.round(wb - top + 6) + 'px' : '';
   }
   { const ro = new ResizeObserver(()=>placePresets()); ro.observe($('presetBox')); const cp = $('presetBox').parentElement.querySelector('.cornerpng'); if(cp) ro.observe(cp); }
   window.addEventListener('resize', placePresets);
   /* --barB: the bottom of the display bar, below which the read-out, the view menu and the
      divergence warning are placed (the bar wraps onto more rows on narrow screens) */
   { const bar = document.querySelector('.dispbar'), wrap = bar.parentElement;
-    const place = () => wrap.style.setProperty('--barB', Math.round(bar.offsetTop + bar.offsetHeight + 8) + 'px');
+    const place = () => { wrap.style.setProperty('--barB', Math.round(bar.offsetTop + bar.offsetHeight + 8) + 'px'); placeCutV(); };
     new ResizeObserver(place).observe(bar); place(); }
   function runPreset(setup, id){
     running = false;
@@ -6071,8 +6485,25 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     if(!darkBG){ darkBG = true; applyTheme(); }   // black background by default
     setLUT('fire'); $('cmap').value='fire';
   }
+  /* 3D: the cube of side 32 at dx = 0.5 (64³ points), coloured by h − ⟨h⟩ in jet, turning at 6°/s */
+  function base3D(){
+    params.dim=3; params.L=32; params.bc='periodic'; params.dx=0.5; params.order=4;
+    params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.sigma=0; params.amp=0.1; params.eps=0.1; params.n=2; params.nl2=true; params.absMode='euclid';
+    /* n = 2: the product wave sin·sin·sin has |k| = √3·2πn/L = 0.68, close to the fastest growth (n = 3 would give |k| = 1.02, a decaying wave) */
+    params.dt=0.1; $('selDt').value='0.1';
+    stepsPerFrame=1; $('selSpf').value='1';
+    dispGain=2; yvar='h'; qkind='h'; modeSel[3]='cube';
+    view3.tilt=60; view3.rot=35; view3.dist=5;
+    cube.spin=3; cube.size=1; cube.cutX=100; cube.cutV=0;
+    if(!darkBG){ darkBG = true; applyTheme(); }   // black background by default
+    setLUT('jet'); $('cmap').value='jet';
+  }
   $('bPre1').addEventListener('click', ()=>runPreset(base1D, 'bPre1'));
   $('bPre2').addEventListener('click', ()=>runPreset(base2D, 'bPre2'));
+  $('bPre3').addEventListener('click', ()=>runPreset(base3D, 'bPre3'));
+  $('bPre3a').addEventListener('click', ()=>runPreset(()=>{ base3D(); params.alpha=1.5; }, 'bPre3a'));
+  $('bPre3n').addEventListener('click', ()=>runPreset(()=>{ base3D(); params.beta=-0.5; }, 'bPre3n'));
+  $('bPreK3').addEventListener('click', ()=>runPreset(()=>{ base3D(); params.order=246; params.lam=0.1; params.dt=0.2; $('selDt').value='0.2'; }, 'bPreK3'));
   $('bPre1a').addEventListener('click', ()=>runPreset(()=>{ base1D(); params.alpha=1; }, 'bPre1a'));
   $('bPre2a').addEventListener('click', ()=>runPreset(()=>{
     base2D(); params.alpha=1.5;
