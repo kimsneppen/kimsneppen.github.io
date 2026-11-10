@@ -1347,7 +1347,7 @@
     </div>
     <div class="chartnote" id="ctNote" style="margin-bottom:4px"></div>
     <div class="chartbox ct"><canvas id="cCT"></canvas>
-      <label class="diffpill" id="ctDiffPill" title="Diff: a round is active (yellow) when, of the companies started in it, more than Diff did not survive their first round of trade; an active period is a run of active rounds">Diff
+      <label class="diffpill" id="ctDiffPill" title="Diff: the threshold of the rule chosen under Active periods (yellow: the active periods)">Diff
         <select class="diffSel"></select></label></div>
   </section>
   <section class="display">
@@ -1393,8 +1393,11 @@
   <section class="display">
     <div class="cardhead"><h2>Active periods</h2><span class="sub" id="apSub">how many companies of the most scalable product start in one burst of turbulence</span></div>
     <div class="chartbar">
-      <label class="diffpill" title="Diff: a round is active when, of the companies started in it, more than Diff did not survive their first round of trade; an active period is a run of active rounds">Diff
+      <label class="diffpill" title="Diff: the threshold of the rule beside it; an active period is a run of active rounds">Diff
         <select class="diffSel"></select></label>
+      <label class="diffpill" title="when a round is active: (survived) more than Diff of the companies started in it survived their first round of trade; (started − survived) more than Diff of them did not; (old) the companies that survived their first and their second round of trade in the round differ by more than Diff, placed 2 rounds back">active when
+        <select id="apRule"><option value="surv">survived 1 round &gt; Diff</option><option value="fail">started − survived 1 round &gt; Diff</option><option value="old">|survived 1 − survived 2| &gt; Diff (old)</option></select></label>
+      <div class="seg" id="apWho" title="whose companies count: those of the most scalable product (in Cost ultra flat the one with the smallest transport cost), or those of every product"><button data-w="one" class="on">C only</button><button data-w="all">all products</button></div>
       <div class="seg" id="apScale" title="both axes logarithmic, only the vertical one, or neither">
         <button data-s="log" class="on">log–log</button><button data-s="loglin">log–lin</button><button data-s="lin">lin–lin</button></div>
     </div>
@@ -4206,7 +4209,7 @@ function ctReset(){
     dying:new Uint8Array(LL),len:0,next:0,ver:0,cap,id:new Int32Array(cap),birth:new Int32Array(cap),death:new Int32Array(cap),
     maxS:new Float32Array(cap),par:new Int32Array(cap),surv:new Int32Array(cap),pos:new Int32Array(cap),own:new Int32Array(cap),
     lastAt:new Int32Array(LL).fill(-1),zeroAt:new Int32Array(LL).fill(-1),t:[],D:[],c1:[],c2:[],nb:[],big:[],
-    n1b:[],n2b:[],na:[],ev:[],evb:[]};
+    n1b:[],n2b:[],na:[],ev:[],evb:[],nbA:[],n1bA:[],n2bA:[],c1A:[],c2A:[],pend:null,sv:null};
   AP=null;
   for(let r=0;r<LL;r++)if(E.F[ic][r])ctNew(r,E.t);
 }
@@ -4263,10 +4266,21 @@ function ctRecord(){
     for(let r=0;r<LL;r++)if(dying[r]){la[r]=cur[r]; cur[r]=-1; dying[r]=0}}
   for(let r=0;r<LL;r++)if(E.fate[r]>0||E.money[r]<=0)CT.zeroAt[r]=t;
   for(let r=0;r<LL;r++)if(F[r]&&cur[r]<0){ctNew(r,t); nb++; ev.push(r); evb.push(r)}
+  // every product (the toggle all products): each factory opened this round (E.opened) is followed until it has sold
+  // in two rounds (survived its first and second round of trade, counted by the round it opened: n1bA, n2bA; and in the
+  // round it happens: c1A, c2A) or has closed; nbA: the factories of every product opened this round
+  const NP=E.N; if(!CT.pend||CT.pend.length!==NP){CT.pend=Array.from({length:NP},()=>new Int32Array(LL).fill(-1)); CT.sv=Array.from({length:NP},()=>new Uint8Array(LL))}
+  let c1A=0, c2A=0, nbA=0;
+  for(let i=0;i<NP;i++){const Fi=E.F[i], si=E.sold[i], pd=CT.pend[i], sv=CT.sv[i];
+    for(let r=0;r<LL;r++){
+      if(pd[r]>=0){const alive=Fi[r]&&E.opened[r]!==i;
+        if(!alive)pd[r]=-1; else if(si[r]>0){const q=++sv[r]; if(q===1){c1A++; byBirth('n1bA',pd[r])} else{c2A++; byBirth('n2bA',pd[r]); pd[r]=-1}}}
+      if(Fi[r]&&E.opened[r]===i){pd[r]=t; sv[r]=0; nbA++}}}
+  CT.nbA.push(nbA); CT.n1bA.push(0); CT.n2bA.push(0); CT.c1A.push(c1A); CT.c2A.push(c2A);
   const H=E.hist[E.hist.length-1];
   CT.t.push(t); CT.D.push(H&&H.neff?H.neff[ic]:NaN); CT.c1.push(c1); CT.c2.push(c2); CT.nb.push(nb);
   CT.n1b.push(0); CT.n2b.push(0); CT.na.push(H?Math.round(H.starts*LL):0); CT.ev.push(Int32Array.from(ev)); CT.evb.push(Int32Array.from(evb));
-  if(CT.t.length>200000)for(const k of ['t','D','c1','c2','nb','n1b','n2b','na','ev','evb'])CT[k].splice(0,50000);
+  if(CT.t.length>200000)for(const k of ['t','D','c1','c2','nb','n1b','n2b','na','ev','evb','nbA','n1bA','n2bA','c1A','c2A'])CT[k].splice(0,50000);
   if(CT.big.length>20000)CT.big.splice(0,5000);
 }
 // a range with two handles: the start and the end (null: the first / the last there is); the handles follow when the
@@ -4853,29 +4867,35 @@ function net3D(g,d,inY,nShow,o){
   return true;
 }
 
-// ---- Active periods. A round i is active when, of the companies of the most scalable product started in it (nb), more
-// than Diff did not survive their first round of trade: nb − n1b > Diff (n1b: those of them that survived it). The
-// companies start in round i and are judged in the rounds after it, but the activity belongs to round i; the last
-// round is left out, its companies not judged yet. An active period is a run of active rounds
+// ---- Active periods. Whose companies: those of the most scalable product (apWho 'one') or of every product ('all').
+// When a round i is active (apRule): 'surv' — more than Diff of the companies started in round i survived their first
+// round of trade (n1b > Diff); 'fail' — more than Diff of them did not (nb − n1b > Diff; in Cost ultra flat some 500 C
+// companies start every round and nearly all fail at once, so this is true in every round); 'old' — the companies
+// that survived their first and their second round of trade in round i + 2 differ by more than Diff (|c1 − c2|).
+// The companies start in round i and are judged in the rounds after it, but the activity belongs to round i; the
+// rounds not judged yet are left out. An active period is a run of active rounds
 // between passive ones (one still open at the end, or begun at the first round kept, is left out). For each: Nc, the
 // companies of the product started in it; Nc1, Nc2, those of them that survived 1 and 2 rounds of trade; Na, the new
 // companies of every product; sites, the cells where a company of the product started or collapsed in it. Diff can be
 // changed at any time: the counts of every round are kept (CT.nb, n1b, n2b, na, ev)
-let apDiff=1, apScale='log', AP=null;
+let apDiff=1, apScale='log', AP=null, apRule='surv', apWho='one';
+// the counts behind the rule: of the most scalable product, or of every product
+const apArr=()=>apWho==='all'?{nb:CT.nbA,s1:CT.n1bA,s2:CT.n2bA,c1:CT.c1A,c2:CT.c2A}:{nb:CT.nb,s1:CT.n1b,s2:CT.n2b,c1:CT.c1,c2:CT.c2};
 const AP_FIT=[{on:false,x0:10,sl:-1.5},{on:false,x0:10,sl:-1.5},{on:false,x0:10,sl:-1.5}];
 function apPeriods(D){
   if(!CT)return [];
-  const n=CT.t.length, key=D+':'+n+':'+CT.t[n-1]+':'+CT.ver;
+  const n=CT.t.length, key=D+':'+n+':'+CT.t[n-1]+':'+CT.ver+':'+apRule+':'+apWho;
   if(AP&&AP.key===key)return AP.list;
-  const list=[]; let s=-1;
-  for(let i=0;i+1<n;i++){const act=CT.nb[i]-CT.n1b[i]>D;
+  const list=[]; let s=-1; const A=apArr(), old=apRule==='old', m=old?2:1;
+  const act0=apRule==='surv'?i=>A.s1[i]>D:apRule==='fail'?i=>A.nb[i]-A.s1[i]>D:i=>Math.abs((A.c1[i+2]||0)-(A.c2[i+2]||0))>D;
+  for(let i=0;i+m<n;i++){const act=act0(i);
     if(act){if(s<0)s=i} else if(s>=0){if(s>0)list.push(apMake(s,i-1)); s=-1}}
   AP={key,list}; return list;
 }
 // (each site counted once in a period, however often companies started or collapsed there: sitesB, the sites where a
 // company started; sites, where one started or collapsed)
-function apMake(i0,i1){let Nc=0,N1=0,N2=0,Na=0; const seen=new Set(), seenB=new Set();
-  for(let i=i0;i<=i1;i++){Nc+=CT.nb[i]; N1+=CT.n1b[i]; N2+=CT.n2b[i]; Na+=CT.na[i]; for(const r of CT.ev[i])seen.add(r);
+function apMake(i0,i1){let Nc=0,N1=0,N2=0,Na=0; const seen=new Set(), seenB=new Set(), A=apArr();
+  for(let i=i0;i<=i1;i++){Nc+=A.nb[i]||0; N1+=A.s1[i]||0; N2+=A.s2[i]||0; Na+=CT.na[i]; for(const r of CT.ev[i])seen.add(r);
     if(CT.evb[i])for(const r of CT.evb[i])seenB.add(r)}
   return {i0,i1,Nc,N1,N2,Na,sites:seen.size,sitesB:seenB.size}}
 // the probability density of the values, per unit: logarithmic bins (4 a decade, whole numbers) on a logarithmic x
@@ -4899,7 +4919,7 @@ function apPlots(){
   const H=v=>apHist(per.map(v),lx), mk=(k,series,xl,yl,title)=>{const f=apFitLine(series[0].p,AP_FIT[k],lx,ly); if(f)series.push(f);
     return {series,o:{xl,yl,scale:apScale},title}};
   return {per,tFrom:Math.ceil(tFrom),tB,
-    apN:mk(0,[{c:col,t:`${nm} companies started, Nc`,p:H(q=>q.Nc)},{c:'#16233b',dash:true,t:'companies of every product started',p:H(q=>q.Na)}],
+    apN:mk(0,apWho==='all'?[{c:col,t:'companies of every product started, Nc',p:H(q=>q.Nc)}]:[{c:col,t:`${nm} companies started, Nc`,p:H(q=>q.Nc)},{c:'#16233b',dash:true,t:'companies of every product started',p:H(q=>q.Na)}],
       'Collapse activity, All','probability density P(Nc)',`P(Nc): companies started in an active period (Diff ${apDiff})`),
     apS:mk(1,[{c:col,t:'survived ≥ 1 round of trade',p:H(q=>q.N1)},{c:'#7c2d12',t:'survived ≥ 2 rounds',p:H(q=>q.N2)}],
       'Collapse activity, Lasting','probability density',`${nm} companies that lasted, per active period (Diff ${apDiff})`),
@@ -4912,15 +4932,20 @@ function apDraw(force){
   for(const [id,k] of [['cApN','apN'],['cApS','apS'],['cApX','apX']])xyPlot($(id),q[k].series,q[k].o);
   const per=q.per, med=a=>{const b=a.slice().sort((x,y)=>x-y); return b.length?b[b.length>>1]:0};
   $('apSub').textContent=`how many companies of ${nm}, the most scalable product, start in one burst of turbulence`;
+  $('apWho').querySelector('[data-w=one]').textContent=`${nm} only`;
   $('apNote').textContent=`${per.length} active periods for Diff ${apDiff} in the last ⅔ of the run (rounds ${q.tFrom}–${q.tB})`+(per.length?` (median length ${med(per.map(p=>p.i1-p.i0+1))} rounds, median Nc ${med(per.map(p=>p.Nc))}, largest ${Math.max(...per.map(p=>p.Nc))})`:'')+
-    `. A round is active when, of the new ${nm} companies started in it, more than Diff did not survive their first round of trade (started − survived 1 round > Diff, counted in the round they started); `+
-    `an active period is a run of active rounds (yellow in the plots After a collapse). `+
+    `. Counted: ${apWho==='all'?'the companies of every product':`the ${nm} companies`}. A round is active when `+(apRule==='surv'?`more than Diff of the companies started in it survived their first round of trade`:apRule==='fail'?`more than Diff of the companies started in it did not survive their first round of trade (started − survived 1 round)`:`the companies that survived their first and their second round of trade in it differ by more than Diff, placed 2 rounds back`)+
+    ` (counted in the round they started); an active period is a run of active rounds (yellow in the plots After a collapse). `+
     `Dashed: the companies of every product started in the period (with equal start costs, as in Cost flat or ultra flat, the money spent on starting them). Sites: each counted once in a period (full: where a company started; dashed: started or collapsed). Fit: P(x₀)·(x/x₀)^slope through the curve at x₀.`;
 }
-// Diff (0 … 100: about 15 starts fail in a typical round of the standard setup), its menus, the scales, the fits
-{const opts=[0,1,2,3,4,5,6,7,8,9,10,12,15,20,25,30,40,50,75,100].map(k=>`<option value="${k}">${k}</option>`).join('');
+// Diff (0 … 2000: with every product counted some 200 companies survive and 1200 fail in a round of Cost ultra flat),
+// its menus, the rule, whose companies, the scales, the fits
+{const opts=[0,1,2,3,4,5,6,7,8,9,10,12,15,20,25,30,40,50,75,100,150,200,250,300,400,500,750,1000,1500,2000].map(k=>`<option value="${k}">${k}</option>`).join('');
   document.querySelectorAll('.diffSel').forEach(sel=>{sel.innerHTML=opts; sel.value=String(apDiff);
     sel.onchange=()=>{apDiff=+sel.value; document.querySelectorAll('.diffSel').forEach(x=>x.value=String(apDiff)); drawCT(true); apDraw(true)}});
+  $('apRule').value=apRule; $('apRule').onchange=e=>{apRule=e.target.value; drawCT(true); apDraw(true)};
+  document.querySelectorAll('#apWho button').forEach(b=>b.onclick=()=>{apWho=b.dataset.w;
+    document.querySelectorAll('#apWho button').forEach(x=>x.classList.toggle('on',x===b)); drawCT(true); apDraw(true)});
   document.querySelectorAll('#apScale button').forEach(b=>b.onclick=()=>{apScale=b.dataset.s;
     document.querySelectorAll('#apScale button').forEach(x=>x.classList.toggle('on',x===b)); apDraw(true)});
   const sl=Array.from({length:31},(_,k)=>{const v=-k/10; return `<option value="${v}">${v.toFixed(1).replace('-','−')}</option>`}).join('');
