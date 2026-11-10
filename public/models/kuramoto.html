@@ -271,16 +271,23 @@
   .cornerpng .rotctl b{font-size:10.5px;min-width:38px;text-align:right}
   .cornerpng .rotctl[hidden],.cornerpng .lseg[hidden]{display:none}
   .display.darkbg .cornerpng .rotctl{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
-  .cutx{position:absolute;left:12px;right:12px;bottom:46px;display:flex;align-items:center;gap:8px;z-index:2;font-size:11px;color:var(--ink2);pointer-events:none}
+  /* the x-cut bar of the cube: a thin line above the lower right controls, as wide as they are */
+  .cutx{position:absolute;right:12px;bottom:46px;width:var(--cutW,260px);max-width:calc(100% - 24px);display:flex;align-items:center;gap:6px;z-index:2;font-size:10px;color:var(--ink2);pointer-events:none}
   .cutx[hidden]{display:none}
-  .cutx input{flex:1;min-width:60px;accent-color:var(--accent);pointer-events:auto}
-  .cutx span,.cutx b{background:rgba(255,255,255,.8);border-radius:6px;padding:2px 6px;pointer-events:auto;white-space:nowrap}
-  .cutx b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;min-width:48px;text-align:center}
-  .display.darkbg .cutx span,.display.darkbg .cutx b{background:rgba(16,19,28,.8);color:#c7d2fe}
+  .cutx input{flex:1;min-width:40px;height:14px;margin:0;pointer-events:auto;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
+  .cutx input::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:rgba(90,100,130,.45)}
+  .cutx input::-moz-range-track{height:3px;border-radius:2px;background:rgba(90,100,130,.45)}
+  .cutx input::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:11px;height:11px;margin-top:-4px;border-radius:50%;background:var(--accent);border:1px solid #fff}
+  .cutx input::-moz-range-thumb{width:9px;height:9px;border-radius:50%;background:var(--accent);border:1px solid #fff}
+  .display.darkbg .cutx input::-webkit-slider-runnable-track,.display.darkbg .cutx input::-moz-range-track{background:rgba(199,210,254,.35)}
+  .cutx button{height:18px;padding:0 6px;border:1px solid var(--line);border-radius:6px;background:rgba(255,255,255,.8);color:var(--ink2);font-size:10px;line-height:16px;font-family:inherit;cursor:pointer;pointer-events:auto;white-space:nowrap}
+  .cutx button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .display.darkbg .cutx button{background:rgba(16,19,28,.8);border-color:#2a3140;color:#c7d2fe}
+  .display.darkbg .cutx button.on{background:var(--accent);color:#fff}
   .cutv{position:absolute;top:var(--barB,48px);left:var(--cutL,50%);display:flex;align-items:center;gap:6px;z-index:3;font-size:11px;color:var(--ink2);background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:8px;padding:3px 8px;backdrop-filter:blur(2px);white-space:nowrap}
   .cutv[hidden]{display:none}
   .cutv input{width:90px;accent-color:var(--accent)}
-  .cutv b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;min-width:34px}
+  .cutv b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;min-width:38px}
   .display.darkbg .cutv{background:rgba(16,19,28,.85);border-color:#2a3140;color:#c7d2fe}
   #rowSize[hidden]{display:none !important}
   .seg button:disabled{opacity:.35;cursor:default}
@@ -289,6 +296,7 @@
   .cornerpng .lseg button{border:0;border-radius:0;background:transparent;padding:0 7px;height:28px;font-size:11px;line-height:26px;color:var(--ink2);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700}
   .cornerpng .lseg button + button{border-left:1px solid var(--line)}
   .cornerpng .lseg button.on{background:var(--accent);color:#fff}
+  .cornerpng .lseg.spf button{padding:0 5px;font-size:10.5px}
   .cornerpng .lseg.other::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.85;
     background:linear-gradient(to top right,transparent calc(50% - 1.2px),#dc2626 calc(50% - 1.2px),#dc2626 calc(50% + 1.2px),transparent calc(50% + 1.2px)),
                linear-gradient(to top left,transparent calc(50% - 1.2px),#dc2626 calc(50% - 1.2px),#dc2626 calc(50% + 1.2px),transparent calc(50% + 1.2px))}
@@ -585,7 +593,7 @@
     .rdout{top:46px;right:8px;font-size:11px;gap:2px 8px;padding:3px 8px;max-width:calc(100% - 16px)}
     .presets{left:8px;bottom:8px}
     .cornerpng{right:8px;bottom:8px}
-    .cutx{left:8px;right:8px;bottom:52px}
+    .cutx{right:8px;bottom:52px;max-width:calc(100% - 16px)}
     .cornerpng .rotctl{height:34px}
     .cornerpng button{padding:7px 11px;font-size:12.5px}
     .cornerpng button.runbtn,.cornerpng button.rstbtn{width:36px;height:34px;line-height:32px;padding:0}
@@ -652,6 +660,7 @@
     .cornerpng .rotctl{height:32px}
     .cornerpng .rotctl input{width:60px}
     .cutx{bottom:86px}
+    .cornerpng .lseg.spf button{padding:0 4px}
     .cutv{left:8px;z-index:2}
     .cornerpng .lseg button{height:32px;line-height:30px;padding:0 6px;font-size:11px}
     .lyaphead .ttl{width:100%}
@@ -1407,6 +1416,9 @@
         </div>
         <div class="cornerpng">
           <button id="bRun2" class="runbtn" title="run / pause (space)">&#10074;&#10074;</button>
+          <div class="lseg spf" id="segSpf" title="steps of the model per drawn frame: 1, 5 or 50 (the control panel's steps / frame menu offers more values; in 1D and 2D a frame is cut at about 0.12 s of computing, in 3D the chosen number is taken in full)">
+            <button data-v="1">1</button><button data-v="5">5</button><button data-v="50">50</button>
+          </div>
           <button id="bReset2" class="rstbtn" title="reset: restart from the initial condition">&#8635;</button>
           <div class="lseg" id="segL2" title="box length L (the control panel's setting; crossed out when the run uses another L — a click still starts that L)">
             <button data-v="64">64</button><button data-v="128">128</button><button data-v="256">256</button><button data-v="512">512</button>
@@ -1422,10 +1434,10 @@
         </div>
         <div class="diverged" id="divergedMsg">Diverged — reduce dt, then Reset</div>
         <div class="cutv" id="cutV" hidden title="transparency threshold of the cube: every lattice point whose coloured value lies below this fraction of the colour scale (from the lower end of the colour bar to the upper) is transparent — 0 % shows the whole cube, 100 % keeps only the ridges, the points that are a local maximum of the coloured variable along the x, the y or the z line through them">
-          <span>below</span><input type="range" id="rngCutV" min="0" max="100" step="1" value="0"><b id="cutVVal">0 %</b>
+          <span>below</span><input type="range" id="rngCutV" min="0" max="9" step="1" value="0"><b id="cutVVal">0 %</b>
         </div>
-        <div class="cutx" id="cutX" hidden title="vertical cut: the part of the cube beyond this distance from its x = 0 face is drawn 90 % transparent">
-          <span>cut x</span><input type="range" id="rngCutX" min="0" max="100" step="1" value="100"><b id="cutXVal">none</b>
+        <div class="cutx" id="cutX" hidden>
+          <button id="bCutT" title="vertical cut: the part of the cube beyond the cut is drawn 90 % transparent — click to make it 95 % transparent (and back)">cut x</button><input type="range" id="rngCutX" min="0" max="100" step="1" value="100" title="vertical cut: the distance of the cut plane from the cube's x = 0 face; at the right end there is no cut">
         </div>
         <div class="wfctl v3 folded" id="viewBox">
           <div><span>mode</span><select id="dispmode" title="display mode"></select></div>
@@ -1462,7 +1474,7 @@
           <div class="prow">
             <button id="bPre1" title="1D KS: periodic, L=128, dx=0.5 (256 points), dt=0.1, jet &minus;&nabla;&sup2;h">KS 1D</button>
             <button id="bPre2" title="2D KS: L=128, dx=0.5 (256&sup2; points), surface 3D, flames &nabla;&sup2;h, tilt 62&deg;">KS 2D</button>
-            <button id="bPre3" title="3D KS: periodic cube, L = 32, dx = 0.5 (64&sup3; points), dt = 0.1, coloured by h&minus;&lang;h&rang; in jet, slowly rotating">KS 3D</button>
+            <button id="bPre3" title="3D KS: periodic cube, L = 32, dx = 1 (32&sup3; points; dx = 0.5 gives 64&sup3;, eight times slower, the same statistics), dt = 0.1, coloured by h&minus;&lang;h&rang; in jet, slowly rotating">KS 3D</button>
           </div>
           <div class="prow">
             <button id="bPre1a" title="KS 1D with &alpha; = 1 (extra &alpha;|&nabla;h| growth), dt = 0.1">KS 1D abs1</button>
@@ -1477,7 +1489,7 @@
           <div class="prow">
             <button id="bPreK1" title="0.1&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2;: the &Lambda; = 0.1 equation with the standard KS nonlinearity, 1D, periodic, L = 128, dx = 0.5, dt = 0.1 — the view, colours, time step and line density of KS 1D">KKS 1D</button>
             <button id="bPreK2" title="0.1&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 2D: L = 128, dx = 0.5 (256&sup2; points), dt = 0.2 — surface 3D, flames &nabla;&sup2;h, tilt 62&deg;, time step as KS 2D">KKS 2D</button>
-            <button id="bPreK3" title="0.1&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 3D: L = 32, dx = 0.5 (64&sup3; points), dt = 0.2, the rotating cube of KS 3D">KKS 3D</button>
+            <button id="bPreK3" title="0.1&nabla;&sup2;h + &nabla;&#8308;h + &nabla;&#8310;h + (&nabla;h)&sup2; in 3D: L = 32, dx = 1 (32&sup3; points), dt = 0.2, the rotating cube of KS 3D">KKS 3D</button>
           </div>
           <div class="prow">
             <button id="bPreBeauty" data-pre="beauty" title="Beauty — Art 2D. Cycles off &rarr; &alpha; = +3 (h upward) &rarr; &alpha; = &minus;3 (&minus;h upward) &rarr; off. 2D, L = 256, periodic, surface coloured by h&minus;&lang;h&rang; in jet, default view (tilt 62&deg;, rot 0&deg;, dist 5&middot;L)">Art 2D</button>
@@ -2131,9 +2143,9 @@ function fftMixed(re, im, off, n, inv){
 }
 
 /* in-place radix-2 complex FFT on re/im[off .. off+n) — any other length goes to the mixed-radix routine */
-function fftRange(re, im, off, n, inv){
+function fftRange(re, im, off, n, inv, ns){                  // ns: leave the 1/n of the inverse to the caller
   if(n < 2) return;
-  if(n & (n-1)){ fftMixed(re, im, off, n, inv); return; }
+  if(n & (n-1)){ fftMixed(re, im, off, n, inv); if(ns && inv){ for(let i=off; i<off+n; i++){ re[i]*=n; im[i]*=n; } } return; }
   const T = fftTables(n), rev = T.rev, C = T.c, S = T.s;
   for(let i=1; i<n; i++){
     const j = rev[i];
@@ -2156,7 +2168,7 @@ function fftRange(re, im, off, n, inv){
       }
     }
   }
-  if(inv){
+  if(inv && !ns){
     const f = 1/n;
     for(let i=off; i<off+n; i++){ re[i]*=f; im[i]*=f; }
   }
@@ -2168,7 +2180,7 @@ function fftCore(re, im, inv){ fftRange(re, im, 0, re.length, inv); }
    the inner loop runs over contiguous memory instead of gathering one column at a time with
    a stride of nx — the same arithmetic in the same order (bit-identical), ~20 % faster on
    a 512² lattice */
-function fftCols(re, im, nx, ny, inv){
+function fftCols(re, im, nx, ny, inv, ns){                   // ns: no 1/ny on the inverse
   const T = fftTables(ny), rev = T.rev, C = T.c, S = T.s;
   for(let i=1; i<ny; i++){
     const j = rev[i];
@@ -2189,7 +2201,7 @@ function fftCols(re, im, nx, ny, inv){
       }
     }
   }
-  if(inv){ const f = 1/ny, n = nx*ny; for(let i=0; i<n; i++){ re[i]*=f; im[i]*=f; } }
+  if(inv && !ns){ const f = 1/ny, n = nx*ny; for(let i=0; i<n; i++){ re[i]*=f; im[i]*=f; } }
 }
 
 function fft2(re, im, nx, ny, inv, sr, si){   // rows then columns, no sub-array churn
@@ -2206,7 +2218,16 @@ function fft2(re, im, nx, ny, inv, sr, si){   // rows then columns, no sub-array
    nx·ny of them at once with fftCols (stride nx·ny) when nz is a power of two, else one at a
    time through the scratch pair tr, ti */
 function fft3(re, im, nx, ny, nz, inv, sr, si, tr, ti){
-  const P = nx*ny;
+  const P = nx*ny, M = P*nz, pow2 = !(nx & (nx-1)) && !(ny & (ny-1)) && !(nz & (nz-1));
+  if(pow2){
+    /* every length a power of two: rows, then the columns of each plane, then the z lines, and the
+       1/M of the inverse in one pass at the end instead of one pass per direction */
+    for(let r=0; r<M; r+=nx) fftRange(re, im, r, nx, inv, true);
+    for(let z=0; z<nz; z++){ const o = z*P; fftCols(re.subarray(o, o+P), im.subarray(o, o+P), nx, ny, inv, true); }
+    fftCols(re, im, P, nz, inv, true);
+    if(inv){ const f = 1/M; for(let p=0; p<M; p++){ re[p]*=f; im[p]*=f; } }
+    return;
+  }
   for(let z=0; z<nz; z++){ const o = z*P; fft2(re.subarray(o, o+P), im.subarray(o, o+P), nx, ny, inv, sr, si); }
   if(!(nz & (nz-1))){ fftCols(re, im, P, nz, inv); return; }
   for(let x=0; x<P; x++){
@@ -2370,6 +2391,9 @@ function buildSim(P){
      The γ term needs the spectrum of g = (∇h)² on its own: g rides in the
      imaginary part of the forward transform of the local terms and is unpacked
      with the Hermitian symmetry, N̂ = Â − γk²·ĝ — no extra transform. */
+  /* max|∇h|² of the state a step starts from, read off the first nonlinear evaluation of that step
+     (the gradient is in hand there anyway); the 3D display shows it instead of transforming again */
+  let grabGrad = false, gradMax2 = NaN;
   function nonlin(inr, ini, outr, outi){                 // dealiased pseudospectral N(v)
     const dOn = DELTA !== 0, gOn = GAMMA !== 0, sOn = SIGMA !== 0, lOn = dOn || sOn;   // lOn: ∇²h is needed in x-space
     let lap = null;
@@ -2412,6 +2436,12 @@ function buildSim(P){
         if(sOn){ const l = lap[p]; n += SIGMA*l*l; }
         tr[p] = n; ti[p] = gOn ? g : 0;                  // g packed into the imaginary part
       }
+    }
+    if(grabGrad){
+      grabGrad = false; let m = 0;
+      if(ALPHA === 0 && BETA === 0 && NL2 === 1 && !dOn && !gOn && !sOn){ for(let p=0;p<M;p++){ const v = outr[p]; if(v > m) m = v; } }
+      else for(let p=0;p<M;p++){ const a = g1r[p], b = two ? g1i[p] : 0, c = three ? g2r[p] : 0, g = a*a + b*b + c*c; if(g > m) m = g; }
+      gradMax2 = m;
     }
     FT(tr, ti, false);
     if(gOn){                                             // unpack: Â = (Z + Z̄(−k))/2, ĝ = (Z − Z̄(−k))/(2i)
@@ -2894,7 +2924,8 @@ function buildSim(P){
   };
 
   s.step = function(){
-    stepv(vr, vi);
+    grabGrad = !mirror;                        // (with mirrored walls the ghost half would count too)
+    stepv(vr, vi); s.gradMax = Math.sqrt(gradMax2);
     s.meanH += vr[0]/M; vr[0]=0; vi[0]=0;    // absorb mean growth into a scalar
     hermitize(vr, vi);
     if(lyap.on){ stepv(wr, wi); wr[0]=0; wi[0]=0; hermitize(wr, wi); }
@@ -3564,6 +3595,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      colouring cache is left alone; computed once per change of the surface */
   let gradBuf = null, gradStamp = -1, gradMax = 0;
   function maxGrad(){
+    if(params.dim === 3 && isFinite(sim.gradMax)) return sim.gradMax;   // from the step itself (the state one step back)
     if(gradStamp !== stamp || !gradBuf || gradBuf.length !== sim.M){
       if(!gradBuf || gradBuf.length !== sim.M) gradBuf = new Float64Array(sim.M);
       sim.derived('absdx', gradBuf); gradMax = absMax(gradBuf); gradStamp = stamp;
@@ -4444,7 +4476,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      z axis, tilt (0 = seen from above), perspective distance — with its own viewpoint. */
   const view3 = { tilt:60, rot:35, dist:5 };
   const curView = () => params.dim === 3 ? view3 : view;
-  const cube = { spin:3, size:1, cutX:100, cutV:0, R:200, msR:0, lastDraw:0 };   // spin: the cube turns 2·spin degrees per second
+  const cube = { spin:3, size:1, cutX:100, cutT:0.1, cutV:0, R:200, msR:0, lastDraw:0 };   // spin: the cube turns 2·spin degrees per second; cutT: what is left of the light beyond the x cut
+  /* the threshold bar's stops, in per cent of the colour scale; the last one keeps only the ridges */
+  const CUTVV = [0, 1, 5, 25, 50, 75, 90, 95, 99, 100];
   const vol = { can:document.createElement('canvas'), ctx:null, img:null, ci:null, al:null, key:'' };
   vol.ctx = vol.can.getContext('2d');
   /* colour index and opacity class of every lattice point for the colouring `kind` (cached per frame) */
@@ -4455,7 +4489,11 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     vol.key = key;
     if(!vol.ci || vol.ci.length !== M){ vol.ci = new Uint16Array(M); vol.al = new Uint8Array(M); }
     const ci = vol.ci, al = vol.al, pct = cube.cutV, n2 = n*n;
-    for(let p=0;p<M;p++) ci[p] = cidx(kind, q[p], S);
+    if(splitOn(kind)) for(let p=0;p<M;p++) ci[p] = cidx(kind, q[p], S);
+    else {                                                  // lutIdx(mapT(...)) inlined: t = v/S or (v/S + 1)/2
+      const a = kind === 'absdx' ? 255/S : 127.5/S, b = kind === 'absdx' ? 0.5 : 128;
+      for(let p=0;p<M;p++){ const i = (a*q[p] + b)|0; ci[p] = i < 0 ? 0 : (i > 255 ? 255 : i); }
+    }
     if(pct >= 100){
       /* ridges: the points that are a local maximum of the quantity along the x, the y or the z line through them */
       for(let k=0;k<n;k++){
@@ -4474,7 +4512,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       const lo = kind === 'absdx' ? 0 : -S, thr = lo + pct/100*(S - lo);
       for(let p=0;p<M;p++) al[p] = q[p] >= thr ? 2 : 0;
     }
-    const cx = Math.round(cube.cutX/100*n);                 // beyond the cut, i ≥ cx: 10 %
+    const cx = Math.round(cube.cutX/100*n);                 // beyond the cut, i ≥ cx: 10 % (or 5 %) of the light is left
     if(cx < n) for(let k=0;k<n;k++) for(let j=0;j<n;j++){ const row = k*n2 + j*n; for(let i=cx;i<n;i++) if(al[row+i]) al[row+i] = 1; }
   }
   /* the camera: unit vectors of screen x, screen y and depth (toward the eye) in cube coordinates,
@@ -4496,13 +4534,28 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     let lx = 0.35*eu[0] + 0.45*ev[0] + 0.82*ed[0], ly = 0.35*eu[1] + 0.45*ev[1] + 0.82*ed[1], lz = 0.35*eu[2] + 0.45*ev[2] + 0.82*ed[2];
     const ln = 1/Math.sqrt(lx*lx + ly*ly + lz*lz); lx *= ln; ly *= ln; lz *= ln;
     const sh = dot => 0.55 + 0.45*Math.max(0, dot);
-    const S0 = sh(-lx), S1 = sh(lx), S2 = sh(-ly), S3 = sh(ly), S4 = sh(-lz), S5 = sh(lz);
-    const SH = [S0, S1, S2, S3, S4, S5];
+    const SH = [sh(-lx), sh(lx), sh(-ly), sh(ly), sh(-lz), sh(lz)];
+    /* the colour table shaded for each of the six faces, so that a sample costs one lookup */
+    const NC = L3.length, SL = vol.sl && vol.sl.length === 6*NC ? vol.sl : (vol.sl = new Float32Array(6*NC));
+    for(let f=0; f<6; f++){ const s = SH[f], o = f*NC; for(let c=0; c<NC; c++) SL[o+c] = s*L3[c]; }
+    const beyond = cube.cutT;
     const ex = persp ? dcam*ed[0] : 0, ey = persp ? dcam*ed[1] : 0, ez = persp ? dcam*ed[2] : 0;
-    let o = 0;
-    for(let py=0; py<R; py++){
+    /* the rows and columns the cube can reach: the projection of its eight corners (with a margin) */
+    let umin = Infinity, umax = -Infinity, vmin = Infinity, vmax = -Infinity;
+    for(let c=0; c<8; c++){
+      const X = (c&1) ? 0.5 : -0.5, Y = (c&2) ? 0.5 : -0.5, Z = (c&4) ? 0.5 : -0.5;
+      const dp = X*ed[0] + Y*ed[1] + Z*ed[2], pf = persp ? dcam/(dcam - dp) : 1;
+      const u = (X*eu[0] + Y*eu[1] + Z*eu[2])*pf, v = (X*ev[0] + Y*ev[1] + Z*ev[2])*pf;
+      if(u < umin) umin = u; if(u > umax) umax = u; if(v < vmin) vmin = v; if(v > vmax) vmax = v;
+    }
+    const pxA = Math.max(0, Math.floor((umin/span + 0.5)*R) - 1), pxB = Math.min(R - 1, Math.ceil((umax/span + 0.5)*R) + 1);
+    const pyA = Math.max(0, Math.floor((-vmax/span + 0.5)*R) - 1), pyB = Math.min(R - 1, Math.ceil((-vmin/span + 0.5)*R) + 1);
+    /* background everywhere first (as 32-bit words), then only the rays that can hit the cube */
+    const bg32 = new Uint32Array(d.buffer); bg32.fill(((255 << 24) | (bgb << 16) | (bgg << 8) | bgr) >>> 0);
+    for(let py=pyA; py<=pyB; py++){
       const v = -((py + 0.5)/R - 0.5)*span;
-      for(let px=0; px<R; px++, o+=4){
+      let o = 4*(py*R + pxA);
+      for(let px=pxA; px<=pxB; px++, o+=4){
         const u = ((px + 0.5)/R - 0.5)*span;
         const Px = u*eu[0] + v*ev[0], Py = u*eu[1] + v*ev[1], Pz = u*eu[2] + v*ev[2];   // the pixel's point on the depth-0 plane
         let ox, oy, oz, dx, dy, dz;
@@ -4518,7 +4571,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
           else { let ta = -oy/dy, tb = (n - oy)/dy; if(ta > tb){ const t = ta; ta = tb; tb = t; } if(ta > t0){ t0 = ta; face = dy > 0 ? 2 : 3; } if(tb < t1) t1 = tb; } }
         if(!miss){ if(Math.abs(dz) < 1e-12){ if(oz < 0 || oz >= n) miss = true; }
           else { let ta = -oz/dz, tb = (n - oz)/dz; if(ta > tb){ const t = ta; ta = tb; tb = t; } if(ta > t0){ t0 = ta; face = dz > 0 ? 4 : 5; } if(tb < t1) t1 = tb; } }
-        if(miss || t1 <= t0 || face < 0){ d[o] = bgr; d[o+1] = bgg; d[o+2] = bgb; d[o+3] = 255; continue; }
+        if(miss || t1 <= t0 || face < 0) continue;                 // the background is already there
         /* the first block and the walk */
         const x = ox + dx*t0, y = oy + dy*t0, z = oz + dz*t0;
         let ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
@@ -4534,8 +4587,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
         for(;;){
           const p = iz*n2 + iy*n + ix, a = al[p];
           if(a){
-            const w = a === 2 ? T : 0.1*T, c = 3*ci[p], s = SH[face];
-            cr += w*L3[c]*s; cg += w*L3[c+1]*s; cb += w*L3[c+2]*s; T -= w;
+            const w = a === 2 ? T : beyond*T, c = face*NC + 3*ci[p];
+            cr += w*SL[c]; cg += w*SL[c+1]; cb += w*SL[c+2]; T -= w;
             if(T < 0.02) break;
           }
           if(tmx < tmy){
@@ -4604,7 +4657,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       /* the caption (exported pictures only — on screen the corner boxes hold this), top left */
       if(!onScreen){
         ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-        ctx.fillText('L = ' + fmt(params.L) + ',  ' + sim.physNx + '³ points' + (cube.cutV >= 100 ? ',  ridges of ' + kindLabel(kind) : cube.cutV > 0 ? ',  ' + kindLabel(kind) + ' above ' + cube.cutV + ' % of the scale' : '') + (cube.cutX < 100 ? ',  cut at x = ' + fmt(cube.cutX/100*params.L) : ''), x0 + 6, y0 + 6);
+        ctx.fillText('L = ' + fmt(params.L) + ',  ' + sim.physNx + '³ points' + (cube.cutV >= 100 ? ',  ridges of ' + kindLabel(kind) : cube.cutV > 0 ? ',  ' + kindLabel(kind) + ' above ' + cube.cutV + ' % of the scale' : '') + (cube.cutX < 100 ? ',  cut at x = ' + fmt(cube.cutX/100*params.L) + ' (' + Math.round(100 - 100*cube.cutT) + ' % transparent beyond)' : ''), x0 + 6, y0 + 6);
       }
     }
     hbarPx = 0; xbarPx = 0;
@@ -5691,6 +5744,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
      near 120 ms — always at least one step; the run advances in smaller bites, the physics
      is unchanged, and small lattices never reach the cap. */
   let msPerStep = 0;
+  /* timing read-out for profiling from the console: ms per model step, the cube's render time and resolution */
+  window.ksTiming = () => ({ msPerStep: +msPerStep.toFixed(1), msRender: +cube.msR.toFixed(1), R: cube.R, stepsPerFrame, dim: params.dim, N: sim && sim.physNx });
   const FRAME_MS = 120;
   let spinLast = 0;
   function tick(ts){
@@ -5708,7 +5763,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     }
     spinLast = ts;
     if(running && !diverged){
-      const n = msPerStep > 0 ? Math.max(1, Math.min(stepsPerFrame, Math.floor(FRAME_MS/msPerStep))) : 1;
+      /* 1D and 2D: at most ~FRAME_MS of computing per frame; 3D: the chosen steps in full (a frame may then take a second or more at 64³) */
+      const n = msPerStep > 0 ? Math.max(1, Math.min(stepsPerFrame, Math.floor((params.dim === 3 ? 3000 : FRAME_MS)/msPerStep))) : 1;
       const t0 = performance.now();
       advance(n);
       const ms = (performance.now() - t0)/n;
@@ -5859,8 +5915,9 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function syncCubeUI(){
     $('rngSpin').value = cube.spin; $('spinVal').textContent = cube.spin ? (2*cube.spin) + '°/s' : 'off';
     $('rngSize').value = cube.size; $('v3SizeVal').textContent = '×' + (+cube.size.toFixed(2));
-    $('rngCutX').value = cube.cutX; $('cutXVal').textContent = cube.cutX >= 100 ? 'none' : 'x = ' + fmt(cube.cutX/100*params.L);
-    $('rngCutV').value = cube.cutV; $('cutVVal').textContent = cube.cutV >= 100 ? 'ridges' : cube.cutV + ' %';
+    $('rngCutX').value = cube.cutX; $('bCutT').classList.toggle('on', cube.cutT < 0.1);
+    let iv = 0; for(let i=0;i<CUTVV.length;i++) if(Math.abs(CUTVV[i] - cube.cutV) < Math.abs(CUTVV[iv] - cube.cutV)) iv = i;
+    $('rngCutV').value = iv; $('cutVVal').textContent = cube.cutV >= 100 ? 'ridges' : cube.cutV + ' %';
     syncViewSliders();
   }
   $('viewHead').addEventListener('click', ()=>{ const f = $('viewBox').classList.toggle('folded'); $('viewHead').classList.toggle('open', !f); });
@@ -6169,7 +6226,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   $('rngSpin').addEventListener('input', e=>{ cube.spin = +e.target.value; syncCubeUI(); if(!running) draw(); });
   $('rngSize').addEventListener('input', e=>{ cube.size = +e.target.value; syncCubeUI(); if(!running) draw(); });
   $('rngCutX').addEventListener('input', e=>{ cube.cutX = +e.target.value; syncCubeUI(); if(!running) draw(); });
-  $('rngCutV').addEventListener('input', e=>{ cube.cutV = +e.target.value; syncCubeUI(); if(!running) draw(); });
+  $('bCutT').addEventListener('click', ()=>{ cube.cutT = cube.cutT < 0.1 ? 0.1 : 0.05; syncCubeUI(); if(!running) draw(); });
+  $('rngCutV').addEventListener('input', e=>{ cube.cutV = CUTVV[Math.max(0, Math.min(CUTVV.length - 1, Math.round(+e.target.value)))]; syncCubeUI(); if(!running) draw(); });
   /* the threshold bar hangs under the free / fixed switch; when the read-out box would cover it, it moves below that */
   function placeCutV(){
     const el = $('cutV'); if(el.hidden) return;
@@ -6317,6 +6375,16 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
 
   /* small copies of Run / Pause and Reset in the lower right corner of the display */
   $('bRun2').addEventListener('click', ()=>$('bRun').click());
+  /* the steps / frame toggle beside the run button: 1, 5 or 50, the same setting as the panel's menu */
+  $('segSpf').querySelectorAll('button').forEach(b => b.addEventListener('click', ()=>{
+    userSpf = true; stepsPerFrame = +b.dataset.v; $('selSpf').value = b.dataset.v; noteSpfRef(); syncSpfSeg();
+  }));
+  let spfSegState = -1;
+  function syncSpfSeg(){
+    if(spfSegState === stepsPerFrame) return;
+    spfSegState = stepsPerFrame;
+    $('segSpf').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.v === stepsPerFrame));
+  }
   $('bReset2').addEventListener('click', ()=>$('bReset').click());
   /* the L switch beside them: sets L like the control panel's menu (the run
      restarts with the new box, running state kept); the button of the L in use
@@ -6337,7 +6405,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   let run2State = null;
   function syncRun2(){
-    syncL2();
+    syncL2(); syncSpfSeg();
     const r = running && !diverged;
     if(run2State === r) return;
     run2State = r;
@@ -6422,10 +6490,18 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   function placeCutX(){
     const el = $('cutX'); if(el.hidden) return;
     const wrap = el.offsetParent; if(!wrap) return;
-    const wb = wrap.getBoundingClientRect().bottom;
+    const wr = wrap.getBoundingClientRect(), cp = wrap.querySelector('.cornerpng');
+    /* as long as the run of controls from the run button to the rotation slider (the picture buttons
+       further right, when they share the row, are left out), right-aligned with that slider */
+    let l = Infinity, r = -Infinity;
+    if(cp) for(const c of cp.children){ const b = c.getBoundingClientRect(); if(!b.width) continue; l = Math.min(l, b.left); r = Math.max(r, b.right); if(c.id === 'rotCtl') break; }
+    if(isFinite(l)){ wrap.style.setProperty('--cutW', Math.round(r - l) + 'px'); el.style.right = Math.round(wr.right - r) + 'px'; }
+    else { wrap.style.setProperty('--cutW', ''); el.style.right = ''; }
+    /* just above the corner controls — and above the presets box only where that reaches under the bar */
     let top = Infinity;
-    for(const e of [wrap.querySelector('.cornerpng'), $('presetBox')]){ if(!e) continue; const r = e.getBoundingClientRect(); if(r.width && r.height) top = Math.min(top, r.top); }
-    el.style.bottom = isFinite(top) ? Math.round(wb - top + 6) + 'px' : '';
+    if(cp){ const b = cp.getBoundingClientRect(); if(b.width && b.height) top = b.top; }
+    { const b = $('presetBox').getBoundingClientRect(); if(b.width && b.height && isFinite(l) && b.right > l - 6) top = Math.min(top, b.top); }
+    el.style.bottom = isFinite(top) ? Math.round(wr.bottom - top + 5) + 'px' : '';
   }
   { const ro = new ResizeObserver(()=>placePresets()); ro.observe($('presetBox')); const cp = $('presetBox').parentElement.querySelector('.cornerpng'); if(cp) ro.observe(cp); }
   window.addEventListener('resize', placePresets);
@@ -6487,14 +6563,14 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   }
   /* 3D: the cube of side 32 at dx = 0.5 (64³ points), coloured by h − ⟨h⟩ in jet, turning at 6°/s */
   function base3D(){
-    params.dim=3; params.L=32; params.bc='periodic'; params.dx=0.5; params.order=4;
+    params.dim=3; params.L=32; params.bc='periodic'; params.dx=1; params.order=4;   // dx = 1: 32³ points, ~50 frames/s; dx = 0.5 (64³) gives the same W and slopes within the run-to-run scatter, 8× slower
     params.alpha=0; params.beta=0; params.gamma=0; params.delta=0; params.sigma=0; params.amp=0.1; params.eps=0.1; params.n=2; params.nl2=true; params.absMode='euclid';
     /* n = 2: the product wave sin·sin·sin has |k| = √3·2πn/L = 0.68, close to the fastest growth (n = 3 would give |k| = 1.02, a decaying wave) */
     params.dt=0.1; $('selDt').value='0.1';
     stepsPerFrame=1; $('selSpf').value='1';
     dispGain=2; yvar='h'; qkind='h'; modeSel[3]='cube';
     view3.tilt=60; view3.rot=35; view3.dist=5;
-    cube.spin=3; cube.size=1; cube.cutX=100; cube.cutV=0;
+    cube.spin=3; cube.size=1; cube.cutX=100; cube.cutT=0.1; cube.cutV=0;
     if(!darkBG){ darkBG = true; applyTheme(); }   // black background by default
     setLUT('jet'); $('cmap').value='jet';
   }
