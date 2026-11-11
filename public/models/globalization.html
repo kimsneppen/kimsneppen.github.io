@@ -4587,7 +4587,7 @@ function net2D(g,d,inY,r0,r1,o){
     g.font=pfont(11*treeK(),z,true); const s=miniLetter(i)||'·', tw=g.measureText(s).width; g.fillStyle=PC('rgba(255,255,255,.9)','rgba(11,13,19,.85)');
     const ly=pt+h-10*dpr-13*z*treeK(); g.fillRect(x-tw/2-3*dpr,ly,tw+6*dpr,13*z*treeK()); g.fillStyle=ink; g.textAlign='center'; g.textBaseline='top'; g.fillText(s,x,ly)});
   // the label time just under the numbers of the time axis
-  g.font=pfont(11*treeTS(),z); g.fillStyle=LABC(); g.textAlign='center'; g.textBaseline='top';
+  g.font=pfont(11*treeTS(),z); g.fillStyle=out?PC('#4a5872','#aeb8cc'):LABC(); g.textAlign='center'; g.textBaseline='top';
   g.fillText('time',pl+w/2,pt+h+4*dpr+7.6*dpr*treeK()+13*treeTS()*z);
 }
 // A zoom box dragged over the flat tree: the rounds under it, and (if it is more than a sliver high) the companies in its
@@ -4644,7 +4644,8 @@ function net2D(g,d,inY,r0,r1,o){
       NV={...NV,y0:Math.round(a),y1:Math.round(b)}}
     netSchedule()},{passive:false});}
 // ---- b), c), d) (and e)): the display as it was in a round picked on the flat tree (a click), in the 3D front view, cut
-// tightly around what is drawn and pressed into a square (as the sq button of the display does), with the market areas
+// tightly around what is drawn, in its own shape (not pressed into a square, so that the floor of the town has the same
+// shape in every picture; the place of the cut on the display is kept with it, c.box), with the market areas
 // of the companies of the most scalable product (the dotted outlines of its markets button), from the display's memory (the
 // nearest round kept: every round over the last 100, every 5th back to 600, then every frFarStep-th over the whole run). Each picture is kept as it was drawn,
 // cut tightly around what is drawn. miniN places (3, or 4 with the switch), always kept in the order of their rounds
@@ -4680,9 +4681,10 @@ function miniRender(f){
   frBack=FR.length-1-FR.indexOf(f); domOn.clear(); if(CT)domOn.add(CT.ic); EXPORT_DPR=sc; hoverR=-1;
   // the 3D front view (as the button front of the view menu: turn 90°, tilt 18°, perspective 2.5 L), not zoomed
   view='3d'; Object.assign(V3,{az:90*Math.PI/180,el:18*Math.PI/180,dist:2.5,zoom:1});
-  try{draw(); const b=contentBox(), m=Math.round(4*sc), side=Math.min(b.w,b.h)+2*m; c=document.createElement('canvas'); c.width=side; c.height=side;
-    const o=c.getContext('2d'); o.fillStyle=dark?'#0b0d13':'#ffffff'; o.fillRect(0,0,side,side); o.imageSmoothingEnabled=true; o.imageSmoothingQuality='high';
-    o.drawImage(cv,b.x,b.y,b.w,b.h,m,m,side-2*m,side-2*m)}
+  // (drawn twice: the first picture after a run was drawn with a height scale not yet set for that round — 0.5 units)
+  try{draw(); draw(); const b=contentBox(), m=Math.round(4*sc); c=document.createElement('canvas'); c.width=b.w+2*m; c.height=b.h+2*m;
+    const o=c.getContext('2d'); o.fillStyle=dark?'#0b0d13':'#ffffff'; o.fillRect(0,0,c.width,c.height);
+    o.drawImage(cv,b.x,b.y,b.w,b.h,m,m,b.w,b.h); c.box={x:b.x-m,y:b.y-m}}
   finally{cv.setAttribute('style',ks); EXPORT_DPR=0; hoverR=hv; noFlash=nf; frBack=kb; view=kv; Object.assign(V3,kc); domOn.clear(); kd.forEach(i=>domOn.add(i)); draw(); syncFr()}
   return c;
 }
@@ -4695,7 +4697,7 @@ function miniHint(){
   $('miniHint').innerHTML=(net3d?'<b>Switch the tree to 2D to pick rounds</b> (in 3D a click turns the view). ':'')+
     `<b>To see the town in a round: click or tap the flat tree</b> (2D) at that round — anywhere in the plot, or on its time axis. `+
     `The picture shows the main display as it was then, with the market areas of the ${nm} companies as dotted outlines; `+
-    `it goes to the pictures in turn (the lit one is next: click a picture to choose it, ✕ to remove it; the switch below gives three or four), lettered b), c) … in the order of their rounds, and the round is marked on the tree by a dashed line with its letter, which you can drag. The pictures are the 3D front view, pressed into a square. `+
+    `it goes to the pictures in turn (the lit one is next: click a picture to choose it, ✕ to remove it; the switch below gives three or four), lettered b), c) … in the order of their rounds, and the round is marked on the tree by a dashed line with its letter, which you can drag. The pictures are the 3D front view, all at one scale (in the picture of all, the towns lie in the same place in every panel). `+
     `The display keeps every round of the last 100, every 5th back to 600 (shaded on the tree) and ${far}; the small marks along the bottom of the tree are the rounds kept, and the nearest one is shown.`}
 let hintT=0;
 function miniHintFlash(){miniHint(); const h=$('miniHint'); h.classList.add('flash'); clearTimeout(hintT); hintT=setTimeout(()=>h.classList.remove('flash'),1600)}
@@ -4725,9 +4727,20 @@ function exportAll(btn){
   // the panel letters 48 px, the tree's text and the times 65 % larger than on the screen (NET_TXK)
   const letter=(g,s,x,y)=>{g.fillStyle=ink; g.textAlign='left'; g.textBaseline='top'; g.font=`900 48px ${PFONT}`; g.fillText(s,x,y)};
   const k0=NET_TXK; NET_TXK=1.65; try{
+  // the towns at one scale, each where it lay on the display, inside the box around all of them, so that their floors
+  // have the same size and shape and lie at the same place in every panel (pictures taken before had no place: fitted)
+  const qs=slots.map(i=>i>=0?MINI[i]:null).filter(q=>q&&q.c&&q.c.box);
+  const U=qs.length?{x0:Math.min(...qs.map(q=>q.c.box.x)),y0:Math.min(...qs.map(q=>q.c.box.y)),x1:Math.max(...qs.map(q=>q.c.box.x+q.c.width)),y1:Math.max(...qs.map(q=>q.c.box.y+q.c.height))}:null;
+  // (at most as high as wide: towers reaching higher, as on a display whose scale is about to change, are cut at the top)
+  if(U)U.y0=Math.max(U.y0,U.y1-(U.x1-U.x0));
+  const uk=U?Math.min(S/(U.x1-U.x0),S/(U.y1-U.y0)):1;
+  const place=(g,c,x,y)=>{if(!U||!c.box){fitImage(g,c,x,y,S,S); return}
+    const ox=x+(S-(U.x1-U.x0)*uk)/2, oy=y+(S-(U.y1-U.y0)*uk)/2;
+    g.save(); g.beginPath(); g.rect(x,y,S,S); g.clip(); g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
+    g.drawImage(c,ox+(c.box.x-U.x0)*uk,oy+(c.box.y-U.y0)*uk,c.width*uk,c.height*uk); g.restore()};
   const pic=(g,k,x,y)=>{const i=slots[k], q=i>=0?MINI[i]:null;
     // the time in the font of the tree's label time (as the tree is drawn here: dpr 2)
-    if(q){fitImage(g,q.c,x,y,S,S); g.font=pfont(11*treeTS(),2*FZ); g.fillStyle=netDark?'#aeb8cc':'#4a5872'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText(`time ${q.t}`,x+S-6,y+S-4)}
+    if(q){place(g,q.c,x,y); g.font=pfont(11*treeTS(),2*FZ); g.fillStyle=netDark?'#aeb8cc':'#4a5872'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText(`time ${q.t}`,x+S-6,y+S-4)}
     else{g.strokeStyle=netDark?'#3a4459':'#c3cbdb'; g.setLineDash([6,5]); g.strokeRect(x+0.5,y+0.5,S-1,S-1); g.setLineDash([])}
     letter(g,'bcde'[k]+')',x+4,y+2)};
   let c, g;
@@ -4859,11 +4872,12 @@ function net3D(g,d,inY,nShow,o){
     g.fillStyle=gr; g.beginPath(); g.arc(p[0],p[1],r,0,2*Math.PI); g.fill();
     if(alive){g.strokeStyle=col; g.lineWidth=Math.max(0.6,0.8*dpr); g.stroke()}}
   g.restore();
-  // the label time along the front edge of the floor, just beyond its numbers (upright)
-  {const a=P2(-50,near,fl), b=P2(50,near,fl), m=P2(0,near+(near===fy0?-10:10),fl); let ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
+  // the label time along the front edge of the floor, under its numbers (upright); in a picture 24 px (at dpr 2: about
+  // 0.5 cm in a figure across a page) further down, in the colour of the times of the towns beside it
+  {const a=P2(-50,near,fl), b=P2(50,near,fl), m=P2(0,near+(near===fy0?-4.5:4.5),fl), fsn=11*treeTS()*z; let ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
     if(ang>Math.PI/2)ang-=Math.PI; else if(ang<-Math.PI/2)ang+=Math.PI;
-    g.save(); g.translate(m[0],m[1]); g.rotate(ang); g.font=pfont(11*treeTS(),z); g.fillStyle=LABC();
-    g.textAlign='center'; g.textBaseline='middle'; g.fillText('time',0,0); g.restore()}
+    g.save(); g.translate(m[0],m[1]); g.rotate(ang); g.font=pfont(11*treeTS(),z); g.fillStyle=out?PC('#4a5872','#aeb8cc'):LABC();
+    g.textAlign='center'; g.textBaseline='top'; g.fillText('time',0,1.05*fsn+(out?24:2)*dpr); g.restore()}
   return true;
 }
 
