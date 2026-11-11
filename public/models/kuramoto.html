@@ -1433,8 +1433,8 @@
           <button id="bFlip" class="sqbtn" title="plot −h instead of h (slope and curvature flip with it; |∇h| and the λ densities do not). The equation itself is unchanged.">±</button>
         </div>
         <div class="diverged" id="divergedMsg">Diverged — reduce dt, then Reset</div>
-        <div class="cutv" id="cutV" hidden title="transparency threshold of the cube: every lattice point whose coloured value lies below this fraction of the colour scale (from the lower end of the colour bar to the upper) is transparent — 0 % shows the whole cube, 100 % keeps only the ridges, the points that are a local maximum of the coloured variable along the x, the y or the z line through them">
-          <span>below</span><input type="range" id="rngCutV" min="0" max="9" step="1" value="0"><b id="cutVVal">0 %</b>
+        <div class="cutv" id="cutV" hidden title="transparency threshold of the cube: every lattice point whose coloured value lies below this fraction of the colour scale (from the lower end of the colour bar to the upper) is transparent — 0 % shows the whole cube; beyond 99 % only the local maxima of the coloured variable remain: sheets (a maximum along the x, the y or the z line through the point — these form surfaces), ridges (a maximum within the xy, the xz or the yz plane through it, against its 8 neighbours there — these form lines) and peaks (a maximum against all 26 neighbours — isolated points)">
+          <span>below</span><input type="range" id="rngCutV" min="0" max="11" step="1" value="0"><b id="cutVVal">0 %</b>
         </div>
         <div class="cutx" id="cutX" hidden>
           <button id="bCutT" title="vertical cut: the part of the cube beyond the cut is drawn 90 % transparent — click to make it 95 % transparent (and back)">cut x</button><input type="range" id="rngCutX" min="0" max="100" step="1" value="100" title="vertical cut: the distance of the cut plane from the cube's x = 0 face; at the right end there is no cut">
@@ -1477,9 +1477,9 @@
             <button id="bPre3" title="3D KS: periodic cube, L = 32, dx = 1 (32&sup3; points; dx = 0.5 gives 64&sup3;, eight times slower, the same statistics), dt = 0.1, coloured by h&minus;&lang;h&rang; in jet, slowly rotating">KS 3D</button>
           </div>
           <div class="prow">
-            <button id="bPre1a" title="KS 1D with &alpha; = 1 (extra &alpha;|&nabla;h| growth), dt = 0.1">KS 1D abs1</button>
-            <button id="bPre2a" title="KS 2D with &alpha; = 1.5, dt = 0.1">KS 2D abs1</button>
-            <button id="bPre3a" title="KS 3D with &alpha; = 1.5, dt = 0.1">KS 3D abs1</button>
+            <button id="bPre1a" title="KS 1D with &alpha; = 1.7 (extra &alpha;|&nabla;h| growth), dt = 0.1">KS 1D abs</button>
+            <button id="bPre2a" title="KS 2D with &alpha; = 1.7, dt = 0.1">KS 2D abs</button>
+            <button id="bPre3a" title="KS 3D with &alpha; = 3, dt = 0.1">KS 3D abs3</button>
           </div>
           <div class="prow">
             <button id="bPre1n" title="KS 1D with the (&nabla;h)&#8308; term: &beta; = &minus;0.5, dt = 0.05">KS 1D nnl</button>
@@ -1859,10 +1859,14 @@
           slider scales the cube). Two cuts look inside: the bar along the bottom cuts the cube by a
           vertical plane x = const and draws everything beyond it 90 % transparent, and the
           threshold under the free / fixed switch of the colour scale makes every point whose value
-          lies below the given fraction of the colour scale transparent — at 100 % only the ridges
-          remain, the points that are a local maximum of the coloured variable along the x, the y
-          or the z line through them. A step of the 3D equation costs L&sup3;/dx&sup3; transforms
-          of a 64&sup3; cube at L = 32: a few steps per second; L = 8 and 16 run at the pace of 2D.</p>
+          lies below the given fraction of the colour scale transparent; its last three stops keep
+          only the local maxima of the coloured variable, in three ever stricter senses: <i>sheets</i>,
+          the points that are a maximum along the x, the y or the z line through them (they form
+          surfaces, which fill much of the cube), <i>ridges</i>, a maximum within the xy, the xz or
+          the yz plane through the point, against its eight neighbours in that plane (these form
+          lines), and <i>peaks</i>, a maximum against all 26 neighbours (isolated points). A step of
+          the 3D equation costs 12 transforms of the cube: at 32&sup3; points (L = 32 at dx = 1)
+          some 50 steps per second, at 64&sup3; a few.</p>
           <p><b>Initial condition.</b> A standing wave that fits the box: n full waves (periodic)
           or n half waves (open) of amplitude A; in 2D the product of the x- and y-waves. Waves
           with k &lt; 1 grow, so with A = 0.01 you can watch the clean exponential growth before
@@ -3667,8 +3671,8 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     avgTrack();
     $('rt').textContent = sim.t.toFixed(1);
     $('rmean').textContent = (SG()*sim.meanH).toFixed(2);
-    { const aw = showAvgW ? avgW() : sim.W; $('rw').textContent = isFinite(aw) ? aw.toFixed(3) : '—'; }
-    { const ag = showAvgG ? avgG() : maxGrad(); $('rg').textContent = isFinite(ag) ? ag.toFixed(3) : '—'; }
+    { const aw = showAvgW ? avgW() : sim.W; $('rw').textContent = isFinite(aw) ? aw.toFixed(aw < 0.001 ? 5 : 3) : '—'; }   // two more decimals once the surface is nearly flat
+    { const ag = showAvgG ? avgG() : maxGrad(); $('rg').textContent = isFinite(ag) ? ag.toFixed(ag < 0.001 ? 5 : 3) : '—'; }
     { const show = LIN.on && params.dim === 2; $('rlinWrap').style.display = show ? '' : 'none';
       if(show){ let alive = 0, gen = 0; for(const nd of LIN.nodes){ if(nd.state === 'alive') alive++; if(nd.gen > gen) gen = nd.gen; }
                 $('rlin').textContent = LIN.nodes.length ? alive + ' · gen ' + gen : 'click one on the map'; } }
@@ -4477,8 +4481,10 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   const view3 = { tilt:60, rot:35, dist:5 };
   const curView = () => params.dim === 3 ? view3 : view;
   const cube = { spin:3, size:1, cutX:100, cutT:0.1, cutV:0, R:200, msR:0, lastDraw:0 };   // spin: the cube turns 2·spin degrees per second; cutT: what is left of the light beyond the x cut
-  /* the threshold bar's stops, in per cent of the colour scale; the last one keeps only the ridges */
-  const CUTVV = [0, 1, 5, 25, 50, 75, 90, 95, 99, 100];
+  /* the threshold bar's stops, in per cent of the colour scale; the last three keep only the local
+     maxima: 100 sheets (along a line), 101 ridges (within a plane), 102 peaks (in every direction) */
+  const CUTVV = [0, 1, 5, 25, 50, 75, 90, 95, 99, 100, 101, 102];
+  const MAXNAME = { 100: 'sheets', 101: 'ridges', 102: 'peaks' };
   const vol = { can:document.createElement('canvas'), ctx:null, img:null, ci:null, al:null, key:'' };
   vol.ctx = vol.can.getContext('2d');
   /* colour index and opacity class of every lattice point for the colouring `kind` (cached per frame) */
@@ -4495,14 +4501,29 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       for(let p=0;p<M;p++){ const i = (a*q[p] + b)|0; ci[p] = i < 0 ? 0 : (i > 255 ? 255 : i); }
     }
     if(pct >= 100){
-      /* ridges: the points that are a local maximum of the quantity along the x, the y or the z line through them */
+      /* the local maxima of the quantity (periodic neighbours):
+         sheets — a maximum along the x, the y or the z line through the point (two neighbours);
+         ridges — a maximum within the xy, the xz or the yz plane through it (its 8 neighbours in that plane);
+         peaks  — a maximum against all 26 neighbours */
+      const mode = pct >= 102 ? 2 : pct >= 101 ? 1 : 0;
       for(let k=0;k<n;k++){
         const k0 = k*n2, km = ((k+n-1)%n)*n2, kp = ((k+1)%n)*n2;
         for(let j=0;j<n;j++){
-          const row = k0 + j*n, rjm = k0 + ((j+n-1)%n)*n, rjp = k0 + ((j+1)%n)*n, rkm = km + j*n, rkp = kp + j*n;
+          const jm = ((j+n-1)%n)*n, jp = ((j+1)%n)*n, row = k0 + j*n;
+          const r00 = row, r0m = k0 + jm, r0p = k0 + jp, rm0 = km + j*n, rmm = km + jm, rmp = km + jp, rp0 = kp + j*n, rpm = kp + jm, rpp = kp + jp;
           for(let i=0;i<n;i++){
-            const v = q[row+i];
-            al[row+i] = ((v > q[row + (i+n-1)%n] && v > q[row + (i+1)%n]) || (v > q[rjm+i] && v > q[rjp+i]) || (v > q[rkm+i] && v > q[rkp+i])) ? 2 : 0;
+            const im = (i+n-1)%n, ip = (i+1)%n, v = q[row+i];
+            const x = v > q[r00+im] && v > q[r00+ip], y = v > q[r0m+i] && v > q[r0p+i], z = v > q[rm0+i] && v > q[rp0+i];
+            let on;
+            if(mode === 0) on = x || y || z;
+            else {
+              const xy = x && y && v > q[r0m+im] && v > q[r0m+ip] && v > q[r0p+im] && v > q[r0p+ip];
+              const xz = x && z && v > q[rm0+im] && v > q[rm0+ip] && v > q[rp0+im] && v > q[rp0+ip];
+              const yz = y && z && v > q[rmm+i] && v > q[rmp+i] && v > q[rpm+i] && v > q[rpp+i];
+              on = mode === 1 ? (xy || xz || yz)
+                 : xy && xz && yz && v > q[rmm+im] && v > q[rmm+ip] && v > q[rmp+im] && v > q[rmp+ip] && v > q[rpm+im] && v > q[rpm+ip] && v > q[rpp+im] && v > q[rpp+ip];
+            }
+            al[row+i] = on ? 2 : 0;
           }
         }
       }
@@ -4657,7 +4678,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
       /* the caption (exported pictures only — on screen the corner boxes hold this), top left */
       if(!onScreen){
         ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-        ctx.fillText('L = ' + fmt(params.L) + ',  ' + sim.physNx + '³ points' + (cube.cutV >= 100 ? ',  ridges of ' + kindLabel(kind) : cube.cutV > 0 ? ',  ' + kindLabel(kind) + ' above ' + cube.cutV + ' % of the scale' : '') + (cube.cutX < 100 ? ',  cut at x = ' + fmt(cube.cutX/100*params.L) + ' (' + Math.round(100 - 100*cube.cutT) + ' % transparent beyond)' : ''), x0 + 6, y0 + 6);
+        ctx.fillText('L = ' + fmt(params.L) + ',  ' + sim.physNx + '³ points' + (cube.cutV >= 100 ? ',  ' + MAXNAME[cube.cutV] + ' of ' + kindLabel(kind) : cube.cutV > 0 ? ',  ' + kindLabel(kind) + ' above ' + cube.cutV + ' % of the scale' : '') + (cube.cutX < 100 ? ',  cut at x = ' + fmt(cube.cutX/100*params.L) + ' (' + Math.round(100 - 100*cube.cutT) + ' % transparent beyond)' : ''), x0 + 6, y0 + 6);
       }
     }
     hbarPx = 0; xbarPx = 0;
@@ -5917,7 +5938,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     $('rngSize').value = cube.size; $('v3SizeVal').textContent = '×' + (+cube.size.toFixed(2));
     $('rngCutX').value = cube.cutX; $('bCutT').classList.toggle('on', cube.cutT < 0.1);
     let iv = 0; for(let i=0;i<CUTVV.length;i++) if(Math.abs(CUTVV[i] - cube.cutV) < Math.abs(CUTVV[iv] - cube.cutV)) iv = i;
-    $('rngCutV').value = iv; $('cutVVal').textContent = cube.cutV >= 100 ? 'ridges' : cube.cutV + ' %';
+    $('rngCutV').value = iv; $('cutVVal').textContent = cube.cutV >= 100 ? MAXNAME[cube.cutV] : cube.cutV + ' %';
     syncViewSliders();
   }
   $('viewHead').addEventListener('click', ()=>{ const f = $('viewBox').classList.toggle('folded'); $('viewHead').classList.toggle('open', !f); });
@@ -6467,7 +6488,7 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
     setTermSel('selGamma', BETAV, params.gamma); setTermSel('selDelta', DELTAV, params.delta); setSigmaSel();
   }
   /* the presets box: folds to its title line, which names the preset that is running */
-  const PRESET_NAME = { bPre1:'KS 1D', bPre2:'KS 2D', bPre3:'KS 3D', bPre1a:'KS 1D abs1', bPre2a:'KS 2D abs1', bPre3a:'KS 3D abs1', bPre1n:'KS 1D nnl', bPre2n:'KS 2D nnl', bPre3n:'KS 3D nnl', bPreK1:'KKS 1D', bPreK2:'KKS 2D', bPreK3:'KKS 3D', bPreBubble:'Bubble life' };
+  const PRESET_NAME = { bPre1:'KS 1D', bPre2:'KS 2D', bPre3:'KS 3D', bPre1a:'KS 1D abs', bPre2a:'KS 2D abs', bPre3a:'KS 3D abs3', bPre1n:'KS 1D nnl', bPre2n:'KS 2D nnl', bPre3n:'KS 3D nnl', bPreK1:'KKS 1D', bPreK2:'KKS 2D', bPreK3:'KKS 3D', bPreBubble:'Bubble life' };
   let curPreset = null;
   function setPresetLabel(id, text){
     curPreset = id;
@@ -6577,12 +6598,12 @@ async function scanSample(c, value, seed, report, stopped, yieldFn){
   $('bPre1').addEventListener('click', ()=>runPreset(base1D, 'bPre1'));
   $('bPre2').addEventListener('click', ()=>runPreset(base2D, 'bPre2'));
   $('bPre3').addEventListener('click', ()=>runPreset(base3D, 'bPre3'));
-  $('bPre3a').addEventListener('click', ()=>runPreset(()=>{ base3D(); params.alpha=1.5; }, 'bPre3a'));
+  $('bPre3a').addEventListener('click', ()=>runPreset(()=>{ base3D(); params.alpha=3; }, 'bPre3a'));
   $('bPre3n').addEventListener('click', ()=>runPreset(()=>{ base3D(); params.beta=-0.5; }, 'bPre3n'));
   $('bPreK3').addEventListener('click', ()=>runPreset(()=>{ base3D(); params.order=246; params.lam=0.1; params.dt=0.2; $('selDt').value='0.2'; }, 'bPreK3'));
-  $('bPre1a').addEventListener('click', ()=>runPreset(()=>{ base1D(); params.alpha=1; }, 'bPre1a'));
+  $('bPre1a').addEventListener('click', ()=>runPreset(()=>{ base1D(); params.alpha=1.7; }, 'bPre1a'));
   $('bPre2a').addEventListener('click', ()=>runPreset(()=>{
-    base2D(); params.alpha=1.5;
+    base2D(); params.alpha=1.7;
     params.dt=0.1; $('selDt').value='0.1';
   }, 'bPre2a'));
   $('bPre1n').addEventListener('click', ()=>runPreset(()=>{
