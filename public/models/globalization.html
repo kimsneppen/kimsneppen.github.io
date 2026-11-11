@@ -199,6 +199,15 @@
   .distgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
   @media (min-width:700px){ .distgrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
   .chartbox.dist{height:380px}
+  .chartbox.scan{height:270px}
+  .scanwrap{overflow-x:auto;margin-top:4px}
+  table.scant{border-collapse:collapse;font-size:11.5px;width:100%;font-variant-numeric:tabular-nums}
+  table.scant th{font-weight:600;color:var(--muted);text-align:right;padding:2px 4px;white-space:nowrap;font-size:11px}
+  table.scant td{text-align:right;padding:2px 4px;border-top:1px solid var(--line);white-space:nowrap}
+  table.scant td.v{color:var(--muted);font-size:10.5px}
+  table.scant tr.wait td{color:var(--muted)}
+  .scanhead{font-size:11.5px;color:var(--ink2);margin:8px 0 2px;line-height:1.35}
+  .scanhead b{color:var(--ink)}
   @media (max-width:520px){ .chartbox{height:250px} .chartbox.dist{height:340px} }
   /* .png and sq buttons of each plot */
   .plotbtns{margin-left:auto;display:inline-flex;gap:4px}
@@ -1501,6 +1510,30 @@
       <div class="row"><label>Roads <span class="vv" id="nRoads">0</span> · borders <span class="vv" id="nBorders">0</span></label>
         <button class="btn sm" id="clearNet" title="remove all roads and borders">clear all</button></div>
       <p class="hint">Draw roads and borders on the display with the buttons in its upper left corner: press, drag, release.</p>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Scan</summary>
+    <div class="sect">
+      <div class="row"><label title="the parameter that is changed from point to point">Scan</label>
+        <select id="scanPar"><option value="beta">transport cost β</option><option value="start">start cost</option><option value="alpha">α</option><option value="gamma">γ, the same for all</option></select></div>
+      <div class="row" id="scanMinRow"><label title="every product's value above times f = 1, 1/√2, 1/2, 1/(2√2) … down to this factor">down to ×</label>
+        <input type="number" id="scanMin" min="0.001" max="1" step="any" value="0.1" style="width:80px"></div>
+      <div class="row"><label title="rounds run for each point, from a fresh start; the mean and the median money are averaged over the last two thirds of them">Rounds per point</label>
+        <select id="scanT"><option>300</option><option>500</option><option selected>1000</option><option>2000</option><option>5000</option><option>10000</option></select></div>
+      <p class="hint" id="scanPts"></p>
+      <div class="btnrow" style="margin-top:6px"><button class="btn primary" id="scanGo">Run scan</button></div>
+      <p class="hint" id="scanProg"></p>
+      <div class="plotbar"><span class="plabel">wealth</span>
+        <span class="plotbtns"><button data-plot="scan" data-k="png" title="save the plot of the scan as a PNG picture, with title and axis labels">.png</button><button data-plot="scan" data-k="sq" title="save the plot of the scan in a square picture without title">sq</button><button data-plot="scantab" data-k="png" title="save the table of the scan, with the model it was run with, as a PNG picture">table .png</button></span></div>
+      <div class="chartbox scan"><canvas id="cScan"></canvas></div>
+      <div class="scanhead" id="scanHead"></div>
+      <div class="scanwrap" id="scanTable"></div>
+      <p class="hint">Every point runs the model anew, in the background (the run on the display goes on), with the
+        settings of the moment and the same seed: the values of the products above, scaled by the factor f (β, Start,
+        α), or one γ for every product (0, −0.1, … −1). Mean and median: the money of all agents, averaged over the
+        last two thirds of the rounds. The transport factor stays as set (not lowered gradually).</p>
     </div>
   </details>
 
@@ -3962,7 +3995,8 @@ function nearData(){
 function xyPlot(canvas,series,o,out){
   const dpr=out?out.dpr:fitCanvas(canvas), W=canvas.width, H=canvas.height, g=canvas.getContext('2d'), sq=out&&out.sq;
   if(!out)g.clearRect(0,0,W,H);
-  const z=dpr*FZ, pr=10*z, pt=(sq?8:out?32:25)*z, pb=(out?32:30)*z, h=H-pt-pb;
+  // (o.fz: a smaller text on the screen, for a plot in a narrow place such as the control panel)
+  const zk=(!out&&o.fz)?o.fz/FZ:1, z=dpr*FZ*zk, pr=10*z, pt=(sq?8:out?32:25)*z, pb=(out?32:30)*z, h=H-pt-pb;
   let pl=(out?48:46)*z, w=W-pl-pr;
   const xl=o.scale==='log', yl=o.scale==='log'||o.scale==='loglin';      // which axes are logarithmic
   if(o.title){const tx=out?pl:4*dpr; plotTitle(g,o.title,tx,4*z,z,W-tx-4*dpr)} g.font=pfont(11,z);
@@ -3971,7 +4005,7 @@ function xyPlot(canvas,series,o,out){
   const fx=v=>xl?Math.log10(v):v, fy=v=>yl?Math.log10(v):v;
   let x0,x1,y0,y1;
   if(xl){x0=Math.floor(Math.min(...all.map(q=>fx(q[0]))));x1=o.xmax?fx(o.xmax):Math.ceil(Math.max(...all.map(q=>fx(q[0]))));if(x1<=x0)x1=x0+1}
-  else{x0=0;x1=o.xmax||Math.max(...all.map(q=>q[0]))*1.02||1}
+  else{x0=o.xmin!=null?o.xmin:0;x1=o.xmax!=null?o.xmax:(Math.max(...all.map(q=>q[0]))*1.02||1)}
   let decAll=0;
   if(yl){y0=Math.floor(Math.min(...all.map(q=>fy(q[1]))));y1=Math.ceil(Math.max(...all.map(q=>fy(q[1]))));if(y1<=y0)y1=y0+1;
     decAll=y1-y0; if(o.ydec>0&&o.ydec<decAll)y0=y1-o.ydec}                    // fewer decades: the lowest are cut off
@@ -3998,7 +4032,7 @@ function xyPlot(canvas,series,o,out){
     if(m.bend&&ok(m.bend)){const x=X(m.bend[0]), y=Y(m.bend[1]), r=4.5*dpr; g.fillRect(x-r,y-r,2*r,2*r); g.strokeRect(x-r,y-r,2*r,2*r)}}
   g.restore();
   const narrow=w<520*dpr;
-  legendBox(g,[...series.filter(se=>se.t).map(se=>se.dash?{dash:se.c,t:se.t}:{c:se.c,t:se.t}),...(o.leg||[])],pl+w-4*z,pt+4*z,dpr,false,narrow?0.8:1);
+  legendBox(g,[...series.filter(se=>se.t).map(se=>se.dash?{dash:se.c,t:se.t}:{c:se.c,t:se.t}),...(o.leg||[])],pl+w-4*z,pt+4*z,dpr,false,(narrow?0.8:1)*zk);
   return decAll;
 }
 // the two plots: their data and labels, for the screen and the saved pictures
@@ -4973,6 +5007,7 @@ new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)&&!running)apDraw(t
 // the margins only as wide as the numbers need; both with axis labels ----------
 function exportPlot(which,kind,btn){
   if(which==='netall'){exportAll(btn);return}
+  if(which==='scan'||which==='scantab'){scanExport(which,kind,btn);return}
   const src=$({chart:'chart',money:'cMoney',size:'cSize',surv:'cSurv',fort:'cFort',nearM:'cNearM',nearS:'cNearS',ct:'cCT',net:'cNet',apN:'cApN',apS:'cApS',apX:'cApX'}[which]), r=src.getBoundingClientRect();
   // (the two plots after a collapse are always saved in a square, one above the other)
   const sq=kind==='sq', sqd=sq||which==='ct', dpr=2, W=sqd?1000:Math.round(Math.max(r.width,420)*dpr);
@@ -4992,6 +5027,111 @@ function exportPlot(which,kind,btn){
   savePicture(c,`globalization_${which==='ct'?'collapse_'+PNAME[CT.ic]:which==='net'?'family_tree_'+PNAME[CT.ic]+(netMin?'_survived'+netMin:''):which==='chart'?$('metric').value:which==='fort'?'fortunes_'+fortMode+fortN+(fortLog?'_log':'')+(lifeZero?'_zero':''):which==='surv'?'survival'+(lifeZero?'_zero':''):which.startsWith('near')&&nearScale!=='lin'?which+'_'+nearScale:which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
 }
 document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>exportPlot(b.dataset.plot,b.dataset.k,b));
+
+// ---------- parameter scan ----------
+// A scan runs the model anew for every value of one parameter, in background workers (the core of the model, the script
+// coreScript, in each), from the settings of the moment (the same seed, roads and borders; the transport factor kept),
+// for T rounds a point, and averages the mean and the median money of all agents over the last two thirds of the
+// rounds. β, Start and α: every product's value times f = 1, 1/√2, 1/2, … down to the factor typed (down to ×);
+// γ: the same γ for every product, 0, −0.1, … −1. The results stay until the next scan, with the model they came from
+const SCANP={beta:{n:'transport cost β',sym:'β'},start:{n:'start cost',sym:'Start'},alpha:{n:'production-cost factor α',sym:'α'},gamma:{n:'γ, the same for every product',sym:'γ'}};
+const SCAN={res:null,workers:[],busy:false,url:null};
+function scanPoints(){const par=$('scanPar').value;
+  if(par==='gamma')return Array.from({length:11},(_,k)=>-k/10);
+  const fmin=Math.min(1,Math.max(1e-4,parseFloat($('scanMin').value)||0.1)), pts=[];
+  for(let k=0;k<80;k++){const f=Math.pow(2,-k/2); if(f<fmin*(1-1e-9))break; pts.push(f)}
+  return pts}
+function scanP(par,x){const q=JSON.parse(JSON.stringify(P));
+  q.products.forEach(pr=>{if(par==='gamma')pr.gamma=x; else if(par==='beta')pr.beta*=x; else if(par==='start')pr.start*=x; else pr.alpha=alphaOf(pr)*x});
+  return q}
+const scanVal=(par,pr)=>par==='gamma'?pr.gamma:par==='beta'?pr.beta:par==='start'?pr.start:alphaOf(pr);
+const sig=v=>{if(!Number.isFinite(v))return '–'; const a=Math.abs(v); return (a>=100?v.toFixed(0):+v.toPrecision(3)+'').replace('-','−')};
+// (the results with three digits, also trailing zeros: 1.10, 3.00)
+const sig3=v=>!Number.isFinite(v)?'–':Math.abs(v)>=1000?v.toFixed(0):v.toPrecision(3);
+// the model of the scan in words: the economy, L and the edges first (the head of the table)
+function scanModel(T){
+  const econ=P.econ==='pay'?'buyers pay'+(P.gouge?', gouging':'')+(P.lost?', transport lost':'')+(P.forgive?', shopping debts forgiven':''):'free goods';
+  return {l1:`Model: ${econ} · L = ${P.L} · ${P.bc==='periodic'?'periodic':'closed (not periodic)'} edges`,
+    l2:`n = ${P.n}, wage ${P.wage}, μ = ${P.upkeep}, κ = ${P.kappa}, lim ${P.lim}, ${BUYW_LABEL[P.buyw]||P.buyw}, transport ×${fmt(P.tmul)}`+
+      (P.borders.length?`, ${P.borders.length} borders`:'')+(P.roads.length?`, ${P.roads.length} roads`:'')+`, seed ${P.seed}; ${T} rounds a point, averaged over the last ⅔`,
+    l3:'Products above: '+P.products.map((pr,i)=>`${PNAME[i]} Start ${sig(pr.start)}, γ ${sig(pr.gamma)}, β ${sig(pr.beta)}, α ${sig(alphaOf(pr))}`).join(' · ')}}
+function scanURL(){if(SCAN.url)return SCAN.url;
+  const src=$('coreScript').textContent+`
+self.onmessage=e=>{const {P,T,i}=e.data, E=buildEcon(P); E.reset();
+  const LL=P.L*P.L, b=new Float64Array(LL), t0=Math.floor(T/3); let sm=0, sd=0, k=0;
+  for(let t=0;t<T;t++){E.step();
+    if(t>=t0){let s=0; for(let r=0;r<LL;r++)s+=E.money[r]; b.set(E.money); b.sort(); sm+=s/LL; sd+=b[LL>>1]; k++}
+    if(t%20===19)postMessage({i,t:t+1})}
+  postMessage({i,done:true,mean:sm/k,median:sd/k})};`;
+  return SCAN.url=URL.createObjectURL(new Blob([src],{type:'text/javascript'}))}
+function scanRun(){
+  if(SCAN.busy){scanStop(); return}
+  const par=$('scanPar').value, T=+$('scanT').value, xs=scanPoints();
+  SCAN.res={par,T,model:scanModel(T),names:P.products.map((q,i)=>PNAME[i]),stopped:false,
+    rows:xs.map(x=>({x,vals:scanP(par,x).products.map(pr=>scanVal(par,pr)),t:0,done:false}))};
+  const nw=Math.max(1,Math.min(xs.length,(navigator.hardwareConcurrency||2)-1,6)); let next=0;
+  SCAN.busy=true; SCAN.t0=performance.now();
+  const feed=w=>{if(next>=xs.length){w.terminate(); SCAN.workers=SCAN.workers.filter(q=>q!==w); if(!SCAN.workers.length){SCAN.busy=false; scanSync()} return}
+    const i=next++; w.postMessage({P:scanP(par,xs[i]),T,i})};
+  for(let k=0;k<nw;k++){const w=new Worker(scanURL()); SCAN.workers.push(w);
+    w.onmessage=e=>{const d=e.data, r=SCAN.res.rows[d.i]; if(!r)return;
+      if(d.done){r.t=T; r.done=true; r.mean=d.mean; r.median=d.median; scanDraw(); feed(w)} else{r.t=d.t; scanProgress()}};
+    w.onerror=e=>{e.preventDefault&&e.preventDefault(); scanStop(); $('scanProg').textContent='The scan failed: '+(e.message||'an error in the model')};
+    feed(w)}
+  scanSync()}
+function scanStop(){SCAN.workers.forEach(w=>w.terminate()); SCAN.workers=[]; SCAN.busy=false;
+  if(SCAN.res)SCAN.res.stopped=SCAN.res.rows.some(r=>!r.done); scanSync()}
+function scanProgress(){const R=SCAN.res; if(!R){$('scanProg').textContent=''; return}
+  const tot=R.rows.length*R.T, done=R.rows.reduce((a,r)=>a+r.t,0), nd=R.rows.filter(r=>r.done).length, sec=(performance.now()-SCAN.t0)/1000;
+  $('scanProg').textContent=SCAN.busy?`Running: ${nd} of ${R.rows.length} points done, ${Math.round(100*done/tot)} %`+(done>0&&sec>3?`, about ${Math.max(1,Math.round(sec*(tot-done)/done))} s left`:'')+' (press Stop to end it)':
+    R.stopped?`Stopped: ${nd} of ${R.rows.length} points.`:`Done: ${R.rows.length} points in ${Math.round(sec)} s.`}
+// the points the settings give, in words
+function scanPtsNote(){const par=$('scanPar').value, xs=scanPoints(); $('scanMinRow').style.display=par==='gamma'?'none':'';
+  $('scanPts').textContent=par==='gamma'?'11 points: γ = 0, −0.1, … −1 for every product.':
+    `${xs.length} points: ${SCANP[par].sym} of every product × 1, 0.707, 0.5 … ${sig(xs[xs.length-1])}.`}
+function scanSync(){$('scanGo').textContent=SCAN.busy?'Stop':'Run scan'; $('scanGo').classList.toggle('primary',!SCAN.busy); scanPtsNote(); scanProgress(); scanDraw()}
+// the plot: mean and median wealth against the scanned parameter (f on a logarithmic axis, γ on a linear one)
+function scanPlotData(){const R=SCAN.res; if(!R)return null; const q=R.rows.filter(r=>r.done).sort((a,b)=>a.x-b.x), g=R.par==='gamma';
+  return {series:[{c:'#c2410c',t:'mean wealth',p:q.map(r=>[r.x,r.mean])},{c:'#2563eb',t:'median wealth',p:q.map(r=>[r.x,r.median])}],
+    o:{xl:g?'γ, the same for every product':`${SCANP[R.par].n}: factor f of the values above`,yl:'wealth',scale:g?'loglin':'log',...(g?{xmin:-1,xmax:0}:{})},
+    title:`Scan of ${SCANP[R.par].n} — ${R.model.l1.replace('Model: ','')}`}}
+function scanTableHTML(){const R=SCAN.res; if(!R)return ''; const g=R.par==='gamma', sym=SCANP[R.par].sym;
+  return `<table class="scant"><thead><tr><th>${g?'γ':'f'}</th>${g?'':`<th>${sym} of ${R.names.join(', ')}</th>`}<th>mean</th><th>median</th><th>mean/median</th></tr></thead><tbody>`+
+    R.rows.map(r=>`<tr class="${r.done?'':'wait'}"><td>${sig(r.x)}</td>${g?'':`<td class="v">${r.vals.map(sig).join(', ')}</td>`}<td>${r.done?sig3(r.mean):'…'}</td><td>${r.done?sig3(r.median):'…'}</td><td>${r.done?sig3(r.mean/r.median):'…'}</td></tr>`).join('')+'</tbody></table>'}
+function scanDraw(){const R=SCAN.res;
+  $('scanHead').innerHTML=R?`<b>${R.model.l1}</b><br>${R.model.l2}<br>${R.model.l3}`:'';
+  $('scanTable').innerHTML=scanTableHTML(); scanProgress();
+  const c=$('cScan'); if(!c.getBoundingClientRect().width)return;
+  const d=scanPlotData(); if(!d){const dpr=fitCanvas(c), g=c.getContext('2d'); g.clearRect(0,0,c.width,c.height); g.fillStyle='#8391ab'; g.font=pfont(11,dpr); g.textBaseline='middle';
+    g.fillText('Run a scan to see mean and median wealth here.',8*dpr,c.height/2); return}
+  xyPlot(c,d.series,{...d.o,fz:1.15})}
+// the table as a picture: the model on top, then the table
+function scanTablePicture(){const R=SCAN.res, s=2, F=PFONT, g0=document.createElement('canvas').getContext('2d'), gm=R.par==='gamma', sym=SCANP[R.par].sym;
+  const head=[gm?'γ':'f',...(gm?[]:[`${sym} of ${R.names.join(', ')}`]),'mean wealth','median wealth','mean / median'];
+  const body=R.rows.map(r=>[sig(r.x),...(gm?[]:[r.vals.map(sig).join(', ')]),r.done?sig3(r.mean):'–',r.done?sig3(r.median):'–',r.done?sig3(r.mean/r.median):'–']);
+  const fsz=15*s, pad=18*s, gap=26*s, lh=fsz*1.55, title=`Scan of ${SCANP[R.par].n}`+(R.stopped?' (stopped)':''), lines=[R.model.l1,R.model.l2,R.model.l3];
+  g0.font=`600 ${fsz}px ${F}`; const cw=head.map((h,k)=>Math.max(g0.measureText(h).width,...body.map(b=>{g0.font=`${fsz}px ${F}`; return g0.measureText(b[k]).width})));
+  g0.font=`700 ${fsz*1.1}px ${F}`; let tw=g0.measureText(title).width; g0.font=`${fsz*0.92}px ${F}`; for(const l of lines)tw=Math.max(tw,g0.measureText(l).width);
+  const TW=cw.reduce((a,b)=>a+b,0)+gap*(cw.length-1), W=Math.ceil(2*pad+Math.max(tw,TW)), H=Math.ceil(2*pad+fsz*1.4+lines.length*fsz*1.35+fsz*0.8+(body.length+1)*lh);
+  const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,W,H); g.textBaseline='top';
+  let y=pad; g.fillStyle='#111318'; g.font=`700 ${fsz*1.1}px ${F}`; g.fillText(title,pad,y); y+=fsz*1.4;
+  lines.forEach((l,k)=>{g.font=`${k?'':'600 '}${fsz*0.92}px ${F}`; g.fillStyle=k?'#4a5872':'#111318'; g.fillText(l,pad,y); y+=fsz*1.35}); y+=fsz*0.8;
+  const xr=[]; let x=pad; cw.forEach(w=>{x+=w; xr.push(x); x+=gap});
+  g.font=`600 ${fsz}px ${F}`; g.fillStyle='#4a5872'; g.textAlign='right'; head.forEach((h,k)=>g.fillText(h,xr[k],y)); y+=lh;
+  g.strokeStyle='#111318'; g.lineWidth=s; g.beginPath(); g.moveTo(pad,y-lh*0.2); g.lineTo(pad+TW,y-lh*0.2); g.stroke();
+  g.font=`${fsz}px ${F}`; g.fillStyle='#111318'; body.forEach(b=>{b.forEach((v,k)=>g.fillText(v,xr[k],y)); y+=lh});
+  return c}
+function scanExport(which,kind,btn){const R=SCAN.res; if(!R||!R.rows.some(r=>r.done))return;
+  const tag=`${R.par}_${R.model.l1.includes('buyers pay')?(R.model.l1.includes('gouging')?'gouging':'pay'):'free'}_L${P.L}`;
+  if(which==='scantab'){savePicture(scanTablePicture(),`globalization_scan_${tag}_table.png`,btn); return}
+  const sq=kind==='sq', W=sq?1000:1400, H=1000, c=document.createElement('canvas'); c.width=W; c.height=H;
+  const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,W,H); const d=scanPlotData();
+  xyPlot(c,d.series,{...d.o,title:sq?'':d.title},{dpr:2,sq}); savePicture(c,`globalization_scan_${tag}${sq?'_sq':''}.png`,btn)}
+$('scanGo').onclick=scanRun;
+['scanPar','scanMin','scanT'].forEach(id=>$(id).addEventListener('input',scanPtsNote));
+$('scanPar').addEventListener('change',scanPtsNote);
+new ResizeObserver(()=>scanDraw()).observe($('cScan').parentNode);
+scanSync();
 
 // ---------- chart ----------
 const ch=$('chart'), cctx=ch.getContext('2d');
