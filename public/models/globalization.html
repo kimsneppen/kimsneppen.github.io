@@ -202,6 +202,7 @@
   .scangrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:14px 22px;align-items:start}
   @media (max-width:900px){ .scangrid{grid-template-columns:minmax(0,1fr)} }
   .scanwrap{overflow-x:auto;margin-top:4px}
+  .scanctr{color:var(--ink2);font-variant-numeric:tabular-nums;margin-bottom:0}
   table.scant{border-collapse:collapse;font-size:11.5px;width:100%;font-variant-numeric:tabular-nums}
   table.scant th{font-weight:600;color:var(--muted);text-align:right;padding:2px 4px;white-space:nowrap;font-size:11px}
   table.scant td{text-align:right;padding:2px 4px;border-top:1px solid var(--line);white-space:nowrap}
@@ -1435,13 +1436,16 @@
     </div>
   </section>
   <section class="display" id="scanSec">
-    <div class="cardhead"><h2>Scan</h2><span class="sub">mean and median wealth, and the bends of the factory sizes, as one parameter changes — set and run in the control panel, section Scan</span></div>
+    <div class="cardhead"><h2>Scan</h2><span class="sub">mean and median wealth, and the distances of the smallest factories and of the fewest companies, as one parameter changes — set and run in the control panel, section Scan</span></div>
     <div class="scanhead" id="scanHead"></div>
     <div class="scangrid">
       <div>
         <div class="plotbar"><span class="plabel">wealth</span>
           <span class="plotbtns"><button data-plot="scan" data-k="png" title="save the plot of the scan as a PNG picture, with title and axis labels">.png</button><button data-plot="scan" data-k="sq" title="save the plot of the scan in a square picture without title">sq</button></span></div>
         <div class="chartbox dist"><canvas id="cScan"></canvas></div>
+        <div class="plotbar"><span class="plabel">distances</span>
+          <span class="plotbtns"><button data-plot="scand" data-k="png" title="save the plot of the distances as a PNG picture, with title and axis labels">.png</button><button data-plot="scand" data-k="sq" title="save the plot of the distances in a square picture without title">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cScanD"></canvas></div>
       </div>
       <div>
         <div class="plotbar"><span class="plabel">table</span>
@@ -1542,14 +1546,15 @@
       <div class="row"><label title="rounds run for each point, from a fresh start; the mean and the median money are averaged over the last two thirds of them">Rounds per point</label>
         <select id="scanT"><option>300</option><option>500</option><option selected>1000</option><option>2000</option><option>5000</option><option>10000</option></select></div>
       <p class="hint" id="scanPts"></p>
-      <div class="btnrow" style="margin-top:6px"><button class="btn primary" id="scanGo">Run scan</button></div>
+      <p class="hint scanctr" id="scanCtr"></p>
+      <div class="btnrow" style="margin-top:4px"><button class="btn primary" id="scanGo">Run scan</button></div>
       <p class="hint" id="scanProg"></p>
       <div class="btnrow" style="margin-top:6px"><button class="btn sm" id="scanSee" title="go to the table and the plot of the scan, under the other plots">table and plot ↓</button></div>
       <p class="hint">The table and the plot are in the section Scan, under all the other plots. Every point runs the model anew, in the background (the run on the display goes on), with the
         settings of the moment and the same seed: the values of the products above, scaled by the factor f (β, Start,
         α), or one γ for every product (0, −0.1, … −1). Mean and median: the money of all agents, averaged over the
-        last two thirds of the rounds; ■: the bends of the factory sizes against the distance to the nearest big C company,
-        over the same rounds. The transport factor stays as set (not lowered gradually).</p>
+        last two thirds of the rounds; over the same rounds, against the distance to the nearest big C company: P min,
+        where the fewest agents own a company, and ▲, where the factories of A, B and C are smallest. The transport factor stays as set (not lowered gradually).</p>
     </div>
   </details>
 
@@ -4004,7 +4009,7 @@ function nearData(){
   return {ib:last.ib,il:last.il,il2:last.il2,rounds:z.rounds,from:z.from,mean,median,size,sizeAll,marks,xr,xmax:xr.dmax<Infinity?xr.dmax:0};
 }
 // y against x for a few series. series: [{c, t (legend; none: not in it), p: [[x,y], …], dash: a dashed line without
-// dots, marks: {min, bend} points marked with a triangle and a square (curveMarks)}]; o: {title, xl, yl, scale: lin | loglin (only y logarithmic) | log (both), xmax: the end of the x axis (0: as
+// dots, marks: {min, bend} points marked with a triangle and a square (curveMarks)}]; o: {title, xl, yl, scale: lin | loglin (only y logarithmic) | xlog (only x) | log (both), xmax: the end of the x axis (0: as
 // far as the points go), ydec: on a logarithmic y axis only this many decades from the top (0: all), leg: more legend
 // items}; out (a saved picture): {dpr, sq: a square picture, for a paper — no title, and a left margin only as wide as
 // the numbers need}. Returns the decades a logarithmic y axis needs for all the points (0 when linear)
@@ -4014,7 +4019,7 @@ function xyPlot(canvas,series,o,out){
   // (o.fz: a smaller text on the screen, for a plot in a narrow place such as the control panel)
   const zk=(!out&&o.fz)?o.fz/FZ:1, z=dpr*FZ*zk, pr=10*z, pt=(sq?8:out?32:25)*z, pb=(out?32:30)*z, h=H-pt-pb;
   let pl=(out?48:46)*z, w=W-pl-pr;
-  const xl=o.scale==='log', yl=o.scale==='log'||o.scale==='loglin';      // which axes are logarithmic
+  const xl=o.scale==='log'||o.scale==='xlog', yl=o.scale==='log'||o.scale==='loglin';      // which axes are logarithmic (xlog: only x)
   if(o.title){const tx=out?pl:4*dpr; plotTitle(g,o.title,tx,4*z,z,W-tx-4*dpr)} g.font=pfont(11,z);
   const ok=q=>(!xl||q[0]>0)&&(!yl||q[1]>0), all=series.flatMap(s=>s.p).filter(ok);
   if(!all.length){g.fillStyle='#8391ab';g.textAlign='left';g.fillText('no data yet',pl,pt+h/2);return}
@@ -4069,6 +4074,16 @@ function curveMarksK(an,as,km){
   for(let k=1+w;k<im&&k+w<=km;k++){const a=S[k-w],b=S[k],c=S[k+w]; if(!(Number.isFinite(a)&&Number.isFinite(b)&&Number.isFinite(c)))continue;
     const d2=(a-2*b+c)/(w*w); if(d2>best){best=d2;ib=k}}
   return {min:im+0.5,bend:ib>0?ib+0.5:null};
+}
+// the distance where an agent is least likely to own a company: nc, the agents with a factory (of any product) that
+// sold something, cnt, all agents, per whole cell k = ⌊d⌋; P(k) = Σnc/Σcnt over k − 2 … k + 2 (k ≥ 1, windows with at
+// least 20 agents and 5 % of those in the busiest window), the k of the lowest P, as the middle of the cell k + ½
+function probMinK(nc,cnt,km){
+  const w=2, Pk=[], A=[];
+  for(let k=0;k<=km;k++){let a=0,t=0; for(let j=Math.max(1,k-w);j<=Math.min(km,k+w);j++){a+=cnt[j];t+=nc[j]} A.push(a); Pk.push(t/a)}
+  const amin=Math.max(20,0.05*Math.max(...A)); for(let k=0;k<=km;k++)if(k<1||A[k]<amin)Pk[k]=NaN;
+  let im=-1; for(let k=1;k<=km;k++)if(Number.isFinite(Pk[k])&&(im<0||Pk[k]<Pk[im]))im=k;
+  return im<0?null:im+0.5;
 }
 // a mark at distance x on the plotted curve p: y interpolated between its neighbouring points (in logarithms where the
 // axis is logarithmic); beyond the ends, the end point
@@ -5023,7 +5038,7 @@ new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)&&!running)apDraw(t
 // the margins only as wide as the numbers need; both with axis labels ----------
 function exportPlot(which,kind,btn){
   if(which==='netall'){exportAll(btn);return}
-  if(which==='scan'||which==='scantab'){scanExport(which,kind,btn);return}
+  if(which==='scan'||which==='scand'||which==='scantab'){scanExport(which,kind,btn);return}
   const src=$({chart:'chart',money:'cMoney',size:'cSize',surv:'cSurv',fort:'cFort',nearM:'cNearM',nearS:'cNearS',ct:'cCT',net:'cNet',apN:'cApN',apS:'cApS',apX:'cApX'}[which]), r=src.getBoundingClientRect();
   // (the two plots after a collapse are always saved in a square, one above the other)
   const sq=kind==='sq', sqd=sq||which==='ct', dpr=2, W=sqd?1000:Math.round(Math.max(r.width,420)*dpr);
@@ -5051,10 +5066,10 @@ document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>exportPlo
 // rounds. β, Start and α: every product's value times f = 1, 1/√2, 1/2, … down to the factor typed (down to ×);
 // γ: the same γ for every product, 0, −0.1, … −1. Over the same rounds it sums, as the plot of the factory sizes
 // against the distance to the nearest big company of the most scalable product does (nearRecord, every round), the
-// factories that sold and their units at each distance, and gives the bend of each curve (curveMarksK: the distance
-// where the second derivative of the size is largest, the ■ of that plot) for the two least scalable products and the
-// most scalable one. The results stay until the next scan, with the model they came from; they are shown in the
-// section Scan under the other plots
+// factories that sold and their units at each distance, and gives the lowest point of each size curve (curveMarksK: the
+// ▲ of that plot) for the two least scalable products and the most scalable one, and the distance where the fewest agents
+// own a company that sold (probMinK). The results stay until the next scan, with the model they came from; they are
+// shown in the section Scan under the other plots
 const SCANP={beta:{n:'transport cost β',sym:'β'},start:{n:'start cost',sym:'Start'},alpha:{n:'production-cost factor α',sym:'α'},gamma:{n:'γ, the same for every product',sym:'γ'}};
 const SCAN={res:null,workers:[],busy:false,url:null};
 function scanPoints(){const par=$('scanPar').value;
@@ -5086,9 +5101,10 @@ function scanURL(){if(SCAN.url)return SCAN.url;
 let E=null;
 ${nearestDist.toString()}
 ${curveMarksK.toString()}
+${probMinK.toString()}
 self.onmessage=e=>{const {P,T,i,ib,ls}=e.data; E=buildEcon(P); E.reset();
   const L=P.L, LL=L*L, D=Math.ceil(L*Math.SQRT2)+2, per=P.bc!=='closed', b=new Float64Array(LL), t0=Math.floor(T/3);
-  const cnt=new Float64Array(D), an=[0,1,2].map(()=>new Float64Array(D)), as=[0,1,2].map(()=>new Float64Array(D));
+  const cnt=new Float64Array(D), nc=new Float64Array(D), an=[0,1,2].map(()=>new Float64Array(D)), as=[0,1,2].map(()=>new Float64Array(D)), NP=P.products.length;
   let sm=0, sd=0, k=0;
   for(let t=0;t<T;t++){E.step();
     if(t>=t0){let s=0; for(let r=0;r<LL;r++)s+=E.money[r]; b.set(E.money); b.sort(); sm+=s/LL; sd+=b[LL>>1]; k++;
@@ -5096,30 +5112,37 @@ self.onmessage=e=>{const {P,T,i,ib,ls}=e.data; E=buildEcon(P); E.reset();
       if(mx>0){const big=[]; for(let r=0;r<LL;r++)if(F[r]&&S[r]>=Math.max(1,0.1*mx))big.push(r);
         const dd=nearestDist(big,L,per);
         for(let r=0;r<LL;r++){const q0=Math.min(D-1,Math.floor(dd[r])); cnt[q0]++;
+          for(let j=0;j<NP;j++)if(E.F[j][r]&&E.sales[j][r]>0){nc[q0]++; break}
           for(let q=0;q<3;q++){const j=ls[q]; if(j>=0&&E.F[j][r]){const v=E.sales[j][r]; as[q][q0]+=v; if(v>0)an[q][q0]++}}}}}
-    if(t%20===19)postMessage({i,t:t+1})}
+    if(t%10===9)postMessage({i,t:t+1})}
   let km=0; for(let q=0;q<D;q++)if(cnt[q]>0)km=q;
   const m=[0,1,2].map(q=>ls[q]<0?null:curveMarksK(an[q],as[q],km));
-  postMessage({i,done:true,mean:sm/k,median:sd/k,bend:m.map(x=>x&&x.bend!=null?x.bend:null)})};`;
+  postMessage({i,done:true,mean:sm/k,median:sd/k,smin:m.map(x=>x?x.min:null),pmin:probMinK(nc,cnt,km)})};`;
   return SCAN.url=URL.createObjectURL(new Blob([src],{type:'text/javascript'}))}
 function scanRun(){
   if(SCAN.busy){scanStop(); return}
   const par=$('scanPar').value, T=+$('scanT').value, xs=scanPoints(), p0=scanProducts(scanP(par,xs[0]).products);
-  SCAN.res={par,T,model:scanModel(T),names:P.products.map((q,i)=>PNAME[i]),bendNames:p0.ls.map(i=>i>=0?PNAME[i]:null),big:PNAME[p0.ib],stopped:false,
+  SCAN.res={par,T,model:scanModel(T),names:P.products.map((q,i)=>PNAME[i]),bendNames:p0.ls.map(i=>i>=0?PNAME[i]:null),bendIdx:p0.ls,big:PNAME[p0.ib],stopped:false,
     rows:xs.map(x=>({x,vals:scanP(par,x).products.map(pr=>scanVal(par,pr)),t:0,done:false}))};
   const nw=Math.max(1,Math.min(xs.length,(navigator.hardwareConcurrency||2)-1,6)); let next=0;
   SCAN.busy=true; SCAN.t0=performance.now();
   const feed=w=>{if(next>=xs.length){w.terminate(); SCAN.workers=SCAN.workers.filter(q=>q!==w); if(!SCAN.workers.length){SCAN.busy=false; scanSync()} return}
-    const i=next++, q=scanP(par,xs[i]), pp=scanProducts(q.products); w.postMessage({P:q,T,i,ib:pp.ib,ls:pp.ls})};
+    const i=next++, q=scanP(par,xs[i]), pp=scanProducts(q.products); SCAN.res.rows[i].run=true; w.postMessage({P:q,T,i,ib:pp.ib,ls:pp.ls})};
   for(let k=0;k<nw;k++){const w=new Worker(scanURL()); SCAN.workers.push(w);
     w.onmessage=e=>{const d=e.data, r=SCAN.res.rows[d.i]; if(!r)return;
-      if(d.done){r.t=T; r.done=true; r.mean=d.mean; r.median=d.median; r.bend=d.bend; scanDraw(); feed(w)} else{r.t=d.t; scanProgress()}};
+      if(d.done){r.t=T; r.done=true; r.mean=d.mean; r.median=d.median; r.smin=d.smin; r.pmin=d.pmin; scanDraw(); feed(w)} else{r.t=d.t; scanProgress()}};
     w.onerror=e=>{e.preventDefault&&e.preventDefault(); scanStop(); $('scanProg').textContent='The scan failed: '+(e.message||'an error in the model')};
     feed(w)}
   scanSync()}
 function scanStop(){SCAN.workers.forEach(w=>w.terminate()); SCAN.workers=[]; SCAN.busy=false;
   if(SCAN.res)SCAN.res.stopped=SCAN.res.rows.some(r=>!r.done); scanSync()}
-function scanProgress(){const R=SCAN.res; if(!R){$('scanProg').textContent=''; return}
+// the counter above Run scan: the round each running simulation has reached
+function scanCounter(){const R=SCAN.res, el=$('scanCtr');
+  if(!R){el.textContent='Simulation: no scan run yet'; return}
+  if(!SCAN.busy){el.textContent=R.stopped?`Simulation: stopped, ${R.rows.filter(r=>r.done).length} of ${R.rows.length} points done`:`Simulation: done, all ${R.rows.length} points of ${R.T} rounds`; return}
+  const run=R.rows.map((r,i)=>({r,i})).filter(o=>o.r.run&&!o.r.done);
+  el.textContent=run.length?`Round ${run.map(o=>o.r.t).join(' · ')} of ${R.T} (point${run.length>1?'s':''} ${run.map(o=>o.i+1).join(', ')} of ${R.rows.length})`:'Simulation: starting'}
+function scanProgress(){scanCounter(); const R=SCAN.res; if(!R){$('scanProg').textContent=''; return}
   const tot=R.rows.length*R.T, done=R.rows.reduce((a,r)=>a+r.t,0), nd=R.rows.filter(r=>r.done).length, sec=(performance.now()-SCAN.t0)/1000;
   $('scanProg').textContent=SCAN.busy?`Running: ${nd} of ${R.rows.length} points done, ${Math.round(100*done/tot)} %`+(done>0&&sec>3?`, about ${Math.max(1,Math.round(sec*(tot-done)/done))} s left`:'')+' (press Stop to end it)':
     R.stopped?`Stopped: ${nd} of ${R.rows.length} points.`:`Done: ${R.rows.length} points in ${Math.round(sec)} s.`}
@@ -5133,25 +5156,37 @@ function scanPlotData(){const R=SCAN.res; if(!R)return null; const q=R.rows.filt
   return {series:[{c:'#c2410c',t:'mean wealth',p:q.map(r=>[r.x,r.mean])},{c:'#2563eb',t:'median wealth',p:q.map(r=>[r.x,r.median])}],
     o:{xl:g?'γ, the same for every product':`${SCANP[R.par].n}: factor f of the values above`,yl:'wealth',scale:g?'loglin':'log',...(g?{xmin:-1,xmax:0}:{})},
     title:`Scan of ${SCANP[R.par].n} — ${R.model.l1.replace('Model: ','')}`}}
+// the plot of the distances: the lowest point of each size curve (full lines, in the colour of the product) and the
+// distance with the fewest companies (dashed), against the scanned parameter
+function scanDistData(){const R=SCAN.res; if(!R)return null; const q=R.rows.filter(r=>r.done).sort((a,b)=>a.x-b.x), g=R.par==='gamma';
+  const pts=f=>q.map(r=>[r.x,f(r)]).filter(a=>a[1]!=null&&Number.isFinite(a[1]));
+  const series=[...R.bendNames.map((nm,k)=>nm&&{c:PCOL[R.bendIdx[k]]||'#4a5872',t:`${nm} size min`,p:pts(r=>r.smin&&r.smin[k])}).filter(Boolean),
+    {c:'#16233b',dash:true,t:'P min',p:pts(r=>r.pmin)}];
+  return {series,o:{xl:g?'γ, the same for every product':`${SCANP[R.par].n}: factor f of the values above`,yl:`Distance to nearest ${R.big} company`,scale:g?'lin':'xlog',...(g?{xmin:-1,xmax:0}:{})},
+    title:`Distance of the smallest factories and of the fewest companies — scan of ${SCANP[R.par].n}`}}
 // the columns of the table: the parameter (f or γ), its value for each product (β, Start or α), mean, median, their
-// ratio, and the bends of the size curves (distance to the nearest big company of the most scalable product)
+// ratio, the distance with the fewest companies, and the lowest points of the size curves (distances to the nearest big
+// company of the most scalable product)
 function scanCols(){const R=SCAN.res, g=R.par==='gamma', sym=SCANP[R.par].sym, bn=R.bendNames;
   return [{h:g?'γ':'f',v:r=>sig(r.x)},
     ...(g?[]:R.names.map((nm,k)=>({h:`${sym} ${nm}`,v:r=>sig(r.vals[k]),cls:'v'}))),
     {h:'mean',hl:'mean wealth',v:r=>r.done?sig3(r.mean):'…'},{h:'median',hl:'median wealth',v:r=>r.done?sig3(r.median):'…'},
     {h:'mean/median',hl:'mean / median',v:r=>r.done?sig3(r.mean/r.median):'…'},
-    ...bn.map((nm,q)=>nm&&{h:`■ ${nm}`,hl:`bend ${nm}`,v:r=>r.done?(r.bend&&r.bend[q]!=null?sig(r.bend[q]):'none'):'…',cls:'b'}).filter(Boolean)]}
-const scanBendNote=R=>`■ (bend): the distance to the nearest big ${R.big} company (one selling at least a tenth of the biggest) where the second derivative of the factory size of ${R.bendNames.filter(Boolean).join(', ')} is largest, as the ■ of the plot of factory size against distance; from the last ⅔ of the rounds (none: no bend before the minimum)`;
+    {h:'P min',hl:'P min: fewest companies',v:r=>r.done?(r.pmin!=null?sig(r.pmin):'none'):'…',cls:'b'},
+    ...bn.map((nm,q)=>nm&&{h:`▲ ${nm}`,hl:`▲ ${nm}: smallest`,v:r=>r.done?(r.smin&&r.smin[q]!=null?sig(r.smin[q]):'none'):'…',cls:'b'}).filter(Boolean)]}
+const scanBendNote=R=>`Distances to the nearest big ${R.big} company (one selling at least a tenth of the biggest), from the last ⅔ of the rounds, in sums over ±2 cells of distance. P min: where the fewest agents own a company (of any product) that sold something. ▲ ${R.bendNames.filter(Boolean).join(', ')}: where the factories of that product that sold something are smallest (fewest units sold each), the ▲ of the plot of factory size against distance. none: not enough agents or factories`;
 function scanTableHTML(){const R=SCAN.res; if(!R)return ''; const C=scanCols();
   return `<table class="scant"><thead><tr>${C.map(c=>`<th title="${c.hl||c.h}">${c.h}</th>`).join('')}</tr></thead><tbody>`+
     R.rows.map(r=>`<tr class="${r.done?'':'wait'}">${C.map(c=>`<td${c.cls?` class="${c.cls}"`:''}>${c.v(r)}</td>`).join('')}</tr>`).join('')+'</tbody></table>'}
 function scanDraw(){const R=SCAN.res;
   $('scanHead').innerHTML=R?`<b>${R.model.l1}</b><br>${R.model.l2}<br>${R.model.l3}`:'Run a scan in the control panel (section Scan): its table and plot come here.';
   $('scanTable').innerHTML=scanTableHTML(); $('scanNote').textContent=R?scanBendNote(R):''; scanProgress();
-  const c=$('cScan'); if(!c.getBoundingClientRect().width)return;
-  const d=scanPlotData(); if(!d||!d.series[0].p.length){const dpr=fitCanvas(c), g=c.getContext('2d'); g.clearRect(0,0,c.width,c.height); g.fillStyle='#8391ab'; g.font=pfont(11,dpr*FZ); g.textBaseline='middle';
-    g.fillText(R?'The first points are on their way.':'No scan yet.',12*dpr,c.height/2); return}
-  xyPlot(c,d.series,d.o)}
+  // the two plots, or a word while there are no points
+  const msg=(cv,t)=>{const dpr=fitCanvas(cv), g=cv.getContext('2d'); g.clearRect(0,0,cv.width,cv.height); g.fillStyle='#8391ab'; g.font=pfont(11,dpr*FZ); g.textBaseline='middle';
+    g.fillText(t,12*dpr,cv.height/2)}, wait=R?'The first points are on their way.':'No scan yet.';
+  const c=$('cScan'), c2=$('cScanD');
+  if(c.getBoundingClientRect().width){const d=scanPlotData(); if(d&&d.series[0].p.length)xyPlot(c,d.series,d.o); else msg(c,wait)}
+  if(c2.getBoundingClientRect().width){const d2=scanDistData(); if(d2&&d2.series.some(se=>se.p.length))xyPlot(c2,d2.series,d2.o); else msg(c2,R&&R.rows.some(r=>r.done)?'No distances: no big C company.':wait)}}
 // the table as a picture: the model on top, then the table, then what the bends are
 function scanTablePicture(){const R=SCAN.res, s=2, F=PFONT, g0=document.createElement('canvas').getContext('2d'), C=scanCols();
   const head=C.map(c=>c.hl||c.h), body=R.rows.map(r=>C.map(c=>c.v(r).replace('…','–')));
@@ -5176,13 +5211,14 @@ function scanExport(which,kind,btn){const R=SCAN.res; if(!R||!R.rows.some(r=>r.d
   const tag=`${R.par}_${R.model.l1.includes('buyers pay')?(R.model.l1.includes('gouging')?'gouging':'pay'):'free'}_L${R.model.l1.match(/L = (\d+)/)[1]}`;
   if(which==='scantab'){savePicture(scanTablePicture(),`globalization_scan_${tag}_table.png`,btn); return}
   const sq=kind==='sq', W=sq?1000:1400, H=1000, c=document.createElement('canvas'); c.width=W; c.height=H;
-  const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,W,H); const d=scanPlotData();
-  xyPlot(c,d.series,{...d.o,title:sq?'':d.title},{dpr:2,sq}); savePicture(c,`globalization_scan_${tag}${sq?'_sq':''}.png`,btn)}
+  const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,W,H); const d=which==='scand'?scanDistData():scanPlotData();
+  xyPlot(c,d.series,{...d.o,title:sq?'':d.title},{dpr:2,sq}); savePicture(c,`globalization_scan_${tag}${which==='scand'?'_dist':''}${sq?'_sq':''}.png`,btn)}
 $('scanGo').onclick=scanRun;
 $('scanSee').onclick=()=>{if(window.innerWidth<900)setCtlOpen(false); $('scanSec').scrollIntoView({behavior:'smooth',block:'start'})};
 ['scanPar','scanMin','scanT'].forEach(id=>$(id).addEventListener('input',scanPtsNote));
 $('scanPar').addEventListener('change',scanPtsNote);
 new ResizeObserver(()=>scanDraw()).observe($('cScan').parentNode);
+new ResizeObserver(()=>scanDraw()).observe($('cScanD').parentNode);
 new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))scanDraw()}).observe($('cScan'));
 scanSync();
 
