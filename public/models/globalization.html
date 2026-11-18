@@ -88,6 +88,7 @@
   .seg button{border:0;background:#fff;padding:5px 10px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer;font-family:inherit}
   .seg button + button{border-left:1px solid var(--line)}
   .seg button.on{background:var(--accent);color:#fff}
+  .seg.fitseg button{padding:2px 8px;font-size:11.5px}
   .ptabs{display:inline-flex;gap:4px;flex-wrap:wrap}
   .ptabs button{width:27px;height:25px;border-radius:7px;border:2px solid transparent;cursor:pointer;color:#fff;
     font-weight:700;font-size:12px;font-family:inherit;opacity:.45}
@@ -207,6 +208,7 @@
   .tgl{height:24px;padding:0 11px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#fff;
     font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
   .tgl:hover{filter:brightness(1.12)}
+  .tgl.off{background:#fff;color:var(--accent)}
   /* the title of each section under the display */
   .cardhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:1px 10px;margin:0 0 7px}
   .cardhead h2{font-size:14.5px;margin:0;color:var(--ink);letter-spacing:-.005em}
@@ -865,7 +867,7 @@
         vertical axis, and for the factories the band between the two curves of the most scalable product, C, is shaded.</p>
       <p><b>Distributions</b>: how the money is spread over the agents, P(M), and how big the companies are, P(s). Both
         axes are logarithmic: each step along an axis multiplies by 10. On such a plot a power law, P ∝ x<sup>−a</sup>,
-        is a straight line, and the dashed lines are such fits. In P(M) the dotted lines mark the mean money (orange) and the
+        is a straight line, and the dashed lines are such fits (shown when <i>fit</i> is chosen above the plot; off at the start). In P(M) the dotted lines mark the mean money (orange) and the
         typical money, the median (blue): half of the agents have less. Above them, in the lower left corner, is P(M ≤ w),
         the share of agents with no money (one wage or less), which a logarithmic axis cannot show. The tail is fitted
         over one decade, from a thirtieth to a third of the largest fortune (in a sum over many rounds, of the mean
@@ -924,7 +926,7 @@
         no upkeep idle ones stay open), which is why the dashed lines lie far below. The <i>decades</i> slider cuts the
         lowest decades off a logarithmic axis. All this against the distance d to the nearest big company of the most scalable product (one that sells
         at least a tenth of what the biggest one sells, the biggest taken as its mean size over the last 100 rounds), summed over the last 100 rounds or over the last two
-        thirds of the run. Linear, log–lin (only the vertical axis logarithmic) or log–log; the slider shortens the distance
+        thirds of the run. Linear, log–lin (only the vertical axis logarithmic) or log–log (the start); the slider shortens the distance
         axis, for instance to the first 20 cells, where most of the change happens. Close to a big chip company the mean money is high — its owner lives there — and the bakeries sell
         many times more than far away (about 7 times in the standard setup, 10 to 20 times with n = 0.2 and upkeep) —
         most likely because the rich order more, and bread is
@@ -1288,7 +1290,7 @@
       <label class="win" title="the top of the y axis, as a share of what the curves need (the curves are cut at the top); also for the other quantities">y up to
         <input type="range" id="chartY" min="0" max="9" step="1" value="3"><span id="chartYV">all</span></label>
       <button class="nbtn" id="bRegBand" title="mean money: a grey band of the mean ± the standard deviation between the regions' mean money (from region to region, not the error of the mean), round by round, instead of the golden area; only with borders">regions ± SD</button>
-      <label class="win" title="the time window: from now back in time, in steps of a factor 1.5; at the right end, the whole run">window
+      <label class="win" title="the time window: the last 100, 200, … 5 000 rounds, then 10 000, 20 000, 40 000 …; at the right end, the whole run (further back the record of the rounds is thinner: every 2nd, 4th … round)">window
         <input type="range" id="chartWin" min="0" max="0" step="1" value="0"><span id="chartWinV"></span></label>
       <span class="chartnote" id="chartNote"></span>
       <span class="plotbtns"><button data-plot="chart" data-k="png" title="save this plot as a PNG picture, with title and axis labels">.png</button><button data-plot="chart" data-k="sq" title="save this plot in a square picture for a paper: axis labels, no title">sq</button></span>
@@ -1307,12 +1309,14 @@
     <div class="distgrid">
       <div>
         <div class="plotbar"><span class="plabel">P(M)</span>
+          <span class="seg fitseg" data-fit="money" title="the power-law fit (dashed line, with its slope in the legend): shown or not"><button data-f="0" class="on">no fit</button><button data-f="1">fit</button></span>
           <label class="win" title="how many decades of the y axis to show: fewer cuts off the lowest ones">decades
             <input type="range" id="moneyDec" min="1" max="6" step="1" value="6"><span id="moneyDecV">all</span></label></div>
         <div class="chartbox dist"><canvas id="cMoney"></canvas></div>
       </div>
       <div>
-        <div class="plotbar"><span class="plabel">P(s)</span></div>
+        <div class="plotbar"><span class="plabel">P(s)</span>
+          <span class="seg fitseg" data-fit="size" title="the power-law fit (dashed line, with its slope in the legend): shown or not"><button data-f="0" class="on">no fit</button><button data-f="1">fit</button></span></div>
         <div class="chartbox dist"><canvas id="cSize"></canvas></div>
       </div>
     </div>
@@ -1357,7 +1361,7 @@
       <div class="seg" id="nearWin" title="sum over the last 100 rounds, or over the last two thirds of the run since the last change of a parameter">
         <button data-w="r100" class="on">last 100 rounds</button><button data-w="avg">last ⅔ of run</button></div>
       <div class="seg" id="nearScale" title="linear axes; log–lin: only the vertical axis logarithmic; or both axes logarithmic">
-        <button data-s="lin" class="on">linear</button><button data-s="loglin">log–lin</button><button data-s="log">log–log</button></div>
+        <button data-s="lin">linear</button><button data-s="loglin">log–lin</button><button data-s="log" class="on">log–log</button></div>
       <label class="win" title="how far the distance axis goes, from 5 cells to all of it (the right end of the slider)">distance up to
         <input type="range" id="nearX" min="0" max="0" step="1" value="0"><span id="nearXV">all</span></label>
     </div>
@@ -1405,12 +1409,13 @@
     <div class="cardhead"><h2>Family tree of the companies</h2><span class="sub" id="netSub">the companies of the most
       scalable product, each linked to the company that collapsed before it where it started</span></div>
     <div class="chartbar">
+      <button class="tgl off" id="netOn" title="the family tree is drawn only when switched on (it takes time in a long run); it covers the last 1000 rounds">tree off</button>
       <button class="nbtn" id="netRun" title="run / pause (space), as above the town">▶</button>
       <span class="lab">time</span>
       <div class="dual" id="netRange" title="the rounds shown: the companies alive at some time in them; drag the left handle for the start, the right one for the end (at the right end: up to the present round)"><span class="sel"></span><input type="range" id="netFrom" min="0" max="1000" step="1" value="0" aria-label="start of the time shown"><input type="range" id="netTo" min="0" max="1000" step="1" value="1000" aria-label="end of the time shown"></div>
       <span class="rangev" id="netRangeV"></span>
       <button class="nbtn" id="netAbove" title="the rounds of the plots above (◀ back returns)">as above</button>
-      <div class="seg" id="netSurv" title="which companies to show: all that appeared, or those that survived at least 1, 2, 3, 4 or 5 rounds of trade (sold something and were still open after it)">
+      <div class="seg" id="netSurv" title="which companies to show: all (the open ones, and the closed ones that sold something; those that closed without ever selling are not kept), or those that survived at least 1, 2, 3, 4 or 5 rounds of trade (sold something and were still open after it)">
         <button data-k="0" class="on">all</button><button data-k="1">≥ 1</button><button data-k="2">≥ 2</button><button
         data-k="3">≥ 3</button><button data-k="4">≥ 4</button><button data-k="5">≥ 5</button></div>
     </div>
@@ -1664,7 +1669,7 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 // A bankrupt agent (money < 0) closes its weakest factory, its debts are written off, and it starts again from money w;
 // with forgive, a debt that its shopping alone ran up is written off and its factories stay.
 function buildEcon(P){
-  const L=P.L, LL=L*L, N=P.products.length;
+  const L=P.L, LL=L*L; let N=P.products.length;      // (N grows when a product is added during a run: E.addProduct)
   const rng=mulberry32(P.seed||1);
   const E={P,L,N,t:0,hist:[]};
   const closed=()=>P.bc==='closed';
@@ -1866,13 +1871,17 @@ function buildEcon(P){
   // make, α·s^γ (∞ where there is no factory); tr: the transport in C₁, β·d times the road factors on the way, without
   // border taxes and tariffs (0 without a supplier)
   E.F=[];E.sales=[];E.sup=[];E.dist=[];E.u=[];E.area=[];E.cost=[];E.c2=[];E.mg=[];E.tr=[];
-  for(let i=0;i<N;i++){
+  const newSales=[];
+  const addArrays=()=>{
     E.F.push(new Uint8Array(LL)); E.sales.push(new Int32Array(LL)); E.sup.push(new Int32Array(LL));
     E.dist.push(new Float32Array(LL)); E.u.push(new Float64Array(LL)); E.area.push(new Int32Array(LL)); E.cost.push(new Float64Array(LL));
     E.c2.push(new Float64Array(LL).fill(Infinity)); E.mg.push(new Float64Array(LL));
-    E.tr.push(new Float64Array(LL));
-  }
-  const cum=new Float64Array(LL), inList=new Uint8Array(LL), paid=new Float64Array(LL), newSales=[]; for(let i=0;i<N;i++)newSales.push(new Int32Array(LL));
+    E.tr.push(new Float64Array(LL)); newSales.push(new Int32Array(LL))};
+  for(let i=0;i<N;i++)addArrays();
+  const cum=new Float64Array(LL), inList=new Uint8Array(LL), paid=new Float64Array(LL);
+  // a new product, the last of P.products, added during a run: nobody makes it yet; agents open it as they open any
+  // other product, when they give up theirs or have none (the money, the factories and the round go on)
+  E.addProduct=function(){while(N<P.products.length){addArrays(); N++} E.N=N; netKey=''; E.stale=true; E.computeMarkets()};
   E.paid=paid;
   // sold: the units each factory sold in the last round, also of the factories that closed at its end (0 for one
   // opened at its end); for reading only
@@ -2101,7 +2110,10 @@ function buildEcon(P){
     H.transport=p*trOut; Object.assign(H,{sellers:p*sumM,orders:nOrd,sc});
     // (lostT: the transport that was lost, with lost)
     if(pays)Object.assign(H,{paid:p*sumF,production:p*prOut,returned:p*Math.max(0,sumC-lostOut),lostT:p*lostOut,ubi});
-    E.econ=P.econ; E.t++; E.hist.push(H); if(E.hist.length>6000)E.hist.splice(0,1000);
+    E.econ=P.econ; E.t++; E.hist.push(H);
+    // (the record of the rounds: when it holds 8000, every second one of all but the last 4000 goes, so that it covers the
+    // whole run, ever more thinly further back)
+    if(E.hist.length>8000){const k=E.hist.length-4000; E.hist=E.hist.slice(0,k).filter((q,i)=>i%2===0).concat(E.hist.slice(k))}
     E.computeMarkets();
     return H;
   };
@@ -2188,7 +2200,7 @@ document.querySelectorAll('[data-tip]').forEach(e=>{e.title=HELP[e.dataset.tip]}
 // factory colours and names, from the transport costs β: A, blue, is the product with the largest β, and C, red, the
 // one with the smallest; with one or two products A only if its β ≥ 0.05 and C only if its β < 0.05. The others are
 // B, green (then D, E, …), in between. The colours come from the jet or the spectral colour map: A at the cool end (x =
-// 0.08), C at the warm end (0.92), the others evenly between
+// 0.08), C at the warm end (0.92), B in the middle (0.5) and D, E, … at 0.7, 0.78, …
 const SPECTRAL=['5e4fa2','3288bd','66c2a5','abdda4','e6f598','fee08b','fdae61','f46d43','d53e4f','9e0142'].map(h=>[0,2,4].map(k=>parseInt(h.slice(k,k+2),16)));
 const PAL={
   jet:x=>[4*x-3,4*x-2,4*x-1].map(v=>Math.round(255*Math.min(1,Math.max(0,1.5-Math.abs(v))))),
@@ -2203,7 +2215,8 @@ function productRoles(pr){
   else{if(pr[ord[0]].beta>=0.05)iA=ord[0]; const l=ord[N-1]; if(l!==iA&&pr[l].beta<0.05)iC=l}
   const mid=ord.filter(i=>i!==iA&&i!==iC), name=[], x=[], ML='BDEFGH';
   if(iA>=0){name[iA]='A'; x[iA]=0.08} if(iC>=0){name[iC]='C'; x[iC]=0.92}
-  mid.forEach((i,k)=>{name[i]=ML[k]; x[i]=0.08+0.84*(k+1)/(mid.length+1)});
+  // (B always green, the middle of the map; a fourth and further products orange to red, between B and C)
+  mid.forEach((i,k)=>{name[i]=ML[k]; x[i]=[0.5,0.7,0.78,0.84,0.88][k]??0.9});
   return {name,x}}
 function setPalette(){
   const R=productRoles(P.products); PNAME=[...R.name,...'ABCDEFGH'.split('').filter(c=>!R.name.includes(c))];
@@ -2452,7 +2465,9 @@ function syncSales(){
 // largest production-cost factor α of them
 $('pAdd').onclick=()=>{const pr=P.products;
   pr.push({start:Math.round(1.6*Math.max(...pr.map(p=>p.start))),gamma:Math.round(100*(Math.min(...pr.map(p=>p.gamma))-0.15))/100,
-    beta:Math.round(1000*0.75*Math.min(...pr.map(p=>p.beta)))/1000,alpha:Math.max(...pr.map(alphaOf))});restart()};
+    beta:Math.round(1000*0.75*Math.min(...pr.map(p=>p.beta)))/1000,alpha:Math.max(...pr.map(alphaOf))});
+  // the run goes on: the new product is added to the town as it is (a red line in the time series marks the change)
+  E.addProduct(); buildProductUI(); refresh(); drawDist()};
 $('palSel').onchange=e=>{palName=e.target.value;buildProductUI();refresh()};
 // the economy, free goods (the standard) or buyers pay: a menu in the panel and the golden button above the town. In
 // both the next round works out its own p
@@ -2957,6 +2972,9 @@ $('metric').onchange=()=>drawChart();
 // the time series: the vertical axis per quantity (true: logarithmic), and the time window shown, as for the fortunes
 const chartLog={};
 let chartWinK=0, chartWinAll=true;
+// the windows of the time series: the last 100, 200, … 5 000 rounds, then 10 000, 20 000, 40 000 …; at the right end
+// of the slider the whole run
+const chartWinOf=k=>k<50?100*(k+1):5000*Math.pow(2,k-49);
 document.querySelectorAll('#chartScale button').forEach(b=>b.onclick=()=>{chartLog[$('metric').value]=b.dataset.s==='log'; drawChart()});
 $('chartWin').oninput=e=>{chartWinK=+e.target.value; chartWinAll=chartWinK>=+e.target.max; soon(drawChart)};
 function setView(v){
@@ -3707,8 +3725,12 @@ function frRecord(){
 }
 // the model as it was in round f.t, for the drawing code: its own arrays, the rest from the model
 function frView(f){
-  if(!f.view){const v=Object.create(E); v.F=f.F; v.sales=f.sales; v.sup=f.sup; v.money=f.money; v.t=f.t;
-    v.area=f.sup.map(s=>{const a=new Int32Array(f.LL); for(let r=0;r<f.LL;r++)if(s[r]>=0)a[s[r]]++; return a});
+  // (a round kept from before a product was added: that product's arrays empty)
+  if(f.view&&f.view.F.length!==E.N)f.view=null;
+  if(!f.view){const v=Object.create(E), pad=(a,mk)=>{const b=a.slice(); while(b.length<E.N)b.push(mk()); return b};
+    v.F=pad(f.F,()=>new Uint8Array(f.LL)); v.sales=pad(f.sales,()=>new Int32Array(f.LL)); v.sup=pad(f.sup,()=>new Int32Array(f.LL).fill(-1));
+    v.money=f.money; v.t=f.t;
+    v.area=v.sup.map(s=>{const a=new Int32Array(f.LL); for(let r=0;r<f.LL;r++)if(s[r]>=0)a[s[r]]++; return a});
     f.view=v}
   return f.view;
 }
@@ -3865,14 +3887,22 @@ function stampParams(oc,scale){
   return out;
 }
 // save a canvas as a PNG file; the button shows '…' meanwhile
+// (made at once, within the click: a download started later, after a busy round of the run, may be blocked by the
+// browser as one the user did not ask for)
 function savePicture(oc,name,btn){
-  const label=btn.dataset.label||(btn.dataset.label=btn.textContent);
-  btn.classList.add('busy'); btn.textContent='…';
-  const save=url=>{const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>{btn.classList.remove('busy');btn.textContent=label},400)};
-  if(oc.toBlob)oc.toBlob(b=>{if(!b){save(oc.toDataURL('image/png'));return}const u=URL.createObjectURL(b);save(u);setTimeout(()=>URL.revokeObjectURL(u),8000)},'image/png');
-  else save(oc.toDataURL('image/png'));
+  if(btn){btn.dataset.label=btn.dataset.label||btn.textContent; btn.classList.add('busy'); btn.textContent='…'}
+  let url;
+  try{const d=oc.toDataURL('image/png'), b=atob(d.slice(d.indexOf(',')+1)), u=new Uint8Array(b.length);
+    for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+    url=URL.createObjectURL(new Blob([u],{type:'image/png'}))}
+  catch(e){btnWord(btn,'failed'); alert('The picture could not be made: '+(e&&e.message||e)); return}
+  const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),20000);
+  if(btn)setTimeout(()=>{btn.classList.remove('busy'); btn.textContent=btn.dataset.label},400);
 }
+// a word on a button for a moment (nothing to save, or it failed)
+function btnWord(btn,w){if(!btn)return; btn.dataset.label=btn.dataset.label||btn.textContent; btn.classList.remove('busy');
+  btn.textContent=w; setTimeout(()=>{btn.textContent=btn.dataset.label},1500)}
 function exportPNG(kind){
   const btn=$(kind==='sq'?'bSq':'bPng');
   const scale=Math.max(2,window.devicePixelRatio||1);
@@ -3912,7 +3942,7 @@ function distRecord(){
   const b=Float64Array.from(last.b), z=Float64Array.from(last.z), add=(H,tau)=>{const k=binOf(LB,tau);if(k>=0&&k<H.length)H[k]++};
   for(const tau of AH.tb)add(b,tau);
   for(const tau of AH.tz)add(z,tau);
-  DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:last.s.map((a,i)=>a.map((v,k)=>v+h.s[i][k])),b,z,
+  DH.rec.push({t:E.t,m:last.m.map((v,k)=>v+h.m[k]),s:h.s.map((a,i)=>a.map((v,k)=>v+(last.s[i]?last.s[i][k]:0))),b,z,
     msum:(last.msum||0)+h.msum,mcnt:(last.mcnt||0)+h.mcnt,mz:(last.mz||0)+h.mz,mmax:h.mmax,smax:h.smax});     // running sums; the largest money and companies of the round
   if(DH.rec.length>8000)DH.rec.splice(1,1000);
 }
@@ -3928,7 +3958,7 @@ function histWindow(){         // summed over the last two thirds of the rounds 
     if(q.smax){ns++; q.smax.forEach((v,i)=>{if(i<smax.length)smax[i]+=v})}}
   if(DH.rec.length-1>lo)mmax/=DH.rec.length-1-lo;
   if(ns)for(let i=0;i<smax.length;i++)smax[i]/=ns;
-  return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-a.s[i][k])),b:b.b.map((v,k)=>v-a.b[k]),z:b.z.map((v,k)=>v-a.z[k]),rounds:b.t-a.t,
+  return {m:b.m.map((v,k)=>v-a.m[k]),s:b.s.map((x,i)=>x.map((v,k)=>v-(a.s[i]?a.s[i][k]:0))),b:b.b.map((v,k)=>v-a.b[k]),z:b.z.map((v,k)=>v-a.z[k]),rounds:b.t-a.t,
     msum:(b.msum||0)-(a.msum||0),mcnt:(b.mcnt||0)-(a.mcnt||0),mz:(b.mz||0)-(a.mz||0),mmax,smax};
 }
 // ---- agents: how long they last, and their fortunes ----
@@ -4245,15 +4275,19 @@ function distPlots(){
       legend:null,yl:'probability density P(τ), per round',opt:{ydec:survDecAll?0:survDec,
         empty:!lifeZero&&P.upkeep===0&&(P.econ==='so'||P.forgive)?
           ['no bankruptcies without upkeep:','see  a life ends · money 0']:null}},
-    money:{series:[{c:'#b7791f',h:d.m,fit:fitM,fitLabel:'tail: '}],B:MB,xl:'money M of an agent',
+    money:{series:[{c:'#b7791f',h:d.m,fit:FITON.money?fitM:null,fitLabel:'tail: '}],B:MB,xl:'money M of an agent',
       title:'P(M): probability density of money, per unit of M',stitle:'P(M), density per unit of money',yl:'probability density P(M)',
       legend:[{t:'P(M ≤ w) = '+pZero,ts:'P(M≤w) '+pZero},...(mMed>0?[{c:'#2563eb',t:'typical (median) '+fmt(mMed),ts:'median '+fmt(mMed)}]:[]),
         {c:'#c2410c',t:'mean '+fmt(mMean)}],
       opt:{marks:[{x:mMean,c:'#c2410c'},{x:mMed,c:'#2563eb'}],legendBL:true,ydec:moneyDecAll?0:moneyDec}},
-    size:{series:d.s.map((h,i)=>({c:PCOL[i],h,fit:i===ismall?fitS:null,fitLabel:PNAME[i]+': '})),B:SB,xl:'company size s (units sold per round)',
+    size:{series:d.s.map((h,i)=>({c:PCOL[i],h,fit:FITON.size&&i===ismall?fitS:null,fitLabel:PNAME[i]+': '})),B:SB,xl:'company size s (units sold per round)',
       title:'P(s): probability density of company size, per unit of s',stitle:'P(s), density per unit of company size',
       legend:P.products.map((p,i)=>({c:PCOL[i],t:`${PNAME[i]}   γ = ${String(p.gamma).replace('-','−')}`})),yl:'probability density P(s)'}};
 }
+// the power-law fits of P(M) and P(s): off unless switched on above the plot
+const FITON={money:false,size:false};
+document.querySelectorAll('.fitseg').forEach(sg=>sg.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  FITON[sg.dataset.fit]=b.dataset.f==='1'; sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); drawDist()}));
 // All plots under the display that follow the run: the distributions, the agents, around the high-tech companies, after a
 // collapse (each drawn only when it can be seen)
 function drawDist(){
@@ -4294,7 +4328,7 @@ $('survDec').oninput=e=>{survDec=+e.target.value; survDecAll=survDec>=+e.target.
 // whole number of cells d, the number of agents, their money (sum and histogram, for the median), and the number and
 // sales of the factories of the two least scalable products (the highest γ) and of the most scalable one; the plots sum
 // the last NEARN rounds ----
-const NEARN=100, NEARSNAP=120; let NEAR=null, nearScale='lin', nearWin='r100';     // nearScale: lin, loglin (y log) or log
+const NEARN=100, NEARSNAP=120; let NEAR=null, nearScale='log', nearWin='r100';     // nearScale: lin, loglin (y log) or log
 const NMB=nb(MB);
 // per distance (whole cells): the number of agents, their money (sum and histogram, for the median), and the number
 // and sales of the factories of the two least scalable products and of the most scalable one (three slots, -1 when the
@@ -4704,10 +4738,12 @@ document.querySelectorAll('#lifeSeg button').forEach(b=>b.onclick=()=>setLife(b.
 // buyers that bought from it, and its own cell) remember it (lastArea); a company born later in such a cell has it as
 // its predecessor (par): the company that collapsed last where it started. Every company has an id (in the order of
 // birth); the arrays hold the companies kept, in that order (CT.len of them, CT.id their ids; ctIx: the place of an id).
-// Up to CTMAX companies are kept; when that is full a quarter of them goes (ctCompact): first the oldest of those that
-// collapsed without surviving a round of trade, then the oldest of the other dead ones — so that the whole run keeps
-// its companies that lasted — and a company whose predecessor went is linked to that one's nearest kept predecessor. ----
-const CTMAX=1<<21;
+// When the arrays are full, the companies the family tree no longer needs go (ctCompact): those that closed without
+// ever selling (in Cost ultra flat some 500 C companies start a round and nearly all fail at once) and those that
+// closed more than NETWIN rounds ago, the span of the tree; a company whose predecessor went is linked to that one's
+// nearest kept predecessor. The arrays grow only when that frees less than half of them, up to CTMAX; when that is
+// full, a quarter goes: first the oldest that collapsed without surviving a round of trade, then the oldest dead ones. ----
+const CTMAX=1<<21, NETWIN=1000;
 let CT=null, ctA=null, ctB=null, netMin=0;
 function ctReset(){
   const LL=E.L*E.L, ic=nearProducts().ib, cap=4096;
@@ -4723,8 +4759,10 @@ function ctReset(){
 const CTARR=['id','birth','death','maxS','par','surv','pos','own'];
 function ctNew(r,t){
   if(CT.len>=CT.cap){
-    if(CT.cap<CTMAX){const c=2*CT.cap; for(const k of CTARR){const a=new CT[k].constructor(c); a.set(CT[k]); CT[k]=a} CT.cap=c}
-    else ctCompact()}
+    ctCompact(true);
+    if(CT.len>CT.cap/2){
+      if(CT.cap<CTMAX){const c=2*CT.cap; for(const k of CTARR){const a=new CT[k].constructor(c); a.set(CT[k]); CT[k]=a} CT.cap=c}
+      else if(CT.len>=CT.cap)ctCompact(false)}}
   const k=CT.len++, id=CT.next++;
   // own: the company that collapsed last in the same place (the same owner), if the owner's money stayed positive from
   // its collapse to now (zeroAt: the last round the money was 0 or less, or a debt was written off)
@@ -4735,10 +4773,13 @@ function ctNew(r,t){
 // the place of a company in the arrays (−1: not kept)
 function ctIx(id){if(id<0)return -1; const a=CT.id; let lo=0,hi=CT.len;
   while(lo<hi){const m=(lo+hi)>>1; if(a[m]<id)lo=m+1; else hi=m} return lo<CT.len&&a[lo]===id?lo:-1}
-function ctCompact(){
+function ctCompact(trim){
   const n=CT.len, keep=new Uint8Array(n).fill(1), need=n>>2; let freed=0;
-  for(let k=0;k<n&&freed<need;k++)if(CT.death[k]>=0&&CT.surv[k]===0){keep[k]=0; freed++}
-  for(let k=0;k<n&&freed<need;k++)if(keep[k]&&CT.death[k]>=0){keep[k]=0; freed++}
+  // trim: every company that closed without selling, or before the span of the tree; else a quarter of them
+  if(trim){const old=E.t-NETWIN-2; for(let k=0;k<n;k++)if(CT.death[k]>=0&&(CT.surv[k]===0||CT.death[k]<old)){keep[k]=0; freed++}
+    if(!freed)return}
+  else{for(let k=0;k<n&&freed<need;k++)if(CT.death[k]>=0&&CT.surv[k]===0){keep[k]=0; freed++}
+    for(let k=0;k<n&&freed<need;k++)if(keep[k]&&CT.death[k]>=0){keep[k]=0; freed++}}
   // the nearest kept predecessor of each company that goes (a predecessor is always older, so it is known already)
   const up=new Int32Array(n).fill(-1);
   const res=id=>{const i=ctIx(id); return i<0?-1:keep[i]?id:up[i]};
@@ -4786,7 +4827,7 @@ function ctRecord(){
   CT.nbA.push(nbA); CT.n1bA.push(0); CT.n2bA.push(0); CT.c1A.push(c1A); CT.c2A.push(c2A);
   const H=E.hist[E.hist.length-1];
   CT.t.push(t); CT.D.push(H&&H.neff?H.neff[ic]:NaN); CT.c1.push(c1); CT.c2.push(c2); CT.nb.push(nb);
-  CT.n1b.push(0); CT.n2b.push(0); CT.na.push(H?Math.round(H.starts*LL):0); CT.ev.push(Int32Array.from(ev)); CT.evb.push(Int32Array.from(evb));
+  CT.n1b.push(0); CT.n2b.push(0); CT.na.push(H?Math.round(H.starts*LL):0); const EA=LL<=65536?Uint16Array:Int32Array; CT.ev.push(EA.from(ev)); CT.evb.push(EA.from(evb));
   if(CT.t.length>200000)for(const k of ['t','D','c1','c2','nb','n1b','n2b','na','ev','evb','nbA','n1bA','n2bA','c1A','c2A'])CT[k].splice(0,50000);
   if(CT.big.length>20000)CT.big.splice(0,5000);
 }
@@ -4818,7 +4859,9 @@ function dualRange(id,span,get,set,start){
 }
 // the rounds from a to b (null: the first kept / the present), within what there is
 function ctSpan(){return CT&&CT.t.length?[CT.t[0]-1,CT.t[CT.t.length-1]]:[0,E?E.t:0]}
-function winOf2(a,b){const [t0,t1]=ctSpan(); let ta=a===null?t0:Math.max(t0,Math.min(t1,a)), tb=b===null?t1:Math.max(t0,Math.min(t1,b));
+// the rounds the family tree can show: the last NETWIN
+function netSpan(){const [t0,t1]=ctSpan(); return [Math.max(t0,t1-NETWIN),t1]}
+function winOf2(a,b,span){const [t0,t1]=span||ctSpan(); let ta=a===null?t0:Math.max(t0,Math.min(t1,a)), tb=b===null?t1:Math.max(t0,Math.min(t1,b));
   if(tb<=ta){if(b===null||tb>=t1)ta=Math.max(t0,tb-1); else tb=Math.min(t1,ta+1)} return [ta,tb]}
 // the tops of D's axis, as fractions of all of it (the slider D up to), and the background of the two plots
 // The top of D's axis (the slider D up to): 5, then 20 % more each step, as whole numbers (5, 6, 7, 9, 10, 12, 15, 18 …),
@@ -4844,7 +4887,7 @@ function netPush(){const q=netHist[netHist.length-1], c=netState();
 let netWheelT=0; const netWheelPush=()=>{const t=performance.now(); if(t-netWheelT>700)netPush(); netWheelT=t};
 // the tree redrawn at the next frame (handles dragged, wheel)
 let netRAF=0; function netSchedule(){if(netRAF)return; netRAF=requestAnimationFrame(()=>{netRAF=0; netRedraw()})}
-function netRedraw(){if(!E||!CT)return; netSync(); netVSync(); syncNetBtns(); const [na,nb]=winOf2(NV.a,NV.b);
+function netRedraw(){if(!E||!CT)return; if(!netOn){netOffNote(); return} netSync(); netVSync(); syncNetBtns(); const [na,nb]=winOf2(NV.a,NV.b,netSpan());
   $('netRangeV').textContent=`rounds ${na}–${nb}`; netPlot($('cNet'))}
 function syncNetBtns(){$('netBack').disabled=!netHist.length; $('netFullT').disabled=NV.a===null&&NV.b===null;
   $('netFullY').disabled=!NV.sel&&NV.y0===0&&NV.y1===1000;
@@ -4852,7 +4895,7 @@ function syncNetBtns(){$('netBack').disabled=!netHist.length; $('netFullT').disa
   document.querySelectorAll('#net3dSeg button').forEach(b=>b.classList.toggle('on',(b.dataset.v==='3d')===net3d));
   $('netBg').classList.toggle('on',netDark); $('cNet').parentNode.classList.toggle('d3',net3d);
   $('netGold').textContent=GOLDL[netGold]; $('netGold').disabled=!net3d; $('netGold').classList.toggle('on',net3d&&netGold>0); miniHint()}
-const netSync=dualRange('netRange',ctSpan,()=>[NV.a,NV.b],(a,b)=>{NV={...NV,a,b}; netSchedule()},netPush);
+const netSync=dualRange('netRange',netSpan,()=>[NV.a,NV.b],(a,b)=>{NV={...NV,a,b}; netSchedule()},netPush);
 // the height shown: a bar along the left edge of the tree with two handles, top and bottom (NV.y0, NV.y1: 0 … 1000 of the
 // whole height); dragging the bar between them moves both. It is laid along the plot after each drawing (netVPlace)
 {const V=$('netV'), [h0,h1]=V.querySelectorAll('.vh'), vs=V.querySelector('.vsel');
@@ -4888,18 +4931,27 @@ const GOLDL=['gold: off','gold: thin','gold: thick','gold: very thick'];
 $('netGold').onclick=()=>{netGold=(netGold+1)%4; netRedraw()};
 // a plot is drawn only when it can be seen (or when asked for: force), since the tree can hold many companies
 const onScreen=c=>{if(VIS.has(c))return VIS.get(c); const r=c.getBoundingClientRect(); return r.bottom>0&&r.top<window.innerHeight&&r.width>0};
-let netT=0;
+let netT=0, netCost=0, netOn=false;
+// the family tree is drawn only when switched on (the button in its section)
+function netOffNote(){const c=$('cNet'), dpr=fitCanvas(c), g=c.getContext('2d'); g.clearRect(0,0,c.width,c.height);
+  g.fillStyle='#8391ab'; g.font=pfont(12,dpr*FZ); g.textBaseline='middle';
+  g.fillText('The family tree is off: switch it on with the button above (tree off).',12*dpr,c.height/2); $('netNote').textContent=''; NETG=null}
+$('netOn').onclick=()=>{netOn=!netOn; $('netOn').textContent=netOn?'tree on':'tree off'; $('netOn').classList.toggle('off',!netOn);
+  if(netOn)netRedraw(); else netOffNote()};
 function drawCT(force){
   if(!E||!CT)return;
   ctSync(); netSync(); netVSync(); syncNetBtns();
-  const [ta,tb]=winOf2(ctA,ctB), [na,nb]=winOf2(NV.a,NV.b), nm=PNAME[CT.ic];
+  const [ta,tb]=winOf2(ctA,ctB), [na,nb]=winOf2(NV.a,NV.b,netSpan()), nm=PNAME[CT.ic];
   $('ctRangeV').textContent=`rounds ${ta}–${tb}`; $('netRangeV').textContent=`rounds ${na}–${nb}`;
   $('ctSub').textContent=`the companies of ${nm}, the most scalable product: how many share its market, and how many of the new ones last`;
   $('netSub').textContent=`the companies of ${nm}, each linked to the company that collapsed before it where it started`;
   // (a plot out of view is kept to be drawn as it comes into view)
   if(force||onScreen($('cCT')))ctPlot($('cCT')); else PEND.set($('cCT'),()=>drawCT());
-  // the tree: at most every second while a run goes on
-  if(force||(onScreen($('cNet'))&&(!running||performance.now()-netT>1000))){netT=performance.now(); netPlot($('cNet'))}
+  // the tree, when switched on: while a run goes on at most every second, and with five times the time it took to
+  // draw between two drawings
+  if(!netOn)netOffNote();
+  else if(force||(onScreen($('cNet'))&&(!running||performance.now()-netT>Math.max(1000,5*netCost)))){
+    const a=performance.now(); netT=a; netPlot($('cNet')); netCost=performance.now()-a}
   else if(!onScreen($('cNet')))PEND.set($('cNet'),()=>drawCT());
   if(!running||performance.now()-netT<50)apDraw(force);
 }
@@ -4980,7 +5032,7 @@ function netData(){
   const r=netData0(); r.sel=NV.sel; NETDk=key; return r;
 }
 function netData0(){
-  const [na,nb]=winOf2(NV.a,NV.b), m=CT.len, B=CT.birth, D=CT.death, SV=CT.surv, S=CT.maxS, now=E.t;
+  const [na,nb]=winOf2(NV.a,NV.b,netSpan()), m=CT.len, B=CT.birth, D=CT.death, SV=CT.surv, S=CT.maxS, now=E.t;
   let lo=0,hi=m; while(lo<hi){const q=(lo+hi)>>1; if(B[q]<=nb)lo=q+1; else hi=q} const k1=lo-1;
   const end=k=>D[k]<0?now:D[k];
   let ks=[], at=new Map(), nAll=0;
@@ -5148,7 +5200,7 @@ function net2D(g,d,inY,r0,r1,o){
     if(net3d){e.preventDefault(); netWheelPush(); NET3.zoom=Math.max(0.3,Math.min(12,NET3.zoom*Math.exp(-dl*0.0012))); netSchedule(); return}
     if(!(e.shiftKey||e.altKey)||!NETG)return; e.preventDefault(); netWheelPush();
     const G=NETG, dpr=window.devicePixelRatio||1, [x,y]=pos(e), k=Math.exp(dl*0.0015);
-    if(e.shiftKey){const [t0,t1]=ctSpan(), [a,b]=winOf2(NV.a,NV.b), tp=Math.max(a,Math.min(b,a+(x*dpr-G.pl)/G.w*(b-a)));
+    if(e.shiftKey){const [t0,t1]=netSpan(), [a,b]=winOf2(NV.a,NV.b,netSpan()), tp=Math.max(a,Math.min(b,a+(x*dpr-G.pl)/G.w*(b-a)));
       let na=Math.round(tp-(tp-a)*k), nb=Math.round(tp+(b-tp)*k); if(nb-na<2){na=Math.round(tp)-1; nb=na+2}
       NV={...NV,a:na<=t0?null:na,b:nb>=t1?null:nb}}
     else{const fy=NV.y0+Math.max(0,Math.min(1,(y*dpr-G.pt-G.rpad)/(G.h-2*G.rpad)))*(NV.y1-NV.y0);
@@ -5496,17 +5548,19 @@ function exportPlot(which,kind,btn){
   const c=document.createElement('canvas'); c.width=W; c.height=H;
   const g=c.getContext('2d'); g.fillStyle=(which==='ct'&&ctDark)||(which==='net'&&netDark)?'#0b0d13':'#ffffff'; g.fillRect(0,0,W,H);
   if(which==='chart')drawChart({canvas:c,dpr,sq});
-  else if(which==='ct'){if(!ctPlot(c,{dpr,sq}))return}
-  else if(which==='net'){if(!netPlot(c,{dpr,sq}))return}
+  else if(which==='ct'){if(!ctPlot(c,{dpr,sq})){btnWord(btn,'no data yet'); return}}
+  else if(which==='net'){if(!netPlot(c,{dpr,sq})){btnWord(btn,'no data yet'); return}}
   else if(which==='fort')fortPlot(c,{dpr,sq});
   else if(which==='apN'||which==='apS'||which==='apX'){const e=apPlots()[which];
     xyPlot(c,e.series,{...e.o,title:sq?'':e.title+' — round '+E.t},{dpr,sq})}
-  else if(which==='nearM'||which==='nearS'){const q=nearPlots(); if(!q)return; const e=q[which];
+  else if(which==='nearM'||which==='nearS'){const q=nearPlots(); if(!q){btnWord(btn,'no data yet'); return} const e=q[which];
     xyPlot(c,e.series,{...e.o,title:sq?'':e.title+' — round '+E.t},{dpr,sq})}
   else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,sq?'':q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl,sq},q.opt)}
   savePicture(c,`globalization_${which==='ct'?'collapse_'+PNAME[CT.ic]:which==='net'?'family_tree_'+PNAME[CT.ic]+(netMin?'_survived'+netMin:''):which==='chart'?$('metric').value:which==='fort'?'fortunes_'+fortMode+fortN+(fortLog?'_log':'')+(lifeZero?'_zero':''):which==='surv'?'survival'+(lifeZero?'_zero':''):which.startsWith('near')&&nearScale!=='lin'?which+'_'+nearScale:which}_t${E.t}${kind==='sq'?'_sq':''}.png`,btn);
 }
-document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>exportPlot(b.dataset.plot,b.dataset.k,b));
+document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>{
+  try{exportPlot(b.dataset.plot,b.dataset.k,b)}
+  catch(e){console.error(e); btnWord(b,'failed'); alert('The picture could not be made: '+(e&&e.message||e))}});
 
 // ---------- parameter scan ----------
 // A scan runs the model anew for every value of one parameter, in background workers (the core of the model, the script
@@ -5800,14 +5854,14 @@ function drawChart(out){
     series.push({c:'#000000',v:hist.map(q=>q.median!=null?q.median*medF:NaN),dash:2});
     if(regBand){series.push({hide:true,band:'hi',v:hist.map(q=>q.money+(q.regSD||0))},{hide:true,band:'lo',v:hist.map(q=>q.money-(q.regSD||0))})}}
   else if(m==='price')series.push({c:'#16233b',v:hist.map(q=>q.price)});
-  else for(let i=0;i<N;i++){series.push({c:PCOL[i],v:hist.map(q=>q[m][i])});
+  else for(let i=0;i<N;i++){series.push({c:PCOL[i],v:hist.map(q=>q[m]&&q[m][i]!=null?q[m][i]:NaN)});
     if(m==='prod')series.push({c:PCOL[i],v:hist.map(q=>q.neff?q.neff[i]:NaN),dash:true})}
   // the vertical axis: linear or logarithmic as chosen for this quantity (at first logarithmic for the factories only);
   // a logarithmic axis leaves out zero and less (the number of factories counts from 1)
   const logy=chartLog[m]!==undefined?chartLog[m]:m==='prod', tz=v=>!logy?v:m==='prod'?Math.log10(Math.max(1,v)):v>0?Math.log10(v):NaN;
   // the time window: the last 10·1.5^k rounds, or (the slider at its right end) the whole run
-  const tA=hist[0].t, t1=hist[hist.length-1].t; let K=0; while(winOf(K)<t1-tA)K++;
-  const kw=chartWinAll?K:Math.min(chartWinK,K), t0=kw>=K?tA:t1-winOf(kw);
+  const tA=hist[0].t, t1=hist[hist.length-1].t; let K=0; while(chartWinOf(K)<t1-tA)K++;
+  const kw=chartWinAll?K:Math.min(chartWinK,K), t0=kw>=K?tA:t1-chartWinOf(kw);
   let i0=0; while(i0<hist.length-2&&hist[i0].t<t0)i0++;
   if(!out){const sl=$('chartWin'); if(+sl.max!==K)sl.max=K; if(+sl.value!==kw)sl.value=kw; setText($('chartWinV'),kw>=K?`all ${t1-tA} rounds`:`last ${t1-t0} rounds`);
     document.querySelectorAll('#chartScale button').forEach(b=>b.classList.toggle('on',(b.dataset.s==='log')===logy))}
