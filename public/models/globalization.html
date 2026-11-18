@@ -164,6 +164,8 @@
   }
   /* lower right corner of the display: background, picture with parameters, compact picture */
   .cornerbtns{position:absolute;right:6px;bottom:6px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;z-index:3;max-width:calc(100% - 12px)}
+  /* (the road tools take the lower left corner: the buttons of the lower right wrap beside them) */
+  .canvas-wrap .cornerbtns{max-width:calc(100% - var(--roadw,160px) - 18px)}
   /* market domains of each product: small buttons in the product's colour */
   .cornerbtns .dombtns{display:inline-flex;gap:3px;margin-right:3px}
   .cornerbtns .dombtns .dlab{font-size:11px;color:var(--muted);align-self:center;margin-right:2px}
@@ -305,6 +307,8 @@
   .tools{position:relative;flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start;pointer-events:none}
   .tools > *{pointer-events:auto}
   .tools.tright{flex:0 1 auto;margin-left:auto;justify-content:flex-end}
+  .tools.tbl{position:absolute;left:6px;bottom:6px;z-index:3;flex:none;flex-wrap:nowrap}
+  .tools.tbl .tmenu .vmbox{top:auto;bottom:100%;max-height:min(60vh,420px)}
   .pat{display:inline-flex;align-items:center;gap:4px;height:27px;padding:0 3px 0 9px;border:1px solid var(--line);border-radius:8px;
     background:rgba(255,255,255,.9);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}
   .pat select{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0 1px;cursor:pointer;outline-offset:2px}
@@ -592,11 +596,12 @@
           shopping.</li>
         <li><b>Deciding.</b> Every owner judges its factory by its <b>net sales</b>: the units it sold this round, minus
           the number of sales it takes to pay the upkeep. Without upkeep that is just the units sold; with μ = 0.02 and
-          n = 1 a bakery's upkeep takes 2.4 sales a round. If its net sales fell since last round (by any amount in the
-          standard setup; see <i>Patience</i> below), or are zero or less (without upkeep: it sold nothing), the owner
+          n = 1 a bakery's upkeep takes 2.4 sales a round. If its net sales fell since last round (at the first fall in the
+          standard setup, patience κ = 1; see <i>Patience</i> below), or are zero or less (without upkeep: it sold nothing), the owner
           tries something new, and so does an agent without a factory. It picks at random another product it can
-          afford, pays Start, and opens a new factory, which starts small (s = 1). If it can afford none, nothing
-          changes. An agent runs one factory at a time (you can allow more in the control panel), so the old one
+          afford, pays Start, and opens a new factory, which starts small (s = 1). If it can afford none, it closes
+          its factory all the same and stays without one until it can (<i>always close</i>, the standard; with
+          <i>keep if broke</i>, the toggle above the town, nothing changes). An agent runs one factory at a time (you can allow more in the control panel), so the old one
           closes. The rule is the same in both economies. Owners judge sales, not money: a change of p alone never
           makes anybody give up, and the extra money of gouging does not count either.</li>
       </ol>
@@ -645,7 +650,7 @@
         <li><b>The chips.</b> Step twice more. After round 4 only one chip factory is left, at (4,2): it sold 42 of
           the 64 chips. Step on: it sells 54 in round 5 and 57 in round 6, a giant in a small world. It cannot sell
           all 64, because nobody buys from itself: the chips its own owner orders find no seller (its read-out says
-          that it buys C nowhere). In round 7 its sales dip to 56, and its owner gives up (patience 0): hover over
+          that it buys C nowhere). In round 7 its sales dip to 56, and its owner gives up (patience 1): hover over
           (4,2), and the read-out says so. Now the tiny town has no chips left. Step once more. The price p in the
           status line of the control panel goes up to 0.025: the 64 chip orders find no seller, so fewer units share
           the same wages. Start follows p (the status line shows the factor, ×1.50). So a bakery now costs 3, a B
@@ -701,17 +706,19 @@
 
       <h2 id="r-patience">Patience: when does an owner give up?</h2>
       <p>Sales always go up and down a little by pure chance, like the number of sixes when you roll 600 dice: about
-        100, give or take 10. A factory that sells about q units a round sees chance ups and downs of about √q units
-        (the square root of q): about 10 when it sells 100, about 30 when it sells 1&nbsp;000. With <b>patience</b>, an
-        owner gives up only when its net sales fall by more than <b>κ</b> (kappa) times that ordinary wobble: by more
-        than κ · √q units, where q is what it sold last round.</p>
+        100, give or take 10. A single fall of sales may be bad luck; a fall in several rounds in a row is a trend.
+        With <b>patience κ</b> (kappa) an owner gives up only when its net sales have fallen in κ rounds in a row.</p>
       <p>The <b>patience</b> menu in the upper right corner of the town sets κ:</p>
       <ul>
-        <li><b>0</b> (the standard setup): any fall of sales, however small, makes the owner give up. Very nervous
-          owners.</li>
-        <li><b>1</b> (beyond chance): the fall must be bigger than ordinary chance.</li>
-        <li><b>2 to 5</b>: the fall must be 2 to 5 times bigger than chance.</li>
+        <li><b>1</b> (the standard setup): the first fall of sales, however small, makes the owner give up. Very
+          nervous owners.</li>
+        <li><b>2 to 5, or 10</b>: the sales must fall in 2 to 5, or 10, rounds in a row. A round in which they do not
+          fall starts the count anew, and so does a new factory.</li>
       </ul>
+      <p>Until 18 November 2026 patience meant something else: an owner gave up when its net sales fell by more than κ
+        times the chance wobble, κ·√q units for a factory that sold q units, with κ = 0 for any fall. The old κ = 0 is
+        the new κ = 1 (the runs are the same). The numbers below and in lessons 5 and 9 were found with that old rule
+        and its κ = 1 … 5; they are kept as a record and do not describe the present menu.</p>
       <p>The numbers below are for free goods. With patience 0, 1 or 2 a chip company that has grown to the top usually
         stays there only a round or two. A big chip company ends when a rival takes about a third of its sales in one
         round, many times the chance wobble and far more than patience forgives (lesson 5). Patience matters
@@ -813,7 +820,7 @@
         ship far. Products that are cheap to carry go global first, and even bread goes global once transport costs
         a twentieth of the standard (lesson 1).</p>
       <p>Two more things to watch. The giants are fragile: in the standard town a big chip company typically lasts
-        about four rounds, at any patience. It ends by losing about a third of its sales in one round, far more than
+        about four rounds, at any patience (the old rule of the section Patience). It ends by losing about a third of its sales in one round, far more than
         chance, nearly all to one chip factory, and the next giant often grows up next door, on the orders of the old
         giant's own owner (lesson 5). With patience 5, though, a few giants now and then stay for hundreds of rounds.
         And a bakery can suddenly boom: when its neighbours
@@ -897,7 +904,7 @@
         while it owns a big company and sinks in grey stretches while it tries one new factory after another. Three
         times in four that a chip giant closes, its owner builds a new one within 80 rounds and the money climbs
         again; after its last giant the money drains away (lesson 4).
-        With patience 4 or 5 chosen before a new start (↺), the richest keep their companies, and their money climbs
+        With the old patience 4 or 5 (see Patience) chosen before a new start (↺), the richest keep their companies, and their money climbs
         steadily (at 4 for about 2&nbsp;000 rounds).</p>
       <p><b>A life ends: bankrupt or money 0.</b> These buttons over the section give both plots another view. With
         <i>money 0</i> a life ends whenever the agent's money falls to zero — to one wage or less — whether it goes
@@ -929,7 +936,8 @@
       <h2 id="r-lessons">Lessons from the model</h2>
       <p>The lessons come from the standard setup as it was when they were written — the closed 125 × 125 town (the
         standard town now has periodic edges; choose <i>edges closed</i> above the town to repeat them) with free goods, the Income weight, n = 1,
-        patience 0, no upkeep and α = 1 — and from the same town when the buyers pay (gouging off, shopping debts
+        patience 0 of the old rule (κ = 1 now; see Patience), the start costs of Cost standard (Start 2, 8, 20, γ −0.3, −0.6,
+        −0.9, β 0.1, 0.05, 0.02), keep if broke, no upkeep and α = 1 — and from the same town when the buyers pay (gouging off, shopping debts
         bankrupt). They hold in both economies unless said; a number in parentheses is for buyers pay. A big chip
         company, or chip giant, sells at least 5 % of all chips. The most important come first. Most numbers are means
         of five to ten runs, or of three to six for some changes, over rounds 301–1&nbsp;000; where the town has not
@@ -964,7 +972,7 @@
           bread to chips: 70 chip factories open a round, not 15 (37, not 5), 4 % grow big, not 15 % (8, not 29 %), and
           the richest agent has 350, not 1&nbsp;300 (130, not 900). With B and C four times dearer, 2.6 open a round
           (1), and nearly half grow big (seven in ten).</li>
-        <li><b>Patience seldom saves a chip giant, and its successor often grows up next door, fed by the giant's own
+        <li>(Patience here is the old rule of the section Patience.) <b>Patience seldom saves a chip giant, and its successor often grows up next door, fed by the giant's own
           owner.</b> With any patience, also 4 or 5 chosen in a running town, a big chip company typically lasts about
           four rounds; with 4 or 5 only 2 to 5 in 100 stay big for more than ten rounds, though with 5 a few stay big
           for hundreds of rounds (up to about 90 when the buyers pay). A giant ends by losing about a third of its
@@ -994,7 +1002,7 @@
           nearly every agent goes bankrupt every 40 rounds (65). At μ = 0.02 all the money the town gains ends with the
           richest 1 %: by round 4&nbsp;000 they own 45 to 62 % of it (59 to 75 %), against 16 to 28 % (8 to 20 %)
           without upkeep, and the poorer half keeps 8 to 12 % (5 to 9 %), as in real countries [11].</li>
-        <li><b>Patience keeps the small companies alive, and the money piles up with their owners.</b> Chosen in a
+        <li>(Patience here is the old rule of the section Patience.) <b>Patience keeps the small companies alive, and the money piles up with their owners.</b> Chosen in a
           running town, patience 5 lets bakeries and B factories go on for hundreds of rounds, while most chip giants
           still fall within a few (lesson 5). Fewer owners give up, so less of the new money goes into new factories: 73
           instead of 97 % (85 instead of 99 % when the buyers pay). The rest piles up with the bakers and B makers: by
@@ -1011,9 +1019,9 @@
           out why an owner gives up. ↺ then gives a new tiny town; <b>standard</b> above the town, or any preset but
           <i>Tiny town</i> and <i>Large town</i> in the control panel, goes back to the 125 × 125 town, which the ideas
           below need (<b>large</b>, right of <b>standard</b>, gives the same rules on a 250 × 250 town).</li>
-        <li>Let the town run a few hundred rounds, then set <b>patience</b> to 5: the richest get much richer, and now
-          and then a chip company stays big for a hundred rounds or more. Then press ↺ for a new town with patience
-          5: it freezes.</li>
+        <li>Let the town run a few hundred rounds, then set <b>patience</b> to 2, 3 or 10, so that an owner gives up
+          only after that many falls of its sales in a row, and watch the big companies and the richest agents. Then
+          press ↺ for a new town with the same patience.</li>
         <li>Choose the <b>Globalization</b> preset in the control panel: transport gets cheaper every round, and local
           producers merge into a few big ones.</li>
         <li>Turn on <b>markets C</b>, then draw a border with a 100 % tax right through the biggest C market. Remove it
@@ -1119,8 +1127,8 @@
         <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down" selected>money ↓ below the plane</option></select>
       <span class="spacer"></span>
       <button class="tbtn stdbtn" id="bCost"
-        title="start costs of A, B and C: standard 2, 8, 20 · wide 2, 10, 50 · flat 1 for every product · ultra flat: Start 1, γ −1 and α 1 for every product, β 0.25, 0.05 and 0.01 for A, B and C; click to switch"
-        >Cost standard</button>
+        title="the products: standard — A, B and C with Start 2, 8, 20, γ −0.3, −0.6, −0.9, β 0.1, 0.05, 0.02 · flat — one product, Start 1, γ −1, β 0.10, α 1 · flat-2 — two such products, β 0.10 and 0.02 · ultra flat (the standard setup) — three such products, β 0.25, 0.05 and 0.01; click to switch (a set with another number of products starts the town anew)"
+        >Cost ultra flat</button>
       <button class="tbtn stdbtn selfbtn" id="bSelf"></button>
       <button class="tbtn stdbtn selfbtn" id="bClose"></button>
       <button class="tbtn sobtn on" id="bSO2" data-tip="econ">free goods · n 1</button>
@@ -1151,20 +1159,6 @@
         </div>
       </details>
       <!-- roads and borders: choose a tool, then press, drag and release on the lattice (or tap a road or border to remove it) -->
-      <div class="tool">
-        <button class="tb" data-tool="addRoad" title="add a road: press, drag and release on the lattice">+ road</button>
-        <details class="tmenu"><summary title="transport cost on the road">▾</summary>
-          <div class="vmbox"><div class="row"><label>transport on the road ×<span class="vv" id="roadFV">0.20</span></label>
-            <input type="range" id="roadF" min="0.05" max="1" step="0.05" value="0.2"></div>
-            <p class="hint">Moving along the road costs this fraction of the normal transport cost β.</p>
-            <div class="vmsub">Road from the centre</div>
-            <div class="row"><label>to the corner</label>
-              <select id="roadCorner"><option value="tl">upper left</option><option value="tr">upper right</option><option value="bl">lower left</option><option value="br" selected>lower right</option></select></div>
-            <button class="btn sm" id="addCornerRoad">add this road</button>
-            <p class="hint">A straight road from the middle of the lattice to the corner (as seen in the flat views), with the transport factor above.</p></div>
-        </details>
-      </div>
-      <button class="tb" data-tool="rmRoad" title="remove a road: tap on it">− road</button>
       <div class="tool">
         <button class="tb" data-tool="addBorder" title="add a border: press, drag and release on the lattice">+ border</button>
         <details class="tmenu"><summary
@@ -1232,10 +1226,27 @@
         <label class="pat" data-tip="mu">
           <span>μ</span><select id="upSel2"><option value="0">0</option><option value="0.01">0.01</option><option value="0.02">0.02</option><option value="0.03">0.03</option><option value="0.05">0.05</option><option value="0.1">0.10</option></select></label>
         <label class="pat" data-tip="kappa">
-          <span>patience κ</span><select id="patSel"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></label>
+          <span>patience κ</span><select id="patSel"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="10">10</option></select></label>
         <label class="pat" title="the edges of the town: closed, like an island, or periodic, wrapped around like a doughnut, so that walking off one side brings you back on the other">
           <span>edges</span><select id="bcSel2"><option value="closed">closed</option><option value="periodic">periodic</option></select></label>
       </div>
+      </div>
+      <!-- roads: in the lower left corner of the display (their menu opens upward) -->
+      <div class="tools tbl">
+      <div class="tool">
+        <button class="tb" data-tool="addRoad" title="add a road: press, drag and release on the lattice">+ road</button>
+        <details class="tmenu"><summary title="transport cost on the road">▾</summary>
+          <div class="vmbox"><div class="row"><label>transport on the road ×<span class="vv" id="roadFV">0.20</span></label>
+            <input type="range" id="roadF" min="0.05" max="1" step="0.05" value="0.2"></div>
+            <p class="hint">Moving along the road costs this fraction of the normal transport cost β.</p>
+            <div class="vmsub">Road from the centre</div>
+            <div class="row"><label>to the corner</label>
+              <select id="roadCorner"><option value="tl">upper left</option><option value="tr">upper right</option><option value="bl">lower left</option><option value="br" selected>lower right</option></select></div>
+            <button class="btn sm" id="addCornerRoad">add this road</button>
+            <p class="hint">A straight road from the middle of the lattice to the corner (as seen in the flat views), with the transport factor above.</p></div>
+        </details>
+      </div>
+      <button class="tb" data-tool="rmRoad" title="remove a road: tap on it">− road</button>
       </div>
       <div class="cornerbtns">
         <span class="inforow"><span class="frbtns"><button id="bBack" aria-label="one round back"
@@ -1551,9 +1562,9 @@
       <div class="row"><label data-tip="upkeep">Upkeep μ <span class="vv" id="upV"></span></label>
         <input type="range" id="upR" min="0" max="0.2" step="0.005" value="0"></div>
       <div class="row"><label data-tip="patience">Patience κ</label>
-        <select id="kapSel"><option value="0">0 · any fall</option><option value="1">1 · beyond chance</option>
-          <option value="2">2</option><option value="3">3</option><option value="4">4</option>
-          <option value="5">5</option></select></div>
+        <select id="kapSel"><option value="1">1 · the first fall</option><option value="2">2 falls in a row</option>
+          <option value="3">3 in a row</option><option value="4">4 in a row</option>
+          <option value="5">5 in a row</option><option value="10">10 in a row</option></select></div>
       <div class="row"><label title="money at the start: every agent gets a sum drawn at random, uniformly between 0 and M₀ (in the tiny town of the tutorial: M₀ for everybody)">Initial money 0 … M₀ <span class="vv" id="M0V"></span></label><input type="range" id="M0R" min="0" max="50" step="1" value="5"></div>
       <p class="hint">Everything acts at once, except the size L and the starting money M₀, which act when you press Reset.</p>
     </div>
@@ -1570,7 +1581,7 @@
         <select id="bcSel"><option value="periodic">periodic</option><option value="closed">closed</option></select></div>
       <div class="row"><label>Roads <span class="vv" id="nRoads">0</span> · borders <span class="vv" id="nBorders">0</span></label>
         <button class="btn sm" id="clearNet" title="remove all roads and borders">clear all</button></div>
-      <p class="hint">Draw roads and borders on the display with the buttons in its upper left corner: press, drag, release.</p>
+      <p class="hint">Draw roads and borders on the display with the buttons in its lower left (roads) and upper left (borders) corners: press, drag, release.</p>
     </div>
   </details>
 
@@ -1582,7 +1593,7 @@
       <div class="row" id="scanMinRow"><label title="every product's value above times f = 1, 1/√2, 1/2, 1/(2√2) … down to this factor">down to ×</label>
         <input type="number" id="scanMin" min="0.001" max="1" step="any" value="0.1" style="width:80px"></div>
       <div class="row"><label title="rounds run for each point, from a fresh start; the mean and the median money are averaged over the last two thirds of them">Rounds per point</label>
-        <select id="scanT"><option>300</option><option>500</option><option selected>1000</option><option>2000</option><option>5000</option><option>10000</option></select></div>
+        <select id="scanT"><option>300</option><option>500</option><option>1000</option><option>2000</option><option selected>3000</option><option>5000</option><option>10000</option></select></div>
       <p class="hint" id="scanPts"></p>
       <p class="hint scanctr" id="scanCtr"></p>
       <div class="btnrow" style="margin-top:4px"><button class="btn primary" id="scanGo">Run scan</button></div>
@@ -1616,8 +1627,8 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 // P = {L, products:[{start,gamma,beta,alpha}] (alpha: the production-cost factor, kept ≥ 1 by the UI and used here
 //      as given; absent or not > 0 means 1), n (orders per agent per product per round), lim (max factories per agent),
 //      wage (money every agent receives per round), upkeep (per round, as a fraction of Start), kappa (patience: an
-//      owner gives up when its units sold, net of upkeep, fall below last round's by more than κ·√(units sold last
-//      round); 0 = any fall), buyw (who places the orders: 'inc' ∝ last round's income, the Income weight, 'money' ∝
+//      owner gives up when its units sold, net of upkeep, have fallen below the round before's in κ rounds in a row;
+//      1 = at the first fall; values below 1 count as 1), buyw (who places the orders: 'inc' ∝ last round's income, the Income weight, 'money' ∝
 //      the money held), M0 (the money at the start: with m0u, the standard of the page, every agent gets a sum drawn
 //      uniformly between 0 and M0, from a random stream of its own; without it every agent gets M0),
 //      bc:'periodic'|'closed', tmul (transport factor),
@@ -1842,9 +1853,10 @@ function buildEcon(P){
   E.money=new Float64Array(LL); E.inc=new Float64Array(LL); E.prevInc=new Float64Array(LL);
   E.profit=new Float64Array(LL); E.prevProfit=new Float64Array(LL); E.net=new Float64Array(LL); E.prevNet=new Float64Array(LL);
   E.units=new Float64Array(LL); E.prevUnits=new Float64Array(LL); E.earn=new Float64Array(LL); E.price=1; E.bankruptList=[]; E.closeList=[];
+  E.falls=new Int32Array(LL);                // the rounds in a row in which the agent's net sales fell (patience κ)
   E.started=new Int32Array(LL);              // round at which the agent last opened a factory (−1: never)
-  // each agent's round, for the read-out: why (0 it kept its business, 1 it had no factory, 2 its net sales fell by
-  // more than patience allows, 3 its net sales were ≤ 0), the product it opened and the one it closed (bankrupt, or
+  // each agent's round, for the read-out: why (0 it kept its business, 1 it had no factory, 2 its net sales fell in
+  // κ rounds in a row (patience), 3 its net sales were ≤ 0), the product it opened and the one it closed (bankrupt, or
   // at lim to open another; −1 none), fate (1 bankrupt, 2 shopping debt forgiven), its money at the start of the
   // round, the upkeep and the Start it paid (money); ubi: the equal income of the round (buyers pay)
   E.why=new Int8Array(LL); E.opened=new Int8Array(LL); E.dropped=new Int8Array(LL); E.fate=new Int8Array(LL);
@@ -1873,7 +1885,7 @@ function buildEcon(P){
     // (equal money at the start makes all the agents save and open factories in step, a spurious oscillation)
     const rm=P.m0u?mulberry32((P.seed||1)^0x5bd1e995):null;
     for(let r=0;r<LL;r++){E.money[r]=rm?rm()*P.M0:P.M0;E.inc[r]=0;E.prevInc[r]=0;E.profit[r]=0;E.prevProfit[r]=0;E.net[r]=0;E.prevNet[r]=0;
-      E.units[r]=0;E.prevUnits[r]=0;E.earn[r]=0;paid[r]=0;E.started[r]=-1}
+      E.units[r]=0;E.prevUnits[r]=0;E.earn[r]=0;paid[r]=0;E.started[r]=-1;E.falls[r]=0}
     E.why.fill(0); E.opened.fill(-1); E.dropped.fill(-1); E.fate.fill(0); E.prevMoney.set(E.money);
     E.upk.fill(0); E.spent.fill(0);
     // until the first round: p₀, the price when all n·L²·N orders are served (0 without wages)
@@ -2010,10 +2022,10 @@ function buildEcon(P){
     //   the upkeep p·Uup, Uup = Σ μ·Start(i)/p₀ counted in units. money < 0 → bankrupt: the weakest factory closes, the
     //   debt is written off and the agent starts again from w; with forgive, a debt from shopping alone (the money
     //   would be ≥ 0 without it) is forgiven: money = w, and the factories stay.
-    //   Having no factory, net sales (units sold − Uup) below last round's by more than κ·√(units sold last round),
-    //   or net sales ≤ 0 make the agent explore: it opens a product it can afford, paying Start·p/p₀, and closes its
+    //   Having no factory, net sales (units sold − Uup) below the round before's in κ rounds in a row (patience; 1:
+    //   at the first fall), or net sales ≤ 0 make the agent explore: it opens a product it can afford, paying Start·p/p₀, and closes its
     //   weakest factory (fewest net sales) first if it is at lim. A change of the common p is no reason to give up.
-    const cand=new Int32Array(N), mu=P.upkeep, lim=Math.max(1,Math.min(N,P.lim|0||N));
+    const cand=new Int32Array(N), mu=P.upkeep, lim=Math.max(1,Math.min(N,P.lim|0||N)), kap=Math.max(1,Math.round(P.kappa)||1);
     // p₀: the price when every order is served at m = 1; ps: it, or 1 when there are no wages; sc = p/p₀ (1 without
     // wages): Start in money ÷ Start; pu = p/ps: the upkeep in money ÷ μ·Start (= sc with wages; exactly 1 at p = p₀)
     const p0=P.wage*LL/(N*T), ps=p0>0?p0:1, sc=p0>0?p/p0:1, pu=p/ps;
@@ -2045,8 +2057,9 @@ function buildEcon(P){
         }
       }
       // (the 1e-9 keeps rounding from deciding a net of exactly 0, since the upkeep in units can come out a hair below
-      // a whole number, or a fall of exactly κ·√(units sold))
-      const why=nf===0?1:E.t>0&&E.net[r]<E.prevNet[r]-P.kappa*Math.sqrt(Math.max(1,E.prevUnits[r]))-1e-9?2
+      // a whole number). A fall counts the rounds in a row with falling net sales; with κ = 1 the first fall decides
+      const fell=nf>0&&E.t>0&&E.net[r]<E.prevNet[r]-1e-9; E.falls[r]=fell?E.falls[r]+1:0;
+      const why=nf===0?1:fell&&E.falls[r]>=kap?2
         :E.net[r]<=1e-9?3:0;
       E.why[r]=why;
       // one product whose owners place no orders for it (skip): companies do not buy at all, the buyers are the agents
@@ -2078,6 +2091,7 @@ function buildEcon(P){
           E.started[r]=E.t+1; H.starts++;
         }
       }
+      if(E.opened[r]>=0||E.dropped[r]>=0)E.falls[r]=0;      // a factory opened or closed: the count starts anew
       H.money+=E.money[r]; if(E.money[r]>H.maxMoney)H.maxMoney=E.money[r];
     }
     for(let i=0;i<N;i++){E.sales[i].set(newSales[i]);const F=E.F[i],S=E.sales[i];for(let r=0;r<LL;r++)if(!F[r])S[r]=0}
@@ -2100,7 +2114,8 @@ function buildEcon(P){
 
 <script>
 // ---------- UI ----------
-const PNAME='ABCDEFGH';
+// the names of the products, set with the colours (setPalette) from their transport costs β
+let PNAME=[...'ABCDEFGH'];
 const $=id=>document.getElementById(id);
 // the long help texts, shown as the title of the elements with data-tip="key"
 const HELP={
@@ -2124,8 +2139,9 @@ const HELP={
     'wages, and a factory costs Start·p/p₀, the same number of sales whatever p is. The gouging toggle in the '+
     'upper right corner of the town lets the sellers charge the next-best offer instead; n, μ and patience κ have '+
     'their menus there too',
-  std:'restore the standard setup: the three products A, B and C, free goods with the Income weight (gouging off, '+
-    'transport paid back, shopping debts bankrupt), n = 1, patience 0, wage 0.05, upkeep 0, a periodic 125 × 125 town (edges wrapped around) without roads or '+
+  std:'restore the standard setup: Cost ultra flat (A, B and C with Start 1, γ −1, α 1 and β 0.25, 0.05, 0.01), always '+
+    'close, free goods with the Income weight (gouging off, '+
+    'transport paid back, shopping debts bankrupt), n = 1, patience 1, wage 0.05, upkeep 0, a periodic 125 × 125 town (edges wrapped around) without roads or '+
     'borders',
   large:'the standard setup on a large 250 × 250 town: 62 500 agents, four times as many, so the rounds take longer',
   buyw:'who places the orders: picked ∝ last round\'s income (Income weight: the wage, the sales and, when the '+
@@ -2133,9 +2149,9 @@ const HELP={
   mu:'upkeep μ: every round a factory owner pays μ times what its factory cost to build, Start·p/p₀, the same '+
     'number of sales whatever p is, because machines wear out. The standard setup has μ = 0; the slider in the '+
     'control panel has more values',
-  kappa:'Patience κ: how big a fall in net sales (units sold, minus the upkeep counted in sales) makes an owner '+
-    'give up its product and try another one, in both economies. 0: any fall at all (the standard setup). 1: a '+
-    'fall bigger than ordinary chance, √(units sold) units. 2–5: a fall 2 to 5 times bigger than that.',
+  kappa:'Patience κ: in how many rounds in a row the net sales of an owner (units sold, minus the upkeep counted in '+
+    'sales) must fall before it gives up its product and tries another one, in both economies. 1: the first fall '+
+    'is enough (the standard setup). 2: two falls in a row, and so on; a round without a fall starts the count anew.',
   life:'for both plots: a life ends when the agent goes bankrupt, or whenever its money falls to zero (one wage '+
     'or less) — without upkeep nobody goes bankrupt with free goods, nor with shopping debts forgiven',
   start:'what a new factory costs, paid once when it opens; upkeep μ is a share of it every round. Start is the '+
@@ -2164,12 +2180,15 @@ const HELP={
     'and this does not act',
   upkeep:'running cost of a factory per round, as a fraction μ of its start cost, Start·p/p₀: counted in sales, '+
     'in both economies',
-  patience:'an owner gives up its product when its net sales (units sold, minus the upkeep counted in sales) fall '+
-    'by more than κ·√(units sold) units, κ times the ordinary ups and downs of chance; 0: at any fall. The same '+
-    'in both economies',
+  patience:'an owner gives up its product when its net sales (units sold, minus the upkeep counted in sales) have '+
+    'fallen in κ rounds in a row; 1: at the first fall. A round without a fall, or a new factory, starts the count '+
+    'anew. The same in both economies',
 };
 document.querySelectorAll('[data-tip]').forEach(e=>{e.title=HELP[e.dataset.tip]});
-// factory colours: N colours sampled from the jet or the spectral colour map, the basic product A at the cool end
+// factory colours and names, from the transport costs β: A, blue, is the product with the largest β, and C, red, the
+// one with the smallest; with one or two products A only if its β ≥ 0.05 and C only if its β < 0.05. The others are
+// B, green (then D, E, …), in between. The colours come from the jet or the spectral colour map: A at the cool end (x =
+// 0.08), C at the warm end (0.92), the others evenly between
 const SPECTRAL=['5e4fa2','3288bd','66c2a5','abdda4','e6f598','fee08b','fdae61','f46d43','d53e4f','9e0142'].map(h=>[0,2,4].map(k=>parseInt(h.slice(k,k+2),16)));
 const PAL={
   jet:x=>[4*x-3,4*x-2,4*x-1].map(v=>Math.round(255*Math.min(1,Math.max(0,1.5-Math.abs(v))))),
@@ -2177,16 +2196,24 @@ const PAL={
     return SPECTRAL[k].map((c,j)=>Math.round(c+(SPECTRAL[k+1][j]-c)*f))},
 };
 let palName='jet', PCOL=[], PRGB=[], PSH=[], PTXT=[];
+function productRoles(pr){
+  const N=pr.length, ord=pr.map((q,i)=>i).sort((a,b)=>pr[b].beta-pr[a].beta||a-b);   // largest β first
+  let iA=-1, iC=-1;
+  if(N>=3){iA=ord[0]; iC=ord[N-1]}
+  else{if(pr[ord[0]].beta>=0.05)iA=ord[0]; const l=ord[N-1]; if(l!==iA&&pr[l].beta<0.05)iC=l}
+  const mid=ord.filter(i=>i!==iA&&i!==iC), name=[], x=[], ML='BDEFGH';
+  if(iA>=0){name[iA]='A'; x[iA]=0.08} if(iC>=0){name[iC]='C'; x[iC]=0.92}
+  mid.forEach((i,k)=>{name[i]=ML[k]; x[i]=0.08+0.84*(k+1)/(mid.length+1)});
+  return {name,x}}
 function setPalette(){
-  const N=P.products.length;
-  // (a single product is red, whatever the palette)
-  PRGB=N===1?[[220,38,38]]:Array.from({length:N},(_,i)=>PAL[palName](0.08+0.84*i/(N-1)));
+  const R=productRoles(P.products); PNAME=[...R.name,...'ABCDEFGH'.split('').filter(c=>!R.name.includes(c))];
+  PRGB=R.x.map(x=>PAL[palName](x));
   PCOL=PRGB.map(c=>'#'+c.map(v=>v.toString(16).padStart(2,'0')).join(''));
   PTXT=PRGB.map(c=>0.299*c[0]+0.587*c[1]+0.114*c[2]>150?'#16233b':'#fff');
   PSH=PRGB.map(c=>({top:shade(c.map(v=>v+(255-v)*0.18),1),a:shade(c,0.8),b:shade(c,0.6)}));
 }
 
-const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:0,buyw:'inc',M0:5,bc:'periodic',tmul:1,roads:[],borders:[],
+const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',tmul:1,roads:[],borders:[],
   econ:'so',gouge:false,forgive:false,lost:false,self:false,skip:false,close:false,m0u:true,seed:1};
 // a grid of countries: n two-way borders along each axis taxing every product. In a periodic town one of them lies on
 // the edge, at 0, and they are at j·L/n, j = 0 … n − 1: n × n countries of the same size. In a closed town the n borders
@@ -2200,18 +2227,21 @@ function regrid(L,per){const g=P.borders.find(b=>b.grid); if(!g)return;
   P.borders=[...P.borders.filter(b=>!b.grid),...gridBorders(L,g.grid,g.tax,g.tariff,per)]}
 // a more scalable product (lower γ) always costs more to start; A is the basic product
 const THREE=[{start:2,gamma:-0.3,beta:0.1},{start:8,gamma:-0.6,beta:0.05},{start:20,gamma:-0.9,beta:0.02}];
+// the flat products (Cost flat, flat-2 and ultra flat): Start 1, γ −1, α 1; ultra flat is the standard setup
+const FLAT=b=>({start:1,gamma:-1,beta:b,alpha:1});
+const ULTRA_P=[FLAT(0.25),FLAT(0.05),FLAT(0.01)];
 const PRESETS={
-  standard:{label:'Standard setup',note:'The standard setup. A: basic product, cheap to start, weak economy of scale, '+
-    'costly to ship. B: ordinary industry. C: high tech, strong economy of scale and cheap to ship, but expensive '+
-    'to start. Free goods with the Income weight, n = 1, patience 0, wage 0.05, upkeep 0, a periodic 125 × 125 town '+
+  standard:{label:'Standard setup',note:'The standard setup: Cost ultra flat, three products that differ only in transport cost — '+
+    'Start 1, γ −1 and α 1 for each, β 0.25 for A, 0.05 for B and 0.01 for C — and always close: an owner that gives '+
+    'up closes its factory. Free goods with the Income weight, n = 1, patience 1, wage 0.05, upkeep 0, a periodic 125 × 125 town '+
     'without roads or borders. The golden button above the town switches to buyers pay; gouging, right of the '+
     'Income weight, then lets the sellers charge the next-best offer, and Shopping debts, under the Economy menu, '+
     'can forgive debts that come from shopping alone (both off in the standard setup).',
-    products:THREE,tmul:1,anneal:false,std:true},
+    products:ULTRA_P,tmul:1,anneal:false,std:true},
   // the standard setup on 250 × 250 (the button large above the town)
   large:{label:'Large town',note:'The standard setup on a large 250 × 250 town: 62 500 agents, four times as many as '+
     'in the standard 125 × 125 town, so the rounds take longer.',
-    products:THREE,tmul:1,anneal:false,std:true,L:250},
+    products:ULTRA_P,tmul:1,anneal:false,std:true,L:250},
   // the standard rules on a closed 8 × 8 town (the tutorial was written for closed edges), with cheaper B and chip factories (Start 4 and 8 instead of 8 and 20) and dearer
   // transport (β 0.2, 0.1 and 0.05 instead of 0.1, 0.05 and 0.02): the tutorial of the pull-down starts it with a fixed
   // seed (startTinyTutorial)
@@ -2237,7 +2267,7 @@ const PRESETS={
 let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=false, loopTok=0;
 
 // the model settings of the standard setup (the view and the colours are left as they are): periodic edges
-const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:0,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,self:false,skip:false,close:false};
+const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,self:false,skip:false,close:true};
 // a preset (a standard one on its own lattice size, L, if it has one); seed: a fixed seed, else one at random
 function applyPreset(k,seed){
   const pr=PRESETS[k];
@@ -2248,6 +2278,8 @@ function applyPreset(k,seed){
   // restart keeps the preset's borders
   else if(+$('Lsel').value<=16){$('Lsel').value=String(STD.L); P.L=STD.L}
   P.products=pr.products.map(o=>({...o}));
+  // every preset gives up with always close, but the tiny town of the tutorial, whose text follows one run with keep if broke
+  P.close=k!=='tiny';
   P.tmul=pr.tmul; P.roads=[]; P.borders=pr.borders?pr.borders(+$('Lsel').value):[];
   $('anneal').checked=!!pr.anneal;
   $('presetNote').textContent=pr.note;
@@ -2324,7 +2356,9 @@ function buildProductUI(){
     });
     // once typed (Enter, or leaving the field), the field shows the value the model uses: Start, β ≥ 0, α ≥ 1; a
     // field left empty shows it again
-    inp.addEventListener('change',()=>{const k=inp.dataset.k; inp.value=k==='alpha'?alphaOf(pr):pr[k]})});
+    inp.addEventListener('change',()=>{const k=inp.dataset.k; inp.value=k==='alpha'?alphaOf(pr):pr[k];
+      if(k==='beta'){const old=PNAME.slice(0,P.products.length).join(); setPalette();
+        if(PNAME.slice(0,P.products.length).join()!==old){buildProductUI(); refresh()}}})});
     tb.appendChild(tr);
   });
   checkMono(); syncSales();
@@ -2371,22 +2405,21 @@ function buildProductUI(){
 // the column sales of the products table: Start counted in sales, Start/p₀, with p₀ = w·L²/(N·T) the price when all T
 // orders of each product are served (T = n·L², rounded); renewed when Start, n, w, L or the products change. From
 // 10 000 on in thousands (k), so that it fits the column; the title has the whole number
-// the start costs as one of four sets (the button left of the economy button): standard and wide set A, B and C (the
-// others keep theirs), flat sets every product to 1; other values: custom. Ultra flat also sets γ −1 and α 1 for every
-// product, and β 0.25, 0.05 and 0.01 for A, B and C; the next click (standard) gives γ, β and α back as they were
-// before ultra flat (preUltra; the standard ones if there is no record)
-const ULTRA={beta:[0.25,0.05,0.01]};
-const COSTS=[['standard',[2,8,20]],['wide',[2,10,50]],['flat',null],['ultra flat',null,ULTRA]];
-const costOf=(c,i)=>c?c[i]:1;                       // the start cost of product i in a set (undefined: not set)
-const isUltra=()=>P.products.every((pr,i)=>pr.start===1&&pr.gamma===-1&&alphaOf(pr)===1&&(i>=3||pr.beta===ULTRA.beta[i]));
-const costNow=()=>isUltra()?3:COSTS.findIndex(([,c,u])=>!u&&P.products.every((pr,i)=>costOf(c,i)===undefined||pr.start===costOf(c,i)));
+// the products as one of four sets (the button left of the own-order toggle; every set gives every product Start, γ,
+// β and α): standard (A, B and C of the standard costs, THREE), flat (one product, Start 1, γ −1, β 0.10, α 1), flat-2
+// (two such products, β 0.10 and 0.02) and ultra flat (three, β 0.25, 0.05 and 0.01: the standard setup); other
+// products: custom. A set with another number of products starts the town anew
+const COSTS=[['standard',THREE],['flat',[FLAT(0.1)]],['flat-2',[FLAT(0.1),FLAT(0.02)]],['ultra flat',ULTRA_P]];
+const costNow=()=>COSTS.findIndex(([,set])=>set.length===P.products.length&&P.products.every((pr,i)=>pr.start===set[i].start&&
+  pr.gamma===set[i].gamma&&pr.beta===set[i].beta&&alphaOf(pr)===alphaOf(set[i])));
 function syncCost(){const k=costNow(); $('bCost').textContent='Cost '+(k<0?'custom':COSTS[k][0])}
-let preUltra=null;
-$('bCost').onclick=()=>{const k=costNow(), [,c,u]=COSTS[(k+1)%COSTS.length];
-  if(u){preUltra=P.products.map(pr=>({gamma:pr.gamma,beta:pr.beta,alpha:pr.alpha}));
-    P.products.forEach((pr,i)=>{pr.start=1; pr.gamma=-1; pr.alpha=1; if(i<u.beta.length)pr.beta=u.beta[i]})}
-  else{if(k===3)P.products.forEach((pr,i)=>{const q=(preUltra&&preUltra[i])||THREE[i]; if(q){pr.gamma=q.gamma; pr.beta=q.beta; pr.alpha=q.alpha}});
-    P.products.forEach((pr,i)=>{if(costOf(c,i)!==undefined)pr.start=costOf(c,i)})}
+$('bCost').onclick=()=>{const k=costNow(), set=COSTS[(k+1)%COSTS.length][1], N0=P.products.length;
+  P.products=set.map(o=>({alpha:1,...o}));
+  if(set.length!==N0){
+    // a border that taxes some products forgets those no longer there, and goes when it taxed only those
+    for(const b of P.borders)if(b.prods)b.prods=b.prods.filter(j=>j<P.products.length);
+    P.borders=P.borders.filter(b=>!b.prods||b.prods.length);
+    restart(); return}
   buildProductUI(); E.computeMarkets(); draw()};
 // The orders of an owner for the product it makes, a toggle right of the Cost button with three settings: buy elsewhere
 // (the standard: it must buy the product from another factory), own allowed (its own factory is one of its offers, at
@@ -2400,13 +2433,13 @@ function syncSelf(){const b=$('bSelf'), m=selfMode(); b.textContent=SELF_LABEL[m
     (m===2&&P.products.length===1?' With a single product the companies then do not buy at all: the buyers are the agents without a factory (half of them at the start); an owner that gives up closes its factory and becomes a buyer, and opens a new one later when it can pay Start.':'')+
     ' Click to switch: buy elsewhere → own allowed → no own orders.'}
 $('bSelf').onclick=()=>{const m=(selfMode()+1)%3; P.self=m===1; P.skip=m===2; syncSelf(); E.computeMarkets(); updStat(); distMark(); draw()};
-// what an owner that gives up does with its factory, a toggle right of the one above: keep if broke (the standard: it
-// closes it only when it can pay for another product, and keeps it otherwise) or always close (it closes it, and opens
-// a product at random among those it can pay, the closed one among them, if any; P.close)
+// what an owner that gives up does with its factory, a toggle right of the one above: keep if broke (it closes it only
+// when it can pay for another product, and keeps it otherwise) or always close (the standard of the page: it closes
+// it, and opens a product at random among those it can pay, the closed one among them, if any; P.close)
 const CLOSE_LABEL=['keep if broke','always close'];
-function syncClose(){const b=$('bClose'); b.textContent=CLOSE_LABEL[P.close?1:0]; b.classList.toggle('on',!!P.close);
-  b.title=P.close?'Always close: an owner that gives up closes its factory, and opens a product at random among those it can pay for (the closed one among them). If it can pay for none it stays without a factory, as a buyer only, until it can. Click for the standard, keep if broke.'
-    :'Keep if broke (the standard): an owner that gives up closes its factory only when it can pay for a factory of another product, which it opens; otherwise it keeps the factory. Click for always close.'}
+function syncClose(){const b=$('bClose'); b.textContent=CLOSE_LABEL[P.close?1:0]; b.classList.toggle('on',!P.close);
+  b.title=P.close?'Always close (the standard): an owner that gives up closes its factory, and opens a product at random among those it can pay for (the closed one among them). If it can pay for none it stays without a factory, as a buyer only, until it can. Click for keep if broke.'
+    :'Keep if broke: an owner that gives up closes its factory only when it can pay for a factory of another product, which it opens; otherwise it keeps the factory (the tiny town of the tutorial). Click for the standard, always close.'}
 $('bClose').onclick=()=>{P.close=!P.close; syncClose(); updStat(); distMark()};
 function syncSales(){
   syncCost();
@@ -3057,7 +3090,7 @@ function updStat(){
   const pe=priceEcon(), pf=v=>v<0.1?v.toFixed(4):fmt(v,3);
   let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit p <b>${pf(E.price)}</b> `+
     `(${pe.pay?'buyers pay'+(pe.gouge?', gouging':''):'free goods'}${pe.next?'; '+pe.next:''})`+
-    (P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:'')+(selfMode()?' · '+selfText():'')+(P.close?' · always close':'');
+    (P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:'')+(selfMode()?' · '+selfText():'')+(P.close?'':' · keep if broke');
   // per round: the agents with sales, starts and bankruptcies, and the shopping debts forgiven when the buyers pay
   if(H)s+=`<br>agents with sales <b>${(100*H.active).toFixed(1)}%</b> · per round: starts `+
     `<b>${(100*H.starts).toFixed(1)}%</b>, bankruptcies <b>${(100*H.bankrupt).toFixed(2)}%</b>`+
@@ -3743,7 +3776,7 @@ function readout(r){
     if(why===0)dec=`it kept its ${made.length>1?'factories':'factory'}`;
     else if(why===1)dec=fate===1?(op<0?'it could not afford a new factory':`it opened ${Y}`)
       :'it had no factory and '+(op<0?'could not afford one':`opened ${Y}`);
-    else{const c=why===2?`its ${E.upk[r]>0?'net ':''}sales fell${H.kappa>0?' by more than patience allows':''}`
+    else{const c=why===2?`its ${E.upk[r]>0?'net ':''}sales fell${H.kappa>1?` in ${H.kappa} rounds in a row`:''}`
         :E.units[r]>0?'its sales did not pay for its upkeep':'it sold nothing';
       dec=c+(op<0?', but it could not afford another product'
         :dr>=0&&fate!==1?`, so it gave up ${X(dr)} and opened ${Y}`:`, so it opened ${Y}`)}
@@ -3805,7 +3838,7 @@ function stampParams(oc,scale){
     (view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
   const pe=priceEcon(), lines=[
     {t:`Globalization in a nutshell — 2D · round ${frT()} · ${viewName}`,b:true},
-    {t:`L = ${E.L}, n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close, ':''}lim = ${P.lim}, `+
+    {t:`L = ${E.L}, n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close':'keep if broke'}, lim = ${P.lim}, `+
       `wage w = ${P.wage}, upkeep μ = ${P.upkeep}, patience κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
       (pe.pay?`buyers pay, p = ${E.price.toPrecision(3)}${pe.gouge?', gouging':''}`+
         (pe.forgive?', shopping debts forgiven':''):`free goods, p = ${E.price.toPrecision(3)}`)+
