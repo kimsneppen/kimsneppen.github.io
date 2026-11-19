@@ -835,7 +835,9 @@
         factories (menu at the top). The scale bar at the left corner of the town shows the height of a round number
         of units, and its golden, thicker continuation the height of a round number of money.
         Drag to turn and tilt, use the mouse wheel to zoom, or open the <i>view</i> menu. <i>lin / log</i> switches the
-        towers to a logarithmic scale, so that small factories show up too.</p>
+        towers to a logarithmic scale, so that small factories show up too. The menu <i>heights ×1</i> multiplies the
+        heights of all towers, factories and money alike, by 0.1, 0.25, 0.5, 2, 4 or 10, and the scale bars follow; the
+        <i>view</i> menu has two front views, <i>front</i> (tilt 18°) and <i>front25</i> (tilt 25°).</p>
       <p><b>Agents</b>: every seller is a small pie, its area the units sold, a slice per product. When the squares are
         big enough (the 8 × 8 tiny town, or 16 × 16 on a large screen), each also shows the letter of the agent's
         factory with the units it sold in the last round (A 7), and the agent's money. <b>Market</b>: for one
@@ -1127,6 +1129,8 @@
       <div class="seg" id="hSeg" title="height of the towers: units sold last round, linear or logarithmic"><button data-h="lin" class="on">lin</button><button data-h="log">log</button></div>
       <select id="moneySel" title="money of the agents as golden, semi-transparent towers in the same view">
         <option value="off">no money</option><option value="up">money ↑ with factories</option><option value="down" selected>money ↓ below the plane</option></select>
+      <select id="hScaleSel" title="heights of all towers, the factories and the money, multiplied by this factor; the scale bars in the corner follow">
+        <option value="0.1">heights ×0.1</option><option value="0.25">heights ×0.25</option><option value="0.5">heights ×0.5</option><option value="1" selected>heights ×1</option><option value="2">heights ×2</option><option value="4">heights ×4</option><option value="10">heights ×10</option></select>
       <span class="spacer"></span>
       <button class="tbtn stdbtn" id="bCost"
         title="the products: standard — A, B and C with Start 2, 8, 20, γ −0.3, −0.6, −0.9, β 0.1, 0.05, 0.02 · flat — one product, Start 1, γ −1, β 0.10, α 1 · flat-2 — two such products, β 0.10 and 0.02 · ultra flat (the standard setup) — three such products, β 0.25, 0.05 and 0.01; click to switch (a set with another number of products starts the town anew)"
@@ -1158,6 +1162,7 @@
           <div class="row"><label title="enlarge the 3D view (also with the mouse wheel over the display)">Zoom <span class="vv" id="zoomV"></span></label><input type="range" id="zoomR" min="-0.7" max="1.4" step="0.01" value="0"></div>
           <button class="btn sm" id="viewReset">reset view</button>
           <button class="btn sm" id="viewFront" title="turn 90°, tilt 18°, perspective 2.5 L">front</button>
+          <button class="btn sm" id="viewFront25" title="turn 90°, tilt 25°, perspective 2.5 L">front25</button>
         </div>
       </details>
       <!-- roads and borders: choose a tool, then press, drag and release on the lattice (or tap a road or border to remove it) -->
@@ -2288,6 +2293,7 @@ const PRESETS={
     products:THREE,tmul:0.2,anneal:false,borders:L=>gridBorders(L,P.bc==='periodic'?3:2,0.2)},
 };
 let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=false, loopTok=0;
+let hScale=1;      // the heights of all towers in the 3D view (factories and money) multiplied by this factor (menu hScaleSel)
 
 // the model settings of the standard setup (the view and the colours are left as they are): periodic edges
 const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,self:false,skip:false,close:true};
@@ -2419,7 +2425,7 @@ function buildProductUI(){
     b.onclick=()=>{psel=i;buildProductUI();draw()}; pt.appendChild(b);
   });
   pt.classList.toggle('dis',view==='3d'||view==='agents'||view==='money'||P.products.length<2);
-  $('hSeg').style.display=$('moneySel').style.display=$('viewMenu').style.display=view==='3d'?'':'none';
+  $('hSeg').style.display=$('moneySel').style.display=$('hScaleSel').style.display=$('viewMenu').style.display=view==='3d'?'':'none';
   $('pAdd').disabled=P.products.length>=PNAME.length; $('pDel').disabled=P.products.length<=1;
   const ls=$('limSel'); P.lim=Math.max(1,Math.min(P.products.length,P.lim));
   ls.innerHTML=P.products.map((_,k)=>`<option value="${k+1}">${k+1}${k+1===P.products.length?' (all)':''}</option>`).join('');
@@ -2560,6 +2566,7 @@ $('elR').oninput=e=>{V3.el=+e.target.value*Math.PI/180;syncView();drawSoon()};
 $('distSel').onchange=e=>{V3.dist=+e.target.value;draw()};
 $('viewReset').onclick=()=>{Object.assign(V3,VIEW0);syncView();draw()};
 $('viewFront').onclick=()=>{V3.az=90*Math.PI/180; V3.el=18*Math.PI/180; V3.dist=2.5; syncView(); draw()};
+$('viewFront25').onclick=()=>{V3.az=90*Math.PI/180; V3.el=25*Math.PI/180; V3.dist=2.5; syncView(); draw()};
 $('zoomR').oninput=e=>{V3.zoom=Math.exp(+e.target.value);syncView();drawSoon()};
 // flashes where an agent's money falls to zero: off → yellow → in the colour of its company → off; the lightning icon
 // shows the state
@@ -2579,6 +2586,7 @@ document.querySelectorAll('#distSeg button').forEach(b=>b.onclick=()=>{
   distMode=b.dataset.d; document.querySelectorAll('#distSeg button').forEach(x=>x.classList.toggle('on',x===b)); drawDist();
 });
 $('moneySel').onchange=e=>{money3=e.target.value;draw()};
+$('hScaleSel').onchange=e=>{hScale=+e.target.value||1;draw()};
 $('bBg').onclick=()=>{dark=!dark;document.querySelector('.display').classList.toggle('darkbg',dark);setFlashMode(flashMode)};
 $('bPng').onclick=()=>exportPNG('png');
 $('bSq').onclick=()=>exportPNG('sq');
@@ -3386,8 +3394,10 @@ function draw3D(){
   const tot=new Float64Array(LL), EF=E.F, ES=E.sales, EM=E.money;
   for(let i=0;i<N;i++){const F=EF[i], S=ES[i]; for(let r=0;r<LL;r++)if(F[r])tot[r]+=S[r]}
   if(!EXPORT_DPR)updateScales();
-  const f=hlog?v=>HW*Math.log(1+v)/Math.log(1+V3.hmax):v=>HW*v/V3.hmax;
-  const fm=hlog?v=>HM*Math.log(1+Math.max(0,v))/Math.log(1+V3.mmax):v=>HM*Math.max(0,v)/V3.mmax;
+  // (hScale: the heights menu multiplies all heights; the scale bars show the units that match)
+  const HWk=HW*hScale, HMk=HM*hScale;
+  const f=hlog?v=>HWk*Math.log(1+v)/Math.log(1+V3.hmax):v=>HWk*v/V3.hmax;
+  const fm=hlog?v=>HMk*Math.log(1+Math.max(0,v))/Math.log(1+V3.mmax):v=>HMk*Math.max(0,v)/V3.mmax;
   // scale bars at the left corner of the lattice, in one line: the companies upward from the ground, and the money (if
   // shown) in continuation of it, downward from the ground when it hangs below the plane, else on top of the companies
   const corners=[[-L/2,-L/2],[L/2,-L/2],[L/2,L/2],[-L/2,L/2]];
@@ -3395,13 +3405,16 @@ function draw3D(){
   // (the round numbers vs; the heights are set where the bars are drawn, where a bar that would run off the canvas is
   // made shorter)
   const bars=[], decs=m=>{const t=[]; for(let v=1;v<=m;v*=10)t.push(v); return t};
-  bars.push({base:()=>0,sg:1,fz:f,vs:hlog?(V3.hmax>=1?decs(V3.hmax):[1]):[niceNum(0.5*V3.hmax)],label:hlog?'units (log)':'units'});
-  if(money3!=='off'){const vs=hlog?decs(V3.mmax):[niceNum(0.5*V3.mmax)];
+  bars.push({base:()=>0,sg:1,fz:f,vs:hlog?(V3.hmax>=1?decs(V3.hmax):[1]):[niceNum(0.5*V3.hmax/hScale)],label:hlog?'units (log)':'units'});
+  if(money3!=='off'){const vs=hlog?decs(V3.mmax):[niceNum(0.5*V3.mmax/hScale)];
     if(vs.length)bars.push({base:()=>mDown?0:bars[0].z1,sg:mDown?-1:1,fz:fm,vs,label:'money',gold:true})}
   // framing: the lattice with room for towers 1.15 times the height scale (and, with money below the plane, as deep), seen
   // from the camera. It does not depend on the towers of the moment, so it changes only when the scales are renewed or the
   // view is turned
-  const zUp=Math.max(f(1.15*V3.hmax),mUp?fm(1.15*V3.mmax):0), zDn=mDown?fm(1.15*V3.mmax):0;
+  // (heights scaled down: the view frames the lower towers and the ground grows; scaled up: the frame of ×1 is kept and
+  // the tallest towers run off the top)
+  const kF=hScale>1?1/hScale:1;
+  const zUp=kF*Math.max(f(1.15*V3.hmax),mUp?fm(1.15*V3.mmax):0), zDn=mDown?kF*fm(1.15*V3.mmax):0;
   let X0=Infinity,X1=-Infinity,Y0=Infinity,Y1=-Infinity;
   for(const c of corners)for(const z of [0,zUp,-zDn]){const p=proj(c[0],c[1],z);
     X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Y0=Math.min(Y0,p[1]);Y1=Math.max(Y1,p[1])}
@@ -3866,7 +3879,7 @@ function contentBox(){          // bounding box of everything drawn on the (tran
 }
 function stampParams(oc,scale){
   const o=oc.getContext('2d'), fs=12*scale, lh=1.45*fs, pad=8*scale;
-  const viewName={'3d':'3D, height = units sold'+(hlog?' (log)':''),agents:'agents',market:'market of '+PNAME[psel],sales:'sales of '+PNAME[psel],money:'money'}[view]+
+  const viewName={'3d':'3D, height = units sold'+(hlog?' (log)':'')+(hScale!==1?', heights ×'+hScale:''),agents:'agents',market:'market of '+PNAME[psel],sales:'sales of '+PNAME[psel],money:'money'}[view]+
     (view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
   const pe=priceEcon(), lines=[
     {t:`Globalization in a nutshell — 2D · round ${frT()} · ${viewName}`,b:true},
