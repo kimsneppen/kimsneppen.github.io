@@ -311,6 +311,7 @@
   .tools.tright{flex:0 1 auto;margin-left:auto;justify-content:flex-end}
   .tools.tbl{position:absolute;left:6px;bottom:6px;z-index:3;flex:none;flex-wrap:nowrap}
   .tools.tbl .tmenu .vmbox{top:auto;bottom:100%;max-height:min(60vh,420px)}
+  @media (max-width:699px){ .tools.tbl{flex-wrap:wrap;max-width:200px} }   /* the money menu under the road buttons */
   .pat{display:inline-flex;align-items:center;gap:4px;height:27px;padding:0 3px 0 9px;border:1px solid var(--line);border-radius:8px;
     background:rgba(255,255,255,.9);color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap}
   .pat select{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0 1px;cursor:pointer;outline-offset:2px}
@@ -324,6 +325,7 @@
   .tools .tb,.tools .tmenu > summary{height:27px;padding:0 9px;border:1px solid var(--line);background:rgba(255,255,255,.9);color:var(--accent);
     font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;line-height:25px}
   .tools .tb{border-radius:8px}
+  .tools select.tb{padding:0 3px;line-height:normal}
   .tools .tool{display:inline-flex}               /* their menus open under the tool bar, from its left edge */
   .tools .tool .tb{border-radius:8px 0 0 8px}
   .tools .tmenu > summary{list-style:none;border-left:0;border-radius:0 8px 8px 0;padding:0 6px;display:block}
@@ -837,7 +839,10 @@
         Drag to turn and tilt, use the mouse wheel to zoom, or open the <i>view</i> menu. <i>lin / log</i> switches the
         towers to a logarithmic scale, so that small factories show up too. The menu <i>heights ×1</i> multiplies the
         heights of all towers, factories and money alike, by 0.1, 0.25, 0.5, 2, 4 or 10, and the scale bars follow; the
-        <i>view</i> menu has two front views, <i>front</i> (tilt 18°) and <i>front25</i> (tilt 25°).</p>
+        <i>view</i> menu has two front views, <i>front</i> (tilt 18°) and <i>front25</i> (tilt 25°). The menu <i>money towers</i>
+        right of − road replaces the golden towers by money contours on the ground: the money of the agents smoothed over 1,
+        2, 4 or 8 lattice spacings, one shade for each factor 10 — dark grey below 0.1, grey, light grey, light golden,
+        golden and dark golden above 1000 — with a contour line between the shades and their key above the scale bar.</p>
       <p><b>Agents</b>: every seller is a small pie, its area the units sold, a slice per product. When the squares are
         big enough (the 8 × 8 tiny town, or 16 × 16 on a large screen), each also shows the letter of the agent's
         factory with the units it sold in the last round (A 7), and the agent's money. <b>Market</b>: for one
@@ -1254,6 +1259,8 @@
         </details>
       </div>
       <button class="tb" data-tool="rmRoad" title="remove a road: tap on it">− road</button>
+      <select class="tb" id="mContSel" title="the money of the agents: golden towers (the money menu above), or money contours on the ground — the money smoothed over 1, 2, 4 or 8 lattice spacings, one shade for each factor 10 (dark grey below 0.1, grey, light grey, light golden, golden, dark golden above 1000) and a contour line between them">
+        <option value="0" selected>money towers</option><option value="1">money contours 1</option><option value="2">money contours 2</option><option value="4">money contours 4</option><option value="8">money contours 8</option></select>
       </div>
       <div class="cornerbtns">
         <span class="inforow"><span class="frbtns"><button id="bBack" aria-label="one round back"
@@ -2293,6 +2300,7 @@ const PRESETS={
     products:THREE,tmul:0.2,anneal:false,borders:L=>gridBorders(L,P.bc==='periodic'?3:2,0.2)},
 };
 let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=false, loopTok=0;
+let moneyCont=0;  // money as contours on the ground of the 3D view, smoothed over this many lattice spacings (0: towers; menu mContSel)
 let hScale=1;      // the heights of all towers in the 3D view (factories and money) multiplied by this factor (menu hScaleSel)
 
 // the model settings of the standard setup (the view and the colours are left as they are): periodic edges
@@ -2425,7 +2433,7 @@ function buildProductUI(){
     b.onclick=()=>{psel=i;buildProductUI();draw()}; pt.appendChild(b);
   });
   pt.classList.toggle('dis',view==='3d'||view==='agents'||view==='money'||P.products.length<2);
-  $('hSeg').style.display=$('moneySel').style.display=$('hScaleSel').style.display=$('viewMenu').style.display=view==='3d'?'':'none';
+  $('hSeg').style.display=$('moneySel').style.display=$('hScaleSel').style.display=$('mContSel').style.display=$('viewMenu').style.display=view==='3d'?'':'none';
   $('pAdd').disabled=P.products.length>=PNAME.length; $('pDel').disabled=P.products.length<=1;
   const ls=$('limSel'); P.lim=Math.max(1,Math.min(P.products.length,P.lim));
   ls.innerHTML=P.products.map((_,k)=>`<option value="${k+1}">${k+1}${k+1===P.products.length?' (all)':''}</option>`).join('');
@@ -2587,6 +2595,7 @@ document.querySelectorAll('#distSeg button').forEach(b=>b.onclick=()=>{
 });
 $('moneySel').onchange=e=>{money3=e.target.value;draw()};
 $('hScaleSel').onchange=e=>{hScale=+e.target.value||1;draw()};
+$('mContSel').onchange=e=>{moneyCont=+e.target.value||0; $('moneySel').disabled=!!moneyCont; draw()};
 $('bBg').onclick=()=>{dark=!dark;document.querySelector('.display').classList.toggle('darkbg',dark);setFlashMode(flashMode)};
 $('bPng').onclick=()=>exportPNG('png');
 $('bSq').onclick=()=>exportPNG('sq');
@@ -3371,6 +3380,76 @@ function g3Gold(A,n,side,lw){
   });
   gl.disable(gl.STENCIL_TEST); gl.disable(gl.BLEND); gl.depthMask(true);
 }
+// ---- money contours on the ground of the 3D view: the money of the agents smoothed with a Gaussian of width σ =
+// moneyCont lattice spacings (periodic or closed edges as the town), one shade for each factor 10 of the smoothed money
+// (MC_EDGE), painted on the ground as a picture of k × k pixels a cell (about 1024 pixels across, 512 while running) (bilinear between the cell centres), and the
+// contour lines between the shades found by marching squares; kept until the money or the settings change
+const MC_COL=[[92,96,104],[146,150,158],[208,211,216],[242,224,164],[221,172,46],[146,104,14]];   // darker grey … dark golden
+const MC_EDGE=[0.1,1,10,100,1000], MCF={key:'',img:null,k:1,seg:null};
+function moneyContours(){
+  const L=E.L, M=E.money, sig=moneyCont, per=P.bc==='periodic';
+  let sum=0; for(let r=0;r<M.length;r++)sum+=M[r];
+  const res=running&&!EXPORT_DPR?512:1024;              // a coarser picture while the town runs
+  const key=L+':'+sig+':'+per+':'+E.t+':'+sum+':'+res;
+  if(MCF.key===key)return MCF;
+  const RR=Math.ceil(3*sig), w=[]; for(let d=-RR;d<=RR;d++)w.push(Math.exp(-d*d/(2*sig*sig)));
+  const pass=(src,dst,hz)=>{for(let y=0;y<L;y++)for(let x=0;x<L;x++){let a=0,ws=0;
+    for(let d=-RR;d<=RR;d++){let u=(hz?x:y)+d; if(u<0||u>=L){if(!per)continue; u=((u%L)+L)%L}
+      const q=w[d+RR]; a+=q*(hz?src[y*L+u]:src[u*L+x]); ws+=q}
+    dst[y*L+x]=a/ws}};
+  const A=new Float64Array(L*L), B=new Float64Array(L*L); pass(M,A,true); pass(A,B,false);
+  const lg=new Float64Array(L*L); for(let r=0;r<L*L;r++)lg[r]=Math.log10(Math.max(1e-9,B[r]));
+  // the picture: the log of the money between the cell centres, its shade by the decade
+  const k=Math.max(1,Math.min(8,Math.floor(res/L))), N=L*k;
+  const img=MCF.img&&MCF.img.width===N?MCF.img:Object.assign(document.createElement('canvas'),{width:N,height:N});
+  const ic=img.getContext('2d'), id=ic.createImageData(N,N), px=id.data;
+  const idx=u=>per?((u%L)+L)%L:Math.max(0,Math.min(L-1,u));
+  const cx0=new Int32Array(N), cx1=new Int32Array(N), ct=new Float64Array(N);
+  for(let q=0;q<N;q++){const c=(q+0.5)/k-0.5, i=Math.floor(c); cx0[q]=idx(i); cx1[q]=idx(i+1); ct[q]=c-i}
+  for(let py=0;py<N;py++){const j0=cx0[py]*L, j1=cx1[py]*L, ty=ct[py];
+    for(let pxi=0;pxi<N;pxi++){const i0=cx0[pxi], i1=cx1[pxi], tx=ct[pxi];
+      const v=(1-ty)*((1-tx)*lg[j0+i0]+tx*lg[j0+i1])+ty*((1-tx)*lg[j1+i0]+tx*lg[j1+i1]);
+      const b=Math.max(0,Math.min(5,Math.floor(v)+2)), c=MC_COL[b], o=4*(py*N+pxi);
+      px[o]=c[0]; px[o+1]=c[1]; px[o+2]=c[2]; px[o+3]=255}}
+  ic.putImageData(id,0,0);
+  // the contour lines (marching squares over the cell centres, lattice coordinates; a saddle decided by the mean)
+  const seg=[];
+  for(const e of MC_EDGE){const c=Math.log10(e);
+    for(let j=0;j<L-1;j++)for(let i=0;i<L-1;i++){
+      const v0=lg[j*L+i], v1=lg[j*L+i+1], v2=lg[(j+1)*L+i+1], v3=lg[(j+1)*L+i];
+      const hi0=v0>=c, hi1=v1>=c, hi2=v2>=c, hi3=v3>=c;
+      if(hi0===hi1&&hi1===hi2&&hi2===hi3)continue;
+      const x=i+0.5, y=j+0.5, pts=[], t=(a,b)=>(c-a)/(b-a);
+      if(hi0!==hi1)pts.push([x+t(v0,v1),y]); if(hi1!==hi2)pts.push([x+1,y+t(v1,v2)]);
+      if(hi2!==hi3)pts.push([x+1-t(v2,v3),y+1]); if(hi3!==hi0)pts.push([x,y+1-t(v3,v0)]);
+      if(pts.length===2)seg.push(pts[0][0],pts[0][1],pts[1][0],pts[1][1]);
+      else if(pts.length===4){const mid=(v0+v1+v2+v3)/4>=c;
+        if(mid===hi0)seg.push(...pts[0],...pts[1],...pts[2],...pts[3]); else seg.push(...pts[0],...pts[3],...pts[1],...pts[2])}}}
+  Object.assign(MCF,{key,img,k,seg}); return MCF;
+}
+// the picture on the ground: in tiles (16 × 16 with perspective, where a tile is nearly affine), each as two triangles
+// mapped affinely; then the contour lines
+function drawMoneyField(P2,L,dpr,persp){
+  const F=moneyContours(), k=F.k, T=persp?16:1, st=L/T;
+  const tri=(q,S)=>{
+    const [x0,y0]=[q[0][0]*k,q[0][1]*k],[x1,y1]=[q[1][0]*k,q[1][1]*k],[x2,y2]=[q[2][0]*k,q[2][1]*k];
+    const [u0,v0]=S[0],[u1,v1]=S[1],[u2,v2]=S[2], det=(x1-x0)*(y2-y0)-(x2-x0)*(y1-y0);
+    const a=((u1-u0)*(y2-y0)-(u2-u0)*(y1-y0))/det, c=((u2-u0)*(x1-x0)-(u1-u0)*(x2-x0))/det;
+    const b=((v1-v0)*(y2-y0)-(v2-v0)*(y1-y0))/det, d=((v2-v0)*(x1-x0)-(v1-v0)*(x2-x0))/det;
+    const gx=(u0+u1+u2)/3, gy=(v0+v1+v2)/3, ex=p=>{const dx=p[0]-gx, dy=p[1]-gy, l=Math.hypot(dx,dy)||1; return [p[0]+0.7*dx/l, p[1]+0.7*dy/l]};
+    ctx.save(); ctx.beginPath(); ctx.moveTo(...ex(S[0])); ctx.lineTo(...ex(S[1])); ctx.lineTo(...ex(S[2])); ctx.closePath(); ctx.clip();
+    ctx.setTransform(a,b,c,d,u0-a*x0-c*y0,v0-b*x0-d*y0);
+    const N=F.img.width, sx=Math.max(0,Math.min(x0,x1,x2)-2), sy=Math.max(0,Math.min(y0,y1,y2)-2);
+    const sw=Math.min(N,Math.max(x0,x1,x2)+2)-sx, sh=Math.min(N,Math.max(y0,y1,y2)+2)-sy;
+    ctx.drawImage(F.img,sx,sy,sw,sh,sx,sy,sw,sh); ctx.restore()};
+  ctx.save(); ctx.imageSmoothingEnabled=true;
+  for(let ty=0;ty<T;ty++)for(let tx=0;tx<T;tx++){
+    const q=[[tx*st,ty*st],[(tx+1)*st,ty*st],[(tx+1)*st,(ty+1)*st],[tx*st,(ty+1)*st]], S=q.map(p=>P2(p[0]-L/2,p[1]-L/2,0));
+    tri([q[0],q[1],q[2]],[S[0],S[1],S[2]]); tri([q[0],q[2],q[3]],[S[0],S[2],S[3]])}
+  const g=F.seg; ctx.strokeStyle='rgba(38,32,22,.6)'; ctx.lineWidth=Math.max(0.6,0.75*dpr); ctx.lineJoin='round'; ctx.beginPath();
+  for(let m=0;m<g.length;m+=4){ctx.moveTo(...P2(g[m]-L/2,g[m+1]-L/2,0)); ctx.lineTo(...P2(g[m+2]-L/2,g[m+3]-L/2,0))}
+  ctx.stroke(); ctx.restore();
+}
 function draw3D(){
   const L=E.L, LL=L*L, N=E.N;
   const dpr=fitCanvas(cv), W=cv.width, H=cv.height;
@@ -3378,7 +3457,7 @@ function draw3D(){
   const ca=Math.cos(V3.az), sa=Math.sin(V3.az), se=Math.sin(V3.el), ce=Math.cos(V3.el), HW=0.34*L, HM=0.24*L;   // height of the biggest company and of the largest money
   const D=V3.dist>0?V3.dist*L:0, Dc=D||1e7;
   const xc=Dc*sa*ce, yc=Dc*ca*ce, zc=Dc*se;            // camera position (far away along the view direction when D = 0)
-  const mUp=money3==='up', mDown=money3==='down';
+  const m3=moneyCont?'off':money3, mUp=m3==='up', mDown=m3==='down';
   // projection to unit screen coordinates: rotate by the azimuth, tilt, and divide by the depth for the perspective
   const proj=(x,y,z)=>{const X=x*ca-y*sa, Y=x*sa+y*ca, k=D?D/(D-(Y*ce+z*se)):1; return [X*k,(Y*se-z*ce)*k]};
   // WebGL draws the towers when it can (g3Ready); the 2D canvas paints them from far to near the camera, in this order
@@ -3406,7 +3485,7 @@ function draw3D(){
   // made shorter)
   const bars=[], decs=m=>{const t=[]; for(let v=1;v<=m;v*=10)t.push(v); return t};
   bars.push({base:()=>0,sg:1,fz:f,vs:hlog?(V3.hmax>=1?decs(V3.hmax):[1]):[niceNum(0.5*V3.hmax/hScale)],label:hlog?'units (log)':'units'});
-  if(money3!=='off'){const vs=hlog?decs(V3.mmax):[niceNum(0.5*V3.mmax/hScale)];
+  if(m3!=='off'){const vs=hlog?decs(V3.mmax):[niceNum(0.5*V3.mmax/hScale)];
     if(vs.length)bars.push({base:()=>mDown?0:bars[0].z1,sg:mDown?-1:1,fz:fm,vs,label:'money',gold:true})}
   // framing: the lattice with room for towers 1.15 times the height scale (and, with money below the plane, as deep), seen
   // from the camera. It does not depend on the towers of the moment, so it changes only when the scales are renewed or the
@@ -3428,7 +3507,7 @@ function draw3D(){
   // money towers lower than 2 pixels are not drawn, nor more than the 1500 richest: thousands of semi-transparent towers
   // would only make the browser slow to paint (early in a run everybody has about the same money)
   let zminM=2/(s*ce);
-  if(money3!=='off'&&LL>1500)zminM=Math.max(zminM,fm(richCut(E.money,E.t)));
+  if(m3!=='off'&&LL>1500)zminM=Math.max(zminM,fm(richCut(E.money,E.t)));
   const quad=(pts,fill,stroke)=>{ctx.beginPath();ctx.moveTo(...pts[0]);for(let k=1;k<4;k++)ctx.lineTo(...pts[k]);ctx.closePath();
     ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.stroke()}};
   // the side faces of a box over one lattice cell that look toward the camera, and its top. The golden money towers are
@@ -3461,6 +3540,7 @@ function draw3D(){
   ctx.beginPath(); corners.forEach((c,k)=>{const p=P2(c[0],c[1],0); k?ctx.lineTo(...p):ctx.moveTo(...p)}); ctx.closePath();
   ctx.globalAlpha=mDown?0.62:1; ctx.fillStyle=dark?'#1a2131':'#e6eaf2'; ctx.fill(); ctx.globalAlpha=1;
   ctx.strokeStyle=dark?'#3a4459':'#c3cbdb'; ctx.lineWidth=dpr; ctx.stroke();
+  if(moneyCont)drawMoneyField(P2,L,dpr,D>0);                // money contours on the ground
   ctx.strokeStyle=dark?'rgba(200,210,230,.12)':'rgba(131,145,171,.25)'; ctx.beginPath();
   for(let j=1;j<8;j++){const g=-L/2+j*L/8; let a=P2(g,-L/2,0),b=P2(g,L/2,0); ctx.moveTo(...a);ctx.lineTo(...b); a=P2(-L/2,g,0);b=P2(L/2,g,0);ctx.moveTo(...a);ctx.lineTo(...b)}
   ctx.stroke();
@@ -3532,13 +3612,25 @@ function draw3D(){
     ctx.strokeText(s,bx+bw(b)/2+7*dpr,y); ctx.fillText(s,bx+bw(b)/2+7*dpr,y)};
   bars.forEach(b=>{const t=b.ticks[b.ticks.length-1]; put(b,t,fmtV(t.v)+' '+b.label,true)});
   bars.forEach(b=>b.ticks.slice(0,-1).forEach(t=>put(b,t,fmtV(t.v))));
+  // money contours: their key above the end of the units bar, a shade for each factor 10 and the money between them
+  if(moneyCont){
+    const sh=1.05*fs, sw=13*dpr, nk=MC_COL.length, yb=Math.max(by(bars[0].z1)-1.3*fs, nk*sh+1.9*fs), ty=yb-nk*sh;
+    MC_COL.forEach((c,j)=>{ctx.fillStyle='rgb('+c+')'; ctx.fillRect(bx-sw/2,yb-(j+1)*sh,sw,sh)});
+    ctx.lineWidth=dpr; ctx.strokeStyle=ink; ctx.strokeRect(bx-sw/2,ty,sw,nk*sh);
+    ctx.font=`600 ${0.8*fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`;
+    ctx.lineWidth=3*dpr; ctx.strokeStyle=dark?'rgba(0,0,0,.75)':'rgba(255,255,255,.85)'; ctx.fillStyle=ink;
+    MC_EDGE.forEach((e,j)=>{const y=yb-(j+1)*sh, t=String(e); ctx.strokeText(t,bx+sw/2+6*dpr,y); ctx.fillText(t,bx+sw/2+6*dpr,y)});
+    ctx.font=`600 ${fs}px -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif`; ctx.fillStyle=dark?'#f6d25c':'#8a6412';
+    const tt='money (σ '+moneyCont+')'; ctx.strokeText(tt,bx-sw/2,ty-0.75*fs); ctx.fillText(tt,bx-sw/2,ty-0.75*fs);
+  }
   ctx.restore();
   drawFlashes(r=>{const x=(r%L)+0.5-L/2,y=((r/L)|0)+0.5-L/2;
     return {cell:s,base:P2(x,y,0),top:size=>P2(x,y,f(size)),
-      pillar:money3==='off'?null:m=>{const h=fm(m);return h>zmin?[P2(x,y,0),P2(x,y,mDown?-h:h)]:null}}});
+      pillar:m3==='off'?null:m=>{const h=fm(m);return h>zmin?[P2(x,y,0),P2(x,y,mDown?-h:h)]:null}}});
   LEG=P.products.map((pr,i)=>`<span><i style="background:${PCOL[i]}"></i>${PNAME[i]}</span>`).join('')+
     `<span>tower height = units sold last round, largest company lowest (${hlog?'log':'linear'})</span>`+regLeg+
-    (money3!=='off'?`<span><i style="background:rgba(222,176,46,.6)"></i>money${mDown?', hanging below the plane':''}</span>`:'')+
+    (m3!=='off'?`<span><i style="background:rgba(222,176,46,.6)"></i>money${mDown?', hanging below the plane':''}</span>`:'')+
+    (moneyCont?`<span><i style="background:linear-gradient(90deg,${MC_COL.map(c=>'rgb('+c+')').join(',')})"></i>money on the ground, smoothed over ${moneyCont} lattice spacing${moneyCont>1?'s':''}: one shade for each factor 10 (below 0.1, 0.1–1, 1–10, 10–100, 100–1000, above 1000), contour lines between them</span>`:'')+
     '<span>drag to turn and tilt</span>';
   if(hoverR>=0&&hoverR<LL)readout(hoverR);
 }
@@ -3880,7 +3972,7 @@ function contentBox(){          // bounding box of everything drawn on the (tran
 function stampParams(oc,scale){
   const o=oc.getContext('2d'), fs=12*scale, lh=1.45*fs, pad=8*scale;
   const viewName={'3d':'3D, height = units sold'+(hlog?' (log)':'')+(hScale!==1?', heights ×'+hScale:''),agents:'agents',market:'market of '+PNAME[psel],sales:'sales of '+PNAME[psel],money:'money'}[view]+
-    (view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
+    (view==='3d'&&moneyCont?', money contours σ '+moneyCont:view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
   const pe=priceEcon(), lines=[
     {t:`Globalization in a nutshell — 2D · round ${frT()} · ${viewName}`,b:true},
     {t:`L = ${E.L}, n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close':'keep if broke'}, lim = ${P.lim}, `+
