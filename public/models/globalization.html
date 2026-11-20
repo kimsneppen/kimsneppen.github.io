@@ -562,6 +562,12 @@
         transport, p·β·d for a unit from distance d (times the road factor on a road; border taxes and tariffs are not
         transport), no longer comes back to everybody. It is spent on the road and leaves the town, and only the
         making, taxes and tariffs come back as the equal income. This too works only when the buyers pay.</p>
+      <p>The next button, <i>tax to all</i>, switches to <i>tax to country</i>: the border tax and tariff paid where
+        goods cross a border no longer come back to everybody, but go to the country the goods enter there, shared
+        equally by the agents living in it. Goods that cross two borders on their way pay each crossing's tax to the
+        country entered at that crossing. The countries are the pieces the borders cut out of the town, numbered on the
+        map; a border that does not close a piece off sends its tax to the piece it lies in. The making and the
+        transport still come back to everybody (or the transport is lost). This too works only when the buyers pay.</p>
 
       <h2 id="r-round">One round, step by step</h2>
       <ol>
@@ -800,7 +806,8 @@
         transport so far), the seller's share p included (α = 1 in the standard setup). A tax takes its share of
         that, in both economies. With free goods no money changes hands: the tax and the tariff only change where
         the buyers buy. When the buyers pay, the buyer pays the tax and the tariff as part of its cost C, and that
-        money comes back to everybody as the equal income.</p>
+        money comes back to everybody as the equal income — or, with the button <i>tax to country</i> (upper right
+        corner of the town), to the agents of the country the goods enter.</p>
       <p>So a tax hits even the cheapest goods. A chip factory that sold 1&nbsp;000 chips last round makes each for
         about 0.002, but where a chip crosses it is still worth at least p, the seller's share. A 100 % tax doubles what
         every good is worth there, the giant's chips too, and adds at least 1 to its cost C: it acts much like a tariff
@@ -1234,6 +1241,7 @@
         <button class="pat ptog" id="bBuyW" data-tip="buyw">Income weight</button>
         <button class="pat ptog" id="bGouge" title="gouging acts only when the buyers pay">no gouging</button>
         <button class="pat ptog" id="bLost" title="acts only when the buyers pay">transport back</button>
+        <button class="pat ptog" id="bTaxTo" title="acts only when the buyers pay">tax to all</button>
         <label class="pat" title="n: orders per agent and product per round. The standard setup has n = 1. With small n sales are few and noisy; the control panel has more values">
           <span>n</span><select id="nSel2"><option value="0.2">0.2</option><option value="0.5">0.5</option><option value="1">1</option><option value="2">2</option><option value="5">5</option></select></label>
         <label class="pat" data-tip="mu">
@@ -1665,6 +1673,8 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 //      of the goods' value charged on crossing; tariff = amount added per unit on crossing; prods: the products it taxes,
 //      all if absent; one-way: only when crossing toward (dy, −dx) for the drawn direction (dx, dy), which on the screen (y downward)
 //      is to the left of the drawing direction),
+//      taxTo:'all'|'country' (buyers pay: the border taxes and tariffs come back to everybody with the rest of C, the
+//      standard, or each crossing's tax and tariff goes to the country the goods enter there, shared equally by its agents),
 //      econ:'so'|'pay' (free goods | buyers pay), gouge (a seller charges the buyer's next-best offer), forgive (a
 //      debt run up by shopping alone is forgiven), lost (the transport the buyers pay is lost: it does not come back
 //      to everybody; gouge, forgive and lost act only when the buyers pay), self (an agent may also buy the product
@@ -1724,7 +1734,10 @@ function buildEcon(P){
   // road factor of a cell; tax multiplier and tariff of a move — one pair of arrays shared by all products, or one pair
   // per product when some border taxes only some products
   const roadF=new Float32Array(LL); let taxMs=[], taxAs=[];
-  let netKey='', taxOff=0;
+  let netKey='', taxOff=0, taxAny=false;
+  // the countries: the pieces of the town cut out by the borders, as the regions of the page (E.country: the country of
+  // each agent, E.nCountry of them, E.countrySize agents in each); for the option tax to the country it enters
+  E.country=new Int32Array(LL); E.nCountry=1; E.countrySize=Int32Array.of(LL);
   E.bshift=[1.414e-7,1.047e-7];          // how far the borders are moved for the crossing test (buildNet)
   // (borders without tax or tariff change no cost: the town is then searched as without them, so that borders with no
   // tax are the same as no borders)
@@ -1732,6 +1745,7 @@ function buildEcon(P){
   function buildNet(){
     const key=JSON.stringify([P.roads,P.borders,P.bc]); if(key===netKey)return; netKey=key;
     taxOff=(P.borders||[]).some(b=>(b.tax||0)>0)?1:0;          // a taxed border: offers start from 1 + α·s^γ (below)
+    taxAny=(P.borders||[]).some(b=>(b.tax||0)>0||(b.tariff||0)>0);
     const some=(P.borders||[]).some(b=>b.prods&&b.prods.length<N), nArr=some?N:1;
     if(taxMs.length!==nArr){taxMs=[];taxAs=[];for(let k=0;k<nArr;k++){taxMs.push(new Float32Array(LL*16));taxAs.push(new Float32Array(LL*16))}}
     roadF.fill(1); for(let k=0;k<nArr;k++){taxMs[k].fill(1);taxAs[k].fill(0)}
@@ -1775,6 +1789,65 @@ function buildEcon(P){
             }
       }
     }
+    // the countries, as regions() of the page finds them: a step between two neighbouring agents is cut where it meets
+    // a border (in either direction; touching counts), and the pieces are found by flood fill
+    {const cl=closed(), bR=new Uint8Array(LL), bD=new Uint8Array(LL);
+      const meet=(ax,ay,bx,by,cx,cy,dx,dy)=>{const o=(px,py,qx,qy,rx,ry)=>(qx-px)*(ry-py)-(qy-py)*(rx-px);
+        return o(cx,cy,dx,dy,ax,ay)*o(cx,cy,dx,dy,bx,by)<=0&&o(ax,ay,bx,by,cx,cy)*o(ax,ay,bx,by,dx,dy)<=0};
+      const sh=cl?[[0,0]]:[[0,0],[L,0],[-L,0],[0,L],[0,-L]];
+      for(const bd of P.borders||[])for(const [sx,sy] of sh)for(let j=1;j<bd.pts.length;j++){
+        const x0=bd.pts[j-1][0]+sx+ex, y0=bd.pts[j-1][1]+sy+ey, x1=bd.pts[j][0]+sx+ex, y1=bd.pts[j][1]+sy+ey;
+        for(let y=Math.max(0,Math.floor(Math.min(y0,y1))-2);y<=Math.min(L-1,Math.ceil(Math.max(y0,y1))+1);y++)
+          for(let x=Math.max(0,Math.floor(Math.min(x0,x1))-2);x<=Math.min(L-1,Math.ceil(Math.max(x0,x1))+1);x++){
+            const ax=x+0.5, ay=y+0.5;
+            if(meet(ax,ay,ax+1,ay,x0,y0,x1,y1))bR[y*L+x]=1;
+            if(meet(ax,ay,ax,ay+1,x0,y0,x1,y1))bD[y*L+x]=1;
+          }
+      }
+      const id=E.country, q=new Int32Array(LL); id.fill(-1); let nc=0;
+      for(let r0=0;r0<LL;r0++){if(id[r0]>=0)continue;
+        let h=0,t=0; q[t++]=r0; id[r0]=nc;
+        while(h<t){const r=q[h++], x=r%L, y=(r/L)|0, go=w=>{if(id[w]<0){id[w]=nc;q[t++]=w}};
+          if((x<L-1||!cl)&&!bR[r])go(y*L+(x+1)%L);
+          if(x>0||!cl){const l=y*L+(x+L-1)%L; if(!bR[l])go(l)}
+          if((y<L-1||!cl)&&!bD[r])go(((y+1)%L)*L+x);
+          if(y>0||!cl){const u=((y+L-1)%L)*L+x; if(!bD[u])go(u)}}
+        nc++}
+      E.nCountry=nc; E.countrySize=new Int32Array(nc); for(let r=0;r<LL;r++)E.countrySize[id[r]]++}
+  }
+  // Tax to the country it enters (buyers pay, taxTo 'country'): the border taxes and tariffs in each buyer's delivered
+  // cost C₁, split by the country each crossing enters. The cheapest path is walked back from the buyer to the factory,
+  // move by move (every offer remembers the offer it came from: pred = 64·cell + 16·slot + move); a move's tax and
+  // tariff is the cost it added minus the transport it added, and goes to the country of the cell it enters. The paths
+  // form a tree, so every offer (slot id = 4·cell + slot) remembers the nearest crossing back along its path (jmp: the
+  // offer a crossing move entered, −1 none), and a buyer's walk jumps from crossing to crossing. Per product a list per
+  // buyer: E.txO[i][r] … E.txO[i][r + 1] − 1 index E.txC[i] (the country) and E.txA[i] (the amount for one unit, in
+  // units of p); E.txO[i] null when not wanted
+  const txWant=()=>P.taxTo==='country'&&P.econ==='pay'&&taxAny;
+  E.txO=[]; E.txC=[]; E.txA=[];
+  const jmp=new Int32Array(4*LL), stk=new Int32Array(4*LL);
+  function taxSplit(i,sel,cost,trn,pred){
+    let O=E.txO[i]; if(!O||O.length!==LL+1)O=E.txO[i]=new Int32Array(LL+1);
+    let C=E.txC[i]&&E.txC[i].length?E.txC[i]:new Int32Array(1024), A=E.txA[i]&&E.txA[i].length?E.txA[i]:new Float64Array(1024), k=0;
+    const id=E.country;
+    const txOf=(w,kw,v,kv)=>(cost(w,kw)-cost(v,kv))-(trn(w,kw)-trn(v,kv));     // the tax of the move into offer (w, kw)
+    jmp.fill(-2);
+    const J=s0=>{let s=s0, sp=0;
+      while(jmp[s]===-2){const w=s>>2, kw=s&3, pv=pred(w,kw);
+        if(pv<0){jmp[s]=-1; break}
+        const v=pv>>6, kv=(pv>>4)&3;
+        if(txOf(w,kw,v,kv)>1e-12){jmp[s]=s; break}
+        stk[sp++]=s; s=v*4+kv}
+      const val=jmp[s]; while(sp>0)jmp[stk[--sp]]=val; return val};
+    for(let r=0;r<LL;r++){O[r]=k; const sl=sel(r); if(sl<0)continue;
+      const k0=k;
+      for(let h=J(r*4+sl);h>=0;){const w=h>>2, kw=h&3, pv=pred(w,kw), v=pv>>6, kv=(pv>>4)&3, tx=txOf(w,kw,v,kv), c=id[w];
+        let j=k0; while(j<k&&C[j]!==c)j++;
+        if(j===k){if(k===C.length){const C2=new Int32Array(2*k), A2=new Float64Array(2*k); C2.set(C); A2.set(A); C=C2; A=A2}
+          C[k]=c; A[k]=0; k++}
+        A[j]+=tx; h=J(v*4+kv)}
+    }
+    O[LL]=k; E.txC[i]=C; E.txA[i]=A;
   }
   // Dijkstra from all factories at once. Each cell keeps the two cheapest offers from different factories, because
   // a factory cell must buy from somebody else. A move multiplies the cost so far by the border tax (a percentage of the
@@ -1791,79 +1864,83 @@ function buildEcon(P){
   let popC=0,popN=0,popS=0;
   // (trA, trB: the transport alone in the offers cA, cB)
   const cA=new Float64Array(LL), sA=new Int32Array(LL), cB=new Float64Array(LL), sB=new Int32Array(LL), done=new Uint8Array(LL),
-    trA=new Float64Array(LL), trB=new Float64Array(LL);
+    trA=new Float64Array(LL), trB=new Float64Array(LL), pA=new Int32Array(LL), pB=new Int32Array(LL);
   function marketGraph(i,fac,u,beta,sup,dist,area,off){
     const tM=taxMs[taxMs.length>1?i:0], tA=taxAs[taxAs.length>1?i:0];     // the taxes of moves for this product
-    cA.fill(Infinity); cB.fill(Infinity); sA.fill(-1); sB.fill(-1); done.fill(0); trA.fill(0); trB.fill(0); hl=0;
+    cA.fill(Infinity); cB.fill(Infinity); sA.fill(-1); sB.fill(-1); done.fill(0); trA.fill(0); trB.fill(0); pA.fill(-1); pB.fill(-1); hl=0;
     for(const f of fac){cA[f]=u[f]+off;sA[f]=f;push(u[f]+off,f,f)}
     const cl=closed();
-    // pass the offer (cost c, from factory s, transport t in it) on from cell v to its neighbours
-    const relax=(v,c,s,t)=>{
+    // pass the offer (cost c, from factory s, transport t in it; slot k of v: 0 the best, 1 the second) on from cell v to
+    // its neighbours (pv: where the offer came from)
+    const relax=(v,c,s,t,k)=>{
       const x=v%L, y=(v/L)|0, base=v*16;
       for(let d=0;d<16;d++){
+        const pv=v*64+k*16+d;
         let wx=x+NB[d][0], wy=y+NB[d][1];
         if(cl){if(wx<0||wy<0||wx>=L||wy>=L)continue}
         else{if(wx<0)wx+=L;else if(wx>=L)wx-=L; if(wy<0)wy+=L;else if(wy>=L)wy-=L}
         const w=wy*L+wx, dw=done[w]; if(dw===2)continue;
         const rf=roadF[v]<1&&roadF[w]<1?Math.max(roadF[v],roadF[w]):1;
         const tr=beta*NBL[d]*rf, c2=c*tM[base+d]+tA[base+d]+tr, t2=t+tr;
-        if(dw===1){if(s!==sA[w]&&c2<cB[w]){cB[w]=c2;sB[w]=s;trB[w]=t2;push(c2,w,s)}}       // the best is final: only the second
-        else if(s===sA[w]){if(c2<cA[w]){cA[w]=c2;trA[w]=t2;push(c2,w,s)}}
-        else if(c2<cA[w]){cB[w]=cA[w];sB[w]=sA[w];trB[w]=trA[w];cA[w]=c2;sA[w]=s;trA[w]=t2;push(c2,w,s)}   // the old best becomes the second
-        else if(c2<cB[w]){cB[w]=c2;sB[w]=s;trB[w]=t2;push(c2,w,s)}
+        if(dw===1){if(s!==sA[w]&&c2<cB[w]){cB[w]=c2;sB[w]=s;trB[w]=t2;pB[w]=pv;push(c2,w,s)}}       // the best is final: only the second
+        else if(s===sA[w]){if(c2<cA[w]){cA[w]=c2;trA[w]=t2;pA[w]=pv;push(c2,w,s)}}
+        else if(c2<cA[w]){cB[w]=cA[w];sB[w]=sA[w];trB[w]=trA[w];pB[w]=pA[w];cA[w]=c2;sA[w]=s;trA[w]=t2;pA[w]=pv;push(c2,w,s)}   // the old best becomes the second
+        else if(c2<cB[w]){cB[w]=c2;sB[w]=s;trB[w]=t2;pB[w]=pv;push(c2,w,s)}
       }
     };
     while(hl>0){
       pop(); const c=popC, v=popN, s=popS;
       if(done[v]===0){
-        if(s===sA[v]&&c===cA[v]){done[v]=1;relax(v,c,s,trA[v])}
-        else if(s===sB[v]&&c===cB[v]){done[v]=1;relax(v,cA[v],sA[v],trA[v]);done[v]=2;relax(v,c,s,trB[v])}   // a tie: settle both
-      }else if(done[v]===1&&s===sB[v]&&c===cB[v]){done[v]=2;relax(v,c,s,trB[v])}
+        if(s===sA[v]&&c===cA[v]){done[v]=1;relax(v,c,s,trA[v],0)}
+        else if(s===sB[v]&&c===cB[v]){done[v]=1;relax(v,cA[v],sA[v],trA[v],0);done[v]=2;relax(v,c,s,trB[v],1)}   // a tie: settle both
+      }else if(done[v]===1&&s===sB[v]&&c===cB[v]){done[v]=2;relax(v,c,s,trB[v],1)}
     }
     for(let r=0;r<LL;r++){
       const b=sA[r]===r&&!ownOK()?sB[r]:sA[r];            // nobody buys from itself (unless self-buy is allowed)
       sup[r]=b; dist[r]=b<0?0:pdist(b,r); E.cost[i][r]=b<0?Infinity:(b===sA[r]?cA[r]:cB[r])-off; if(b>=0)area[b]++;
       E.tr[i][r]=b<0?0:b===sA[r]?trA[r]:trB[r];
     }
+    if(txWant())taxSplit(i,r=>{const b=sA[r]===r&&!ownOK()?sB[r]:sA[r]; return b<0?-1:b===sA[r]?0:1},
+      (r,k)=>k?cB[r]:cA[r],(r,k)=>k?trB[r]:trA[r],(r,k)=>k?pB[r]:pA[r]);
   }
   // Gouging: as marketGraph, but every cell keeps its three cheapest offers from different factories, the first gN of
   // them final, so that a factory cell, which buys from somebody else, also knows its next-best offer C₂ (E.c2). A new
   // offer is never cheaper than one already final, so final offers are never displaced and the search stays exact.
   // Offers of equal cost become final in the order they arrived, as in marketGraph.
   // (gT: the transport alone in the offers gC)
-  const gC=new Float64Array(3*LL), gS=new Int32Array(3*LL), gN=new Uint8Array(LL), gT=new Float64Array(3*LL);
+  const gC=new Float64Array(3*LL), gS=new Int32Array(3*LL), gN=new Uint8Array(LL), gT=new Float64Array(3*LL), gP=new Int32Array(3*LL);
   function marketGraph3(i,fac,u,beta,sup,dist,area,off){
     const tM=taxMs[taxMs.length>1?i:0], tA=taxAs[taxAs.length>1?i:0], c2=E.c2[i];
-    gC.fill(Infinity); gS.fill(-1); gN.fill(0); gT.fill(0); hl=0;
+    gC.fill(Infinity); gS.fill(-1); gN.fill(0); gT.fill(0); gP.fill(-1); hl=0;
     const cl=closed();
-    // the offer (cost c, from factory s, transport t in it) reaches cell w
-    const offer=(w,c,s,t)=>{
+    // the offer (cost c, from factory s, transport t in it; pv: where it came from) reaches cell w
+    const offer=(w,c,s,t,pv)=>{
       const n=gN[w]; if(n===3)return;
       const b=3*w; let j=-1;
       for(let k=0;k<3;k++)if(gS[b+k]===s){j=k;break}
       if(j>=0){if(j<n||c>=gC[b+j])return}       // final already, or no cheaper
       else{if(c>=gC[b+2])return; j=2}          // not among the three: it displaces the dearest
-      while(j>n&&gC[b+j-1]>c){gC[b+j]=gC[b+j-1];gS[b+j]=gS[b+j-1];gT[b+j]=gT[b+j-1];j--}
-      gC[b+j]=c;gS[b+j]=s;gT[b+j]=t;push(c,w,s);
+      while(j>n&&gC[b+j-1]>c){gC[b+j]=gC[b+j-1];gS[b+j]=gS[b+j-1];gT[b+j]=gT[b+j-1];gP[b+j]=gP[b+j-1];j--}
+      gC[b+j]=c;gS[b+j]=s;gT[b+j]=t;gP[b+j]=pv;push(c,w,s);
     };
-    const relax=(v,c,s,t)=>{
+    const relax=(v,c,s,t,k)=>{
       const x=v%L, y=(v/L)|0, base=v*16;
       for(let d=0;d<16;d++){
         let wx=x+NB[d][0], wy=y+NB[d][1];
         if(cl){if(wx<0||wy<0||wx>=L||wy>=L)continue}
         else{if(wx<0)wx+=L;else if(wx>=L)wx-=L; if(wy<0)wy+=L;else if(wy>=L)wy-=L}
         const w=wy*L+wx, rf=roadF[v]<1&&roadF[w]<1?Math.max(roadF[v],roadF[w]):1;
-        const tr=beta*NBL[d]*rf; offer(w,c*tM[base+d]+tA[base+d]+tr,s,t+tr);
+        const tr=beta*NBL[d]*rf; offer(w,c*tM[base+d]+tA[base+d]+tr,s,t+tr,v*64+k*16+d);
       }
     };
-    for(const f of fac)offer(f,u[f]+off,f,0);
+    for(const f of fac)offer(f,u[f]+off,f,0,-1);
     while(hl>0){
       pop(); const c=popC, v=popN, s=popS, n=gN[v];
       if(n===3)continue;
       const b=3*v; let j=-1;
       for(let k=n;k<3;k++)if(gS[b+k]===s&&gC[b+k]===c){j=k;break}
       if(j<0)continue;                                     // a stale offer
-      for(let k=n;k<=j;k++){gN[v]=k+1;relax(v,gC[b+k],gS[b+k],gT[b+k])}   // those of equal cost ahead of it first
+      for(let k=n;k<=j;k++){gN[v]=k+1;relax(v,gC[b+k],gS[b+k],gT[b+k],k)}   // those of equal cost ahead of it first
     }
     const own=ownOK();
     for(let r=0;r<LL;r++){
@@ -1873,6 +1950,8 @@ function buildEcon(P){
       sup[r]=bs; dist[r]=bs<0?0:pdist(bs,r); E.cost[i][r]=bs<0?Infinity:gC[b+k1]-off; c2[r]=k2<0?Infinity:gC[b+k2]-off; if(bs>=0)area[bs]++;
       E.tr[i][r]=bs<0?0:gT[b+k1];
     }
+    if(txWant())taxSplit(i,r=>{const b=3*r; for(let k=0;k<3;k++){const s=gS[b+k]; if(s<0||(s===r&&!own))continue; return k} return -1},
+      (r,k)=>gC[3*r+k],(r,k)=>gT[3*r+k],(r,k)=>gP[3*r+k]);
   }
 
   // inc: money acquired in the last round (wage + equal income + sales); profit: sales − upkeep, in money; net: the
@@ -1941,7 +2020,7 @@ function buildEcon(P){
       if(F[r]){const v=al*Math.pow(1+S[r],g);u[r]=v;fac.push(r);if(v<umin)umin=v;if(v>umax)umax=v}
       else u[r]=Infinity;
     }
-    area.fill(0);
+    area.fill(0); E.txO[i]=null;
     const nF=fac.length;
     if(!nF){sup.fill(-1);dist.fill(0);E.cost[i].fill(Infinity);c2.fill(Infinity);E.tr[i].fill(0);return}
     if(E.useGraph()){graph(i,fac,u,beta,sup,dist,area,off);return}
@@ -1997,7 +2076,7 @@ function buildEcon(P){
     if(offBC!==P.bc||!offs)buildOffsets();
     buildNet();
     for(let i=0;i<N;i++)market(i);
-    E.stale=false; E.mode=mode(); E.selfM=ownOK();
+    E.stale=false; E.mode=mode(); E.selfM=ownOK(); E.txM=txWant();
   };
 
   function pick(W){
@@ -2008,7 +2087,7 @@ function buildEcon(P){
 
   E.step=function(){
     // fresh from the end of the last round, unless a parameter or gouging changed since
-    if(E.stale!==false||E.mode!==mode()||E.selfM!==ownOK())E.computeMarkets();
+    if(E.stale!==false||E.mode!==mode()||E.selfM!==ownOK()||E.txM!==txWant())E.computeMarkets();
     const pays=P.econ==='pay', gouge=pays&&!!P.gouge, forgive=pays&&!!P.forgive, lost=pays&&!!P.lost;
     // orders: buyer ∝ the money it acquired in the previous round (Income weight), or (buyw 'money') ∝ the money it
     // has, so that agents without money do not shop
@@ -2023,9 +2102,12 @@ function buildEcon(P){
     // the buyer pays m + C₁ (paid: Σ for each agent), and C₁, the making α·s^γ (prOut) and the transport, taxes and
     // tariffs C₁ − α·s^γ (trOut), comes back to everybody; with lost, all but the transport alone (lostOut)
     paid.fill(0); if(gouge)for(let i=0;i<N;i++)E.mg[i].fill(0);
-    let trOut=0, prOut=0, sumF=0, sumM=0, sumC=0, nOrd=0, lostOut=0;
+    // (tax to the country it enters: cPot, what each country gets, in units of p; sumTx, all of it)
+    let trOut=0, prOut=0, sumF=0, sumM=0, sumC=0, nOrd=0, lostOut=0, sumTx=0;
+    const txc=pays&&P.taxTo==='country', cPot=txc?new Float64Array(E.nCountry):null;
     for(let i=0;i<N;i++){
       const ns=newSales[i], sup=E.sup[i], dist=E.dist[i], uu=E.u[i], cc=E.cost[i], c2=E.c2[i], mg=E.mg[i], tt=E.tr[i], F=E.F[i]; ns.fill(0);
+      const txO=txc?E.txO[i]:null, txC=E.txC[i], txA=E.txA[i];
       let dsum=0,sold=0;
       for(let k=0;k<T;k++){
         let r2=uniform?(rng()*LL)|0:pick(W);
@@ -2038,6 +2120,7 @@ function buildEcon(P){
         const c=cc[r2]; let m=1;
         if(gouge){const q=c2[r2]; if(q<Infinity&&q>c)m=1+(q-c); mg[s]+=m; sumM+=m}
         paid[r2]+=m+c; sumF+=m+c; sumC+=c; prOut+=uu[s]; trOut+=c-uu[s]; if(lost)lostOut+=tt[r2];
+        if(txO)for(let j=txO[r2],e=txO[r2+1];j<e;j++){cPot[txC[j]]+=txA[j]; sumTx+=txA[j]}
       }
       if(!gouge)sumM+=sold;
       nOrd+=sold;
@@ -2047,9 +2130,11 @@ function buildEcon(P){
       H.prod.push(np);H.neff.push(s2>0?s1*s1/s2:0);H.share.push(sold?mx/sold:0);H.dist.push(sold?dsum/sold:0);H.unmet.push(1-sold/T);
     }
     // this round's p, before any money moves: the sellers together get the wages, p·Σm = w·L² (no orders: p stays);
-    // buyers pay: p·ΣC₁ comes back as an equal income ubi to every agent (with lost: p·(ΣC₁ − the transport))
+    // buyers pay: p·ΣC₁ comes back as an equal income ubi to every agent (with lost: p·(ΣC₁ − the transport)); with
+    // tax to the country it enters, the taxes and tariffs go instead to the countries, cInc a head in each
     if(sumM>0)E.price=P.wage*LL/sumM;
-    const p=E.price, ubi=pays?p*Math.max(0,sumC-lostOut)/LL:0; E.ubi=ubi;
+    const p=E.price, ubi=pays?p*Math.max(0,sumC-sumTx-lostOut)/LL:0; E.ubi=ubi;
+    const cInc=txc?Float64Array.from(cPot,(v,k)=>p*v/Math.max(1,E.countrySize[k])):null; E.cInc=cInc;
     // money and the decisions of every agent, the same in both economies:
     //   money += w + ubi + p·earn − upkeep − p·paid (free goods: ubi = paid = 0), earn = Σ m over the units it sold,
     //   the upkeep p·Uup, Uup = Σ μ·Start(i)/p₀ counted in units. money < 0 → bankrupt: the weakest factory closes, the
@@ -2071,7 +2156,7 @@ function buildEcon(P){
       let units=0, up=0, nf=0, earn=0;
       for(let i=0;i<N;i++)if(E.F[i][r]){units+=newSales[i][r];up+=mu*P.products[i].start;nf++;if(gouge)earn+=E.mg[i][r]}
       if(!gouge)earn=units;
-      const m0=E.money[r], inc=P.wage+ubi+p*earn, upk=up*pu;
+      const m0=E.money[r], inc=P.wage+ubi+(cInc?cInc[E.country[r]]:0)+p*earn, upk=up*pu;
       E.prevMoney[r]=m0; E.upk[r]=upk; E.spent[r]=0; E.opened[r]=-1; E.dropped[r]=-1; E.fate[r]=0;
       E.prevUnits[r]=E.units[r]; E.units[r]=units; E.earn[r]=earn;
       E.prevNet[r]=E.net[r]; E.net[r]=units-up/ps;
@@ -2133,7 +2218,8 @@ function buildEcon(P){
     // making, the transport, taxes and tariffs, the two together, which came back to everybody, and that a head
     H.transport=p*trOut; Object.assign(H,{sellers:p*sumM,orders:nOrd,sc});
     // (lostT: the transport that was lost, with lost)
-    if(pays)Object.assign(H,{paid:p*sumF,production:p*prOut,returned:p*Math.max(0,sumC-lostOut),lostT:p*lostOut,ubi});
+    if(pays)Object.assign(H,{paid:p*sumF,production:p*prOut,returned:p*Math.max(0,sumC-sumTx-lostOut),lostT:p*lostOut,ubi,
+      taxTo:txc,taxC:p*sumTx});
     E.econ=P.econ; E.t++; E.hist.push(H);
     // (the record of the rounds: when it holds 8000, every second one of all but the last 4000 goes, so that it covers the
     // whole run, ever more thinly further back)
@@ -2251,7 +2337,7 @@ function setPalette(){
 }
 
 const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',tmul:1,roads:[],borders:[],
-  econ:'so',gouge:false,forgive:false,lost:false,self:false,skip:false,close:false,m0u:true,seed:1};
+  econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:false,m0u:true,seed:1};
 // a grid of countries: n two-way borders along each axis taxing every product. In a periodic town one of them lies on
 // the edge, at 0, and they are at j·L/n, j = 0 … n − 1: n × n countries of the same size. In a closed town the n borders
 // are inside, at j·L/(n + 1), j = 1 … n: (n + 1) × (n + 1) countries (a line at 0 is kept but neither counts nor is drawn).
@@ -2306,7 +2392,7 @@ let moneyCont=1;  // money as contours on the ground of the 3D view, smoothed ov
 let hScale=1;      // the heights of all towers in the 3D view (factories and money) multiplied by this factor (menu hScaleSel)
 
 // the model settings of the standard setup (the view and the colours are left as they are): periodic edges
-const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,self:false,skip:false,close:true};
+const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:true};
 // a preset (a standard one on its own lattice size, L, if it has one); seed: a fixed seed, else one at random
 function applyPreset(k,seed){
   const pr=PRESETS[k];
@@ -2511,7 +2597,7 @@ $('bBuyW').onclick=()=>{P.buyw=BUYW[(BUYW.indexOf(P.buyw)+1)%BUYW.length]; syncB
 // The golden economy button above the town switches between free goods and buyers paying for what they buy; n, μ, κ,
 // gouging and the shopping debts keep their values. Its label shows the economy and the n in use.
 const ECON_LABEL={so:'free goods',pay:'buyers pay'};
-function syncSO(){$('bSO2').textContent=ECON_LABEL[P.econ]+' · n '+P.n; menuShow($('nSel2'),P.n); syncGouge(); syncLost();
+function syncSO(){$('bSO2').textContent=ECON_LABEL[P.econ]+' · n '+P.n; menuShow($('nSel2'),P.n); syncGouge(); syncLost(); syncTaxTo();
   syncDebt()}
 // gouging: a toggle right of the Income weight, golden when on, greyed out with free goods, where it does not act
 function syncGouge(){const b=$('bGouge'), act=P.econ==='pay';
@@ -2530,6 +2616,18 @@ function syncLost(){const b=$('bLost'), act=P.econ==='pay';
     'an equal income, so nothing leaves the town. ')+
     (act?'Click to switch.':'It acts only when the buyers pay (the golden button above the town).')}
 $('bLost').onclick=()=>{P.lost=!P.lost; syncLost(); updStat(); distMark()};
+// the border taxes and tariffs the buyers pay: back to everybody with the rest of C (the standard, tax to all), or each
+// crossing's to the country the goods enter there, shared equally by its agents (golden, tax to country); a toggle right
+// of the transport, greyed out with free goods, where nobody pays a tax
+function syncTaxTo(){const b=$('bTaxTo'), act=P.econ==='pay', c=P.taxTo==='country';
+  b.textContent=c?'tax to country':'tax to all'; b.classList.toggle('on',c); b.disabled=!act;
+  b.title=(c?'Tax to country: the border tax and tariff paid where goods cross a border go to the country they enter '+
+    'there, shared equally by its agents (with several borders on the way, each crossing\'s to the country entered). '+
+    'Making and transport come back to everybody as before. '
+    :'Tax to all: the border taxes and tariffs the buyers pay come back to everybody, with the making and the '+
+    'transport, as an equal income. ')+
+    (act?'Click to switch.':'It acts only when the buyers pay (the golden button above the town).')}
+$('bTaxTo').onclick=()=>{P.taxTo=P.taxTo==='country'?'all':'country'; syncTaxTo(); updStat(); distMark()};
 // shopping debts, under the Economy menu of the panel: bankrupt (the standard) or forgiven (golden) when they come from
 // shopping alone; greyed out with free goods, where nobody pays for shopping
 function syncDebt(){const b=$('bDebt'), act=P.econ==='pay';
@@ -3154,11 +3252,14 @@ function updStat(){
   // buyers pay: where the buyers' money went in the last round — to the sellers, and for making, transport, taxes and
   // tariffs, which came back to everybody in the same round as an equal income
   // (with the transport lost: what it cost, which left the town)
-  if(H&&H.econ==='pay')s+=`<br>last round the buyers paid <b>${fmt(H.paid,1)}</b>: <b>${fmt(H.sellers,1)}</b> to the `+
-    (H.lost?`sellers (all the wages), <b>${fmt(H.lostT,1)}</b> for transport, which was lost, and `+
-      `<b>${fmt(H.returned,1)}</b> for making, taxes and tariffs, which came `
-    :`sellers (all the wages) and <b>${fmt(H.returned,1)}</b> for making, transport, taxes and tariffs, which came `)+
-    `back to everybody, <b>${pf(H.ubi)}</b> each`;
+  // (with tax to the country it enters: the taxes and tariffs, which went to the countries)
+  if(H&&H.econ==='pay'){const tt=H.taxTo?'':', taxes and tariffs';
+    s+=`<br>last round the buyers paid <b>${fmt(H.paid,1)}</b>: <b>${fmt(H.sellers,1)}</b> to the `+
+    (H.lost?`sellers (all the wages), <b>${fmt(H.lostT,1)}</b> for transport, which was lost, `+(H.taxTo?'':'and ')+
+      `<b>${fmt(H.returned,1)}</b> for making${tt}, which came `
+    :`sellers (all the wages)${H.taxTo?',':' and'} <b>${fmt(H.returned,1)}</b> for making${H.taxTo?' and transport':', transport'+tt}, which came `)+
+    `back to everybody, <b>${pf(H.ubi)}</b> each`+
+    (H.taxTo?`, and <b>${fmt(H.taxC,1)}</b> for border taxes and tariffs, which went to the countries the goods entered`:'')}
   // Start and upkeep follow p, ×p/p₀: shown when p differs from p₀ (with gouging, or when orders are not served)
   if(H&&Math.abs(H.sc-1)>1e-9)s+=` · Start and upkeep ×<b>${H.sc.toFixed(2)}</b> (p/p₀)`;
   setHTML($('stat'),s);
@@ -3912,7 +4013,7 @@ function readout(r){
     // the money of the round, from the round before: the wage, the equal income and the shopping (buyers pay), the
     // sales (p a unit, more with gouging) and the upkeep; then a debt written off, and a new factory
     const p=H.price, pay=H.econ==='pay', fate=E.fate[r];
-    const parts=[['wage',H.wage],['equal income',pay?E.ubi:0],
+    const parts=[['wage',H.wage],['equal income',pay?E.ubi:0],['tax income of its country',pay&&E.cInc?E.cInc[E.country[r]]:0],
       [H.gouge&&E.units[r]>0?`sales (${(E.earn[r]/E.units[r]).toFixed(2)}·p a unit)`:'sales',p*E.earn[r]],
       ['shopping',pay?-p*E.paid[r]:0],['upkeep',-E.upk[r]]].filter(([,v],j)=>j===0||v!==0);
     s+=`, round before ${f1(E.prevMoney[r])}: `+parts.map(([k,v])=>`${k} ${sg(v)}`).join(', ');
@@ -5746,7 +5847,7 @@ const sig=v=>{if(!Number.isFinite(v))return '–'; const a=Math.abs(v); return (
 const sig3=v=>!Number.isFinite(v)?'–':Math.abs(v)>=1000?v.toFixed(0):v.toPrecision(3);
 // the model of the scan in words: the economy, L and the edges first (the head of the table)
 function scanModel(T,names){
-  const econ=P.econ==='pay'?'buyers pay'+(P.gouge?', gouging':'')+(P.lost?', transport lost':'')+(P.forgive?', shopping debts forgiven':''):'free goods';
+  const econ=P.econ==='pay'?'buyers pay'+(P.gouge?', gouging':'')+(P.lost?', transport lost':'')+(P.taxTo==='country'?', tax to country':'')+(P.forgive?', shopping debts forgiven':''):'free goods';
   return {l1:`Model: ${econ} · L = ${P.L} · ${P.bc==='periodic'?'periodic':'closed (not periodic)'} edges`,
     l2:`n = ${P.n}, wage ${P.wage}, μ = ${P.upkeep}, κ = ${P.kappa}, lim ${P.lim}, ${BUYW_LABEL[P.buyw]||P.buyw}, ${['buy elsewhere','own allowed (agents may buy from their own factory)','no own orders (owners place no orders for their own product)'][selfMode()]}, ${P.close?'always close (an owner that gives up closes its factory)':'keep if broke'}, transport ×${fmt(P.tmul)}`+
       (P.borders.length?`, ${P.borders.length} borders`:'')+(P.roads.length?`, ${P.roads.length} roads`:'')+`, start money ${P.m0u?'0 … '+P.M0:P.M0}, seed ${P.seed}; ${T} rounds a point, averaged over the last ⅔`,
@@ -6005,7 +6106,7 @@ function bordersDesc(){const bs=P.borders; if(!bs.length)return {geom:'No border
     tax.push(...new Set(o.map(b=>`tax ${pc(b.tax||0)}`+(b.tariff?`, tariff ${b.tariff}`:''))))}
   return {geom:geom.join('; '),tax:[...new Set(tax)].join(' / ')}}
 function chgParts(){const q={
-  econ:P.econ==='pay'?'buyers pay':'free goods', gouge:P.gouge?'gouging':'no gouging', lost:P.lost?'transport lost':'transport back',
+  econ:P.econ==='pay'?'buyers pay':'free goods', gouge:P.gouge?'gouging':'no gouging', lost:P.lost?'transport lost':'transport back', taxTo:P.taxTo==='country'?'tax to country':'tax to all',
   debt:P.forgive?'shopping debts forgiven':'shopping debts bankrupt', buyw:BUYW_LABEL[P.buyw]||P.buyw, self:selfText(), close:CLOSE_LABEL[P.close?1:0], n:`n = ${P.n}`,
   mu:`μ = ${P.upkeep}`, kappa:`κ = ${P.kappa}`, wage:`wage ${P.wage}`, lim:`lim ${P.lim}`, edges:`${P.bc} edges`,
   bgeom:bordersDesc().geom, btax:bordersDesc().tax, roads:P.roads.length?`${P.roads.length} road${P.roads.length>1?'s':''}`:'No roads'};
