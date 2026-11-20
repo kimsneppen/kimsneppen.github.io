@@ -174,6 +174,7 @@
   @media (max-width:420px){ .cornerbtns .dombtns .dlab{display:none} }
   .cornerbtns .dombtns button{min-width:24px;padding:0 5px;box-shadow:inset 0 -4px 0 var(--pc);font-family:inherit;font-size:12px;line-height:25px}
   .cornerbtns .dombtns button.on,.display.darkbg .cornerbtns .dombtns button.on{background:var(--pc);border-color:var(--pc);color:var(--pt)}
+  .cornerbtns .dombtns button.domsty{box-shadow:none;min-width:44px}
   .cornerbtns button{height:28px;min-width:30px;padding:0 9px;font-size:11.5px;border-radius:8px;border:1px solid var(--line);
     background:rgba(255,255,255,.88);color:var(--accent);font-weight:700;cursor:pointer;
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;line-height:26px}
@@ -839,7 +840,7 @@
         Drag to turn and tilt, use the mouse wheel to zoom, or open the <i>view</i> menu. <i>lin / log</i> switches the
         towers to a logarithmic scale, so that small factories show up too. The menu <i>heights ×1</i> multiplies the
         heights of all towers, factories and money alike, by 0.02, 0.03, 0.05, 0.1, 0.25, 0.5, 2, 4 or 10, and the scale bars follow; the
-        <i>view</i> menu has two front views, <i>front</i> (tilt 18°) and <i>front30</i> (tilt 30°, the view at the start). The menu <i>money contours ½</i>
+        <i>view</i> menu has two front views, <i>front</i> (tilt 18°) and <i>front30</i> (tilt 30°, the view at the start). The menu <i>money contours 1</i>
         right of − road replaces the golden towers by money contours on the ground: the money of the agents smoothed over ½,
         1, 2 or 4 lattice spacings, one shade for each factor 10 — dark grey below 0.1, grey, light grey, light golden,
         golden and dark golden above 1000 — with a contour line between the shades and their key above the scale bar.</p>
@@ -1260,7 +1261,7 @@
       </div>
       <button class="tb" data-tool="rmRoad" title="remove a road: tap on it">− road</button>
       <select class="tb" id="mContSel" title="the money of the agents: golden towers (the money menu above), or money contours on the ground — the money smoothed over ½, 1, 2 or 4 lattice spacings, one shade for each factor 10 (dark grey below 0.1, grey, light grey, light golden, golden, dark golden above 1000) and a contour line between them">
-        <option value="0">money towers</option><option value="0.5" selected>money contours ½</option><option value="1">money contours 1</option><option value="2">money contours 2</option><option value="4">money contours 4</option></select>
+        <option value="0">money towers</option><option value="0.5">money contours ½</option><option value="1" selected>money contours 1</option><option value="2">money contours 2</option><option value="4">money contours 4</option></select>
       </div>
       <div class="cornerbtns">
         <span class="inforow"><span class="frbtns"><button id="bBack" aria-label="one round back"
@@ -2301,7 +2302,7 @@ const PRESETS={
     products:THREE,tmul:0.2,anneal:false,borders:L=>gridBorders(L,P.bc==='periodic'?3:2,0.2)},
 };
 let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=false, loopTok=0;
-let moneyCont=0.5;  // money as contours on the ground of the 3D view, smoothed over this many lattice spacings (0: towers; menu mContSel)
+let moneyCont=1;  // money as contours on the ground of the 3D view, smoothed over this many lattice spacings (0: towers; menu mContSel)
 let hScale=1;      // the heights of all towers in the 3D view (factories and money) multiplied by this factor (menu hScaleSel)
 
 // the model settings of the standard setup (the view and the colours are left as they are): periodic edges
@@ -2427,6 +2428,11 @@ function buildProductUI(){
     b.onclick=()=>{if(domOn.has(i))domOn.delete(i);else domOn.add(i); b.classList.toggle('on',domOn.has(i)); draw()};
     db.appendChild(b);
   });
+  // the style of the market-domain lines (all products): dotted, or full lines thin, normal or thick
+  const sb=document.createElement('button'); sb.className='domsty'; sb.textContent=DOMSTY_L[domSty];
+  sb.title='the lines of the market domains: dotted, or full lines — thin, normal or thick — in the colour of the product (shown for the products switched on to the left); click to switch';
+  sb.onclick=()=>{domSty=(domSty+1)%DOMSTY_L.length; sb.textContent=DOMSTY_L[domSty]; draw()};
+  db.appendChild(sb);
   const pt=$('ptabs'); pt.innerHTML='';
   P.products.forEach((pr,i)=>{
     const b=document.createElement('button'); b.textContent=PNAME[i]; b.style.background=PCOL[i]; b.style.color=PTXT[i];
@@ -2745,12 +2751,15 @@ function toolUp(){
 // different sellers. A seller with buyers belongs to its own domain (it buys the product from someone else).
 // at(x,y): the screen point of the lattice corner (x,y)
 const domOn=new Set();
+// the style of the lines (button beside the product buttons): 0 dotted, 1 thin, 2 normal, 3 thick full lines
+let domSty=0; const DOMSTY_L=['dotted','thin','normal','thick'];
 function drawDomains(at,dpr){
   if(!domOn.size)return;
   const L=E.L, LL=L*L, dom=new Int32Array(LL);
   // on the white ground bigger dots, in a light colour made darker (B's light green would vanish on the light ground)
-  ctx.save(); ctx.lineCap='round'; ctx.lineWidth=Math.max(1.2,(dark?1.5:2.2)*dpr);
-  ctx.setLineDash([0.01,(dark?3:4)*dpr]);
+  ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
+  if(domSty===0){ctx.lineWidth=Math.max(1.2,(dark?1.5:2.2)*dpr); ctx.setLineDash([0.01,(dark?3:4)*dpr])}
+  else{ctx.lineWidth=Math.max(0.6,[0,0.7,1.5,3][domSty]*dpr); ctx.setLineDash([])}
   for(const i of domOn){
     if(i>=E.N)continue;
     const F=E.F[i], sup=E.sup[i], A=E.area[i], q=PRGB[i], lum=(0.299*q[0]+0.587*q[1]+0.114*q[2])/255;
