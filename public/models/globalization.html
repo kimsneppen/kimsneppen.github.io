@@ -612,7 +612,10 @@
           tries something new, and so does an agent without a factory. It picks at random another product it can
           afford, pays Start, and opens a new factory, which starts small (s = 1). If it can afford none, it closes
           its factory all the same and stays without one until it can (<i>always close</i>, the standard; with
-          <i>keep if broke</i>, the toggle above the town, nothing changes). An agent runs one factory at a time (you can allow more in the control panel), so the old one
+          <i>keep if broke</i>, the toggle above the town, nothing changes). With <i>plan, then save</i>, the toggle beside it,
+          the agent first picks the product at random, the one it made among them, and saves until it can pay that
+          product's Start: with equal Starts this is the same, but when the products cost different amounts to start,
+          the agents save up for the dear ones too, instead of always opening the cheapest they can pay. An agent runs one factory at a time (you can allow more in the control panel), so the old one
           closes. The rule is the same in both economies. Owners judge sales, not money: a change of p alone never
           makes anybody give up, and the extra money of gouging does not count either.</li>
       </ol>
@@ -1150,6 +1153,7 @@
         >Cost ultra flat</button>
       <button class="tbtn stdbtn selfbtn" id="bSelf"></button>
       <button class="tbtn stdbtn selfbtn" id="bClose"></button>
+      <button class="tbtn stdbtn selfbtn" id="bPlan"></button>
       <button class="tbtn sobtn on" id="bSO2" data-tip="econ">free goods · n 1</button>
       <span class="bargrp"><button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
         <button class="tbtn run slow" id="bSlow2" aria-label="slow run"
@@ -1683,7 +1687,10 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 //      another buyer, picked the same way, so that every product keeps its n·L² orders; self then has no effect),
 //      close (an owner that gives up always closes its weakest factory, and opens a product at random among those it
 //      can pay, the closed one among them, if any; absent or false, the standard: it closes it only when it is at
-//      lim and can pay for another product, and otherwise keeps it), seed}
+//      lim and can pay for another product, and otherwise keeps it), plan (an agent that is to open a factory first
+//      picks its product, at random among those it does not make, the closed one among them, and saves until it can pay
+//      that product's Start; absent or false: it opens a product at random among those it can pay, as soon as it can pay
+//      one; with equal Starts the two give the same run), seed}
 // Every order goes to the buyer's cheapest offer C₁ = α·s^γ + β·d (+ border tax and tariff), the delivered cost; nobody
 // buys from itself (unless P.self allows it). The seller keeps m = 1 a unit, in units of the price p; with gouging m = 1 + C₂ − C₁, C₂ the
 // delivered cost of the buyer's next-best offer from another factory (none: m = 1), while the buyers still choose by
@@ -1968,6 +1975,8 @@ function buildEcon(P){
   // at lim to open another; −1 none), fate (1 bankrupt, 2 shopping debt forgiven), its money at the start of the
   // round, the upkeep and the Start it paid (money); ubi: the equal income of the round (buyers pay)
   E.why=new Int8Array(LL); E.opened=new Int8Array(LL); E.dropped=new Int8Array(LL); E.fate=new Int8Array(LL);
+  // plan: the product the agent saves for (−1: none yet; P.plan)
+  E.plan=new Int8Array(LL).fill(-1);
   E.prevMoney=new Float64Array(LL); E.upk=new Float64Array(LL); E.spent=new Float64Array(LL); E.ubi=0;
   // cost: the delivered price C₁ each agent pays; c2: its next-best offer C₂ (∞: none; found only with gouging);
   // mg: Σ m = 1 + C₂ − C₁ over the units each factory sold this round (gouging); u: what a unit costs each factory to
@@ -1998,7 +2007,7 @@ function buildEcon(P){
     const rm=P.m0u?mulberry32((P.seed||1)^0x5bd1e995):null;
     for(let r=0;r<LL;r++){E.money[r]=rm?rm()*P.M0:P.M0;E.inc[r]=0;E.prevInc[r]=0;E.profit[r]=0;E.prevProfit[r]=0;E.net[r]=0;E.prevNet[r]=0;
       E.units[r]=0;E.prevUnits[r]=0;E.earn[r]=0;paid[r]=0;E.started[r]=-1;E.falls[r]=0}
-    E.why.fill(0); E.opened.fill(-1); E.dropped.fill(-1); E.fate.fill(0); E.prevMoney.set(E.money);
+    E.why.fill(0); E.opened.fill(-1); E.dropped.fill(-1); E.fate.fill(0); E.plan.fill(-1); E.prevMoney.set(E.money);
     E.upk.fill(0); E.spent.fill(0);
     // until the first round: p₀, the price when all n·L²·N orders are served (0 without wages)
     E.price=P.wage*LL/(N*Math.max(1,Math.round(P.n*LL)));
@@ -2141,7 +2150,8 @@ function buildEcon(P){
     //   debt is written off and the agent starts again from w; with forgive, a debt from shopping alone (the money
     //   would be ≥ 0 without it) is forgiven: money = w, and the factories stay.
     //   Having no factory, net sales (units sold − Uup) below the round before's in κ rounds in a row (patience; 1:
-    //   at the first fall), or net sales ≤ 0 make the agent explore: it opens a product it can afford, paying Start·p/p₀, and closes its
+    //   at the first fall), or net sales ≤ 0 make the agent explore: it opens a product it can afford (with P.plan: the
+    //   product it saves for, once it can pay it), paying Start·p/p₀, and closes its
     //   weakest factory (fewest net sales) first if it is at lim. A change of the common p is no reason to give up.
     const cand=new Int32Array(N), mu=P.upkeep, lim=Math.max(1,Math.min(N,P.lim|0||N)), kap=Math.max(1,Math.round(P.kappa)||1);
     // p₀: the price when every order is served at m = 1; ps: it, or 1 when there are no wages; sc = p/p₀ (1 without
@@ -2151,6 +2161,18 @@ function buildEcon(P){
       for(let i=0;i<N;i++)if(E.F[i][r]){const v=newSales[i][r]-mu*P.products[i].start/ps;
         if(v<wv){wv=v;w=i;nt=1}else if(v===wv){nt++;if(rng()*nt<1)w=i}}
       return w};
+    // plan, then save (P.plan): the product an agent saves for is drawn at random among those it does not make (with a
+    // single product, the one it gives up too) once it can pay the cheapest of them, which is the draw, and its moment,
+    // of the product picked among those it can pay without a plan, so that with equal Starts both rules give the same
+    // run; it is opened as soon as the agent can pay its Start; −1: nothing to open (yet)
+    const planFor=(r,drop)=>{
+      let j=E.plan[r];
+      if(j<0||j>=N||(E.F[j][r]&&!(N===1&&j===drop))){
+        let nc=0, cmin=Infinity;
+        for(let i=0;i<N;i++)if(!E.F[i][r]||(N===1&&i===drop)){cand[nc++]=i; if(P.products[i].start<cmin)cmin=P.products[i].start}
+        j=nc&&cmin*sc<=E.money[r]?cand[(rng()*nc)|0]:-1; E.plan[r]=j}
+      if(j>=0&&P.products[j].start*sc<=E.money[r]){E.plan[r]=-1; return j}
+      return -1};
     E.bankruptList=[]; E.closeList=[];
     for(let r=0;r<LL;r++){
       let units=0, up=0, nf=0, earn=0;
@@ -2187,20 +2209,23 @@ function buildEcon(P){
         // always close: the weakest factory closes, and a product it can pay (the closed one among them) opens, if any
         if(nf>0){const d=weakest(r); E.closeList.push({r,size:Math.max(newSales[d][r],E.sales[d][r]),prod:d,mon:Math.max(0,m0)});
           E.F[d][r]=0; if(E.dropped[r]<0)E.dropped[r]=d}
-        let nc=0; for(let i=0;i<N;i++)if(!E.F[i][r]&&P.products[i].start*sc<=E.money[r])cand[nc++]=i;
-        if(nc){const j=cand[(rng()*nc)|0], c=P.products[j].start*sc;
+        let j=-1;
+        if(P.plan)j=planFor(r,-1);
+        else{let nc=0; for(let i=0;i<N;i++)if(!E.F[i][r]&&P.products[i].start*sc<=E.money[r])cand[nc++]=i; if(nc)j=cand[(rng()*nc)|0]}
+        if(j>=0){const c=P.products[j].start*sc;
           E.money[r]-=c; E.spent[r]=c; E.opened[r]=j; E.F[j][r]=1; newSales[j][r]=0; E.started[r]=E.t+1; H.starts++}
       }else if(why&&N===1&&skip&&nf>0){
         E.closeList.push({r,size:Math.max(newSales[0][r],E.sales[0][r]),prod:0,mon:Math.max(0,m0)}); E.F[0][r]=0;
         if(E.dropped[r]<0)E.dropped[r]=0;
       }else if(why){
         const drop=nf>=lim?weakest(r):-1;
-        let nc=0;
+        let j=-1;
         // (with a single product the owner can only give its factory up and open a new one of the same product in its
         // place, paying Start again: the company collapses and starts anew)
-        for(let i=0;i<N;i++)if((!E.F[i][r]||(N===1&&i===drop))&&P.products[i].start*sc<=E.money[r])cand[nc++]=i;
-        if(nc){
-          const j=cand[(rng()*nc)|0], c=P.products[j].start*sc;
+        if(P.plan)j=planFor(r,drop);
+        else{let nc=0; for(let i=0;i<N;i++)if((!E.F[i][r]||(N===1&&i===drop))&&P.products[i].start*sc<=E.money[r])cand[nc++]=i; if(nc)j=cand[(rng()*nc)|0]}
+        if(j>=0){
+          const c=P.products[j].start*sc;
           // a factory closed because its owner changes product: recorded with its size (units sold) for the display
           if(drop>=0){const size=Math.max(newSales[drop][r],E.sales[drop][r]);
             E.closeList.push({r,size,prod:drop,mon:Math.max(0,m0)}); E.F[drop][r]=0;
@@ -2337,7 +2362,7 @@ function setPalette(){
 }
 
 const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',tmul:1,roads:[],borders:[],
-  econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:false,m0u:true,seed:1};
+  econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:false,plan:false,m0u:true,seed:1};
 // a grid of countries: n two-way borders along each axis taxing every product. In a periodic town one of them lies on
 // the edge, at 0, and they are at j·L/n, j = 0 … n − 1: n × n countries of the same size. In a closed town the n borders
 // are inside, at j·L/(n + 1), j = 1 … n: (n + 1) × (n + 1) countries (a line at 0 is kept but neither counts nor is drawn).
@@ -2392,7 +2417,7 @@ let moneyCont=1;  // money as contours on the ground of the 3D view, smoothed ov
 let hScale=1;      // the heights of all towers in the 3D view (factories and money) multiplied by this factor (menu hScaleSel)
 
 // the model settings of the standard setup (the view and the colours are left as they are): periodic edges
-const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:true};
+const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:true,plan:false};
 // a preset (a standard one on its own lattice size, L, if it has one); seed: a fixed seed, else one at random
 function applyPreset(k,seed){
   const pr=PRESETS[k];
@@ -2405,6 +2430,8 @@ function applyPreset(k,seed){
   P.products=pr.products.map(o=>({...o}));
   // every preset gives up with always close, but the tiny town of the tutorial, whose text follows one run with keep if broke
   P.close=k!=='tiny';
+  // and every preset opens what the agents can pay, the rule of the lessons and of the tutorial (plan, then save: the toggle)
+  P.plan=false;
   P.tmul=pr.tmul; P.roads=[]; P.borders=pr.borders?pr.borders(+$('Lsel').value):[];
   $('anneal').checked=!!pr.anneal;
   $('presetNote').textContent=pr.note;
@@ -2432,7 +2459,7 @@ const fmt=(v,d=2)=>Math.abs(v)>=100?v.toFixed(0):Math.abs(v)>=10?v.toFixed(1):v.
 function syncControls(){
   $('nSel').value=String(P.n); $('kapSel').value=$('patSel').value=String(P.kappa);
   $('wageR').value=P.wage; $('wageV').textContent=P.wage.toFixed(2);
-  syncUp(); syncBuyW(); syncSelf(); syncClose();
+  syncUp(); syncBuyW(); syncSelf(); syncClose(); syncPlan();
   $('M0R').value=P.M0; $('M0V').textContent=P.M0;
   $('tmR').value=Math.log10(P.tmul); $('tmV').textContent=fmt(P.tmul);
   $('bcSel').value=$('bcSel2').value=P.bc; $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
@@ -2571,6 +2598,15 @@ function syncClose(){const b=$('bClose'); b.textContent=CLOSE_LABEL[P.close?1:0]
   b.title=P.close?'Always close (the standard): an owner that gives up closes its factory, and opens a product at random among those it can pay for (the closed one among them). If it can pay for none it stays without a factory, as a buyer only, until it can. Click for keep if broke.'
     :'Keep if broke: an owner that gives up closes its factory only when it can pay for a factory of another product, which it opens; otherwise it keeps the factory (the tiny town of the tutorial). Click for the standard, always close.'}
 $('bClose').onclick=()=>{P.close=!P.close; syncClose(); updStat(); distMark()};
+// how an agent picks the product of its next factory, a toggle right of the one above: open what it can pay (the rule of
+// the page: a product at random among those it can pay, as soon as it can pay one) or plan, then save (P.plan: it picks
+// the product at random first, the closed one among them, and saves until it can pay that product's Start). With equal
+// Starts, as in the standard setup, the two give the same run
+const PLAN_LABEL=['open what it can pay','plan, then save'];
+function syncPlan(){const b=$('bPlan'); b.textContent=PLAN_LABEL[P.plan?1:0]; b.classList.toggle('on',!!P.plan);
+  b.title=P.plan?'Plan, then save: an agent that is to open a factory first picks its product at random (the closed one among them) and saves until it can pay that product\'s Start, so that it saves up for the dear products too. With equal Starts this gives the same run as open what it can pay. Click for open what it can pay.'
+    :'Open what it can pay (the rule of the page): an agent opens a product at random among those it can pay, as soon as it can pay one. When the products cost different amounts to start, the poor then always open the cheapest and never save up for the dear ones. Click for plan, then save.'}
+$('bPlan').onclick=()=>{P.plan=!P.plan; syncPlan(); updStat(); distMark()};
 function syncSales(){
   syncCost();
   const N=P.products.length, T=Math.max(1,Math.round(P.n*P.L*P.L)), p0=P.wage*P.L*P.L/(N*T);
@@ -3244,7 +3280,7 @@ function updStat(){
   const pe=priceEcon(), pf=v=>v<0.1?v.toFixed(4):fmt(v,3);
   let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit p <b>${pf(E.price)}</b> `+
     `(${pe.pay?'buyers pay'+(pe.gouge?', gouging':''):'free goods'}${pe.next?'; '+pe.next:''})`+
-    (P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:'')+(selfMode()?' · '+selfText():'')+(P.close?'':' · keep if broke');
+    (P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:'')+(selfMode()?' · '+selfText():'')+(P.close?'':' · keep if broke')+(P.plan?' · plan, then save':'');
   // per round: the agents with sales, starts and bankruptcies, and the shopping debts forgiven when the buyers pay
   if(H)s+=`<br>agents with sales <b>${(100*H.active).toFixed(1)}%</b> · per round: starts `+
     `<b>${(100*H.starts).toFixed(1)}%</b>, bankruptcies <b>${(100*H.bankrupt).toFixed(2)}%</b>`+
@@ -4021,13 +4057,15 @@ function readout(r){
     if(E.spent[r]>0)s+=`, new factory ${sg(-E.spent[r])}`;
     // what it did: kept its factory, or (no factory, sales fell, or none sold) opened another, if it could afford one
     const why=E.why[r], op=E.opened[r], dr=E.dropped[r], Y=op>=0?X(op):'';
+    // (plan, then save: the product it saves for, if it picked one)
+    const pl=P.plan&&op<0&&E.plan&&E.plan[r]>=0?X(E.plan[r]):'';
     let dec;
     if(why===0)dec=`it kept its ${made.length>1?'factories':'factory'}`;
-    else if(why===1)dec=fate===1?(op<0?'it could not afford a new factory':`it opened ${Y}`)
-      :'it had no factory and '+(op<0?'could not afford one':`opened ${Y}`);
+    else if(why===1)dec=fate===1?(op<0?(pl?`it saves for ${pl}`:'it could not afford a new factory'):`it opened ${Y}`)
+      :'it had no factory and '+(op<0?(pl?`saves for ${pl}`:'could not afford one'):`opened ${Y}`);
     else{const c=why===2?`its ${E.upk[r]>0?'net ':''}sales fell${H.kappa>1?` in ${H.kappa} rounds in a row`:''}`
         :E.units[r]>0?'its sales did not pay for its upkeep':'it sold nothing';
-      dec=c+(op<0?', but it could not afford another product'
+      dec=c+(op<0?(pl?(dr>=0&&fate!==1?`, so it gave up ${X(dr)} and saves for ${pl}`:`, so it saves for ${pl}`):', but it could not afford another product')
         :dr>=0&&fate!==1?`, so it gave up ${X(dr)} and opened ${Y}`:`, so it opened ${Y}`)}
     did=`units sold <b>${E.units[r]}</b>, the round before ${E.prevUnits[r]} · `+
       (fate===1?`it went bankrupt${dr>=0?` (${X(dr)} closed)`:''}: its debt was written off; `
@@ -4087,7 +4125,7 @@ function stampParams(oc,scale){
     (view==='3d'&&moneyCont?', money contours σ '+(moneyCont===0.5?'½':moneyCont):view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
   const pe=priceEcon(), lines=[
     {t:`Globalization in a nutshell — 2D · round ${frT()} · ${viewName}`,b:true},
-    {t:`L = ${E.L}, n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close':'keep if broke'}, lim = ${P.lim}, `+
+    {t:`L = ${E.L}, n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close':'keep if broke'}, ${P.plan?'plan, then save, ':''}lim = ${P.lim}, `+
       `wage w = ${P.wage}, upkeep μ = ${P.upkeep}, patience κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
       (pe.pay?`buyers pay, p = ${E.price.toPrecision(3)}${pe.gouge?', gouging':''}`+
         (pe.forgive?', shopping debts forgiven':''):`free goods, p = ${E.price.toPrecision(3)}`)+
@@ -5849,7 +5887,7 @@ const sig3=v=>!Number.isFinite(v)?'–':Math.abs(v)>=1000?v.toFixed(0):v.toPreci
 function scanModel(T,names){
   const econ=P.econ==='pay'?'buyers pay'+(P.gouge?', gouging':'')+(P.lost?', transport lost':'')+(P.taxTo==='country'?', tax to country':'')+(P.forgive?', shopping debts forgiven':''):'free goods';
   return {l1:`Model: ${econ} · L = ${P.L} · ${P.bc==='periodic'?'periodic':'closed (not periodic)'} edges`,
-    l2:`n = ${P.n}, wage ${P.wage}, μ = ${P.upkeep}, κ = ${P.kappa}, lim ${P.lim}, ${BUYW_LABEL[P.buyw]||P.buyw}, ${['buy elsewhere','own allowed (agents may buy from their own factory)','no own orders (owners place no orders for their own product)'][selfMode()]}, ${P.close?'always close (an owner that gives up closes its factory)':'keep if broke'}, transport ×${fmt(P.tmul)}`+
+    l2:`n = ${P.n}, wage ${P.wage}, μ = ${P.upkeep}, κ = ${P.kappa}, lim ${P.lim}, ${BUYW_LABEL[P.buyw]||P.buyw}, ${['buy elsewhere','own allowed (agents may buy from their own factory)','no own orders (owners place no orders for their own product)'][selfMode()]}, ${P.close?'always close (an owner that gives up closes its factory)':'keep if broke'}${P.plan?', plan, then save (an agent picks the product of its next factory first and saves for it)':''}, transport ×${fmt(P.tmul)}`+
       (P.borders.length?`, ${P.borders.length} borders`:'')+(P.roads.length?`, ${P.roads.length} roads`:'')+`, start money ${P.m0u?'0 … '+P.M0:P.M0}, seed ${P.seed}; ${T} rounds a point, averaged over the last ⅔`,
     l3:'Products above: '+P.products.map((pr,i)=>`${names[i]} Start ${sig(pr.start)}, γ ${sig(pr.gamma)}, β ${sig(pr.beta)}, α ${sig(alphaOf(pr))}`).join(' · ')}}
 // From each of the cells ref: the nearest other cell with a factory (F) that sold something (S > 0), of any size; of
@@ -6107,7 +6145,7 @@ function bordersDesc(){const bs=P.borders; if(!bs.length)return {geom:'No border
   return {geom:geom.join('; '),tax:[...new Set(tax)].join(' / ')}}
 function chgParts(){const q={
   econ:P.econ==='pay'?'buyers pay':'free goods', gouge:P.gouge?'gouging':'no gouging', lost:P.lost?'transport lost':'transport back', taxTo:P.taxTo==='country'?'tax to country':'tax to all',
-  debt:P.forgive?'shopping debts forgiven':'shopping debts bankrupt', buyw:BUYW_LABEL[P.buyw]||P.buyw, self:selfText(), close:CLOSE_LABEL[P.close?1:0], n:`n = ${P.n}`,
+  debt:P.forgive?'shopping debts forgiven':'shopping debts bankrupt', buyw:BUYW_LABEL[P.buyw]||P.buyw, self:selfText(), close:CLOSE_LABEL[P.close?1:0], plan:PLAN_LABEL[P.plan?1:0], n:`n = ${P.n}`,
   mu:`μ = ${P.upkeep}`, kappa:`κ = ${P.kappa}`, wage:`wage ${P.wage}`, lim:`lim ${P.lim}`, edges:`${P.bc} edges`,
   bgeom:bordersDesc().geom, btax:bordersDesc().tax, roads:P.roads.length?`${P.roads.length} road${P.roads.length>1?'s':''}`:'No roads'};
   if(!$('anneal').checked)q.transport=`transport ×${fmt(P.tmul)}`;
