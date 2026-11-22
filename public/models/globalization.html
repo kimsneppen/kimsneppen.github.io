@@ -609,13 +609,14 @@
           the number of sales it takes to pay the upkeep. Without upkeep that is just the units sold; with μ = 0.02 and
           n = 1 a bakery's upkeep takes 2.4 sales a round. If its net sales fell since last round (at the first fall in the
           standard setup, patience κ = 1; see <i>Patience</i> below), or are zero or less (without upkeep: it sold nothing), the owner
-          tries something new, and so does an agent without a factory. It picks at random another product it can
-          afford, pays Start, and opens a new factory, which starts small (s = 1). If it can afford none, it closes
-          its factory all the same and stays without one until it can (<i>always close</i>, the standard; with
-          <i>keep if broke</i>, the toggle above the town, nothing changes). With <i>plan, then save</i>, the toggle beside it,
-          the agent first picks the product at random, the one it made among them, and saves until it can pay that
-          product's Start: with equal Starts this is the same, but when the products cost different amounts to start,
-          the agents save up for the dear ones too, instead of always opening the cheapest they can pay. An agent runs one factory at a time (you can allow more in the control panel), so the old one
+          tries something new, and so does an agent without a factory. It picks the product of its next factory at
+          random, the one it made among them, and saves until it can pay that product's Start; then it pays Start and
+          opens the new factory, which starts small (s = 1). Meanwhile it closes its factory all the same and stays
+          without one (<i>always close</i>, the standard; with <i>keep if broke</i>, the toggle above the town, it keeps
+          its factory until it can pay). With <i>open what it can pay</i>, the toggle beside it, an agent instead opens a
+          product at random among those it can pay, as soon as it can pay one: with equal Starts this is the same, but
+          when the products cost different amounts to start, the poor then always open the cheapest and never save up
+          for the dear ones (the rule of the tiny town of the tutorial). An agent runs one factory at a time (you can allow more in the control panel), so the old one
           closes. The rule is the same in both economies. Owners judge sales, not money: a change of p alone never
           makes anybody give up, and the extra money of gouging does not count either.</li>
       </ol>
@@ -2362,7 +2363,7 @@ function setPalette(){
 }
 
 const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',tmul:1,roads:[],borders:[],
-  econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:false,plan:false,m0u:true,seed:1};
+  econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:false,plan:true,m0u:true,seed:1};
 // a grid of countries: n two-way borders along each axis taxing every product. In a periodic town one of them lies on
 // the edge, at 0, and they are at j·L/n, j = 0 … n − 1: n × n countries of the same size. In a closed town the n borders
 // are inside, at j·L/(n + 1), j = 1 … n: (n + 1) × (n + 1) countries (a line at 0 is kept but neither counts nor is drawn).
@@ -2417,7 +2418,7 @@ let moneyCont=1;  // money as contours on the ground of the 3D view, smoothed ov
 let hScale=1;      // the heights of all towers in the 3D view (factories and money) multiplied by this factor (menu hScaleSel)
 
 // the model settings of the standard setup (the view and the colours are left as they are): periodic edges
-const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:true,plan:false};
+const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:true,plan:true};
 // a preset (a standard one on its own lattice size, L, if it has one); seed: a fixed seed, else one at random
 function applyPreset(k,seed){
   const pr=PRESETS[k];
@@ -2430,8 +2431,9 @@ function applyPreset(k,seed){
   P.products=pr.products.map(o=>({...o}));
   // every preset gives up with always close, but the tiny town of the tutorial, whose text follows one run with keep if broke
   P.close=k!=='tiny';
-  // and every preset opens what the agents can pay, the rule of the lessons and of the tutorial (plan, then save: the toggle)
-  P.plan=false;
+  // and every preset plans, then saves (the rule of the paper), but the tiny town, whose tutorial follows one run in which
+  // the agents open what they can pay
+  P.plan=k!=='tiny';
   P.tmul=pr.tmul; P.roads=[]; P.borders=pr.borders?pr.borders(+$('Lsel').value):[];
   $('anneal').checked=!!pr.anneal;
   $('presetNote').textContent=pr.note;
@@ -2598,14 +2600,14 @@ function syncClose(){const b=$('bClose'); b.textContent=CLOSE_LABEL[P.close?1:0]
   b.title=P.close?'Always close (the standard): an owner that gives up closes its factory, and opens a product at random among those it can pay for (the closed one among them). If it can pay for none it stays without a factory, as a buyer only, until it can. Click for keep if broke.'
     :'Keep if broke: an owner that gives up closes its factory only when it can pay for a factory of another product, which it opens; otherwise it keeps the factory (the tiny town of the tutorial). Click for the standard, always close.'}
 $('bClose').onclick=()=>{P.close=!P.close; syncClose(); updStat(); distMark()};
-// how an agent picks the product of its next factory, a toggle right of the one above: open what it can pay (the rule of
-// the page: a product at random among those it can pay, as soon as it can pay one) or plan, then save (P.plan: it picks
-// the product at random first, the closed one among them, and saves until it can pay that product's Start). With equal
-// Starts, as in the standard setup, the two give the same run
+// how an agent picks the product of its next factory, a toggle right of the one above: plan, then save (the standard of
+// the page, P.plan: it picks the product at random first, the closed one among them, and saves until it can pay that
+// product's Start) or open what it can pay (a product at random among those it can pay, as soon as it can pay one; the
+// tiny town of the tutorial). With equal Starts, as in the standard setup, the two give the same run
 const PLAN_LABEL=['open what it can pay','plan, then save'];
-function syncPlan(){const b=$('bPlan'); b.textContent=PLAN_LABEL[P.plan?1:0]; b.classList.toggle('on',!!P.plan);
-  b.title=P.plan?'Plan, then save: an agent that is to open a factory first picks its product at random (the closed one among them) and saves until it can pay that product\'s Start, so that it saves up for the dear products too. With equal Starts this gives the same run as open what it can pay. Click for open what it can pay.'
-    :'Open what it can pay (the rule of the page): an agent opens a product at random among those it can pay, as soon as it can pay one. When the products cost different amounts to start, the poor then always open the cheapest and never save up for the dear ones. Click for plan, then save.'}
+function syncPlan(){const b=$('bPlan'); b.textContent=PLAN_LABEL[P.plan?1:0]; b.classList.toggle('on',!P.plan);
+  b.title=P.plan?'Plan, then save (the standard): an agent that is to open a factory first picks its product at random (the closed one among them) and saves until it can pay that product\'s Start, so that it saves up for the dear products too. With equal Starts this gives the same run as open what it can pay. Click for open what it can pay.'
+    :'Open what it can pay: an agent opens a product at random among those it can pay, as soon as it can pay one (the tiny town of the tutorial). When the products cost different amounts to start, the poor then always open the cheapest and never save up for the dear ones. Click for the standard, plan, then save.'}
 $('bPlan').onclick=()=>{P.plan=!P.plan; syncPlan(); updStat(); distMark()};
 function syncSales(){
   syncCost();
@@ -3280,7 +3282,7 @@ function updStat(){
   const pe=priceEcon(), pf=v=>v<0.1?v.toFixed(4):fmt(v,3);
   let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit p <b>${pf(E.price)}</b> `+
     `(${pe.pay?'buyers pay'+(pe.gouge?', gouging':''):'free goods'}${pe.next?'; '+pe.next:''})`+
-    (P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:'')+(selfMode()?' · '+selfText():'')+(P.close?'':' · keep if broke')+(P.plan?' · plan, then save':'');
+    (P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:'')+(selfMode()?' · '+selfText():'')+(P.close?'':' · keep if broke')+(P.plan?'':' · open what it can pay');
   // per round: the agents with sales, starts and bankruptcies, and the shopping debts forgiven when the buyers pay
   if(H)s+=`<br>agents with sales <b>${(100*H.active).toFixed(1)}%</b> · per round: starts `+
     `<b>${(100*H.starts).toFixed(1)}%</b>, bankruptcies <b>${(100*H.bankrupt).toFixed(2)}%</b>`+
@@ -4125,7 +4127,7 @@ function stampParams(oc,scale){
     (view==='3d'&&moneyCont?', money contours σ '+(moneyCont===0.5?'½':moneyCont):view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
   const pe=priceEcon(), lines=[
     {t:`Globalization in a nutshell — 2D · round ${frT()} · ${viewName}`,b:true},
-    {t:`L = ${E.L}, n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close':'keep if broke'}, ${P.plan?'plan, then save, ':''}lim = ${P.lim}, `+
+    {t:`L = ${E.L}, n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close':'keep if broke'}, ${P.plan?'':'open what it can pay, '}lim = ${P.lim}, `+
       `wage w = ${P.wage}, upkeep μ = ${P.upkeep}, patience κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
       (pe.pay?`buyers pay, p = ${E.price.toPrecision(3)}${pe.gouge?', gouging':''}`+
         (pe.forgive?', shopping debts forgiven':''):`free goods, p = ${E.price.toPrecision(3)}`)+
@@ -5887,7 +5889,7 @@ const sig3=v=>!Number.isFinite(v)?'–':Math.abs(v)>=1000?v.toFixed(0):v.toPreci
 function scanModel(T,names){
   const econ=P.econ==='pay'?'buyers pay'+(P.gouge?', gouging':'')+(P.lost?', transport lost':'')+(P.taxTo==='country'?', tax to country':'')+(P.forgive?', shopping debts forgiven':''):'free goods';
   return {l1:`Model: ${econ} · L = ${P.L} · ${P.bc==='periodic'?'periodic':'closed (not periodic)'} edges`,
-    l2:`n = ${P.n}, wage ${P.wage}, μ = ${P.upkeep}, κ = ${P.kappa}, lim ${P.lim}, ${BUYW_LABEL[P.buyw]||P.buyw}, ${['buy elsewhere','own allowed (agents may buy from their own factory)','no own orders (owners place no orders for their own product)'][selfMode()]}, ${P.close?'always close (an owner that gives up closes its factory)':'keep if broke'}${P.plan?', plan, then save (an agent picks the product of its next factory first and saves for it)':''}, transport ×${fmt(P.tmul)}`+
+    l2:`n = ${P.n}, wage ${P.wage}, μ = ${P.upkeep}, κ = ${P.kappa}, lim ${P.lim}, ${BUYW_LABEL[P.buyw]||P.buyw}, ${['buy elsewhere','own allowed (agents may buy from their own factory)','no own orders (owners place no orders for their own product)'][selfMode()]}, ${P.close?'always close (an owner that gives up closes its factory)':'keep if broke'}${P.plan?'':', open what it can pay (an agent opens a product it can pay as soon as it can pay one)'}, transport ×${fmt(P.tmul)}`+
       (P.borders.length?`, ${P.borders.length} borders`:'')+(P.roads.length?`, ${P.roads.length} roads`:'')+`, start money ${P.m0u?'0 … '+P.M0:P.M0}, seed ${P.seed}; ${T} rounds a point, averaged over the last ⅔`,
     l3:'Products above: '+P.products.map((pr,i)=>`${names[i]} Start ${sig(pr.start)}, γ ${sig(pr.gamma)}, β ${sig(pr.beta)}, α ${sig(alphaOf(pr))}`).join(' · ')}}
 // From each of the cells ref: the nearest other cell with a factory (F) that sold something (S > 0), of any size; of
