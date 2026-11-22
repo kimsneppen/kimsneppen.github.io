@@ -1632,8 +1632,8 @@
         <select id="scanPar"><option value="beta">transport cost β</option><option value="betaC">β of C only (the lowest β)</option><option value="start">start cost</option><option value="alpha">α</option><option value="gamma">γ, the same for all</option></select></div>
       <div class="row" id="scanMinRow"><label title="every product's value above times f = 1, 1/√2, 1/2, 1/(2√2) … down to this factor">down to ×</label>
         <input type="number" id="scanMin" min="0.001" max="1" step="any" value="0.1" style="width:80px"></div>
-      <div class="row"><label title="rounds run for each point, from a fresh start; the mean and the median money are averaged over the last two thirds of them">Rounds per point</label>
-        <select id="scanT"><option>300</option><option>500</option><option>1000</option><option>2000</option><option selected>3000</option><option>5000</option><option>10000</option></select></div>
+      <div class="row"><label title="rounds run for each point, from a fresh start; the mean and the median money are averaged over the last two thirds of them (the mean wealth can take some 10 000 rounds to settle where production centers are big)">Rounds per point</label>
+        <select id="scanT"><option>300</option><option>500</option><option>1000</option><option>2000</option><option selected>3000</option><option>5000</option><option>10000</option><option>20000</option><option>30000</option><option>60000</option></select></div>
       <p class="hint" id="scanPts"></p>
       <p class="hint scanctr" id="scanCtr"></p>
       <div class="btnrow" style="margin-top:4px"><button class="btn primary" id="scanGo">Run scan</button></div>
