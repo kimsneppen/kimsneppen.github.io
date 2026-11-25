@@ -140,6 +140,8 @@
   .tbtn.sobtn{font-size:12px;font-weight:600}
   .tbtn.stdbtn{font-size:12px;font-weight:600}
   .tbtn.selfbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  #popSel{font-weight:600}       /* Pop. Variation, where the start-rule toggle was; coloured when σ > 1 */
+  .dispbar #popSel.on,.display.darkbg .dispbar #popSel.on{background:var(--accent);border-color:var(--accent);color:#fff}
   /* buttons of the bar above the town that go to a new line together: ▶, slow run and step, and tiny town with
      standard (they
      load a town); on wide screens the bar is a little tighter, so that it still takes one line in the 3D view of a
@@ -613,15 +615,24 @@
           random, the one it made among them, and saves until it can pay that product's Start; then it pays Start and
           opens the new factory, which starts small (s = 1). Meanwhile it closes its factory all the same and stays
           without one (<i>always close</i>, the standard; with <i>keep if broke</i>, the toggle above the town, it keeps
-          its factory until it can pay). With <i>open what it can pay</i>, the toggle beside it, an agent instead opens a
-          product at random among those it can pay, as soon as it can pay one: with equal Starts this is the same, but
-          when the products cost different amounts to start, the poor then always open the cheapest and never save up
-          for the dear ones (the rule of the tiny town of the tutorial). An agent runs one factory at a time (you can allow more in the control panel), so the old one
+          its factory until it can pay). The page always uses this rule, <i>plan, then save</i>, but in the tiny town of
+          the tutorial: there an agent opens a product at random among those it can pay, as soon as it can pay one.
+          With equal Starts the two rules give the same run, but when the products cost different amounts to start,
+          the poor then always open the cheapest and never save up for the others. An agent runs one factory at a time (you can allow more in the control panel), so the old one
           closes. The rule is the same in both economies. Owners judge sales, not money: a change of p alone never
           makes anybody give up, and the extra money of gouging does not count either.</li>
       </ol>
       <p>At the start, every agent has a random sum of money between 0 and 5 (drawn uniformly; in the tiny town below
         everybody has 5) and a factory of a random product. That is the whole model.</p>
+      <p><b>Empty sites.</b> In the standard setup every site of the lattice holds an agent. The menu
+        <i>Pop. Variation</i> above the town (σ = 1, the standard, up to 10) thins them out: a site at (x, y) holds an
+        agent with probability 1/σ + (1 − 1/σ)·[sin(π(2x/L − 1))·cos(π(y/L − ½))]². That makes two crowded patches,
+        full at (L/4, L/2) and (3L/4, L/2), and between them, down the middle and along the edges, only one site in σ
+        holds an agent. An empty site holds nobody: nothing there earns, saves, shops or owns a factory. But goods
+        cross it at the usual transport cost, as if it were open country. Each product still gets n orders per agent,
+        and the sellers together get the wages of all the agents, so the price is the same as in a full town. The
+        flat views and the money contours show the empty sites in black; the mean, the median and the other
+        statistics count the agents only. A new σ starts the town anew, with the same seed.</p>
 
       <h2 id="r-tiny">A tiny town, step by step</h2>
       <p><button type="button" class="tutbtn" data-action="tiny">Load the tiny town</button></p>
@@ -794,7 +805,8 @@
           draw, with either button.
           A <i>one-way</i> border charges only goods crossing in the direction of its arrows; the arrows point to your
           left as you draw it (drawn from top to bottom, they point to the right).</li>
-        <li>Ready-made shapes, in the same ▾ menus: a <b>road from the centre</b> to a corner of your choice, and a
+        <li>Ready-made shapes, in the same ▾ menus: a <b>road from the centre</b> to a corner of your choice, a
+          <b>road across the middle</b>, horizontal, vertical or both crossing in the centre, and a
           <b>circle in the centre</b> enclosing 5 to 70 % of the town, like a country in the middle of the world. The circle
           charges goods both ways, or only goods going in: then it protects the inside, while its own goods go out free.
           The product buttons in the same menu choose which products the circle taxes, for instance only the chips.
@@ -854,7 +866,9 @@
         <i>view</i> menu has two front views, <i>front</i> (tilt 18°) and <i>front30</i> (tilt 30°, the view at the start). The menu <i>money contours 1</i>
         right of − road replaces the golden towers by money contours on the ground: the money of the agents smoothed over ½,
         1, 2 or 4 lattice spacings, one shade for each factor 10 — dark grey below 0.1, grey, light grey, light golden,
-        golden and dark golden above 1000 — with a contour line between the shades and their key above the scale bar.</p>
+        golden and dark golden above 1000 — with a contour line between the shades and their key above the scale bar.
+        With <i>Pop. Variation</i> above 1 the empty sites are black, and the shades give the money of the agents
+        around, not counting the empty sites.</p>
       <p><b>Agents</b>: every seller is a small pie, its area the units sold, a slice per product. When the squares are
         big enough (the 8 × 8 tiny town, or 16 × 16 on a large screen), each also shows the letter of the agent's
         factory with the units it sold in the last round (A 7), and the agent's money. <b>Market</b>: for one
@@ -1154,7 +1168,8 @@
         >Cost ultra flat</button>
       <button class="tbtn stdbtn selfbtn" id="bSelf"></button>
       <button class="tbtn stdbtn selfbtn" id="bClose"></button>
-      <button class="tbtn stdbtn selfbtn" id="bPlan"></button>
+      <select id="popSel" title="Pop. Variation σ: how unevenly the agents fill the town. σ = 1, the standard: every site holds an agent. Above 1 a site holds an agent with probability 1/σ + (1 − 1/σ)·[sin(π(2x/L − 1))·cos(π(y/L − ½))]²: two crowded patches, full at (L/4, L/2) and (3L/4, L/2), and between them and along the edges sites only one in σ of which hold an agent. Empty sites (black in the flat views and the money contours) hold no agent: nobody there earns, saves, shops or owns a factory, but goods cross them at the usual transport cost. Changing σ starts the town anew with the same seed">
+        <option value="1">Pop. Variation 1</option><option value="1.5">Pop. Variation 1.5</option><option value="2">Pop. Variation 2</option><option value="3">Pop. Variation 3</option><option value="4">Pop. Variation 4</option><option value="5">Pop. Variation 5</option><option value="6">Pop. Variation 6</option><option value="7">Pop. Variation 7</option><option value="8">Pop. Variation 8</option><option value="9">Pop. Variation 9</option><option value="10">Pop. Variation 10</option></select>
       <button class="tbtn sobtn on" id="bSO2" data-tip="econ">free goods · n 1</button>
       <span class="bargrp"><button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
         <button class="tbtn run slow" id="bSlow2" aria-label="slow run"
@@ -1269,7 +1284,14 @@
             <div class="row"><label>to the corner</label>
               <select id="roadCorner"><option value="tl">upper left</option><option value="tr">upper right</option><option value="bl">lower left</option><option value="br" selected>lower right</option></select></div>
             <button class="btn sm" id="addCornerRoad">add this road</button>
-            <p class="hint">A straight road from the middle of the lattice to the corner (as seen in the flat views), with the transport factor above.</p></div>
+            <p class="hint">A straight road from the middle of the lattice to the corner (as seen in the flat views), with the transport factor above.</p>
+            <div class="vmsub">Road across the middle</div>
+            <div class="row"><label>direction</label>
+              <select id="roadMid"><option value="h">horizontal</option><option value="v">vertical</option><option value="hv">both (a cross)</option></select></div>
+            <button class="btn sm" id="addMidRoad">add this road</button>
+            <p class="hint">A straight road through the middle row or column of the lattice, from edge to edge, or both roads
+              crossing in the centre, with the transport factor above. In a periodic town a road across closes on itself
+              over the edges.</p></div>
         </details>
       </div>
       <button class="tb" data-tool="rmRoad" title="remove a road: tap on it">− road</button>
@@ -1691,7 +1713,12 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 //      lim and can pay for another product, and otherwise keeps it), plan (an agent that is to open a factory first
 //      picks its product, at random among those it does not make, the closed one among them, and saves until it can pay
 //      that product's Start; absent or false: it opens a product at random among those it can pay, as soon as it can pay
-//      one; with equal Starts the two give the same run), seed}
+//      one; with equal Starts the two give the same run), sigma (the population variation σ, 1 … 10: a site holds an
+//      agent with probability 1/σ + (1 − 1/σ)·[sin(π(2x/L − 1))·cos(π(y/L − ½))]², x and y its centre, drawn from a
+//      random stream of its own; absent or ≤ 1: every site holds one, and the runs are those of before), seed}
+// An empty site (E.occ 0) holds no agent: nobody there earns, saves, shops or owns a factory, but goods cross it at the
+// usual transport cost. The orders, the wages and the equal income count the agents only: T = n·(number of agents)
+// orders a product, and the sellers together get the wages of all agents.
 // Every order goes to the buyer's cheapest offer C₁ = α·s^γ + β·d (+ border tax and tariff), the delivered cost; nobody
 // buys from itself (unless P.self allows it). The seller keeps m = 1 a unit, in units of the price p; with gouging m = 1 + C₂ − C₁, C₂ the
 // delivered cost of the buyer's next-best offer from another factory (none: m = 1), while the buyers still choose by
@@ -1751,7 +1778,7 @@ function buildEcon(P){
   // tax are the same as no borders)
   E.useGraph=()=>(P.roads&&P.roads.length)||(P.borders||[]).some(b=>(b.tax||0)>0||(b.tariff||0)>0);
   function buildNet(){
-    const key=JSON.stringify([P.roads,P.borders,P.bc]); if(key===netKey)return; netKey=key;
+    const key=JSON.stringify([P.roads,P.borders,P.bc,E.occVer]); if(key===netKey)return; netKey=key;
     taxOff=(P.borders||[]).some(b=>(b.tax||0)>0)?1:0;          // a taxed border: offers start from 1 + α·s^γ (below)
     taxAny=(P.borders||[]).some(b=>(b.tax||0)>0||(b.tariff||0)>0);
     const some=(P.borders||[]).some(b=>b.prods&&b.prods.length<N), nArr=some?N:1;
@@ -1821,7 +1848,7 @@ function buildEcon(P){
           if((y<L-1||!cl)&&!bD[r])go(((y+1)%L)*L+x);
           if(y>0||!cl){const u=((y+L-1)%L)*L+x; if(!bD[u])go(u)}}
         nc++}
-      E.nCountry=nc; E.countrySize=new Int32Array(nc); for(let r=0;r<LL;r++)E.countrySize[id[r]]++}
+      E.nCountry=nc; E.countrySize=new Int32Array(nc); for(let r=0;r<LL;r++)if(E.occ[r])E.countrySize[id[r]]++}   // (its agents)
   }
   // Tax to the country it enters (buyers pay, taxTo 'country'): the border taxes and tariffs in each buyer's delivered
   // cost C₁, split by the country each crossing enters. The cheapest path is walked back from the buyer to the factory,
@@ -1979,6 +2006,20 @@ function buildEcon(P){
   // plan: the product the agent saves for (−1: none yet; P.plan)
   E.plan=new Int8Array(LL).fill(-1);
   E.prevMoney=new Float64Array(LL); E.upk=new Float64Array(LL); E.spent=new Float64Array(LL); E.ubi=0;
+  // occupancy (P.sigma), drawn anew at every reset: E.occ[r] = 1 where the site holds an agent; E.nOcc agents, E.occList
+  // their sites in order (without population variation all sites, so that the runs are those of before); E.sigma, the
+  // σ in force; E.occVer counts the draws (the countries count agents, buildNet)
+  E.occ=new Uint8Array(LL).fill(1); E.nOcc=LL; E.occList=Int32Array.from({length:LL},(_,r)=>r); E.occVer=0; E.sigma=1;
+  function makeOcc(){
+    const sg=+P.sigma>1?+P.sigma:1; E.sigma=sg; E.occVer++;
+    if(sg===1)E.occ.fill(1);
+    else{const ro=mulberry32((P.seed||1)^0x6a09e667), a=1/sg;
+      for(let r=0;r<LL;r++){const x=(r%L+0.5)/L, y=(((r/L)|0)+0.5)/L, q=Math.sin(Math.PI*(2*x-1))*Math.cos(Math.PI*(y-0.5));
+        E.occ[r]=ro()<a+(1-a)*q*q?1:0}
+      if(!E.occ.some(v=>v))E.occ[0]=1}
+    let n=0; for(let r=0;r<LL;r++)if(E.occ[r])n++;
+    E.nOcc=n; E.occList=new Int32Array(n); n=0; for(let r=0;r<LL;r++)if(E.occ[r])E.occList[n++]=r;
+  }
   // cost: the delivered price C₁ each agent pays; c2: its next-best offer C₂ (∞: none; found only with gouging);
   // mg: Σ m = 1 + C₂ − C₁ over the units each factory sold this round (gouging); u: what a unit costs each factory to
   // make, α·s^γ (∞ where there is no factory); tr: the transport in C₁, β·d times the road factors on the way, without
@@ -2004,19 +2045,21 @@ function buildEcon(P){
 
   E.reset=function(){
     E.t=0;E.hist=[];E.econ=P.econ;E.ubi=0;
-    // (equal money at the start makes all the agents save and open factories in step, a spurious oscillation)
+    makeOcc();                     // the agents: every site, or (population variation) some of them
+    // (equal money at the start makes all the agents save and open factories in step, a spurious oscillation; an empty
+    // site has no money)
     const rm=P.m0u?mulberry32((P.seed||1)^0x5bd1e995):null;
-    for(let r=0;r<LL;r++){E.money[r]=rm?rm()*P.M0:P.M0;E.inc[r]=0;E.prevInc[r]=0;E.profit[r]=0;E.prevProfit[r]=0;E.net[r]=0;E.prevNet[r]=0;
+    for(let r=0;r<LL;r++){{const v=rm?rm()*P.M0:P.M0; E.money[r]=E.occ[r]?v:0}E.inc[r]=0;E.prevInc[r]=0;E.profit[r]=0;E.prevProfit[r]=0;E.net[r]=0;E.prevNet[r]=0;
       E.units[r]=0;E.prevUnits[r]=0;E.earn[r]=0;paid[r]=0;E.started[r]=-1;E.falls[r]=0}
     E.why.fill(0); E.opened.fill(-1); E.dropped.fill(-1); E.fate.fill(0); E.plan.fill(-1); E.prevMoney.set(E.money);
     E.upk.fill(0); E.spent.fill(0);
-    // until the first round: p₀, the price when all n·L²·N orders are served (0 without wages)
-    E.price=P.wage*LL/(N*Math.max(1,Math.round(P.n*LL)));
+    // until the first round: p₀, the price when all n·(agents)·N orders are served (0 without wages)
+    E.price=P.wage*E.nOcc/(N*Math.max(1,Math.round(P.n*E.nOcc)));
     for(let i=0;i<N;i++){E.F[i].fill(0);E.sales[i].fill(0)}
     // (one product whose owners place no orders for it, skip: companies do not buy at all, so half of the agents start
-    // without a factory, as the buyers)
-    if(N===1&&P.skip){for(let r=0;r<LL;r++)if(rng()<0.5)E.F[0][r]=1}
-    else for(let r=0;r<LL;r++)E.F[(rng()*N)|0][r]=1;
+    // without a factory, as the buyers; an empty site has none)
+    if(N===1&&P.skip){for(let r=0;r<LL;r++)if(E.occ[r]&&rng()<0.5)E.F[0][r]=1}
+    else for(let r=0;r<LL;r++)if(E.occ[r])E.F[(rng()*N)|0][r]=1;
     E.computeMarkets();
   };
 
@@ -2101,10 +2144,11 @@ function buildEcon(P){
     const pays=P.econ==='pay', gouge=pays&&!!P.gouge, forgive=pays&&!!P.forgive, lost=pays&&!!P.lost;
     // orders: buyer ∝ the money it acquired in the previous round (Income weight), or (buyw 'money') ∝ the money it
     // has, so that agents without money do not shop
-    const byM=P.buyw==='money', skip=!!P.skip;
-    let W=0; for(let r=0;r<LL;r++){W+=byM?Math.max(0,E.money[r]):E.t?E.inc[r]:1;cum[r]=W}
+    // (an empty site places no orders; nA agents at the sites oL)
+    const byM=P.buyw==='money', skip=!!P.skip, occ=E.occ, oL=E.occList, nA=E.nOcc;
+    let W=0; for(let r=0;r<LL;r++){if(occ[r])W+=byM?Math.max(0,E.money[r]):E.t?E.inc[r]:1;cum[r]=W}
     const uniform=!(W>0);
-    const T=Math.max(1,Math.round(P.n*LL));
+    const T=Math.max(1,Math.round(P.n*nA));
     // the record of the round, with the wage and the patience κ it was played with (for the read-out)
     const H={t:E.t+1,econ:P.econ,gouge,forgive,lost,prod:[],neff:[],share:[],dist:[],unmet:[],active:0,starts:0,bankrupt:0,
       forgiven:0,money:0,maxUnits:0,maxMoney:0,wage:P.wage,kappa:P.kappa};
@@ -2120,9 +2164,9 @@ function buildEcon(P){
       const txO=txc?E.txO[i]:null, txC=E.txC[i], txA=E.txA[i];
       let dsum=0,sold=0;
       for(let k=0;k<T;k++){
-        let r2=uniform?(rng()*LL)|0:pick(W);
+        let r2=uniform?oL[(rng()*nA)|0]:pick(W);
         // (skip: an owner of the product places no order for it; another buyer is picked, after 60 tries the order is dropped)
-        if(skip&&F[r2]){let q=0; do{r2=uniform?(rng()*LL)|0:pick(W)}while(F[r2]&&++q<60); if(F[r2])continue}
+        if(skip&&F[r2]){let q=0; do{r2=uniform?oL[(rng()*nA)|0]:pick(W)}while(F[r2]&&++q<60); if(F[r2])continue}
         const s=sup[r2];
         if(s<0)continue;
         ns[s]++;dsum+=dist[r2];sold++;
@@ -2142,8 +2186,8 @@ function buildEcon(P){
     // this round's p, before any money moves: the sellers together get the wages, p·Σm = w·L² (no orders: p stays);
     // buyers pay: p·ΣC₁ comes back as an equal income ubi to every agent (with lost: p·(ΣC₁ − the transport)); with
     // tax to the country it enters, the taxes and tariffs go instead to the countries, cInc a head in each
-    if(sumM>0)E.price=P.wage*LL/sumM;
-    const p=E.price, ubi=pays?p*Math.max(0,sumC-sumTx-lostOut)/LL:0; E.ubi=ubi;
+    if(sumM>0)E.price=P.wage*nA/sumM;          // (the wages of all agents, nA = L² without population variation)
+    const p=E.price, ubi=pays?p*Math.max(0,sumC-sumTx-lostOut)/nA:0; E.ubi=ubi;
     const cInc=txc?Float64Array.from(cPot,(v,k)=>p*v/Math.max(1,E.countrySize[k])):null; E.cInc=cInc;
     // money and the decisions of every agent, the same in both economies:
     //   money += w + ubi + p·earn − upkeep − p·paid (free goods: ubi = paid = 0), earn = Σ m over the units it sold,
@@ -2157,7 +2201,7 @@ function buildEcon(P){
     const cand=new Int32Array(N), mu=P.upkeep, lim=Math.max(1,Math.min(N,P.lim|0||N)), kap=Math.max(1,Math.round(P.kappa)||1);
     // p₀: the price when every order is served at m = 1; ps: it, or 1 when there are no wages; sc = p/p₀ (1 without
     // wages): Start in money ÷ Start; pu = p/ps: the upkeep in money ÷ μ·Start (= sc with wages; exactly 1 at p = p₀)
-    const p0=P.wage*LL/(N*T), ps=p0>0?p0:1, sc=p0>0?p/p0:1, pu=p/ps;
+    const p0=P.wage*nA/(N*T), ps=p0>0?p0:1, sc=p0>0?p/p0:1, pu=p/ps;
     const weakest=r=>{let w=-1,wv=Infinity,nt=0;
       for(let i=0;i<N;i++)if(E.F[i][r]){const v=newSales[i][r]-mu*P.products[i].start/ps;
         if(v<wv){wv=v;w=i;nt=1}else if(v===wv){nt++;if(rng()*nt<1)w=i}}
@@ -2176,6 +2220,7 @@ function buildEcon(P){
       return -1};
     E.bankruptList=[]; E.closeList=[];
     for(let r=0;r<LL;r++){
+      if(!occ[r])continue;                 // an empty site: no agent, no wage, no money
       let units=0, up=0, nf=0, earn=0;
       for(let i=0;i<N;i++)if(E.F[i][r]){units+=newSales[i][r];up+=mu*P.products[i].start;nf++;if(gouge)earn+=E.mg[i][r]}
       if(!gouge)earn=units;
@@ -2239,7 +2284,7 @@ function buildEcon(P){
       H.money+=E.money[r]; if(E.money[r]>H.maxMoney)H.maxMoney=E.money[r];
     }
     for(let i=0;i<N;i++){E.sales[i].set(newSales[i]);const F=E.F[i],S=E.sales[i];for(let r=0;r<LL;r++)if(!F[r])S[r]=0}
-    H.active/=LL; H.starts/=LL; H.bankrupt/=LL; H.forgiven/=LL; H.money/=LL; H.price=p;
+    H.active/=nA; H.starts/=nA; H.bankrupt/=nA; H.forgiven/=nA; H.money/=nA; H.price=p;   // (per agent)
     // what the sellers got (= the wages), the orders served, Start ÷ Start₀; buyers pay: what the buyers paid, the
     // making, the transport, taxes and tariffs, the two together, which came back to everybody, and that a head
     H.transport=p*trOut; Object.assign(H,{sellers:p*sumM,orders:nOrd,sc});
@@ -2363,7 +2408,7 @@ function setPalette(){
 }
 
 const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',tmul:1,roads:[],borders:[],
-  econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:false,plan:true,m0u:true,seed:1};
+  econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:false,plan:true,sigma:1,m0u:true,seed:1};
 // a grid of countries: n two-way borders along each axis taxing every product. In a periodic town one of them lies on
 // the edge, at 0, and they are at j·L/n, j = 0 … n − 1: n × n countries of the same size. In a closed town the n borders
 // are inside, at j·L/(n + 1), j = 1 … n: (n + 1) × (n + 1) countries (a line at 0 is kept but neither counts nor is drawn).
@@ -2418,7 +2463,7 @@ let moneyCont=1;  // money as contours on the ground of the 3D view, smoothed ov
 let hScale=1;      // the heights of all towers in the 3D view (factories and money) multiplied by this factor (menu hScaleSel)
 
 // the model settings of the standard setup (the view and the colours are left as they are): periodic edges
-const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:true,plan:true};
+const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:true,plan:true,sigma:1};
 // a preset (a standard one on its own lattice size, L, if it has one); seed: a fixed seed, else one at random
 function applyPreset(k,seed){
   const pr=PRESETS[k];
@@ -2431,8 +2476,8 @@ function applyPreset(k,seed){
   P.products=pr.products.map(o=>({...o}));
   // every preset gives up with always close, but the tiny town of the tutorial, whose text follows one run with keep if broke
   P.close=k!=='tiny';
-  // and every preset plans, then saves (the rule of the paper), but the tiny town, whose tutorial follows one run in which
-  // the agents open what they can pay
+  // and every preset plans, then saves (the rule of the paper, which the page always uses: there is no toggle), but the
+  // tiny town, whose tutorial follows one run in which the agents open what they can pay
   P.plan=k!=='tiny';
   P.tmul=pr.tmul; P.roads=[]; P.borders=pr.borders?pr.borders(+$('Lsel').value):[];
   $('anneal').checked=!!pr.anneal;
@@ -2461,7 +2506,7 @@ const fmt=(v,d=2)=>Math.abs(v)>=100?v.toFixed(0):Math.abs(v)>=10?v.toFixed(1):v.
 function syncControls(){
   $('nSel').value=String(P.n); $('kapSel').value=$('patSel').value=String(P.kappa);
   $('wageR').value=P.wage; $('wageV').textContent=P.wage.toFixed(2);
-  syncUp(); syncBuyW(); syncSelf(); syncClose(); syncPlan();
+  syncUp(); syncBuyW(); syncSelf(); syncClose(); syncPop();
   $('M0R').value=P.M0; $('M0V').textContent=P.M0;
   $('tmR').value=Math.log10(P.tmul); $('tmV').textContent=fmt(P.tmul);
   $('bcSel').value=$('bcSel2').value=P.bc; $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
@@ -2600,15 +2645,20 @@ function syncClose(){const b=$('bClose'); b.textContent=CLOSE_LABEL[P.close?1:0]
   b.title=P.close?'Always close (the standard): an owner that gives up closes its factory, and opens a product at random among those it can pay for (the closed one among them). If it can pay for none it stays without a factory, as a buyer only, until it can. Click for keep if broke.'
     :'Keep if broke: an owner that gives up closes its factory only when it can pay for a factory of another product, which it opens; otherwise it keeps the factory (the tiny town of the tutorial). Click for the standard, always close.'}
 $('bClose').onclick=()=>{P.close=!P.close; syncClose(); updStat(); distMark()};
-// how an agent picks the product of its next factory, a toggle right of the one above: plan, then save (the standard of
-// the page, P.plan: it picks the product at random first, the closed one among them, and saves until it can pay that
-// product's Start) or open what it can pay (a product at random among those it can pay, as soon as it can pay one; the
-// tiny town of the tutorial). With equal Starts, as in the standard setup, the two give the same run
+// how an agent picks the product of its next factory: always plan, then save (P.plan: it picks the product at random
+// first, the closed one among them, and saves until it can pay that product's Start), but in the tiny town of the
+// tutorial, open what it can pay (a product at random among those it can pay, as soon as it can pay one). With equal
+// Starts, as in the standard setup, the two give the same run. (The labels name the rule in the status line and the
+// change lines.)
 const PLAN_LABEL=['open what it can pay','plan, then save'];
-function syncPlan(){const b=$('bPlan'); b.textContent=PLAN_LABEL[P.plan?1:0]; b.classList.toggle('on',!P.plan);
-  b.title=P.plan?'Plan, then save (the standard): an agent that is to open a factory first picks its product at random (the closed one among them) and saves until it can pay that product\'s Start, so that it saves up for the dear products too. With equal Starts this gives the same run as open what it can pay. Click for open what it can pay.'
-    :'Open what it can pay: an agent opens a product at random among those it can pay, as soon as it can pay one (the tiny town of the tutorial). When the products cost different amounts to start, the poor then always open the cheapest and never save up for the dear ones. Click for the standard, plan, then save.'}
-$('bPlan').onclick=()=>{P.plan=!P.plan; syncPlan(); updStat(); distMark()};
+// Pop. Variation σ, the menu where the start-rule toggle was (P.sigma, 1 … 10): with σ above 1 only some sites hold an
+// agent, dense in two patches and sparse between them (the core, makeOcc). A new σ starts the town anew, with the same
+// seed, so that the same town can be compared at several σ
+const sigmaOf=()=>+P.sigma>1?+P.sigma:1;
+function syncPop(){const s=$('popSel'), v=String(sigmaOf());
+  if(![...s.options].some(o=>o.value===v)){const o=document.createElement('option'); o.value=v; o.textContent='Pop. Variation '+v; s.appendChild(o)}
+  s.value=v; s.classList.toggle('on',sigmaOf()>1)}
+$('popSel').onchange=e=>{P.sigma=+e.target.value; syncPop(); restart(P.seed)};
 function syncSales(){
   syncCost();
   const N=P.products.length, T=Math.max(1,Math.round(P.n*P.L*P.L)), p0=P.wage*P.L*P.L/(N*T);
@@ -2829,6 +2879,14 @@ $('addCornerRoad').onclick=()=>{
   P.roads.push({pts:[[c,c],[x,y]],f:+$('roadF').value});
   closeMenus(); netChanged();
 };
+// a straight road across the lattice from edge to edge, through the centre of the middle row (horizontal) or column
+// (vertical), or both crossing in the centre; in a periodic town it closes on itself across the edges
+$('addMidRoad').onclick=()=>{
+  const L=E.L, m=Math.floor(L/2)+0.5, k=$('roadMid').value, f=+$('roadF').value;
+  if(k.includes('h'))P.roads.push({pts:[[0,m],[L,m]],f});
+  if(k.includes('v'))P.roads.push({pts:[[m,0],[m,L]],f});
+  closeMenus(); netChanged();
+};
 function netChanged(){
   E.computeMarkets(); distMark();
   $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
@@ -2984,11 +3042,12 @@ function regions(){
 }
 // the mean and the median money of each region
 function regionStats(){
-  const R=regions(), LL=E.L*E.L, M=E.money, n=R.n, sum=new Float64Array(n), start=new Int32Array(n+1);
-  for(let r=0;r<LL;r++)start[R.id[r]+1]++;
+  // (over the agents of each region: an empty site, Pop. Variation, has none)
+  const R=regions(), LL=E.L*E.L, M=E.money, O=E.occ, n=R.n, sum=new Float64Array(n), start=new Int32Array(n+1);
+  for(let r=0;r<LL;r++)if(O[r])start[R.id[r]+1]++;
   for(let k=0;k<n;k++)start[k+1]+=start[k];
   const vals=new Float64Array(LL), at=start.slice(0,n);
-  for(let r=0;r<LL;r++){const k=R.id[r]; vals[at[k]++]=M[r]; sum[k]+=M[r]}
+  for(let r=0;r<LL;r++){if(!O[r])continue; const k=R.id[r]; vals[at[k]++]=M[r]; sum[k]+=M[r]}
   const mean=new Float64Array(n), med=new Float64Array(n);
   for(let k=0;k<n;k++){const a=vals.subarray(start[k],start[k+1]).sort(), m=a.length;
     mean[k]=m?sum[k]/m:0; med[k]=m?(m%2?a[m>>1]:(a[m/2-1]+a[m/2])/2):0}
@@ -3282,7 +3341,8 @@ function updStat(){
   const pe=priceEcon(), pf=v=>v<0.1?v.toFixed(4):fmt(v,3);
   let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit p <b>${pf(E.price)}</b> `+
     `(${pe.pay?'buyers pay'+(pe.gouge?', gouging':''):'free goods'}${pe.next?'; '+pe.next:''})`+
-    (P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:'')+(selfMode()?' · '+selfText():'')+(P.close?'':' · keep if broke')+(P.plan?'':' · open what it can pay');
+    (P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:'')+(selfMode()?' · '+selfText():'')+(P.close?'':' · keep if broke')+(P.plan?'':' · open what it can pay')+
+    (E.sigma>1?` · Pop. Variation <b>${E.sigma}</b>: <b>${E.nOcc}</b> agents on ${E.L*E.L} sites`:'');
   // per round: the agents with sales, starts and bankruptcies, and the shopping debts forgiven when the buyers pay
   if(H)s+=`<br>agents with sales <b>${(100*H.active).toFixed(1)}%</b> · per round: starts `+
     `<b>${(100*H.starts).toFixed(1)}%</b>, bankruptcies <b>${(100*H.bankrupt).toFixed(2)}%</b>`+
@@ -3537,10 +3597,10 @@ function g3Gold(A,n,side,lw){
 const MC_COL=[[92,96,104],[146,150,158],[208,211,216],[242,224,164],[221,172,46],[146,104,14]];   // darker grey … dark golden
 const MC_EDGE=[0.1,1,10,100,1000], MCF={key:'',img:null,k:1,seg:null};
 function moneyContours(){
-  const L=E.L, M=E.money, sig=moneyCont, per=P.bc==='periodic';
+  const L=E.L, M=E.money, sig=moneyCont, per=P.bc==='periodic', O=E.occ, part=E.nOcc<L*L;   // part: Pop. Variation, empty sites
   let sum=0; for(let r=0;r<M.length;r++)sum+=M[r];
   const res=running&&!EXPORT_DPR?512:1024;              // a coarser picture while the town runs
-  const key=L+':'+sig+':'+per+':'+E.t+':'+sum+':'+res;
+  const key=L+':'+sig+':'+per+':'+E.t+':'+sum+':'+res+':'+E.sigma+':'+E.nOcc;
   if(MCF.key===key)return MCF;
   const RR=Math.ceil(3*sig), w=[]; for(let d=-RR;d<=RR;d++)w.push(Math.exp(-d*d/(2*sig*sig)));
   const pass=(src,dst,hz)=>{for(let y=0;y<L;y++)for(let x=0;x<L;x++){let a=0,ws=0;
@@ -3548,6 +3608,10 @@ function moneyContours(){
       const q=w[d+RR]; a+=q*(hz?src[y*L+u]:src[u*L+x]); ws+=q}
     dst[y*L+x]=a/ws}};
   const A=new Float64Array(L*L), B=new Float64Array(L*L); pass(M,A,true); pass(A,B,false);
+  // with empty sites (Pop. Variation) the money of the agents around: the smoothed money (an empty site holds none)
+  // divided by the smoothed share of sites with an agent, so that a sparse place does not look poorer for its empty sites
+  if(part){const B2=new Float64Array(L*L); pass(Float64Array.from(O),A,true); pass(A,B2,false);
+    for(let r=0;r<L*L;r++)B[r]=B2[r]>1e-12?B[r]/B2[r]:0}
   const lg=new Float64Array(L*L); for(let r=0;r<L*L;r++)lg[r]=Math.log10(Math.max(1e-9,B[r]));
   // the picture: the log of the money between the cell centres, its shade by the decade
   const k=Math.max(1,Math.min(8,Math.floor(res/L))), N=L*k;
@@ -3557,9 +3621,11 @@ function moneyContours(){
   const cx0=new Int32Array(N), cx1=new Int32Array(N), ct=new Float64Array(N);
   for(let q=0;q<N;q++){const c=(q+0.5)/k-0.5, i=Math.floor(c); cx0[q]=idx(i); cx1[q]=idx(i+1); ct[q]=c-i}
   for(let py=0;py<N;py++){const j0=cx0[py]*L, j1=cx1[py]*L, ty=ct[py];
-    for(let pxi=0;pxi<N;pxi++){const i0=cx0[pxi], i1=cx1[pxi], tx=ct[pxi];
+    for(let pxi=0;pxi<N;pxi++){const i0=cx0[pxi], i1=cx1[pxi], tx=ct[pxi], o=4*(py*N+pxi);
+      // an empty site (Pop. Variation): black
+      if(part&&!O[((py/k)|0)*L+((pxi/k)|0)]){px[o]=0; px[o+1]=0; px[o+2]=0; px[o+3]=255; continue}
       const v=(1-ty)*((1-tx)*lg[j0+i0]+tx*lg[j0+i1])+ty*((1-tx)*lg[j1+i0]+tx*lg[j1+i1]);
-      const b=Math.max(0,Math.min(5,Math.floor(v)+2)), c=MC_COL[b], o=4*(py*N+pxi);
+      const b=Math.max(0,Math.min(5,Math.floor(v)+2)), c=MC_COL[b];
       px[o]=c[0]; px[o+1]=c[1]; px[o+2]=c[2]; px[o+3]=255}}
   ic.putImageData(id,0,0);
   // the contour lines (marching squares over the cell centres, lattice coordinates; a saddle decided by the mean)
@@ -3781,6 +3847,7 @@ function draw3D(){
     `<span>tower height = units sold last round, largest company lowest (${hlog?'log':'linear'})</span>`+regLeg+
     (m3!=='off'?`<span><i style="background:rgba(222,176,46,.6)"></i>money${mDown?', hanging below the plane':''}</span>`:'')+
     (moneyCont?`<span><i style="background:linear-gradient(90deg,${MC_COL.map(c=>'rgb('+c+')').join(',')})"></i>money on the ground, smoothed over ${moneyCont===0.5?'½':moneyCont} lattice spacing${moneyCont===1?'':'s'}: one shade for each factor 10 (below 0.1, 0.1–1, 1–10, 10–100, 100–1000, above 1000), contour lines between them</span>`:'')+
+    (moneyCont&&E.nOcc<LL?'<span><i style="background:#000"></i>an empty site, no agent (Pop. Variation); the shades give the money of the agents around</span>':'')+
     '<span>drag to turn and tilt</span>';
   if(hoverR>=0&&hoverR<LL)readout(hoverR);
 }
@@ -3864,6 +3931,7 @@ function drawLive(){
   if(view==='agents'){
     // background: each agent tinted by the products it can make; the producers with income are drawn on top as pies
     for(let r=0;r<LL;r++){
+      if(!E.occ[r]){put(r,[0,0,0]);continue}        // an empty site (Pop. Variation): black
       const bg=dark?[22,27,38]:[244,246,250]; let c=bg, k=0;
       for(let i=0;i<N;i++)if(E.F[i][r]){const p=PRGB[i];c=k?[(c[0]+p[0])/2,(c[1]+p[1])/2,(c[2]+p[2])/2]:p;k++}
       put(r,k?bg.map((b,j)=>b+(c[j]-b)*0.3):c);
@@ -3872,16 +3940,17 @@ function drawLive(){
       '<span>● producer, area ∝ income, slices = sales of each product</span><span>pale: factory without sales</span>';
   }else if(view==='market'){
     const sup=E.sup[psel];
-    for(let r=0;r<LL;r++){const s=sup[r];put(r,s<0?(dark?[0,0,0]:[255,255,255]):supColor(s))}
+    for(let r=0;r<LL;r++){const s=sup[r];put(r,!E.occ[r]?[0,0,0]:s<0?(dark?[0,0,0]:[255,255,255]):supColor(s))}   // (black: an empty site)
     legend=`<span>product <b style="color:${PCOL[psel]}">${PNAME[psel]}</b>: colour = the factory an agent buys from</span><span>● factory, size ∝ sales</span>`;
   }else{
     const A=view==='sales'?E.sales[psel]:E.money;
     let mx=1; for(let r=0;r<LL;r++)if(A[r]>mx)mx=A[r];
     const lm=Math.log(1+mx);
-    for(let r=0;r<LL;r++)put(r,view==='sales'&&!E.F[psel][r]?[0,0,0]:gnu(0.08+0.92*Math.log(1+Math.max(0,A[r]))/lm));
+    for(let r=0;r<LL;r++)put(r,(view==='sales'&&!E.F[psel][r])||!E.occ[r]?[0,0,0]:gnu(0.08+0.92*Math.log(1+Math.max(0,A[r]))/lm));
     legend=(view==='sales'?`<span>units of <b style="color:${PCOL[psel]}">${PNAME[psel]}</b> sold last round (black: no factory)</span>`:'<span>money</span>')+
       `<span>0<span class="bar" style="background:${GRAD}"></span>${Math.round(mx)} (log)</span>`;
   }
+  if(E.nOcc<LL)legend+='<span>black square: an empty site, no agent (Pop. Variation)</span>';
   octx.putImageData(img,0,0);
   // a tiny town (L ≤ 16) lies between the tool bars over the top of the display and the buttons in its lower right
   // corner, so that they hide none of its squares and catch no tap meant for one (if that leaves it half its size or
@@ -3925,6 +3994,7 @@ function drawLive(){
       ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineJoin='round';
       ctx.strokeStyle=dark?'rgba(0,0,0,.85)':'rgba(255,255,255,.92)'; ctx.fillStyle=dark?'#ffffff':'#16233b';
       for(let r=0;r<LL;r++){
+        if(!E.occ[r])continue;                      // (an empty site: nothing to write)
         const f=[]; for(let i=0;i<N;i++)if(E.F[i][r])f.push(PNAME[i]+' '+E.sales[i][r]);
         const T=f.length?[f.join(' '),mf(E.money[r])]:[mf(E.money[r])];
         ctx.font=font(fs0); const w=Math.max(...T.map(t=>ctx.measureText(t).width)), fs=w>0.9*cell?fs0*0.9*cell/w:fs0;
@@ -4034,6 +4104,10 @@ function readPast(r){
 // before, and what it did at the end of the round and why (E.why, E.opened, E.dropped, E.fate); what it makes, and
 // where it buys
 function readout(r){
+  if(E.occ&&!E.occ[r]){const L=E.L;       // an empty site (Pop. Variation)
+    setHTML($('readout'),`site <b>(${r%L},${(r/L)|0})</b> · empty: no agent lives here (Pop. Variation ${E.sigma}). `+
+      'Nobody here earns, saves, shops or owns a factory, but goods cross the site at the usual transport cost.');
+    return}
   if(frBack>0){readPast(r);return}
   const L=E.L, N=E.N, H=E.hist[E.hist.length-1];
   const made=[], buys=[], X=i=>`<b style="color:${PCOL[i]}">${PNAME[i]}</b>`;
@@ -4127,7 +4201,7 @@ function stampParams(oc,scale){
     (view==='3d'&&moneyCont?', money contours σ '+(moneyCont===0.5?'½':moneyCont):view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
   const pe=priceEcon(), lines=[
     {t:`Globalization in a nutshell — 2D · round ${frT()} · ${viewName}`,b:true},
-    {t:`L = ${E.L}, n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close':'keep if broke'}, ${P.plan?'':'open what it can pay, '}lim = ${P.lim}, `+
+    {t:`L = ${E.L}, ${E.sigma>1?`Pop. Variation σ = ${E.sigma} (${E.nOcc} agents), `:''}n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close':'keep if broke'}, ${P.plan?'':'open what it can pay, '}lim = ${P.lim}, `+
       `wage w = ${P.wage}, upkeep μ = ${P.upkeep}, patience κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
       (pe.pay?`buyers pay, p = ${E.price.toPrecision(3)}${pe.gouge?', gouging':''}`+
         (pe.forgive?', shopping debts forgiven':''):`free goods, p = ${E.price.toPrecision(3)}`)+
@@ -4198,10 +4272,11 @@ function distMark(){if(E&&DH)DH.t0=E.t}
 function histNow(){
   const LL=E.L*E.L, m=new Float64Array(nb(MB)), s=P.products.map(()=>new Float64Array(nb(SB)));
   let msum=0, mmax=0, mz=0; const smax=s.map(()=>0);
-  for(let r=0;r<LL;r++){const v=E.money[r]; msum+=v; if(v>mmax)mmax=v; if(v<=P.wage)mz++; if(v>0){const k=binOf(MB,v);if(k>=0&&k<m.length)m[k]++}}
+  for(let r=0;r<LL;r++){if(!E.occ[r])continue;            // (the agents only)
+    const v=E.money[r]; msum+=v; if(v>mmax)mmax=v; if(v<=P.wage)mz++; if(v>0){const k=binOf(MB,v);if(k>=0&&k<m.length)m[k]++}}
   for(let i=0;i<E.N;i++){const S=E.sales[i],h=s[i];for(let r=0;r<LL;r++)if(S[r]>0){const k=binOf(SB,S[r]);if(k>=0&&k<h.length)h[k]++;
     if(S[r]>smax[i])smax[i]=S[r]}}
-  return {m,s,msum,mcnt:LL,mmax,smax,mz};
+  return {m,s,msum,mcnt:E.nOcc,mmax,smax,mz};
 }
 function distRecord(){
   const h=histNow(), last=DH.rec[DH.rec.length-1];
@@ -4263,7 +4338,7 @@ function agReset(){
 }
 // the round in which agent r's present life began: its last bankruptcy, or (zero) the last time its money fell to zero
 const lifeStart=(r,zero)=>Math.max(0,zero?AH.lastZ[r]:AH.last[r]);
-const meanMoney=()=>{const M=E.money; let s=0; for(let r=0;r<M.length;r++)s+=Math.max(0,M[r]); return s/M.length};
+const meanMoney=()=>{const M=E.money; let s=0; for(let r=0;r<M.length;r++)s+=Math.max(0,M[r]); return s/(E.nOcc||M.length)};   // (per agent)
 // a long line loses its oldest quarter: from HMAX points if the agent is neither followed nor rich (AH.big: ten times
 // the mean money, as for being picked), but never the latest of its two present lives; from HMAXR points in any case.
 // A newly picked agent is then drawn back as far as its line is kept, while the fortunes shown keep their whole lives
@@ -4305,6 +4380,7 @@ function agRecord(){
   for(const b of E.bankruptList)bk[b.r]=1;
   AH.tb=[]; AH.tz=[]; AH.zl=[]; AH.big=10*mean;
   for(let r=0;r<LL;r++){
+    if(!E.occ[r])continue;           // (an empty site, Pop. Variation: no agent to follow)
     const v=M[r], p=mainProduct(r), pv=AH.pm[r], zero=pv>w&&v<=w; AH.pm[r]=v;
     if(zero)AH.zl.push({r,mon:pv});                // for the flashes: who fell to zero, and the money it had before
     if(!bk[r]&&!zero){hAdd(r,t,v,p); continue}
@@ -4333,7 +4409,8 @@ function fillSlots(){
   const LL=E.L*E.L, M=E.money, inS=new Set(AH.slots);
   if(AH.slots.length>=fortN)return;
   if(fortMode==='rand'){
-    while(AH.slots.length<Math.min(fortN,LL)){const r=(Math.random()*LL)|0; if(!inS.has(r)){AH.slots.push(r);inS.add(r)}}
+    const oL=E.occList, nA=E.nOcc;     // (agents only: an empty site, Pop. Variation, has none)
+    while(AH.slots.length<Math.min(fortN,nA)){const r=oL[(Math.random()*nA)|0]; if(!inS.has(r)){AH.slots.push(r);inS.add(r)}}
     return;
   }
   const cand=[];
@@ -4669,6 +4746,7 @@ function nearRecord(){
     ib,il,il2};
   const ls=[il,il2,ib!==il&&ib!==il2?ib:-1], dd=nearestDist(big,L,P.bc!=='closed');
   for(let r=0;r<LL;r++){
+    if(!E.occ[r])continue;           // (the agents only: an empty site, Pop. Variation, counts at no distance)
     const d=dd[r], k=Math.min(D-1,Math.floor(d)), v=E.money[r];
     e.cnt[k]++; e.msum[k]+=v; if(v>0){const j=binOf(MB,v); if(j>=0&&j<NMB)e.mh[k*NMB+j]++}
     for(let q=0;q<3;q++){const i=ls[q]; if(i>=0&&E.F[i][r]){const s=E.sales[i][r]; e.ac[q][k]++; e.as[q][k]+=s;
@@ -5888,7 +5966,7 @@ const sig3=v=>!Number.isFinite(v)?'–':Math.abs(v)>=1000?v.toFixed(0):v.toPreci
 // the model of the scan in words: the economy, L and the edges first (the head of the table)
 function scanModel(T,names){
   const econ=P.econ==='pay'?'buyers pay'+(P.gouge?', gouging':'')+(P.lost?', transport lost':'')+(P.taxTo==='country'?', tax to country':'')+(P.forgive?', shopping debts forgiven':''):'free goods';
-  return {l1:`Model: ${econ} · L = ${P.L} · ${P.bc==='periodic'?'periodic':'closed (not periodic)'} edges`,
+  return {l1:`Model: ${econ} · L = ${P.L} · ${P.bc==='periodic'?'periodic':'closed (not periodic)'} edges`+(sigmaOf()>1?` · Pop. Variation σ = ${sigmaOf()}`:''),
     l2:`n = ${P.n}, wage ${P.wage}, μ = ${P.upkeep}, κ = ${P.kappa}, lim ${P.lim}, ${BUYW_LABEL[P.buyw]||P.buyw}, ${['buy elsewhere','own allowed (agents may buy from their own factory)','no own orders (owners place no orders for their own product)'][selfMode()]}, ${P.close?'always close (an owner that gives up closes its factory)':'keep if broke'}${P.plan?'':', open what it can pay (an agent opens a product it can pay as soon as it can pay one)'}, transport ×${fmt(P.tmul)}`+
       (P.borders.length?`, ${P.borders.length} borders`:'')+(P.roads.length?`, ${P.roads.length} roads`:'')+`, start money ${P.m0u?'0 … '+P.M0:P.M0}, seed ${P.seed}; ${T} rounds a point, averaged over the last ⅔`,
     l3:'Products above: '+P.products.map((pr,i)=>`${names[i]} Start ${sig(pr.start)}, γ ${sig(pr.gamma)}, β ${sig(pr.beta)}, α ${sig(alphaOf(pr))}`).join(' · ')}}
@@ -5927,13 +6005,15 @@ self.onmessage=e=>{const {P,T,i,ib,ls}=e.data; E=buildEcon(P); E.reset();
   for(let t=0;t<T;t++){E.step();
     const S=E.sales[ib], F=E.F[ib]; let mx=0; for(let r=0;r<LL;r++)if(F[r]&&S[r]>mx)mx=S[r];
     mxR[t%100]=mx; if(mxN<100)mxN++;
-    if(t>=t0){let s=0; for(let r=0;r<LL;r++)s+=E.money[r]; b.set(E.money); b.sort(); sm+=s/LL; sd+=b[LL>>1]; k++;
+    // (the mean and the median over the agents: with Pop. Variation the empty sites are left out)
+    if(t>=t0){const O=E.occ, nA=E.nOcc; let s=0, q=0; for(let r=0;r<LL;r++)if(O[r]){s+=E.money[r]; b[q++]=E.money[r]}
+      const bb=b.subarray(0,nA); bb.sort(); sm+=s/nA; sd+=bb[nA>>1]; k++;
       // the big companies: those that sold at least a tenth of the biggest, the biggest taken as its mean over the last 100 rounds
       let av=0; for(let q=0;q<mxN;q++)av+=mxR[q]; av/=mxN;
       const big=[]; if(av>0)for(let r=0;r<LL;r++)if(F[r]&&S[r]>=Math.max(1,0.1*av))big.push(r);
       if(big.length){
         const dd=nearestDist(big,L,per);
-        for(let r=0;r<LL;r++){const q0=Math.min(D-1,Math.floor(dd[r])); cnt[q0]++;
+        for(let r=0;r<LL;r++){if(!E.occ[r])continue; const q0=Math.min(D-1,Math.floor(dd[r])); cnt[q0]++;
           for(let j=0;j<NP;j++)if(E.F[j][r]&&E.sales[j][r]>0){nc[q0]++; break}
           for(let q=0;q<3;q++){const j=ls[q]; if(j>=0&&E.F[j][r]){const v=E.sales[j][r]; as[q][q0]+=v; if(v>0)an[q][q0]++}}}
         // ⟨d⟩: from each big company, the nearest other company of the product that sold (of any size): its distance d
@@ -6129,7 +6209,11 @@ const CHART_Y={prod:'factories of each product',share:"largest company's market 
 // a title unless the picture is square (sq: for a paper, the left margin only as wide as the numbers need)
 // the median of an array (the middle value; of an even number, the upper of the two middle ones)
 let MEDBUF=null;
-function medianOf(a){if(!MEDBUF||MEDBUF.length!==a.length)MEDBUF=new Float64Array(a.length); MEDBUF.set(a); MEDBUF.sort(); return MEDBUF[a.length>>1]}
+// (the median over the agents: an empty site, Pop. Variation, has none)
+function medianOf(a){const o=E&&E.occ&&E.nOcc<a.length?E.occ:null, n=o?E.nOcc:a.length;
+  if(!MEDBUF||MEDBUF.length!==n)MEDBUF=new Float64Array(n);
+  if(o){let k=0; for(let r=0;r<a.length;r++)if(o[r])MEDBUF[k++]=a[r]} else MEDBUF.set(a);
+  MEDBUF.sort(); return MEDBUF[n>>1]}
 // ---- the changes of the conditions during a run: before every round the settings are described in words (chgParts),
 // part by part; a part that differs from the round before is a change at that round, shown in the plots in time as a
 // red line with the old words before it and the new ones after it. (The transport factor is left out while it is
