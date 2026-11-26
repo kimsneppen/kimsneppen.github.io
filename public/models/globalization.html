@@ -140,8 +140,12 @@
   .tbtn.sobtn{font-size:12px;font-weight:600}
   .tbtn.stdbtn{font-size:12px;font-weight:600}
   .tbtn.selfbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  #popSel{font-weight:600}       /* Pop. Variation, where the start-rule toggle was; coloured when σ > 1 */
-  .dispbar #popSel.on,.display.darkbg .dispbar #popSel.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  /* Pop. Variation, where the start-rule toggle was, with its shape just below it; coloured when σ > 1, the shape
+     faded when σ = 1 (it then changes nothing) */
+  .popstack{display:inline-flex;flex-direction:column;gap:2px;flex:0 0 auto}
+  .dispbar .popstack select{padding:2px 5px;font-size:12px;font-weight:600}
+  .dispbar .popstack select.on,.display.darkbg .dispbar .popstack select.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .dispbar .popstack select.idle{opacity:.6}
   /* buttons of the bar above the town that go to a new line together: ▶, slow run and step, and tiny town with
      standard (they
      load a town); on wide screens the bar is a little tighter, so that it still takes one line in the 3D view of a
@@ -625,14 +629,25 @@
       <p>At the start, every agent has a random sum of money between 0 and 5 (drawn uniformly; in the tiny town below
         everybody has 5) and a factory of a random product. That is the whole model.</p>
       <p><b>Empty sites.</b> In the standard setup every site of the lattice holds an agent. The menu
-        <i>Pop. Variation</i> above the town (σ = 1, the standard, up to 10) thins them out: a site at (x, y) holds an
-        agent with probability 1/σ + (1 − 1/σ)·[sin(π(2x/L − 1))·cos(π(y/L − ½))]². That makes two crowded patches,
-        full at (L/4, L/2) and (3L/4, L/2), and between them, down the middle and along the edges, only one site in σ
-        holds an agent. An empty site holds nobody: nothing there earns, saves, shops or owns a factory. But goods
+        <i>Pop. Variation</i> above the town thins them out. Its number σ (1, the standard, then 1.5, 2, 4, 6 or 10)
+        sets the contrast: the most crowded places are full, and in the emptiest only one site in σ holds an agent.
+        The menu just below it sets the shape.</p>
+      <p><i>Wave</i>: a site at (x, y) holds an agent with probability
+        1/σ + (1 − 1/σ)·[sin(π(2x/L − 1))·cos(π(y/L − ½))]². That makes two crowded patches, full at (L/4, L/2) and
+        (3L/4, L/2), and between them, down the middle and along the edges, only one site in σ holds an agent.</p>
+      <p><i>Width w</i> (4, 8, L/10, L/5 or L/2 lattice spacings): the agents crowd along the roads. A site holds an agent
+        with probability 1/σ + (1 − 1/σ)·exp(−d²/2w²), where d is its distance to the nearest road. On the road, where
+        d = 0, every site holds an agent. At the distance w the exponential has fallen to 0.61, at 2w to 0.14 and at 3w to 0.01: from about
+        3w on, only one site in σ holds an agent. Take σ = 4 and w = 8: on the road every site holds an agent, 8 sites away
+        0.25 + 0.75 × 0.61 ≈ 0.7 of them, 16 sites away 0.25 + 0.75 × 0.14 ≈ 0.35, and far away a quarter. Without
+        roads the agents crowd along the middle line across the town, where the road across the middle (in the road
+        menu) runs. With periodic edges the distance is measured across the edges too. Since the agents follow the
+        roads, drawing or removing a road starts the town anew, with the same seed.</p>
+      <p>An empty site holds nobody: nothing there earns, saves, shops or owns a factory. But goods
         cross it at the usual transport cost, as if it were open country. Each product still gets n orders per agent,
         and the sellers together get the wages of all the agents, so the price is the same as in a full town. The
         flat views and the money contours show the empty sites in black; the mean, the median and the other
-        statistics count the agents only. A new σ starts the town anew, with the same seed.</p>
+        statistics count the agents only. A new σ, or a new shape, starts the town anew, with the same seed.</p>
 
       <h2 id="r-tiny">A tiny town, step by step</h2>
       <p><button type="button" class="tutbtn" data-action="tiny">Load the tiny town</button></p>
@@ -1168,8 +1183,10 @@
         >Cost ultra flat</button>
       <button class="tbtn stdbtn selfbtn" id="bSelf"></button>
       <button class="tbtn stdbtn selfbtn" id="bClose"></button>
-      <select id="popSel" title="Pop. Variation σ: how unevenly the agents fill the town. σ = 1, the standard: every site holds an agent. Above 1 a site holds an agent with probability 1/σ + (1 − 1/σ)·[sin(π(2x/L − 1))·cos(π(y/L − ½))]²: two crowded patches, full at (L/4, L/2) and (3L/4, L/2), and between them and along the edges sites only one in σ of which hold an agent. Empty sites (black in the flat views and the money contours) hold no agent: nobody there earns, saves, shops or owns a factory, but goods cross them at the usual transport cost. Changing σ starts the town anew with the same seed">
-        <option value="1">Pop. Variation 1</option><option value="1.5">Pop. Variation 1.5</option><option value="2">Pop. Variation 2</option><option value="3">Pop. Variation 3</option><option value="4">Pop. Variation 4</option><option value="5">Pop. Variation 5</option><option value="6">Pop. Variation 6</option><option value="7">Pop. Variation 7</option><option value="8">Pop. Variation 8</option><option value="9">Pop. Variation 9</option><option value="10">Pop. Variation 10</option></select>
+      <span class="popstack"><select id="popSel" title="Pop. Variation σ, the contrast: how unevenly the agents fill the town. σ = 1, the standard: every site holds an agent. Above 1 a site holds an agent with probability 1/σ + (1 − 1/σ)·f, where f, between 0 and 1, is the shape chosen in the menu below: crowded where f = 1, and only one site in σ holds an agent where f = 0. Empty sites (black in the flat views and the money contours) hold no agent: nobody there earns, saves, shops or owns a factory, but goods cross them at the usual transport cost. Changing σ starts the town anew with the same seed">
+        <option value="1">Pop. Variation 1</option><option value="1.5">Pop. Variation 1.5</option><option value="2">Pop. Variation 2</option><option value="4">Pop. Variation 4</option><option value="6">Pop. Variation 6</option><option value="10">Pop. Variation 10</option></select>
+      <select id="popShape" title="the shape f of the Pop. Variation above (it acts when σ is above 1). Wave: f = [sin(π(2x/L − 1))·cos(π(y/L − ½))]², two crowded patches, full at (L/4, L/2) and (3L/4, L/2). Width w: f = exp(−d²/2w²), d the distance from the site to the nearest road (without roads: to the middle line across the town, where the road across the middle runs), so that the agents crowd along the roads in a band about w wide on each side; w is 4, 8, L/10, L/5 or L/2 lattice spacings. With a width, drawing or removing a road starts the town anew, with the same seed, as does a new shape">
+        <option value="wave">Wave</option><option value="4">width 4</option><option value="8">width 8</option><option value="L10">width L/10</option><option value="L5">width L/5</option><option value="L2">width L/2</option></select></span>
       <button class="tbtn sobtn on" id="bSO2" data-tip="econ">free goods · n 1</button>
       <span class="bargrp"><button class="tbtn run" id="bRun2" title="run / pause (space)">▶</button>
         <button class="tbtn run slow" id="bSlow2" aria-label="slow run"
@@ -1714,8 +1731,11 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 //      picks its product, at random among those it does not make, the closed one among them, and saves until it can pay
 //      that product's Start; absent or false: it opens a product at random among those it can pay, as soon as it can pay
 //      one; with equal Starts the two give the same run), sigma (the population variation σ, 1 … 10: a site holds an
-//      agent with probability 1/σ + (1 − 1/σ)·[sin(π(2x/L − 1))·cos(π(y/L − ½))]², x and y its centre, drawn from a
-//      random stream of its own; absent or ≤ 1: every site holds one, and the runs are those of before), seed}
+//      agent with probability 1/σ + (1 − 1/σ)·f, drawn from a random stream of its own; absent or ≤ 1: every site holds
+//      one, and the runs are those of before), popw (the shape f: 'wave' or absent, f = [sin(π(2x/L − 1))·
+//      cos(π(y/L − ½))]², x and y the centre of the site; a width w, '4', '8', 'L10', 'L5' or 'L2' (L/10, L/5, L/2):
+//      f = exp(−d²/2w²), d the distance from the centre to the nearest road, or without roads to the middle line
+//      y = ⌊L/2⌋ + ½, across the edges too when they are periodic), seed}
 // An empty site (E.occ 0) holds no agent: nobody there earns, saves, shops or owns a factory, but goods cross it at the
 // usual transport cost. The orders, the wages and the equal income count the agents only: T = n·(number of agents)
 // orders a product, and the sellers together get the wages of all agents.
@@ -2006,17 +2026,69 @@ function buildEcon(P){
   // plan: the product the agent saves for (−1: none yet; P.plan)
   E.plan=new Int8Array(LL).fill(-1);
   E.prevMoney=new Float64Array(LL); E.upk=new Float64Array(LL); E.spent=new Float64Array(LL); E.ubi=0;
-  // occupancy (P.sigma), drawn anew at every reset: E.occ[r] = 1 where the site holds an agent; E.nOcc agents, E.occList
-  // their sites in order (without population variation all sites, so that the runs are those of before); E.sigma, the
-  // σ in force; E.occVer counts the draws (the countries count agents, buildNet)
+  // occupancy (P.sigma, P.popw), drawn anew at every reset: E.occ[r] = 1 where the site holds an agent; E.nOcc agents,
+  // E.occList their sites in order (without population variation all sites, so that the runs are those of before);
+  // E.sigma, the σ in force; E.popw, the width of the profile in force (0: the wave), E.popKey its menu value and
+  // E.popRoads the number of roads it followed (0: the middle line); E.occVer counts the draws (the countries count
+  // agents, buildNet)
   E.occ=new Uint8Array(LL).fill(1); E.nOcc=LL; E.occList=Int32Array.from({length:LL},(_,r)=>r); E.occVer=0; E.sigma=1;
+  E.popw=0; E.popKey='wave'; E.popRoads=0;
+  // the width w of the profile (P.popw: 'wave' or absent, the wave; '4' or '8' lattice spacings; 'L10', 'L5', 'L2':
+  // L/10, L/5, L/2)
+  const popWidth=v=>v==='L10'?L/10:v==='L5'?L/5:v==='L2'?L/2:+v>0?+v:0;
+  // the squared distance from the centre of every site to the nearest road (the polylines of P.roads), or, without
+  // roads, to the middle line y = ⌊L/2⌋ + ½, where the horizontal road across the middle runs (so that no road and that
+  // road give the same agents). With periodic edges the roads are also taken shifted by ±L along x, y and both: the
+  // distance is then measured across the edges too. Exact: the town is cut into tiles of 8 × 8 sites, and for each tile
+  // only the segments that can be nearest to one of its sites are tried — those whose box is no farther from the tile
+  // than the nearest segment from the tile's centre plus half the tile's diagonal; in a tile, the box of a segment
+  // farther than the best distance so far skips it, and the nearest segment of the site before is tried first
+  function roadDist2(){
+    const d2=new Float64Array(LL), m=Math.floor(L/2)+0.5, sh=closed()?[0]:[0,-L,L], segs=[], S=[];
+    for(const rd of P.roads||[])for(let j=1;j<rd.pts.length;j++)segs.push([rd.pts[j-1][0],rd.pts[j-1][1],rd.pts[j][0],rd.pts[j][1]]);
+    if(!segs.length)segs.push([0,m,L,m]);
+    // per segment: start (x, y), direction (dx, dy), 1/(dx² + dy²) (0 for a point), box x0, x1, y0, y1
+    for(const [x0,y0,x1,y1] of segs)for(const sx of sh)for(const sy of sh){
+      const a=x0+sx, b=y0+sy, dx=x1-x0, dy=y1-y0, l2=dx*dx+dy*dy;
+      S.push(a,b,dx,dy,l2>0?1/l2:0,Math.min(a,a+dx),Math.max(a,a+dx),Math.min(b,b+dy),Math.max(b,b+dy))}
+    const n=S.length/9;
+    const dist2=(k,px,py)=>{const o=9*k, ex=px-S[o], ey=py-S[o+1], t=Math.max(0,Math.min(1,(ex*S[o+2]+ey*S[o+3])*S[o+4])),
+      fx=ex-t*S[o+2], fy=ey-t*S[o+3]; return fx*fx+fy*fy};
+    // squared gap between the box of segment k and the rectangle x0 … x1, y0 … y1 (a point when x0 = x1, y0 = y1)
+    const gap2=(k,x0,x1,y0,y1)=>{const o=9*k, gx=S[o+5]>x1?S[o+5]-x1:x0>S[o+6]?x0-S[o+6]:0, gy=S[o+7]>y1?S[o+7]-y1:y0>S[o+8]?y0-S[o+8]:0;
+      return gx*gx+gy*gy};
+    const T=8, list=new Int32Array(n);
+    let last=0;
+    for(let y0=0;y0<L;y0+=T)for(let x0=0;x0<L;x0+=T){
+      const x1=Math.min(L,x0+T), y1=Math.min(L,y0+T), cx=(x0+x1)/2, cy=(y0+y1)/2;
+      let ub=Infinity; for(let k=0;k<n;k++){const v=dist2(k,cx,cy); if(v<ub)ub=v}
+      ub=Math.sqrt(ub)+Math.hypot(x1-x0,y1-y0)/2+1e-9; ub*=ub;
+      let nl=0; for(let k=0;k<n;k++)if(gap2(k,x0,x1,y0,y1)<=ub)list[nl++]=k;
+      for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){const px=x+0.5, py=y+0.5;
+        let best=dist2(last,px,py);
+        for(let j=0;j<nl;j++){const k=list[j]; if(gap2(k,px,px,py,py)>=best)continue;
+          const v=dist2(k,px,py); if(v<best){best=v; last=k}}
+        d2[y*L+x]=best}}
+    return d2}
+  // the sites that hold an agent (1) for the present settings, written into o: σ = 1 every site; else a site holds an
+  // agent with probability a + (1 − a)·f, a = 1/σ, one number of a random stream of its own for every site in order.
+  // The wave: f = [sin(π(2x/L − 1))·cos(π(y/L − ½))]², x and y the centre of the site; a width w: f = exp(−d²/2w²),
+  // d the distance of the centre to the nearest road (roadDist2)
+  function drawOcc(o){
+    const sg=+P.sigma>1?+P.sigma:1, w=sg>1?popWidth(P.popw):0;
+    if(sg===1){o.fill(1);return}
+    const ro=mulberry32((P.seed||1)^0x6a09e667), a=1/sg;
+    if(w>0){const d2=roadDist2(), k=1/(2*w*w);
+      for(let r=0;r<LL;r++)o[r]=ro()<a+(1-a)*Math.exp(-d2[r]*k)?1:0}
+    else for(let r=0;r<LL;r++){const x=(r%L+0.5)/L, y=(((r/L)|0)+0.5)/L, q=Math.sin(Math.PI*(2*x-1))*Math.cos(Math.PI*(y-0.5));
+      o[r]=ro()<a+(1-a)*q*q?1:0}
+    if(!o.some(v=>v))o[0]=1}
+  // the sites a reset would now fill (the page compares them with E.occ when the roads or the edges change)
+  E.occNow=()=>{const o=new Uint8Array(LL); drawOcc(o); return o};
   function makeOcc(){
     const sg=+P.sigma>1?+P.sigma:1; E.sigma=sg; E.occVer++;
-    if(sg===1)E.occ.fill(1);
-    else{const ro=mulberry32((P.seed||1)^0x6a09e667), a=1/sg;
-      for(let r=0;r<LL;r++){const x=(r%L+0.5)/L, y=(((r/L)|0)+0.5)/L, q=Math.sin(Math.PI*(2*x-1))*Math.cos(Math.PI*(y-0.5));
-        E.occ[r]=ro()<a+(1-a)*q*q?1:0}
-      if(!E.occ.some(v=>v))E.occ[0]=1}
+    E.popw=sg>1?popWidth(P.popw):0; E.popKey=E.popw>0?String(P.popw):'wave'; E.popRoads=E.popw>0?(P.roads||[]).length:0;
+    drawOcc(E.occ);
     let n=0; for(let r=0;r<LL;r++)if(E.occ[r])n++;
     E.nOcc=n; E.occList=new Int32Array(n); n=0; for(let r=0;r<LL;r++)if(E.occ[r])E.occList[n++]=r;
   }
@@ -2408,7 +2480,7 @@ function setPalette(){
 }
 
 const P={L:125,products:[],n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',tmul:1,roads:[],borders:[],
-  econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:false,plan:true,sigma:1,m0u:true,seed:1};
+  econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:false,plan:true,sigma:1,popw:'wave',m0u:true,seed:1};
 // a grid of countries: n two-way borders along each axis taxing every product. In a periodic town one of them lies on
 // the edge, at 0, and they are at j·L/n, j = 0 … n − 1: n × n countries of the same size. In a closed town the n borders
 // are inside, at j·L/(n + 1), j = 1 … n: (n + 1) × (n + 1) countries (a line at 0 is kept but neither counts nor is drawn).
@@ -2463,7 +2535,7 @@ let moneyCont=1;  // money as contours on the ground of the 3D view, smoothed ov
 let hScale=1;      // the heights of all towers in the 3D view (factories and money) multiplied by this factor (menu hScaleSel)
 
 // the model settings of the standard setup (the view and the colours are left as they are): periodic edges
-const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:true,plan:true,sigma:1};
+const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'periodic',econ:'so',gouge:false,forgive:false,lost:false,taxTo:'all',self:false,skip:false,close:true,plan:true,sigma:1,popw:'wave'};
 // a preset (a standard one on its own lattice size, L, if it has one); seed: a fixed seed, else one at random
 function applyPreset(k,seed){
   const pr=PRESETS[k];
@@ -2651,14 +2723,32 @@ $('bClose').onclick=()=>{P.close=!P.close; syncClose(); updStat(); distMark()};
 // Starts, as in the standard setup, the two give the same run. (The labels name the rule in the status line and the
 // change lines.)
 const PLAN_LABEL=['open what it can pay','plan, then save'];
-// Pop. Variation σ, the menu where the start-rule toggle was (P.sigma, 1 … 10): with σ above 1 only some sites hold an
-// agent, dense in two patches and sparse between them (the core, makeOcc). A new σ starts the town anew, with the same
-// seed, so that the same town can be compared at several σ
+// Pop. Variation σ, the menu where the start-rule toggle was (P.sigma: 1, 1.5, 2, 4, 6, 10): with σ above 1 only some
+// sites hold an agent (the core, drawOcc), in the shape of the menu just below it (P.popw): the wave, dense in two
+// patches and sparse between them, or a width w, dense along the roads (without roads along the middle line). A new σ,
+// or a new shape at σ above 1, starts the town anew, with the same seed, so that the same town can be compared
 const sigmaOf=()=>+P.sigma>1?+P.sigma:1;
-function syncPop(){const s=$('popSel'), v=String(sigmaOf());
+const POPW_LABEL={wave:'Wave','4':'width 4','8':'width 8',L10:'width L/10',L5:'width L/5',L2:'width L/2'};
+const popwOf=()=>POPW_LABEL[P.popw]&&P.popw!=='wave'?P.popw:'wave';
+// the width of a shape on an L × L town (0: the wave), as in the core
+const popWidthOf=(k,L)=>k==='L10'?L/10:k==='L5'?L/5:k==='L2'?L/2:+k>0?+k:0;
+// the shape in words: "wave", or "width 8 along the roads", "width L/5 = 25 along the middle line"
+function popDesc(k,L,roads){const w=popWidthOf(k,L); if(!(w>0))return 'wave';
+  return `width ${String(k).startsWith('L')?POPW_LABEL[k].slice(6)+' = '+(+w.toFixed(1)):w} along `+
+    (roads?'the road'+(roads>1?'s':''):'the middle line')}
+const popDescE=()=>popDesc(E.popKey,E.L,E.popRoads);
+function syncPop(){const s=$('popSel'), v=String(sigmaOf()), on=sigmaOf()>1;
   if(![...s.options].some(o=>o.value===v)){const o=document.createElement('option'); o.value=v; o.textContent='Pop. Variation '+v; s.appendChild(o)}
-  s.value=v; s.classList.toggle('on',sigmaOf()>1)}
+  s.value=v; s.classList.toggle('on',on);
+  const t=$('popShape'); t.value=popwOf(); t.classList.toggle('on',on); t.classList.toggle('idle',!on)}
 $('popSel').onchange=e=>{P.sigma=+e.target.value; syncPop(); restart(P.seed)};
+$('popShape').onchange=e=>{P.popw=e.target.value; syncPop(); if(sigmaOf()>1)restart(P.seed)};
+// with a width the agents live along the roads: a change of the roads, or of the edges, that moves them (the sites a
+// reset would now fill, E.occNow, are not those of the town) starts the town anew, with the same seed
+function popFollows(){
+  if(!(E.sigma>1&&E.popw>0)||!E.occNow)return false;
+  const o=E.occNow(); for(let r=0;r<o.length;r++)if(o[r]!==E.occ[r]){restart(P.seed); return true}
+  E.popRoads=P.roads.length; return false}
 function syncSales(){
   syncCost();
   const N=P.products.length, T=Math.max(1,Math.round(P.n*P.L*P.L)), p0=P.wage*P.L*P.L/(N*T);
@@ -2824,6 +2914,7 @@ $('M0R').oninput=e=>{P.M0=+e.target.value;$('M0V').textContent=P.M0};
 $('tmR').oninput=e=>{P.tmul=Math.pow(10,+e.target.value);$('tmV').textContent=fmt(P.tmul);E.computeMarkets();draw();updStat()};
 // the boundaries: in the panel and in the upper right corner of the display
 function setBC(v){P.bc=v; $('bcSel').value=$('bcSel2').value=v; regrid(E.L,v==='periodic');
+  if(popFollows())return;          // (agents along the roads, measured across the edges when they are periodic)
   $('nBorders').textContent=P.borders.length; E.computeMarkets(); distMark(); draw(); drawDist()}
 $('bcSel').onchange=e=>setBC(e.target.value);
 $('bcSel2').onchange=e=>setBC(e.target.value);
@@ -2888,6 +2979,7 @@ $('addMidRoad').onclick=()=>{
   closeMenus(); netChanged();
 };
 function netChanged(){
+  if(popFollows())return;          // (agents along the roads: new roads, a new town)
   E.computeMarkets(); distMark();
   $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
   draw(); updStat();
@@ -3342,7 +3434,7 @@ function updStat(){
   let s=`round <b>${E.t}</b> · transport factor <b>${fmt(P.tmul)}</b> · price per unit p <b>${pf(E.price)}</b> `+
     `(${pe.pay?'buyers pay'+(pe.gouge?', gouging':''):'free goods'}${pe.next?'; '+pe.next:''})`+
     (P.buyw&&P.buyw!=='inc'?' · '+BUYW_LABEL[P.buyw]:'')+(selfMode()?' · '+selfText():'')+(P.close?'':' · keep if broke')+(P.plan?'':' · open what it can pay')+
-    (E.sigma>1?` · Pop. Variation <b>${E.sigma}</b>: <b>${E.nOcc}</b> agents on ${E.L*E.L} sites`:'');
+    (E.sigma>1?` · Pop. Variation <b>${E.sigma}</b>, <b>${popDescE()}</b>: <b>${E.nOcc}</b> agents on ${E.L*E.L} sites`:'');
   // per round: the agents with sales, starts and bankruptcies, and the shopping debts forgiven when the buyers pay
   if(H)s+=`<br>agents with sales <b>${(100*H.active).toFixed(1)}%</b> · per round: starts `+
     `<b>${(100*H.starts).toFixed(1)}%</b>, bankruptcies <b>${(100*H.bankrupt).toFixed(2)}%</b>`+
@@ -3600,7 +3692,7 @@ function moneyContours(){
   const L=E.L, M=E.money, sig=moneyCont, per=P.bc==='periodic', O=E.occ, part=E.nOcc<L*L;   // part: Pop. Variation, empty sites
   let sum=0; for(let r=0;r<M.length;r++)sum+=M[r];
   const res=running&&!EXPORT_DPR?512:1024;              // a coarser picture while the town runs
-  const key=L+':'+sig+':'+per+':'+E.t+':'+sum+':'+res+':'+E.sigma+':'+E.nOcc;
+  const key=L+':'+sig+':'+per+':'+E.t+':'+sum+':'+res+':'+E.sigma+':'+E.popKey+':'+E.popRoads+':'+E.nOcc;
   if(MCF.key===key)return MCF;
   const RR=Math.ceil(3*sig), w=[]; for(let d=-RR;d<=RR;d++)w.push(Math.exp(-d*d/(2*sig*sig)));
   const pass=(src,dst,hz)=>{for(let y=0;y<L;y++)for(let x=0;x<L;x++){let a=0,ws=0;
@@ -4105,7 +4197,7 @@ function readPast(r){
 // where it buys
 function readout(r){
   if(E.occ&&!E.occ[r]){const L=E.L;       // an empty site (Pop. Variation)
-    setHTML($('readout'),`site <b>(${r%L},${(r/L)|0})</b> · empty: no agent lives here (Pop. Variation ${E.sigma}). `+
+    setHTML($('readout'),`site <b>(${r%L},${(r/L)|0})</b> · empty: no agent lives here (Pop. Variation ${E.sigma}, ${popDescE()}). `+
       'Nobody here earns, saves, shops or owns a factory, but goods cross the site at the usual transport cost.');
     return}
   if(frBack>0){readPast(r);return}
@@ -4201,7 +4293,7 @@ function stampParams(oc,scale){
     (view==='3d'&&moneyCont?', money contours σ '+(moneyCont===0.5?'½':moneyCont):view==='3d'&&money3!=='off'?', golden = money'+(money3==='down'?' (below)':''):'');
   const pe=priceEcon(), lines=[
     {t:`Globalization in a nutshell — 2D · round ${frT()} · ${viewName}`,b:true},
-    {t:`L = ${E.L}, ${E.sigma>1?`Pop. Variation σ = ${E.sigma} (${E.nOcc} agents), `:''}n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close':'keep if broke'}, ${P.plan?'':'open what it can pay, '}lim = ${P.lim}, `+
+    {t:`L = ${E.L}, ${E.sigma>1?`Pop. Variation σ = ${E.sigma}, ${popDescE()} (${E.nOcc} agents), `:''}n = ${P.n}, ${P.buyw&&P.buyw!=='inc'?BUYW_LABEL[P.buyw]+', ':''}${selfMode()?selfText()+', ':''}${P.close?'always close':'keep if broke'}, ${P.plan?'':'open what it can pay, '}lim = ${P.lim}, `+
       `wage w = ${P.wage}, upkeep μ = ${P.upkeep}, patience κ = ${P.kappa}, transport ×${fmt(P.tmul)}, `+
       (pe.pay?`buyers pay, p = ${E.price.toPrecision(3)}${pe.gouge?', gouging':''}`+
         (pe.forgive?', shopping debts forgiven':''):`free goods, p = ${E.price.toPrecision(3)}`)+
@@ -5966,7 +6058,7 @@ const sig3=v=>!Number.isFinite(v)?'–':Math.abs(v)>=1000?v.toFixed(0):v.toPreci
 // the model of the scan in words: the economy, L and the edges first (the head of the table)
 function scanModel(T,names){
   const econ=P.econ==='pay'?'buyers pay'+(P.gouge?', gouging':'')+(P.lost?', transport lost':'')+(P.taxTo==='country'?', tax to country':'')+(P.forgive?', shopping debts forgiven':''):'free goods';
-  return {l1:`Model: ${econ} · L = ${P.L} · ${P.bc==='periodic'?'periodic':'closed (not periodic)'} edges`+(sigmaOf()>1?` · Pop. Variation σ = ${sigmaOf()}`:''),
+  return {l1:`Model: ${econ} · L = ${P.L} · ${P.bc==='periodic'?'periodic':'closed (not periodic)'} edges`+(sigmaOf()>1?` · Pop. Variation σ = ${sigmaOf()}, ${popDesc(popwOf(),P.L,P.roads.length)}`:''),
     l2:`n = ${P.n}, wage ${P.wage}, μ = ${P.upkeep}, κ = ${P.kappa}, lim ${P.lim}, ${BUYW_LABEL[P.buyw]||P.buyw}, ${['buy elsewhere','own allowed (agents may buy from their own factory)','no own orders (owners place no orders for their own product)'][selfMode()]}, ${P.close?'always close (an owner that gives up closes its factory)':'keep if broke'}${P.plan?'':', open what it can pay (an agent opens a product it can pay as soon as it can pay one)'}, transport ×${fmt(P.tmul)}`+
       (P.borders.length?`, ${P.borders.length} borders`:'')+(P.roads.length?`, ${P.roads.length} roads`:'')+`, start money ${P.m0u?'0 … '+P.M0:P.M0}, seed ${P.seed}; ${T} rounds a point, averaged over the last ⅔`,
     l3:'Products above: '+P.products.map((pr,i)=>`${names[i]} Start ${sig(pr.start)}, γ ${sig(pr.gamma)}, β ${sig(pr.beta)}, α ${sig(alphaOf(pr))}`).join(' · ')}}
