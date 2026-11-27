@@ -591,7 +591,8 @@
           agent has saved does not count. This is the <i>Income weight</i>, the standard. The <i>Income weight</i>
           button in the upper right corner of the town switches to the <i>Money weight</i>: agents are then picked in
           proportion to the money they hold, so the poor shop little.</li>
-        <li><b>Selling.</b> Every order goes to the buyer's cheapest factory, the one with the lowest C. In a round, all
+        <li><b>Selling.</b> Every order goes to the buyer's cheapest factory, the one with the lowest C. If two factories
+          offer exactly the same C, the buyer takes one of them at random. In a round, all
           of an agent's orders of one product go to the same factory. Then the price p of the round is worked out from
           all the orders.</li>
         <li><b>Money.</b> Every agent earns the same wage, w = 0.05 a round. A factory owner also gets p for every
@@ -833,6 +834,13 @@
       </ul>
       <p>Goods always travel the cheapest way: they may follow a road part of the way, or go around the end of a border
         instead of paying.</p>
+      <p>The cheapest way is found by a search across the lattice, in steps of 1, √2 and √5 (16 moves), so that no way
+        is more than 3 % longer than a straight line. When two factories offer a buyer exactly the same cost, the buyer
+        takes one of them at random. Until 27 November 2026 the search gave it to the offer it reached first, always in
+        the same order; in a town cut into taxed countries the agents in the top-left corner of every country then won
+        those ties round after round and grew rich without limit. (In a large periodic town without roads and borders
+        the same search stands in for straight lines when they would be slow; there the order of ties makes no
+        difference and is kept, so that such runs are the same as before.)</p>
       <p>What the goods are worth where they cross is their full price so far, p · (1 + α · s<sup>γ</sup> + the
         transport so far), the seller's share p included (α = 1 in the standard setup). A tax takes its share of
         that, in both economies. With free goods no money changes hands: the tax and the tariff only change where
@@ -1760,6 +1768,17 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 function buildEcon(P){
   const L=P.L, LL=L*L; let N=P.products.length;      // (N grows when a product is added during a run: E.addProduct)
   const rng=mulberry32(P.seed||1);
+  // Ties in the shortest-path search (marketGraph, marketGraph3): when two offers cost a buyer exactly the same, the
+  // search gives the buyer to the offer it reaches first, and that order is fixed (the numbering of the sites and the
+  // order of the moves), so that the same places win the same ties in every round. In a town with walls — taxed
+  // borders, tariffs, closed edges — or roads, the factories in the top-left corner of a walled country then won their
+  // ties round after round, earned more than the one start a round they can pay and piled up money without limit.
+  // There every factory's offer therefore starts with a tiny random addition, below 1e-12 (the tolerance of the
+  // straight-line search, which breaks its ties at random), drawn anew in every search from a random stream of its own,
+  // tieR, so that ties are broken at random. In a periodic town without roads and borders, where the search only stands
+  // in for the straight-line one when that would be slow, the fixed order does no harm (checked: no corner, edge or row
+  // holds more than its share of the money) and is kept, so that those runs stay as before, bit for bit.
+  const tieR=mulberry32(((P.seed||1)^0x5bd1e995)>>>0);
   const E={P,L,N,t:0,hist:[]};
   const closed=()=>P.bc==='closed';
   const ownOK=()=>!!P.self&&!P.skip;       // may an agent buy from its own factory?
@@ -1923,7 +1942,9 @@ function buildEcon(P){
   function marketGraph(i,fac,u,beta,sup,dist,area,off){
     const tM=taxMs[taxMs.length>1?i:0], tA=taxAs[taxAs.length>1?i:0];     // the taxes of moves for this product
     cA.fill(Infinity); cB.fill(Infinity); sA.fill(-1); sB.fill(-1); done.fill(0); trA.fill(0); trB.fill(0); pA.fill(-1); pB.fill(-1); hl=0;
-    for(const f of fac){cA[f]=u[f]+off;sA[f]=f;push(u[f]+off,f,f)}
+    // (tj: random ties with walls or roads, see tieR)
+    const tj=E.useGraph()||closed()?1e-12:0;
+    for(const f of fac){const c0=u[f]+off+(tj?tj*tieR():0);cA[f]=c0;sA[f]=f;push(c0,f,f)}
     const cl=closed();
     // pass the offer (cost c, from factory s, transport t in it; slot k of v: 0 the best, 1 the second) on from cell v to
     // its neighbours (pv: where the offer came from)
@@ -1988,7 +2009,8 @@ function buildEcon(P){
         const tr=beta*NBL[d]*rf; offer(w,c*tM[base+d]+tA[base+d]+tr,s,t+tr,v*64+k*16+d);
       }
     };
-    for(const f of fac)offer(f,u[f]+off,f,0,-1);
+    {const tj=E.useGraph()||closed()?1e-12:0;            // random ties with walls or roads, see tieR
+      for(const f of fac)offer(f,u[f]+off+(tj?tj*tieR():0),f,0,-1)}
     while(hl>0){
       pop(); const c=popC, v=popN, s=popS, n=gN[v];
       if(n===3)continue;
