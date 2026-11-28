@@ -57,6 +57,7 @@
   .dropbox ol,.dropbox ul{margin:5px 0;padding-left:24px}
   .dropbox li{margin:4px 0}
   .dropbox h2{font-size:15px;color:var(--accent);margin:18px 0 4px;padding-top:12px;border-top:1px solid var(--line);letter-spacing:-.005em}
+  .dropbox h3{font-size:14px;color:var(--ink);margin:16px 0 2px;letter-spacing:-.005em}   /* a lesson of the paper */
   .dropbox .toc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
   .dropbox .toc a{padding:2px 10px;border-radius:999px;background:var(--accent-soft);border:1px solid rgba(67,56,202,.16);
     font-size:12.5px;cursor:pointer;white-space:nowrap}
@@ -405,6 +406,11 @@
   .btn.sm{flex:0 0 auto;padding:5px 10px;font-size:12.5px}
   .btn:disabled{opacity:.45;cursor:default}
   /* a toggle of the panel (shopping debts): gold when not the standard, greyed out where it does not act */
+  /* planting or removing a center: a line at the bottom of the window says what to do, and then what was done */
+  .aimhint{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;max-width:min(92vw,560px);display:none;
+    padding:7px 14px;border-radius:14px;background:rgba(22,35,59,.92);color:#fff;font-size:13px;line-height:1.35;
+    text-align:center;pointer-events:none;box-shadow:0 4px 14px rgba(22,35,59,.25)}
+  .aimhint.show{display:block}
   .btn.tog{min-width:118px}
   .btn.tog.on{background:#b7791f;border-color:#b7791f;color:#fff}
   .controls details{border-top:1px solid var(--line)}
@@ -448,722 +454,476 @@
   <details class="titledrop" id="titleDrop">
     <summary><h1>Globalization in a nutshell — 2D</h1><span class="howto">how it works</span></summary>
     <div class="dropbox">
-      <p class="lead">Why is bread still baked around the corner, while nearly every computer chip in the world comes from
-        a handful of factories far away? This applet is a toy world for thinking about that question. It is the model of
-        Sneppen and Bornholdt [1], drawn on a flat map and extended from one product to many.</p>
+      <p class="lead">Why is bread baked around the corner, while nearly every computer chip in the world comes from
+        a handful of factories far away? And when goods become cheap to carry, who gets rich? This applet is a toy
+        world for thinking about such questions. It runs the model of the paper <i>Cheap transport drives metastable
+        production centers and rising inequality</i> [1]. Every result of that paper can be repeated here, and you can
+        change the rules and see what happens.</p>
+      <p>The text first gives the rules. Then a tiny town of 64 agents shows them at work, round by round. Then come
+        the lessons of the paper, each with a button that loads its world. The rest explains the pictures, the plots
+        and the controls. A button like <i>Load the tiny town</i> closes this text, so that you can see the town. Open
+        the text again with <i>how it works</i>, at the top of the page: it comes back to where you were.</p>
       <nav class="toc">
-        <a data-to="r-town">The town</a><a data-to="r-cost">What things cost</a><a data-to="r-pay">Who pays</a>
-        <a data-to="r-gouge">Gouging</a><a data-to="r-round">One round</a><a data-to="r-tiny">Tiny town</a>
-        <a data-to="r-patience">Patience</a><a data-to="r-money">Money</a><a data-to="r-geo">Roads and borders</a>
-        <a data-to="r-look">What to look for</a><a data-to="r-pics">The picture</a><a data-to="r-plots">The plots</a>
-        <a data-to="r-lessons">Lessons</a><a data-to="r-try">Try this</a><a data-to="r-lit">Related models</a>
+        <a data-to="r-rules">The rules</a><a data-to="r-think">Pencil and paper</a><a data-to="r-tiny">Tiny town</a>
+        <a data-to="r-lessons">The lessons</a><a data-to="r-follow">Following the centers</a>
+        <a data-to="r-pics">The picture</a><a data-to="r-plots">The plots</a><a data-to="r-ctl">The controls</a>
+        <a data-to="r-try">Try this</a><a data-to="r-lit">Where it comes from</a>
       </nav>
 
-      <h2 id="r-town">The town</h2>
-      <p>Picture a square town of L × L people, one on each square of a grid (L is the number of people along one
-        side). In the standard setup L = 125, so the town has 125 × 125 = 15&nbsp;625 people. We call them
-        <b>agents</b>. Everybody needs a few kinds of goods, called A, B and C. An agent can own a factory that makes
-        one of them. Time runs in <b>rounds</b>, like the turns of a board game. Every agent has some money and earns
-        the same wage, w = 0.05, in every round.</p>
-      <p>Think of <b>A</b> as bread: a bakery is cheap to start, and a big bakery bakes only a little more cheaply than
-        a small one. <b>B</b> lies in between: an ordinary industry, say bicycles. <b>C</b> is high tech, like computer
-        chips: a chip factory is very expensive to build, but the bigger it is, the cheaper each chip becomes.</p>
-      <p>The town has no edges: it is wrapped around like a doughnut, so that walking off the right side brings you back
-        on the left (periodic edges). The <i>edges</i> menu in the upper right corner of the town can close it
-        instead, like an island; the tiny town is closed. The control
-        panel (the tab at the right edge of the window) has this and most other settings: there you can also change
-        the products and add more of them. The button <i>tiny town</i> above the town loads a town of only 8 × 8
-        agents, in which you can follow every agent by eye: see <i>A tiny town, step by step</i>.</p>
-
-      <h2 id="r-cost">What things cost</h2>
-      <p>When you want one unit of a product, you look at every factory that makes it. You pick the one that can make
-        it and bring it to you most cheaply, but never your own factory. From a factory d steps away, one unit
-        costs</p>
+      <h2 id="r-rules">The rules</h2>
+      <p>The whole model fits on a postcard.</p>
+      <p><b>The town.</b> Picture a square town of L × L squares, with one person on each. We call them
+        <b>agents</b>. The town of the paper has L = 125, so 125 × 125 = 15&nbsp;625 agents. It has no edge: walk off
+        the right side and you come back on the left, as in an old video game. Time moves in <b>rounds</b>, like the
+        turns of a board game.</p>
+      <p>Each agent has some money and may own one factory. A factory makes one product. Think of product <b>A</b>
+        as bread and of product <b>C</b> as computer chips. In the model the two differ in one thing only: bread
+        costs a lot to carry, chips cost little.</p>
+      <p><b>Rule 1: whoever earns, shops.</b> In every round each product gets as many orders as the town has
+        agents. Who places them? Agents drawn at random. But an agent that earned ten times more last round is ten
+        times more likely to be drawn.</p>
+      <p><b>Rule 2: the cheapest factory wins.</b> An order goes to the factory that can make the unit and bring it
+        to the buyer most cheaply. Nobody buys from its own factory. From a factory d steps away a unit costs</p>
       <p class="eqc">C = s<sup>γ</sup> + β · d</p>
-      <p>The first part, <b>s<sup>γ</sup></b> (s to the power γ), is what it costs the factory to make the unit. Here
-        <b>s</b> is the size of the factory: 1 + the number of units it sold last round. <b>γ</b> (gamma) is a negative
-        number, so the bigger the factory, the smaller s<sup>γ</sup>. A brand-new factory has s = 1, so it makes a unit
-        for 1. With γ = −0.3 (bread), a loaf costs about half as much to make each time the bakery grows ten times
-        bigger: 1 at s = 1, 0.5 at s = 10, 0.25 at s = 100. With γ = −0.9 (chips), each tenfold growth makes a chip
-        about 8 times cheaper: 1, 0.13, 0.016. Being big pays: this is called the <i>economy of scale</i>.</p>
-      <p>The second part, <b>β · d</b>, is the transport: every step between the factory and you adds β (beta). Bread is
-        costly to carry (β = 0.1 per step), chips are cheap to ship (β = 0.02).</p>
-      <p><b>An example.</b> A bakery 3 steps from you sold 99 loaves last round, so s = 100. It makes a loaf for
-        100<sup>−0.3</sup> ≈ 0.25. Carrying the loaf to you costs 3 × 0.1 = 0.3. So C ≈ 0.25 + 0.3 = 0.55. A
-        brand-new bakery next door would cost 1 + 0.1 = 1.1, twice as much. The big bakery wins, although it is
-        farther away.</p>
-      <p>All the costs C are counted in units of the price <b>p</b>, the money a seller gets for one unit (see the next
-        section). A cost of 0.55 means 0.55 · p in money.</p>
-      <p><b>Starting a factory</b> costs a sum called <b>Start</b>, paid once, when it opens. Start is counted in
-        sales. In the standard setup a new bakery costs as much money as 120 sales bring in, a B factory 480 sales and
-        a chip factory 1&nbsp;200 sales. There a sale brings p ≈ 0.0167, so in money that is 2, 8 and 20. If a sale
-        brings more or less money, Start follows, so a factory always costs the same number of sales. The products
-        table in the control panel shows Start both ways: in money, as it costs at the start of a run (column
-        <i>Start</i>), and in sales (column <i>sales</i>). The products that gain most from being big also cost most
-        to start, and the applet warns you if you change the numbers so that this is no longer so.</p>
-      <p>The products table also has a factor <b>α</b> (alpha) for each product, 1 in the standard setup: a factory of
-        that product then makes a unit for α · s<sup>γ</sup> instead of s<sup>γ</sup>, so that C = α · s<sup>γ</sup> +
-        β · d. α is at least 1, and a product with a lower γ should not have a smaller α; the applet warns you if it
-        does.</p>
+      <p>The first part is the cost of <i>making</i> the unit. Here s is the size of the factory: 1 plus the units it
+        sold last round. With γ = −1, as in the paper, s<sup>γ</sup> is simply 1/s. A new factory has s = 1 and makes
+        a unit for 1. A factory that sold 99 units makes one for 1/100. Big is cheap: this is the <i>economy of
+        scale</i>. The second part is the cost of <i>carrying</i> the unit: β for every step. Bread has β = 0.1,
+        chips have β = 0.02.</p>
+      <p><b>Try the numbers.</b> A bakery 3 steps from you sold 99 loaves last round. Its loaf costs you
+        1/100 + 3 × 0.1 = 0.31. A brand-new bakery next door asks 1 + 0.1 = 1.1. You buy from the big one. Now put
+        the big bakery 12 steps away: 0.01 + 12 × 0.1 = 1.21. This time the newcomer wins. Distance protects the
+        small.</p>
+      <p><b>Rule 3: money.</b> Every agent gets the same wage in every round, w = 0.05. The sellers get money too:
+        all of them together get exactly as much as all the wages together, and they share it by the units they
+        sold. With two products, twice as many units are sold as there are agents, so each unit brings its
+        seller</p>
+      <p class="eqc">p = 0.05 / 2 = 0.025</p>
+      <p>Forty sales bring 1, as much as twenty rounds of wages. In the standard game the buyers pay nothing: the
+        goods are free, and what the sellers get is new money. (The paper calls this Model A.)</p>
+      <p><b>Rule 4: give up, save, start again.</b> After every round each owner looks at its sales. Did they fall,
+        even by a single unit? Or did it sell nothing? Then it gives up and closes its factory. An agent without a
+        factory picks its next product at random, saves until it has 1, pays it, and opens a new factory. That 1 is
+        the <b>start cost</b>: twenty wages. The new factory starts small, with s = 1.</p>
+      <p>At the start every agent owns a factory of a random product and has a random sum of money between 0 and 5.
+        That is the whole model. No agent plans ahead and no agent is clever. Yet towns, booms, crashes and a few
+        very rich agents appear.</p>
+      <p><b>A second version: the buyers pay.</b> The golden button above the town switches from <i>free goods</i> to
+        <i>buyers pay</i> (Model B of the paper). A buyer then pays p · (1 + C) for a unit. The seller gets p, as
+        before. The rest, p · C, pays for making and carrying. That money is not lost: making and carrying is work,
+        and in the same round it is handed back to all agents in equal shares. With <b>gouging</b> (the button
+        <i>no gouging</i> above the town) a seller asks each buyer as much as the buyer's second-cheapest factory
+        would cost: the highest price at which the buyer still stays. An agent whose money falls below zero is
+        bankrupt: its factory closes, its debt is forgotten, and it starts again with one wage. Both versions build
+        the same towns. Only the money differs.</p>
 
-      <h2 id="r-pay">Who pays? Free goods or buyers pay</h2>
-      <p>The <b>price p</b> is what a seller gets for one unit. It is set every round so that the sellers together earn
-        exactly what everybody earned in wages:</p>
-      <p class="eqc">p = (all the wages) / (all the units sold)</p>
-      <p>In the standard town the 15&nbsp;625 agents earn 781 in wages a round and buy 46&nbsp;875 units, on average
-        one of each product per agent. So p = 781 / 46&nbsp;875 = 0.05/3 ≈ 0.0167. If the town buys twice as much, each
-        unit brings half as much. The price is worked out every round, after all the orders are placed and before any
-        money moves. (An order finds no seller only when nobody else makes that product. Then fewer units are sold,
-        and each brings more.)</p>
-      <p>The golden button above the town, labelled <i>free goods</i> or <i>buyers pay</i>, switches between two
-        economies; the <i>Economy</i> menu in the control panel does the same. They differ only in who pays the
-        sellers. Everything else is the same in both, also the rule that sets the price p.</p>
-      <p><b>Free goods</b> (the standard setup): the buyers pay nothing. Every sale brings the seller p of new money,
-        made from nothing, just like the wages. The buyers still pick the factory with the lowest cost C, as if they
-        paid it.</p>
-      <p><b>Buyers pay</b>: a buyer pays p · (1 + C) for a unit. The seller gets p. The rest, p · C, pays for making
-        and carrying the unit, and for any border tax and tariff on the way (see <i>Roads, borders, taxes and
-        tariffs</i>). That money comes back to everybody in the same round, as an equal income: making and carrying
-        goods is work, and the town shares the money for it equally. Nothing leaves the town. The sellers again earn
-        exactly the wages, so p is the same as with free goods.</p>
-      <p><b>The example again.</b> When the buyers pay, the loaf with C ≈ 0.55 costs its buyer
-        0.0167 × (1 + 0.55) ≈ 0.026. The baker gets 0.0167. The other 0.009 pays for making the loaf (about 0.004)
-        and carrying it (0.005), and comes back to everybody. With free goods the same loaf costs its buyer nothing,
-        and the baker still gets 0.0167.</p>
-      <p>In the standard town, when the buyers pay, they pay about 1&nbsp;240 a round in all: 781 to the sellers, and
-        about 460 for making and carrying. That comes back as an equal income of about 0.029 a round to every agent,
-        59 % of a wage. The status line in the control panel shows these numbers for the last round.</p>
-
-      <h2 id="r-gouge">Gouging: charging what the rival would ask</h2>
-      <p>When the buyers pay, a big factory makes its goods far more cheaply than its rivals, yet it gets only p a unit:
-        the saving goes to its buyers. With <b>gouging</b> a seller instead asks each buyer as much as it can without
-        losing the buyer: what the buyer's next-best factory would charge.</p>
-      <p>Call the buyer's cheapest cost C<sub>1</sub> (the C of the sections above), and the cost from its
-        second-cheapest factory C<sub>2</sub> (never the buyer's own). The buyer now pays p · (1 + C<sub>2</sub>). The
-        seller keeps p · (1 + C<sub>2</sub> − C<sub>1</sub>), more than p. The rest, p · C<sub>1</sub>, pays for making
-        and carrying the unit and comes back to everybody, as before. A buyer with only one factory to choose from
-        pays the normal price, p · (1 + C<sub>1</sub>).</p>
-      <p><b>The example again.</b> Say the next-best bakery for the buyer of the loaf is 4 steps away and sold 9 loaves
-        last round: C<sub>2</sub> = 10<sup>−0.3</sup> + 4 × 0.1 ≈ 0.50 + 0.40 = 0.90. The buyer now pays
-        p × (1 + 0.90) = 1.90 × p instead of 1.55 × p, just what it would pay at the other bakery without gouging. The
-        baker keeps p × (1 + 0.90 − 0.55) = 1.35 × p instead of p. The making and carrying, 0.55 × p, comes back to
-        everybody as before. With gouging p is about 0.0128 in the standard town (see below), so the loaf costs its
-        buyer about 0.024, and the baker keeps about 0.017: about what it got without gouging, since p is lower.</p>
-      <p>The sellers together still earn exactly the wages. Each unit now brings them more than p, so p is lower: about
-        0.0128 instead of 0.0167 in the standard town. Big companies gain, small ones lose. A chip factory that sells
-        1&nbsp;000 or more a round keeps about 1.43 × p a unit, more money than without gouging. A small one keeps about
-        1.08 × p, less money than without gouging, since p is lower.</p>
-      <p>Gouging changes what is paid, not how the buyers choose: each buyer still picks the factory with the lowest
-        C<sub>1</sub>, and the owners still judge by their sales. It changes the town through the money. Start and
-        upkeep are counted in sales, so in money they fall with p: a bakery now costs 1.5 instead of 2, still the money
-        of 120 sales. New factories cost less money, so more of them open: about 190 a round instead of 148 without
-        gouging. They come in bursts: p now changes by a few percent from round to round, and when it dips, Start dips
-        with it, so that many owners who wanted to change but could not afford it suddenly can. Switched on in a
-        running town, gouging lowers p at once, and in the next round more than ten times as many agents as usual
-        open a factory. The typical agent (the median: half of the agents have less) has 2.1 instead of 2.7, and the
-        richest 1&nbsp;% own 13 % of the money instead of 10 %.</p>
-      <p>The button <i>no gouging</i>, right of the <i>Income weight</i> button in the upper right corner of the town,
-        switches it on. It works only when the buyers pay; with free goods it is faded and cannot be clicked.</p>
-      <p>The button right of it, <i>transport back</i>, switches to <i>transport lost</i>: what the buyers pay for the
-        transport, p·β·d for a unit from distance d (times the road factor on a road; border taxes and tariffs are not
-        transport), no longer comes back to everybody. It is spent on the road and leaves the town, and only the
-        making, taxes and tariffs come back as the equal income. This too works only when the buyers pay.</p>
-      <p>The next button, <i>tax to all</i>, switches to <i>tax to country</i>: the border tax and tariff paid where
-        goods cross a border no longer come back to everybody, but go to the country the goods enter there, shared
-        equally by the agents living in it. Goods that cross two borders on their way pay each crossing's tax to the
-        country entered at that crossing. The countries are the pieces the borders cut out of the town, numbered on the
-        map; a border that does not close a piece off sends its tax to the piece it lies in. The making and the
-        transport still come back to everybody (or the transport is lost). This too works only when the buyers pay.</p>
-
-      <h2 id="r-round">One round, step by step</h2>
-      <ol>
-        <li><b>Shopping.</b> For every product, orders are placed: n per agent on average (n = 1 in the standard setup;
-          the n menu in the upper right corner of the town offers 0.2, 0.5, 1, 2 or 5). Who orders? Agents picked at
-          random, but those who earned more last round are picked more often. Each of the n · L² orders of a product
-          picks its buyer on its own: agent i is picked with the probability
-          <span class="eqc" style="display:block">P(i) = I<sub>i</sub> / Σ<sub>j</sub> I<sub>j</sub></span>
-          Here I<sub>i</sub> is what agent i earned last round: its wage, its equal income when the buyers pay, and
-          what its sales brought. Σ<sub>j</sub> I<sub>j</sub> (Σ, sigma, means: add up over all the agents j) is what
-          all the agents earned together. So P(i) is agent i's share of all the income. In the very first round all
-          the agents are picked equally often. An agent can place several orders, or none: with free goods, in the
-          standard town, an agent living on its wage alone places on average one order of each product every other
-          round, the owner of the biggest chip company several hundred a round. High earners shop more; the money an
-          agent has saved does not count. This is the <i>Income weight</i>, the standard. The <i>Income weight</i>
-          button in the upper right corner of the town switches to the <i>Money weight</i>: agents are then picked in
-          proportion to the money they hold, so the poor shop little.</li>
-        <li><b>Selling.</b> Every order goes to the buyer's cheapest factory, the one with the lowest C. If two factories
-          offer exactly the same C, the buyer takes one of them at random. In a round, all
-          of an agent's orders of one product go to the same factory. Then the price p of the round is worked out from
-          all the orders.</li>
-        <li><b>Money.</b> Every agent earns the same wage, w = 0.05 a round. A factory owner also gets p for every
-          unit it sold (more with gouging). When the buyers pay, every agent also pays for its shopping,
-          p · (1 + C) for every unit it bought (more with gouging), and gets the equal income. And an owner may have
-          to pay <b>upkeep</b>: every round a share μ (mu) of its factory's Start, because machines wear out. Like
-          Start, the upkeep is counted in sales. The standard setup has no upkeep, μ = 0; the μ menu offers
-          0.01 to 0.1, that is 1 to 10 % a round. All together:
-          <span class="eqc" style="display:block">ΔM = w + equal income + sales − shopping − upkeep</span>
-          ΔM is the change of the agent's money M in the round. With free goods there is no shopping bill and no
-          equal income.</li>
-        <li><b>Debts.</b> An agent whose money falls below zero is <b>bankrupt</b>: its factory closes (the weakest, if
-          it has several), its debt is written off, and it starts again with money w, just the wage. When the buyers
-          pay, shopping alone can push an agent into debt, since it is picked to shop by what it earned, not by what it
-          has. The <i>Shopping debts</i> switch in the control panel, under the Economy menu, decides what happens
-          then; it works only when the buyers pay. Set to <i>bankrupt</i> (the standard), it treats such a debt like
-          any other. Set to <i>forgiven</i>, it writes the debt off, but the agent keeps its factory and starts again
-          with money w. A debt counts as a shopping debt when the money would not have fallen below zero without the
-          shopping.</li>
-        <li><b>Deciding.</b> Every owner judges its factory by its <b>net sales</b>: the units it sold this round, minus
-          the number of sales it takes to pay the upkeep. Without upkeep that is just the units sold; with μ = 0.02 and
-          n = 1 a bakery's upkeep takes 2.4 sales a round. If its net sales fell since last round (at the first fall in the
-          standard setup, patience κ = 1; see <i>Patience</i> below), or are zero or less (without upkeep: it sold nothing), the owner
-          tries something new, and so does an agent without a factory. It picks the product of its next factory at
-          random, the one it made among them, and saves until it can pay that product's Start; then it pays Start and
-          opens the new factory, which starts small (s = 1). Meanwhile it closes its factory all the same and stays
-          without one (<i>always close</i>, the standard; with <i>keep if broke</i>, the toggle above the town, it keeps
-          its factory until it can pay). The page always uses this rule, <i>plan, then save</i>, but in the tiny town of
-          the tutorial: there an agent opens a product at random among those it can pay, as soon as it can pay one.
-          With equal Starts the two rules give the same run, but when the products cost different amounts to start,
-          the poor then always open the cheapest and never save up for the others. An agent runs one factory at a time (you can allow more in the control panel), so the old one
-          closes. The rule is the same in both economies. Owners judge sales, not money: a change of p alone never
-          makes anybody give up, and the extra money of gouging does not count either.</li>
-      </ol>
-      <p>At the start, every agent has a random sum of money between 0 and 5 (drawn uniformly; in the tiny town below
-        everybody has 5) and a factory of a random product. That is the whole model.</p>
-      <p><b>Empty sites.</b> In the standard setup every site of the lattice holds an agent. The menu
-        <i>Pop. Variation</i> above the town thins them out. Its number σ (1, the standard, then 1.5, 2, 4, 6 or 10)
-        sets the contrast: the most crowded places are full, and in the emptiest only one site in σ holds an agent.
-        The menu just below it sets the shape.</p>
-      <p><i>Wave</i>: a site at (x, y) holds an agent with probability
-        1/σ + (1 − 1/σ)·[sin(π(2x/L − 1))·cos(π(y/L − ½))]². That makes two crowded patches, full at (L/4, L/2) and
-        (3L/4, L/2), and between them, down the middle and along the edges, only one site in σ holds an agent.</p>
-      <p><i>Width w</i> (4, 8, L/10, L/5 or L/2 lattice spacings): the agents crowd along the roads. A site holds an agent
-        with probability 1/σ + (1 − 1/σ)·exp(−d²/2w²), where d is its distance to the nearest road. On the road, where
-        d = 0, every site holds an agent. At the distance w the exponential has fallen to 0.61, at 2w to 0.14 and at 3w to 0.01: from about
-        3w on, only one site in σ holds an agent. Take σ = 4 and w = 8: on the road every site holds an agent, 8 sites away
-        0.25 + 0.75 × 0.61 ≈ 0.7 of them, 16 sites away 0.25 + 0.75 × 0.14 ≈ 0.35, and far away a quarter. Without
-        roads the agents crowd along the middle line across the town, where the road across the middle (in the road
-        menu) runs. With periodic edges the distance is measured across the edges too. Since the agents follow the
-        roads, drawing or removing a road starts the town anew, with the same seed.</p>
-      <p>An empty site holds nobody: nothing there earns, saves, shops or owns a factory. But goods
-        cross it at the usual transport cost, as if it were open country. Each product still gets n orders per agent,
-        and the sellers together get the wages of all the agents, so the price is the same as in a full town. The
-        flat views and the money contours show the empty sites in black; the mean, the median and the other
-        statistics count the agents only. A new σ, or a new shape, starts the town anew, with the same seed.</p>
+      <h2 id="r-think">Two things you can work out with pencil and paper</h2>
+      <p><b>The reach of a big factory.</b> Can a newcomer ever beat a giant? The newcomer next door makes a unit
+        for 1. The giant makes it for almost nothing, but must carry it: β · d. So the giant wins as long as β · d is
+        less than 1, that is, up to a distance</p>
+      <p class="eqc">R = 1 / β</p>
+      <p>For bread (β = 0.1) that is 10 steps. For chips (β = 0.02) it is 50 steps. Inside its reach a big factory
+        need not fear any newcomer. Outside it, a newcomer finds buyers. Notice what dropped out: γ. Once a factory
+        is big, it hardly matters how strong the economy of scale is. The cost of carrying decides.</p>
+      <p><b>Who orders how much.</b> All the agents together earn their wages, and the sellers earn as much again.
+        So half of all income is wages, the same for everybody, and half follows the sales. Orders follow income.
+        An agent that sold u units of one of N products therefore places, on average,</p>
+      <p class="eqc">½ · (1 + u / N)</p>
+      <p>orders of each product in the next round. An agent that sold nothing places half an order: one every
+        other round. With two products, the owner of a chip company that sold 1&nbsp;000 chips places 250 orders
+        of bread and 250 of chips: a quarter of its sales. Keep this quarter in mind. It explains most of what
+        follows.</p>
 
       <h2 id="r-tiny">A tiny town, step by step</h2>
       <p><button type="button" class="tutbtn" data-action="tiny">Load the tiny town</button></p>
-      <p>The button loads a town of 8 × 8 = 64 agents with the standard rules, but with cheaper factories and dearer
-        transport. A bakery still costs 2, but a B factory costs 4 and a chip factory 8 (instead of 8 and 20): the
-        money of 120, 240 and 480 sales. To move a unit one step costs β = 0.2 for bread, 0.1 for B and 0.05 for chips
-        (instead of 0.1, 0.05 and 0.02). It is always the same town. It shows the <i>Agents</i> view, waits at
-        round 0, and closes this text, so that you can see the town. Open the text again with <i>how it works</i>, at
-        the top of the page, and it opens here. Then read a step, close the text (Esc, or tap outside it), and try the
-        step. The <i>Tiny town</i> link at the top of the text brings you back here. The button <i>tiny town</i> above
-        the town loads the same town.</p>
+      <p>The button loads a town of only 8 × 8 = 64 agents, small enough to follow every one of them. It is an
+        island: a closed town, with edges. To fit the island, carrying costs more than in the big town: 0.5 a step
+        for bread and 0.04 a step for chips. Everything else is as above. It is always the same town. It shows the
+        <i>Agents</i> view and waits at round 0. Read a step, close the text (Esc, or tap outside it), and try the
+        step. The link <i>Tiny town</i> at the top of the text brings you back here, and the button <i>tiny town</i>
+        above the town loads the same town again.</p>
       <ol>
-        <li><b>What a square shows.</b> Each square is one agent. It shows the letter of the product its factory makes,
-          A, B or C, with the number of units the factory sold in the last round: A 7 is a bakery that sold 7 loaves.
-          It also shows the agent's money. At round 0 every agent owns a factory of a random product, has sold
-          nothing yet, and has money 5. Hover over a square, or tap it, to read more about the agent in the read-out
-          under the town. The read-out names the agent by its column and row, counted from 0 at the upper left: (2,3)
-          is the third square from the left in the fourth row.</li>
-        <li><b>Round 1: shopping and selling.</b> Press <i>step</i> above the town once (or <i>Step</i> in the control
-          panel, or the key s). Every product now gets 64 orders, one per agent on average, and in this first round
-          every agent is equally likely to place them. Each order goes to the buyer's cheapest factory. All the
-          factories are new, s = 1, so a unit costs 1 + β · d: the cheapest factory is simply the nearest one. Find a
-          square with a big number, such as B 10 at (7,1). Has it few factories of its kind nearby? (The B 0 just above
-          it, at (7,0), was opened only at the end of round 1: step 4 tells why.) The <i>Market</i>
-          view shows who will buy from it in the next round, now that it has grown: everybody is coloured like the
-          factory they buy from (pick the product with the buttons next to the views). For B, 11 agents will now buy
-          from (7,1), against 5 in round 1; for chips, 20 will buy from (3,6), which sold 7, against 6. Then go back
-          to <i>Agents</i>.</li>
-        <li><b>The money rule.</b> Hover over an owner. Its money changed by the wage, 0.05, plus p ≈ 0.0167 for every
-          unit it sold: the owner of a factory that sold 6 units, such as (4,1), went from 5 to
-          5 + 0.05 + 6 × 0.0167 = 5.15. The read-out shows the money before and after the round, and splits the change
-          into its parts. Check a few agents.</li>
-        <li><b>Deciding.</b> In round 1 no sales can have fallen yet, but six owners sold nothing. Each of them gave
-          up its factory and opened another product it could afford. Five now have money of about 3: they opened a
-          bakery, which cost 2. The sixth, (7,0), had a bakery, so it opened a B factory for 4 and has about 1 left. A
-          chip factory was out of reach: it costs 8, and they had 5.05. Now press Step again. The factories that sold
-          most in round 1 are bigger now, and so cheaper: they take the buyers of their neighbours. Many owners sell
-          less than before, or nothing, and give up: 41 of the 64 open a new factory. Find one: the read-out says why
-          it gave up, and what it opened. Some cannot afford another product and keep theirs: the new bakery of (1,0)
-          sold nothing, but its owner has 3.10, less than the 4 a B factory costs, and the read-out says so.</li>
-        <li><b>The chips.</b> Step twice more. After round 4 only one chip factory is left, at (4,2): it sold 42 of
-          the 64 chips. Step on: it sells 54 in round 5 and 57 in round 6, a giant in a small world. It cannot sell
-          all 64, because nobody buys from itself: the chips its own owner orders find no seller (its read-out says
-          that it buys C nowhere). In round 7 its sales dip to 56, and its owner gives up (patience 1): hover over
-          (4,2), and the read-out says so. Now the tiny town has no chips left. Step once more. The price p in the
-          status line of the control panel goes up to 0.025: the 64 chip orders find no seller, so fewer units share
-          the same wages. Start follows p (the status line shows the factor, ×1.50). So a bakery now costs 3, a B
-          factory 6 and a chip factory 12: still the money of 120, 240 and 480 sales.</li>
-        <li><b>B goes round the town.</b> Since round 2 the biggest B factory has been the one at (1,2): in round 8 it
-          sold 55 of the 64 B. Step to round 9: it sells 47, so its owner gives B up and opens a bakery. Its square
-          showed 10.6 after round 8 (the read-out rounds it to 11). With the wage and 47 × 0.025 for its sales, it had
-          11.8 before it paid for the bakery, just short of the 12 a chip factory costs. Step to round 10: now (0,2),
-          the B factory where (1,2) bought its B, sells 60. Hover over it: the last line of the read-out says that its
-          owner buys B from (0,4). In round 10 this owner got 1.55, about a quarter of all the money the
-          town got (3.2 in wages and 3.2 in sales). So with the Income weight it places about a quarter of the orders
-          in round 11, and its own B orders go to (0,4), since nobody buys from itself. Step: (0,2) sells only 51 and
-          gives B up, and (0,4) sells 13. Step again: (0,4) is now the biggest B factory, so the cheapest, and
-          sells 62. Then the same happens to it. Now press the slow-run button, ▶ with a small s, right of ▶ above the
-          town: it plays one round a frame, with 0.1 s between frames (and sets the control panel so); press it again to pause. Watch B go round the
-          town: from round 10 to round 1&nbsp;000 it changes hands 485 times, 457 of them after two rounds, and every
-          time to the factory the old leader bought from.</li>
-        <li><b>The bread, and no more chips.</b> Let the slow run go on. To go faster, pause, then press ▶ (or
-          <i>Run</i> in the control panel, or the space bar): it runs 2 rounds a frame without delay, and the control panel goes back to that. Bread is
-          dear to ship, and a big bakery bakes only a little more cheaply, so bread stays local. In most rounds two or
-          three bakeries sell 10 loaves or more, the biggest about 27 of the 64. Its buyers live within three or four
-          steps of it, while the biggest B factory sells to nearly everybody. Most agents keep a factory that sells
-          nothing, about 36 bakeries and 20 B factories. They cannot afford another product, so they save their wage:
-          the owner of a B factory that sells nothing opens a bakery once it has 3, and a baker that sells nothing
-          opens a B factory once it has 6. In rounds 39 to 41 there is a wave of this: fifteen B factories that sell
-          nothing become bakeries. Fourteen of them were opened in rounds 1 to 3 and never sold a unit. To watch it,
-          load the town again, slow-run it to about round 35, pause, and step. And the chips never come back in the
-          first 1&nbsp;000 rounds: when an owner picks a new factory, it never has the 12 a chip factory costs. In 24
-          tiny towns of 1&nbsp;000 rounds each, the chips came back only 6 times.</li>
-        <li><b>Buyers pay.</b> Load the tiny town again (the button <i>tiny town</i> above the town does it), and
-          switch to <i>buyers pay</i> with the golden button. Step three rounds. The read-out now also shows what an
-          agent paid for its shopping, and the equal income it got. Check that the money still adds up: wage + equal
-          income + sales − shopping − new factory (for an agent that opened one). With the Income weight an agent can
-          be picked to shop for more than it has. In this town it first happens in round 6, to the agent at (1,2). It
-          had the biggest B factory, but in round 4 its sales fell, and it opened a bakery for 2. The bakery sold
-          nothing in round 5, so its sales fell again, and it spent 4 of its last 4.04 on a B factory. Step to
-          round 6: its shopping costs 0.13, more than it has, and the read-out of (1,2) says that it went bankrupt. It
-          happens in 222 of the first 1&nbsp;000 rounds, more than one round in five. Load the town again, switch to
-          buyers pay, set <i>Shopping debts</i> to <i>forgiven</i> in the control panel and go to round 6 once more:
-          the same agent now keeps its B factory.</li>
-        <li><b>Gouging.</b> Now switch on gouging, with the button right of <i>Income weight</i>, and step. Hover over
-          the big sellers: their sales now bring more than p a unit, because their buyers' next-best factory is
-          dearer. In round 7 the B factory at (6,3) sells 63 units at 1.58·p a unit. Compare the sales part of the
-          money change with p times the units sold. Which keep the most a unit? In rounds 7 to 13 the biggest B factory.
-          Over the first 1&nbsp;000 rounds it is mostly a B factory, but only half of the time the biggest one. When it
-          is another B factory, it is nearly always the one the biggest buys from. Of the bakeries, the biggest keeps
-          the most in only one round in five. What counts is how much dearer the buyers' next-best factory is. Where a
-          product has only one factory, its buyers have no other to turn to, and they pay the normal price: in rounds 7
-          and 8 the last chip factory, (4,2), sells 57 chips at 1.00·p a unit. Gouging also lowers p, since the sellers
-          together still get the wages. The status line shows ×0.80, so a B factory costs only 3.2. In round 7 fifteen
-          owners of bakeries that sold nothing open one; thirteen of them had less than the 4 it cost in round 6.</li>
+        <li><b>What a square shows.</b> Each square is one agent. It shows the letter of its factory, A or C, with
+          the units the factory sold in the last round, and below it the agent's money. At round 0 there are 29
+          bakeries (A) and 35 chip factories (C). Nobody has sold anything yet, and the money is anything between
+          0 and 5. Hover over a square, or tap it: the read-out under the town tells more. It names the agent by
+          column and row, counted from 0 at the upper left: (6,2) is the seventh square of the third row.</li>
+        <li><b>Round 1: the nearest factory wins.</b> Press <i>step</i> above the town (or the key s). Bread now
+          gets 64 orders, and so do chips. All factories are new, s = 1, so a unit costs 1 + β · d everywhere: the
+          nearest factory is the cheapest. The chip factory at (6,2) sold 7 chips, more than any other. The bakery
+          at (6,3) sold 6 loaves.</li>
+        <li><b>Check the money.</b> Hover over (6,2). Its money went from 0.69 to 0.92, and the read-out splits the
+          change: wage +0.05, sales +0.18. Check it yourself. The 64 agents earned 64 × 0.05 = 3.2 in wages, and
+          128 units were sold, so p = 3.2 / 128 = 0.025. Seven chips bring 7 × 0.025 = 0.175. Now try another
+          agent.</li>
+        <li><b>Giving up.</b> In round 1 fourteen owners sold nothing, and all fourteen gave up. Thirteen of them
+          had at least 1 and opened a new factory at once. Hover over (0,0): it went from 1.77 to 0.82, wage +0.05,
+          new factory −1.00. The fourteenth, at (6,0), had only 0.40 and must save first. Press step again. The
+          factories that sold in round 1 are bigger now, so they are cheaper, and they take buyers from their
+          neighbours. The chip factory at (6,2) sells 22. This time 43 owners give up: 38 sold nothing, and 5 sold
+          less than before.</li>
+        <li><b>Bread stays local, chips do not.</b> Step to round 4. Only two chip factories still sell: (6,4)
+          sold 48 of the 64 chips and (1,7) sold 16. But ten bakeries sell bread, and the biggest, at (6,3), sold
+          18 loaves. Why the difference? Work out the reach. For chips R = 1/0.04 = 25 steps, far more than the
+          island is wide: one chip factory can serve everybody. For bread R = 1/0.5 = 2 steps: farther away, the
+          carrying alone costs more than a new bakery needs to bake a loaf. It stays like this. In rounds 500 to
+          1&nbsp;000 of this town, five or six bakeries sell in a round, the biggest about 30 loaves, and two chip
+          factories, the bigger one 53 of the 64 chips.</li>
+        <li><b>The relay.</b> No chip factory stays on top. Step to round 6: (1,7) sells 57 chips. Its owner earned
+          0.05 + 57 × 0.025 = 1.475, while the whole town earned 6.4 (3.2 in wages and 3.2 in sales). So this one
+          agent has 23 % of the town's income and places about 23 % of the 64 chip orders: 15 of them. (The
+          quarter rule says the same: ½ · (1 + 57/2) is about 15.) But nobody buys from its own factory. The last
+          line of the read-out says where its chips come from: (2,5), a small chip factory nearby. Step to round 7.
+          (2,5) sells 16 chips, all of them to that one rich customer. So (1,7) sells only 64 − 16 = 48, fewer than
+          57, and its owner gives up at once: the read-out says <i>its sales fell, so it gave up C</i>. Step to
+          round 8: (2,5), now the biggest chip factory left and so the cheapest, sells 60. And who lives on the
+          orders of its owner? (1,6), next door. In round 9 (2,5) sells 49 and gives up, and in round 10 (1,6)
+          sells 61. It is a relay race in which every runner trains its own successor. Press the slow-run button
+          (▶ with a small s, above the town) and watch the chips go round. In the first 1&nbsp;000 rounds the lead
+          changes 479 times: 442 times after exactly two rounds, and 462 times it goes to the very factory where
+          the old leader's owner bought its chips. Five times the chain breaks, first in round 126: for one round
+          nobody sells chips. In such a round only bread shares the sellers' money, so the price doubles to 0.05.
+          One round later a new chip factory has the market. That is a collapse in miniature (lesson 5).</li>
+        <li><b>Most agents are savers.</b> Let the town run a few hundred rounds (▶, or the space bar) and look at
+          the money. Of the 64 agents, 59 hold less than 1. Follow one of them. It saves its wage for twenty
+          rounds, opens a factory for 1, the factory sells nothing, it gives up, and it saves again. Its money
+          climbs from 0 to 1 again and again, like the teeth of a saw. A saw tooth is below its middle half of the
+          time. So the typical agent has about half a start cost: the median, the money of the agent in the
+          middle, is 0.58 here. The average is 0.71, pulled up by the few owners who sell.</li>
+        <li><b>When the buyers pay.</b> Load the tiny town again and press the golden button <i>free goods</i>, so
+          that it says <i>buyers pay</i>. Step twice and hover over (6,2). Beside wage and sales the read-out now
+          lists shopping −0.15 and equal income +0.026. The status line in the control panel adds up the town: the
+          buyers paid 4.9, of which 3.2 went to the sellers and 1.7 paid for making and carrying and came back to
+          everybody, 0.026 each. Now press <i>no gouging</i>, so that it says <i>gouging</i>, and step twice more.
+          The sellers now charge what the buyer's second choice would cost. The price p falls from 0.025 to 0.021,
+          and a new factory costs 0.83 instead of 1 (the status line says ×0.83).</li>
       </ol>
+      <p>That is all there is to the rules. The big town plays the same game with 15&nbsp;625 agents, and it has room
+        for more than one chip company.</p>
 
-      <h2 id="r-patience">Patience: when does an owner give up?</h2>
-      <p>Sales always go up and down a little by pure chance, like the number of sixes when you roll 600 dice: about
-        100, give or take 10. A single fall of sales may be bad luck; a fall in several rounds in a row is a trend.
-        With <b>patience κ</b> (kappa) an owner gives up only when its net sales have fallen in κ rounds in a row.</p>
-      <p>The <b>patience</b> menu in the upper right corner of the town sets κ:</p>
+      <h2 id="r-lessons">The lessons of the paper</h2>
+      <p>Each lesson has a button that loads its world and starts it. Give a world a thousand rounds or more
+        before you judge it: the first rounds only sort out the random start. The numbers below are those of the
+        paper [1]. Your own run will differ a little, as two throws of dice do.</p>
+
+      <h3>1. One product: many savers and a few owners</h3>
+      <p><button type="button" class="tutbtn" data-action="paper1">Load: bread alone</button></p>
+      <p>Factories that sell tens to hundreds of loaves divide the town into market areas, each about as wide as
+        the reach of bread, 10 steps. Press <i>A</i> in the lower right corner of the town to see the areas as
+        dotted lines.</p>
+      <p>Now look at the plot <i>Distributions</i>. The money has two parts. Of the agents, 94 % hold less than a
+        start cost, spread evenly between 0 and 1: these are the savers of the tiny town. The others, owners and
+        former owners, form a long tail up to a thousand. So the typical agent has about half a start cost, 0.53.
+        Remember this number. Whatever we do to the town, it will hardly move.</p>
+      <p>One more thing, in the plot <i>Around the high-tech companies</i>: the bakeries next to a big bakery
+        are bigger than the others. Why? The owner of the big bakery is the richest agent around, it orders a lot
+        of bread, and it may not buy from itself. A neighbour gets the orders.</p>
+
+      <h3>2. Two products: production centers</h3>
+      <p><button type="button" class="tutbtn" data-action="paper2">Load: bread and chips</button></p>
+      <p>Now there are chips too, five times cheaper to carry than bread. A few chip companies, each selling
+        thousands of chips, divide the town into areas some 50 steps wide. And something new appears. Around every
+        big chip company the bakeries are large as well: within 10 steps of it a bakery sells some 500 loaves a
+        round, eight times more than far away. Chips and bread are made in the same places. We call such a place a
+        <b>production center</b>. In the picture it looks like a town.</p>
+      <p>Why do the two gather? Follow the money, with the quarter rule. A chip company sells u chips all over its
+        area. Its owner brings the income home and orders u/4 loaves, and bread must be baked nearby. The bakers
+        there earn too, and they order bread in turn: a quarter of a quarter. And so on:</p>
+      <p class="eqc">1/4 + 1/16 + 1/64 + … = 1/3</p>
+      <p>For every chip, a center bakes a third of a loaf. As many loaves are sold as chips, so a third of all
+        bread should be baked in the centers, and elsewhere two thirds of a loaf per agent. The model gives 0.32 and
+        0.68. Regional economists know this loop as the export-base multiplier [3]: what a region earns by selling
+        far away is spent again at home.</p>
+      <p>The average agent is now five times richer than in the town with bread alone. The mean money falls from
+        about 700 at the chip owners to 30 far from them. But the typical agent still has 0.53, near a center or
+        far from it.</p>
+
+      <h3>3. A center outlives its companies</h3>
+      <p><button type="button" class="tutbtn" data-action="paper2" data-follow="1">Load: bread and chips, and follow the centers</button></p>
+      <p>Here is a puzzle. A big chip company lives about 4 rounds. Yet a production center lives 40 to 50 rounds,
+        and some live 700. How can a town outlive all of its companies?</p>
+      <p>By the relay that you saw in the tiny town. The owner of the leading chip company must buy its chips
+        from somebody else. As long as every other big chip company is more than 50 steps away, the cheapest seller
+        is a start-up next door: it makes a chip for 1, while the others pay more than 1 for the trip alone. The
+        owner's orders, a quarter of its own sales, make the start-up grow until the two share the area. Then the
+        leader's sales fall, its owner gives up, and the start-up takes over and raises its own successor. In the
+        big town this cycle takes four rounds. In 81 % of the closures of a big chip company a company within 6 steps
+        takes over, and 99 times in 100 it is the one from which the old owner bought its chips.</p>
+      <p>The button above also switches on <i>Follow the centers</i>. A white dashed line now trails every center:
+        its walk. A center moves a step or two at every handover, since the successor stands next door. See
+        <i>Following the centers</i> below for the plots that come with it.</p>
+      <p>What if owners may buy from themselves? Press <i>buy elsewhere</i> above the town, so that it says
+        <i>own allowed</i>. The relay then works in only 17 % of the closures, the chips are sold by centers 4 rounds
+        old instead of 50 to 110, and wealth no longer gathers around the chip companies. One innocent rule holds
+        the towns together.</p>
+
+      <h3>4. A rival within reach ends a center</h3>
+      <p>When does the relay fail? When the leader's owner finds its chips cheaper far away than next door. That
+        happens when a big chip company of another center stands within reach, less than 50 steps away. Then no
+        successor is raised, and when the leader falls, nobody stands ready.</p>
+      <p>The paper measured it. With a rival within reach, a center ended with a chance of 0.37 in each round.
+        With the nearest rival more than 1.1 reaches away, the chance was 0.0006. The plot <i>rivals</i> shows the
+        same for your own run.</p>
+      <p>So centers that last stand a little more than one reach apart. And they leave no wider gap: in a gap, a
+        start-up would find buyers and grow into a new center. Count how many fit: a town holds about
+        0.9 × (L · β)² centers. For L = 125 and chips with β = 0.02 that is 0.9 × 2.5² ≈ 5 or 6. Halve the cost of
+        carrying chips, and there is room for only a quarter as many.</p>
+      <p>Test it with your own hands. In the control panel, under <i>Production centers</i>, press <i>plant</i>
+        and click on the town halfway between two centers. A new big chip company stands there at once, within reach
+        of both. Step on a few rounds and watch which of the three is gone.</p>
+
+      <h3>5. Cascades</h3>
+      <p>When a relay fails, the area of the dead center lies open. Some 800 chip factories start in every round,
+        and normally they all fail at once. Now they suddenly find buyers. For a few rounds many small chip
+        companies compete: the number of chip companies that count jumps from about 6 to 15–25 (plot <i>After a
+        collapse</i>). Then one of them grows, raises a partner, and a new center stands, usually close to the old
+        one. Three of four such bursts come with the end of an established center.</p>
+      <p>The fallen owner is still rich, but it orders little, because orders follow income, not wealth. Its
+        fortune stays behind as old money: golden ground without towers. It drains slowly, since a rich agent opens
+        a new factory in almost every round, and nearly all of them fail.</p>
+      <p>How big is a cascade? Count the factories started while it lasts (plot <i>collapse</i>, under
+        <i>Production centers</i>). There is no room for a giant one: the sizes fall off exponentially, around a
+        typical size. Patient owners make cascades smaller. Set <i>patience κ</i> above the town to 2 or 4, so that
+        an owner gives up only after 2 or 4 falls in a row: the typical cascade shrinks from 9&nbsp;800 started
+        factories to 4&nbsp;800 and 1&nbsp;700, and with κ = 4 half of the centers live longer than 138 rounds
+        instead of 43.</p>
+
+      <h3>6. Cheaper transport: the average gets rich, the typical agent does not</h3>
+      <p>This is the globalization of the title. Load <i>bread and chips</i> above, open the control panel (the tab
+        at the right edge) and, under <i>Products</i>, make chips cheaper and cheaper to carry: β = 0.2, 0.1, 0.05,
+        0.02. Or let the applet do it: in the section <i>Scan</i> choose <i>β of C only</i> and press <i>Run
+        scan</i>.</p>
+      <p>In the paper (with β = 0.3 for bread) the mean money grows 25-fold as β of chips falls from 0.2 to 0.018.
+        The median stays at half a start cost. The centers grow: the bakeries next to a big chip company sell 415
+        loaves instead of 26. And they move apart, as the count 0.9 × (L · β)² says. Their cores stay as narrow as
+        the reach of bread.</p>
+      <p>Why does the typical agent gain nothing? It is a saver, and its money is the saw tooth of the tiny town,
+        whatever the chips cost to carry. Part of this is built into the model: the wage is fixed, the factories
+        employ nobody, and half of all orders always follow the wages. What the model shows is where the other
+        half goes: to the owners of the companies with the widest reach, and to their neighbours.</p>
+
+      <h3>7. The cost of carrying decides, not the economy of scale</h3>
+      <p>Load <i>bread and chips</i> again and set γ to −0.5 for both products (control panel, <i>Products</i>).
+        Hardly anything changes: the same number of chip companies, the same centers, the same money. A company
+        that sells 1&nbsp;000 units makes one for 0.001 with γ = −1 and for 0.03 with γ = −0.5. Both are next to
+        nothing beside the 1 of a newcomer, and the reach is 1/β either way. Now double β of chips instead, from
+        0.02 to 0.04: the chip companies that count go from 7 to 26, and the mean money falls from 35 to 5.</p>
+      <p>Only a weak economy of scale matters. With γ = −0.1 a company that sells 1&nbsp;200 units still pays 0.5 to
+        make one. Its reach shrinks to half, just as if carrying cost twice as much.</p>
+
+      <h3>8. Borders</h3>
+      <p><button type="button" class="tutbtn" data-action="paper4">Load: 25 countries</button></p>
+      <p>The opposite of globalization. The town is cut into 5 × 5 countries, and every unit that enters a country
+        pays a tax of 100 % of its value. That adds at least 1 to the cost of an import: as much as a start-up
+        needs to make the unit at home. So no reach crosses a border. Within about a hundred rounds each of the 25
+        countries has built its own chip company. Without borders only 4 or 5 of them hold one.</p>
+      <p>The countries become more alike: the spread between their mean money halves. The mean itself falls by
+        about a fifth. And the typical agent? The median does not move. To see the change as the paper shows it,
+        load <i>bread and chips</i>, let it run, and add the borders later: in the border menu (▾ beside
+        <i>+ border</i>) set the tax to 100 % and press 5 under the grid of countries.</p>
+      <p>A lower tax does not close a border. It shortens the reach across it, from 1/β to (1 − tax)/β. With a
+        tax of 10 %, 8 countries build their own chip company.</p>
+
+      <h3>9. Rivers</h3>
+      <p><button type="button" class="tutbtn" data-action="paperR" data-follow="1">Load: two rivers</button></p>
+      <p>A river is a road along which goods travel at a tenth of the cost. You might expect factories to crowd
+        along it. They do the opposite: a river empties its banks. The reason is the reach again. Along the river
+        the giants deliver from far away for less than 1, so a start-up on the bank finds no buyers. The centers
+        settle 20 to 40 steps from the rivers.</p>
+      <p>But a center that does stand on a river stays there much longer than elsewhere: from the river it serves
+        the whole river. So a river holds a center, but it seldom creates one. The plot <i>on a road</i> counts how
+        long centers stay on a road or at a crossing. Try it: press <i>plant</i> (control panel, <i>Production
+        centers</i>) and put a center on a river, or right on the crossing. In the paper a planted center lasted 21
+        rounds on a river and 11 at the crossing, against 4 at the same place in a town without rivers. Or draw a
+        road right through a living center (<i>+ road</i>, lower left corner of the town).</p>
+
+      <h3>10. Is a center tied to its place?</h3>
+      <p>With real cities this experiment can rarely be done. Here it takes one click. Load <i>bread and chips</i>
+        with the centers followed (the button of lesson 3), let the town settle, and use <i>remove</i> in the
+        control panel, under <i>Production centers</i>. It takes away what you choose within the distance r of the
+        place you point at.</p>
       <ul>
-        <li><b>1</b> (the standard setup): the first fall of sales, however small, makes the owner give up. Very
-          nervous owners.</li>
-        <li><b>2 to 5, or 10</b>: the sales must fall in 2 to 5, or 10, rounds in a row. A round in which they do not
-          fall starts the count anew, and so does a new factory.</li>
+        <li><b>Only the leading chip company</b> (what goes: C companies; r = 0; point at the company). Almost
+          nothing happens: its partner in the relay takes over.</li>
+        <li><b>Every chip company within r = 6</b> (what goes: C companies). Now the relay is broken, and the chip
+          start-ups of the area compete for its market. In the paper a big chip company stood there again after
+          some 30 rounds, and after some 50 when the bakeries were closed too (what goes: all companies). But it
+          did not stay: later the place held one about as seldom as any other place.</li>
+        <li><b>All companies and all the money.</b> The agents there cannot open a factory for some twenty rounds,
+          the time it takes to save a start cost from the wage. Meanwhile the chip market goes elsewhere. In the
+          paper a big chip company came back only after some 290 rounds.</li>
       </ul>
-      <p>Until 18 November 2026 patience meant something else: an owner gave up when its net sales fell by more than κ
-        times the chance wobble, κ·√q units for a factory that sold q units, with κ = 0 for any fall. The old κ = 0 is
-        the new κ = 1 (the runs are the same). The numbers below and in lessons 5 and 9 were found with that old rule
-        and its κ = 1 … 5; they are kept as a record and do not describe the present menu.</p>
-      <p>The numbers below are for free goods. With patience 0, 1 or 2 a chip company that has grown to the top usually
-        stays there only a round or two. A big chip company ends when a rival takes about a third of its sales in one
-        round, many times the chance wobble and far more than patience forgives (lesson 5). Patience matters
-        most when sales are small: on a 64 × 64 town with n = 0.2, patience 3 sometimes lets a chip giant rule for 100
-        rounds or more, and the richest 1 % own three quarters of the money, not an eighth. With n = 5 even patience 5
-        forgives a giant a fall of only a few percent: switched on in a running town it changes little.</p>
-      <p>In the standard setup (n = 1, 125 × 125) big chip companies typically last about four rounds at any patience
-        (lesson 5); patience 3 lifts the richest 1 % from about a fifth to a third of the money, but not the richest
-        agent. What patience 4 or 5 does depends on when you choose it. Chosen in a running town, it piles money up at
-        the top while the median stays put: by round 1&nbsp;000 the richest 1 % own over half of it (κ = 4) or nearly
-        two thirds (κ = 5) instead of a fifth (lesson 9). With κ = 5 a few chip companies stay big for a hundred rounds
-        or more, and by round 1&nbsp;000 the richest agent has some 9&nbsp;000 (1&nbsp;700 without patience), still
-        gaining. Chosen before a new start (↺), κ = 5 freezes the chip market into some 230 local chip makers, each
-        selling to its neighbours, and money piles up with the few sellers; with κ = 4 they slowly merge, and the
-        giants return after about 2&nbsp;000 rounds (lesson 9).</p>
+      <p>So a center is not tied to its place. Only the money left behind helps production return there.</p>
 
-      <h2 id="r-money">Where does the money come from, and where does it go?</h2>
-      <p><b>Free goods.</b> Every round money comes in twice: as wages, and as payment for the units sold — and the
-        price makes the sales worth exactly as much as the wages. Money leaves in two ways: when someone builds a
-        factory, and as upkeep, if there is any. On the 125 × 125 town about 1&nbsp;560 comes in per round (781 in
-        wages, 781 in sales). In the standard setup, without upkeep, about 1&nbsp;520 of it goes into new factories;
-        with upkeep 0.02, about 930 goes into new factories and 620 into upkeep. Almost nothing stays.</p>
-      <p><b>Buyers pay.</b> Now money comes in only as wages, 781 a round (and a little when debts are written off). The
-        buyers pay about 1&nbsp;240 a round for their shopping. Of that, 781 goes to the sellers, and about 460 pays for
-        making and carrying the goods (and for border taxes and tariffs, if there are any) and comes back to everybody
-        as the equal income. Nothing leaves the town. What the agents save goes into new factories, about 780 a round,
-        and into upkeep, if there is any.</p>
-      <p>Shopping can also push an agent into debt: with the Income weight an agent is picked to shop by what it earned
-        last round, not by what it has, so it can spend more than it owns. In the standard town about 24 agents a round
-        go bankrupt this way. With <i>Shopping debts</i> set to <i>forgiven</i>, about 23 agents a round have such a
-        debt written off and keep their factories, and without upkeep nobody goes bankrupt. With the Money weight hardly
-        anybody spends more than it has.</p>
-      <p>Why does it balance so neatly? The town has a thermostat. Anyone who does badly and has enough money starts a
-        new factory, and most of these start-ups fail: the start cost is lost, and with upkeep a failed B or C factory
-        soon bankrupts an owner without savings. The more money there is, the more start-ups, and the more money is
-        burned — until what goes out matches what comes in.</p>
-      <p>When a big company closes, its owner keeps the money and tries one new factory after another. Most of them
-        fail. In the standard setup the owner of a big bakery or B factory has some 30 and loses half within 3 rounds,
-        while a chip giant's owner has a few hundred. Three times in four it builds a new chip giant within 80 rounds,
-        and such owners together keep most of their money; the other times it loses nearly all of it within 20
-        rounds (lesson 4). So a golden money column in the 3D picture either stays for a while or melts away fast.</p>
-      <p>With a single product an owner whose sales fall gives its factory up and opens a new one in its place, paying
-        the start cost again, just as an owner of several products switches to another one (the preset <i>One
-        product</i>; the − product button goes down to one). That is the simplest model of companies that collapse
-        and start anew. The preset <i>Twin products</i> has two products with the same numbers (Start 5, γ −0.5,
-        β 0.05) but different names. Owners switch between them, about 310 times a round, and their start costs use
-        up nearly all the new money: after the first few hundred rounds the money grows by only about 10 a round, and
-        the richest 1 % own about a tenth of it.</p>
+      <h3>11. What the model leaves out</h3>
+      <p>The agents do not move, so the centers gather factories and money, not people. Nobody is employed, the
+        wage never changes, and nobody plans. So do not read the numbers as a forecast. Read the model as a
+        machine for asking <i>what if</i>: it shows that a few simple rules are enough to make production
+        centers, their endless succession, and a growing gap between the average and the typical agent.</p>
 
-      <h2 id="r-geo">Roads, borders, taxes and tariffs</h2>
-      <p>With the buttons in the upper left corner you draw on the town: choose one, then press, drag and let go.</p>
+      <h2 id="r-follow">Following the centers</h2>
+      <p>The section <i>Production centers</i> of the control panel follows every center through its life. Switch
+        it on with the button beside <i>Follow the centers</i>.</p>
+      <p><b>What is a center, for the computer?</b> We follow a center by its biggest chip company (in general:
+        by its biggest company of the product that is cheapest to carry). A <i>big</i> company is one that sells at
+        least a tenth of what the biggest sells. The center is still the same center as long as its biggest
+        company stands within δ steps of where its biggest company stood one round before. With δ = 6, as in the
+        paper, a handover to the neighbour keeps the center; a jump across the town ends it and starts a new one. A
+        center that has lived 20 rounds is called <i>established</i>. Both numbers can be changed.</p>
+      <p><b>On the town</b> every living center gets a white ring and a white dashed line, its walk: thin while
+        the center is young, thick once it is established. When an established center ends, its walk fades away
+        over 10 rounds.</p>
+      <p><b>Under the other plots</b> a new section, <i>Production centers</i>, appears. Its plots count from the
+        round you switch the following on, or press <i>count anew</i>. The paper leaves out the start of each run:
+        to do the same, let the town run 4&nbsp;000 rounds, press <i>count anew</i>, and run 8&nbsp;000 more.</p>
       <ul>
-        <li>A <b>road</b> makes transport along it cheaper; its ▾ sets how much (× 0.2 means five times cheaper).</li>
-        <li>A <b>border</b> makes goods dearer when they cross it. Its ▾ sets a <b>tax</b>, a percentage of what the
-          goods are worth where they cross (see below), and a <b>tariff</b>, a fixed amount per unit, in units of p like
-          all costs. Lower down, below the circle (next item), the same menu has a second <b>+ border</b> button. It
-          works like the first. With it come the direction and the product buttons, which hold for every border you
-          draw, with either button.
-          A <i>one-way</i> border charges only goods crossing in the direction of its arrows; the arrows point to your
-          left as you draw it (drawn from top to bottom, they point to the right).</li>
-        <li>Ready-made shapes, in the same ▾ menus: a <b>road from the centre</b> to a corner of your choice, a
-          <b>road across the middle</b>, horizontal, vertical or both crossing in the centre, and a
-          <b>circle in the centre</b> enclosing 5 to 70 % of the town, like a country in the middle of the world. The circle
-          charges goods both ways, or only goods going in: then it protects the inside, while its own goods go out free.
-          The product buttons in the same menu choose which products the circle taxes, for instance only the chips.
-          A border you draw can do the same: choose its products with the buttons by the second <b>+ border</b>.
-          At the bottom of the border menu, a <b>grid of countries</b>: n borders along each axis cut the town into
-          countries of the same size, with the tax and tariff of the menu, both ways and for every product: n × n
-          countries in a periodic town, where one of the borders lies on the edge, (n + 1) × (n + 1) in a closed one.</li>
-        <li><b>− road</b> and <b>− border</b>: tap one to remove it. <b>✕ all</b> removes them all.</li>
+        <li><b>lives</b>: the share of the established centers that live at least so many rounds. The paper finds
+          that half of them end within 40 to 50 rounds.</li>
+        <li><b>walk</b>: how far a living center has moved after 1, 2, 3 … rounds (the distance squared, averaged
+          over all centers). For a few rounds it grows like a random walk, the dashed line. Then it bends over:
+          after 100 rounds a center is still within about 5 steps of its place. A center does not walk away. It
+          ends, and a new one forms nearby.</li>
+        <li><b>collapse</b>: the size of the cascade in which a center ended, counted as in the paper: the
+          factories started while the turbulence lasts. Dashed: all cascades.</li>
+        <li><b>rivals</b>: the chance that a center ends in the next round, against the distance to the nearest
+          big chip company of another center. Within reach (below 1 on the axis) it is hundreds of times higher
+          than beyond.</li>
+        <li><b>on a road</b> (only when the town has roads): how long a center stays on a road, and at a crossing
+          of two roads.</li>
       </ul>
-      <p>Goods always travel the cheapest way: they may follow a road part of the way, or go around the end of a border
-        instead of paying.</p>
-      <p>The cheapest way is found by a search across the lattice, in steps of 1, √2 and √5 (16 moves), so that no way
-        is more than 3 % longer than a straight line. When two factories offer a buyer exactly the same cost, the buyer
-        takes one of them at random. Until 27 November 2026 the search gave it to the offer it reached first, always in
-        the same order; in a town cut into taxed countries the agents in the top-left corner of every country then won
-        those ties round after round and grew rich without limit. (In a large periodic town without roads and borders
-        the same search stands in for straight lines when they would be slow; there the order of ties makes no
-        difference and is kept, so that such runs are the same as before.)</p>
-      <p>What the goods are worth where they cross is their full price so far, p · (1 + α · s<sup>γ</sup> + the
-        transport so far), the seller's share p included (α = 1 in the standard setup). A tax takes its share of
-        that, in both economies. With free goods no money changes hands: the tax and the tariff only change where
-        the buyers buy. When the buyers pay, the buyer pays the tax and the tariff as part of its cost C, and that
-        money comes back to everybody as the equal income — or, with the button <i>tax to country</i> (upper right
-        corner of the town), to the agents of the country the goods enter.</p>
-      <p>So a tax hits even the cheapest goods. A chip factory that sold 1&nbsp;000 chips last round makes each for
-        about 0.002, but where a chip crosses it is still worth at least p, the seller's share. A 100 % tax doubles what
-        every good is worth there, the giant's chips too, and adds at least 1 to its cost C: it acts much like a tariff
-        of 1, and a 20 % tax much like a tariff of 0.2. A tariff costs the giant as much as anybody. With free goods,
-        across a border down the middle of a 64 × 64 town, chips from the other side reach about 30 % of the buyers
-        without a border, but only about 20 % with a tariff of 0.2 or a tax of 20 %, 6 % with a tariff of 0.5 or
-        a tax of 50 %, and under 1 % with a tariff of 1 or a tax of 100 %. Then each side gets its own chip factory.
-        Bread stops crossing at a tariff of 0.2 to 0.5, or a tax of 20 to 50 %.</p>
-
-      <h2 id="r-look">What to look for</h2>
-      <p>The big question: can a newcomer ever beat a giant? The newcomer makes a unit for 1, the giant for
-        s<sup>γ</sup>, which can be tiny. A customer goes to the newcomer only if the giant's transport cost has eaten
-        up its advantage. So the giant keeps every customer within a distance of about R ≈ (1 − s<sup>γ</sup>)/β. If R
-        is bigger than the whole town, no newcomer can win a single customer from it anywhere: the giant is a natural
-        world monopoly. This holds in both economies, with or without gouging, because the buyers always pick the
-        lowest cost C. Yet such a giant lasts only about two rounds, like the biggest B factory in the tiny town. Its
-        owner earns the most, so with the Income weight it places the most orders, and nobody buys from itself: its
-        own orders go to a rival. The giant's sales fall, its owner gives up, and the rival, grown on those orders,
-        takes over.</p>
-      <p>Now you can see what globalization does. Make transport cheaper (the <i>transport factor</i> in the control panel;
-        <i>lower gradually</i> keeps lowering it) and R grows: many small local producers merge into a few big ones that
-        ship far. Products that are cheap to carry go global first, and even bread goes global once transport costs
-        a twentieth of the standard (lesson 1).</p>
-      <p>Two more things to watch. The giants are fragile: in the standard town a big chip company typically lasts
-        about four rounds, at any patience (the old rule of the section Patience). It ends by losing about a third of its sales in one round, far more than
-        chance, nearly all to one chip factory, and the next giant often grows up next door, on the orders of the old
-        giant's own owner (lesson 5). With patience 5, though, a few giants now and then stay for hundreds of rounds.
-        And a bakery can suddenly boom: when its neighbours
-        close, it takes over their customers, grows ten times bigger in two or three rounds, gets rich — and then its
-        owner switches to B or C at the first dip in its sales.</p>
+      <p><b>Experiments.</b> Two more buttons of that section let you do to the town what the paper did with
+        scripts. <i>plant</i>: press it, then point at the town and click, or slide a finger there and let go. The
+        agent at that place gets a big chip company, as big as the biggest in the town; it keeps its money. Press
+        <i>plant</i> again for one more center. <i>remove</i> works the same way, but takes things away within the
+        distance r of the place: only the chip companies, all companies, or all companies and all the money of the
+        agents there. With r = 0 it is the one place you point at; the paper used r = 6. The owners keep their
+        money, unless you take it, and start again by the usual rule. While you point, a ring or a circle on the
+        town shows where it will happen, and Esc puts the tool away.</p>
+      <p>The text above the plots gives the numbers behind them, among them how many centers the town holds at a
+        time, to compare with 0.9 × (L · β)². Every plot has the buttons <b>.png</b> and <b>sq</b> to save it. To
+        run the very same town again, type a number in the field <i>Seed</i> (control panel, <i>Economy</i>) and
+        press Reset: the same seed gives the same run, round for round.</p>
 
       <h2 id="r-pics">How to read the picture of the town</h2>
-      <p><b>3D</b> (the default): the town seen from the side. Every factory is a tower as tall as the number of units it
-        sold last round. The golden glass columns are the agents' money, hanging below the ground or standing around the
-        factories (menu at the top). The scale bar at the left corner of the town shows the height of a round number
-        of units, and its golden, thicker continuation the height of a round number of money.
-        Drag to turn and tilt, use the mouse wheel to zoom, or open the <i>view</i> menu. <i>lin / log</i> switches the
-        towers to a logarithmic scale, so that small factories show up too. The menu <i>heights ×1</i> multiplies the
-        heights of all towers, factories and money alike, by 0.02, 0.03, 0.05, 0.1, 0.25, 0.5, 2, 4 or 10, and the scale bars follow; the
-        <i>view</i> menu has two front views, <i>front</i> (tilt 18°) and <i>front30</i> (tilt 30°, the view at the start). The menu <i>money contours 1</i>
-        right of − road replaces the golden towers by money contours on the ground: the money of the agents smoothed over ½,
-        1, 2 or 4 lattice spacings, one shade for each factor 10 — dark grey below 0.1, grey, light grey, light golden,
-        golden and dark golden above 1000 — with a contour line between the shades and their key above the scale bar.
-        With <i>Pop. Variation</i> above 1 the empty sites are black, and the shades give the money of the agents
-        around, not counting the empty sites.</p>
-      <p><b>Agents</b>: every seller is a small pie, its area the units sold, a slice per product. When the squares are
-        big enough (the 8 × 8 tiny town, or 16 × 16 on a large screen), each also shows the letter of the agent's
-        factory with the units it sold in the last round (A 7), and the agent's money. <b>Market</b>: for one
-        product, everybody is coloured like the factory they buy from. <b>Sales</b> and <b>Money</b>: heat maps. When there are borders, every view shows the mean and the median money in each
-        region they cut out (in 3D written on the ground, behind the towers), so you can compare the countries. Click
-        the numbers, or the button <i>regions</i> beside the markets buttons in the lower right corner, to switch all
-        of them to their averages over the last two thirds of the run since a setting or the borders last changed (in
-        gold), and click
-        again for the present. With a grid of countries (the border menu) the legend also gives the mean wealth of
-        the regions and the standard deviation between them, both taken every round and averaged over the last two
-        thirds of the run. Hover
-        over or tap an agent to read its numbers.</p>
-      <p>The buttons in the lower right corner:</p>
-      <ul>
-        <li><b>markets A B C</b>: dotted lines on the ground around the customers of every seller of that product.</li>
-        <li><b>⚡</b> marks every agent whose money falls to zero (to one wage or less), in the colour of the company it
-          had then — yellow if it had none — or all in yellow, or off. The bigger the company, the bigger the mark: a soft
-          flash where it stood, and small lightnings along its tower and its money column; the many small falls give
-          small flashes, at most 60 at a time. A company that closes sinks to the ground.</li>
-        <li><b>◐</b> switches between the white background and a black one. <b>.png</b> saves a picture with all the settings
-          written under it, <b>sq</b> a picture of just the town, 10 % lower than wide, and <b>rv</b> just the town cut in its own shape, with no text but the scale bars.</li>
-      </ul>
+      <p><b>3D</b> (the view at the start): the town seen from the side. Every factory is a tower as tall as the
+        units it sold last round, blue for bread (A), red for chips (C). The shades on the ground are the money of
+        the agents, one shade for each factor of 10, from grey (little) to golden (a lot); the menu <i>money
+        contours</i> in the lower left corner can show it as golden towers instead. Drag to turn and tilt, use the
+        mouse wheel to zoom, or open the menu <i>view</i>. <i>lin / log</i> switches the heights to a logarithmic
+        scale, so that small factories show too.</p>
+      <p><b>Agents</b>: every seller is a small pie as large as its sales. In a tiny town each square also shows
+        the letter of the factory, its sales and the money of its agent. <b>Market</b>: for one product, everybody
+        has the colour of the factory they buy from. <b>Sales</b> and <b>Money</b>: heat maps. In every view you can
+        hover over an agent, or tap it, to read its numbers.</p>
+      <p>The buttons in the lower right corner: <b>◀ ▶</b> step back through the last rounds and forward again.
+        <b>A</b> and <b>C</b> draw dotted lines around the market area of every seller of that product.
+        <b>⚡</b> marks every agent whose money has just run out. <b>◐</b> switches between a white and a black
+        background. <b>.png</b> saves the picture with all its settings written under it, <b>sq</b> just the town,
+        and <b>rv</b> the town cut in its own shape.</p>
 
       <h2 id="r-plots">The plots under the town</h2>
-      <p><b>In time</b>: how something changes from round to round — the number of factories of each product (dashed:
-        their effective size (Σs)²/Σs², where s is what a factory sells: the number of equal factories that would be as
-        concentrated — 1 when one company sells everything), the market share of the biggest company, how far goods travel, the start-ups and bankruptcies, the money, the price.
-        The <i>window</i> slider shows the last 10, 15, 23 … rounds or the whole run, <i>lin / log</i> switches the
-        vertical axis, and for the factories the band between the two curves of the most scalable product, C, is shaded.</p>
-      <p><b>Distributions</b>: how the money is spread over the agents, P(M), and how big the companies are, P(s). Both
-        axes are logarithmic: each step along an axis multiplies by 10. On such a plot a power law, P ∝ x<sup>−a</sup>,
-        is a straight line, and the dashed lines are such fits (shown when <i>fit</i> is chosen above the plot; off at the start). In P(M) the dotted lines mark the mean money (orange) and the
-        typical money, the median (blue): half of the agents have less. Above them, in the lower left corner, is P(M ≤ w),
-        the share of agents with no money (one wage or less), which a logarithmic axis cannot show. The tail is fitted
-        over one decade, from a thirtieth to a third of the largest fortune (in a sum over many rounds, of the mean
-        largest of a round), away from both the crowd of ordinary agents and the very richest; summed, its slope is
-        about −1 with free goods (single runs −0.7 to −1.3; 125 × 125 town, n = 0.2 to 5). But the money follows no
-        single power law: in the standard town P(M) falls as about M<sup>−0.9</sup> from 1 to 10, where the savers
-        are, M<sup>−2</sup> from 10 to 100 and M<sup>−1.3</sup> to M<sup>−1.5</sup> from 100 to 1&nbsp;000, in both
-        economies. The fitted decade gives about −1 only because it lies on a flatter stretch between about 70 and
-        300, where the fortunes of the chip owners sit. The bakeries
-        in P(s) are fitted likewise, from a fiftieth to a fifth of the largest, across a bend near 40·n units: about −2
-        in the standard setup, also with n = 0.2, but −0.7 to −3.7 at other n, with the Money weight or with upkeep
-        (all with free goods). You can see the present round, or everything since you
-        last changed a setting (its first third left out, so the town has time to settle).</p>
-      <p><b>Agents</b>, on the left: P(τ), how many rounds an agent lasts between two bankruptcies. The standard setup
-        has none, and the plot says so. When the buyers pay, those who cannot pay for their shopping go bankrupt
-        (hardly any with the Money weight); with <i>Shopping debts</i> set to <i>forgiven</i> in the control panel, a
-        debt from shopping alone is written off without a bankruptcy. With free goods and upkeep 0.01 or 0.02 (the μ
-        menu), nearly all bankruptcies are
-        failed B factories (from 0.03 on, failed bakeries every 40 rounds). A bankrupt agent has only its wage, 0.05 a
-        round; 40 wages buy a bakery (2), then it saves for a B factory (8), which at μ = 0.02 costs 0.16 a round in
-        upkeep, over three wages: unless it sells well, the agent is soon bankrupt again. An idle bakery leaves its
-        owner 0.01 a round, so saving 8 takes 800 rounds: after 4&nbsp;000 rounds half the cycles last over 650 rounds,
-        a quarter under 330, a quarter the full 840 or more.
-        The <i>decades</i> slider over this plot shows fewer decades of the y axis, to look closely at the common times.
-        On the right: the money of single agents, round by round. The plot follows the richest agent (or the 2, 3, 5
-        or 10 richest), or agents picked at random. The round button over the plot switches between the largest, 2
-        largest, 5 largest, 10 largest, 5 at random and 10 at random; the buttons over the section let you
-        choose freely, also 3. Each agent is drawn for its whole life:
-        from its last bankruptcy (or the start of the run) until it goes bankrupt again, where a cross marks the end. One
-        of the richest is also let go once its fortune is gone — its money back to the mean money of the town — where a
-        circle marks the end. Then the richest agent not yet shown (or another one picked at random) takes its place,
-        drawn back to where its own life began (after a very long life, as far back as it is kept — normally at least to
-        the last time it had nothing). The slider sets the time window: from now back in time, each step 1.5
-        times longer, and at its right end the whole run. The colour of the line shows what the agent was making at the
-        time; grey means no factory, or one opened that very round. In the standard setup a rich agent's money climbs
-        while it owns a big company and sinks in grey stretches while it tries one new factory after another. Three
-        times in four that a chip giant closes, its owner builds a new one within 80 rounds and the money climbs
-        again; after its last giant the money drains away (lesson 4).
-        With the old patience 4 or 5 (see Patience) chosen before a new start (↺), the richest keep their companies, and their money climbs
-        steadily (at 4 for about 2&nbsp;000 rounds).</p>
-      <p><b>A life ends: bankrupt or money 0.</b> These buttons over the section give both plots another view. With
-        <i>money 0</i> a life ends whenever the agent's money falls to zero — to one wage or less — whether it goes
-        bankrupt or spends its last savings on a new factory, and the fortunes plot follows each of the richest from the
-        last time it had nothing until its money is all gone. With free goods and upkeep 0.02, about half of these
-        lives last 40 rounds: from nothing an agent saves its wage, 0.05 a round, for 40 rounds until it can buy a
-        bakery (2), and buying it leaves it with nothing again. The standard setup has no upkeep, and then nobody goes
-        bankrupt with free goods — money comes in as wage and sales, and goes out only when an agent buys a factory with
-        money it has — so P(τ) of the bankruptcies stays empty. Lives that end at money 0 remain: an agent whose factories
-        fail saves 40 rounds for a bakery, then 160 rounds for a B factory (8), and so on, and P(τ) has peaks at 40 and
-        160 rounds (about 41 % and 33 % of the lives).</p>
-      <p><b>Around the high-tech companies</b>: the mean and the median money of the agents, and the mean size — the
-        units sold — of the bread factories, of the ordinary (B) factories and of the chip factories themselves (at d = 0
-        the big ones), counting only factories that sold something, so that a size is at least 1. With <i>+ per
-        agent</i>, dashed lines also show the units sold per agent at that distance, 0 for every agent without such a
-        factory: a size times the chance that there is a working factory. Many factories sell nothing in a round (with
-        no upkeep idle ones stay open), which is why the dashed lines lie far below. The <i>decades</i> slider cuts the
-        lowest decades off a logarithmic axis. All this against the distance d to the nearest big company of the most scalable product (one that sells
-        at least a tenth of what the biggest one sells, the biggest taken as its mean size over the last 100 rounds), summed over the last 100 rounds or over the last two
-        thirds of the run. Linear, log–lin (only the vertical axis logarithmic) or log–log (the start); the slider shortens the distance
-        axis, for instance to the first 20 cells, where most of the change happens. Close to a big chip company the mean money is high — its owner lives there — and the bakeries sell
-        many times more than far away (about 7 times in the standard setup, 10 to 20 times with n = 0.2 and upkeep) —
-        most likely because the rich order more, and bread is
-        bought close by. Some ten cells away both curves are flat. The median changes much less than the mean: the wealth
-        sits with a few, not with the whole neighbourhood.</p>
-      <p>Every plot has its own <b>.png</b> and <b>sq</b> buttons to save it as a picture: <b>.png</b> in the shape
-        shown, with a title; <b>sq</b> a square one for a paper, without a title and with narrow margins.</p>
+      <ul>
+        <li><b>In time</b>: one quantity round by round. Choose it in the menu: the factories of each product,
+          the share of the biggest company, how far goods travel, starts and bankruptcies, the money (mean and
+          median), the price.</li>
+        <li><b>Distributions</b>: how the money and the sizes of the companies are spread. Both axes are
+          logarithmic: every step multiplies by 10. The dotted lines mark the mean and the median money.</li>
+        <li><b>Agents</b>: on the left, how long an agent lasts between two times its money runs out. On the
+          right, the fortunes of single agents, round by round: they climb while an agent owns a big company and
+          drain away afterwards.</li>
+        <li><b>Around the high-tech companies</b>: money and factory sizes against the distance to the nearest
+          big chip company. This is the profile of a production center.</li>
+        <li><b>After a collapse</b>: the number of chip companies that count, and how many new ones last. The
+          bursts are the cascades.</li>
+        <li><b>Family tree of the companies</b> (switch it on with <i>tree off</i>): each chip company linked to
+          the one that fell before it in the same place.</li>
+        <li><b>Active periods</b>: the sizes of the cascades, for rules that you can choose.</li>
+        <li><b>Production centers</b>: only while the centers are followed (see above).</li>
+        <li><b>Scan</b>: the results of a scan, in which the applet runs the model again and again while it
+          changes one number, such as the cost of carrying chips.</li>
+      </ul>
+      <p>Every plot has its own buttons <b>.png</b> and <b>sq</b> to save it as a picture: <b>.png</b> in the shape
+        shown, with a title, and <b>sq</b> a nearly square one for a paper, without a title.</p>
 
-      <h2 id="r-lessons">Lessons from the model</h2>
-      <p>The lessons come from the standard setup as it was when they were written — the closed 125 × 125 town (the
-        standard town now has periodic edges; choose <i>edges closed</i> above the town to repeat them) with free goods, the Income weight, n = 1,
-        patience 0 of the old rule (κ = 1 now; see Patience), the start costs of Cost standard (Start 2, 8, 20, γ −0.3, −0.6,
-        −0.9, β 0.1, 0.05, 0.02), keep if broke, no upkeep and α = 1 — and from the same town when the buyers pay (gouging off, shopping debts
-        bankrupt). They hold in both economies unless said; a number in parentheses is for buyers pay. A big chip
-        company, or chip giant, sells at least 5 % of all chips. The most important come first. Most numbers are means
-        of five to ten runs, or of three to six for some changes, over rounds 301–1&nbsp;000; where the town has not
-        settled by then, they come from rounds 901–1&nbsp;000 or from one to five runs of up to 4&nbsp;000 rounds.</p>
-      <ol class="lessons">
-        <li><b>Cheaper transport merges markets: a product goes global once carrying it across the town costs as much as
-          making it in a new factory.</b> With transport four times cheaper, the biggest chip maker makes 80 % of the
-          chips instead of 22 % (84 instead of 31 % when the buyers pay), and just 2 % of new chip factories grow big,
-          not 15 % (5, not 29 %). Lower transport slowly, as the <i>Globalization</i> preset does, and one company makes
-          most of the chips once transport costs a third of the standard, most of B at a ninth and most of the bread at
-          a twentieth. In each case, carrying a unit from corner to corner, some 175 steps, then costs about 1. With the
-          same β for all three products, they go global together.</li>
-        <li><b>Cheap transport makes the richest much richer, and so does dear transport.</b> With transport four times
-          cheaper a chip giant sells to most of the town and earns its owner some 200 a round while it lasts: the
-          richest 1 % own 60 % of the money instead of 19 % (18 instead of 10 % when the buyers pay), while the median
-          stays near 3. With transport four times dearer, 24 chip makers sell at a time instead of 10 (9 instead of 6)
-          and most new ones grow big, so the same owners stay rich: in runs of 3&nbsp;000 rounds the richest 1 % kept
-          gaining, to 64 % (43 to 52 %), against 16 to 24 % (12 to 16 %) with standard transport. When the buyers pay,
-          dear transport also ruins those far from the factories: 130 to 320 go bankrupt a round instead of 24.</li>
-        <li><b>A protected country gets richer, but only its company owners do.</b> Put a circle with 10 % of the town
-          in the middle, and charge goods going in a tariff of 1 a unit, or a 100 % tax, which does the same. Its chip
-          makers get the home market to themselves, grow big and win the outside market too: the town's biggest chip
-          maker sits inside in about four rounds of five (more than nine of ten when the buyers pay), and the insiders
-          earn 1.8 times as much a head as the outsiders (2.0). Yet the typical insider has only 2 % more money than the
-          typical outsider: 96 to 97 % of the insiders' extra money sits with their richest tenth. Charge goods both
-          ways, and the gain is gone; when the buyers pay, the inside even loses its chip makers.</li>
-        <li><b>A fortune lasts only while its owner keeps winning, and owners win more often when fewer try.</b>
-          Fortunes come from chip giants. Three in four times a giant falls (four in five when the buyers pay), its
-          owner builds a new one within 80 rounds; these owners together keep about 85 % of their money, the others only
-          3 to 4 % after 20 rounds. These wins go to a few; half of the owners whose giant falls build no other. At most
-          about three new chip giants arise a round, so the more try, the worse the odds. Without B, savers jump from
-          bread to chips: 70 chip factories open a round, not 15 (37, not 5), 4 % grow big, not 15 % (8, not 29 %), and
-          the richest agent has 350, not 1&nbsp;300 (130, not 900). With B and C four times dearer, 2.6 open a round
-          (1), and nearly half grow big (seven in ten).</li>
-        <li>(Patience here is the old rule of the section Patience.) <b>Patience seldom saves a chip giant, and its successor often grows up next door, fed by the giant's own
-          owner.</b> With any patience, also 4 or 5 chosen in a running town, a big chip company typically lasts about
-          four rounds; with 4 or 5 only 2 to 5 in 100 stay big for more than ten rounds, though with 5 a few stay big
-          for hundreds of rounds (up to about 90 when the buyers pay). A giant ends by losing about a third of its
-          sales in one round, 14 to 20 times the chance wobble,
-          nearly all to one chip factory. Nobody buys from itself, so the giant's owner, a top earner, sends its chip
-          orders, 3 to 4 % of all, to its cheapest other chip factory. So 7 in 10 new chip giants start within 5 cells
-          of a falling one (6 in 10 when the buyers pay), but only 2 to 3 in 10 in a test where chip owners buy no
-          chips.</li>
-        <li><b>When the buyers pay, only the wages are new money, so fewer companies start and the chip market falls to
-          a few.</b> With free goods the sellers' takings come on top of the wages; when the buyers pay, they come out
-          of the buyers' pockets. Nearly all new money goes into new factories, so 148 start a round instead of 267, 12
-          chip factories remain instead of 35, and the biggest sells 31 % of the chips instead of 22 %. Yet the typical
-          agent is hardly poorer. Whoever pays, an agent whose factory sells nothing saves 8 for a B factory, then 2 for
-          a bakery, and so on, so the median money is near 3, half the gap between the two prices: 3.0 with free goods,
-          2.7 when the buyers pay.</li>
-        <li><b>When the buyers pay, forgiving shopping debts breaks up the big fortunes.</b> Some 24 agents a round
-          cannot pay for their shopping, mostly agents that have just spent their savings on a new factory. Bankrupt,
-          they lose that factory; forgiven, they keep it. With forgiveness the richest 1 % own 5 % of the money instead
-          of 10 %, the richest agent has 280 instead of 900, and 20 rounds after its giant closed, a chip giant's owner
-          has 7 left instead of about 200. What matters are the few chip makers among the debtors, under one a round:
-          bankrupt, they leave the chip market to the rich, who can pay any bill; forgiven, they stay and make about a
-          third of the chips. With free goods nobody runs into debt.</li>
-        <li><b>Upkeep sinks the owners of idle factories once it costs more than they can spare, and it piles the money
-          up at the top.</b> An agent that sells nothing can spare its wage, 0.05, with free goods, but only about 0.03
-          when the buyers pay. So idle B factories go first, and between μ = 0.02 and 0.03 (0.01 and 0.02) the bakeries
-          collapse, from 14&nbsp;500 to 1&nbsp;100 (13&nbsp;000 to 2&nbsp;300). The median money falls from 3 to 1, and
-          nearly every agent goes bankrupt every 40 rounds (65). At μ = 0.02 all the money the town gains ends with the
-          richest 1 %: by round 4&nbsp;000 they own 45 to 62 % of it (59 to 75 %), against 16 to 28 % (8 to 20 %)
-          without upkeep, and the poorer half keeps 8 to 12 % (5 to 9 %), as in real countries [11].</li>
-        <li>(Patience here is the old rule of the section Patience.) <b>Patience keeps the small companies alive, and the money piles up with their owners.</b> Chosen in a
-          running town, patience 5 lets bakeries and B factories go on for hundreds of rounds, while most chip giants
-          still fall within a few (lesson 5). Fewer owners give up, so less of the new money goes into new factories: 73
-          instead of 97 % (85 instead of 99 % when the buyers pay). The rest piles up with the bakers and B makers: by
-          round 1&nbsp;000 the richest 1 % own 64 % of the money instead of 21 % (47 instead of 12 %), and their share
-          is still rising. Chosen before a new start, patience 5 freezes the chip market into some 230 local chip
-          makers, each selling to its neighbours; with patience 4 they slowly merge, and after about 2&nbsp;000 rounds
-          the giants are back.</li>
-      </ol>
+      <h2 id="r-ctl">The controls</h2>
+      <p><b>Above the town.</b> The views; <i>lin / log</i>; the menus for the money and for the heights of the
+        towers. <i>Cost</i> steps through ready-made sets of products: <i>flat</i> is bread alone, <i>flat-2</i>
+        bread and chips as in the paper, <i>ultra flat</i> three goods that differ only in the cost of carrying
+        (0.25, 0.05 and 0.01 a step), and <i>standard</i> three goods that also differ in start cost and in
+        economy of scale. <i>buy elsewhere</i> lets owners buy from themselves, or place no orders for their own
+        product at all. <i>always close</i> can be switched to <i>keep if broke</i>: an owner that gives up then
+        keeps its factory until it can pay for a new one. <i>Pop. Variation</i> leaves some squares empty, so
+        that the town has crowded and thin parts. The golden button switches between <i>free goods</i> and <i>buyers pay</i>. Then
+        ▶ (run or pause; the space bar), slow run, <i>step</i> (key s) and ↺ (a new town; key r). <i>tiny town</i>,
+        <i>standard</i> and <i>large</i> load ready-made towns.</p>
+      <p><b>On the town, upper edge.</b> <i>+ border</i>: press on the town, drag and let go to draw a border.
+        Its menu ▾ sets the tax (a share of the value of the goods where they cross) and the tariff (a fixed sum
+        for every unit), and has ready-made shapes: a circle in the middle and a grid of countries.
+        <i>− border</i>: tap a border to remove it. <i>✕ all</i> removes all roads and borders. <i>Income
+        weight</i> can be switched to <i>Money weight</i>: the shoppers are then drawn by the money they hold, not
+        by what they earned. The next three buttons act only when the buyers pay: gouging, whether the money paid
+        for carrying comes back or is lost, and whether a border tax goes to everybody or to the country that the
+        goods enter. Then the menus <i>n</i> (orders per agent of each product), <i>μ</i> (upkeep: what a factory
+        costs its owner in every round, as a share of the start cost; 0 in the paper), <i>patience κ</i> and
+        <i>edges</i> (periodic, or closed like an island).</p>
+      <p><b>On the town, lower left.</b> <i>+ road</i> works like <i>+ border</i>. Along a road, carrying costs a
+        fraction of the normal cost, set in its menu ▾ (0.1 for the rivers of the paper). Goods always take the
+        cheapest way: they may follow a road for part of the trip, or go around the end of a border.</p>
+      <p><b>The control panel</b> (the tab <i>controls</i> at the right edge, or the key k). <i>Products</i>: for
+        each product the start cost, γ, β, and α, a factor on the cost of making (1 in the paper), with buttons to
+        add a product or remove one. <i>Economy</i>: the size L of the town, the wage and the other numbers of the
+        rules, and the seed. <i>Transport, roads and borders</i>: a factor on every β at once, which the applet can
+        also lower a little in every round. <i>Production centers</i>, <i>Scan</i> and <i>Presets</i>: see
+        above. The presets whose names begin with <i>Paper</i> are the worlds of the lessons.</p>
 
       <h2 id="r-try">Try this</h2>
       <ul class="try">
-        <li>Press <b>tiny town</b> above the town (or <b>Load the tiny town</b> in <i>A tiny town, step by step</i>),
-          and follow the first rounds with <b>step</b>: hover over the agents, check how their money changes, and find
-          out why an owner gives up. ↺ then gives a new tiny town; <b>standard</b> above the town, or any preset but
-          <i>Tiny town</i> and <i>Large town</i> in the control panel, goes back to the 125 × 125 town, which the ideas
-          below need (<b>large</b>, right of <b>standard</b>, gives the same rules on a 250 × 250 town).</li>
-        <li>Let the town run a few hundred rounds, then set <b>patience</b> to 2, 3 or 10, so that an owner gives up
-          only after that many falls of its sales in a row, and watch the big companies and the richest agents. Then
-          press ↺ for a new town with the same patience.</li>
-        <li>Choose the <b>Globalization</b> preset in the control panel: transport gets cheaper every round, and local
-          producers merge into a few big ones.</li>
-        <li>Turn on <b>markets C</b>, then draw a border with a 100 % tax right through the biggest C market. Remove it
-          (<b>− border</b>) and draw one with a tariff of 1 instead: do they act alike? Then try both when the buyers
-          pay: the buyers choose just as before, but now they pay the tax and the tariff, which come back to
-          everybody.</li>
-        <li>Draw a road across the town and see which products grow along it.</li>
-        <li>Switch the economy to <b>buyers pay</b> with the golden button above the town, and compare the money
-          columns. Follow the 5 largest fortunes for a few hundred rounds, then switch on <b>gouging</b> (the button
-          right of <i>Income weight</i>): do the owners of the chip giants get richer, and do the giants last
-          longer?</li>
-        <li>When the buyers pay, set <b>Shopping debts</b> in the control panel to <i>forgiven</i>. Compare the
-          bankruptcies in the <i>In time</i> plot, and the number of factories, with those when shopping debts make
-          an agent bankrupt.</li>
+        <li>In the tiny town, find the two chip factories in some round and work out from the sales of the bigger
+          one how many chips the smaller one will sell in the next round. Step and check.</li>
+        <li>Load <i>bread and chips</i>, follow the centers, and wait for a center to end. Look where its nearest
+          rival stood: was it within 50 steps?</li>
+        <li>Let the same world run 2&nbsp;000 rounds. How many centers does it hold on average? Now change L to
+          250 (control panel, <i>Economy</i>): you should find four times as many.</li>
+        <li>Double the start cost of both products. What happens to the median money, and what to the centers?</li>
+        <li>Set <i>patience κ</i> to 4 and follow the centers. Do they live longer? Do they walk less?</li>
+        <li>In the world of the 25 countries, remove the borders (<i>✕ all</i>) after a thousand rounds. How long
+          does it take until most countries have lost their chip company?</li>
+        <li>Draw a road through a living center. Does the center stay on it?</li>
+        <li>Plant three centers in a row, 20 steps apart. How many are left after 50 rounds?</li>
+        <li>Remove a center together with its money, then plant a new one in the same place. Does it last?</li>
+        <li>Switch to <i>buyers pay</i> and then to <i>gouging</i>. The centers stay the same. What happens to the
+          price, and to the median money?</li>
+        <li>Add a third product (<i>Cost ultra flat</i> has three). Is the middle one made in the centers of the
+          one that is cheapest to carry?</li>
       </ul>
-      <h2 id="r-lit">Related models</h2>
-      <p>The model sits where economics and physics meet, and older models share parts of it.</p>
-      <p><b>Shops on a map.</b> Hotelling [2] was the first to put sellers on a map: customers along a street buy from the
-        shop whose price plus walking cost is lowest. The rule here, C = s<sup>γ</sup> + β·d, is the same idea, in two
-        dimensions and with a price that falls as the factory grows.</p>
-      <p><b>Economic geography.</b> In Krugman's model [3] economies of scale and transport costs decide whether industry
-        spreads out or gathers in one region, and when transport gets cheap enough, manufacturing concentrates. The town
-        here reaches the same conclusion, but from simple agents that only react to their own sales, without the
-        equilibrium and foresight of the economic models — and it shows the order: the products that are cheapest to
-        carry go global first (lesson 1).</p>
-      <p><b>Lock-in.</b> Arthur [4] showed that with increasing returns, small chance events decide which technology wins,
-        and the winner is then hard to dislodge. A chip giant here is such a lock-in in space: inside its reach R no new
-        factory can win a customer from it. Yet the giants change every few rounds, and the next one often grows up
-        next door, on the orders of the old giant's own owner (lesson 5). The original model [1] also finds that new
-        companies tend to reappear close to old ones: history matters.</p>
-      <p><b>Trade networks.</b> The closest recent model we found is by Han, Schröder, Witthaut and Böttcher [5]: agents
-        choose whom to trade with, with economies of scale, transport costs and different tastes. They find three regimes —
-        centralized production with a star-shaped trade network, distributed production where everybody trades with
-        everybody, and local production without trade — much like the chips, the ordinary industry and the bread here.</p>
-      <p><b>Avalanches.</b> Bak, Chen, Scheinkman and Woodford [6] showed that producers who interact locally, with
-        economies of scale, can turn small independent shocks into large swings of the whole economy (self-organized
-        criticality). The steady churn of start-ups, giants and crashes here is of the same kind.</p>
-      <p><b>Money.</b> When money is only passed around, never created or destroyed, it spreads like energy in a gas, with
-        an exponential distribution, as Dragulescu and Yakovenko showed [7]. When wealth also grows by risky investments,
-        the rich form a power-law (Pareto) tail, as in the model of Bouchaud and Mézard [8]. In this town money is created
-        (as wages, and with free goods also by the sales) and destroyed (by start costs and upkeep). When the buyers
-        pay, what they pay for making and carrying the goods, and for border taxes and tariffs, comes back to
-        everybody, so nothing else leaves. P(M) has a fat tail, but not a single power law: per unit of money it falls
-        as about M<sup>−2</sup> from 10 to 100 and M<sup>−1.3</sup> to M<sup>−1.5</sup> from 100 to 1&nbsp;000, in both
-        economies, with a flatter stretch between about 70 and 300, where the chip owners' fortunes sit; a fit over
-        one decade across that stretch gives about M<sup>−1</sup>. Real wealth tails are usually steeper.</p>
-      <p><b>Company sizes.</b> Axtell found [9] that the sizes of US companies follow Zipf's law: the number of companies
-        bigger than s falls as 1/s, so the density falls as s<sup>−2</sup>. The bread companies here come close: over the
-        decade of sizes below a fifth of the largest bakery the slope is −1.97 to −2.03 in the standard setup, also
-        with n = 0.2 (summed over the last two thirds of 1&nbsp;000 rounds). But that decade lies across a bend in the
-        curve, near 40·n units, and at other n, with the Money weight or with upkeep the slope comes out anywhere
-        between −0.7 and −3.7 (with free goods). From 4 to 40 units the curve falls as s<sup>−2.2</sup> with n = 0.2,
-        but below the bend, with n = 1 and 5, only as s<sup>−0.6</sup> — there most bakeries sell almost nothing,
-        while those that boom spread over a wide range of sizes. Ranked by size, the k-th largest bakery sells about
-        k<sup>−0.7</sup> times as much as the largest (k<sup>−0.55</sup> when the buyers pay) for k up to 100, not
-        1/k, as Zipf's law would have it. Stanley and co-workers [10] found that big companies
-        grow and shrink less, in proportion, than small ones; one could test that in this town too.</p>
-      <p>In a short search of the literature we found no other model that puts these pieces together — many products,
-        each with its own economy of scale and transport cost, on a map, with prices that set themselves — beyond the
-        one-product original [1].</p>
+
+      <h2 id="r-lit">Where the model comes from</h2>
+      <p>The model began with one product [2]: agents on a map buy from the supplier with the lowest cost, which
+        falls with the size of the company and grows with distance, and cheaper transport turns a local economy
+        into a global one. The paper [1] extends it to several products and closes the loop of money: what an
+        agent earns by selling one product decides how much it orders of all of them.</p>
+      <p>Older ideas meet here. Hotelling put sellers on a street, with customers who pay the price plus the
+        walk [4]. Christaller saw that every good has a range, and that the places which offer long-range goods
+        also offer the short-range ones [5]. Krugman showed that industry gathers in one region once transport is
+        cheap enough [6], and Arthur that with increasing returns chance decides who wins, and the winner then
+        stays [7]. Our centers do not stay: they pass from company to company and end in cascades. Real cities, in
+        contrast, are held in place by their geography, as the rebuilt cities of Japan show [8].</p>
       <div class="refs">
-        <p>[1] K. Sneppen and S. Bornholdt, <i>Globalization in a nutshell</i>, Phys. Rev. E <b>98</b>, 042314 (2018).
+        <p>[1] K. Sneppen, <i>Cheap transport drives metastable production centers and rising inequality: a model of
+          economic geography</i> (2026). The paper that this applet belongs to.</p>
+        <p>[2] K. Sneppen and S. Bornholdt, <i>Globalization in a nutshell</i>, Phys. Rev. E <b>98</b>, 042314 (2018).
           <a href="https://doi.org/10.1103/PhysRevE.98.042314" target="_blank" rel="noopener">doi:10.1103/PhysRevE.98.042314</a></p>
-        <p>[2] H. Hotelling, <i>Stability in competition</i>, Economic Journal <b>39</b>, 41–57 (1929).</p>
-        <p>[3] P. Krugman, <i>Increasing returns and economic geography</i>, Journal of Political Economy <b>99</b>, 483–499 (1991).
+        <p>[3] D. C. North, <i>Location theory and regional economic growth</i>, J. Polit. Econ. <b>63</b>, 243–258 (1955).
+          <a href="https://doi.org/10.1086/257668" target="_blank" rel="noopener">doi:10.1086/257668</a></p>
+        <p>[4] H. Hotelling, <i>Stability in competition</i>, Economic Journal <b>39</b>, 41–57 (1929).</p>
+        <p>[5] W. Christaller, <i>Die zentralen Orte in Süddeutschland</i> (Gustav Fischer, Jena, 1933).</p>
+        <p>[6] P. Krugman, <i>Increasing returns and economic geography</i>, Journal of Political Economy <b>99</b>, 483–499 (1991).
           <a href="https://doi.org/10.1086/261763" target="_blank" rel="noopener">doi:10.1086/261763</a></p>
-        <p>[4] W. B. Arthur, <i>Competing technologies, increasing returns, and lock-in by historical events</i>, Economic Journal
+        <p>[7] W. B. Arthur, <i>Competing technologies, increasing returns, and lock-in by historical events</i>, Economic Journal
           <b>99</b>, 116–131 (1989).</p>
-        <p>[5] C. Han, M. Schröder, D. Witthaut and P. C. Böttcher, <i>Formation of trade networks by economies of scale and product
-          differentiation</i>, J. Phys. Complexity <b>4</b>, 025006 (2023).
-          <a href="https://doi.org/10.1088/2632-072X/acc91f" target="_blank" rel="noopener">doi:10.1088/2632-072X/acc91f</a></p>
-        <p>[6] P. Bak, K. Chen, J. Scheinkman and M. Woodford, <i>Aggregate fluctuations from independent sectoral shocks:
-          self-organized criticality in a model of production and inventory dynamics</i>, Ricerche Economiche <b>47</b>, 3–30 (1993).</p>
-        <p>[7] A. Dragulescu and V. M. Yakovenko, <i>Statistical mechanics of money</i>, Eur. Phys. J. B <b>17</b>, 723 (2000).
-          <a href="https://doi.org/10.1007/s100510070114" target="_blank" rel="noopener">doi:10.1007/s100510070114</a></p>
-        <p>[8] J.-P. Bouchaud and M. Mézard, <i>Wealth condensation in a simple model of economy</i>, Physica A <b>282</b>, 536–545 (2000).
-          <a href="https://doi.org/10.1016/S0378-4371(00)00205-3" target="_blank" rel="noopener">doi:10.1016/S0378-4371(00)00205-3</a></p>
-        <p>[9] R. L. Axtell, <i>Zipf distribution of U.S. firm sizes</i>, Science <b>293</b>, 1818–1820 (2001).
-          <a href="https://doi.org/10.1126/science.1062081" target="_blank" rel="noopener">doi:10.1126/science.1062081</a></p>
-        <p>[10] M. H. R. Stanley, L. A. N. Amaral, S. V. Buldyrev, S. Havlin, H. Leschhorn, P. Maass, M. A. Salinger and
-          H. E. Stanley, <i>Scaling behaviour in the growth of companies</i>, Nature <b>379</b>, 804–806 (1996).</p>
-        <p>[11] T. Piketty, <i>Capital in the Twenty-First Century</i> (Harvard University Press, 2014), Table 7.2: the
-          poorer half owns about 10 % of all wealth in Scandinavia in the 1970s–80s, and about 5 % in Europe and the
-          United States in 2010.</p>
+        <p>[8] D. R. Davis and D. E. Weinstein, <i>Bones, bombs, and break points: the geography of economic activity</i>,
+          Am. Econ. Rev. <b>92</b>, 1269–1289 (2002).
+          <a href="https://doi.org/10.1257/000282802762024502" target="_blank" rel="noopener">doi:10.1257/000282802762024502</a></p>
       </div>
     </div>
   </details>
@@ -1553,6 +1313,50 @@
       </div>
     </div>
   </section>
+  <!-- the production centers, followed: shown only while they are followed (control panel, Production centers) -->
+  <section class="display" id="trkSec" style="display:none">
+    <div class="cardhead"><h2>Production centers</h2><span class="sub" id="trkSub">the centers followed by their biggest company: how long they live, how far they walk, and how they end</span></div>
+    <div class="chartbar">
+      <label class="diffpill" title="δ: the longest step, in lattice spacings, that the biggest company of a center may take from one round to the next for the center to count as the same center (6 in the paper, 4 in its Fig. S6b). A new δ starts the following anew">δ
+        <select class="trkDeltaSel"></select></label>
+      <label class="diffpill" title="a center counts in the plots once it has lived this many rounds (20 in the paper: an established center). A new value starts the counting anew">established after
+        <select class="trkMinSel"></select></label>
+      <button class="nbtn trkAnew" title="count anew: the plots forget what they have counted and start again from this round (the centers are followed on, with their ages). Use it to leave out the start of a run">count anew</button>
+    </div>
+    <div class="chartnote" id="trkNote" style="margin-bottom:4px"></div>
+    <div class="distgrid">
+      <div>
+        <div class="plotbar"><span class="plabel" title="the share of the established centers that live at least so many rounds. A center that is still alive counts as far as it got (the Kaplan–Meier estimate); the curve stops where fewer than three centers are left">lives</span>
+          <button class="nbtn trkSc" data-p="trkL" title="the axes: only the vertical one logarithmic, both, or neither"></button>
+          <span class="plotbtns"><button data-plot="trkL" data-k="png" title="save as a PNG picture, with title and axis labels">.png</button><button data-plot="trkL" data-k="sq" title="save in a picture for a paper, 10 % lower than wide">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cTrkL"></canvas></div>
+      </div>
+      <div>
+        <div class="plotbar"><span class="plabel" title="the mean squared displacement: the squared distance, in lattice spacings, between where an established center stands and where it stood so many rounds before, averaged over all centers and rounds (the edges of a periodic town unwrapped). Dashed: a random walk with the same first step">walk</span>
+          <button class="nbtn trkSc" data-p="trkM" title="the axes: both logarithmic, only the vertical one, or neither"></button>
+          <span class="plotbtns"><button data-plot="trkM" data-k="png" title="save as a PNG picture, with title and axis labels">.png</button><button data-plot="trkM" data-k="sq" title="save in a picture for a paper, 10 % lower than wide">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cTrkM"></canvas></div>
+      </div>
+      <div>
+        <div class="plotbar"><span class="plabel" title="the size of the cascade in which an established center ended, by the rule of the paper: every new factory, of any product, is followed until it has sold something, and stayed open, in two rounds; round t − 2 is active when the numbers that do so for the first and for the second time in round t differ by more than 4; a cascade is a run of active rounds, and its size Nc the factories started in it. A center belongs to the cascade that holds the round before its last one, or starts within the three rounds after. Dashed: all cascades">collapse</span>
+          <button class="nbtn trkSc" data-p="trkC" title="the axes: only the vertical one logarithmic, both, or neither"></button>
+          <span class="plotbtns"><button data-plot="trkC" data-k="png" title="save as a PNG picture, with title and axis labels">.png</button><button data-plot="trkC" data-k="sq" title="save in a picture for a paper, 10 % lower than wide">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cTrkC"></canvas></div>
+      </div>
+      <div>
+        <div class="plotbar"><span class="plabel" title="the chance that an established center has ended one round later, against the distance from its biggest company to the nearest big company of another center (one farther than δ away), in units of the reach α/β. Five classes: closer than 0.9 reaches (drawn at 0.8), 0.9–1.0, 1.0–1.1, 1.1–1.2, and farther (drawn at 1.3); a point is drawn from 30 rounds on">rivals</span>
+          <button class="nbtn trkSc" data-p="trkH" title="the axes: only the vertical one logarithmic, both, or neither"></button>
+          <span class="plotbtns"><button data-plot="trkH" data-k="png" title="save as a PNG picture, with title and axis labels">.png</button><button data-plot="trkH" data-k="sq" title="save in a picture for a paper, 10 % lower than wide">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cTrkH"></canvas></div>
+      </div>
+      <div id="trkRoadBox">
+        <div class="plotbar"><span class="plabel" title="how long an established center stays on a road (its biggest company on a cell the road passes, or beside one), and at a crossing (within δ of a place where two roads meet). A stay ends when the center leaves or ends; one still going on counts as far as it got. The curve stops where fewer than three stays are left">on a road</span>
+          <button class="nbtn trkSc" data-p="trkR" title="the axes: only the vertical one logarithmic, both, or neither"></button>
+          <span class="plotbtns"><button data-plot="trkR" data-k="png" title="save as a PNG picture, with title and axis labels">.png</button><button data-plot="trkR" data-k="sq" title="save in a picture for a paper, 10 % lower than wide">sq</button></span></div>
+        <div class="chartbox dist"><canvas id="cTrkR"></canvas></div>
+      </div>
+    </div>
+  </section>
   <section class="display" id="scanSec">
     <div class="cardhead"><h2>Scan</h2><span class="sub">mean and median wealth, the distance from the big C companies (C: the product with the lowest β) to the nearest company of each product (weighted by its size), the distances of the smallest factories and of the fewest companies, and the factory sizes against the distance to the nearest big C company, as one parameter changes — set and run in the control panel, section Scan</span></div>
     <div class="scanhead" id="scanHead"></div>
@@ -1593,6 +1397,9 @@
   </section>
 </div>
 
+<!-- what to do next while a center is being planted or removed, and what was done (at the bottom of the window) -->
+<div class="aimhint" id="aimHint" role="status"></div>
+
 <!-- =============== control panel (drawer) =============== -->
 <button class="ctltab" id="ctlTab" title="open the control panel (key k)">controls &#9666;</button>
 <button class="ctlpull" id="ctlPull" title="pull the control panel aside (key k)">hide &#9656;</button>
@@ -1621,13 +1428,14 @@
       </div>
       <div class="row"><label>Factory colours</label>
         <select id="palSel"><option value="jet">jet</option><option value="spectral">spectral</option></select></div>
-      <p class="hint" id="monoHint">A more scalable product (lower γ) must not cost less to start: Start does not
-        decrease as γ decreases (all start costs equal is fine). Its α must not be smaller: α does not decrease as γ decreases. α is the production-cost factor, at
-        least 1 (1 in the standard setup): a factory of size s makes a unit for α·s<sup>γ</sup> instead of
-        s<sup>γ</sup>. A new product is added as the most scalable one, with the largest α. At least two products stay:
-        going down to one makes twins, two products with the same numbers. Start, γ, β and α act at once; changing the
-        number of products restarts. The column <i>sales</i> is Start counted in sales, Start/p₀: so many units sold
-        pay for a new factory in both economies.</p>
+      <p class="hint" id="monoHint">For each product: <i>Start</i>, what a new factory costs; γ, how fast making
+        gets cheaper as a factory grows (a factory of size s makes a unit for α·s<sup>γ</sup>; γ = −1 in the paper);
+        β, what it costs to carry a unit one step; and α, a factor on the cost of making (1 in the paper, never
+        below 1). The column <i>sales</i> says how many units a factory must sell to earn its start cost back.
+        The numbers act at once, and <i>+ product</i> adds a product to the running town; <i>− product</i> starts
+        a new town. A product
+        with a stronger economy of scale (a lower γ) should not have a lower Start or a lower α than the others: the
+        text turns red when it does.</p>
     </div>
   </details>
 
@@ -1652,8 +1460,10 @@
         <select id="kapSel"><option value="1">1 · the first fall</option><option value="2">2 falls in a row</option>
           <option value="3">3 in a row</option><option value="4">4 in a row</option>
           <option value="5">5 in a row</option><option value="10">10 in a row</option></select></div>
-      <div class="row"><label title="money at the start: every agent gets a sum drawn at random, uniformly between 0 and M₀ (in the tiny town of the tutorial: M₀ for everybody)">Initial money 0 … M₀ <span class="vv" id="M0V"></span></label><input type="range" id="M0R" min="0" max="50" step="1" value="5"></div>
-      <p class="hint">Everything acts at once, except the size L and the starting money M₀, which act when you press Reset.</p>
+      <div class="row"><label title="money at the start: every agent gets a sum drawn at random, uniformly between 0 and M₀">Initial money 0 … M₀ <span class="vv" id="M0V"></span></label><input type="range" id="M0R" min="0" max="50" step="1" value="5"></div>
+      <div class="row"><label title="the seed of the random numbers. Empty: every Reset draws a new seed at random (shown here in grey), so that every run is different. A whole number: every Reset starts the same town again, round for round the same run; the paper's Fig. 4 has the seed 43155623">Seed</label>
+        <input type="number" id="seedIn" min="0" step="1" placeholder="random" inputmode="numeric" style="width:118px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit"></div>
+      <p class="hint">Everything acts at once, except the size L, the starting money M₀ and the seed, which act when you press Reset.</p>
     </div>
   </details>
 
@@ -1668,7 +1478,41 @@
         <select id="bcSel"><option value="periodic">periodic</option><option value="closed">closed</option></select></div>
       <div class="row"><label>Roads <span class="vv" id="nRoads">0</span> · borders <span class="vv" id="nBorders">0</span></label>
         <button class="btn sm" id="clearNet" title="remove all roads and borders">clear all</button></div>
-      <p class="hint">Draw roads and borders on the display with the buttons in its lower left (roads) and upper left (borders) corners: press, drag, release.</p>
+      <p class="hint">The transport factor multiplies the cost of carrying of every product at once; <i>lower
+        gradually</i> makes carrying a little cheaper in every round. Draw roads and borders on the town itself, with
+        the buttons in its lower left corner (roads) and upper left corner (borders): press, drag, let go.</p>
+    </div>
+  </details>
+
+  <details open>
+    <summary>Production centers</summary>
+    <div class="sect">
+      <div class="row"><label title="follow every production center by its biggest company of the product that is cheapest to carry: its walk is drawn on the display as a white dashed line, and the plots of the centers appear under the other plots">Follow the centers</label>
+        <button class="btn sm tog" id="bTrk">off</button></div>
+      <div class="row"><label title="δ: the longest step, in lattice spacings, that the biggest company of a center may take from one round to the next for the center to count as the same center (6 in the paper, 4 in its Fig. S6b). A new δ starts the following anew">Step δ</label>
+        <select class="trkDeltaSel"></select></div>
+      <div class="row"><label title="a center counts in the plots, and its walk is drawn thick, once it has lived this many rounds (20 in the paper: an established center). A new value starts the counting anew">Established after</label>
+        <select class="trkMinSel"></select></div>
+      <div class="btnrow" style="margin-top:4px"><button class="btn sm trkAnew" title="count anew: the plots forget what they have counted and start again from this round (the centers are followed on, with their ages). Use it to leave out the start of a run">count anew</button>
+        <button class="btn sm" id="trkSee" title="go to the plots of the centers, under the other plots">plots ↓</button></div>
+      <p class="hint" id="trkStat"></p>
+      <div class="row"><label title="plant a center: press the button, then point at the town (move the mouse, or put a finger down and slide it) and click or let go where the center should stand. The agent there gets a big company of the product that is cheapest to carry: one that counts as having sold as much in the last round as the biggest company of that product does (at least 1000 in the standard town). Its other factory closes; it keeps its money. Press the button again for one more center">Plant a center</label>
+        <button class="btn sm tog" id="bPlant">plant</button></div>
+      <div class="row"><label title="remove a center: press the button, then point at the town and click or let go. Everything chosen below goes within the distance r of that place. The owners keep their money, unless the money goes too, and open new factories by the usual rule">Remove a center</label>
+        <button class="btn sm tog" id="bBomb">remove</button></div>
+      <div class="row"><label title="what a removal takes away: only the companies of the product that is cheapest to carry; all companies; or all companies and all the money of the agents there">… what goes</label>
+        <select id="bombWhat"><option value="c">C companies</option><option value="all" selected>all companies</option><option value="money">companies and money</option></select></div>
+      <div class="row"><label title="the distance r, in lattice spacings, within which a removal acts: 0 is only the place you point at, 6 the radius of the paper">… within r <span class="vv" id="bombRV">6</span></label>
+        <input type="range" id="bombR" min="0" max="10" step="1" value="6"></div>
+      <p class="hint" id="aimNote"></p>
+      <p class="hint">A production center is followed by its biggest company of the product that is cheapest to
+        carry (chips, C). It is still the same center as long as that biggest company stands within δ steps of where
+        it stood one round before. On the town its walk is a white dashed line, thick once the center is
+        established; when an established center ends, the line fades away over 10 rounds. The plots count from the
+        round you switch this on, or press <i>count anew</i>. To leave out the start of a run, as the paper does,
+        let the town run a few thousand rounds first. <i>plant</i> and <i>remove</i> are for experiments: press one,
+        then point at the town and click (or slide a finger there and let go). More under <i>how it works</i>,
+        <i>Following the centers</i>.</p>
     </div>
   </details>
 
@@ -1686,14 +1530,15 @@
       <div class="btnrow" style="margin-top:4px"><button class="btn primary" id="scanGo">Run scan</button></div>
       <p class="hint" id="scanProg"></p>
       <div class="btnrow" style="margin-top:6px"><button class="btn sm" id="scanSee" title="go to the table and the plot of the scan, under the other plots">table and plot ↓</button></div>
-      <p class="hint">The table and the plot are in the section Scan, under all the other plots. Every point runs the model anew, in the background (the run on the display goes on), with the
-        settings of the moment and the same seed: the values of the products above, scaled by the factor f (β, Start,
-        α), or β of C alone (the others kept), or one γ for every product (0, −0.1, … −1). In a scan the product with
-        the lowest β is always called C and drawn red; the others are A, B … from the highest β down. Mean and median: the money of all agents, averaged over the
-        last two thirds of the rounds; over the same rounds, against the distance to the nearest big C company: P min,
-        where the fewest agents own a company, ▲, where the factories of A, B and C are smallest, and ⟨d⟩, the distance
-        from it to the nearest A, B and C company, weighted by that company's size; and the size of the factories
-        against that distance at every point of the scan. The transport factor stays as set (not lowered gradually).</p>
+      <p class="hint">A scan answers a question such as: what happens as chips get cheaper to carry? The applet
+        runs the town again and again, from a fresh start and with the same seed, and changes one number from run to
+        run: every β, Start or α times a factor f (1, 0.71, 0.5 … down to the factor above), the β of C alone, or one
+        γ for all products (0, −0.1, … −1). The runs go on in the background while the town on the display plays
+        on. The results are in the section <i>Scan</i>, under all the other plots: the mean and the median money
+        (averaged over the last two thirds of each run), and the profile of the centers, that is the sizes of the
+        factories against the distance to the nearest big C company, with the distance where they are smallest (▲)
+        and where the fewest agents own a company (P min). In a scan C is always the product that is cheapest to
+        carry.</p>
     </div>
   </details>
 
@@ -2530,27 +2375,48 @@ const PRESETS={
   large:{label:'Large town',note:'The standard setup on a large 250 × 250 town: 62 500 agents, four times as many as '+
     'in the standard 125 × 125 town, so the rounds take longer.',
     products:ULTRA_P,tmul:1,anneal:false,std:true,L:250},
-  // the standard rules on a closed 8 × 8 town (the tutorial was written for closed edges), with cheaper B and chip factories (Start 4 and 8 instead of 8 and 20) and dearer
-  // transport (β 0.2, 0.1 and 0.05 instead of 0.1, 0.05 and 0.02): the tutorial of the pull-down starts it with a fixed
-  // seed (startTinyTutorial)
-  tiny:{label:'Tiny town',note:'The standard rules on a tiny closed 8 × 8 town of 64 agents, small enough to follow each of '+
-    'them. The products keep their γ, but a B factory costs 4 and a chip factory 8 (instead of 8 and 20), and '+
-    'transport is dearer: β is 0.2, 0.1 and 0.05 for A, B and C (instead of 0.1, 0.05 and 0.02). In the Agents view '+
-    'every square shows the factory of its agent with the units it sold last round, and its money; hover over or tap '+
-    'an agent to see where its money came from and went, and why it kept or changed its factory. Step through the '+
-    'rounds with Step (key s), or run slowly with the button ▶ with a small s.',
-    products:[{...THREE[0],beta:0.2},{...THREE[1],start:4,beta:0.1},{...THREE[2],start:8,beta:0.05}],tmul:1,
-    anneal:false,std:true,L:8,bc:'closed'},
+  // the rules of the paper on a closed 8 × 8 town, small enough to follow every agent (the tutorial of the pull-down
+  // starts it with the fixed seed 1: startTinyTutorial): two products that differ only in transport cost, bread (A),
+  // which costs 0.5 a step to carry, and chips (C), which cost 0.04 a step; Start 1 and γ −1 for both
+  tiny:{label:'Tiny town',note:'The rules of the paper on a tiny closed 8 × 8 town of 64 agents, small enough to follow each of '+
+    'them. Two products that differ only in what they cost to carry: bread (A) costs 0.5 a step, chips (C) 0.04 a step; '+
+    'both have Start 1 and γ −1. In the Agents view every square shows the factory of its agent with the units it sold '+
+    'last round, and its money; hover over or tap an agent to see where its money came from and went, and why it '+
+    'kept or changed its factory. Step through the rounds with Step (key s), or run slowly with the button ▶ with a '+
+    'small s. The tutorial (how it works, at the top of the page) follows this town round by round.',
+    products:[FLAT(0.5),FLAT(0.04)],tmul:1,anneal:false,std:true,L:8,bc:'closed'},
   twins:{label:'Twin products',note:'Two products with the numbers of the original one-product model (Start 5, γ −0.5, β 0.05) but different names. With twins an owner whose sales fall switches to the other product (with a single product it gives its factory up and opens a new one in its place).',
     products:[{start:5,gamma:-0.5,beta:0.05},{start:5,gamma:-0.5,beta:0.05}],tmul:1,anneal:false},
   // a single product (C of the standard setup): an owner whose sales fall gives its factory up and opens a new one in
   // its place, paying Start again — the simplest model of companies that collapse and start anew
-  single:{label:'One product',note:'A single product, the high-tech C of the standard setup (Start 20, γ −0.9, β 0.02). An owner whose sales fall gives its factory up and opens a new one in its place, paying the start cost again, as owners of several products switch: the simplest model of companies that collapse and start anew. The sections After a collapse, Family tree and Active periods follow its companies.',
+  single:{label:'One product',note:'A single product, the high-tech C of the set Cost standard (Start 20, γ −0.9, β 0.02); for the one product of the paper, bread alone, choose Paper: one product. An owner whose sales fall gives its factory up and opens a new one in its place, paying the start cost again, as owners of several products switch: the simplest model of companies that collapse and start anew. The sections After a collapse, Family tree and Active periods follow its companies.',
     products:[{start:20,gamma:-0.9,beta:0.02}],tmul:1,anneal:false},
-  glob:{label:'Globalization',note:'Transport starts 3× dearer and is lowered by e^−0.002 per round: local producers coarsen into a few big companies.',
+  glob:{label:'Globalization',note:'Transport costs three times as much at first and is lowered by e^−0.002 per round: local producers coarsen into a few big companies.',
     products:THREE,tmul:3,anneal:true},
   borders:{label:'Borders',note:'Cheap transport (factor 0.2), but 3 × 3 countries: crossing a border costs 20 % of the value of the goods. It is the grid of countries in the border menu with n = 3 in a periodic town (one border on the edge) or n = 2 in a closed one.',
     products:THREE,tmul:0.2,anneal:false,borders:L=>gridBorders(L,P.bc==='periodic'?3:2,0.2)},
+  // the worlds of the paper (Sneppen, "Cheap Transport Drives Metastable Production Centers and Rising Inequality"):
+  // the standard economy (free goods = Model A, patience 1, wage 0.05, a periodic 125 × 125 town) with the paper's products
+  paper1:{label:'Paper: one product',note:'The world of Fig. 1 of the paper: one product, A, with transport cost β 0.1, γ −1 and Start 1, in the '+
+    'standard economy (free goods, the paper\'s Model A; the golden button above the town switches to buyers pay, Model B). '+
+    'Big factories divide the town into market domains, and their owners grow rich.',
+    products:[FLAT(0.1)],tmul:1,anneal:false,std:true},
+  paper2:{label:'Paper: two products',note:'The world of Fig. 2 of the paper: A (β 0.1) and C (β 0.02), five times cheaper to carry, both with γ −1 and '+
+    'Start 1. A few big C companies divide the town, and around each of them the A factories grow: production centers. '+
+    'Switch on Follow the centers (control panel, Production centers) to see them walk and end. In the paper C is added '+
+    'at round 4000 of the world with A alone: for that, load Paper: one product, run it, press + product (control panel, '+
+    'Products) and give the new product Start 1, γ −1 and β 0.02.',
+    products:[FLAT(0.1),FLAT(0.02)],tmul:1,anneal:false,std:true},
+  paper4:{label:'Paper: borders',note:'The world of Fig. 4 of the paper: the two products of Fig. 2 in 5 × 5 countries that tax every unit that '+
+    'enters by 100 % of its value. Every country builds its own C company. In the paper the borders come at round 8000 '+
+    'of an open world: for that, load Paper: two products, run it, then set the tax to 100 % in the border menu (▾ beside '+
+    '+ border) and choose the grid n = 5.',
+    products:[FLAT(0.1),FLAT(0.02)],tmul:1,anneal:false,std:true,borders:L=>gridBorders(L,5,1,0,true)},
+  paperR:{label:'Paper: rivers',note:'The world of Fig. S9 of the paper: the two products of Fig. 2 with two rivers that cross in the middle (roads '+
+    'along which goods travel at a tenth of the cost). Follow the centers to see how long one stays on a river or at '+
+    'the crossing. For a single river, remove one of the two with − road.',
+    products:[FLAT(0.1),FLAT(0.02)],tmul:1,anneal:false,std:true,
+    roads:L=>{const m=Math.floor(L/2)+0.5; return [{pts:[[0,m],[L,m]],f:0.1},{pts:[[m,0],[m,L]],f:0.1}]}},
 };
 let E=null, running=false, view='3d', psel=0, hoverR=-1, hlog=false, money3='down', dark=false, loopTok=0;
 let moneyCont=1;  // money as contours on the ground of the 3D view, smoothed over this many lattice spacings (0: towers; menu mContSel)
@@ -2561,19 +2427,18 @@ const STD={L:125,n:1,lim:1,wage:0.05,upkeep:0,kappa:1,buyw:'inc',M0:5,bc:'period
 // a preset (a standard one on its own lattice size, L, if it has one); seed: a fixed seed, else one at random
 function applyPreset(k,seed){
   const pr=PRESETS[k];
-  P.m0u=k!=='tiny';          // the tiny town of the tutorial starts with the same money for everybody, as its text says
+  P.m0u=true;                // every agent starts with a sum drawn at random between 0 and M₀ (also in the tiny town)
   if(pr.std){Object.assign(P,STD); if(pr.bc)P.bc=pr.bc; $('Lsel').value=String(pr.L||STD.L); $('aRate').value='0.002';
     circOn.clear(); bordOn.clear()}
   // any other preset chosen in a tiny town (L ≤ 16, the tutorial) goes back to the standard size; P.L too, so that
   // restart keeps the preset's borders
   else if(+$('Lsel').value<=16){$('Lsel').value=String(STD.L); P.L=STD.L}
   P.products=pr.products.map(o=>({...o}));
-  // every preset gives up with always close, but the tiny town of the tutorial, whose text follows one run with keep if broke
-  P.close=k!=='tiny';
-  // and every preset plans, then saves (the rule of the paper, which the page always uses: there is no toggle), but the
-  // tiny town, whose tutorial follows one run in which the agents open what they can pay
-  P.plan=k!=='tiny';
-  P.tmul=pr.tmul; P.roads=[]; P.borders=pr.borders?pr.borders(+$('Lsel').value):[];
+  // every preset gives up with always close, and plans, then saves (the rules of the paper; until 28 November 2026
+  // the tiny town of the tutorial kept its factories if broke and opened what it could pay)
+  P.close=true;
+  P.plan=true;
+  P.tmul=pr.tmul; P.roads=pr.roads?pr.roads(+$('Lsel').value):[]; P.borders=pr.borders?pr.borders(+$('Lsel').value):[];
   $('anneal').checked=!!pr.anneal;
   $('presetNote').textContent=pr.note;
   syncControls(); restart(seed);
@@ -2584,10 +2449,15 @@ function restart(seed){
   if(L1!==P.L){const g=P.borders.find(b=>b.grid); P.roads=[];   // a new lattice size starts without roads and borders,
     P.borders=g?gridBorders(L1,g.grid,g.tax,g.tariff):[]}          // but a grid of countries is laid out on it again
   $('nRoads').textContent=P.roads.length; $('nBorders').textContent=P.borders.length;
-  P.L=L1; P.seed=Number.isInteger(seed)?seed:(Math.random()*2**31)|0; V3.hmax=1; V3.mmax=1; V3.scaleT=-1;
+  // the seed of the random numbers: the one given (the tutorial, a restart of the same town), else the one typed in
+  // the control panel (Seed), else one at random, shown there in grey
+  {const si=$('seedIn'), sv=si.value.trim(), typed=sv!==''&&Number.isFinite(+sv);
+    P.seed=Number.isInteger(seed)?seed:typed?Math.floor(Math.abs(+sv))>>>0:(Math.random()*2**31)|0;
+    si.placeholder=typed&&!Number.isInteger(seed)?'':'random: '+P.seed}
+  P.L=L1; V3.hmax=1; V3.mmax=1; V3.scaleT=-1;
   document.querySelector('.display').classList.toggle('tiny',L1<=16);      // room for a tiny town (CSS, draw)
   E=buildEcon(P); flashes=[]; sinking.clear(); frozenAt=0;
-  distReset(); frReset();
+  distReset(); trkReset(); frReset();
   if(psel>=P.products.length)psel=0;
   buildProductUI(); refresh(); drawDist();
 }
@@ -2737,7 +2607,7 @@ $('bSelf').onclick=()=>{const m=(selfMode()+1)%3; P.self=m===1; P.skip=m===2; sy
 const CLOSE_LABEL=['keep if broke','always close'];
 function syncClose(){const b=$('bClose'); b.textContent=CLOSE_LABEL[P.close?1:0]; b.classList.toggle('on',!P.close);
   b.title=P.close?'Always close (the standard): an owner that gives up closes its factory, and opens a product at random among those it can pay for (the closed one among them). If it can pay for none it stays without a factory, as a buyer only, until it can. Click for keep if broke.'
-    :'Keep if broke: an owner that gives up closes its factory only when it can pay for a factory of another product, which it opens; otherwise it keeps the factory (the tiny town of the tutorial). Click for the standard, always close.'}
+    :'Keep if broke: an owner that gives up closes its factory only when it can pay for a factory of another product, which it opens; otherwise it keeps the factory. Click for the standard, always close.'}
 $('bClose').onclick=()=>{P.close=!P.close; syncClose(); updStat(); distMark()};
 // how an agent picks the product of its next factory: always plan, then save (P.plan: it picks the product at random
 // first, the closed one among them, and saves until it can pay that product's Start), but in the tiny town of the
@@ -2943,9 +2813,11 @@ $('bcSel2').onchange=e=>setBC(e.target.value);
 $('clearNet').onclick=$('clearNet2').onclick=()=>{P.roads=[];P.borders=[];netChanged()};
 // ---- roads and borders, drawn on the display: choose a tool, then press, drag and release (or tap to remove) ----
 let tool=null, toolDrag=null;
+let aimAt=null, aimDown=false, aimT=0;      // planting or removing a center: the place pointed at (aimSync, aimAct)
 function syncTools(){
   document.querySelectorAll('.tools [data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool));
   cv.style.cursor=tool?(tool.startsWith('rm')?'pointer':'crosshair'):'crosshair';
+  aimSync();
 }
 document.querySelectorAll('.tools [data-tool]').forEach(b=>b.onclick=()=>{
   tool=tool===b.dataset.tool?null:b.dataset.tool; closeMenus(); syncTools()});
@@ -3339,8 +3211,20 @@ function startTinyTutorial(){
   const d=$('titleDrop'); if(d.open){dropY=document.querySelector('.dropbox').scrollTop; d.open=false}
   document.querySelector('.display').scrollIntoView({block:'nearest',behavior:'smooth'});   // buttons, town, read-out
 }
+// The other buttons of the pull-down's text (data-action = the key of a preset): they load that town, close the text
+// so that the town can be seen, and start the run; data-follow="1" also switches on Follow the centers
+function tutLoad(k,follow){
+  setRun(false); tool=null; syncTools(); applyPreset(k); setView('3d');
+  if(follow&&!trkOn)$('bTrk').onclick();
+  const d=$('titleDrop'); if(d.open){dropY=document.querySelector('.dropbox').scrollTop; d.open=false}
+  document.querySelector('.display').scrollIntoView({block:'nearest',behavior:'smooth'});
+  setRun(true);
+}
 document.addEventListener('click',e=>{
-  if(e.target.closest&&e.target.closest('[data-action="tiny"]')){e.preventDefault(); startTinyTutorial()}});
+  const b=e.target.closest&&e.target.closest('[data-action]'); if(!b)return;
+  const a=b.dataset.action;
+  if(a==='tiny'){e.preventDefault(); startTinyTutorial()}
+  else if(PRESETS[a]){e.preventDefault(); tutLoad(a,b.dataset.follow==='1')}});
 $('bTiny').onclick=()=>startTinyTutorial();
 $('titleDrop').addEventListener('toggle',()=>{
   if($('titleDrop').open&&dropY>=0){document.querySelector('.dropbox').scrollTop=dropY; dropY=-1}});
@@ -3361,7 +3245,8 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='s'||e.key==='S'){e.preventDefault();doStep();refresh();kickFlash()}
   else if(e.key==='r'||e.key==='R'){e.preventDefault();restart()}
   else if(e.key==='k'||e.key==='K'){e.preventDefault();setCtlOpen(!document.body.classList.contains('ctl-open'))}
-  else if(e.key==='Escape'){if($('titleDrop').open)$('titleDrop').open=false;else if(document.body.classList.contains('ctl-open'))setCtlOpen(false)}
+  else if(e.key==='Escape'){if(aimOn()){tool=null; aimAt=null; aimDown=false; syncTools(); draw()}
+    else if($('titleDrop').open)$('titleDrop').open=false;else if(document.body.classList.contains('ctl-open'))setCtlOpen(false)}
 });
 // the contents row of the pull-down scrolls it to the section
 document.querySelectorAll('.toc a').forEach(a=>a.onclick=e=>{e.preventDefault();
@@ -3379,7 +3264,7 @@ function doStep(){
   }
   chgCheck(); ctBefore(); E.step();
   {const H=E.hist[E.hist.length-1]; if(H)H.median=medianOf(E.money)}      // the median money, with the round's record
-  agRecord(); distRecord(); nearRecord(); ravRecord(); frRecord(); ctRecord();
+  agRecord(); distRecord(); nearRecord(); ravRecord(); frRecord(); ctRecord(); trkRecord();
   // the time a round takes on the screen: a closed company's tower sinks to zero over that time
   const now0=performance.now(); if(lastStepT)stepMs=0.8*stepMs+0.2*Math.min(2000,now0-lastStepT); lastStepT=now0;
   for(const c of [...E.closeList,...E.bankruptList])
@@ -3954,6 +3839,8 @@ function draw3D(){
     const tt='money (σ '+(moneyCont===0.5?'½':moneyCont)+')'; ctx.strokeText(tt,bx-sw/2,ty-0.75*fs); ctx.fillText(tt,bx-sw/2,ty-0.75*fs);
   }
   ctx.restore();
+  trkWalks((x,y)=>P2(x-L/2,y-L/2,0),s,dpr);              // the walks of the production centers, when they are followed
+  aimDraw((x,y)=>P2(x-L/2,y-L/2,0),s,dpr);               // where a center is about to be planted or removed
   drawFlashes(r=>{const x=(r%L)+0.5-L/2,y=((r/L)|0)+0.5-L/2;
     return {cell:s,base:P2(x,y,0),top:size=>P2(x,y,f(size)),
       pillar:m3==='off'?null:m=>{const h=fm(m);return h>zmin?[P2(x,y,0),P2(x,y,mDown?-h:h)]:null}}});
@@ -3962,7 +3849,7 @@ function draw3D(){
     (m3!=='off'?`<span><i style="background:rgba(222,176,46,.6)"></i>money${mDown?', hanging below the plane':''}</span>`:'')+
     (moneyCont?`<span><i style="background:linear-gradient(90deg,${MC_COL.map(c=>'rgb('+c+')').join(',')})"></i>money on the ground, smoothed over ${moneyCont===0.5?'½':moneyCont} lattice spacing${moneyCont===1?'':'s'}: one shade for each factor 10 (below 0.1, 0.1–1, 1–10, 10–100, 100–1000, above 1000), contour lines between them</span>`:'')+
     (moneyCont&&E.nOcc<LL?'<span><i style="background:#000"></i>an empty site, no agent (Pop. Variation); the shades give the money of the agents around</span>':'')+
-    '<span>drag to turn and tilt</span>';
+    trkLegend()+'<span>drag to turn and tilt</span>';
   if(hoverR>=0&&hoverR<LL)readout(hoverR);
 }
 function evR3(ev){
@@ -4140,8 +4027,10 @@ function drawLive(){
     if(view==='market'&&s>=0){ctx.beginPath();ctx.moveTo(cx(hoverR),cy(hoverR));ctx.lineTo(cx(s),cy(s));ctx.stroke()}
     readout(hoverR);
   }
+  trkWalks((x,y)=>[x0+x*cell,y0+y*cell],cell,dpr);       // the walks of the production centers, when they are followed
+  aimDraw((x,y)=>[x0+x*cell,y0+y*cell],cell,dpr);        // where a center is about to be planted or removed
   drawFlashes(r=>({cell,base:[cx(r),cy(r)],top:()=>[cx(r),cy(r)],pillar:null}));
-  LEG=legend;
+  LEG=legend+trkLegend();
 }
 // ---- the past of the display, to look back at: after every round the state the display draws (factories, units sold,
 // money, suppliers) is kept — every round over the last FR_NEAR rounds, then the rounds divisible by FR_STEP back to
@@ -4274,6 +4163,8 @@ let drag=null;
 cv.addEventListener('wheel',e=>{if(view!=='3d')return; e.preventDefault();
   V3.zoom=Math.min(Math.exp(1.4),Math.max(Math.exp(-0.7),V3.zoom*Math.exp(-e.deltaY*0.0012))); syncView(); if(!running)drawSoon()},{passive:false});
 cv.addEventListener('pointerdown',ev=>{
+  // a center is being planted or removed: the place pointed at; letting go there acts (pointerup)
+  if(aimOn()){aimAt=gridPos(ev); aimDown=!!aimAt; if(aimAt){try{cv.setPointerCapture(ev.pointerId)}catch(e){}} drawSoon(); return}
   if(tool){toolDown(ev);return}                   // a road or border tool is chosen: draw or remove instead
   const num=onRegionNumbers(ev);                  // on the numbers of the regions: a click switches now ↔ average
   if(view==='3d'){drag={x:ev.clientX,y:ev.clientY,az:V3.az,el:V3.el,moved:false,num};cv.setPointerCapture(ev.pointerId)}
@@ -4281,6 +4172,7 @@ cv.addEventListener('pointerdown',ev=>{
   hoverR=view==='3d'?evR3(ev):evR(ev);draw();
 });
 cv.addEventListener('pointermove',ev=>{
+  if(aimOn()){aimAt=gridPos(ev); drawSoon(); return}          // (slid off the town: nothing happens on letting go)
   if(toolDrag){const g=gridPos(ev);if(g)toolMove(g);return}
   if(drag&&view==='3d'){
     const dx=ev.clientX-drag.x, dy=ev.clientY-drag.y;
@@ -4291,9 +4183,12 @@ cv.addEventListener('pointermove',ev=>{
   if(!tool)cv.style.cursor=onRegionNumbers(ev)?'pointer':'crosshair';
   hoverR=view==='3d'?evR3(ev):evR(ev);if(!running)drawSoon();
 });
-cv.addEventListener('pointerup',()=>{if(drag&&drag.num&&!drag.moved){regionAvg=!regionAvg;draw()} drag=null;if(toolDrag)toolUp()});
-cv.addEventListener('pointercancel',()=>{drag=null;toolDrag=null});
-cv.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse'){hoverR=-1;setHTML($('readout'),'Hover over or tap an agent.');if(!running)drawSoon()}});
+cv.addEventListener('pointerup',()=>{
+  if(aimOn()){const g=aimAt, d=aimDown; aimDown=false; if(d&&g)aimAct(g); return}
+  if(drag&&drag.num&&!drag.moved){regionAvg=!regionAvg;draw()} drag=null;if(toolDrag)toolUp()});
+cv.addEventListener('pointercancel',()=>{drag=null;toolDrag=null;aimDown=false});
+cv.addEventListener('pointerleave',ev=>{if(aimOn()&&!aimDown){aimAt=null; drawSoon()}
+  if(ev.pointerType==='mouse'){hoverR=-1;setHTML($('readout'),'Hover over or tap an agent.');if(!running)drawSoon()}});
 
 // ---------- pictures: .png = the display with the parameters in the lower left corner; sq = only what is drawn ----------
 function renderPicture(scale){
@@ -4761,7 +4656,7 @@ document.querySelectorAll('.fitseg').forEach(sg=>sg.querySelectorAll('button').f
 function drawDist(){
   if(!E||!DH)return;
   let d=null; const D=()=>d||(d=distPlots());
-  drawMS(D); drawAg(D); drawNear(); drawCT();
+  drawMS(D); drawAg(D); drawNear(); drawCT(); trkDraw();
 }
 // the money and company-size distributions (D: their data, if already worked out)
 function drawMS(D){
@@ -6007,12 +5902,357 @@ function apDraw(force){
     cb.onchange=upd; x0.oninput=upd; se.onchange=upd})}
 new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)&&!running)soon(()=>apDraw(true))}).observe($('cApN'));
 
+// ---------- Production centers, followed (the rule of the paper's SI Appendix, section S2) ----------
+// C: the product that is cheapest to carry (the lowest β: scanC). A big C company sold at least a tenth of what the
+// biggest one sold (the biggest: its mean over the last 100 rounds; E.sold, so that a company that closed at the end of
+// the round still counts in that round). Every round the centers, the largest first, take the biggest big C company not
+// yet taken that stands within δ lattice spacings of their position: it is the center's new position, and every big C
+// company within δ of it belongs to the center. A center that finds none has ended; the big C companies left over
+// start new centers. A center that has lived trkMin rounds is established. The centers are followed in every run,
+// switched on or not (it costs next to nothing and changes nothing in the model: no random number is drawn), so that
+// their ages and walks are there when the following is switched on; the statistics (TRK.S) count only while it is on:
+//   lives     the life of every center that ended (the plot takes those of at least trkMin rounds, and counts the
+//             established centers still alive as far as they got: Kaplan–Meier, trkKM);
+//   msd       for every established center and round, the squared distance to where it stood 1, 2, … rounds before
+//             (TRK_LAGS), with the periodic edges unwrapped (ux, uy);
+//   ends      the last round of every established center that ended: the plot looks up the active period it fell in,
+//             by the rule of the paper (every product; round t − 2 is active when |c1(t) − c2(t)| > 4; trkPeriods),
+//             and takes the factories of every product started in it, Nc;
+//   hn, he    for every established center and round, the distance from its position to the nearest big C company of
+//             another center (one farther than δ away), in bins of a tenth of the reach α/β of C: the rounds (hn) and
+//             those after which the center had ended (he);
+//   stayR, stayX   how long an established center stayed on a road (on a cell the road passes, or one of its 8
+//             neighbours) and at a crossing (within δ of a cell where two roads meet); a stay ends when the center
+//             leaves or ends.
+// The walk of every living center is drawn on the display as a white dashed line (trkWalks), thick once the center
+// is established; the walk of an established center that ended fades over TRK_FADE rounds (the ghosts, kept
+// TRK_GHOST rounds for looking back).
+const TRK_LAGS=[1,2,3,4,5,6,7,8,9,10,12,15,20,25,30,40,50,60,80,100,120,150,200,250,300,400,500,600,800,1000,1500,2000,3000];
+const TRK_NB=31, TRK_GHOST=700, TRK_FADE=10, TRK_PATH=20000;
+let TRK=null, trkOn=false, trkDelta=6, trkMin=20;
+const trkSc={trkL:'loglin',trkM:'log',trkC:'loglin',trkH:'loglin',trkR:'loglin'};
+const TRK_SCN={log:'log–log',loglin:'log–lin',lin:'lin–lin'};
+const trkStat0=()=>({t0:E.t,n:0,sumC:0,sumE:0,lives:[],ends:[],msdS:new Float64Array(TRK_LAGS.length),msdN:new Float64Array(TRK_LAGS.length),
+  hn:new Float64Array(TRK_NB),he:new Float64Array(TRK_NB),stayR:[],stayX:[],estR:0,roadR:0,crossR:0});
+function trkReset(){TRK={ic:scanC(P.products),L:E.L,N:E.N,delta:trkDelta,mx:[],centers:[],ghosts:[],next:1,S:trkStat0(),
+  rkey:'',road:null,cross:null,nRoad:0,nCross:0,pk:'',pl:[]}}
+// the following started anew in the middle of a run (a new δ): the centers of the round just played are found at
+// once, with the same measure of a big company as before (the last 100 rounds), and their walks begin here
+function trkReseed(){
+  const mx=TRK&&TRK.L===E.L?TRK.mx.slice(0,-1):[], on=trkOn; trkReset(); TRK.mx=mx;
+  if(E.t>0){trkOn=false; try{trkRecord()}finally{trkOn=on}}
+}
+// the cells of the roads: road — a cell a road passes (sampled every quarter cell, as the model does) or one of its 8
+// neighbours; cross — a cell within δ of a place where two roads meet (a road cell with another road in or beside it)
+function trkRoads(){
+  const T=TRK, L=E.L, LL=L*L, per=P.bc!=='closed', key=L+'|'+per+'|'+T.delta+'|'+JSON.stringify(P.roads.map(r=>r.pts));
+  if(T.rkey===key)return; T.rkey=key; T.road=null; T.cross=null; T.nRoad=0; T.nCross=0;
+  if(!P.roads.length)return;
+  const m=new Int32Array(LL);
+  P.roads.forEach((rd,k)=>{const bit=1<<(k%30);
+    for(let j=1;j<rd.pts.length;j++){const [x0,y0]=rd.pts[j-1], [x1,y1]=rd.pts[j], n=Math.max(1,Math.ceil(4*Math.hypot(x1-x0,y1-y0)));
+      for(let q=0;q<=n;q++){const x=Math.floor(x0+(x1-x0)*q/n), y=Math.floor(y0+(y1-y0)*q/n); if(x>=0&&y>=0&&x<L&&y<L)m[y*L+x]|=bit}}});
+  const road=new Uint8Array(LL), cr=[], cell=(X,Y)=>{if(per){X=(X%L+L)%L; Y=(Y%L+L)%L} else if(X<0||Y<0||X>=L||Y>=L)return -1; return Y*L+X};
+  for(let r=0;r<LL;r++){if(!m[r])continue; const x=r%L, y=(r/L)|0; let all=0;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const q=cell(x+dx,y+dy); if(q>=0){road[q]=1; all|=m[q]}}
+    if(all&(all-1))cr.push(r)}
+  for(let r=0;r<LL;r++)T.nRoad+=road[r];
+  T.road=road;
+  if(cr.length){const cross=new Uint8Array(LL), D=T.delta, K=Math.ceil(D);
+    for(const r of cr){const x=r%L, y=(r/L)|0;
+      for(let dy=-K;dy<=K;dy++)for(let dx=-K;dx<=K;dx++)if(dx*dx+dy*dy<=D*D){const q=cell(x+dx,y+dy); if(q>=0)cross[q]=1}}
+    for(let r=0;r<LL;r++)T.nCross+=cross[r];
+    T.cross=cross}
+}
+// a stay on a road or at a crossing that ended in round `to`: counted if the center was established by then
+function trkStay(c,key,from,to){if(trkOn&&to-c.born+1>=trkMin)TRK.S[key].push(to-from+1)}
+// a center whose last round was te
+function trkEnd(c,te){
+  const T=TRK, Q=T.S, life=te-c.born+1, est=life>=trkMin;
+  if(c.rs>=0)trkStay(c,'stayR',c.rs,te); if(c.xs>=0)trkStay(c,'stayX',c.xs,te);
+  if(trkOn){Q.lives.push(life); if(est)Q.ends.push(te); if(c.pend>=0){Q.hn[c.pend]++; Q.he[c.pend]++}}
+  if(est)T.ghosts.push({born:c.born,off:c.off,te,path:c.path});
+}
+function trkRecord(){
+  const L=E.L, LL=L*L, ic=scanC(P.products);
+  if(!TRK||TRK.L!==L||TRK.N!==E.N||TRK.ic!==ic||TRK.delta!==trkDelta)trkReset();
+  if(ic>=E.N||!E.sold[ic])return;
+  const T=TRK, S=E.sold[ic], t=E.t, per=P.bc!=='closed', D=T.delta, Q=T.S, on=trkOn;
+  trkRoads();
+  let mx=0; for(let r=0;r<LL;r++)if(S[r]>mx)mx=S[r];
+  T.mx.push(mx); if(T.mx.length>100)T.mx.shift();
+  const thr=Math.max(1,0.1*T.mx.reduce((a,b)=>a+b,0)/T.mx.length);
+  const big=[]; for(let r=0;r<LL;r++)if(S[r]>=thr)big.push(r);
+  big.sort((a,b)=>S[b]-S[a]||a-b);
+  const nb=big.length, bx=new Int32Array(nb), by=new Int32Array(nb), claimed=new Uint8Array(nb);
+  for(let j=0;j<nb;j++){bx[j]=big[j]%L; by[j]=(big[j]/L)|0}
+  const d1=(a,b)=>{a=Math.abs(a-b); return per&&a>L-a?L-a:a}, dist=(j,x,y)=>Math.hypot(d1(bx[j],x),d1(by[j],y));
+  const alive=[];
+  T.centers.sort((a,b)=>b.size-a.size||a.id-b.id);
+  for(const c of T.centers){
+    const x=c.pos%L, y=(c.pos/L)|0; let k=-1;
+    for(let j=0;j<nb;j++)if(!claimed[j]&&dist(j,x,y)<=D){k=j; break}
+    if(k<0){trkEnd(c,t-1); continue}
+    if(c.pend>=0){if(on)Q.hn[c.pend]++; c.pend=-1}
+    let dx=bx[k]-x, dy=by[k]-y; if(per){if(dx>L/2)dx-=L; else if(dx<-L/2)dx+=L; if(dy>L/2)dy-=L; else if(dy<-L/2)dy+=L}
+    c.pos=big[k]; c.size=S[big[k]]; c.path.push(c.pos); c.ux.push(c.ux[c.ux.length-1]+dx); c.uy.push(c.uy[c.uy.length-1]+dy);
+    if(c.path.length>TRK_PATH){const h=TRK_PATH>>1; c.path.splice(0,h); c.ux.splice(0,h); c.uy.splice(0,h); c.off+=h}
+    for(let j=0;j<nb;j++)if(!claimed[j]&&dist(j,bx[k],by[k])<=D)claimed[j]=1;
+    alive.push(c);
+  }
+  for(let k=0;k<nb;k++){if(claimed[k])continue;
+    alive.push({id:T.next++,born:t,pos:big[k],size:S[big[k]],path:[big[k]],ux:[bx[k]],uy:[by[k]],off:0,rs:-1,xs:-1,pend:-1});
+    for(let j=0;j<nb;j++)if(!claimed[j]&&dist(j,bx[k],by[k])<=D)claimed[j]=1}
+  T.centers=alive;
+  for(const c of alive){const onR=!!(T.road&&T.road[c.pos]), onX=!!(T.cross&&T.cross[c.pos]);
+    if(onR){if(c.rs<0)c.rs=t} else if(c.rs>=0){trkStay(c,'stayR',c.rs,t-1); c.rs=-1}
+    if(onX){if(c.xs<0)c.xs=t} else if(c.xs>=0){trkStay(c,'stayX',c.xs,t-1); c.xs=-1}}
+  if(T.ghosts.length&&t-T.ghosts[0].te>TRK_GHOST)T.ghosts=T.ghosts.filter(g=>t-g.te<=TRK_GHOST);
+  if(!on)return;
+  Q.n++; Q.sumC+=alive.length;
+  const R=trkReach();
+  for(const c of alive){if(t-c.born+1<trkMin)continue; Q.sumE++;
+    const n=c.ux.length, x1=c.ux[n-1], y1=c.uy[n-1];
+    for(let k=0;k<TRK_LAGS.length;k++){const lag=TRK_LAGS[k]; if(lag>=n)break;
+      const ex=x1-c.ux[n-1-lag], ey=y1-c.uy[n-1-lag]; Q.msdS[k]+=ex*ex+ey*ey; Q.msdN[k]++}
+    const x=c.pos%L, y=(c.pos/L)|0; let d=Infinity; for(let j=0;j<nb;j++){const q=dist(j,x,y); if(q>D&&q<d)d=q}
+    c.pend=Math.min(TRK_NB-1,Math.floor(d/R/0.1));           // closed in the next round: did the center end?
+    Q.estR++; if(c.rs>=0)Q.roadR++; if(c.xs>=0)Q.crossR++}
+}
+// the reach of a big C company: a newcomer makes a unit for α, so the big company wins as far as α/β
+function trkReach(){const pr=P.products[TRK.ic]||P.products[0]; return alphaOf(pr)/Math.max(1e-9,pr.beta*P.tmul)}
+// the walks on the display (at: lattice coordinates → the canvas; E is the round shown, also one looked back at)
+function trkWalks(at,cell,dpr){
+  if(!trkOn||!TRK||!E||TRK.L!==E.L)return;
+  const L=E.L, T=TRK, t=E.t, per=P.bc!=='closed';
+  // (a center hops back and forth between the same few places, as one company hands over to the next: every stretch
+  // of its walk is drawn once, however often the center took it, so that the dashes stay dashes)
+  const walk=(path,born,off,upto,alpha,thick,ring)=>{
+    const n=Math.min(path.length,upto-born-off+1); if(n<1)return;
+    const i0=Math.max(0,n-3000), LL=L*L, seen=new Set(), segs=[];
+    for(let i=i0+1;i<n;i++){const a=path[i-1], b=path[i]; if(a===b)continue;
+      const k=a<b?a*LL+b:b*LL+a; if(seen.has(k))continue; seen.add(k);
+      const ax=a%L, ay=(a/L)|0, bx=b%L, by=(b/L)|0;
+      if(per&&(Math.abs(ax-bx)>L/2||Math.abs(ay-by)>L/2))continue;        // a step across the edge of a periodic town
+      segs.push(at(ax+0.5,ay+0.5),at(bx+0.5,by+0.5))}
+    const trace=()=>{ctx.beginPath(); for(let j=0;j<segs.length;j+=2){ctx.moveTo(segs[j][0],segs[j][1]); ctx.lineTo(segs[j+1][0],segs[j+1][1])} ctx.stroke()};
+    const w=(thick?2.8:1.3)*dpr, da=Math.max(2.4*dpr,Math.min(6*dpr,0.3*cell));
+    ctx.save(); ctx.globalAlpha=alpha; ctx.lineJoin='round';
+    if(segs.length){
+      ctx.lineCap='round'; ctx.setLineDash([]); ctx.strokeStyle='rgba(8,12,24,.6)'; ctx.lineWidth=w+1.8*dpr; trace();       // a dark rim: seen on any ground
+      ctx.lineCap='butt'; ctx.setLineDash([da,0.8*da]); ctx.strokeStyle='#ffffff'; ctx.lineWidth=w; trace();
+      ctx.setLineDash([])}
+    if(ring){const r=path[n-1], q=at((r%L)+0.5,((r/L)|0)+0.5), rad=(thick?5.5:3.2)*dpr;       // where the center stands now
+      ctx.beginPath(); ctx.arc(q[0],q[1],rad,0,2*Math.PI); ctx.strokeStyle='rgba(8,12,24,.7)'; ctx.lineWidth=(thick?4.2:3)*dpr; ctx.stroke();
+      ctx.strokeStyle='#ffffff'; ctx.lineWidth=(thick?2.2:1.4)*dpr; ctx.stroke()}
+    ctx.restore()};
+  for(const g of T.ghosts){if(g.born>t)continue;
+    if(g.te>=t)walk(g.path,g.born,g.off,t,1,t-g.born+1>=trkMin,true);
+    else if(t-g.te<=TRK_FADE)walk(g.path,g.born,g.off,g.te,1-(t-g.te)/(TRK_FADE+1),true,false)}
+  for(const c of T.centers)if(c.born<=t)walk(c.path,c.born,c.off,t,1,t-c.born+1>=trkMin,true);
+}
+const trkLegend=()=>!trkOn?'':`<span><i style="background:repeating-linear-gradient(90deg,#fff 0 5px,#16233b 5px 8px);outline:1px solid #16233b"></i>the walk of each production center (δ ${trkDelta}): thick once it has lived ${trkMin} rounds; it fades when the center has ended</span>`;
+// Kaplan–Meier: the share of the stays (or lives) that last at least τ rounds, from those that ended (ev) and those
+// still going on, as far as they got (cen). The curve stops where fewer than minN are left
+function trkKM(ev,cen,minN){
+  if(!ev.length)return [];
+  const cnt=new Map(); for(const v of ev)cnt.set(v,(cnt.get(v)||0)+1);
+  const all=[...ev,...cen].sort((a,b)=>a-b), us=[...cnt.keys()].sort((a,b)=>a-b), N=all.length;
+  let S=1, i=0; const p=[[all[0],1]];
+  for(const u of us){while(i<N&&all[i]<u)i++; const n=N-i; if(n<minN)break;
+    if(u>p[p.length-1][0])p.push([u,S]);
+    S*=1-cnt.get(u)/n; p.push([u+1,S])}
+  return p;
+}
+const trkMedian=p=>{for(const q of p)if(q[1]<=0.5)return q[0]-1; return null};       // the τ at which half are gone
+// the active periods of the paper: the factories of every product; round t − 2 is active when the factories that
+// survived their first and their second round of trade in round t differ by more than 4; a period is a run of active
+// rounds (one still open at the end, or begun at the first round kept, is left out). Nc: the factories started in it
+function trkPeriods(){
+  if(!CT||!CT.c1A)return [];
+  const n=CT.t.length, key=n+':'+(n?CT.t[n-1]:0)+':'+CT.ver; if(TRK.pk===key)return TRK.pl;
+  const list=[], c1=CT.c1A, c2=CT.c2A, nb=CT.nbA; let s=-1;
+  for(let i=0;i+2<n;i++){const act=Math.abs((c1[i+2]||0)-(c2[i+2]||0))>4;
+    if(act){if(s<0)s=i} else if(s>=0){if(s>0){let Nc=0; for(let j=s;j<i;j++)Nc+=nb[j]||0; list.push({a:CT.t[s],b:CT.t[i-1],Nc})} s=-1}}
+  TRK.pk=key; TRK.pl=list; return list;
+}
+// the plots: their data and labels, for the screen and the saved pictures
+function trkPlots(){
+  const T=TRK, Q=T.S, ic=T.ic, nm=PNAME[ic]||'C', col=PCOL[ic]||'#be123c', dk='#16233b', t=E.t;
+  const lx=k=>trkSc[k]==='log', mk=(k,series,xl,yl,title)=>({series,o:{xl,yl,scale:trkSc[k]},title});
+  const estNow=T.centers.filter(c=>t-c.born+1>=trkMin);
+  // lives
+  const ev=Q.lives.filter(v=>v>=trkMin), km=trkKM(ev,estNow.map(c=>t-c.born+1),3);
+  // the walk: the mean squared displacement, and a random walk with the same first step
+  const msd=[]; let m1=0, mTop=0;
+  for(let k=0;k<TRK_LAGS.length;k++)if(Q.msdN[k]>=20){const v=Q.msdS[k]/Q.msdN[k]; if(TRK_LAGS[k]===1)m1=v; if(v>mTop)mTop=v; msd.push([TRK_LAGS[k],v])}
+  const rw=[]; if(m1>0&&msd.length>1){const xe=msd[msd.length-1][0], x1=trkSc.trkM==='log'?xe:Math.max(2,Math.min(xe,1.3*mTop/m1)); rw.push([1,m1],[x1,m1*x1])}
+  const at100=msd.find(q=>q[0]>=100);
+  // the collapse: the active period each established center ended in
+  const per=trkPeriods(), since=per.filter(p=>p.a>=Q.t0), used=new Set(), withEnd=[];
+  const tKnown=per.length?per[per.length-1].b:-1, tFirst=CT&&CT.t.length?CT.t[0]:Infinity; let nJ=0, nHit=0;
+  for(const te of Q.ends){if(te+3>tKnown||te<tFirst)continue; nJ++;
+    let lo=0, hi=per.length; while(lo<hi){const m=(lo+hi)>>1; if(per[m].b<te-1)lo=m+1; else hi=m}
+    const p=per[lo]; if(p&&p.a<=te+3){nHit++; if(!used.has(p.a)){used.add(p.a); withEnd.push(p.Nc)}}}
+  const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+  // the rivals: five classes of distance, as in the paper (closer than 0.9 reaches drawn at 0.8, farther than 1.2 at 1.3)
+  const cls=[[0,9,0.8],[9,10,0.95],[10,11,1.05],[11,12,1.15],[12,TRK_NB,1.3]], hz=[], hzT=[];
+  for(const [a,b,x] of cls){let n=0,e=0; for(let k=a;k<b;k++){n+=Q.hn[k]; e+=Q.he[k]} hzT.push([e,n]); if(n>=30)hz.push([x,e/n])}
+  // the roads: how long an established center stays
+  const kr=trkKM(Q.stayR,estNow.filter(c=>c.rs>=0).map(c=>t-c.rs+1),3), kx=trkKM(Q.stayX,estNow.filter(c=>c.xs>=0).map(c=>t-c.xs+1),3);
+  return {nm,estNow:estNow.length,ev,km,msd,m1,at100,per:since,withEnd,nJ,nHit,meanAll:mean(since.map(p=>p.Nc)),meanEnd:mean(withEnd),hzT,kr,kx,
+    trkL:mk('trkL',[{c:col,t:`${nm} centers`,p:km}],
+      'rounds τ','share of the centers that live at least τ rounds',`How long the production centers live (δ ${trkDelta}, established after ${trkMin} rounds)`),
+    trkM:mk('trkM',[{c:col,t:'a living center',p:msd},{c:dk,dash:true,t:'a random walk',p:rw}],
+      'time lag Δt (rounds)','mean squared displacement (lattice spacings²)',`How far a living center walks (δ ${trkDelta})`),
+    trkC:mk('trkC',[{c:col,t:'with the end of a center',p:apHist(withEnd,lx('trkC'))},{c:dk,dash:true,t:'all cascades',p:apHist(since.map(p=>p.Nc),lx('trkC'))}],
+      'factories started in the cascade, Nc','probability density P(Nc)','Size of the cascade when a center ends'),
+    trkH:mk('trkH',[{c:col,t:`${nm} centers`,p:hz}],
+      `distance to the nearest rival, in reaches of ${nm}`,'chance that the center ends in the next round','A rival within reach ends a center'),
+    trkR:mk('trkR',[{c:'#b7791f',t:'stays on a road',p:kr},{c:'#0f766e',t:'stays at a crossing',p:kx}],
+      'rounds τ','share of the stays that last at least τ rounds',`How long a center stays on a road (δ ${trkDelta})`)};
+}
+const TRK_IDS={trkL:'cTrkL',trkM:'cTrkM',trkC:'cTrkC',trkH:'cTrkH',trkR:'cTrkR'};
+function trkDraw(force){
+  if(!E||!TRK)return;
+  const T=TRK, Q=T.S, t=E.t, on=trkOn;
+  $('trkSec').style.display=on?'':'none';
+  if(!on){setText($('trkStat'),''); return}
+  const nEst=T.centers.filter(c=>t-c.born+1>=trkMin).length;
+  setText($('trkStat'),`Following ${T.centers.length} center${T.centers.length===1?'':'s'}, ${nEst} of them established. Counted since round ${Q.t0}: ${Q.lives.filter(v=>v>=trkMin).length} established centers ended.`);
+  const roads=P.roads.length>0; $('trkRoadBox').style.display=roads?'':'none';
+  const ids=Object.keys(TRK_IDS).filter(k=>roads||k!=='trkR');
+  if(!(force||ids.some(k=>onScreen($(TRK_IDS[k]))))){PEND.set($('cTrkL'),()=>trkDraw()); return}
+  const q=trkPlots(), nm=q.nm, f1=v=>v>=100?v.toFixed(0):v>=10?v.toFixed(1):v.toFixed(2), R=trkReach(), LB=(E.L/R)*(E.L/R);
+  for(const k of ids)xyPlot($(TRK_IDS[k]),q[k].series,q[k].o);
+  $('trkSub').textContent=`the centers of ${nm}, the product that is cheapest to carry, followed by their biggest company: how long they live, how far they walk, and how they end`;
+  const med=trkMedian(q.km), longest=q.ev.length?Math.max(...q.ev):0, nc=Q.n?Q.sumC/Q.n:0;
+  const n0=v=>Math.round(v).toLocaleString('en-US').replace(/,/g,' ');       // 16 924, kept on one line
+  let s=`Counted since round ${Q.t0}: ${Q.n} rounds, with δ = ${trkDelta}. `+
+    (Q.n?`<b>Centers:</b> ${f1(nc)} at a time on average, ${f1(Q.sumE/Q.n)} of them established (${trkMin} rounds old or more). That is ${(nc/LB).toFixed(2)} × (L·β)², with β the cost of carrying ${nm}; its reach 1/β is ${f1(R)} steps. `:'')+
+    `<b>Lives:</b> ${q.ev.length} established centers ended`+(Q.n&&q.ev.length?` (${f1(1000*q.ev.length/Q.n)} per 1000 rounds)`:'')+(med!==null?`; half of them lived ${med} rounds or less`:'')+(longest?`, the longest ${longest}`:'')+
+    `. ${q.estNow} ${q.estNow===1?'is':'are'} alive now. `+
+    `<b>Walk:</b> `+(q.m1>0?`in one round a center moves ${f1(q.m1)} squared steps on average`+(q.at100?`; in ${q.at100[0]} rounds ${f1(q.at100[1])}, where a random walk would have made ${f1(q.m1*q.at100[0])}. So a center stays within about ${f1(Math.sqrt(q.at100[1]))} steps of its place`:'')+'. ':'nothing to show yet. ')+
+    `<b>Collapse:</b> `+(q.nJ?`of ${q.nJ} ends of established centers, ${q.nHit} fell in a cascade (${q.withEnd.length} different cascades). Such a cascade started ${n0(q.meanEnd)} factories on average, against ${n0(q.meanAll)} for all ${q.per.length} cascades. `:`no end of an established center to count yet (${q.per.length} cascades so far). `)+
+    `<b>Rivals</b> (ends / rounds, by the distance to the nearest rival in reaches): closer than 0.9: ${q.hzT[0].join(' / ')}; 0.9–1.0: ${q.hzT[1].join(' / ')}; 1.0–1.1: ${q.hzT[2].join(' / ')}; 1.1–1.2: ${q.hzT[3].join(' / ')}; farther: ${q.hzT[4].join(' / ')}. `;
+  if(roads){const sh=Q.estR?100*Q.roadR/Q.estR:0, cell=100*T.nRoad/(E.L*E.L), mr=trkMedian(q.kr), mx=trkMedian(q.kx);
+    s+=`<b>Roads:</b> ${Q.stayR.length} stay${Q.stayR.length===1?'':'s'} on a road ended`+(mr!==null?` (half within ${mr} rounds, the longest ${Math.max(...Q.stayR)})`:Q.stayR.length?` (the longest ${Math.max(...Q.stayR)} rounds)`:'')+
+      (T.cross?`, ${Q.stayX.length} at a crossing`+(mx!==null?` (half within ${mx} rounds, the longest ${Math.max(...Q.stayX)})`:Q.stayX.length?` (the longest ${Math.max(...Q.stayX)} rounds)`:''):'')+
+      `. The established centers spent ${sh.toFixed(1)} % of their rounds on a road, which takes up ${cell.toFixed(1)} % of the town`+
+      (T.cross&&Q.estR?`, and ${(100*Q.crossR/Q.estR).toFixed(1)} % at a crossing (${(100*T.nCross/(E.L*E.L)).toFixed(1)} % of the town)`:'')+'. '}
+  s+=`Hover over the name of a plot to read how it is counted.`;
+  setHTML($('trkNote'),s);
+}
+function trkSync(){
+  const b=$('bTrk'); b.textContent=trkOn?'on':'off'; b.classList.toggle('on',trkOn);
+  document.querySelectorAll('.trkDeltaSel').forEach(s=>s.value=String(trkDelta)); document.querySelectorAll('.trkMinSel').forEach(s=>s.value=String(trkMin));
+  document.querySelectorAll('.trkSc').forEach(x=>x.textContent=TRK_SCN[trkSc[x.dataset.p]]);
+  $('trkSec').style.display=trkOn?'':'none';
+}
+{const dOpt=[2,3,4,5,6,8,10,12,15,20].map(k=>`<option value="${k}">${k}</option>`).join(''), mOpt=[1,5,10,20,50,100,200].map(k=>`<option value="${k}">${k} round${k===1?'':'s'}</option>`).join('');
+  document.querySelectorAll('.trkDeltaSel').forEach(sel=>{sel.innerHTML=dOpt;
+    sel.onchange=()=>{trkDelta=+sel.value; trkSync(); if(E){trkReseed(); draw(); trkDraw(true)}}});       // a new δ: the following starts anew
+  document.querySelectorAll('.trkMinSel').forEach(sel=>{sel.innerHTML=mOpt;
+    sel.onchange=()=>{trkMin=+sel.value; trkSync(); if(E&&TRK){TRK.S=trkStat0(); draw(); trkDraw(true)}}});
+  document.querySelectorAll('.trkAnew').forEach(b=>b.onclick=()=>{if(E&&TRK){TRK.S=trkStat0(); for(const c of TRK.centers)c.pend=-1; trkDraw(true)}});
+  document.querySelectorAll('.trkSc').forEach(b=>b.onclick=()=>{const k=b.dataset.p, o=['loglin','log','lin']; trkSc[k]=o[(o.indexOf(trkSc[k])+1)%3]; trkSync(); if(E&&TRK)trkDraw(true)});
+  $('bTrk').onclick=()=>{trkOn=!trkOn; trkSync();
+    if(E){if(!TRK)trkReset(); if(trkOn){TRK.S=trkStat0(); for(const c of TRK.centers)c.pend=-1} draw(); trkDraw(true)}};
+  $('trkSee').onclick=()=>{if(!trkOn)$('bTrk').onclick(); if(window.innerWidth<900)setCtlOpen(false); $('trkSec').scrollIntoView({behavior:'smooth',block:'start'})};
+  trkSync()}
+new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)&&!running)soon(()=>trkDraw(true))}).observe($('cTrkL'));
+
+// ---------- Planting and removing a center (the experiments of the paper's SI Appendix, section S8) ----------
+// Two tools of the section Production centers of the control panel: 'plant' and 'bomb' (the variable tool, as for the
+// roads and borders). While one is chosen, the place pointed at is shown on the town (aimDraw): the mouse moves over
+// it, or a finger is put down and slides. A click, or letting go, acts there (aimAct), and the tool is put away: press
+// the button again for one more. Esc, or the button once more, puts the tool away without acting.
+// plant: the agent of that site gets a company of C, the product that is cheapest to carry (scanC), that counts as
+//   having sold S0 units in the last round: S0 the mean biggest C company of the last 100 rounds, and at least
+//   0.064·L² (1000 in the 125 × 125 town, the size planted in the paper). Its other factories close and its record of
+//   sales starts anew, so that the new company is judged from its first round on. Its money is not touched.
+// bomb: within the distance r of that site (across the edges of a periodic town) the factories close — those of C
+//   only, or all of them — and the records of sales of their owners start anew; with money, the money of every agent
+//   there is set to 0. As in the paper, the owners keep their income of the last round: it draws their orders once more.
+// Both leave the random numbers of the model alone; the market is worked out anew at once, as the next round would.
+const aimOn=()=>tool==='plant'||tool==='bomb';
+const aimCell=g=>{const L=E.L; return [Math.min(L-1,Math.max(0,Math.floor(g[0]))),Math.min(L-1,Math.max(0,Math.floor(g[1])))]};
+const BOMB_WHAT={c:nm=>`the ${nm} companies`,all:()=>'all companies',money:()=>'all companies and all money'};
+function aimSay(msg,ms){const el=$('aimHint'); clearTimeout(aimT); if(!msg){el.classList.remove('show'); return}
+  el.textContent=msg; el.classList.add('show'); if(ms)aimT=setTimeout(()=>{if(!aimOn())el.classList.remove('show')},ms)}
+function aimSync(){
+  const nm=E?PNAME[scanC(P.products)]||'C':'C', r=+$('bombR').value;
+  $('bPlant').classList.toggle('on',tool==='plant'); $('bBomb').classList.toggle('on',tool==='bomb');
+  $('bPlant').textContent=tool==='plant'?'point at the town':'plant'; $('bBomb').textContent=tool==='bomb'?'point at the town':'remove';
+  $('bombRV').textContent=r; $('bombWhat').options[0].textContent=nm+' companies';
+  if(tool==='plant')aimSay(`Plant a ${nm} center: point at the town and click, or slide a finger there and let go. Esc: not now.`);
+  else if(tool==='bomb')aimSay(`Remove ${BOMB_WHAT[$('bombWhat').value](nm)} `+(r>0?`within ${r} steps of a place`:'at one place')+`: point at the town and click, or slide a finger there and let go. Esc: not now.`);
+  else aimSay('');
+}
+function aimPick(k){
+  tool=tool===k?null:k; aimAt=null; aimDown=false; closeMenus(); syncTools();
+  if(tool){if(window.innerWidth<900)setCtlOpen(false);       // a narrow window: the panel is put away, so that the town can be pointed at
+    document.querySelector('.canvas-wrap').scrollIntoView({block:'nearest',behavior:'smooth'})}
+  draw();
+}
+$('bPlant').onclick=()=>aimPick('plant'); $('bBomb').onclick=()=>aimPick('bomb');
+$('bombR').oninput=()=>{aimSync(); drawSoon()}; $('bombWhat').onchange=()=>aimSync();
+// a big company of C for the agent at (x, y); returns what was done, in words
+function trkPlant(x,y){
+  const L=E.L, r=y*L+x, ic=scanC(P.products), nm=PNAME[ic]||'C';
+  if(E.occ&&!E.occ[r])return `Nobody lives at (${x},${y}): no center planted there.`;
+  const mx=TRK&&TRK.L===L&&TRK.ic===ic&&TRK.mx.length?TRK.mx.reduce((a,b)=>a+b,0)/TRK.mx.length:0;
+  const S0=Math.max(1,Math.round(0.064*L*L),Math.round(mx));
+  for(let i=0;i<E.N;i++){E.F[i][r]=i===ic?1:0; E.sales[i][r]=i===ic?S0:0}
+  E.net[r]=0; E.prevNet[r]=0; E.falls[r]=0; E.units[r]=0; E.prevUnits[r]=0; E.started[r]=E.t; E.stale=true;
+  return `Planted at (${x},${y}), round ${E.t}: a ${nm} company that counts as having sold ${S0} units in the last round.`;
+}
+// the factories (and the money) within the distance R of (x0, y0); returns what was done, in words
+function trkBomb(x0,y0){
+  const L=E.L, per=P.bc!=='closed', R=+$('bombR').value, mode=$('bombWhat').value, ic=scanC(P.products), nm=PNAME[ic]||'C', K=Math.ceil(R);
+  const seen=new Set(); let nf=0, na=0, mon=0;
+  for(let dy=-K;dy<=K;dy++)for(let dx=-K;dx<=K;dx++){if(dx*dx+dy*dy>R*R)continue;
+    let X=x0+dx, Y=y0+dy; if(per){X=(X%L+L)%L; Y=(Y%L+L)%L} else if(X<0||Y<0||X>=L||Y>=L)continue;
+    const r=Y*L+X; if(seen.has(r)||(E.occ&&!E.occ[r]))continue; seen.add(r); na++;
+    let any=false; for(let i=0;i<E.N;i++){if(mode==='c'&&i!==ic)continue; if(E.F[i][r]){E.F[i][r]=0; E.sales[i][r]=0; any=true; nf++}}
+    if(any){E.net[r]=0; E.prevNet[r]=0; E.falls[r]=0; E.units[r]=0; E.prevUnits[r]=0}
+    if(mode==='money'){mon+=Math.max(0,E.money[r]); E.money[r]=0}}
+  E.stale=true;
+  return `Removed at (${x0},${y0}), round ${E.t}, `+(R>0?`within ${R} steps (${na} agents)`:'at that one place')+`: ${nf} ${mode==='c'?nm+' ':''}compan${nf===1?'y':'ies'}`+
+    (mode==='money'?` and all the money there, ${mon>=100?mon.toFixed(0):mon.toFixed(1)} in all`:'')+'.';
+}
+function aimAct(g){
+  const [x,y]=aimCell(g), msg=tool==='plant'?trkPlant(x,y):trkBomb(x,y);
+  tool=null; aimAt=null; syncTools();
+  if(E.stale!==false)E.computeMarkets();          // the market with the change, as the next round would work it out
+  // the picture kept of the present round (to look back at) follows the change
+  {const q=FR[FR.length-1]; if(q&&q.t===E.t&&q.N===E.N){for(let i=0;i<E.N;i++){q.F[i].set(E.F[i]); q.sales[i].set(E.sales[i]); q.sup[i].set(E.sup[i])} q.money.set(E.money); q.view=null}}
+  setText($('aimNote'),msg); aimSay(msg,6000);
+  refresh(); drawDist();
+}
+// the place pointed at: for planting a ring in the colour of C around the site; for removing the circle of radius r
+// (the one site for r = 0)
+function aimDraw(at,cell,dpr){
+  if(!aimOn()||!aimAt||!E||EXPORT_DPR)return;
+  const [x,y]=aimCell(aimAt), cx=x+0.5, cy=y+0.5;
+  const circle=rad=>{ctx.beginPath(); for(let k=0;k<48;k++){const a=2*Math.PI*k/48, q=at(cx+rad*Math.cos(a),cy+rad*Math.sin(a)); k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])} ctx.closePath()};
+  const square=()=>{ctx.beginPath(); [[x,y],[x+1,y],[x+1,y+1],[x,y+1]].forEach((p,k)=>{const q=at(p[0],p[1]); k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])}); ctx.closePath()};
+  ctx.save(); ctx.lineJoin='round'; ctx.setLineDash([]);
+  if(tool==='plant'){const col=PCOL[scanC(P.products)]||'#be123c';
+    circle(Math.max(1.2,9*dpr/Math.max(1e-6,cell))); ctx.strokeStyle='rgba(8,12,24,.7)'; ctx.lineWidth=5*dpr; ctx.stroke(); ctx.strokeStyle=col; ctx.lineWidth=2.6*dpr; ctx.stroke();
+    square(); ctx.fillStyle=col; ctx.fill(); ctx.strokeStyle='#ffffff'; ctx.lineWidth=1.2*dpr; ctx.stroke()}
+  else{const R=+$('bombR').value; if(R>0)circle(R+0.5); else square();
+    ctx.fillStyle='rgba(220,38,38,.22)'; ctx.fill(); ctx.strokeStyle='rgba(8,12,24,.7)'; ctx.lineWidth=4.4*dpr; ctx.stroke();
+    ctx.setLineDash([6*dpr,4*dpr]); ctx.strokeStyle='#ff5a5a'; ctx.lineWidth=2.2*dpr; ctx.stroke(); ctx.setLineDash([])}
+  ctx.restore();
+}
+
 // ---------- pictures of the plots: .png in the shape shown, with a title; sq in a square, for a paper: no title, and
 // the margins only as wide as the numbers need; both with axis labels ----------
 function exportPlot(which,kind,btn){
   if(which==='netall'){exportAll(btn);return}
   if(which==='scan'||which==='scand'||which==='scanw'||which==='scans'||which==='scantab'){scanExport(which,kind,btn);return}
-  const src=$({chart:'chart',money:'cMoney',size:'cSize',surv:'cSurv',fort:'cFort',nearM:'cNearM',nearS:'cNearS',ct:'cCT',ctd:'cCT',net:'cNet',apN:'cApN',apS:'cApS',apX:'cApX'}[which]), r=src.getBoundingClientRect();
+  const src=$({chart:'chart',money:'cMoney',size:'cSize',surv:'cSurv',fort:'cFort',nearM:'cNearM',nearS:'cNearS',ct:'cCT',ctd:'cCT',net:'cNet',apN:'cApN',apS:'cApS',apX:'cApX',...TRK_IDS}[which]), r=src.getBoundingClientRect();
   // (the two plots after a collapse are always saved in a square, one above the other)
   // (sq: 1000 × 900 pixels; lv: a long picture, 1500 × 682 (2.2 : 1), for the time series — both without a title)
   const lv=kind==='lv', sq=kind==='sq'||lv, sqd=sq||which==='ct', dpr=2, W=lv?1500:sqd?1000:Math.round(Math.max(r.width,420)*dpr);
@@ -6027,10 +6267,13 @@ function exportPlot(which,kind,btn){
   else if(which==='fort')fortPlot(c,{dpr,sq});
   else if(which==='apN'||which==='apS'||which==='apX'){const e=apPlots()[which];
     xyPlot(c,e.series,{...e.o,title:sq?'':e.title+' — round '+E.t},{dpr,sq})}
+  else if(TRK_IDS[which]){if(!TRK){btnWord(btn,'no data yet'); return} const e=trkPlots()[which];
+    if(!e.series.some(se=>se.p.length)){btnWord(btn,'no data yet'); return}
+    xyPlot(c,e.series,{...e.o,title:sq?'':e.title+' — rounds '+TRK.S.t0+'–'+E.t},{dpr,sq})}
   else if(which==='nearM'||which==='nearS'){const q=nearPlots(); if(!q){btnWord(btn,'no data yet'); return} const e=q[which];
     xyPlot(c,e.series,{...e.o,title:sq?'':e.title+' — round '+E.t},{dpr,sq})}
   else{const q=distPlots()[which]; logPlot(c,q.series,q.B,q.xl,sq?'':q.title+' — round '+E.t,q.legend,{dpr,ylabel:q.yl,sq},q.opt)}
-  savePicture(c,`globalization_${which==='ct'?'collapse_'+PNAME[CT.ic]:which==='ctd'?'diversity_'+PNAME[CT.ic]:which==='net'?'family_tree_'+PNAME[CT.ic]+(netMin?'_survived'+netMin:''):which==='chart'?$('metric').value:which==='fort'?'fortunes_'+fortMode+fortN+(fortLog?'_log':'')+(lifeZero?'_zero':''):which==='surv'?'survival'+(lifeZero?'_zero':''):which.startsWith('near')&&nearScale!=='lin'?which+'_'+nearScale:which}_t${E.t}${kind!=='png'?'_'+kind:''}.png`,btn);
+  savePicture(c,`globalization_${which==='ct'?'collapse_'+PNAME[CT.ic]:which==='ctd'?'diversity_'+PNAME[CT.ic]:which==='net'?'family_tree_'+PNAME[CT.ic]+(netMin?'_survived'+netMin:''):which==='chart'?$('metric').value:which==='fort'?'fortunes_'+fortMode+fortN+(fortLog?'_log':'')+(lifeZero?'_zero':''):which==='surv'?'survival'+(lifeZero?'_zero':''):which.startsWith('near')&&nearScale!=='lin'?which+'_'+nearScale:TRK_IDS[which]?'centers_'+{trkL:'lives',trkM:'walk',trkC:'collapse',trkH:'rivals',trkR:'roads'}[which]+'_delta'+trkDelta:which}_t${E.t}${kind!=='png'?'_'+kind:''}.png`,btn);
 }
 document.querySelectorAll('.plotbtns button').forEach(b=>b.onclick=()=>{
   try{exportPlot(b.dataset.plot,b.dataset.k,b)}
